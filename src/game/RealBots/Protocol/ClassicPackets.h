@@ -452,4 +452,72 @@ struct ClassicLoginVerifyWorld
     }
 };
 
+// Keepalive/session-liveness packets a bot's default handling drives on its own, independent of
+// whatever task is on top of the stack (bot-phase-1.md, "Default handling").
+
+// vibemangos: src/game/Handlers/MiscHandler.cpp -- CLASSIC_CMSG_KEEP_ALIVE is bound to
+// Handle_NULL (cata's Handle_EarlyProccess): the body is never parsed server-side, so an empty
+// one (what a real client also sends -- there is nothing to say) is enough.
+struct ClassicKeepAlive
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_KEEP_ALIVE;
+
+    void Write(ByteBuffer&) const {}
+};
+
+// vibemangos: src/game/Server/Packets/Misc.cpp TimeSyncRequest::AppendBodyTo().
+struct ClassicTimeSyncRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_TIME_SYNC_REQUEST;
+
+    uint32 SequenceIndex = 0;
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> SequenceIndex;
+        return true;
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Misc.cpp TimeSyncResponse::ReadFromWorldPacket() (field
+// order: sequenceIndex then clientTime).
+struct ClassicTimeSyncResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TIME_SYNC_RESPONSE;
+
+    uint32 SequenceIndex = 0;
+    uint32 ClientTime = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SequenceIndex;
+        data << ClientTime;
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Misc.cpp LogoutRequest::ReadFromWorldPacket() -- a single
+// IdleLogout bit, flushed to its own byte; the bot is never idle-logging-out, so it's always false.
+struct ClassicLogoutRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_LOGOUT_REQUEST;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(false); // idleLogout
+        data.FlushBits();
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Misc.cpp LogoutComplete::AppendBodyTo() (empty body).
+// Routed PacketRoute::Realm (Opcodes.cpp) -- arrives on the Realm connection even when the
+// logout request itself was sent on the Instance one (bot-phase-1-progress-6.md).
+struct ClassicLogoutComplete
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_COMPLETE;
+
+    bool Read(ByteBuffer&) { return true; }
+};
+
 #endif

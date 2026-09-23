@@ -293,3 +293,60 @@ TEST_CASE("ClassicResumeComms::Read always succeeds on an empty body", "[packets
     ClassicResumeComms resumeComms;
     CHECK(resumeComms.Read(data));
 }
+
+TEST_CASE("ClassicKeepAlive::Write produces an empty body", "[packets]")
+{
+    ByteBuffer data;
+    ClassicKeepAlive{}.Write(data);
+    CHECK(data.size() == 0);
+}
+
+TEST_CASE("ClassicTimeSyncRequest round-trips", "[packets]")
+{
+    ClassicTimeSyncRequest out;
+    out.SequenceIndex = 0x12345678;
+
+    ByteBuffer data;
+    data << out.SequenceIndex;
+
+    ClassicTimeSyncRequest in;
+    REQUIRE(in.Read(data));
+    CHECK(in.SequenceIndex == out.SequenceIndex);
+}
+
+TEST_CASE("ClassicTimeSyncRequest::Read rejects a truncated body", "[packets]")
+{
+    ByteBuffer data;
+    ClassicTimeSyncRequest in;
+    CHECK_FALSE(in.Read(data));
+}
+
+TEST_CASE("ClassicTimeSyncResponse::Write matches the expected field order", "[packets]")
+{
+    ClassicTimeSyncResponse out;
+    out.SequenceIndex = 7;
+    out.ClientTime = 424242;
+
+    ByteBuffer data;
+    out.Write(data);
+
+    uint32 sequenceIndex, clientTime;
+    data >> sequenceIndex >> clientTime;
+    CHECK(sequenceIndex == out.SequenceIndex);
+    CHECK(clientTime == out.ClientTime);
+    CHECK(data.rpos() == data.size());
+}
+
+TEST_CASE("ClassicLogoutRequest::Write produces a single flushed bit", "[packets]")
+{
+    ByteBuffer data;
+    ClassicLogoutRequest{}.Write(data);
+    CHECK(data.size() == 1);
+}
+
+TEST_CASE("ClassicLogoutComplete::Read always succeeds on an empty body", "[packets]")
+{
+    ByteBuffer data;
+    ClassicLogoutComplete complete;
+    CHECK(complete.Read(data));
+}

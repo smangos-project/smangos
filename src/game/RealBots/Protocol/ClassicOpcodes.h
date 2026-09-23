@@ -19,6 +19,8 @@ enum ClassicOpcodes : uint32
     CLASSIC_CMSG_PLAYER_LOGIN              = 0x390016,
     CLASSIC_CMSG_CREATE_CHARACTER          = 0x39006E,
     CLASSIC_CMSG_CONNECT_TO_FAILED         = 0x390000,
+    CLASSIC_CMSG_LOGOUT_REQUEST            = 0x35006A,
+    CLASSIC_CMSG_TIME_SYNC_RESPONSE        = 0x37005A,
 
     CLASSIC_SMSG_AUTH_CHALLENGE            = 0x420000,
     CLASSIC_SMSG_ENTER_ENCRYPTED_MODE      = 0x420001,
@@ -30,6 +32,12 @@ enum ClassicOpcodes : uint32
     CLASSIC_SMSG_ENUM_CHARACTERS_RESULT    = 0x3B0018,
     CLASSIC_SMSG_LOGIN_VERIFY_WORLD        = 0x3B0030,
     CLASSIC_SMSG_CREATE_CHAR               = 0x3B019D,
+    CLASSIC_SMSG_LOGOUT_COMPLETE           = 0x3B0120,
+    CLASSIC_SMSG_TIME_SYNC_REQUEST         = 0x4C0000,
 };
+
+// Name for the packet log (bot-phase-1.md, "Packet log"); "UNKNOWN" (plus the opcode's own hex
+// value, printed alongside it by the caller) for anything not listed above.
+char const* ClassicOpcodeName(uint32 opcode);
 
 #endif
