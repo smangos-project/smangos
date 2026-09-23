@@ -46,18 +46,8 @@ std::unique_ptr<IO::Networking::AsyncSocketAcceptor> IO::Networking::AsyncSocket
         return nullptr;
     }
 
-    int errorCode;
-
-    // TODO <static> check if WSA was already initialized
-    // TODO if fatal error, close socket and CleanupWSA (if reference counter == 0)
-
-    WSADATA wsaData;
-    errorCode = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (errorCode != 0)
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "::WSAStartup(...) Error: %u", errorCode);
-        return nullptr;
-    }
+    // Winsock is initialized once per process in IoContext::CreateIoContext(), which every
+    // caller here already holds a `ctx` from -- see that function's own comment.
 
     // Create an IPv4 TCP server where other clients can connect to
     SOCKET listenNativeSocket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

@@ -2,9 +2,25 @@
 #include "Log.h"
 #include <thread>
 #include <Windows.h>
+#include <WinSock2.h>
 
 std::unique_ptr<IO::IoContext> IO::IoContext::CreateIoContext()
 {
+    // The one place Winsock gets initialized for the whole process: every socket user (client
+    // connects included) creates an IoContext first, but AsyncSocketAcceptor is only ever
+    // constructed by code that also listens -- a pure client (a bot with no fake/real server of
+    // its own in the same process) used to never call WSAStartup at all, failing its first
+    // ::socket()/::connect() with WSANOTINITIALISED. Safe to call more than once per process
+    // (Windows reference-counts it); this tree never calls WSACleanup, matching
+    // AsyncSocketAcceptor's own prior behavior.
+    WSADATA wsaData;
+    int wsaError = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaError != 0)
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "::WSAStartup(...) Error: %d", wsaError);
+        return nullptr;
+    }
+
     DWORD constexpr numberOfMaxThreads = 0; // 0 means as many as there are threads on the system
     ULONG_PTR completionKey = 0;
     HANDLE completionPort = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, completionKey, numberOfMaxThreads);
