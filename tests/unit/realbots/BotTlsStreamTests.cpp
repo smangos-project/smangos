@@ -47,10 +47,40 @@ constexpr uint16_t TestPort = 28518;
 // An ephemeral, self-signed certificate for the server half of the test -- BotTlsStream never
 // verifies its peer (bot-phase-1.md, "No certificate verification"), so nothing about this cert
 // needs to be trustworthy, only present.
+// Move-only: a user-declared destructor suppresses the implicit move ctor/assignment but NOT
+// the implicit (shallow, pointer-copying) copy assignment -- `member = GenerateSelfSignedCert()`
+// would compile, shallow-copy the raw pointers, then immediately double-free them when the
+// temporary's destructor runs, unless copy is explicitly removed and move is provided instead.
 struct SelfSignedCert
 {
     EVP_PKEY* key = nullptr;
     X509* cert = nullptr;
+
+    SelfSignedCert() = default;
+    SelfSignedCert(SelfSignedCert const&) = delete;
+    SelfSignedCert& operator=(SelfSignedCert const&) = delete;
+
+    SelfSignedCert(SelfSignedCert&& other) noexcept : key(other.key), cert(other.cert)
+    {
+        other.key = nullptr;
+        other.cert = nullptr;
+    }
+
+    SelfSignedCert& operator=(SelfSignedCert&& other) noexcept
+    {
+        if (this != &other)
+        {
+            if (cert)
+                X509_free(cert);
+            if (key)
+                EVP_PKEY_free(key);
+            key = other.key;
+            cert = other.cert;
+            other.key = nullptr;
+            other.cert = nullptr;
+        }
+        return *this;
+    }
 
     ~SelfSignedCert()
     {

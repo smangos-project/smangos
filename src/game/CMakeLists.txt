@@ -542,6 +542,8 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotWorldConnection.h
       RealBots/Net/BotTlsStream.cpp
       RealBots/Net/BotTlsStream.h
+      RealBots/Net/BotRestClient.cpp
+      RealBots/Net/BotRestClient.h
   )
 endif()
 
