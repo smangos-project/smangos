@@ -48,16 +48,37 @@ set (shared_SRCS
     Crypto/InitializeCrypto.cpp
     Crypto/Authentication/SRP6.h
     Crypto/Authentication/SRP6.cpp
+    Crypto/Authentication/BnetSRP6.h
+    Crypto/Authentication/BnetSRP6.cpp
     Crypto/Encoding/Base32.h
     Crypto/Encoding/Base32.cpp
     Crypto/Encryption/RC4.h
     Crypto/Encryption/RC4.cpp
+    Crypto/Encryption/AES_GCM.h
+    Crypto/Encryption/AES_GCM.cpp
+    Crypto/Encryption/PacketCrypt.h
+    Crypto/Encryption/PacketCrypt.cpp
     Crypto/Hash/HMACSHA1.h
     Crypto/Hash/HMACSHA1.cpp
+    Crypto/Hash/HMACSHA256.h
+    Crypto/Hash/HMACSHA256.cpp
+    Crypto/Hash/HMACSHA512.h
+    Crypto/Hash/HMACSHA512.cpp
     Crypto/Hash/MD5.h
     Crypto/Hash/MD5.cpp
     Crypto/Hash/SHA1.h
     Crypto/Hash/SHA1.cpp
+    Crypto/Hash/SHA256.h
+    Crypto/Hash/SHA256.cpp
+    Crypto/Hash/SHA512.h
+    Crypto/Hash/SHA512.cpp
+    Crypto/SessionKeyGenerator512.h
+    Crypto/Ed25519.h
+    Crypto/Ed25519.cpp
+    Crypto/Ed25519Vendor/ed25519/ed25519.h
+    Crypto/Ed25519Vendor/curve25519.c
+    Crypto/RsaSign.h
+    Crypto/RsaSign.cpp
     Compression/ZLib.h
     Compression/ZLib.cpp
     Database/Database.h

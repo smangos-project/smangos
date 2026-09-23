@@ -20,3 +20,15 @@ function(mangos_target_flags _target)
     target_compile_options(${_target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${_cxx}>)
   endif()
 endfunction()
+
+# Copies the OpenSSL runtime DLLs next to a Windows executable target's output, so it can
+# actually run (not just link) without OPENSSL_ROOT_DIR/bin on PATH.
+# Usage: mangos_copy_openssl_dlls(<target>)
+function(mangos_copy_openssl_dlls _target)
+  if(WIN32 AND OPENSSL_RUNTIME_DLLS)
+    add_custom_command(TARGET ${_target} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OPENSSL_RUNTIME_DLLS} "$<TARGET_FILE_DIR:${_target}>"
+      COMMAND_EXPAND_LISTS
+    )
+  endif()
+endfunction()

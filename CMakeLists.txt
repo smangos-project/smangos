@@ -98,9 +98,21 @@ if(WIN32)
   set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/mysql)
   set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.lib)
   set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.lib)
-  set(OPENSSL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/openssl)
-  set(OPENSSL_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libeay32.lib)
-  set(OPENSSL_DEBUG_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libeay32.lib)
+  # RealBots' crypto (Ed25519 signing for CLASSIC_SMSG_ENTER_ENCRYPTED_MODE, and the TLS to
+  # come with the REST/RPC login) needs OpenSSL >=1.1.1; the vendored dep/windows copy is
+  # 1.0.2k (2017), which predates Ed25519 entirely. Defaults to a system OpenSSL 3.x install
+  # (the openssl.org Windows installer's default layout); override -DOPENSSL_ROOT_DIR=... to
+  # point elsewhere. Everything outside RealBots already branches on OPENSSL_VERSION_MAJOR/
+  # OPENSSL_VERSION_NUMBER and picks its modern-OpenSSL path under this automatically.
+  set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64" CACHE PATH "OpenSSL install used on Windows (needs >=1.1.1 for Ed25519)")
+  set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include)
+  # libcrypto only for now (hashes/AES/SRP6/Ed25519); libssl joins once BotTlsStream needs real
+  # TLS (bot-phase-1.md step 4). Kept single-item: OPENSSL_LIBRARIES/OPENSSL_DEBUG_LIBRARIES are
+  # used with the legacy optimized/debug target_link_libraries keywords elsewhere (mangosd,
+  # realmd), which only scope the single list item immediately following the keyword.
+  set(OPENSSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libcrypto.lib)
+  set(OPENSSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libcrypto.lib)
+  set(OPENSSL_RUNTIME_DLLS ${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll)
   set(ZLIB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/dep/windows/include/zlib)
   if (REQUIRES_LIBCURL AND MSVC)
     # MinGW falls through to find_package(CURL) below, which picks up
