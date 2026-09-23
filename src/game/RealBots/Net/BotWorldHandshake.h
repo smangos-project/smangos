@@ -39,6 +39,11 @@ class BotWorldHandshake : public std::enable_shared_from_this<BotWorldHandshake>
             bool Success = false;
             std::shared_ptr<BotWorldConnection> Connection;
             uint32 AuthResult = 0; // BattlenetRpcErrorCode from SMSG_AUTH_RESPONSE; 0 == Ok
+            // The 40-byte world session key CMSG_AUTH_SESSION established -- CharSelect needs it
+            // again if the server redirects to a second ("Instance") connection via
+            // SMSG_CONNECT_TO (BotInstanceConnect's CMSG_AUTH_CONTINUED_SESSION reuses it rather
+            // than doing a fresh key exchange).
+            std::array<uint8, 40> SessionKey{};
             std::string Error;
         };
         using HandshakeCallback = std::function<void(Result)>;

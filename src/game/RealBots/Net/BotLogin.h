@@ -49,7 +49,12 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
         struct Result
         {
             bool Success = false;
+            // The Instance connection once CLASSIC_SMSG_CONNECT_TO redirected to one (see
+            // BotCharSelect::Result); falls back to the Realm connection if no redirect happened.
             std::shared_ptr<BotWorldConnection> Connection;
+            // The original ("Realm") connection, kept alive alongside Connection above -- null
+            // if no redirect happened (Connection is already the Realm connection then).
+            std::shared_ptr<BotWorldConnection> RealmConnection;
             ClassicGuid CharacterGuid;
             std::string Error;
         };
@@ -64,10 +69,10 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
 
         void OnBnetLogin(BotBnetLogin::Result result);
         void OnWorldHandshake(BotWorldHandshake::Result result);
-        void OnCharSelect(std::shared_ptr<BotWorldConnection> connection, BotCharSelect::Result result);
+        void OnCharSelect(BotCharSelect::Result result);
 
         void Fail(std::string const& error);
-        void Succeed(std::shared_ptr<BotWorldConnection> connection, ClassicGuid const& guid);
+        void Succeed(std::shared_ptr<BotWorldConnection> connection, std::shared_ptr<BotWorldConnection> realmConnection, ClassicGuid const& guid);
 
         IO::IoContext* m_ioContext;
         Options m_options;

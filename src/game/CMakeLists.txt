@@ -552,6 +552,8 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotWorldHandshake.h
       RealBots/Net/BotCharSelect.cpp
       RealBots/Net/BotCharSelect.h
+      RealBots/Net/BotInstanceConnect.cpp
+      RealBots/Net/BotInstanceConnect.h
       RealBots/Net/BotLogin.cpp
       RealBots/Net/BotLogin.h
       RealBots/Protocol/BnetServiceHash.h

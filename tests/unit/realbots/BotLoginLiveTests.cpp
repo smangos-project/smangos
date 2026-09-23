@@ -112,6 +112,8 @@ TEST_CASE("BotLogin: reaches InWorld against a live vibemangos target", "[live]"
         result.Connection->Close();
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
+    if (result.RealmConnection)
+        result.RealmConnection->Close();
 
     ctx->Shutdown();
     ioThread.join();

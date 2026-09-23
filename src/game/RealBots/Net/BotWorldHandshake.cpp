@@ -204,6 +204,7 @@ void BotWorldHandshake::Succeed(uint32 authResult)
         result.Success = (authResult == 0);
         result.Connection = m_connection;
         result.AuthResult = authResult;
+        result.SessionKey = m_sessionKey;
         if (!result.Success)
             result.Error = "SMSG_AUTH_RESPONSE result " + std::to_string(authResult);
         callback(std::move(result));

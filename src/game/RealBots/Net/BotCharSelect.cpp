@@ -1,13 +1,17 @@
 #include "BotCharSelect.h"
+#include "BotInstanceConnect.h"
 #include "ClassicOpcodes.h"
+#include "IO/Networking/IpAddress.h"
 #include "Log.h"
+#include <cstdio>
 
-std::shared_ptr<BotCharSelect> BotCharSelect::Create(std::shared_ptr<BotWorldConnection> connection)
+std::shared_ptr<BotCharSelect> BotCharSelect::Create(IO::IoContext* ioContext, std::shared_ptr<BotWorldConnection> connection)
 {
-    return std::shared_ptr<BotCharSelect>(new BotCharSelect(std::move(connection)));
+    return std::shared_ptr<BotCharSelect>(new BotCharSelect(ioContext, std::move(connection)));
 }
 
-BotCharSelect::BotCharSelect(std::shared_ptr<BotWorldConnection> connection) : m_connection(std::move(connection))
+BotCharSelect::BotCharSelect(IO::IoContext* ioContext, std::shared_ptr<BotWorldConnection> connection)
+    : m_ioContext(ioContext), m_connection(std::move(connection))
 {
 }
 
@@ -39,6 +43,8 @@ void BotCharSelect::OnPacket(BotPacket packet)
         case Step::WaitingLoginVerifyWorld:
             if (packet.Opcode == CLASSIC_SMSG_LOGIN_VERIFY_WORLD)
                 HandleLoginVerifyWorld(packet);
+            else if (packet.Opcode == CLASSIC_SMSG_CONNECT_TO)
+                HandleConnectTo(packet);
             break;
         case Step::Done:
             break;
@@ -117,6 +123,51 @@ void BotCharSelect::HandleLoginVerifyWorld(BotPacket& packet)
     Succeed();
 }
 
+void BotCharSelect::HandleConnectTo(BotPacket& packet)
+{
+    ClassicConnectTo connectTo;
+    if (!connectTo.Read(packet.Data))
+    {
+        Fail("malformed SMSG_CONNECT_TO");
+        return;
+    }
+
+    // From here on only the Instance connection matters to this state machine; the Realm
+    // connection stays open (SMSG_PONG/SMSG_LOGOUT_COMPLETE still route through it, see
+    // vibemangos's Opcodes.cpp PacketRoute::Realm entries) but stops driving OnPacket.
+    m_realmConnection = m_connection;
+    m_connection->SetPacketCallback(nullptr);
+    m_connection->SetDisconnectCallback(nullptr);
+
+    char addressStr[16];
+    snprintf(addressStr, sizeof(addressStr), "%u.%u.%u.%u",
+        connectTo.AddressIPv4[0], connectTo.AddressIPv4[1], connectTo.AddressIPv4[2], connectTo.AddressIPv4[3]);
+
+    BotInstanceConnect::Options instanceOptions;
+    instanceOptions.WorldAddress = addressStr;
+    instanceOptions.WorldPort = connectTo.Port;
+    instanceOptions.SessionKey = m_options.SessionKey;
+    instanceOptions.PackedKey = connectTo.Key;
+    instanceOptions.VerifyServerSignature = m_options.VerifyServerSignature;
+
+    std::shared_ptr<BotCharSelect> self = shared_from_this();
+    std::shared_ptr<BotInstanceConnect> instanceConnect = BotInstanceConnect::Create(m_ioContext);
+    instanceConnect->Connect(instanceOptions, [self](BotInstanceConnect::Result result)
+    {
+        if (!result.Success)
+        {
+            self->Fail("instance connect: " + result.Error);
+            return;
+        }
+
+        self->m_connection = result.Connection;
+        self->m_connection->SetPacketCallback([self](BotPacket packet) { self->OnPacket(std::move(packet)); });
+        self->m_connection->SetDisconnectCallback([self]() { self->OnDisconnect(); });
+        // m_step is already WaitingLoginVerifyWorld from HandleEnumCharactersResult/
+        // HandleCreateCharResponse -- nothing else to do until it arrives on this connection.
+    });
+}
+
 void BotCharSelect::SendPlayerLogin(ClassicGuid const& guid)
 {
     m_characterGuid = guid;
@@ -149,6 +200,8 @@ void BotCharSelect::Fail(std::string const& error)
         Result result;
         result.Success = false;
         result.Error = error;
+        result.Connection = m_connection;
+        result.RealmConnection = m_realmConnection;
         callback(std::move(result));
     }
 }
@@ -168,6 +221,8 @@ void BotCharSelect::Succeed()
         Result result;
         result.Success = true;
         result.CharacterGuid = m_characterGuid;
+        result.Connection = m_connection;
+        result.RealmConnection = m_realmConnection;
         callback(std::move(result));
     }
 }

@@ -45,6 +45,13 @@ std::array<uint8, 32> const& WorldHandshakeCrypto::EnterEncryptedModePrivateKey(
     return key;
 }
 
+std::array<uint8, 32> const& WorldHandshakeCrypto::ContinuedSessionSeed()
+{
+    static std::array<uint8, 32> const seed = { 0x56, 0x5C, 0x61, 0x9C, 0x48, 0x3A, 0x52, 0x1F, 0x61, 0x5D, 0x05, 0x49, 0xB2, 0x9A, 0x39, 0xBF,
+        0x4B, 0x97, 0xB0, 0x1B, 0xF9, 0x6C, 0xDE, 0xD6, 0x80, 0x1D, 0xAB, 0x26, 0x02, 0xA9, 0x9B, 0x9D };
+    return seed;
+}
+
 std::array<uint8, 16> const& WorldHandshakeCrypto::EnableEncryptionContext()
 {
     static std::array<uint8, 16> const context = { 0xA7, 0x1F, 0xB6, 0x9B, 0xC9, 0x7C, 0xDD, 0x96,
@@ -117,4 +124,22 @@ std::array<uint8, 64> WorldHandshakeCrypto::ComputeEnterEncryptedModeDigest(
     hmac.UpdateData(&enabledByte, 1);
     hmac.UpdateData(EnableEncryptionSeed());
     return hmac.GetDigest();
+}
+
+std::array<uint8, 24> WorldHandshakeCrypto::ComputeContinuedSessionDigest(
+    std::array<uint8, 40> const& sessionKey,
+    uint64 packedKey,
+    std::array<uint8, 32> const& localChallenge,
+    std::array<uint8, 32> const& serverChallenge)
+{
+    HMACSHA512::Generator hmac(sessionKey.data(), sessionKey.size());
+    hmac.UpdateData(reinterpret_cast<uint8 const*>(&packedKey), sizeof(packedKey));
+    hmac.UpdateData(localChallenge);
+    hmac.UpdateData(serverChallenge);
+    hmac.UpdateData(ContinuedSessionSeed());
+    HMACSHA512::Digest full = hmac.GetDigest();
+
+    std::array<uint8, 24> truncated{};
+    std::copy(full.begin(), full.begin() + truncated.size(), truncated.begin());
+    return truncated;
 }

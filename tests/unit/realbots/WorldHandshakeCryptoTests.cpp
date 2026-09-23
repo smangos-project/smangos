@@ -73,3 +73,25 @@ TEST_CASE("WorldHandshakeCrypto: ComputeEnterEncryptedModeDigest differs by the 
     auto again = WorldHandshakeCrypto::ComputeEnterEncryptedModeDigest(encryptKey, true);
     CHECK(enabledDigest == again);
 }
+
+TEST_CASE("WorldHandshakeCrypto: ComputeContinuedSessionDigest is deterministic", "[worldhandshake]")
+{
+    std::array<uint8, 40> sessionKey{};
+    for (size_t i = 0; i < sessionKey.size(); ++i)
+        sessionKey[i] = static_cast<uint8>(i * 11 + 1);
+    std::array<uint8, 32> local = TestChallenge(3);
+    std::array<uint8, 32> server = TestChallenge(150);
+    uint64 packedKey = 0x0123456789ABCDEFull;
+
+    auto digest1 = WorldHandshakeCrypto::ComputeContinuedSessionDigest(sessionKey, packedKey, local, server);
+    auto digest2 = WorldHandshakeCrypto::ComputeContinuedSessionDigest(sessionKey, packedKey, local, server);
+    CHECK(digest1 == digest2);
+
+    // A different packed key (a different Instance connection's identity) must change the digest.
+    auto otherKeyDigest = WorldHandshakeCrypto::ComputeContinuedSessionDigest(sessionKey, packedKey ^ 1, local, server);
+    CHECK(digest1 != otherKeyDigest);
+
+    // Order matters: local-then-server must differ from server-then-local.
+    auto swapped = WorldHandshakeCrypto::ComputeContinuedSessionDigest(sessionKey, packedKey, server, local);
+    CHECK(digest1 != swapped);
+}

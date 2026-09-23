@@ -95,6 +95,80 @@ struct ClassicEnterEncryptedModeAck
     void Write(ByteBuffer&) const {}
 };
 
+// vibemangos: src/game/Server/WorldSocket.cpp SendConnectToInstance(). Sent right after
+// CMSG_PLAYER_LOGIN, unconditionally -- confirmed identical in TrinityCore cata_classic's
+// WorldSession::HandlePlayerLoginOpcode -- redirecting the client to open a second ("Instance")
+// world connection for SMSG_LOGIN_VERIFY_WORLD and all further gameplay traffic; the original
+// ("Realm") connection stays open for what still routes through it (SMSG_PONG,
+// SMSG_LOGOUT_COMPLETE). Only AddressType 1 (IPv4) is parsed -- the only value either reference
+// server ever sends. The RSA signature isn't verified: that only matters to a real client
+// deciding whether to trust the redirect, and RsaSign here has no verify half, only sign.
+struct ClassicConnectTo
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CONNECT_TO;
+    static constexpr uint8 ADDRESS_TYPE_IPV4 = 1;
+
+    std::array<uint8, 256> Signature{};
+    std::array<uint8, 4> AddressIPv4{};
+    uint16 Port = 0;
+    uint32 Serial = 0;
+    uint8 ConnectionType = 0;
+    uint64 Key = 0;
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < Signature.size() + 1)
+            return false;
+        data.read(Signature.data(), Signature.size());
+
+        uint8 addressType = 0;
+        data >> addressType;
+        if (addressType != ADDRESS_TYPE_IPV4)
+            return false;
+
+        if (data.size() - data.rpos() < AddressIPv4.size() + sizeof(Port) + sizeof(Serial) + sizeof(ConnectionType) + sizeof(Key))
+            return false;
+        data.read(AddressIPv4.data(), AddressIPv4.size());
+        data >> Port;
+        data >> Serial;
+        data >> ConnectionType;
+        data >> Key;
+        return true;
+    }
+};
+
+// vibemangos: src/game/Server/WorldSocket.cpp _HandleAuthContinuedSession() (read order mirrored
+// here). Sent on the Instance connection in place of CMSG_AUTH_SESSION: it reuses the world
+// session key the Realm connection's CMSG_AUTH_SESSION already established rather than a fresh
+// SRP6/join-session-key exchange (see WorldHandshakeCrypto::ComputeContinuedSessionDigest).
+struct ClassicAuthContinuedSession
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUTH_CONTINUED_SESSION;
+
+    uint64 DosResponse = 0; // see ClassicAuthSession::DosResponse -- read but never validated
+    uint64 Key = 0; // ClassicConnectTo::Key, echoed back to identify the pending Instance connection
+    std::array<uint8, 32> LocalChallenge{};
+    std::array<uint8, 24> Digest{};
+
+    void Write(ByteBuffer& data) const
+    {
+        data << DosResponse;
+        data << Key;
+        data.append(LocalChallenge.data(), LocalChallenge.size());
+        data.append(Digest.data(), Digest.size());
+    }
+};
+
+// vibemangos: src/game/Server/WorldSocket.cpp SendResumeComms() (empty body) -- sent on the
+// Instance connection right after CMSG_ENTER_ENCRYPTED_MODE_ACK, in place of SMSG_AUTH_RESPONSE
+// (which only ever goes out on the Realm connection).
+struct ClassicResumeComms
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_RESUME_COMMS;
+
+    bool Read(ByteBuffer&) { return true; }
+};
+
 // vibemangos: src/game/Server/WorldSocket.cpp SendAuthResponse(). Only the fields bot-phase-1.md's
 // WorldHandshake stage needs are parsed (Result, whether SuccessInfo was sent); the rest of the
 // body (virtual realm list, character templates, ...) is left unread, which is safe -- every

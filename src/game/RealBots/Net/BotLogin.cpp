@@ -66,22 +66,26 @@ void BotLogin::OnWorldHandshake(BotWorldHandshake::Result result)
     charOptions.Class = m_options.Class;
     charOptions.Gender = m_options.Gender;
     charOptions.FarClip = m_options.FarClip;
+    charOptions.SessionKey = result.SessionKey;
+    charOptions.VerifyServerSignature = m_options.VerifyServerSignature;
 
     std::shared_ptr<BotLogin> self = shared_from_this();
-    std::shared_ptr<BotWorldConnection> connection = result.Connection;
-    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(connection);
-    charSelect->EnterWorld(charOptions, [self, connection](BotCharSelect::Result result) { self->OnCharSelect(connection, std::move(result)); });
+    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(m_ioContext, result.Connection);
+    charSelect->EnterWorld(charOptions, [self](BotCharSelect::Result result) { self->OnCharSelect(std::move(result)); });
 }
 
-void BotLogin::OnCharSelect(std::shared_ptr<BotWorldConnection> connection, BotCharSelect::Result result)
+void BotLogin::OnCharSelect(BotCharSelect::Result result)
 {
     if (!result.Success)
     {
-        connection->Close();
+        if (result.Connection)
+            result.Connection->Close();
+        if (result.RealmConnection)
+            result.RealmConnection->Close();
         Fail("char select: " + result.Error);
         return;
     }
-    Succeed(connection, result.CharacterGuid);
+    Succeed(result.Connection, result.RealmConnection, result.CharacterGuid);
 }
 
 void BotLogin::Fail(std::string const& error)
@@ -98,7 +102,7 @@ void BotLogin::Fail(std::string const& error)
     }
 }
 
-void BotLogin::Succeed(std::shared_ptr<BotWorldConnection> connection, ClassicGuid const& guid)
+void BotLogin::Succeed(std::shared_ptr<BotWorldConnection> connection, std::shared_ptr<BotWorldConnection> realmConnection, ClassicGuid const& guid)
 {
     if (m_callback)
     {
@@ -107,6 +111,7 @@ void BotLogin::Succeed(std::shared_ptr<BotWorldConnection> connection, ClassicGu
         Result result;
         result.Success = true;
         result.Connection = std::move(connection);
+        result.RealmConnection = std::move(realmConnection);
         result.CharacterGuid = guid;
         callback(std::move(result));
     }

@@ -234,7 +234,7 @@ TEST_CASE("BotCharSelect: an existing character logs straight in", "[botcharsele
 
     REQUIRE(bannerDone.WaitFor(std::chrono::seconds(5)));
 
-    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(connection);
+    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(ctx.get(), connection);
 
     WaitFlag done;
     BotCharSelect::Result result;
@@ -399,7 +399,7 @@ TEST_CASE("BotCharSelect: creates a character when none exist, then logs in", "[
 
     REQUIRE(bannerDone.WaitFor(std::chrono::seconds(5)));
 
-    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(connection);
+    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(ctx.get(), connection);
 
     WaitFlag done;
     BotCharSelect::Result result;
@@ -500,7 +500,7 @@ TEST_CASE("BotCharSelect: fails cleanly with no characters and CreateIfNone fals
 
     REQUIRE(bannerDone.WaitFor(std::chrono::seconds(5)));
 
-    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(connection);
+    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(ctx.get(), connection);
 
     WaitFlag done;
     BotCharSelect::Result result;

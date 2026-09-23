@@ -23,6 +23,7 @@ class WorldHandshakeCrypto
         static std::array<uint8, 32> const& SessionKeySeed();
         static std::array<uint8, 32> const& EncryptionKeySeed();
         static std::array<uint8, 32> const& EnableEncryptionSeed();
+        static std::array<uint8, 32> const& ContinuedSessionSeed();
 
         // The fixed Ed25519 keypair CLASSIC_SMSG_ENTER_ENCRYPTED_MODE is signed under -- not a
         // real secret (both sides of every reference implementation hardcode it), just the
@@ -60,6 +61,18 @@ class WorldHandshakeCrypto
         // CLASSIC_SMSG_ENTER_ENCRYPTED_MODE's signature covers.
         static std::array<uint8, 64> ComputeEnterEncryptedModeDigest(
             std::array<uint8, 32> const& encryptKey, bool enabled);
+
+        // digest = HMAC-SHA512(sessionKey, packedKey(8 bytes, native/little-endian) ||
+        // localChallenge || serverChallenge || ContinuedSessionSeed)[0..24] -- the
+        // CMSG_AUTH_CONTINUED_SESSION Digest field the Instance connection sends in place of
+        // CMSG_AUTH_SESSION's auth-check digest (see ClassicAuthContinuedSession). `sessionKey`
+        // here is the *existing* 40-byte session key the Realm connection's CMSG_AUTH_SESSION
+        // already established, not a fresh derivation.
+        static std::array<uint8, 24> ComputeContinuedSessionDigest(
+            std::array<uint8, 40> const& sessionKey,
+            uint64 packedKey,
+            std::array<uint8, 32> const& localChallenge,
+            std::array<uint8, 32> const& serverChallenge);
 };
 
 #endif

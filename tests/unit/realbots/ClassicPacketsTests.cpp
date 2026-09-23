@@ -203,3 +203,93 @@ TEST_CASE("ClassicLoginVerifyWorld::Read rejects a truncated body", "[packets]")
     ClassicLoginVerifyWorld verify;
     CHECK_FALSE(verify.Read(data));
 }
+
+TEST_CASE("ClassicConnectTo::Read parses an IPv4 redirect", "[packets]")
+{
+    std::array<uint8, 256> signature{};
+    for (size_t i = 0; i < signature.size(); ++i)
+        signature[i] = uint8(i);
+
+    ByteBuffer data;
+    data.append(signature.data(), signature.size());
+    data << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    data << uint8(127) << uint8(0) << uint8(0) << uint8(1);
+    data << uint16(8085);
+    data << uint32(17); // ConnectToSerial::WorldAttempt1
+    data << uint8(1);   // WorldSocketConnectionType::Instance
+    data << uint64(0x0123456789ABCDEFull);
+
+    ClassicConnectTo connectTo;
+    REQUIRE(connectTo.Read(data));
+    CHECK(connectTo.Signature == signature);
+    CHECK(connectTo.AddressIPv4 == std::array<uint8, 4>{ 127, 0, 0, 1 });
+    CHECK(connectTo.Port == 8085);
+    CHECK(connectTo.Serial == 17);
+    CHECK(connectTo.ConnectionType == 1);
+    CHECK(connectTo.Key == 0x0123456789ABCDEFull);
+}
+
+TEST_CASE("ClassicConnectTo::Read rejects an address type other than IPv4", "[packets]")
+{
+    ByteBuffer data;
+    std::array<uint8, 256> signature{};
+    data.append(signature.data(), signature.size());
+    data << uint8(2); // not ADDRESS_TYPE_IPV4
+
+    ClassicConnectTo connectTo;
+    CHECK_FALSE(connectTo.Read(data));
+}
+
+TEST_CASE("ClassicConnectTo::Read rejects a body truncated before the signature ends", "[packets]")
+{
+    ByteBuffer data;
+    data << uint32(1); // far too short for even the signature
+
+    ClassicConnectTo connectTo;
+    CHECK_FALSE(connectTo.Read(data));
+}
+
+TEST_CASE("ClassicConnectTo::Read rejects a body truncated after the address type", "[packets]")
+{
+    ByteBuffer data;
+    std::array<uint8, 256> signature{};
+    data.append(signature.data(), signature.size());
+    data << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    data << uint8(127) << uint8(0); // short of the remaining address/port/serial/type/key fields
+
+    ClassicConnectTo connectTo;
+    CHECK_FALSE(connectTo.Read(data));
+}
+
+TEST_CASE("ClassicAuthContinuedSession::Write matches the expected wire shape", "[packets]")
+{
+    ClassicAuthContinuedSession session;
+    session.DosResponse = 0x11ull;
+    session.Key = 0x2233445566778899ull;
+    session.LocalChallenge.fill(uint8(0x42));
+    session.Digest.fill(uint8(0x7A));
+
+    ByteBuffer data;
+    session.Write(data);
+
+    uint64 dosResponse, key;
+    data >> dosResponse >> key;
+    CHECK(dosResponse == session.DosResponse);
+    CHECK(key == session.Key);
+
+    std::array<uint8, 32> localChallenge{};
+    data.read(localChallenge.data(), localChallenge.size());
+    CHECK(localChallenge == session.LocalChallenge);
+
+    std::array<uint8, 24> digest{};
+    data.read(digest.data(), digest.size());
+    CHECK(digest == session.Digest);
+    CHECK(data.rpos() == data.size());
+}
+
+TEST_CASE("ClassicResumeComms::Read always succeeds on an empty body", "[packets]")
+{
+    ByteBuffer data;
+    ClassicResumeComms resumeComms;
+    CHECK(resumeComms.Read(data));
+}
