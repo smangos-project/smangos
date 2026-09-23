@@ -11,10 +11,12 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Protocol/WorldHandshakeCrypto.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
+  ${REALBOTS_DIR}/Net/BotTlsStream.cpp
   CoroutineTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp
   BotWorldConnectionTests.cpp
+  BotTlsStreamTests.cpp
   TestMain.cpp
 )
 
@@ -38,6 +40,8 @@ if (WIN32)
   target_link_libraries(tests-realbots PRIVATE
     optimized ${OPENSSL_LIBRARIES}
     debug ${OPENSSL_DEBUG_LIBRARIES}
+    $<$<CONFIG:Debug>:${OPENSSL_SSL_DEBUG_LIBRARIES}>
+    $<$<NOT:$<CONFIG:Debug>>:${OPENSSL_SSL_LIBRARIES}>
   )
 endif()
 

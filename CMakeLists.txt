@@ -112,7 +112,14 @@ if(WIN32)
   # realmd), which only scope the single list item immediately following the keyword.
   set(OPENSSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libcrypto.lib)
   set(OPENSSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libcrypto.lib)
-  set(OPENSSL_RUNTIME_DLLS ${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll)
+  # libssl, for BotTlsStream (bot-phase-1.md step 4). Kept as its own variable, linked with
+  # generator expressions (see BotTlsStream's consumers) rather than added to OPENSSL_LIBRARIES:
+  # the legacy `optimized <list>`/`debug <list>` target_link_libraries keyword form used with
+  # OPENSSL_LIBRARIES elsewhere only scopes the single list item immediately after the keyword,
+  # so a second library appended to that same variable would leak in unconditionally.
+  set(OPENSSL_SSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libssl.lib)
+  set(OPENSSL_SSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libssl.lib)
+  set(OPENSSL_RUNTIME_DLLS ${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll ${OPENSSL_ROOT_DIR}/bin/libssl-3-x64.dll)
   set(ZLIB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/dep/windows/include/zlib)
   if (REQUIRES_LIBCURL AND MSVC)
     # MinGW falls through to find_package(CURL) below, which picks up
