@@ -197,6 +197,46 @@ class ByteBuffer
             return *this;
         }
 
+        // Modern (RealBots) string writers -- unlike operator<<(std::string const&) above, these
+        // write raw bytes with NO null terminator: the modern wire format always conveys string
+        // length separately (either implicitly, via a preceding bit-packed length field the
+        // caller writes itself with WriteSizedString(), or because the field is fixed-size).
+        // Ported from vibemangos's ByteBuffer.h (itself matching jimsproxy's Framework/IO/
+        // WorldPacket.cs WriteString()/WriteBits(len,n)).
+        void WriteString(std::string const& value)
+        {
+            if (!value.empty())
+                append((uint8 const*)value.data(), value.length());
+        }
+
+        // Bit-length-prefixed string: WriteBits(len, bitCount), FlushBits(), then the raw bytes.
+        // This is the shape used by every modern packet field, e.g. player names, chat text.
+        void WriteSizedString(std::string const& value, int32 bitCount)
+        {
+            WriteBits(uint32(value.length()), bitCount);
+            FlushBits();
+            WriteString(value);
+        }
+
+        // Read-side counterpart to WriteString() above: reads exactly `len` raw bytes, no null
+        // terminator expected. The caller reads the length itself first (typically via
+        // ReadBits()+ResetBitPos(), matching WriteSizedString()'s write side) since the bit width
+        // varies per field. Clamps len to what's actually left in the buffer before resizing/
+        // reading, so a wrong bit-packing/field-count assumption elsewhere in the same Read()
+        // mis-parses safely instead of throwing mid-buffer.
+        std::string ReadString(size_t len)
+        {
+            size_t const remaining = size() - rpos();
+            if (len > remaining)
+                len = remaining;
+
+            std::string value;
+            value.resize(len);
+            if (len)
+                read(reinterpret_cast<uint8*>(&value[0]), len);
+            return value;
+        }
+
         ByteBuffer& operator>>(bool& value)
         {
             value = read<char>() != 0;
@@ -308,6 +348,12 @@ class ByteBuffer
 
         size_t wpos() const { return _wpos; }
 
+        // Byte offset of the write cursor including a pending (not yet flushed) bit-accumulator
+        // byte -- i.e. "where the next FlushBits() will land". Needed by callers that must
+        // remember a position to patch later (e.g. a mask reserved before its bits are known)
+        // across a WriteBit()/WriteBits() sequence. Mirrors TrinityCore's ByteBuffer::bitwpos().
+        size_t bitwpos() const { return _wpos + (m_bitPos == 8 ? 0 : 1); }
+
         size_t wpos(size_t wpos_)
         {
             _wpos = wpos_;
@@ -331,6 +377,10 @@ class ByteBuffer
 
         template <typename T> T read()
         {
+            // Auto-discard any partially-read bit-accumulator byte before a normal
+            // byte-aligned read -- matches jimsproxy's byte-level Read*() methods, which all
+            // call ResetBitPos() first (Framework/IO/ByteBuffer.cs). No-op when m_bitPos==8.
+            ResetBitPos();
             T r = read<T>(_rpos);
             _rpos += sizeof(T);
             return r;
@@ -355,6 +405,7 @@ class ByteBuffer
 
         void read(uint8* dest, size_t len)
         {
+            ResetBitPos();
             if(_rpos  + len > size())
                 throw ByteBufferException(false, _rpos, len, size());
             memcpy(dest, &_storage[_rpos], len);
@@ -497,6 +548,79 @@ class ByteBuffer
 
         void PrintAsHex() const;
 
+        // Bit-packing, needed by RealBots' modern-protocol packets (e.g. CLASSIC_SMSG_AUTH_RESPONSE,
+        // CLASSIC_CMSG_AUTH_SESSION) -- vanilla's wire format never used this, so it didn't exist
+        // before. Ported from vibemangos's ByteBuffer.h, semantics confirmed there against
+        // jimsproxy's Framework/IO/SpanPacketWriter.cs/SpanPacketReader.cs: bits are packed
+        // MSB-first into a single accumulator byte (m_bitPos starts at 8, decrements before each
+        // bit), and FlushBits()/the read-side equivalent is required before resuming normal
+        // byte-aligned reads/writes (append()/read() above call them automatically).
+        void WriteBit(bool value)
+        {
+            --m_bitPos;
+            if (value)
+                m_curBitVal |= uint8(1 << m_bitPos);
+
+            if (m_bitPos == 0)
+                FlushBits();
+        }
+
+        // Writes the low `bitCount` bits of `value`, MSB first (bit `bitCount-1` written first).
+        void WriteBits(uint32 value, int32 bitCount)
+        {
+            for (int32 i = bitCount - 1; i >= 0; --i)
+                WriteBit((value >> i) & 1);
+        }
+
+        void FlushBits()
+        {
+            if (m_bitPos == 8)
+                return;
+
+            // Reset state BEFORE calling append(), not after: append() auto-flushes pending
+            // bits on every write, so if m_bitPos were still non-8 at this point, that
+            // auto-flush would call FlushBits() again, which would call append() again --
+            // infinite mutual recursion.
+            uint8 byteToWrite = m_curBitVal;
+            m_bitPos = 8;
+            m_curBitVal = 0;
+            append(&byteToWrite, 1);
+        }
+
+        bool ReadBit()
+        {
+            if (m_bitPos == 8)
+            {
+                m_curBitVal = read<uint8>();
+                m_bitPos = 0;
+            }
+
+            uint8 returnValue = m_curBitVal;
+            m_curBitVal = uint8(m_curBitVal << 1);
+            ++m_bitPos;
+
+            return (returnValue >> 7) != 0;
+        }
+
+        uint32 ReadBits(int32 bitCount)
+        {
+            uint32 value = 0;
+            for (int32 i = bitCount - 1; i >= 0; --i)
+                if (ReadBit())
+                    value |= uint32(1) << i;
+            return value;
+        }
+
+        // Discards a partially-read bit-accumulator byte so the next `>>`/read<T>() resumes at
+        // the next whole byte boundary -- mirrors FlushBits() on the write side.
+        void ResetBitPos()
+        {
+            if (m_bitPos == 8)
+                return;
+            m_bitPos = 8;
+            m_curBitVal = 0;
+        }
+
     private:
         // limited for internal use because can "append" any unexpected type (like pointer and etc) with hard detection problem
         template <typename T> void append(T value)
@@ -508,6 +632,10 @@ class ByteBuffer
     protected:
         size_t _rpos, _wpos;
         std::vector<uint8> _storage;
+
+        // Bit-packing accumulator state (see WriteBit/ReadBit above). 8 = "no bits pending".
+        uint8 m_bitPos = 8;
+        uint8 m_curBitVal = 0;
 };
 
 template <typename T>

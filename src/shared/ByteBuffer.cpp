@@ -34,6 +34,12 @@ void ByteBuffer::append(uint8 const* src, size_t cnt)
     if (!cnt)
         return;
 
+    // Auto-flush any pending bit-accumulator byte before a normal byte-aligned write -- matches
+    // jimsproxy's WriteBytes() (Framework/IO/ByteBuffer.cs), which does the same before every
+    // non-bit write. No-op (FlushBits() is a no-op when m_bitPos==8) for all pre-existing
+    // callers that never touch bit-packing.
+    FlushBits();
+
     MANGOS_ASSERT(size() < 10000000);
 
     if (_storage.size() < _wpos + cnt)
