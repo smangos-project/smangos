@@ -8,8 +8,13 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Behavior/BotTaskRegistry.cpp
   ${REALBOTS_DIR}/Coroutines/BotRoutine.cpp
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
+  ${REALBOTS_DIR}/Protocol/WorldHandshakeCrypto.cpp
+  ${REALBOTS_DIR}/Net/BotConnector.cpp
+  ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
   CoroutineTests.cpp
   TestRoutineTests.cpp
+  WorldHandshakeCryptoTests.cpp
+  BotWorldConnectionTests.cpp
   TestMain.cpp
 )
 
@@ -21,11 +26,29 @@ target_include_directories(tests-realbots PRIVATE
   ${REALBOTS_DIR}/Core
   ${REALBOTS_DIR}/Behavior
   ${REALBOTS_DIR}/Coroutines
+  ${REALBOTS_DIR}/Protocol
+  ${REALBOTS_DIR}/Net
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/shared
 )
 
-target_link_libraries(tests-realbots PRIVATE shared framework Catch2)
+target_link_libraries(tests-realbots PRIVATE shared framework Catch2 zlib)
+
+if (WIN32)
+  target_link_libraries(tests-realbots PRIVATE
+    optimized ${OPENSSL_LIBRARIES}
+    debug ${OPENSSL_DEBUG_LIBRARIES}
+  )
+endif()
+
+if (UNIX)
+  target_link_libraries(tests-realbots PRIVATE
+    ${OPENSSL_LIBRARIES}
+    ${OPENSSL_EXTRA_LIBRARIES}
+  )
+endif()
+
 set_target_properties(tests-realbots PROPERTIES FOLDER "Tests")
+mangos_copy_openssl_dlls(tests-realbots)
 
 catch_discover_tests(tests-realbots TEST_PREFIX "realbots: " PROPERTIES LABELS "unit")

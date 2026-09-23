@@ -1,0 +1,25 @@
+#ifndef REALBOTS_CLASSICOPCODES_H
+#define REALBOTS_CLASSICOPCODES_H
+
+#include "Common.h"
+
+// Modern (cata-classic-era, 1.15.x) opcodes the world-socket handshake needs. Values verified
+// against vibemangos's src/game/Server/Protocol/Opcodes_1_15_6.h -- one shared table for the
+// server's handler dispatch and the bots, per port-plan.md ("Build everything for both server
+// and client"). Extended as later stages (CharSelect, world entry, ...) need more opcodes.
+enum ClassicOpcodes : uint32
+{
+    CLASSIC_CMSG_AUTH_SESSION              = 0x3A0001,
+    CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK  = 0x3A0003,
+    CLASSIC_CMSG_PING                      = 0x3A0004,
+    CLASSIC_CMSG_LOG_DISCONNECT            = 0x3A0005,
+    CLASSIC_CMSG_KEEP_ALIVE                = 0x3900AB,
+
+    CLASSIC_SMSG_AUTH_CHALLENGE            = 0x420000,
+    CLASSIC_SMSG_ENTER_ENCRYPTED_MODE      = 0x420001,
+    CLASSIC_SMSG_AUTH_RESPONSE             = 0x3B0001,
+    CLASSIC_SMSG_PONG                      = 0x420006,
+    CLASSIC_SMSG_COMPRESSED_PACKET         = 0x42000A,
+};
+
+#endif

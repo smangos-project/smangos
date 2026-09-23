@@ -532,6 +532,14 @@ if (ENABLE_REALBOTS)
       RealBots/Coroutines/BotRoutine.h
       RealBots/Coroutines/BotAwaitables.cpp
       RealBots/Coroutines/BotAwaitables.h
+      RealBots/Protocol/ClassicOpcodes.h
+      RealBots/Protocol/ClassicPackets.h
+      RealBots/Protocol/WorldHandshakeCrypto.cpp
+      RealBots/Protocol/WorldHandshakeCrypto.h
+      RealBots/Net/BotConnector.cpp
+      RealBots/Net/BotConnector.h
+      RealBots/Net/BotWorldConnection.cpp
+      RealBots/Net/BotWorldConnection.h
   )
 endif()
 
@@ -568,6 +576,8 @@ if (ENABLE_REALBOTS)
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Core
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Coroutines
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Protocol
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Net
   )
 endif()
 
