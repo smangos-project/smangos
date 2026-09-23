@@ -38,3 +38,9 @@ if (BUILD_TESTING)
   add_subdirectory(catch2)
   set_target_properties(Catch2 PROPERTIES FOLDER "3rd Party")
 endif()
+
+if (ENABLE_REALBOTS)
+  # Battle.net RPC (BotBnetConnection, bot-phase-1.md step 4) needs protobuf 2.6; unconditional
+  # once the server's own bnetserver lands (bot-phase-1.md's feature-switch rules).
+  add_subdirectory(protobuf)
+endif()
