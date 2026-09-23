@@ -48,6 +48,15 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
 
         void SendRaw(uint32 opcode, ByteBuffer const& body);
 
+        // Retargets who gets the next incoming packet/disconnect -- how a connection is handed
+        // from one login stage to the next (e.g. BotWorldHandshake -> BotCharSelect) before
+        // there's a BotBrain task stack to do this instead (bot-phase-1.md's future model).
+        // Thread-safe against a packet/disconnect arriving concurrently on the IO thread: the
+        // callback in effect at the moment a packet completes is the one that runs for it, never
+        // a half-updated one.
+        void SetPacketCallback(PacketCallback onPacket);
+        void SetDisconnectCallback(DisconnectCallback onDisconnect);
+
         // Arms PacketCrypt with the session's derived AES-256 key (see WorldHandshakeCrypto).
         // Called once, right after sending ClassicEnterEncryptedModeAck -- every packet from
         // either side after that point is encrypted (bot-phase-1.md, "WorldHandshake").
@@ -64,6 +73,7 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
         void ReadNextHeader();
         void ReadBody(uint32 bodySize, std::array<uint8, 12> tag);
         void HandleCompletePacket(std::vector<uint8> plaintext);
+        void DispatchPacket(BotPacket packet);
         void OnIoError(IO::NetworkError const& error);
 
         void FlushSendQueue();
@@ -75,6 +85,7 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
         PacketCrypt m_crypt;
         z_stream_s* m_decompressionStream = nullptr;
 
+        std::mutex m_callbackLock;
         PacketCallback m_onPacket;
         DisconnectCallback m_onDisconnect;
 

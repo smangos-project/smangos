@@ -168,7 +168,15 @@ void BotWorldHandshake::Fail(std::string const& error)
     sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "BotWorldHandshake: %s", error.c_str());
     m_step = Step::Done;
     if (m_connection)
+    {
+        // Breaks the m_connection <-> callback(self) cycle Connect() created when it passed
+        // [self](...) to BotWorldConnection::Create -- without this, self and the connection
+        // keep each other alive forever. Safe from inside a dispatch: DispatchPacket/Close
+        // already copy the callback out before invoking it.
+        m_connection->SetPacketCallback(nullptr);
+        m_connection->SetDisconnectCallback(nullptr);
         m_connection->Close();
+    }
     if (m_callback)
     {
         HandshakeCallback callback = std::move(m_callback);
@@ -183,6 +191,11 @@ void BotWorldHandshake::Fail(std::string const& error)
 void BotWorldHandshake::Succeed(uint32 authResult)
 {
     m_step = Step::Done;
+    if (m_connection)
+    {
+        m_connection->SetPacketCallback(nullptr);
+        m_connection->SetDisconnectCallback(nullptr);
+    }
     if (m_callback)
     {
         HandshakeCallback callback = std::move(m_callback);

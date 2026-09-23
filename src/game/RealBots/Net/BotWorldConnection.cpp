@@ -222,7 +222,7 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
         packet.Opcode = innerOpcode;
         packet.Data.append(decompressed.data() + sizeof(uint32), decompressed.size() - sizeof(uint32));
         packet.Data.rpos(0);
-        m_onPacket(std::move(packet));
+        DispatchPacket(std::move(packet));
         return;
     }
 
@@ -231,7 +231,30 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
     if (bodySize)
         packet.Data.append(bodyStart, bodySize);
     packet.Data.rpos(0);
-    m_onPacket(std::move(packet));
+    DispatchPacket(std::move(packet));
+}
+
+void BotWorldConnection::DispatchPacket(BotPacket packet)
+{
+    PacketCallback callback;
+    {
+        std::lock_guard<std::mutex> lock(m_callbackLock);
+        callback = m_onPacket;
+    }
+    if (callback)
+        callback(std::move(packet));
+}
+
+void BotWorldConnection::SetPacketCallback(PacketCallback onPacket)
+{
+    std::lock_guard<std::mutex> lock(m_callbackLock);
+    m_onPacket = std::move(onPacket);
+}
+
+void BotWorldConnection::SetDisconnectCallback(DisconnectCallback onDisconnect)
+{
+    std::lock_guard<std::mutex> lock(m_callbackLock);
+    m_onDisconnect = std::move(onDisconnect);
 }
 
 void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body)
@@ -323,11 +346,24 @@ void BotWorldConnection::OnIoError(IO::NetworkError const& error)
 
 void BotWorldConnection::Close()
 {
-    if (m_closed)
-        return;
-    m_closed = true;
+    // Close() can be called from any thread (a caller closing explicitly, or internally from
+    // OnIoError on the IO thread). m_closed must gate under a lock -- checked and set together --
+    // or two racing calls can both pass the check before either sets it, double-closing the
+    // socket and double-dispatching m_onDisconnect.
+    {
+        std::lock_guard<std::mutex> lock(m_callbackLock);
+        if (m_closed)
+            return;
+        m_closed = true;
+    }
 
     m_socket.CloseSocket();
-    if (m_onDisconnect)
-        m_onDisconnect();
+
+    DisconnectCallback callback;
+    {
+        std::lock_guard<std::mutex> lock(m_callbackLock);
+        callback = m_onDisconnect;
+    }
+    if (callback)
+        callback();
 }
