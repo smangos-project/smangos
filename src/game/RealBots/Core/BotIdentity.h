@@ -1,6 +1,7 @@
 #ifndef REALBOTS_BOTIDENTITY_H
 #define REALBOTS_BOTIDENTITY_H
 
+#include "ClassicPackets.h"
 #include "Common.h"
 #include <string>
 
@@ -12,7 +13,7 @@ struct BotIdentity
     std::string AccountName;
     std::string Password;
     std::string CharacterName;
-    uint64 CharacterGuid = 0;
+    ClassicGuid CharacterGuid;
 };
 
 #endif

@@ -150,6 +150,54 @@ class HoldAwaiter : public BotAwaiterBase
         BotTaskResult await_resume() const { return BotTaskResult::Done; }
 };
 
+// ctx.Login(options) -> BotLogin::Result. Kicks off BotLogin::Login on the bot's IoContext from
+// await_suspend; the completion (on the IO thread) is marshalled onto the bot's own thread via
+// RealBot::Post into a block shared with the coroutine frame, so Poll (only ever called from
+// RealBot::Tick) never touches anything the IO thread might still be writing to. Uses a
+// std::weak_ptr<RealBot> rather than the bot reference directly, exactly like
+// RealBot::AttachConnections's own callbacks -- the bot can be removed while a login is in
+// flight, and the completion must become a harmless no-op rather than reach into a dead object.
+class LoginAwaiter : public BotAwaiterBase
+{
+    public:
+        LoginAwaiter(RealBot& bot, BotLogin::Options options)
+            : m_bot(bot), m_options(std::move(options)) {}
+
+        void await_suspend(BotRoutine::HandleType handle)
+        {
+            BotAwaiterBase::await_suspend(handle);
+
+            std::shared_ptr<Shared> shared = m_shared;
+            std::weak_ptr<RealBot> weakBot = m_bot.weak_from_this();
+            std::shared_ptr<BotLogin> login = BotLogin::Create(m_bot.GetIoContext());
+            login->Login(m_options, [weakBot, shared](BotLogin::Result result)
+            {
+                if (std::shared_ptr<RealBot> bot = weakBot.lock())
+                {
+                    bot->Post([shared, result = std::move(result)]() mutable
+                    {
+                        shared->Result = std::move(result);
+                        shared->Done = true;
+                    });
+                }
+            });
+        }
+
+        bool Poll(RealBot&, uint32) override { return m_shared->Done; }
+        BotLogin::Result await_resume() { return std::move(m_shared->Result); }
+
+    private:
+        struct Shared
+        {
+            bool Done = false;
+            BotLogin::Result Result;
+        };
+
+        RealBot& m_bot;
+        BotLogin::Options m_options;
+        std::shared_ptr<Shared> m_shared = std::make_shared<Shared>();
+};
+
 template<typename T>
 void BotContext::Send(T const& packet)
 {
@@ -160,6 +208,11 @@ template<typename T>
 PacketAwaiter<T> BotContext::Packet(uint32 timeoutMs, std::function<bool(T const&)> predicate)
 {
     return PacketAwaiter<T>(m_bot, timeoutMs, std::move(predicate));
+}
+
+inline LoginAwaiter BotContext::Login(BotLogin::Options options)
+{
+    return LoginAwaiter(m_bot, std::move(options));
 }
 
 #endif

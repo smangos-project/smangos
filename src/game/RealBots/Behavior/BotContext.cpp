@@ -12,6 +12,11 @@ BotStage BotContext::GetStage() const
     return m_bot.GetStage();
 }
 
+void BotContext::SetStage(BotStage stage)
+{
+    m_bot.SetStage(stage);
+}
+
 BotIdentity const& BotContext::GetIdentity() const
 {
     return m_bot.GetIdentity();
@@ -29,7 +34,7 @@ uint32 BotContext::GetTimeMs() const
 
 void BotContext::Disconnect(bool clean)
 {
-    m_bot.SetStage(clean ? BotStage::LoggingOut : BotStage::Disconnected);
+    m_bot.Disconnect(clean);
 }
 
 namespace

@@ -2,6 +2,7 @@
 #define REALBOTS_BOTCONTEXT_H
 
 #include "BotIdentity.h"
+#include "BotLogin.h"
 #include "BotStage.h"
 #include "BotTaskArgs.h"
 #include <functional>
@@ -18,6 +19,7 @@ class StageAwaiter;
 class DelayAwaiter;
 class RunAwaiter;
 class HoldAwaiter;
+class LoginAwaiter;
 
 // The API a BotRoutine or a hook-style BotTask sees. A thin, stateless facade over
 // RealBot: it does not track "which task is asking" itself -- awaiters find their
@@ -31,6 +33,7 @@ class BotContext
         RealBot& GetBot() const { return m_bot; }
 
         BotStage GetStage() const;
+        void SetStage(BotStage stage);
         BotIdentity const& GetIdentity() const;
         uint32 GetLatencyMs() const;
         uint32 GetTimeMs() const;
@@ -57,6 +60,12 @@ class BotContext
 
         // Stays suspended until popped (removal, or the whole brain being cleared) or disconnected.
         HoldAwaiter Hold();
+
+        // Drives BotLogin::Login on the bot's IoContext and hands back its Result -- the built-in
+        // "login" task's whole body (Tasks/BuiltinBotTasks.cpp). The IO-thread completion is
+        // marshalled onto this bot's own thread via Post before the coroutine resumes
+        // (bot-plan.md, "IO threads only move bytes into a bot's inbox").
+        LoginAwaiter Login(BotLogin::Options options);
 
     private:
         RealBot& m_bot;

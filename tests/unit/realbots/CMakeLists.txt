@@ -1,7 +1,10 @@
 set(REALBOTS_DIR ${CMAKE_SOURCE_DIR}/src/game/RealBots)
 
 add_executable(tests-realbots
+  ${REALBOTS_DIR}/RealBotConfig.cpp
   ${REALBOTS_DIR}/Core/RealBot.cpp
+  ${REALBOTS_DIR}/Core/BotPacketLog.cpp
+  ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskArgs.cpp
@@ -40,6 +43,7 @@ add_executable(tests-realbots
 # rest of `game` pulls in (bot-plan.md, "Bots touch no server runtime state").
 target_include_directories(tests-realbots PRIVATE
   ${CMAKE_SOURCE_DIR}/tests/support
+  ${REALBOTS_DIR}
   ${REALBOTS_DIR}/Core
   ${REALBOTS_DIR}/Behavior
   ${REALBOTS_DIR}/Coroutines

@@ -514,11 +514,17 @@ set (game_SRCS
 
 if (ENABLE_REALBOTS)
   list(APPEND game_SRCS
+      RealBots/RealBotConfig.cpp
+      RealBots/RealBotConfig.h
+      RealBots/RealBotMgr.cpp
+      RealBots/RealBotMgr.h
       RealBots/Core/RealBot.cpp
       RealBots/Core/RealBot.h
       RealBots/Core/BotStage.h
       RealBots/Core/BotIdentity.h
       RealBots/Core/BotPacket.h
+      RealBots/Core/BotPacketLog.cpp
+      RealBots/Core/BotPacketLog.h
       RealBots/Behavior/BotTask.h
       RealBots/Behavior/BotBrain.cpp
       RealBots/Behavior/BotBrain.h
@@ -528,10 +534,13 @@ if (ENABLE_REALBOTS)
       RealBots/Behavior/BotTaskArgs.h
       RealBots/Behavior/BotTaskRegistry.cpp
       RealBots/Behavior/BotTaskRegistry.h
+      RealBots/Behavior/Tasks/BuiltinBotTasks.cpp
+      RealBots/Behavior/Tasks/BuiltinBotTasks.h
       RealBots/Coroutines/BotRoutine.cpp
       RealBots/Coroutines/BotRoutine.h
       RealBots/Coroutines/BotAwaitables.cpp
       RealBots/Coroutines/BotAwaitables.h
+      RealBots/Protocol/ClassicOpcodes.cpp
       RealBots/Protocol/ClassicOpcodes.h
       RealBots/Protocol/ClassicPackets.h
       RealBots/Protocol/WorldHandshakeCrypto.cpp
@@ -591,8 +600,10 @@ endif()
 
 if (ENABLE_REALBOTS)
   include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Core
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior/Tasks
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Coroutines
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Net
