@@ -271,6 +271,10 @@ if (ENABLE_MAILSENDER)
   set(DEFINITIONS ${DEFINITIONS} ENABLE_MAILSENDER)
 endif()
 
+if (ENABLE_REALBOTS)
+  set(DEFINITIONS ${DEFINITIONS} REALBOTS)
+endif()
+
 set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS ${DEFINITIONS})
 set_property(DIRECTORY APPEND PROPERTY
   COMPILE_DEFINITIONS $<$<CONFIG:Debug>:${DEFINITIONS_DEBUG}>
@@ -283,6 +287,11 @@ message(STATUS "MaNGOS CXX flags      : ${MANGOS_CXX_FLAGS}")
 
 add_subdirectory(src)
 add_subdirectory(dep)
+
+if (BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 if (BUILD_EXTRACTORS OR BUILD_REALMMERGE)
     add_subdirectory(contrib)

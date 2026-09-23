@@ -7,6 +7,13 @@ option(BUILD_EXTRACTORS               "Build extractors"                        
 option(BUILD_REALMMERGE               "Build helper tool for merging character databases"                                             OFF)
 option(ENABLE_MAILSENDER              "Enables support for sending emails via sendgrid.com (requires libcurl)"                        OFF)
 option(ENABLE_CPPTRACE                "Enables cpptrace stack tracing; can be disabled if using other tools like GDB"                 ON)
+option(ENABLE_REALBOTS                "Build the RealBots client bot framework"                                                       ON)
+option(BUILD_TESTING                  "Build unit and conformance test suites"                                                        OFF)
+option(BUILD_REALBOT_RUNNER           "Build the RealBots console host (contrib/realbotrunner)"                                       OFF)
+
+if (BUILD_REALBOT_RUNNER AND NOT ENABLE_REALBOTS)
+  message(FATAL_ERROR "BUILD_REALBOT_RUNNER requires ENABLE_REALBOTS to be ON")
+endif()
 
 if(USE_EXTRACTORS)
   message(WARNING "USE_EXTRACTORS is deprecated, please use BUILD_EXTRACTORS instead")
@@ -74,6 +81,9 @@ message(STATUS
     ENABLE_MAILSENDER         Enables support for sending emails via sendgrid.com (requires libcurl)
     SUPPORTED_CLIENT_BUILD    Client version the core will support
     ENABLE_CPPTRACE           Enables cpptrace stack tracing; can be disabled if using other tools like GDB
+    ENABLE_REALBOTS           Build the RealBots client bot framework
+    BUILD_TESTING             Build unit and conformance test suites
+    BUILD_REALBOT_RUNNER      Build the RealBots console host (contrib/realbotrunner)
 
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.

@@ -33,3 +33,8 @@ if (ENABLE_CPPTRACE)
     endif()
   endforeach()
 endif()
+
+if (BUILD_TESTING)
+  add_subdirectory(catch2)
+  set_target_properties(Catch2 PROPERTIES FOLDER "3rd Party")
+endif()
