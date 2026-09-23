@@ -171,7 +171,7 @@ enum Powers
 
 static char const* PowerToString(uint32 power)
 {
-    switch (power)
+    switch (static_cast<Powers>(power))
     {
         case POWER_MANA:
             return "Mana";

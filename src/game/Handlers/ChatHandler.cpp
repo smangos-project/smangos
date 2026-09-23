@@ -79,7 +79,7 @@ bool WorldSession::IsLanguageAllowedForChatType(uint32 lang, uint32 msgType)
 {
     // Right now we'll just restrict addon language to the appropriate chat types
     // Anything else is OK (default previous behaviour)
-    switch (lang)
+    switch (static_cast<Language>(lang))
     {
         case LANG_ADDON:
         {

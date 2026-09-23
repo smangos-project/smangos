@@ -75,7 +75,7 @@ enum MovementFlags
 
 static char const* MoveFlagToString(uint32 flag)
 {
-    switch (flag)
+    switch (static_cast<MovementFlags>(flag))
     {
         case MOVEFLAG_NONE:
             return "None";

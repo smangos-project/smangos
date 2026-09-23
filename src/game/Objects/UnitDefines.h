@@ -524,7 +524,7 @@ enum UnitFlags
 
 static char const* UnitFlagToString(uint32 flag)
 {
-    switch (flag)
+    switch (static_cast<UnitFlags>(flag))
     {
         case UNIT_FLAG_NONE:
             return "None";

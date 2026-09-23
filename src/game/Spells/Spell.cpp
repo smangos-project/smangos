@@ -6979,7 +6979,7 @@ uint32 Spell::CalculatePowerCost(SpellEntry const* spellInfo, Unit* caster, Spel
     // PCT cost from total amount
     if (spellInfo->ManaCostPercentage)
     {
-        switch (spellInfo->powerType)
+        switch (static_cast<Powers>(spellInfo->powerType))
         {
             // health as power used
             case POWER_HEALTH:
