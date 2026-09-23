@@ -247,8 +247,28 @@ void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body)
     if (!body.empty())
         std::memcpy(plaintext.data() + sizeof(uint32), body.contents(), body.size());
 
+    PacketHeader header{};
+    header.size = uint32(plaintext.size());
+
+    std::vector<uint8> framed(sizeof(header) + plaintext.size());
+
+    // Encrypted here, synchronously under m_sendQueueLock -- not deferred to flush time, which
+    // used to race ArmEncryption(): a caller doing Send(ack) then ArmEncryption(key) (exactly
+    // WorldHandshake's sequencing) could see Init() run before the still-queued Ack was ever
+    // turned into bytes, encrypting a packet the server expects unencrypted. Locking Init() the
+    // same way (below) makes the two calls atomic relative to each other: the Ack is fully
+    // encoded under the old (possibly unarmed) state before Init() can take effect.
     std::lock_guard<std::mutex> lock(m_sendQueueLock);
-    m_sendQueue.push_back(std::move(plaintext));
+
+    AES_GCM::Tag tag;
+    m_crypt.EncryptSend(plaintext.data(), plaintext.size(), tag);
+    std::memcpy(header.tag, tag, sizeof(header.tag));
+
+    std::memcpy(framed.data(), &header, sizeof(header));
+    if (!plaintext.empty())
+        std::memcpy(framed.data() + sizeof(header), plaintext.data(), plaintext.size());
+
+    m_sendQueue.push_back(std::move(framed));
     if (!m_sendQueueRunning)
     {
         m_sendQueueRunning = true;
@@ -261,7 +281,7 @@ void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body)
 
 void BotWorldConnection::FlushSendQueue()
 {
-    std::vector<uint8> plaintext;
+    std::vector<uint8> framed;
     {
         std::lock_guard<std::mutex> lock(m_sendQueueLock);
         if (m_sendQueue.empty())
@@ -269,23 +289,12 @@ void BotWorldConnection::FlushSendQueue()
             m_sendQueueRunning = false;
             return;
         }
-        plaintext = std::move(m_sendQueue.front());
+        framed = std::move(m_sendQueue.front());
         m_sendQueue.pop_front();
     }
 
-    auto framed = std::make_shared<ByteBuffer>();
-    PacketHeader header{};
-    header.size = uint32(plaintext.size());
-
-    AES_GCM::Tag tag;
-    m_crypt.EncryptSend(plaintext.data(), plaintext.size(), tag);
-    std::memcpy(header.tag, tag, sizeof(header.tag));
-
-    framed->append(reinterpret_cast<uint8 const*>(&header), sizeof(header));
-    if (!plaintext.empty())
-        framed->append(plaintext.data(), plaintext.size());
-
-    m_socket.Write({ std::shared_ptr<ByteBuffer const>(framed) }, [self = shared_from_this()](IO::NetworkError const& error)
+    auto framedBuf = std::make_shared<std::vector<uint8>>(std::move(framed));
+    m_socket.Write({ std::shared_ptr<std::vector<uint8> const>(framedBuf) }, [self = shared_from_this()](IO::NetworkError const& error)
     {
         if (error)
         {
@@ -301,6 +310,7 @@ void BotWorldConnection::FlushSendQueue()
 
 void BotWorldConnection::ArmEncryption(AES_GCM::Key const& key)
 {
+    std::lock_guard<std::mutex> lock(m_sendQueueLock);
     m_crypt.Init(key);
 }
 
