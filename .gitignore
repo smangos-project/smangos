@@ -121,3 +121,6 @@ Progression.h
 
 # local
 .local/*
+
+# client
+.client/*
