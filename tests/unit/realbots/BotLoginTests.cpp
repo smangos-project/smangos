@@ -36,6 +36,7 @@
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
+#include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstring>
@@ -69,6 +70,21 @@ class WaitFlag
         std::condition_variable m_cv;
         bool m_set = false;
 };
+
+// Mirrors BotRestClient.cpp's own NormalizeAccountString: real account provisioning uppercases
+// both the account name and password before computing the verifier, so this fake has to as well
+// now that the client normalizes what it sends (see BotRestClientTests.cpp's copy of this).
+std::string NormalizeAccountString(std::string const& utf8str)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8str, wstr))
+        return utf8str;
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+    std::string out;
+    if (!WStrToUtf8(wstr, out))
+        return utf8str;
+    return out;
+}
 
 // Same move-only footgun avoidance as the other RealBots TLS test files' copy of this helper.
 struct SelfSignedCert
@@ -276,10 +292,10 @@ void RunFakeLoginRestServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX
         return;
     }
 
-    std::string srpUsername = BnetSRP6::ComputeSrpUsername(TEST_ACCOUNT);
+    std::string srpUsername = BnetSRP6::ComputeSrpUsername(NormalizeAccountString(TEST_ACCOUNT));
 
     BnetSRP6 srp;
-    srp.CalculateVerifier(srpUsername, TEST_PASSWORD);
+    srp.CalculateVerifier(srpUsername, NormalizeAccountString(TEST_PASSWORD));
     srp.CalculateHostPublicEphemeral();
 
     for (;;)

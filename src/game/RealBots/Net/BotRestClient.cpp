@@ -39,6 +39,29 @@ std::string BuildFormInputsJson(std::vector<std::pair<std::string, std::string>>
         body["inputs"].push_back({ { "input_id", id }, { "value", value } });
     return body.dump();
 }
+
+// Real Battle.net clients uppercase (Latin-only) both the account name and password before any
+// SRP math -- vibemangos's own account provisioning does the same
+// (AccountMgr::CreateAccount's normalizeString calls; LoginRESTService::NormalizeAccountString
+// mirrors it for the account name at login time). The account name doesn't strictly need this
+// here since the server independently normalizes whatever it receives and echoes back the
+// resulting srpUsername either way (see OnSrpChallengeResponse), but the password never crosses
+// the wire in plaintext during login: there's no server-side chance to fix a case mismatch, so a
+// password normalized to uppercase at account-creation time will never produce a matching M1
+// unless this side uppercases it too first. Confirmed against a live vibemangos instance this
+// session -- a lowercase-typed password that logs into the real game client (which does this
+// same normalization) was otherwise rejected here.
+std::string NormalizeAccountString(std::string const& utf8str)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8str, wstr))
+        return utf8str;
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+    std::string out;
+    if (!WStrToUtf8(wstr, out))
+        return utf8str;
+    return out;
+}
 }
 
 std::shared_ptr<BotRestClient> BotRestClient::Create(IO::Networking::AsyncSocket socket)
@@ -53,8 +76,8 @@ BotRestClient::BotRestClient(IO::Networking::AsyncSocket socket)
 
 void BotRestClient::Login(std::string const& accountName, std::string const& password, LoginCallback callback)
 {
-    m_accountName = accountName;
-    m_password = password;
+    m_accountName = NormalizeAccountString(accountName);
+    m_password = NormalizeAccountString(password);
     m_callback = std::move(callback);
 
     std::shared_ptr<BotRestClient> self = shared_from_this();

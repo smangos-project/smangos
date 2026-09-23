@@ -13,6 +13,7 @@
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
+#include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstring>
@@ -46,6 +47,23 @@ class WaitFlag
         std::condition_variable m_cv;
         bool m_set = false;
 };
+
+// Mirrors BotRestClient.cpp's own NormalizeAccountString: real account provisioning (vibemangos's
+// AccountMgr::CreateAccount) uppercases both the account name and password before computing the
+// verifier, so the fake server here has to do the same to stay realistic now that the client
+// normalizes what it sends -- otherwise a lowercase test password would never match a verifier
+// this fake "provisioned" from the same lowercase string.
+std::string NormalizeAccountString(std::string const& utf8str)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8str, wstr))
+        return utf8str;
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+    std::string out;
+    if (!WStrToUtf8(wstr, out))
+        return utf8str;
+    return out;
+}
 
 // Move-only: a user-declared destructor suppresses the implicit move ctor/assignment but NOT
 // the implicit (shallow, pointer-copying) copy assignment -- `member = GenerateSelfSignedCert()`
@@ -235,10 +253,10 @@ void RunFakeLoginRestServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX
         return;
     }
 
-    std::string srpUsername = BnetSRP6::ComputeSrpUsername(accountName);
+    std::string srpUsername = BnetSRP6::ComputeSrpUsername(NormalizeAccountString(accountName));
 
     BnetSRP6 srp;
-    srp.CalculateVerifier(srpUsername, correctPassword);
+    srp.CalculateVerifier(srpUsername, NormalizeAccountString(correctPassword));
     srp.CalculateHostPublicEphemeral();
 
     for (;;)

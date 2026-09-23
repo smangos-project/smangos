@@ -26,6 +26,7 @@ add_executable(tests-realbots
   BotWorldHandshakeTests.cpp
   BotCharSelectTests.cpp
   BotLoginTests.cpp
+  BotLoginLiveTests.cpp
   BotTlsStreamTests.cpp
   BotRestClientTests.cpp
   BotBnetConnectionTests.cpp
@@ -68,4 +69,9 @@ endif()
 set_target_properties(tests-realbots PROPERTIES FOLDER "Tests")
 mangos_copy_openssl_dlls(tests-realbots)
 
-catch_discover_tests(tests-realbots TEST_PREFIX "realbots: " PROPERTIES LABELS "unit")
+# [live]-tagged tests (BotLoginLiveTests.cpp) need a reachable real server and aren't part of
+# the hermetic "unit" suite (bot-plan.md's testing model: unit tests make no network calls to a
+# real server; that's what the conformance suite, not yet built, is for). TEST_SPEC excludes them
+# from discovery entirely, so `ctest -L unit` never touches the network; run them by hand with
+# `tests-realbots.exe "[live]"`.
+catch_discover_tests(tests-realbots TEST_PREFIX "realbots: " PROPERTIES LABELS "unit" TEST_SPEC "~[live]")
