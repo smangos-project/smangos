@@ -362,7 +362,11 @@ struct TestFixture
 
 TEST_CASE("BotRestClient: logs in with the correct password", "[botrestclient]")
 {
-    TestFixture fixture(28519);
+    // Deliberately not 28519: BotTlsStreamTests.cpp binds TestPort=28518 and TestPort+1=28519
+    // for its own two fixtures, and this port collided with that one, causing rare cross-test
+    // WSAECONNABORTED/SSL_read flakiness under a full-suite run (a fresh bind racing the
+    // previous listener's TIME_WAIT teardown on the same port).
+    TestFixture fixture(28531);
     fixture.Start("bot1@bots", "correct-password");
 
     std::shared_ptr<BotRestClient> client = fixture.ConnectClient();
@@ -384,7 +388,7 @@ TEST_CASE("BotRestClient: logs in with the correct password", "[botrestclient]")
 
 TEST_CASE("BotRestClient: a wrong password fails without a login ticket", "[botrestclient]")
 {
-    TestFixture fixture(28520);
+    TestFixture fixture(28532);
     fixture.Start("bot1@bots", "correct-password");
 
     std::shared_ptr<BotRestClient> client = fixture.ConnectClient();

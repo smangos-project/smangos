@@ -109,6 +109,11 @@ SelfSignedCert GenerateSelfSignedCert()
 constexpr uint32 RESPONSE_SERVICE_ID = 0xFE;
 constexpr uint32 PUSH_SERVICE_ID = 0;
 
+// Even on a blocking socket, SSL_read/SSL_write can hand back SSL_ERROR_WANT_READ/WANT_WRITE
+// (e.g. a renegotiation or session-ticket record interleaved with application data) -- treating
+// every n<=0 as fatal, as an earlier version of this helper did, occasionally aborted a
+// perfectly healthy connection under load (many TLS fixtures churning in the same test binary)
+// instead of just retrying. Only a real error (SSL_ERROR_SSL/SYSCALL/ZERO_RETURN) is fatal here.
 bool ReadExact(SSL* ssl, void* buffer, size_t size)
 {
     char* dst = static_cast<char*>(buffer);
@@ -116,9 +121,15 @@ bool ReadExact(SSL* ssl, void* buffer, size_t size)
     while (got < size)
     {
         int n = SSL_read(ssl, dst + got, int(size - got));
-        if (n <= 0)
-            return false;
-        got += size_t(n);
+        if (n > 0)
+        {
+            got += size_t(n);
+            continue;
+        }
+        int err = SSL_get_error(ssl, n);
+        if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+            continue;
+        return false;
     }
     return true;
 }
@@ -130,9 +141,15 @@ bool WriteExact(SSL* ssl, void const* buffer, size_t size)
     while (sent < size)
     {
         int n = SSL_write(ssl, src + sent, int(size - sent));
-        if (n <= 0)
-            return false;
-        sent += size_t(n);
+        if (n > 0)
+        {
+            sent += size_t(n);
+            continue;
+        }
+        int err = SSL_get_error(ssl, n);
+        if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+            continue;
+        return false;
     }
     return true;
 }
@@ -195,11 +212,15 @@ constexpr uint32 TEST_PUSH_SERVICE_HASH = 0x22222222;
 constexpr uint32 TEST_PUSH_METHOD_ID = 5;
 constexpr char const* TEST_PUSH_PAYLOAD = "pushed-payload";
 
-// Answers one known (serviceHash, methodId) with Ok, pushes one unprompted message right after
-// the TLS handshake (so the test doesn't need to wait on a second Call to observe it), and
-// answers anything else with RpcNotImplemented (5), matching BnetSession's own "no handler"
-// path -- enough surface to prove Call()/response matching and push delivery both work over a
-// real TLS+framing round trip, not just in-process function calls.
+// Answers one known (serviceHash, methodId) with Ok -- pushing the test's unprompted message
+// right after, the same way BnetSession's own handlers push (e.g. VerifyWebCredentials pushing
+// AuthenticationListener.OnLogonComplete right after replying Ok; see BotBnetLoginTests.cpp's
+// fake server for the same pattern) -- and answers anything else with RpcNotImplemented (5),
+// matching BnetSession's own "no handler" path. Earlier this pushed before the loop, immediately
+// after SSL_accept; that raced the client's own handshake-completion bookkeeping under load (the
+// server's SSL_accept returning success doesn't guarantee the client has finished processing its
+// side yet) and occasionally hung the whole connection. Pushing only from within the loop, after
+// a request the client is already waiting on a response to, needs no such guarantee.
 void RunFakeBnetServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* serverCtx, WaitFlag& serverDone)
 {
     SSL* ssl = SSL_new(serverCtx);
@@ -213,8 +234,6 @@ void RunFakeBnetServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* ser
         return;
     }
 
-    WriteFrame(ssl, PUSH_SERVICE_ID, TEST_PUSH_SERVICE_HASH, TEST_PUSH_METHOD_ID, 1, 0, TEST_PUSH_PAYLOAD);
-
     for (;;)
     {
         uint32 serviceId, serviceHash, methodId, token;
@@ -223,7 +242,10 @@ void RunFakeBnetServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* ser
             break;
 
         if (serviceHash == TEST_KNOWN_SERVICE_HASH && methodId == TEST_KNOWN_METHOD_ID)
+        {
             WriteFrame(ssl, RESPONSE_SERVICE_ID, serviceHash, methodId, token, 0, std::string());
+            WriteFrame(ssl, PUSH_SERVICE_ID, TEST_PUSH_SERVICE_HASH, TEST_PUSH_METHOD_ID, 1, 0, TEST_PUSH_PAYLOAD);
+        }
         else
             WriteFrame(ssl, RESPONSE_SERVICE_ID, serviceHash, methodId, token, 5, std::string());
     }
@@ -365,6 +387,12 @@ TEST_CASE("BotBnetConnection: a push frame reaches the push handler", "[botbnetc
     WaitFlag connected;
     client->Connect([&](bool success) { CHECK(success); connected.Set(); });
     REQUIRE(connected.WaitFor(std::chrono::seconds(5)));
+
+    // The fake server pushes the test message right after answering this call -- see
+    // RunFakeBnetServer's own comment for why it no longer pushes before the client has sent
+    // anything at all.
+    bgs::protocol::NoData request;
+    client->Call(TEST_KNOWN_SERVICE_HASH, TEST_KNOWN_METHOD_ID, request, [](bool, uint32, std::string) {});
 
     REQUIRE(pushed.WaitFor(std::chrono::seconds(5)));
     CHECK(pushedHash == TEST_PUSH_SERVICE_HASH);

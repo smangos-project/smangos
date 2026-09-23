@@ -546,6 +546,9 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotRestClient.h
       RealBots/Net/BotBnetConnection.cpp
       RealBots/Net/BotBnetConnection.h
+      RealBots/Net/BotBnetLogin.cpp
+      RealBots/Net/BotBnetLogin.h
+      RealBots/Protocol/BnetServiceHash.h
   )
   add_subdirectory(RealBots/Protocol/proto)
 endif()
