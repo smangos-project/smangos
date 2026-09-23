@@ -512,6 +512,29 @@ set (game_SRCS
 
 )
 
+if (ENABLE_REALBOTS)
+  list(APPEND game_SRCS
+      RealBots/Core/RealBot.cpp
+      RealBots/Core/RealBot.h
+      RealBots/Core/BotStage.h
+      RealBots/Core/BotIdentity.h
+      RealBots/Core/BotPacket.h
+      RealBots/Behavior/BotTask.h
+      RealBots/Behavior/BotBrain.cpp
+      RealBots/Behavior/BotBrain.h
+      RealBots/Behavior/BotContext.cpp
+      RealBots/Behavior/BotContext.h
+      RealBots/Behavior/BotTaskArgs.cpp
+      RealBots/Behavior/BotTaskArgs.h
+      RealBots/Behavior/BotTaskRegistry.cpp
+      RealBots/Behavior/BotTaskRegistry.h
+      RealBots/Coroutines/BotRoutine.cpp
+      RealBots/Coroutines/BotRoutine.h
+      RealBots/Coroutines/BotAwaitables.cpp
+      RealBots/Coroutines/BotAwaitables.h
+  )
+endif()
+
 if((${CMAKE_VERSION} VERSION_LESS "3.16") OR USE_PCH_OLD)
   list(APPEND game_SRCS
       pchdef.cpp
@@ -537,6 +560,14 @@ else()
   list(APPEND game_SRCS
       ${CMAKE_SOURCE_DIR}/src/scripts/ScriptLoader_noscripts.cpp
       ${CMAKE_SOURCE_DIR}/src/scripts/ScriptLoader.h
+  )
+endif()
+
+if (ENABLE_REALBOTS)
+  include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Core
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Coroutines
   )
 endif()
 
