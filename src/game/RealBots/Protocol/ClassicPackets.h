@@ -160,4 +160,222 @@ struct ClassicPong
     }
 };
 
+// CharSelect/EnteringWorld packets (bot-phase-1.md, "Login" steps 5-6). Each cites its
+// vibemangos source (src/game/Server/Packets/Character.h/.cpp).
+
+// Packed-guid128: the wire format every modern packet uses for an ObjectGuid -- a two-byte
+// (lowMask, highMask) header, then only the non-zero bytes each mask marks (vibemangos:
+// ObjectGuid::AppendPackedGuid128/ReadPackedGuid128, ObjectGuid.cpp). The bot has no ObjectGuid
+// class of its own (bot-plan.md: touches no server runtime state) -- this is the raw 128-bit
+// value, Low/High named exactly as the wire calls them.
+struct ClassicGuid
+{
+    uint64 Low = 0;
+    uint64 High = 0;
+
+    bool IsEmpty() const { return Low == 0 && High == 0; }
+
+    void Write(ByteBuffer& data) const
+    {
+        uint8 lowBytes[8], highBytes[8];
+        uint8 lowMask = 0, highMask = 0;
+        uint8 loSize = 0, hiSize = 0;
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            uint8 b = uint8(Low >> (i * 8));
+            if (b)
+            {
+                lowMask |= uint8(1 << i);
+                lowBytes[loSize++] = b;
+            }
+        }
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            uint8 b = uint8(High >> (i * 8));
+            if (b)
+            {
+                highMask |= uint8(1 << i);
+                highBytes[hiSize++] = b;
+            }
+        }
+
+        data << lowMask << highMask;
+        for (uint8 i = 0; i < loSize; ++i)
+            data << lowBytes[i];
+        for (uint8 i = 0; i < hiSize; ++i)
+            data << highBytes[i];
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 2)
+            return false;
+        uint8 lowMask, highMask;
+        data >> lowMask >> highMask;
+
+        Low = 0;
+        High = 0;
+        for (uint8 i = 0; i < 8; ++i)
+            if (lowMask & uint8(1 << i))
+            {
+                if (data.size() - data.rpos() < 1)
+                    return false;
+                uint8 b;
+                data >> b;
+                Low |= uint64(b) << (i * 8);
+            }
+        for (uint8 i = 0; i < 8; ++i)
+            if (highMask & uint8(1 << i))
+            {
+                if (data.size() - data.rpos() < 1)
+                    return false;
+                uint8 b;
+                data >> b;
+                High |= uint64(b) << (i * 8);
+            }
+        return true;
+    }
+};
+
+// ResponseCodes (vibemangos: src/game/SharedDefines.h) -- only the one value CharSelect needs.
+constexpr uint8 CLASSIC_CHAR_CREATE_SUCCESS = 24;
+
+// vibemangos: src/game/Handlers/CharacterHandler.cpp HandleCharEnumOpcode (NullClientPacket --
+// empty body).
+struct ClassicEnumCharacters
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_ENUM_CHARACTERS;
+
+    void Write(ByteBuffer&) const {}
+};
+
+// vibemangos: src/game/Server/Packets/Character.cpp EnumCharactersResult::AppendBodyTo(). Only
+// enough is parsed to know whether at least one character exists and, if so, its guid -- the rest
+// of the body (race/class/appearance/mail data/race-unlock list/...) is real, reverse-engineered
+// wire shape (see that file's own extensive citations) but not needed to drive CharSelect, and
+// leaving it unread is safe: every packet is length-framed, not delimited by how much of it gets
+// consumed (the same reasoning ClassicAuthResponse::Read above already relies on).
+struct ClassicEnumCharactersResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_ENUM_CHARACTERS_RESULT;
+
+    uint32 CharacterCount = 0;
+    ClassicGuid FirstCharacterGuid;
+
+    bool Read(ByteBuffer& data)
+    {
+        // 9 header bits (Success, Realmless, IsDeletedCharacters, IsNewPlayerRestrictionSkipped,
+        // IsNewPlayerRestricted, IsNewPlayer, IsTrialAccountRestricted,
+        // DisabledClassesMask.HasValue, DontCreateCharacterDisplays), flushed to a byte.
+        for (int i = 0; i < 9; ++i)
+            data.ReadBit();
+        data.ResetBitPos();
+
+        // characters.size(), then 7 more uint32/int32 fields before the per-character list
+        // starts (RegionwideCharacters.Count, MaxCharacterLevel, RaceUnlockData.Count,
+        // UnlockedConditionalAppearances.Count, RaceLimitDisables.Count, WarbandGroups.Count,
+        // DisabledClassesMask value) -- see EnumCharactersResult::AppendBodyTo's own field order.
+        if (data.size() - data.rpos() < sizeof(uint32) * 8)
+            return false;
+        data >> CharacterCount;
+        for (int i = 0; i < 7; ++i)
+        {
+            uint32 skip;
+            data >> skip;
+        }
+
+        if (CharacterCount > 0)
+            return FirstCharacterGuid.Read(data);
+        return true;
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Character.cpp CharCreate::ReadFromWorldPacket(). The bot
+// sends no ChrCustomization choices (CustomizationCount = 0); the server's
+// ConvertModernCustomizationsToLegacy() maps that to skin/face/hairStyle/hairColor/facialHair all
+// 0 -- a valid, if plain, default appearance, which is all Phase 1 needs (a character that
+// exists).
+struct ClassicCreateCharacter
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CREATE_CHARACTER;
+
+    std::string Name;
+    uint8 Race = 0;
+    uint8 Class = 0;
+    uint8 Gender = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBits(uint32(Name.size()), 6);
+        data.WriteBit(false); // hasTemplateSet
+        data.WriteBit(false); // IsTrialBoost
+        data.WriteBit(false); // UseNPE
+        data.WriteBit(false); // HardcoreSelfFound
+        data.FlushBits();
+
+        data << Race;
+        data << Class;
+        data << Gender;
+        data << uint32(0); // customizationCount
+        data << int32(0);  // timerunningSeasonId
+
+        data.append(reinterpret_cast<uint8 const*>(Name.data()), Name.size());
+        // No templateSetId (hasTemplateSet is false) and no customization pairs (count is 0).
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Character.cpp CharCreateResponse::AppendBodyTo().
+struct ClassicCreateCharResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CREATE_CHAR;
+
+    uint8 Result = 0; // ResponseCodes; CLASSIC_CHAR_CREATE_SUCCESS on success
+    ClassicGuid Guid; // the new character's guid on success, empty otherwise
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        data >> Result;
+        return Guid.Read(data);
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Character.cpp PlayerLogin::ReadFromWorldPacket().
+struct ClassicPlayerLogin
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_PLAYER_LOGIN;
+
+    ClassicGuid Guid;
+    // Terrain visibility distance the client requests; read but not applied to anything
+    // server-side yet (vibemangos's own comment on PlayerLogin::farClip).
+    float FarClip = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Guid.Write(data);
+        data << FarClip;
+    }
+};
+
+// vibemangos: src/game/Server/Packets/Character.cpp LoginVerifyWorld::AppendBodyTo(). Reaching
+// this is bot-phase-1.md's InWorld marker; SMSG_UPDATE_OBJECT itself is out of scope for Phase 1
+// ("parsing SMSG_UPDATE_OBJECT" is explicitly excluded) and is received and skipped.
+struct ClassicLoginVerifyWorld
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGIN_VERIFY_WORLD;
+
+    uint32 MapId = 0;
+    float X = 0.0f, Y = 0.0f, Z = 0.0f, O = 0.0f;
+    uint32 Reason = 0;
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) * 2 + sizeof(float) * 4)
+            return false;
+        data >> MapId >> X >> Y >> Z >> O >> Reason;
+        return true;
+    }
+};
+
 #endif

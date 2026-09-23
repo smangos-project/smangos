@@ -19,6 +19,7 @@ add_executable(tests-realbots
   CoroutineTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp
+  ClassicPacketsTests.cpp
   BotWorldConnectionTests.cpp
   BotWorldHandshakeTests.cpp
   BotTlsStreamTests.cpp
