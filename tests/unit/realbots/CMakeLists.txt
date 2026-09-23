@@ -16,12 +16,14 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   ${REALBOTS_DIR}/Net/BotBnetLogin.cpp
   ${REALBOTS_DIR}/Net/BotWorldHandshake.cpp
+  ${REALBOTS_DIR}/Net/BotCharSelect.cpp
   CoroutineTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp
   ClassicPacketsTests.cpp
   BotWorldConnectionTests.cpp
   BotWorldHandshakeTests.cpp
+  BotCharSelectTests.cpp
   BotTlsStreamTests.cpp
   BotRestClientTests.cpp
   BotBnetConnectionTests.cpp
