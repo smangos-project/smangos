@@ -227,6 +227,33 @@ TEST_CASE("Ed25519 SignWithContext round-trips through ED25519_verify_ctx", "[cr
         context.data(), static_cast<uint8_t>(context.size())) == 1);
 }
 
+TEST_CASE("Ed25519 VerifyWithContext accepts a matching signature and rejects a tampered one", "[crypto]")
+{
+    std::array<uint8, 32> seed{};
+    for (size_t i = 0; i < seed.size(); ++i)
+        seed[i] = static_cast<uint8>(i + 1);
+
+    Ed25519 signer;
+    REQUIRE(signer.LoadFromByteArray(seed));
+
+    std::vector<uint8> message = { 'p', 'o', 'n', 'g' };
+    std::vector<uint8> context = { 'c', 't', 'x' };
+    std::vector<uint8> signature = signer.SignWithContext(message.data(), message.size(), context);
+    REQUIRE(signature.size() == 64);
+
+    // The bot side has no private key of its own -- it loads the same known constant purely to
+    // recover the public half, exactly as BotWorldHandshake does for CLASSIC_SMSG_ENTER_ENCRYPTED_MODE.
+    Ed25519 verifier;
+    REQUIRE(verifier.LoadFromByteArray(seed));
+    CHECK(verifier.VerifyWithContext(message.data(), message.size(), signature.data(), context));
+
+    std::vector<uint8> tamperedSignature = signature;
+    tamperedSignature[0] ^= 0xFF;
+    CHECK_FALSE(verifier.VerifyWithContext(message.data(), message.size(), tamperedSignature.data(), context));
+
+    CHECK_FALSE(verifier.VerifyWithContext(message.data(), message.size(), signature.data(), { 'o', 't', 'h', 'e', 'r' }));
+}
+
 TEST_CASE("RsaSign produces a fixed-size, deterministic PKCS#1v1.5 signature", "[crypto]")
 {
     // RsaSign has no public-key accessor (it only signs -- see RsaSign.h), so this checks what's

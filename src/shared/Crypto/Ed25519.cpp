@@ -50,3 +50,18 @@ std::vector<uint8> Ed25519::SignWithContext(uint8 const* message, size_t message
 
     return signature;
 }
+
+bool Ed25519::VerifyWithContext(uint8 const* message, size_t messageLength, uint8 const* signature, std::vector<uint8> const& context) const
+{
+    if (!m_key || context.size() > 255)
+        return false;
+
+    constexpr size_t KeySize = 32;
+
+    uint8 publicKey[KeySize] = {};
+    size_t publicKeyLength = KeySize;
+    if (!EVP_PKEY_get_raw_public_key(m_key, publicKey, &publicKeyLength))
+        return false;
+
+    return ED25519_verify_ctx(message, messageLength, signature, publicKey, context.data(), uint8(context.size())) != 0;
+}

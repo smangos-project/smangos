@@ -41,6 +41,18 @@ class Ed25519
             return SignWithContext(message.data(), message.size(), context);
         }
 
+        // Verifies `signature` (64 bytes) over `message` under RFC 8032 Ed25519ctx with
+        // `context`, using the public key derived from whatever key LoadFromByteArray loaded.
+        // The bot side has no real private key of its own: it loads the same fixed constant
+        // vibemangos signs with (see WorldHandshakeCrypto) purely to recover its public half.
+        bool VerifyWithContext(uint8 const* message, size_t messageLength, uint8 const* signature, std::vector<uint8> const& context) const;
+
+        template <std::size_t N>
+        bool VerifyWithContext(std::array<uint8, N> const& message, std::array<uint8, 64> const& signature, std::vector<uint8> const& context) const
+        {
+            return VerifyWithContext(message.data(), message.size(), signature.data(), context);
+        }
+
     private:
         EVP_PKEY* m_key;
 };
