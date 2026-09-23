@@ -312,6 +312,6 @@ if (BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-if (BUILD_EXTRACTORS OR BUILD_REALMMERGE)
+if (BUILD_EXTRACTORS OR BUILD_REALMMERGE OR BUILD_REALBOT_RUNNER)
     add_subdirectory(contrib)
 endif()

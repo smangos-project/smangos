@@ -26,3 +26,7 @@ endif()
 if (BUILD_REALMMERGE)
 add_subdirectory(RealmMerge)
 endif()
+
+if (BUILD_REALBOT_RUNNER)
+add_subdirectory(realbotrunner)
+endif()
