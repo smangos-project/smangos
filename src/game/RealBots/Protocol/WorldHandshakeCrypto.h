@@ -24,6 +24,13 @@ class WorldHandshakeCrypto
         static std::array<uint8, 32> const& EncryptionKeySeed();
         static std::array<uint8, 32> const& EnableEncryptionSeed();
 
+        // The fixed Ed25519 keypair CLASSIC_SMSG_ENTER_ENCRYPTED_MODE is signed under -- not a
+        // real secret (both sides of every reference implementation hardcode it), just the
+        // shape the modern protocol expects. The bot loads this same "private" key purely to
+        // recover its public half and verify the server's signature with it.
+        static std::array<uint8, 32> const& EnterEncryptedModePrivateKey();
+        static std::array<uint8, 16> const& EnableEncryptionContext();
+
         // digestKey = SHA512(joinSessionKey || AuthCheckClientSeed);
         // digest = HMAC-SHA512(digestKey, localChallenge || serverChallenge || AuthCheckSeed)[0..24]
         // -- the CMSG_AUTH_SESSION Digest field. Same on both sides: a client computes it this
