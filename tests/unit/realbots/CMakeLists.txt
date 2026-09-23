@@ -13,12 +13,14 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
   ${REALBOTS_DIR}/Net/BotTlsStream.cpp
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
+  ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   CoroutineTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp
   BotWorldConnectionTests.cpp
   BotTlsStreamTests.cpp
   BotRestClientTests.cpp
+  BotBnetConnectionTests.cpp
   TestMain.cpp
 )
 
@@ -36,7 +38,7 @@ target_include_directories(tests-realbots PRIVATE
   ${CMAKE_SOURCE_DIR}/src/shared
 )
 
-target_link_libraries(tests-realbots PRIVATE shared framework Catch2 zlib)
+target_link_libraries(tests-realbots PRIVATE shared framework Catch2 zlib bnetproto)
 
 if (WIN32)
   target_link_libraries(tests-realbots PRIVATE

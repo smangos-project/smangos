@@ -544,7 +544,10 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotTlsStream.h
       RealBots/Net/BotRestClient.cpp
       RealBots/Net/BotRestClient.h
+      RealBots/Net/BotBnetConnection.cpp
+      RealBots/Net/BotBnetConnection.h
   )
+  add_subdirectory(RealBots/Protocol/proto)
 endif()
 
 if((${CMAKE_VERSION} VERSION_LESS "3.16") OR USE_PCH_OLD)
@@ -678,6 +681,10 @@ target_link_libraries(game
   Detour
   g3dlite
 )
+
+if (ENABLE_REALBOTS)
+  target_link_libraries(game bnetproto)
+endif()
 
 #add_dependencies(game revision.h)
 

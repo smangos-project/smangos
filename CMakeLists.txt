@@ -304,8 +304,8 @@ set_property(DIRECTORY APPEND PROPERTY
 
 message(STATUS "MaNGOS CXX flags      : ${MANGOS_CXX_FLAGS}")
 
-add_subdirectory(src)
 add_subdirectory(dep)
+add_subdirectory(src)
 
 if (BUILD_TESTING)
   enable_testing()
