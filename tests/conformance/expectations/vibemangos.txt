@@ -4,3 +4,4 @@
 # do, and the port (vmangos.txt) is held to it.
 
 world_socket: never acking SMSG_ENTER_ENCRYPTED_MODE gets the connection closed | vibemangos has no timeout for a connection stuck before CMSG_ENTER_ENCRYPTED_MODE_ACK (still open after 420s)
+world_entry: a failed Instance connect is reported and the next SMSG_CONNECT_TO tried | vibemangos reads CMSG_CONNECT_TO_FAILED as Serial then Con; the bots now send TrinityCore's order (Con then Serial), see README "vibemangos vs TrinityCore"

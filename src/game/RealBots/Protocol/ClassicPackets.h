@@ -184,42 +184,35 @@ struct ClassicConnectTo
     }
 };
 
-// ConnectToSerial values (vibemangos: src/game/Server/WorldSocketConnectionType.h; identical in
-// TrinityCore cata_classic's Packets/AuthenticationPackets.h): SMSG_CONNECT_TO carries the attempt it
-// belongs to, and CMSG_CONNECT_TO_FAILED echoes the one that failed.
+// SMSG_CONNECT_TO carries the attempt it belongs to, and CMSG_CONNECT_TO_FAILED echoes the one
+// that failed.
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1 = 17;
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2 = 35;
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3 = 53;
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4 = 71;
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5 = 89;
 
-// vibemangos: src/game/Server/Packets/Character.cpp ConnectToFailed::ReadFromWorldPacket() (serial,
-// then connection type) and WorldSession::HandleConnectToFailedOpcode(); TrinityCore cata_classic:
-// AuthenticationPackets.cpp ConnectToFailed::Read() and WorldSocket::HandleConnectToFailed(). The
-// escalation is identical (a failure of attempt N asks for attempt N+1, up to five, then the login is
-// aborted), but the two DISAGREE on the field order: vibemangos reads Serial (u32) then Con (u8),
-// TrinityCore reads Con (u8) then Serial (u32). This follows vibemangos: it is the server the bots
-// are proven against first and the tree this is ported into; TrinityCore's may be a 4.4.x-vs-1.15
-// difference or a bug in either. Check against a captured real 1.15.6 client before trusting it
-// (bot-phase-2.md, open question "real-client ground truth"). Sent on the Realm connection.
+// The escalation is a failure of attempt N asking for attempt N+1, up to five, then the login is
+// aborted. Sent on the Realm connection. Field order (connection type, then serial) is unconfirmed
+// against a real 1.15.6 client; see the README's "vibemangos vs TrinityCore" section.
 struct ClassicConnectToFailed
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CONNECT_TO_FAILED;
 
-    uint32 Serial = 0;     // the ClassicConnectTo::Serial of the attempt that failed
-    uint8 Connection = 0;  // the ClassicConnectTo::ConnectionType of that attempt
+    uint8 Connection = 0;  // the ClassicConnectTo::ConnectionType of the attempt that failed
+    uint32 Serial = 0;     // the ClassicConnectTo::Serial of that attempt
 
     void Write(ByteBuffer& data) const
     {
-        data << Serial;
         data << Connection;
+        data << Serial;
     }
 
     bool Read(ByteBuffer& data)
     {
-        if (data.size() - data.rpos() < sizeof(Serial) + sizeof(Connection))
+        if (data.size() - data.rpos() < sizeof(Connection) + sizeof(Serial))
             return false;
-        data >> Serial >> Connection;
+        data >> Connection >> Serial;
         return true;
     }
 };

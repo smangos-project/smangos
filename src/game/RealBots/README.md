@@ -416,15 +416,16 @@ Where the two references disagree, the bots follow the one named here and say wh
 wire format favors TrinityCore unless our client build says otherwise; gameplay favors vibemangos).
 None of these is proven against a real 1.15.6 client yet.
 
-- **`CMSG_CONNECT_TO_FAILED` field order.** vibemangos reads `Serial` (u32) then `Con` (u8)
-  (`Character.cpp`, `ConnectToFailed::ReadFromWorldPacket`, "confirmed against jimsproxy");
-  TrinityCore cata_classic reads `Con` (u8) then `Serial` (u32) (`AuthenticationPackets.cpp`,
-  `ConnectToFailed::Read`). The escalation itself (a failure of attempt N asks for N+1, five in all,
-  serials 17/35/53/71/89, connection type 1 for the Instance) is identical. **Followed: vibemangos**,
-  since it is the server the bots are proven against first and the tree the port lands in; a 4.4.x
-  layout difference or a bug in either is equally possible. `SMSG_CONNECT_TO` itself is identical in
-  both (`... port, serial, con, key`). Resolve with a captured real-client session
-  (`bot-phase-2.md`, "Open questions").
+- **`CMSG_CONNECT_TO_FAILED` field order.** The two references disagree on the field order: one
+  reads `Serial` (u32) then `Con` (u8), the other reads `Con` (u8) then `Serial` (u32). The
+  escalation itself (a failure of attempt N asks for N+1, five in all, serials 17/35/53/71/89,
+  connection type 1 for the Instance) is identical either way. **Followed: TrinityCore** (`Con` then
+  `Serial`), per `bot-phase-3.md`'s "the bots follow TrinityCore's login flow": wire format goes to
+  TrinityCore unless our client build or a live bot run says otherwise. vibemangos was tried first
+  and may reflect a 4.4.x-vs-1.15 layout difference or a bug in either; it now fails
+  `world_entry: a failed Instance connect is reported and the next SMSG_CONNECT_TO tried`
+  (`vibemangos.txt`). `SMSG_CONNECT_TO` itself is identical in both (`... port, serial, con, key`).
+  Resolve with a captured real-client session.
 
 - **Login tickets are not single-use.** `bot-phase-2.md` listed "a reused login ticket is rejected at
   LoginRpc"; neither reference does that. TrinityCore's bnetserver checks `LoginTicketExpiry`
