@@ -179,6 +179,15 @@ set (shared_SRCS
     TimePeriod.cpp
 )
 
+if (ENABLE_REALBOTS)
+  set (shared_SRCS
+    ${shared_SRCS}
+    Bnet/BnetServiceHash.h
+    Bnet/BnetRpcFraming.h
+    Bnet/BnetRpcFraming.cpp
+  )
+endif()
+
 if (ENABLE_MAILSENDER)
   set (shared_SRCS
     ${shared_SRCS}
@@ -329,4 +338,5 @@ endif()
 
 if (ENABLE_REALBOTS)
   add_subdirectory(Bnet/proto)
+  target_link_libraries(shared PUBLIC bnetproto)
 endif()

@@ -1,17 +1,9 @@
 #include "BotBnetConnection.h"
+#include "Bnet/BnetRpcFraming.h"
 #include "Log.h"
 
 #include "rpc_types.pb.h"
 #include <google/protobuf/message.h>
-
-namespace
-{
-// Mirrors BnetSession.cpp's RESPONSE_SERVICE_ID/PUSH_SERVICE_ID exactly (jimsproxy
-// BnetTcpSession.cs:408): 0xFE marks a reply to one of our own requests, 0 marks an unprompted
-// message the server pushed.
-constexpr uint32 RESPONSE_SERVICE_ID = 0xFE;
-constexpr uint32 PUSH_SERVICE_ID = 0;
-}
 
 std::shared_ptr<BotBnetConnection> BotBnetConnection::Create(IO::Networking::AsyncSocket socket)
 {
@@ -53,16 +45,7 @@ void BotBnetConnection::Call(uint32 serviceHash, uint32 methodId, google::protob
     if (!payload.empty())
         header.set_size(uint32(payload.size()));
 
-    std::string headerBytes;
-    header.SerializeToString(&headerBytes);
-
-    std::vector<uint8> frame;
-    frame.reserve(2 + headerBytes.size() + payload.size());
-    uint16 const headerLen = uint16(headerBytes.size());
-    frame.push_back(uint8(headerLen >> 8));
-    frame.push_back(uint8(headerLen));
-    frame.insert(frame.end(), headerBytes.begin(), headerBytes.end());
-    frame.insert(frame.end(), payload.begin(), payload.end());
+    std::vector<uint8> frame = BnetRpcFraming::EncodeFrame(header, payload);
 
     m_pendingCalls[token] = std::move(callback);
 
@@ -86,8 +69,8 @@ void BotBnetConnection::ReadNextFrame()
             return;
         }
 
-        uint16 const headerLen = uint16((uint16((*lengthBuf)[0]) << 8) | (*lengthBuf)[1]);
-        if (headerLen == 0 || headerLen > 4096)
+        uint16 const headerLen = BnetRpcFraming::DecodeHeaderLength(lengthBuf->data());
+        if (headerLen == 0 || headerLen > BnetRpcFraming::MaxHeaderLength)
         {
             sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotBnetConnection: bogus header length %u", headerLen);
             self->OnError(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
@@ -104,7 +87,7 @@ void BotBnetConnection::ReadNextFrame()
             }
 
             auto header = std::make_shared<bgs::protocol::Header>();
-            if (!header->ParseFromArray(headerBuf->data(), int(headerBuf->size())))
+            if (!BnetRpcFraming::DecodeHeader(headerBuf->data(), headerBuf->size(), *header))
             {
                 sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotBnetConnection: failed to parse Header");
                 self->OnError(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
@@ -112,7 +95,7 @@ void BotBnetConnection::ReadNextFrame()
             }
 
             uint32 const payloadSize = header->size();
-            if (payloadSize > 0x100000) // 1 MiB sanity bound, matching BnetSession::ReadFrame
+            if (payloadSize > BnetRpcFraming::MaxPayloadSize)
             {
                 sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotBnetConnection: payload size %u exceeds sanity bound", payloadSize);
                 self->OnError(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
@@ -143,7 +126,7 @@ void BotBnetConnection::ReadNextFrame()
 
 void BotBnetConnection::Dispatch(bgs::protocol::Header const& header, std::string payload)
 {
-    if (header.service_id() == RESPONSE_SERVICE_ID)
+    if (header.service_id() == BnetRpcFraming::ResponseServiceId)
     {
         auto it = m_pendingCalls.find(header.token());
         if (it == m_pendingCalls.end())
@@ -152,7 +135,7 @@ void BotBnetConnection::Dispatch(bgs::protocol::Header const& header, std::strin
         m_pendingCalls.erase(it);
         callback(true, header.status(), std::move(payload));
     }
-    else if (header.service_id() == PUSH_SERVICE_ID)
+    else if (header.service_id() == BnetRpcFraming::PushServiceId)
     {
         if (m_pushHandler)
             m_pushHandler(header.service_hash(), header.method_id(), payload);

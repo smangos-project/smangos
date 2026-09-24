@@ -5,7 +5,7 @@
 // address + session key, the way vibemangos's bnetserver would (see GameUtilitiesService.cpp for
 // the exact attribute/JSON shapes this mirrors).
 #include "BotBnetLogin.h"
-#include "BnetServiceHash.h"
+#include "Bnet/BnetServiceHash.h"
 #include "Compression/ZLib.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "IO/Context/IoContext.h"

@@ -1,6 +1,6 @@
 #include "BotBnetLogin.h"
 #include "BotConnector.h"
-#include "BnetServiceHash.h"
+#include "Bnet/BnetServiceHash.h"
 #include "Compression/ZLib.h"
 #include "Crypto/BigNumber.h"
 #include "Errors.h"

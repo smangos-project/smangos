@@ -18,7 +18,7 @@
 #include "BuiltinBotTasks.h"
 #include "FakeWorldServer.h"
 #include "TestBotDriver.h"
-#include "BnetServiceHash.h"
+#include "Bnet/BnetServiceHash.h"
 #include "Compression/ZLib.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "Crypto/Ed25519.h"

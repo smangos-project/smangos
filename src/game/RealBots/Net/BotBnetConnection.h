@@ -11,17 +11,13 @@
 namespace google { namespace protobuf { class Message; } }
 namespace bgs { namespace protocol { class Header; } }
 
-// The bot's half of vibemangos's BnetSession (src/bnetserver/Server/BnetSession.cpp): Battle.net
-// RPC over TLS, framed as [u16 BE headerLength][Header protobuf][payload] (bgs::protocol::Header,
-// rpc_types.proto). One BotBnetConnection is one TLS connection to RpcPort, carrying every RPC
-// call for bot-phase-1.md's "LoginRpc"/"RealmSelect" steps.
+// Battle.net RPC over TLS, framed via BnetRpcFraming (bgs::protocol::Header, rpc_types.proto). One
+// BotBnetConnection is one TLS connection to RpcPort, carrying every RPC call the login flow makes.
 //
-// Requests are sent bindless (service_id=0, service_hash=<the actual hash>): the server's own
-// read loop (BnetSession::ReadFrame) never inspects service_id on an incoming request, only
-// service_hash/method_id, and ConnectRequest.use_bindless_rpc defaults to true -- so there is no
-// bind handshake to perform first. Responses come back with service_id=0xFE, matched to a request
-// by token; unprompted pushes (e.g. AuthenticationListener.OnLogonComplete) come back with
-// service_id=0 and are delivered to the push handler instead of a Call callback.
+// Requests are sent bindless (service_id=0, service_hash=<the actual hash>): the server never
+// requires a bind handshake first. Responses come back with service_id=ResponseServiceId, matched
+// to a request by token; unprompted pushes (e.g. AuthenticationListener.OnLogonComplete) come back
+// with service_id=PushServiceId and are delivered to the push handler instead of a Call callback.
 class BotBnetConnection : public std::enable_shared_from_this<BotBnetConnection>
 {
     public:

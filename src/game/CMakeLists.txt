@@ -569,7 +569,6 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotWorldLogin.h
       RealBots/Net/BotLogin.cpp
       RealBots/Net/BotLogin.h
-      RealBots/Protocol/BnetServiceHash.h
   )
 endif()
 

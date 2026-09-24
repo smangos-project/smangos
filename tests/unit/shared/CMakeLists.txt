@@ -5,12 +5,20 @@ add_executable(tests-shared
   TestMain.cpp
 )
 
+if (ENABLE_REALBOTS)
+  target_sources(tests-shared PRIVATE BnetRpcFramingTests.cpp)
+endif()
+
 target_include_directories(tests-shared PRIVATE
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/framework
 )
 
 target_link_libraries(tests-shared PRIVATE shared framework Catch2)
+
+if (ENABLE_REALBOTS)
+  target_link_libraries(tests-shared PRIVATE bnetproto)
+endif()
 
 if (WIN32)
   target_link_libraries(tests-shared PRIVATE

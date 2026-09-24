@@ -1,14 +1,12 @@
-#ifndef REALBOTS_BNETSERVICEHASH_H
-#define REALBOTS_BNETSERVICEHASH_H
+#ifndef SHARED_BNETSERVICEHASH_H
+#define SHARED_BNETSERVICEHASH_H
 
 #include "Common.h"
 
-// Hardcoded (serviceHash, methodId) constants for Battle.net RPC dispatch -- the bot's side of
-// vibemangos's src/bnetserver/Services/ServiceHash.h (see that file's own comment: no server or
-// real client ever reads the .proto `option (service_options)`/`(method_options)` annotations at
-// runtime, everyone just hardcodes the numeric values, matching jimsproxy's
-// Framework/Constants/ServiceHash.cs verbatim). Only the subset bot-phase-1.md's LoginRpc/
-// RealmSelect steps actually call or listen for.
+// (serviceHash, methodId) constants for Battle.net RPC dispatch. Nothing on the wire carries
+// service/method names, so both sides hardcode the numeric values from the .proto
+// `option (service_options)`/`(method_options)` annotations. Only the subset the bot's login flow
+// calls or listens for.
 enum class BnetOriginalHash : uint32
 {
     AuthenticationListener = 0x71240E35u,
@@ -37,8 +35,8 @@ enum class BnetAuthenticationListenerMethods : uint32
 
 enum class BnetGameUtilitiesServiceMethods : uint32
 {
-    // Named GenericClientRequest in ServiceHash.h/ProcessClientRequest in the .proto rpc
-    // declaration -- same id, both names appear in the references.
+    // Named GenericClientRequest in the RPC dispatch table, ProcessClientRequest in the .proto rpc
+    // declaration -- same id, both names appear in the wild.
     ProcessClientRequest = 1,
 };
 

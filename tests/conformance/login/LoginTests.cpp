@@ -3,7 +3,7 @@
 // lands rather than all at once. A bot's stage is the step in progress and StopAt(X) holds as X
 // begins (README, "Stages and stop_at"); bot.Held(X) is "held there, with everything the steps before
 // it produced in place".
-#include "BnetServiceHash.h"
+#include "Bnet/BnetServiceHash.h"
 #include "BotBnetConnection.h"
 #include "BotRestClient.h"
 #include "ClassicPackets.h"
