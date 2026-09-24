@@ -160,8 +160,8 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         // Takes ownership of a connection made with MakeWorldCallbacks(kind) (bot thread only).
         // The Instance connection, once attached, is where the world session lives; the Realm
-        // connection stays open beside it for what still routes through it (SMSG_PONG,
-        // SMSG_LOGOUT_COMPLETE).
+        // connection stays open beside it for what still routes through it (SMSG_LOGOUT_COMPLETE, and
+        // the answer to anything sent on it: a ping's pong comes back on the socket it went out on).
         void AttachConnection(BotConnectionKind kind, std::shared_ptr<BotWorldConnection> connection);
         std::shared_ptr<BotWorldConnection> GetConnection(BotConnectionKind kind) const;
         bool HasConnection(BotConnectionKind kind) const { return GetConnection(kind) != nullptr; }

@@ -100,6 +100,51 @@ class TestStageAwaiter
         bool m_reached = false;
 };
 
+// co_await TestWaitUntil(predicate, timeoutMs) -> bool: polls `predicate` (from a background
+// thread, every 10ms) until it is true or the timeout passes. For conditions that are levels, not
+// events -- "the bot has recorded a challenge by now" -- where there is nothing to subscribe to.
+class TestWaitUntil
+{
+    public:
+        TestWaitUntil(std::function<bool()> predicate, uint32_t timeoutMs)
+            : m_predicate(std::move(predicate)), m_timeoutMs(timeoutMs) {}
+
+        bool await_ready() const noexcept { return false; }
+
+        void await_suspend(TestRoutine::HandleType handle)
+        {
+            TestExecutor* executor = handle.promise().Executor;
+            Subscribe([executor, handle]() { executor->Post(handle); });
+        }
+
+        bool await_resume() const { return m_reached; }
+
+        void Subscribe(std::function<void()> onReady)
+        {
+            std::thread([this, onReady = std::move(onReady)]()
+            {
+                auto const deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(m_timeoutMs);
+                for (;;)
+                {
+                    if (m_predicate())
+                    {
+                        m_reached = true;
+                        break;
+                    }
+                    if (std::chrono::steady_clock::now() >= deadline)
+                        break;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+                onReady();
+            }).detach();
+        }
+
+    private:
+        std::function<bool()> m_predicate;
+        uint32_t m_timeoutMs;
+        bool m_reached = false;
+};
+
 // co_await bot.RawPacket(opcode, timeoutMs) -> std::optional<BotPacket>.
 class TestRawPacketAwaiter
 {
@@ -311,6 +356,16 @@ class TestBot
             if (!value.Read(packet->Data))
                 return std::nullopt;
             return value;
+        }
+
+        // Resolves true once a packet with this opcode is in the bot's history (see Received), even one
+        // that arrived before this was called; false on the timeout. What to use for a packet the
+        // bot may already have when a scenario gets to it -- e.g. the server's SMSG_AUTH_CHALLENGE
+        // while the bot is held at WorldHandshake.
+        TestWaitUntil WaitReceived(uint32_t opcode, uint32_t timeoutMs) const
+        {
+            std::shared_ptr<TestPacketRecorder> recorder = m_recorder;
+            return TestWaitUntil([recorder, opcode]() { return recorder->Count(opcode) > 0; }, timeoutMs);
         }
 
         // The bot's published state (stage, session info from the Battle.net half, character guid, ...).

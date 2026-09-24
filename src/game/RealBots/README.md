@@ -260,8 +260,10 @@ cata_classic's source directly, since it looked at first like it might be a vibe
    `CMSG_AUTH_SESSION` (reusing the Realm connection's already-established session key, no fresh
    exchange) and `SMSG_RESUME_COMMS` in place of `SMSG_AUTH_RESPONSE`. `SMSG_LOGIN_VERIFY_WORLD`
    only ever arrives on *this* connection -- that's the framework's own `InWorld` marker. The
-   original Realm connection stays open afterward (`SMSG_PONG`/`SMSG_LOGOUT_COMPLETE` still route
-   through it, per vibemangos's `Opcodes.cpp` `PacketRoute::Realm` table); `SMSG_UPDATE_OBJECT` is
+   original Realm connection stays open afterward (`SMSG_LOGOUT_COMPLETE` still routes through it,
+   per vibemangos's `Opcodes.cpp` `PacketRoute::Realm` table; a ping is answered on the socket it
+   arrived on -- `WorldSocket::_HandlePing` writes the pong itself, whatever route the table lists
+   for `SMSG_PONG`); `SMSG_UPDATE_OBJECT` is
    received on the Instance connection and skipped, unparsed.
 
 **A failed Instance connect is retried**, as both reference servers do it: the failure (a refused or
@@ -406,6 +408,14 @@ None of these is proven against a real 1.15.6 client yet.
   (`refreshLoginTicket` extends it): a ticket is *expired*, never *consumed*, so a used one that
   has not expired logs in again (confirmed live against vibemangos). The scenario was dropped rather
   than written to encode a rule no server has; a forged ticket is rejected and is covered.
+
+- **No timeout for a connection stuck before the encrypted-mode ack.** A bot that never sends
+  `CMSG_ENTER_ENCRYPTED_MODE_ACK` (`world_socket: never acking ...`, `[slow]`) leaves vibemangos's
+  Realm connection open for good: still connected after 420 s. The scenario stays (a server must
+  eventually close a connection that never finishes its handshake) and is listed in
+  `expectations/vibemangos.txt`, the file for what the *reference* does not pass, so the port is
+  held to it while the reference run stays green. `ServerCloseTimeoutMs` (default 30000) is the
+  bound a target grants.
 
 ## Where to look next
 
