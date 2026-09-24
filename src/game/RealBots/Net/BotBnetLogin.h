@@ -73,8 +73,8 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             // ComputeAuthCheckDigest/ComputeSessionKey take, per GameUtilitiesService.cpp's
             // JoinRealm ("World session key = client-supplied secret || server-generated secret").
             std::vector<uint8> SessionKey;
-            // This server's join ticket is the account id as a decimal string (see
-            // GameUtilitiesService.cpp's JoinRealm), sent back as ClassicAuthSession::RealmJoinTicket.
+            // An opaque blob the world socket echoes back as ClassicAuthSession::RealmJoinTicket;
+            // never parsed here, so its exact shape (which varies by server) doesn't matter.
             std::string RealmJoinTicket;
             std::string Error;
         };
@@ -121,6 +121,11 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
         bool m_verifyOk = false;
         bool m_logonCompletePushed = false;
         uint32_t m_logonErrorCode = 0;
+        // The account's first game account id and region, from OnLogonComplete's push
+        // (LogonResult::game_account_id/connected_region) -- GetRealmListTicket needs the id to
+        // resolve which account is asking.
+        uint32_t m_gameAccountId = 0;
+        uint32_t m_gameAccountRegion = 1;
 
         std::vector<uint8> m_clientSecret;
 };

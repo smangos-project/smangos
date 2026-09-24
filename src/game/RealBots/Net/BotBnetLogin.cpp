@@ -265,6 +265,10 @@ void BotBnetLogin::OnPush(uint32 serviceHash, uint32 methodId, std::string const
 
     m_logonCompletePushed = true;
     m_logonErrorCode = result.error_code();
+    if (result.game_account_id_size() > 0)
+        m_gameAccountId = uint32(result.game_account_id(0).low());
+    if (result.has_connected_region())
+        m_gameAccountRegion = result.connected_region();
     MaybeStartRealmSelect();
 }
 
@@ -301,7 +305,14 @@ void BotBnetLogin::RequestRealmListTicket()
     for (uint8 b : m_clientSecret)
         clientInfo["info"]["secret"].push_back(int(b));
 
+    // GetRealmListTicket resolves the asking account from this: without it the request fails with
+    // "invalid identity args" before it ever looks at Param_ClientInfo.
+    nlohmann::json identity;
+    identity["gameAccountID"] = m_gameAccountId;
+    identity["gameAccountRegion"] = m_gameAccountRegion;
+
     bgs::protocol::game_utilities::v1::ClientRequest request;
+    AddBlobAttribute(request, "Param_Identity", "RealmListTicketIdentity:" + identity.dump());
     AddBlobAttribute(request, "Param_ClientInfo", "RealmListTicketClientInformation:" + clientInfo.dump());
     AddBoolAttribute(request, std::string("Command_RealmListTicketRequest_v1_") + COMMAND_VERSION_SUFFIX, true);
 
