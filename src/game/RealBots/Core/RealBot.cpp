@@ -148,6 +148,9 @@ void RealBot::ProcessIncoming(uint32 diff)
     {
         LogPacket(packet, BotPacketDir::Incoming);
 
+        if (m_packetObserver)
+            m_packetObserver(packet);
+
         BotPacketAction action = m_brain.DispatchPacket(*m_context, packet, BotPacketDir::Incoming);
 
         // Logout completion is framework bookkeeping, not something a task hook can swallow: a

@@ -127,6 +127,13 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         // to inject packets; a real connection's packet callback reaches it through Post.
         void QueueIncoming(BotPacket packet);
 
+        // Called for every Incoming packet, independent of the brain/task stack -- unlike a
+        // BotTask, it keeps running across BotBrain::Clear() (bot-plan.md's Disconnected ->
+        // brain wipe), which a task pushed on the stack wouldn't survive. Bot-thread-only to set
+        // (like everything else here); tests/conformance's TestBot is the one caller, watching
+        // for packets a TestRoutine on another thread is awaiting.
+        void SetPacketObserver(std::function<void(BotPacket const&)> observer) { m_packetObserver = std::move(observer); }
+
         // Runs a packet through the task stack's OnPacket hooks (Outgoing) and, unless a task
         // returned Handled or Drop, writes it to the attached connection (if any) and records it.
         template<typename T>
@@ -180,6 +187,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         std::shared_ptr<BotWorldConnection> m_connection;
         std::shared_ptr<BotWorldConnection> m_realmConnection;
         std::unique_ptr<BotPacketLog> m_packetLog;
+        std::function<void(BotPacket const&)> m_packetObserver;
 
         uint32 m_elapsedMs = 0;
         uint32 m_latencyMs = 0;

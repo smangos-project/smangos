@@ -298,15 +298,17 @@ std::vector<std::string> RealBotMgr::List() const
 
 std::optional<RealBotInfo> RealBotMgr::GetInfo(std::string const& name) const
 {
-    std::shared_ptr<RealBot> bot;
-    {
-        std::lock_guard<std::mutex> lock(m_botsLock);
-        auto it = m_bots.find(name);
-        if (it == m_bots.end())
-            return std::nullopt;
-        bot = it->second;
-    }
+    std::shared_ptr<RealBot> bot = GetBot(name);
+    if (!bot)
+        return std::nullopt;
     return bot->GetPublishedInfo();
+}
+
+std::shared_ptr<RealBot> RealBotMgr::GetBot(std::string const& name) const
+{
+    std::lock_guard<std::mutex> lock(m_botsLock);
+    auto it = m_bots.find(name);
+    return it != m_bots.end() ? it->second : nullptr;
 }
 
 bool RealBotMgr::RunTask(std::string const& botName, std::string const& taskName, BotTaskArgs args)

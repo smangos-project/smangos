@@ -76,6 +76,11 @@ class RealBotMgr
 
         std::vector<std::string> List() const;
         std::optional<RealBotInfo> GetInfo(std::string const& name) const;
+        // The bot itself, for callers that need more than GetInfo's published snapshot --
+        // tests/conformance's TestBot, which drives Send/SendRaw/Disconnect/SetPacketObserver
+        // through RealBot's own already-thread-safe (Post-marshalled or lock-guarded) API rather
+        // than RealBotMgr growing a forwarding method for each one.
+        std::shared_ptr<RealBot> GetBot(std::string const& name) const;
 
         RealBotTargetList const& GetTargets() const { return m_targets; }
         // Free/total account counts for a target's lease pool (bot-examples.md #6's "targets"
