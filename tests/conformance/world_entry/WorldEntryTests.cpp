@@ -12,8 +12,11 @@ TEST_CASE("world_entry: an existing character resolves at CharSelect", "[protoco
 {
     RunTest([]() -> TestRoutine
     {
-        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
-        REQUIRE(co_await bot.Stage(BotStage::CharSelect, 30000));
+        // A bot's stage is the step in progress, and StopAt holds as that step begins: the
+        // character is resolved (enumerated, or created) by the time it enters EnteringWorld, and
+        // CMSG_PLAYER_LOGIN has not been sent.
+        TestBot bot(TestBotOptions().StopAt(BotStage::EnteringWorld));
+        REQUIRE(co_await bot.Stage(BotStage::EnteringWorld, 30000));
         CHECK(bot.GetLastError().empty());
     });
 }

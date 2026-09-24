@@ -6,10 +6,14 @@
 #include "BotPacket.h"
 #include "BotStage.h"
 #include "LockedQueue.h"
+#include <array>
+#include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -42,6 +46,9 @@ struct RealBotLoginOptions
     // Holds the login routine at this stage instead of continuing past it -- InWorld (the
     // default) means "don't stop early" (bot-phase-1.md, "Login": "stop_at=<stage>").
     BotStage StopAt = BotStage::InWorld;
+    // How long the world connections wait to connect, and for each packet a login step expects.
+    uint32 ConnectTimeoutMs = 10000;
+    uint32 PacketTimeoutMs = 10000;
 };
 
 // A snapshot of a bot's state, safe to read from any thread -- published once per Tick, after
@@ -91,6 +98,19 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         void Tick(uint32 diff);
 
+        // Tick(elapsed wall time since this bot's last TickNow): how a host with real time to spare
+        // (RealBotMgr's workers) ticks a bot, on its regular interval or early, as soon as it has
+        // something to do (see SetWakeCallback).
+        void TickNow();
+
+        // Called from whichever thread Posts work to this bot (an IO completion, a packet, another
+        // thread's command) right after the work is queued, so the host can tick the bot promptly
+        // instead of at its next regular tick. Set once, before the bot is ticked; must be cheap and
+        // never touch the bot. ConsumeWake() is the host's side: true if there has been work since
+        // it last asked.
+        void SetWakeCallback(std::function<void()> callback) { m_wakeCallback = std::move(callback); }
+        bool ConsumeWake() { return m_wakePending.exchange(false); }
+
         BotStage GetStage() const { return m_stage; }
         void SetStage(BotStage stage);
 
@@ -109,12 +129,26 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         BotBrain& GetBrain() { return m_brain; }
         BotContext& GetContext() { return *m_context; }
 
-        // Attaches a live connection pair -- typically BotLogin::Result's Connection (Instance,
-        // used for Send/SendRaw from here on) and RealmConnection (kept open only for what still
-        // routes through it: SMSG_PONG, SMSG_LOGOUT_COMPLETE). RealmConnection may be null.
-        // Bot-thread only: called from the "login" task once BotLogin hands back its result via
-        // Post (bot-plan.md: connections are handed off, never touched cross-thread directly).
-        void AttachConnections(std::shared_ptr<BotWorldConnection> connection, std::shared_ptr<BotWorldConnection> realmConnection);
+        // What a world connection delivers into: every packet is tagged with the connection it
+        // arrived on and queued into this bot's inbox (never handed to whoever is driving the
+        // handshake), and a close is posted as a connection loss (bot-phase-2.md, "Handshake
+        // through the normal dispatch"). Safe to call from any thread, but only ever attach the
+        // result to the connection it was made for, and only within the connection generation it
+        // was made in: callbacks from a session that has since been closed are ignored.
+        struct WorldCallbacks
+        {
+            std::function<void(BotPacket)> OnPacket;
+            std::function<void()> OnDisconnect;
+        };
+        WorldCallbacks MakeWorldCallbacks(BotConnectionKind kind);
+
+        // Takes ownership of a connection made with MakeWorldCallbacks(kind) (bot thread only).
+        // The Instance connection, once attached, is where the world session lives; the Realm
+        // connection stays open beside it for what still routes through it (SMSG_PONG,
+        // SMSG_LOGOUT_COMPLETE).
+        void AttachConnection(BotConnectionKind kind, std::shared_ptr<BotWorldConnection> connection);
+        std::shared_ptr<BotWorldConnection> GetConnection(BotConnectionKind kind) const;
+        bool HasConnection(BotConnectionKind kind) const { return GetConnection(kind) != nullptr; }
         void CloseConnections();
 
         // Posts a callback to run on this bot's own thread, on its next Tick -- how anything
@@ -134,18 +168,25 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         // for packets a TestRoutine on another thread is awaiting.
         void SetPacketObserver(std::function<void(BotPacket const&)> observer) { m_packetObserver = std::move(observer); }
 
-        // Runs a packet through the task stack's OnPacket hooks (Outgoing) and, unless a task
-        // returned Handled or Drop, writes it to the attached connection (if any) and records it.
+        // Runs a packet through the hooks and task stack (Outgoing) and, unless one returned Drop,
+        // writes it to a connection and records it. The connection is `connection` if given, else
+        // the opcode's default route: the handshake and character-screen opcodes go to Realm,
+        // everything else to Instance once one is attached, Realm before that. With no such
+        // connection attached the packet is still shown to hooks and recorded, just not written.
         template<typename T>
-        void Send(T const& packet)
+        void Send(T const& packet, std::optional<BotConnectionKind> connection = std::nullopt)
         {
             BotPacket pkt;
             pkt.Opcode = T::Opcode;
             packet.Write(pkt.Data);
-            SendRaw(std::move(pkt));
+            SendRaw(std::move(pkt), connection);
         }
 
-        void SendRaw(BotPacket packet);
+        // armEncryption: arm the chosen connection's PacketCrypt with this key as this packet is
+        // sent, but only if it really is sent (a hook that drops CMSG_ENTER_ENCRYPTED_MODE_ACK
+        // leaves the connection unarmed, which is what a "never ack" scenario needs).
+        void SendRaw(BotPacket packet, std::optional<BotConnectionKind> connection = std::nullopt,
+            std::array<uint8, 32> const* armEncryption = nullptr);
         std::vector<BotPacket> const& GetSentPackets() const { return m_sentPackets; }
 
         // clean: sends CLASSIC_CMSG_LOGOUT_REQUEST and waits up to RealBots.LogoutTimeoutMs for
@@ -163,6 +204,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         void ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir);
         void PublishInfo();
         void LogPacket(BotPacket const& packet, BotPacketDir dir);
+        void OnConnectionLost(BotConnectionKind kind);
 
         std::string m_name;
         IO::IoContext* m_ioContext = nullptr;
@@ -184,17 +226,24 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         LockedQueue<std::function<void()>, std::mutex> m_commands;
         std::vector<BotPacket> m_sentPackets;
 
-        std::shared_ptr<BotWorldConnection> m_connection;
         std::shared_ptr<BotWorldConnection> m_realmConnection;
+        std::shared_ptr<BotWorldConnection> m_instanceConnection;
+        // Bumped whenever the connections are closed, so a callback made for an earlier session
+        // (see MakeWorldCallbacks) can tell it is stale. Bot-thread only.
+        uint32 m_connectionGeneration = 0;
         std::unique_ptr<BotPacketLog> m_packetLog;
         std::function<void(BotPacket const&)> m_packetObserver;
 
         uint32 m_elapsedMs = 0;
         uint32 m_latencyMs = 0;
 
+        std::function<void()> m_wakeCallback;
+        std::atomic<bool> m_wakePending{ false };
+        std::chrono::steady_clock::time_point m_lastTickTime = std::chrono::steady_clock::now();
+
         uint32 m_pingTimerMs = 0;
         uint32 m_pingSerial = 0;
-        uint32 m_pingSentAtMs = 0;
+        std::chrono::steady_clock::time_point m_pingSentAt;
         bool m_pingInFlight = false;
 
         bool m_awaitingLogoutComplete = false;

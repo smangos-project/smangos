@@ -224,21 +224,23 @@ class TestBot
         TestRawPacketAwaiter RawPacket(uint32_t opcode, uint32_t timeoutMs) const { return TestRawPacketAwaiter(m_recorder, opcode, timeoutMs); }
         TestNoPacketAwaiter NoPacket(uint32_t opcode, uint32_t timeoutMs) const { return TestNoPacketAwaiter(m_recorder, opcode, timeoutMs); }
 
+        // The connection is `connection` if given, else the opcode's default route (RealBot::Send):
+        // pass one to send on the "wrong" connection on purpose.
         template<typename T>
-        void Send(T const& packet) const
+        void Send(T const& packet, std::optional<BotConnectionKind> connection = std::nullopt) const
         {
             BotPacket pkt;
             pkt.Opcode = T::Opcode;
             packet.Write(pkt.Data);
-            SendRawPacket(std::move(pkt));
+            SendRawPacket(std::move(pkt), connection);
         }
 
-        void SendRaw(uint32_t opcode, ByteBuffer const& body) const
+        void SendRaw(uint32_t opcode, ByteBuffer const& body, std::optional<BotConnectionKind> connection = std::nullopt) const
         {
             BotPacket pkt;
             pkt.Opcode = opcode;
             pkt.Data = ByteBuffer(body); // ByteBuffer only has move assignment, not copy
-            SendRawPacket(std::move(pkt));
+            SendRawPacket(std::move(pkt), connection);
         }
 
         void Disconnect(bool clean) const;
@@ -261,7 +263,7 @@ class TestBot
         std::string const& GetName() const { return m_name; }
 
     private:
-        void SendRawPacket(BotPacket packet) const;
+        void SendRawPacket(BotPacket packet, std::optional<BotConnectionKind> connection) const;
 
         std::string m_name;
         std::shared_ptr<RealBot> m_bot;

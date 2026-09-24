@@ -257,7 +257,7 @@ void BotWorldConnection::SetDisconnectCallback(DisconnectCallback onDisconnect)
     m_onDisconnect = std::move(onDisconnect);
 }
 
-void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body)
+void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body, AES_GCM::Key const* armEncryption)
 {
     if (IsClosing())
         return;
@@ -290,6 +290,11 @@ void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body)
     std::memcpy(framed.data(), &header, sizeof(header));
     if (!plaintext.empty())
         std::memcpy(framed.data() + sizeof(header), plaintext.data(), plaintext.size());
+
+    // Still under the send lock and before the packet reaches the socket, so the server cannot
+    // have answered it yet: nothing is decrypting concurrently with this Init().
+    if (armEncryption)
+        m_crypt.Init(*armEncryption);
 
     m_sendQueue.push_back(std::move(framed));
     if (!m_sendQueueRunning)

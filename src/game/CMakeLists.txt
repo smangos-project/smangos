@@ -565,12 +565,8 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotBnetConnection.h
       RealBots/Net/BotBnetLogin.cpp
       RealBots/Net/BotBnetLogin.h
-      RealBots/Net/BotWorldHandshake.cpp
-      RealBots/Net/BotWorldHandshake.h
-      RealBots/Net/BotCharSelect.cpp
-      RealBots/Net/BotCharSelect.h
-      RealBots/Net/BotInstanceConnect.cpp
-      RealBots/Net/BotInstanceConnect.h
+      RealBots/Net/BotWorldLogin.cpp
+      RealBots/Net/BotWorldLogin.h
       RealBots/Net/BotLogin.cpp
       RealBots/Net/BotLogin.h
       RealBots/Protocol/BnetServiceHash.h

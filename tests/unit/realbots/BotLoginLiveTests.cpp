@@ -1,11 +1,15 @@
-// One-off verification of BotLogin against a real, running vibemangos target (bot-phase-1.md
-// step 5's "first contact"), not the fakes BotLoginTests.cpp/BotBnetLoginTests.cpp/etc. use.
+// One-off verification of the login against a real, running vibemangos target (bot-phase-1.md
+// step 5's "first contact"), not the fakes BotLoginTests.cpp/BotBnetLoginTests.cpp/etc. use. Runs
+// the built-in "login" task on a real RealBot, the way the runner and mangosd do.
 // Tagged [live], deliberately excluded from discovery by tests/unit/realbots/CMakeLists.txt's
 // TEST_SPEC ("~[live]") -- `ctest -L unit` must stay hermetic (bot-plan.md's testing model puts
 // real-network scenarios in the conformance suite, not built yet). Run by hand:
 //   tests-realbots.exe "[live]" --success
 // against a vibemangos instance already listening on the addresses/ports below.
 #include "BotLogin.h"
+#include "BotTaskRegistry.h"
+#include "BuiltinBotTasks.h"
+#include "TestBotDriver.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "IO/Context/IoContext.h"
 #include "Util.h"
@@ -69,99 +73,103 @@ TEST_CASE("BotLogin (live): check a password against the account's stored SRP ve
     CHECK(srp.CheckCredentials(srpUsername, "LOL"));
 }
 
+namespace
+{
+// Starts a bot on the live target running the built-in "login" task, stopping at `stopAt`.
+void StartLiveLogin(TestBotDriver& driver, BotStage stopAt)
+{
+    RegisterBuiltinBotTasks();
+    driver.Query([stopAt](RealBot& bot)
+    {
+        RealBotLoginOptions& options = bot.GetLoginOptions();
+        options.LoginAddress = "127.0.0.1";
+        options.RestPort = 8081;
+        options.RpcPort = 1119;
+        options.AccountName = "lol";
+        options.Password = "lol";
+        options.RealmName = "VibeMangos";
+        options.ClientBuild = 58797;
+        options.CreateIfNone = true;
+        options.CharacterName = "Realbot1";
+        options.Race = 1; // RACE_HUMAN
+        options.Class = 1; // CLASS_WARRIOR
+        options.StopAt = stopAt;
+
+        bot.GetBrain().PushTask(sBotTaskRegistry.Create("login", bot.GetContext(), BotTaskArgs()), bot.GetContext());
+        return true;
+    });
+}
+}
+
 TEST_CASE("BotLogin: reaches InWorld against a live vibemangos target", "[live]")
 {
     auto ctx = IO::IoContext::CreateIoContext();
     REQUIRE(ctx != nullptr);
     std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
 
-    BotLogin::Options options;
-    options.LoginAddress = "127.0.0.1";
-    options.RestPort = 8081;
-    options.RpcPort = 1119;
-    options.AccountName = "lol";
-    options.Password = "lol";
-    options.RealmName = "VibeMangos";
-    options.ClientBuild = 58797;
-    options.CreateIfNone = true;
-    options.CharacterName = "Realbot1";
-    options.Race = 1; // RACE_HUMAN
-    options.Class = 1; // CLASS_WARRIOR
-
-    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
-
-    WaitFlag done;
-    BotLogin::Result result;
-    login->Login(options, [&](BotLogin::Result r)
     {
-        result = std::move(r);
-        done.Set();
-    });
+        TestBotDriver driver(ctx.get());
+        StartLiveLogin(driver, BotStage::InWorld);
 
-    REQUIRE(done.WaitFor(std::chrono::seconds(30)));
-    INFO("error: " << result.Error);
-    CHECK(result.Success);
-    if (result.Success)
-    {
-        CHECK(result.Connection != nullptr);
-        WARN("InWorld as character guid low=" << result.CharacterGuid.Low << " high=" << result.CharacterGuid.High);
-    }
+        bool const inWorld = driver.WaitForStage(BotStage::InWorld, std::chrono::seconds(30));
+        INFO("error: " << driver.Info().LastError << ", stage " << BotStageName(driver.Info().Stage));
+        REQUIRE(inWorld);
 
-    if (result.Connection)
-    {
-        result.Connection->Close();
+        ClassicGuid const guid = driver.Query([](RealBot& bot) { return bot.GetIdentity().CharacterGuid; });
+        WARN("InWorld as character guid low=" << guid.Low << " high=" << guid.High);
+        CHECK(driver.Query([](RealBot& bot) { return bot.HasConnection(BotConnectionKind::Instance); }));
+
+        // Let a keepalive or two run before closing.
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
-    if (result.RealmConnection)
-        result.RealmConnection->Close();
 
     ctx->Shutdown();
     ioThread.join();
 }
 
-TEST_CASE("BotLogin: StopAt CharSelect holds mid-login against a live vibemangos target", "[live]")
+TEST_CASE("BotLogin: StopAt CharSelect holds after the handshake against a live vibemangos target", "[live]")
 {
     auto ctx = IO::IoContext::CreateIoContext();
     REQUIRE(ctx != nullptr);
     std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
 
-    BotLogin::Options options;
-    options.LoginAddress = "127.0.0.1";
-    options.RestPort = 8081;
-    options.RpcPort = 1119;
-    options.AccountName = "lol";
-    options.Password = "lol";
-    options.RealmName = "VibeMangos";
-    options.ClientBuild = 58797;
-    options.CreateIfNone = true;
-    options.CharacterName = "Realbot1";
-    options.Race = 1; // RACE_HUMAN
-    options.Class = 1; // CLASS_WARRIOR
-    options.StopAt = BotStage::CharSelect;
-
-    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
-
-    WaitFlag done;
-    BotLogin::Result result;
-    login->Login(options, [&](BotLogin::Result r)
     {
-        result = std::move(r);
-        done.Set();
-    });
+        TestBotDriver driver(ctx.get());
+        StartLiveLogin(driver, BotStage::CharSelect);
 
-    REQUIRE(done.WaitFor(std::chrono::seconds(30)));
-    INFO("error: " << result.Error);
-    CHECK(result.Success);
-    CHECK(result.Stopped);
-    CHECK(result.Connection != nullptr);
-    // A character was resolved (existing "Realbot1" or freshly created) but CMSG_PLAYER_LOGIN
-    // was never sent, so the connection is still the plain Realm one, never redirected.
-    CHECK(result.CharacterGuid.Low != 0);
+        bool const held = driver.WaitForStage(BotStage::CharSelect, std::chrono::seconds(30));
+        INFO("error: " << driver.Info().LastError << ", stage " << BotStageName(driver.Info().Stage));
+        REQUIRE(held);
 
-    if (result.Connection)
-        result.Connection->Close();
-    if (result.RealmConnection)
-        result.RealmConnection->Close();
+        // Authenticated and encrypted on the Realm connection, the character screen not yet asked
+        // anything: no character resolved, no redirect.
+        CHECK(driver.Query([](RealBot& bot) { return bot.GetIdentity().CharacterGuid.IsEmpty(); }));
+        CHECK(driver.Query([](RealBot& bot) { return bot.HasConnection(BotConnectionKind::Realm) && !bot.HasConnection(BotConnectionKind::Instance); }));
+    }
+
+    ctx->Shutdown();
+    ioThread.join();
+}
+
+TEST_CASE("BotLogin: StopAt EnteringWorld holds with a character resolved against a live vibemangos target", "[live]")
+{
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    {
+        TestBotDriver driver(ctx.get());
+        StartLiveLogin(driver, BotStage::EnteringWorld);
+
+        bool const held = driver.WaitForStage(BotStage::EnteringWorld, std::chrono::seconds(30));
+        INFO("error: " << driver.Info().LastError << ", stage " << BotStageName(driver.Info().Stage));
+        REQUIRE(held);
+
+        // A character was resolved (existing "Realbot1" or freshly created) but CMSG_PLAYER_LOGIN
+        // was never sent, so there is only the plain Realm connection, never a redirect.
+        CHECK(driver.Query([](RealBot& bot) { return bot.GetIdentity().CharacterGuid.Low != 0; }));
+        CHECK(driver.Query([](RealBot& bot) { return bot.HasConnection(BotConnectionKind::Realm) && !bot.HasConnection(BotConnectionKind::Instance); }));
+    }
 
     ctx->Shutdown();
     ioThread.join();

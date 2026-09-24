@@ -35,7 +35,8 @@ class BotBrain
 
         // Destroys every task on the stack without resuming any of them
         // (bot-phase-1.md: "Removing a bot destroys its tasks ... never resumed"), and every
-        // hook that wasn't added persistent.
+        // hook that wasn't added persistent. Called from inside Update or a packet dispatch (a task
+        // disconnecting its own bot), the stack part waits until that call returns.
         void Clear();
 
         bool Empty() const { return m_stack.empty(); }
@@ -58,7 +59,20 @@ class BotBrain
 
         void SweepRemovedHooks();
 
+        // Marks a stretch of Update/DispatchPacket during which the stack must not be destroyed.
+        class StackScope
+        {
+            public:
+                explicit StackScope(BotBrain& brain);
+                ~StackScope();
+
+            private:
+                BotBrain& m_brain;
+        };
+
         std::vector<std::unique_ptr<BotTask>> m_stack;
+        uint32 m_stackBusy = 0;
+        bool m_clearPending = false;
         std::vector<Hook> m_hooks;
         uint32 m_hookDispatchDepth = 0;
 };

@@ -12,6 +12,7 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskArgs.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskRegistry.cpp
+  ${REALBOTS_DIR}/Behavior/Tasks/BuiltinBotTasks.cpp
   ${REALBOTS_DIR}/Coroutines/BotRoutine.cpp
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
   ${REALBOTS_DIR}/Protocol/WorldHandshakeCrypto.cpp
@@ -21,20 +22,17 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
   ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   ${REALBOTS_DIR}/Net/BotBnetLogin.cpp
-  ${REALBOTS_DIR}/Net/BotWorldHandshake.cpp
-  ${REALBOTS_DIR}/Net/BotCharSelect.cpp
-  ${REALBOTS_DIR}/Net/BotInstanceConnect.cpp
+  ${REALBOTS_DIR}/Net/BotWorldLogin.cpp
   ${REALBOTS_DIR}/Net/BotLogin.cpp
   CoroutineTests.cpp
   BotHookTests.cpp
+  BotDispatchOrderTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp
   ClassicPacketsTests.cpp
   ClassicPacketsRoundTripTests.cpp
   BotWorldConnectionTests.cpp
-  BotWorldHandshakeTests.cpp
-  BotWorldRedirectTests.cpp
-  BotCharSelectTests.cpp
+  BotWorldLoginTests.cpp
   BotLoginTests.cpp
   BotLoginLiveTests.cpp
   BotTlsStreamTests.cpp
@@ -54,6 +52,7 @@ target_include_directories(tests-realbots PRIVATE
   ${REALBOTS_DIR}
   ${REALBOTS_DIR}/Core
   ${REALBOTS_DIR}/Behavior
+  ${REALBOTS_DIR}/Behavior/Tasks
   ${REALBOTS_DIR}/Coroutines
   ${REALBOTS_DIR}/Protocol
   ${REALBOTS_DIR}/Net

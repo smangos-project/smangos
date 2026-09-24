@@ -32,9 +32,7 @@ add_executable(realbotrunner
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
   ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   ${REALBOTS_DIR}/Net/BotBnetLogin.cpp
-  ${REALBOTS_DIR}/Net/BotWorldHandshake.cpp
-  ${REALBOTS_DIR}/Net/BotCharSelect.cpp
-  ${REALBOTS_DIR}/Net/BotInstanceConnect.cpp
+  ${REALBOTS_DIR}/Net/BotWorldLogin.cpp
   ${REALBOTS_DIR}/Net/BotLogin.cpp
 )
 mangos_target_flags(realbotrunner)

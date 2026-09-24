@@ -3,14 +3,28 @@
 #include "BotContext.h"
 #include "BotLogin.h"
 #include "BotTaskRegistry.h"
+#include "BotWorldLogin.h"
 #include "RealBot.h"
 
 namespace
 {
-// The default bottom task of a new bot (bot-phase-1.md, "Login"): drives BotLogin::Login through
-// the whole account-in to InWorld-out chain via ctx.Login, then holds so later tasks (ctx.Run,
-// RealBotMgr's "task" command) run on top of it. RealBotMgr::Add is what fills in
-// RealBot::GetLoginOptions() before this task starts.
+// A failed login step: the reason is kept where "info" and TestBot::GetLastError() read it, and
+// the bot is done (Failed closes its connections and drops its tasks).
+BotTaskResult FailLogin(BotContext& ctx, std::string const& error)
+{
+    ctx.GetBot().SetLastError(error);
+    ctx.Log("login failed: %s", error.c_str());
+    ctx.SetStage(BotStage::Failed);
+    return BotTaskResult::Failed;
+}
+
+// The default bottom task of a new bot (bot-phase-1.md, "Login"): the whole account-in to
+// InWorld-out sequence, then it holds so later tasks (ctx.Run, RealBotMgr's "task" command) run on
+// top of it. The Battle.net half runs on the IO threads behind ctx.Login; the world half are
+// routines on this bot (Net/BotWorldLogin.h), run one after another with ctx.Run, so their packets
+// go through the bot's normal dispatch, hooks included. RealBotMgr::Add is what fills in
+// RealBot::GetLoginOptions() before this task starts. Options::StopAt (bot-phase-1.md's
+// "stop_at=<stage>") holds the routine at that stage instead of continuing.
 BotRoutine LoginRoutine(BotContext& ctx)
 {
     RealBot& bot = ctx.GetBot();
@@ -27,35 +41,51 @@ BotRoutine LoginRoutine(BotContext& ctx)
     options.RealmName = opts.RealmName;
     options.RealmId = opts.RealmId;
     options.ClientBuild = opts.ClientBuild;
-    options.VerifyServerSignature = opts.VerifyServerSignature;
-    options.CreateIfNone = opts.CreateIfNone;
-    options.CharacterName = opts.CharacterName;
-    options.Race = opts.Race;
-    options.Class = opts.Class;
-    options.Gender = opts.Gender;
-    options.FarClip = opts.FarClip;
     options.StopAt = opts.StopAt;
 
-    BotLogin::Result result = co_await ctx.Login(options);
-    if (!result.Success)
+    BotLogin::Result login = co_await ctx.Login(options);
+    if (!login.Success)
+        co_return FailLogin(ctx, login.Error);
+
+    bot.GetIdentity().AccountName = opts.AccountName;
+    if (login.Stopped)
     {
-        bot.SetLastError(result.Error);
-        ctx.Log("login failed: %s", result.Error.c_str());
-        ctx.SetStage(BotStage::Failed);
-        co_return BotTaskResult::Failed;
+        ctx.SetStage(opts.StopAt);
+        co_return co_await ctx.Hold();
     }
 
-    if (result.Connection || result.RealmConnection)
-        bot.AttachConnections(result.Connection, result.RealmConnection);
-    bot.GetIdentity().AccountName = opts.AccountName;
+    BotWorldLoginParams world;
+    world.Handshake.WorldAddress = login.WorldAddress;
+    world.Handshake.WorldPort = login.WorldPort;
+    world.Handshake.JoinSessionKey = login.SessionKey;
+    world.Handshake.RealmJoinTicket = login.RealmJoinTicket;
+    world.Handshake.RealmId = opts.RealmId;
+    world.Handshake.VerifyServerSignature = opts.VerifyServerSignature;
+    world.Handshake.ConnectTimeoutMs = opts.ConnectTimeoutMs;
+    world.Handshake.PacketTimeoutMs = opts.PacketTimeoutMs;
+    world.Handshake.StopAt = opts.StopAt;
+    world.CharSelect.CreateIfNone = opts.CreateIfNone;
+    world.CharSelect.CharacterName = opts.CharacterName;
+    world.CharSelect.Race = opts.Race;
+    world.CharSelect.Class = opts.Class;
+    world.CharSelect.Gender = opts.Gender;
+    world.CharSelect.FarClip = opts.FarClip;
+    world.CharSelect.VerifyServerSignature = opts.VerifyServerSignature;
+    world.CharSelect.ConnectTimeoutMs = opts.ConnectTimeoutMs;
+    world.CharSelect.PacketTimeoutMs = opts.PacketTimeoutMs;
+    world.CharSelect.StopAt = opts.StopAt;
+
+    BotWorldLoginOutcome outcome;
+    co_await ctx.Run(BotWorldLoginRoutine(ctx, std::move(world), outcome));
+    if (!outcome.Success)
+        co_return FailLogin(ctx, outcome.Error);
+
     if (!opts.CharacterName.empty())
         bot.GetIdentity().CharacterName = opts.CharacterName;
-    bot.GetIdentity().CharacterGuid = result.CharacterGuid;
+    bot.GetIdentity().CharacterGuid = outcome.CharacterGuid;
 
-    // Options::StopAt (bot-phase-1.md's "stop_at=<stage>") holds the routine wherever BotLogin
-    // stopped instead of treating it as InWorld -- result.Stopped is only ever true when it
-    // matches opts.StopAt exactly (BotLogin never stops on its own).
-    ctx.SetStage(result.Stopped ? opts.StopAt : BotStage::InWorld);
+    // Stopped is only ever true when it matches opts.StopAt exactly (nothing stops on its own).
+    ctx.SetStage(outcome.Stopped ? opts.StopAt : BotStage::InWorld);
 
     co_return co_await ctx.Hold();
 }

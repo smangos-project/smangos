@@ -60,17 +60,35 @@ void BotBrain::DispatchStageChanged(BotContext& ctx, BotStage from, BotStage to)
         top->OnStageChanged(ctx, from, to);
 }
 
+BotBrain::StackScope::StackScope(BotBrain& brain) : m_brain(brain)
+{
+    ++m_brain.m_stackBusy;
+}
+
+BotBrain::StackScope::~StackScope()
+{
+    if (--m_brain.m_stackBusy == 0 && m_brain.m_clearPending)
+    {
+        m_brain.m_clearPending = false;
+        m_brain.m_stack.clear();
+    }
+}
+
 BotTaskResult BotBrain::Update(BotContext& ctx, uint32 diff)
 {
     if (m_stack.empty())
         return BotTaskResult::Done;
 
+    StackScope scope(*this);
     uint32 appliedDiff = diff;
 
-    while (!m_stack.empty())
+    while (!m_stack.empty() && !m_clearPending)
     {
         BotTaskResult result = m_stack.back()->Update(ctx, appliedDiff);
         appliedDiff = 0; // only the tick's real elapsed time counts once; cascaded completions below happen at the same instant
+
+        if (m_clearPending)
+            return BotTaskResult::Running; // a task cleared the brain (a disconnect) from inside its own Update; ~StackScope finishes it
 
         if (result == BotTaskResult::Running)
             return BotTaskResult::Running;
@@ -102,9 +120,14 @@ BotPacketAction BotBrain::DispatchPacket(BotContext& ctx, BotPacket& packet, Bot
     if (hookAction != BotPacketAction::Continue)
         return hookAction;
 
-    for (auto it = m_stack.rbegin(); it != m_stack.rend(); ++it)
+    // By index, from the top, over the size read up front: a task's OnPacket can resume a routine
+    // that pushes a child (ctx.Run), which grows m_stack mid-loop. Nothing below the current
+    // index ever moves, and a Clear() from inside a hook is deferred by the scope until the loop is
+    // done, so the task being called is never destroyed under its own OnPacket.
+    StackScope scope(*this);
+    for (size_t i = m_stack.size(); i > 0; --i)
     {
-        BotPacketAction action = (*it)->OnPacket(ctx, packet, dir);
+        BotPacketAction action = m_stack[i - 1]->OnPacket(ctx, packet, dir);
         if (action != BotPacketAction::Continue)
             return action;
     }
@@ -114,7 +137,13 @@ BotPacketAction BotBrain::DispatchPacket(BotContext& ctx, BotPacket& packet, Bot
 
 void BotBrain::Clear()
 {
-    m_stack.clear();
+    // A stack task can trigger this itself (a routine calling Disconnect, a packet hook seeing a
+    // disconnect): destroying the coroutine frame that is executing would be use-after-free, so
+    // inside an Update or a dispatch the clear is deferred to the end of the outermost one.
+    if (m_stackBusy > 0)
+        m_clearPending = true;
+    else
+        m_stack.clear();
 
     // A hook can't be destroyed out from under a dispatch that's running its own OnPacket (Clear
     // runs from SetStage(Disconnected), which a hook can trigger); mark instead, the sweep follows.

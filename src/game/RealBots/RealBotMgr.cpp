@@ -52,6 +52,8 @@ void RealBotMgr::Start()
 
     m_workerCount = std::max<uint32>(1, RealBotConfig::WorkerThreads());
     for (uint32 i = 0; i < m_workerCount; ++i)
+        m_workerSignals.push_back(std::make_unique<WorkerSignal>());
+    for (uint32 i = 0; i < m_workerCount; ++i)
         m_workerThreads.emplace_back([this, i]() { WorkerLoop(i); });
 
     sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "RealBotMgr: started (%u IO thread(s), %u worker(s))", ioThreads, m_workerCount);
@@ -63,6 +65,8 @@ void RealBotMgr::Stop()
         return;
 
     m_running = false;
+    for (uint32 i = 0; i < m_workerSignals.size(); ++i)
+        WakeWorker(i);
     for (std::thread& t : m_workerThreads)
         if (t.joinable())
             t.join();
@@ -120,28 +124,49 @@ void RealBotMgr::Update(uint32 diff)
         Remove(name);
 }
 
+void RealBotMgr::WakeWorker(uint32 workerIndex)
+{
+    if (workerIndex >= m_workerSignals.size())
+        return;
+
+    WorkerSignal& signal = *m_workerSignals[workerIndex];
+    {
+        std::lock_guard<std::mutex> lock(signal.Mutex);
+        signal.Wake = true;
+    }
+    signal.Cv.notify_one();
+}
+
 void RealBotMgr::WorkerLoop(uint32 workerIndex)
 {
     uint32 const tickMs = std::max<uint32>(1, RealBotConfig::TickIntervalMs());
-    auto last = std::chrono::steady_clock::now();
+    WorkerSignal& signal = *m_workerSignals[workerIndex];
+    auto nextRegularTick = std::chrono::steady_clock::now();
 
     while (m_running)
     {
-        auto const now = std::chrono::steady_clock::now();
-        uint32 const diff = uint32(std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count());
-        last = now;
+        bool const regular = std::chrono::steady_clock::now() >= nextRegularTick;
+        if (regular)
+            nextRegularTick = std::chrono::steady_clock::now() + std::chrono::milliseconds(JitteredTickMs(tickMs));
 
         {
             std::lock_guard<std::mutex> lock(m_botsLock);
             for (auto& [name, bot] : m_bots)
             {
                 auto const it = m_botWorkerIndex.find(name);
-                if (it != m_botWorkerIndex.end() && it->second == workerIndex)
-                    bot->Tick(diff);
+                if (it == m_botWorkerIndex.end() || it->second != workerIndex)
+                    continue;
+
+                // Every bot on the regular tick; between those, only the ones with work waiting.
+                bool const hasWork = bot->ConsumeWake();
+                if (regular || hasWork)
+                    bot->TickNow();
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(JitteredTickMs(tickMs)));
+        std::unique_lock<std::mutex> lock(signal.Mutex);
+        signal.Cv.wait_until(lock, nextRegularTick, [&]() { return signal.Wake || !m_running; });
+        signal.Wake = false;
     }
 }
 
@@ -211,6 +236,9 @@ std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string 
     bot->SetIoContext(m_ioContext.get());
     bot->GetLoginOptions() = std::move(options);
 
+    uint32 const workerIndex = id % m_workerCount;
+    bot->SetWakeCallback([this, workerIndex]() { WakeWorker(workerIndex); });
+
     if (RealBotConfig::PacketLogEnabled())
         bot->EnablePacketLog(RealBotConfig::PacketLogDir());
 
@@ -219,7 +247,7 @@ std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string 
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
         m_bots[name] = bot;
-        m_botWorkerIndex[name] = id % m_workerCount;
+        m_botWorkerIndex[name] = workerIndex;
     }
     ++m_nextId;
 

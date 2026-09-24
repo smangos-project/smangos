@@ -5,6 +5,7 @@
 #include "ClassicOpcodes.h"
 #include "ClassicPackets.h"
 #include "RealBotConfig.h"
+#include <algorithm>
 
 RealBot::RealBot()
     : m_context(std::make_unique<BotContext>(*this))
@@ -28,7 +29,13 @@ void RealBot::SetStage(BotStage stage)
     m_brain.DispatchStageChanged(*m_context, from, stage);
 
     if (stage == BotStage::Failed)
+    {
+        // A failed bot is finished: its tasks and connections go, the way they do on Disconnected
+        // (the brain's clear is deferred if this is called from one of its own tasks).
         m_failedStage = from;
+        m_brain.Clear();
+        CloseConnections();
+    }
 
     if (stage == BotStage::Disconnected)
     {
@@ -45,56 +52,88 @@ void RealBot::EnablePacketLog(std::string const& dir)
     m_packetLog = std::make_unique<BotPacketLog>(dir, m_name.empty() ? "bot" : m_name);
 }
 
-void RealBot::AttachConnections(std::shared_ptr<BotWorldConnection> connection, std::shared_ptr<BotWorldConnection> realmConnection)
+RealBot::WorldCallbacks RealBot::MakeWorldCallbacks(BotConnectionKind kind)
 {
-    m_connection = std::move(connection);
-    m_realmConnection = std::move(realmConnection);
-
     std::weak_ptr<RealBot> weakSelf = weak_from_this();
-    auto onPacket = [weakSelf](BotPacket packet)
-    {
-        if (std::shared_ptr<RealBot> self = weakSelf.lock())
-            self->Post([self, packet = std::move(packet)]() mutable { self->QueueIncoming(std::move(packet)); });
-    };
-    auto onDisconnect = [weakSelf]()
-    {
-        if (std::shared_ptr<RealBot> self = weakSelf.lock())
-            self->Post([self]() { self->SetStage(BotStage::Disconnected); });
-    };
+    uint32 const generation = m_connectionGeneration;
 
-    if (m_connection)
+    WorldCallbacks callbacks;
+    callbacks.OnPacket = [weakSelf, kind, generation](BotPacket packet)
     {
-        m_connection->SetPacketCallback(onPacket);
-        m_connection->SetDisconnectCallback(onDisconnect);
-    }
-    if (m_realmConnection && m_realmConnection != m_connection)
+        packet.Connection = kind;
+        if (std::shared_ptr<RealBot> self = weakSelf.lock())
+        {
+            self->Post([self, generation, packet = std::move(packet)]() mutable
+            {
+                if (generation == self->m_connectionGeneration)
+                    self->QueueIncoming(std::move(packet));
+            });
+        }
+    };
+    callbacks.OnDisconnect = [weakSelf, kind, generation]()
     {
-        m_realmConnection->SetPacketCallback(onPacket);
-        m_realmConnection->SetDisconnectCallback(onDisconnect);
-    }
+        if (std::shared_ptr<RealBot> self = weakSelf.lock())
+        {
+            self->Post([self, kind, generation]()
+            {
+                if (generation == self->m_connectionGeneration)
+                    self->OnConnectionLost(kind);
+            });
+        }
+    };
+    return callbacks;
+}
+
+void RealBot::AttachConnection(BotConnectionKind kind, std::shared_ptr<BotWorldConnection> connection)
+{
+    (kind == BotConnectionKind::Realm ? m_realmConnection : m_instanceConnection) = std::move(connection);
+}
+
+std::shared_ptr<BotWorldConnection> RealBot::GetConnection(BotConnectionKind kind) const
+{
+    return kind == BotConnectionKind::Realm ? m_realmConnection : m_instanceConnection;
 }
 
 void RealBot::CloseConnections()
 {
-    if (m_connection)
+    ++m_connectionGeneration;
+
+    // Detach the callbacks first: closing must not report a "connection lost" for a close we
+    // asked for.
+    for (std::shared_ptr<BotWorldConnection>* connection : { &m_instanceConnection, &m_realmConnection })
     {
-        m_connection->SetPacketCallback(nullptr);
-        m_connection->SetDisconnectCallback(nullptr);
-        m_connection->Close();
-        m_connection.reset();
+        if (*connection)
+        {
+            (*connection)->SetPacketCallback(nullptr);
+            (*connection)->SetDisconnectCallback(nullptr);
+            (*connection)->Close();
+            connection->reset();
+        }
     }
-    if (m_realmConnection)
+}
+
+void RealBot::OnConnectionLost(BotConnectionKind kind)
+{
+    // Losing a world connection while the login is still running is a failed login, not a
+    // disconnect: the bot never got anywhere to be disconnected from.
+    if (m_stage >= BotStage::WorldConnecting && m_stage <= BotStage::EnteringWorld)
     {
-        m_realmConnection->SetPacketCallback(nullptr);
-        m_realmConnection->SetDisconnectCallback(nullptr);
-        m_realmConnection->Close();
-        m_realmConnection.reset();
+        m_lastError = std::string(kind == BotConnectionKind::Realm ? "realm" : "instance")
+            + " connection closed during " + BotStageName(m_stage);
+        SetStage(BotStage::Failed);
+        return;
     }
+
+    SetStage(BotStage::Disconnected);
 }
 
 void RealBot::Post(std::function<void()> fn)
 {
     m_commands.add(std::move(fn));
+
+    m_wakePending = true;
+    if (m_wakeCallback)
+        m_wakeCallback();
 }
 
 void RealBot::QueueIncoming(BotPacket packet)
@@ -102,16 +141,57 @@ void RealBot::QueueIncoming(BotPacket packet)
     m_incoming.add(std::move(packet));
 }
 
-void RealBot::SendRaw(BotPacket packet)
+namespace
 {
+// Opcodes the client only ever sends on the Realm connection: the handshake and the character
+// screen, everything before SMSG_CONNECT_TO. Anything else follows the world session to the
+// Instance connection once there is one (CMSG_AUTH_CONTINUED_SESSION is the Instance's own
+// handshake and is always sent with an explicit connection).
+bool IsRealmOnlyOpcode(uint32 opcode)
+{
+    switch (opcode)
+    {
+        case CLASSIC_CMSG_AUTH_SESSION:
+        case CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK:
+        case CLASSIC_CMSG_ENUM_CHARACTERS:
+        case CLASSIC_CMSG_CREATE_CHARACTER:
+        case CLASSIC_CMSG_PLAYER_LOGIN:
+        case CLASSIC_CMSG_CONNECT_TO_FAILED:
+            return true;
+        default:
+            return false;
+    }
+}
+}
+
+void RealBot::SendRaw(BotPacket packet, std::optional<BotConnectionKind> connection, std::array<uint8, 32> const* armEncryption)
+{
+    if (connection)
+        packet.Connection = *connection;
+    else if (!IsRealmOnlyOpcode(packet.Opcode) && m_instanceConnection)
+        packet.Connection = BotConnectionKind::Instance;
+    else
+        packet.Connection = BotConnectionKind::Realm;
+
     BotPacketAction action = m_brain.DispatchPacket(*m_context, packet, BotPacketDir::Outgoing);
     if (action == BotPacketAction::Drop)
         return;
 
     LogPacket(packet, BotPacketDir::Outgoing);
 
-    if (m_connection)
-        m_connection->SendRaw(packet.Opcode, packet.Data);
+    if (std::shared_ptr<BotWorldConnection> target = GetConnection(packet.Connection))
+    {
+        if (armEncryption)
+        {
+            AES_GCM::Key key;
+            std::copy(armEncryption->begin(), armEncryption->end(), key.begin());
+            target->SendRaw(packet.Opcode, packet.Data, &key);
+        }
+        else
+        {
+            target->SendRaw(packet.Opcode, packet.Data);
+        }
+    }
 
     m_sentPackets.push_back(std::move(packet));
 }
@@ -120,7 +200,7 @@ void RealBot::Disconnect(bool clean)
 {
     m_disconnectRequested = true;
 
-    if (clean && m_connection)
+    if (clean && m_stage == BotStage::InWorld && HasConnection(BotConnectionKind::Instance))
     {
         SetStage(BotStage::LoggingOut);
         Send(ClassicLogoutRequest{});
@@ -142,6 +222,14 @@ void RealBot::ProcessCommands()
 
 void RealBot::ProcessIncoming(uint32 diff)
 {
+    // Between packets the brain gets a zero-time update, so a routine whose wait was just satisfied
+    // (or whose ctx.Run child just finished) has resumed and registered its next await before the
+    // next packet is dispatched. Without it a server sending two packets back to back -- an
+    // SMSG_RESUME_COMMS then SMSG_LOGIN_VERIFY_WORLD -- would have the second dispatched to nobody,
+    // the routine only reaching its next await at the end of the tick. Posted completions (a
+    // connect finishing) get the same treatment from the update before the first packet.
+    m_brain.Update(*m_context, 0);
+
     BotPacket packet;
     while (m_incoming.next(packet))
     {
@@ -164,6 +252,8 @@ void RealBot::ProcessIncoming(uint32 diff)
         {
             ApplyDefaultHandling(packet, BotPacketDir::Incoming);
         }
+
+        m_brain.Update(*m_context, 0);
     }
 }
 
@@ -182,7 +272,10 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             ClassicPong pong;
             if (pong.Read(body) && m_pingInFlight && pong.Serial == m_pingSerial)
             {
-                m_latencyMs = m_elapsedMs - m_pingSentAtMs;
+                // Measured on the wall clock, in whole milliseconds rounded up, so a localhost round
+                // trip under 1ms reads as 1: 0 keeps meaning "never measured".
+                auto const roundTrip = std::chrono::steady_clock::now() - m_pingSentAt;
+                m_latencyMs = uint32(std::max<int64>(1, (std::chrono::duration_cast<std::chrono::microseconds>(roundTrip).count() + 999) / 1000));
                 m_pingInFlight = false;
             }
             break;
@@ -218,7 +311,9 @@ void RealBot::UpdateLogout(uint32 diff)
 
 void RealBot::UpdateKeepalive(uint32 diff)
 {
-    if (!m_connection)
+    // Only once the world session is up: mid-handshake the connections are not yet encrypted, and
+    // a ping there is a protocol violation, not a keepalive.
+    if (m_stage != BotStage::InWorld)
         return;
 
     uint32 const interval = RealBotConfig::PingIntervalMs();
@@ -233,7 +328,7 @@ void RealBot::UpdateKeepalive(uint32 diff)
     ClassicPing ping;
     ping.Serial = ++m_pingSerial;
     ping.Latency = m_latencyMs;
-    m_pingSentAtMs = m_elapsedMs;
+    m_pingSentAt = std::chrono::steady_clock::now();
     m_pingInFlight = true;
     Send(ping);
 
@@ -262,7 +357,15 @@ RealBotInfo RealBot::GetPublishedInfo() const
 void RealBot::LogPacket(BotPacket const& packet, BotPacketDir dir)
 {
     if (m_packetLog)
-        m_packetLog->Write(m_elapsedMs, dir, packet.Opcode, packet.Data);
+        m_packetLog->Write(m_elapsedMs, dir, packet.Connection, packet.Opcode, packet.Data);
+}
+
+void RealBot::TickNow()
+{
+    auto const now = std::chrono::steady_clock::now();
+    uint32 const diff = uint32(std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastTickTime).count());
+    m_lastTickTime = now;
+    Tick(diff);
 }
 
 void RealBot::Tick(uint32 diff)

@@ -66,7 +66,16 @@ left to do (`login` holds at `InWorld`; `idle` holds immediately).
 
 `BotContext` awaitables (`Behavior/BotContext.h`, `Coroutines/BotAwaitables.h`):
 
-- `ctx.Send(packet)` / `ctx.RawPacket(opcode, timeoutMs)` -- send/await one packet.
+- `ctx.Send(packet[, connection])` / `ctx.RawPacket(opcode, timeoutMs)` -- send/await one packet.
+  Every world connection (`BotConnectionKind::Realm` / `Instance`) delivers into the bot's inbox, so
+  a `BotPacket` carries the connection it arrived on or is bound for. `Send` picks the connection
+  from the opcode by default (the handshake and character-screen opcodes go to Realm, everything
+  else to Instance once there is one) unless told which. `ctx.RawPacket({opcodes...}, timeoutMs)`
+  waits for the first of several.
+- `ctx.Connect(kind, address, port, timeoutMs)` -> `BotConnectResult` -- opens a world connection the
+  bot owns from the first byte. `ctx.SendAndArmEncryption(packet, kind, key)` sends the
+  `CMSG_ENTER_ENCRYPTED_MODE_ACK` and arms that connection's encryption as it goes out (only if it
+  really goes out: a hook that drops the ack leaves the connection unarmed).
 - `ctx.Packet<T>(timeoutMs[, predicate])` -> `std::optional<T>` -- **observes**, never consumes;
   the bot's own default handling (and any other task's hook) still sees the same packet unless the
   awaiting/hooking task returns `BotPacketAction::Handled`.
@@ -74,14 +83,25 @@ left to do (`login` holds at `InWorld`; `idle` holds immediately).
 - `ctx.Run("name", args)` / `ctx.Run(routine)` -> `BotTaskResult` -- run another task to completion
   on top of this one, like calling a function.
 - `ctx.Hold()` -- suspend until popped (removal, or the whole brain cleared) or disconnected.
-- `ctx.Login(options)` -> `BotLogin::Result` -- what the built-in `login` task's whole body is; see
-  "What vibemangos needs during world entry" below for what it's actually doing.
+- `ctx.Login(options)` -> `BotLogin::Result` -- the Battle.net half of the built-in `login` task
+  (portal, RPC logon, realm join); the world half is `BotWorldLoginRoutine`, run with `ctx.Run`. See
+  "What vibemangos needs during world entry" below for what they are actually doing.
 
 `TestRoutine`'s free functions (`WhenAll`/`WhenAny`, over a `std::vector<Awaiter>` or over a range
 with a function producing one awaiter per element -- for the latter, the function's parameter type
 must match the range's own element type exactly, e.g. `std::unique_ptr<TestBot>&` for a
 `std::vector<std::unique_ptr<TestBot>>`, not `TestBot&`) let a scenario coordinate several bots
 without threads or polling in the test body itself.
+
+**Ordering guarantee.** A packet-driven wait resumes its routine *inside* the dispatch that satisfied
+it, and `RealBot::Tick` gives the brain a zero-time update between one incoming packet and the next
+(and before the first, after posted completions such as a finished connect). So a routine, or a
+routine's `ctx.Run` parent, has registered its next `co_await` before the packet after the one that
+woke it is dispatched -- a server sending `SMSG_RESUME_COMMS` and `SMSG_LOGIN_VERIFY_WORLD` in one
+write is not a race. It orders packets against awaits; it is not a buffer, so a packet nobody is
+awaiting at that moment is gone (hooks and the packet log still saw it).
+`BotBrain::Clear()` called from inside such a resume (a routine disconnecting or failing its own
+bot) waits until the dispatch or update returns, so a routine is never destroyed while it runs.
 
 **Tested without a server** through `TestFakeBot` (`tests/support/TestFakeBot.h`): a `RealBot` with
 no connections, ticked by hand, packets injected directly. Exercises resumption-only-from-`Tick`,
@@ -168,13 +188,23 @@ Disconnected -> LoginPortal -> LoginRpc -> RealmSelect -> WorldConnecting -> Wor
              -> CharSelect -> EnteringWorld -> InWorld -> (LoggingOut ->) Disconnected
                                                         \-> Failed
 ```
-(`Core/BotStage.h`.) `RealBotLoginOptions::StopAt` (default `BotStage::InWorld`, meaning "don't
-stop early") holds the `login` routine once that stage is reached, *before* that stage's own
-network step runs -- e.g. `StopAt(CharSelect)` resolves a character but never sends
-`CMSG_PLAYER_LOGIN`. Each stoppable value is checked at its own stage's step (`BotLogin.cpp`,
-`BotBnetLogin.cpp`, `BotCharSelect.cpp`: grep `m_options.StopAt`);
-`tests/conformance/support/TestBot.h`'s `TestBotOptions().StopAt(...)` is how a conformance scenario uses it (`RealBotMgr::AddWithOverrides` is the entry point behind
-it -- the plain runner/.realbot `add <target>` still goes through the unmodified `Add`).
+(`Core/BotStage.h`.) A bot's stage is **the step in progress**, and `RealBotLoginOptions::StopAt`
+(default `BotStage::InWorld`, meaning "don't stop early") holds the `login` routine as that stage
+begins, *before* any of that stage's own work: `StopAt(LoginRpc)` has a portal login ticket and has
+not touched the RPC port; `StopAt(WorldConnecting)` has joined a realm and opened no world socket;
+`StopAt(WorldHandshake)` has a connected socket and has answered nothing (the server's
+`SMSG_AUTH_CHALLENGE` reaches hooks and the packet log, unanswered); `StopAt(CharSelect)` has a
+successful `SMSG_AUTH_RESPONSE` and an encrypted connection; `StopAt(EnteringWorld)` has a resolved
+character and has not sent `CMSG_PLAYER_LOGIN`. Each stoppable value is checked where its stage
+begins (`BotLogin.cpp`, `BotBnetLogin.cpp`, `Net/BotWorldLogin.cpp`: grep `StopAt`);
+`tests/conformance/support/TestBot.h`'s `TestBotOptions().StopAt(...)` is how a conformance scenario
+uses it (`RealBotMgr::AddWithOverrides` is the entry point behind it -- the plain runner/.realbot
+`add <target>` still goes through the unmodified `Add`). A held bot keeps its connections open, so a
+scenario can drive the rest of the login by hand with `TestBot::Send`.
+
+A world connection closing while the login is running (`WorldConnecting` through `EnteringWorld`)
+fails the bot at that stage (`Failed`, `FailedStage` set, `LastError` "realm connection closed
+during WorldHandshake"); after `InWorld` it is a `Disconnected`/`ConnectionLost`.
 
 A bot's `RealBotInfo::FailedStage` records what stage it was at right before `Failed`
 ("`info`" prints "`Failed (was CharSelect)`"), and `BotDisconnectReason` (`None` / `Requested` /
@@ -220,7 +250,7 @@ cata_classic's source directly, since it looked at first like it might be a vibe
    received on the Instance connection and skipped, unparsed.
 
 Not yet ported: the up-to-5-attempt `CMSG_CONNECT_TO_FAILED` retry
-(`Net/BotInstanceConnect.h`'s own `TODO(port)`) -- a failed Instance connect just fails the whole
+(`Net/BotWorldLogin.h`'s `TODO(port)`) -- a failed Instance connect just fails the whole
 login instead. `RealBotTarget::ConnectTimeoutMs`/`StageTimeoutMs` are read and stored but not
 consumed anywhere yet; every real connect attempt hardcodes 10 seconds
 (`Net/BotConnector.h`'s callers).
@@ -270,6 +300,14 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   `ASAN_OPTIONS=detect_leaks=0`. The intermittent `BotBnetConnectionTests` crash from Phase 1 did not
   reproduce in 50 whole-binary runs under ASan, 50 `ctest -L unit --repeat until-fail:50` passes, or
   100 rapid whole-binary Release runs (2026-09-24); nothing was changed for it.
+- The world half of the login has its own scripted fake, `tests/support/FakeWorldServer.h`: one
+  straight-line script per accepted connection over a blocking `FakeWorldPeer` (V2 banner, framing,
+  `PacketCrypt`, typed `Send`/`Expect`), with the Realm and Instance handshakes as ready-made
+  functions. It only knows the wire protocol, so the same scripts test the handshake however the bot
+  is built. `TestBotDriver` runs a real `RealBot` on a ticking thread against it
+  (`BotWorldLoginTests.cpp`: every handshake packet is checked to reach hooks, in order, on the right
+  connection; `BotLoginTests.cpp` runs the whole built-in `login` task against fake Battle.net
+  servers plus this).
 - **`tests-conformance`** (`BUILD_TESTING`, `ENABLE_REALBOTS`): talks to a real target over the
   network, driven through `TestBot`/`TestBotOptions` (`tests/conformance/support/`), the same
   awaitable vocabulary as `BotContext` bridged across threads (`Stage`/`Disconnected` poll
@@ -316,15 +354,6 @@ game client (blocked on having one available) and `tests-conformance`'s "ten bot
 scenario (needs ten free accounts on the live target; this dev environment has one). Concrete gaps,
 tracked and scheduled in `bot-phase-2.md`:
 
-- Packets still aren't observable while a bot is mid-handshake (`WorldConnecting` through
-  `CharSelect`) -- `BotWorldHandshake`/`BotCharSelect` still take a connection's packet callback
-  over exclusively rather than routing through `RealBot`'s normal dispatch pipe the way everything
-  from `InWorld` onward does. Rewriting those two as `ctx`-driven coroutines would fix it, but is a
-  bigger, higher-risk change than anything attempted so far.
-- `StopAt(EnteringWorld)`, and `BotInstanceConnect` (the class driving the `SMSG_CONNECT_TO`
-  redirect) more generally, have zero test coverage anywhere -- unit or conformance. A fake
-  "Instance" world socket (mirroring `tests/unit/realbots/BotWorldHandshakeTests.cpp`'s style, but
-  continuing past the handshake into the redirect) would close both gaps at once.
 - `RealBotTarget::ConnectTimeoutMs`/`StageTimeoutMs` are unconsumed (see above).
 - Phase 2 (`bot-plan.md`): more `[protocol]` scenarios (reconnect, timeouts under load, many bots
   at once for real), TrinityCore as a routine cross-check rather than an emergency-only one, and

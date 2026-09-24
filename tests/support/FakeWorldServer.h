@@ -33,6 +33,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 // One completion of an async IO call, waited on from a script thread.
@@ -104,22 +105,8 @@ class FakeWorldPeer
         // step, see PacketCrypt.h).
         bool SendPacket(uint32 opcode, ByteBuffer const& body)
         {
-            std::vector<uint8> plaintext(sizeof(uint32) + body.size());
-            std::memcpy(plaintext.data(), &opcode, sizeof(opcode));
-            if (!body.empty())
-                std::memcpy(plaintext.data() + sizeof(uint32), body.contents(), body.size());
-
-            AES_GCM::Tag tag;
-            if (!m_crypt.EncryptSend(plaintext.data(), plaintext.size(), tag))
-                return Fail("EncryptSend failed");
-
-            std::vector<uint8> framed(sizeof(WireHeader) + plaintext.size());
-            WireHeader header{};
-            header.size = uint32(plaintext.size());
-            std::memcpy(header.tag, tag, sizeof(header.tag));
-            std::memcpy(framed.data(), &header, sizeof(header));
-            std::memcpy(framed.data() + sizeof(header), plaintext.data(), plaintext.size());
-            return WriteAll(std::move(framed));
+            std::vector<uint8> framed;
+            return FramePacket(opcode, body, framed) && WriteAll(std::move(framed));
         }
 
         template<typename T>
@@ -128,6 +115,21 @@ class FakeWorldPeer
             ByteBuffer body;
             packet.Write(body);
             return SendPacket(T::Opcode, body);
+        }
+
+        // Frames every packet in order and writes them as one chunk, so the client's socket
+        // delivers them back to back (what a busy server does).
+        bool SendBatch(std::vector<std::pair<uint32, ByteBuffer>> const& packets)
+        {
+            std::vector<uint8> all;
+            for (auto const& [opcode, body] : packets)
+            {
+                std::vector<uint8> framed;
+                if (!FramePacket(opcode, body, framed))
+                    return false;
+                all.insert(all.end(), framed.begin(), framed.end());
+            }
+            return WriteAll(std::move(all));
         }
 
         // Reads and decrypts the next client packet. false on timeout, IO error or a bad tag.
@@ -226,6 +228,26 @@ class FakeWorldPeer
             uint8 tag[12];
         };
 #pragma pack(pop)
+
+        bool FramePacket(uint32 opcode, ByteBuffer const& body, std::vector<uint8>& framed)
+        {
+            std::vector<uint8> plaintext(sizeof(uint32) + body.size());
+            std::memcpy(plaintext.data(), &opcode, sizeof(opcode));
+            if (!body.empty())
+                std::memcpy(plaintext.data() + sizeof(uint32), body.contents(), body.size());
+
+            AES_GCM::Tag tag;
+            if (!m_crypt.EncryptSend(plaintext.data(), plaintext.size(), tag))
+                return Fail("EncryptSend failed");
+
+            framed.resize(sizeof(WireHeader) + plaintext.size());
+            WireHeader header{};
+            header.size = uint32(plaintext.size());
+            std::memcpy(header.tag, tag, sizeof(header.tag));
+            std::memcpy(framed.data(), &header, sizeof(header));
+            std::memcpy(framed.data() + sizeof(header), plaintext.data(), plaintext.size());
+            return true;
+        }
 
         static std::string Hex(uint32 value)
         {

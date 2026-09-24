@@ -1,7 +1,11 @@
 #include "BotAwaitables.h"
+#include <algorithm>
 
 RawPacketAwaiter::RawPacketAwaiter(RealBot&, uint32 opcode, uint32 timeoutMs)
-    : m_opcode(opcode), m_timeoutMs(timeoutMs) {}
+    : m_opcodes{ opcode }, m_timeoutMs(timeoutMs) {}
+
+RawPacketAwaiter::RawPacketAwaiter(RealBot&, std::vector<uint32> opcodes, uint32 timeoutMs)
+    : m_opcodes(std::move(opcodes)), m_timeoutMs(timeoutMs) {}
 
 bool RawPacketAwaiter::Poll(RealBot&, uint32 diffMs)
 {
@@ -10,7 +14,7 @@ bool RawPacketAwaiter::Poll(RealBot&, uint32 diffMs)
 
 bool RawPacketAwaiter::OnPacket(RealBot&, BotPacket const& packet, BotPacketDir dir)
 {
-    if (dir != BotPacketDir::Incoming || packet.Opcode != m_opcode)
+    if (dir != BotPacketDir::Incoming || std::find(m_opcodes.begin(), m_opcodes.end(), packet.Opcode) == m_opcodes.end())
         return false;
 
     m_result = packet;

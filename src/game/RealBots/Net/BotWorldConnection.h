@@ -46,7 +46,11 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
             SendRaw(T::Opcode, body);
         }
 
-        void SendRaw(uint32 opcode, ByteBuffer const& body);
+        // armEncryption: if set, PacketCrypt is armed with this key right after this packet is
+        // encoded (so it goes out in the old, unarmed state) and before it is queued to the socket
+        // -- the CMSG_ENTER_ENCRYPTED_MODE_ACK case. Arming from another thread after a plain
+        // SendRaw would race the server's already-encrypted reply arriving on the IO thread.
+        void SendRaw(uint32 opcode, ByteBuffer const& body, AES_GCM::Key const* armEncryption = nullptr);
 
         // Retargets who gets the next incoming packet/disconnect -- how a connection is handed
         // from one login stage to the next (e.g. BotWorldHandshake -> BotCharSelect) before

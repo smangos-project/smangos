@@ -77,6 +77,11 @@ RawPacketAwaiter BotContext::RawPacket(uint32 opcode, uint32 timeoutMs)
     return RawPacketAwaiter(m_bot, opcode, timeoutMs);
 }
 
+RawPacketAwaiter BotContext::RawPacket(std::vector<uint32> opcodes, uint32 timeoutMs)
+{
+    return RawPacketAwaiter(m_bot, std::move(opcodes), timeoutMs);
+}
+
 StageAwaiter BotContext::Stage(BotStage stage, uint32 timeoutMs)
 {
     return StageAwaiter(m_bot, stage, timeoutMs);

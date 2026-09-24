@@ -113,10 +113,10 @@ TestBot::~TestBot()
         sRealBotMgr.Remove(m_name);
 }
 
-void TestBot::SendRawPacket(BotPacket packet) const
+void TestBot::SendRawPacket(BotPacket packet, std::optional<BotConnectionKind> connection) const
 {
     std::shared_ptr<RealBot> bot = m_bot;
-    bot->Post([bot, packet = std::move(packet)]() mutable { bot->SendRaw(std::move(packet)); });
+    bot->Post([bot, connection, packet = std::move(packet)]() mutable { bot->SendRaw(std::move(packet), connection); });
 }
 
 void TestBot::Disconnect(bool clean) const

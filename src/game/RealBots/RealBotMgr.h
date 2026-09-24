@@ -9,6 +9,7 @@
 #include "RealBot.h"
 #include "RealBotTarget.h"
 #include <atomic>
+#include <condition_variable>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -101,13 +102,26 @@ class RealBotMgr
             std::string AccountName;
         };
 
+        // What a worker sleeps on: it wakes at its regular tick or as soon as any bot pinned to it
+        // has work (RealBot::SetWakeCallback), so a login step is answered in microseconds instead
+        // of at the next 100ms tick -- vibemangos sends SMSG_CONNECT_TO in parallel with loading the
+        // character, and a client slow to open the Instance connection loses that race.
+        struct WorkerSignal
+        {
+            std::mutex Mutex;
+            std::condition_variable Cv;
+            bool Wake = false;
+        };
+
         void WorkerLoop(uint32 workerIndex);
+        void WakeWorker(uint32 workerIndex);
         std::string AddWithOptions(RealBotLoginOptions options, std::string name);
         void ReleaseLease(BotLease const& lease);
 
         std::unique_ptr<IO::IoContext> m_ioContext;
         std::vector<std::thread> m_ioThreads;
         std::vector<std::thread> m_workerThreads;
+        std::vector<std::unique_ptr<WorkerSignal>> m_workerSignals;
         uint32 m_workerCount = 1;
         std::atomic<bool> m_running{ false };
 
