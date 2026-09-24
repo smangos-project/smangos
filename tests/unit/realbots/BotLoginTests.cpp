@@ -994,6 +994,90 @@ TEST_CASE("BotLogin: StopAt LoginPortal holds immediately, without any network c
     ioThread.join();
 }
 
+TEST_CASE("BotLogin: StopAt WorldConnecting holds after RealmSelect, before opening the world socket", "[botlogin]")
+{
+    constexpr uint16_t RestPort = 28556;
+    constexpr uint16_t RpcPort = 28557;
+    // Deliberately nothing listens here -- StopAt(WorldConnecting) must never try to reach it.
+    constexpr uint16_t UnroutableWorldPort = 1;
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    SelfSignedCert serverCert = GenerateSelfSignedCert();
+    SSL_CTX* serverSslCtx = SSL_CTX_new(TLS_server_method());
+    REQUIRE(serverSslCtx != nullptr);
+    REQUIRE(SSL_CTX_use_certificate(serverSslCtx, serverCert.cert) == 1);
+    REQUIRE(SSL_CTX_use_PrivateKey(serverSslCtx, serverCert.key) == 1);
+
+    auto restAcceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", RestPort);
+    REQUIRE(restAcceptor != nullptr);
+    WaitFlag restServerDone;
+    std::thread restServerThread;
+    restAcceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        restServerThread = std::thread([&restServerDone, &serverSslCtx, descriptor = std::move(descriptor)]() mutable
+        {
+            RunFakeLoginRestServer(std::move(descriptor), serverSslCtx, restServerDone);
+        });
+    });
+
+    auto rpcAcceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", RpcPort);
+    REQUIRE(rpcAcceptor != nullptr);
+    WaitFlag rpcServerDone;
+    WaitFlag joinSessionKeyReady;
+    std::vector<uint8> joinSessionKey;
+    std::thread rpcServerThread;
+    rpcAcceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        rpcServerThread = std::thread([&rpcServerDone, &serverSslCtx, &joinSessionKey, &joinSessionKeyReady, descriptor = std::move(descriptor)]() mutable
+        {
+            RunFakeBnetRpcServer(std::move(descriptor), serverSslCtx, UnroutableWorldPort, joinSessionKey, joinSessionKeyReady, rpcServerDone);
+        });
+    });
+
+    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
+
+    BotLogin::Options options;
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = RestPort;
+    options.RpcPort = RpcPort;
+    options.AccountName = TEST_ACCOUNT;
+    options.Password = TEST_PASSWORD;
+    options.RealmName = TEST_REALM_NAME;
+    options.ClientBuild = 58797;
+    options.StopAt = BotStage::WorldConnecting;
+
+    WaitFlag done;
+    BotLogin::Result result;
+    login->Login(options, [&](BotLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(10)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.Connection == nullptr);
+
+    restAcceptor->ClosePortAndStopAcceptingNewConnections();
+    rpcAcceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+
+    REQUIRE(restServerDone.WaitFor(std::chrono::seconds(5)));
+    REQUIRE(rpcServerDone.WaitFor(std::chrono::seconds(5)));
+    if (restServerThread.joinable())
+        restServerThread.join();
+    if (rpcServerThread.joinable())
+        rpcServerThread.join();
+
+    SSL_CTX_free(serverSslCtx);
+}
+
 TEST_CASE("BotLogin: StopAt WorldHandshake holds after the auth response, before CharSelect", "[botlogin]")
 {
     constexpr uint16_t RestPort = 28553;
