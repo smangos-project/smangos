@@ -923,6 +923,8 @@ struct ClassicLogoutComplete
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_COMPLETE;
 
+    // May carry a SwitchGameMode bit on the wire; unread here since nothing needs it and every
+    // packet is length-framed, so a trailing byte is safe to ignore.
     bool Read(ByteBuffer&) { return true; }
     void Write(ByteBuffer&) const {}
 };
