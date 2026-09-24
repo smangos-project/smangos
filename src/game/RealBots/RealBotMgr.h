@@ -24,10 +24,11 @@
 // std::unique_ptr<IO::IoContext>'s destructor -- a complete type -- right there, not just in
 // RealBotMgr.cpp.
 
-// Owns every bot's IoContext, IO thread(s) and worker thread, so both hosts (mangosd, `.realbot`;
-// contrib/realbotrunner) start it the same way (bot-phase-1.md, "Framework"). Phase 1's version:
-// a single worker thread ticking every bot in turn (bot-phase-1.md step 5's "minimal RealBotMgr
-// (one worker)") -- the pinned worker pool (RealBots.WorkerThreads > 1) is step 6.
+// Owns every bot's IoContext, IO thread(s) and worker pool, so both hosts (mangosd, `.realbot`;
+// contrib/realbotrunner) start it the same way (bot-phase-1.md, "Framework"). RealBots.WorkerThreads
+// worker threads each tick a fixed subset of bots (id % worker count, assigned once at Add and
+// never rebalanced -- bot-plan.md's "Workers: bot pinned to id % count"), on a jittered interval
+// (RealBots.TickIntervalMs +/- 20%) so many workers don't all wake up in lockstep.
 class RealBotMgr
 {
     public:
@@ -69,13 +70,14 @@ class RealBotMgr
             std::string AccountName;
         };
 
-        void WorkerLoop();
+        void WorkerLoop(uint32 workerIndex);
         std::string AddWithOptions(RealBotLoginOptions options, std::string name);
         void ReleaseLease(BotLease const& lease);
 
         std::unique_ptr<IO::IoContext> m_ioContext;
         std::vector<std::thread> m_ioThreads;
-        std::thread m_workerThread;
+        std::vector<std::thread> m_workerThreads;
+        uint32 m_workerCount = 1;
         std::atomic<bool> m_running{ false };
 
         // Populated once by Start() from RealBots.Targets, before any thread but this one runs --
@@ -87,6 +89,8 @@ class RealBotMgr
         mutable std::mutex m_botsLock;
         std::unordered_map<std::string, std::shared_ptr<RealBot>> m_bots;
         std::unordered_map<std::string, BotLease> m_botLeases;
+        // Which worker thread ticks each bot -- id % m_workerCount, fixed at Add time.
+        std::unordered_map<std::string, uint32> m_botWorkerIndex;
         uint32 m_nextId = 1;
 };
 

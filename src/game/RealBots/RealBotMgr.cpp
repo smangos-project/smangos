@@ -7,9 +7,22 @@
 #include "Tasks/BuiltinBotTasks.h"
 #include <algorithm>
 #include <chrono>
+#include <random>
 #include <utility>
 
 INSTANTIATE_SINGLETON_1(RealBotMgr);
+
+namespace
+{
+// +/- 20% of baseMs (bot-plan.md, "Workers: ... jittered tick"), so several worker threads
+// (or several RealBotMgr-owning processes) don't all wake up in lockstep.
+uint32 JitteredTickMs(uint32 baseMs)
+{
+    static thread_local std::mt19937 rng{ std::random_device{}() };
+    std::uniform_real_distribution<double> jitter(0.8, 1.2);
+    return uint32(std::max(1.0, double(baseMs) * jitter(rng)));
+}
+}
 
 RealBotMgr::~RealBotMgr() = default;
 
@@ -37,9 +50,11 @@ void RealBotMgr::Start()
     for (uint32 i = 0; i < ioThreads; ++i)
         m_ioThreads.emplace_back([this]() { m_ioContext->RunUntilShutdown(); });
 
-    m_workerThread = std::thread([this]() { WorkerLoop(); });
+    m_workerCount = std::max<uint32>(1, RealBotConfig::WorkerThreads());
+    for (uint32 i = 0; i < m_workerCount; ++i)
+        m_workerThreads.emplace_back([this, i]() { WorkerLoop(i); });
 
-    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "RealBotMgr: started (%u IO thread(s))", ioThreads);
+    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "RealBotMgr: started (%u IO thread(s), %u worker(s))", ioThreads, m_workerCount);
 }
 
 void RealBotMgr::Stop()
@@ -48,8 +63,10 @@ void RealBotMgr::Stop()
         return;
 
     m_running = false;
-    if (m_workerThread.joinable())
-        m_workerThread.join();
+    for (std::thread& t : m_workerThreads)
+        if (t.joinable())
+            t.join();
+    m_workerThreads.clear();
 
     // Bots' connections close while the IoContext is still running, so their async Close()
     // actually completes instead of leaking a half-closed socket.
@@ -66,7 +83,7 @@ void RealBotMgr::Stop()
     m_ioContext.reset();
 }
 
-void RealBotMgr::WorkerLoop()
+void RealBotMgr::WorkerLoop(uint32 workerIndex)
 {
     uint32 const tickMs = std::max<uint32>(1, RealBotConfig::TickIntervalMs());
     auto last = std::chrono::steady_clock::now();
@@ -80,10 +97,14 @@ void RealBotMgr::WorkerLoop()
         {
             std::lock_guard<std::mutex> lock(m_botsLock);
             for (auto& [name, bot] : m_bots)
-                bot->Tick(diff);
+            {
+                auto const it = m_botWorkerIndex.find(name);
+                if (it != m_botWorkerIndex.end() && it->second == workerIndex)
+                    bot->Tick(diff);
+            }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(tickMs));
+        std::this_thread::sleep_for(std::chrono::milliseconds(JitteredTickMs(tickMs)));
     }
 }
 
@@ -129,8 +150,10 @@ std::string RealBotMgr::Add(std::string const& targetName, std::string name, std
 
 std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string name)
 {
+    uint32 const id = m_nextId;
+
     if (name.empty())
-        name = options.AccountName.empty() ? ("bot" + std::to_string(m_nextId)) : options.AccountName;
+        name = options.AccountName.empty() ? ("bot" + std::to_string(id)) : options.AccountName;
 
     std::shared_ptr<RealBot> bot = std::make_shared<RealBot>();
     bot->SetName(name);
@@ -145,6 +168,7 @@ std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string 
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
         m_bots[name] = bot;
+        m_botWorkerIndex[name] = id % m_workerCount;
     }
     ++m_nextId;
 
@@ -162,6 +186,7 @@ void RealBotMgr::Remove(std::string const& name)
             return;
         bot = std::move(it->second);
         m_bots.erase(it);
+        m_botWorkerIndex.erase(name);
 
         auto leaseIt = m_botLeases.find(name);
         if (leaseIt != m_botLeases.end())
@@ -188,6 +213,7 @@ void RealBotMgr::RemoveAll()
         m_bots.clear();
         leases = std::move(m_botLeases);
         m_botLeases.clear();
+        m_botWorkerIndex.clear();
     }
 
     for (auto const& [name, lease] : leases)
