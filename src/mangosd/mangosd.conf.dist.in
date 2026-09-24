@@ -3403,8 +3403,8 @@ DynamicRespawn.PlayersMaxLevelDiff = 0
 #        The client build/version <name> expects bots to present during login.
 #
 #    RealBots.Target.<name>.Tags
-#        Space-separated tags (e.g. "protocol gameplay") -- what the future conformance suite
-#        filters scenarios by; unused outside that suite so far.
+#        Space-separated tags (e.g. "protocol gameplay") -- what "tests-conformance --target
+#        <name>" filters scenarios by; unused outside that suite so far.
 #
 #    RealBots.Target.<name>.Accounts
 #        Space-separated "name:pass" existing Battle.net logins, leased one per bot.
