@@ -29,7 +29,8 @@ RealBots.Target.vibemangos.RpcPort               = 1119
 RealBots.Target.vibemangos.RealmName             = "VibeMangos"
 RealBots.Target.vibemangos.ClientBuild           = 58797
 RealBots.Target.vibemangos.ClientVersion         = "1.15.6"
-RealBots.Target.vibemangos.Tags                  = "protocol gameplay"    # + "slow load" for the full run
+# Add "slow load" to the Tags below for the full run.
+RealBots.Target.vibemangos.Tags                  = "protocol gameplay"
 RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass bot3@bots:pass bot4@bots:pass bot5@bots:pass bot6@bots:pass bot7@bots:pass bot8@bots:pass bot9@bots:pass bot10@bots:pass"
 RealBots.Target.vibemangos.VerifyServerSignature = 1
 RealBots.Target.vibemangos.ConnectTimeoutMs      = 10000
