@@ -1,0 +1,26 @@
+# RealBots runner config (bot-phase-1.md, "Targets"). Copy to realbotrunner.conf, fill in real
+# accounts, and pass it with `-c realbotrunner.conf`. Global RealBots.* keys not listed here fall
+# back to RealBotConfig's defaults.
+
+RealBots.Targets = "vibemangos"
+
+RealBots.Target.vibemangos.LoginAddress          = "127.0.0.1"
+RealBots.Target.vibemangos.RestPort              = 8081
+RealBots.Target.vibemangos.RpcPort               = 1119
+RealBots.Target.vibemangos.RealmName             = "VibeMangos"
+RealBots.Target.vibemangos.ClientBuild           = 58797
+RealBots.Target.vibemangos.ClientVersion         = "1.15.6"
+RealBots.Target.vibemangos.Tags                  = "protocol gameplay"
+RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass"
+RealBots.Target.vibemangos.VerifyServerSignature = 1
+RealBots.Target.vibemangos.ConnectTimeoutMs      = 10000
+RealBots.Target.vibemangos.StageTimeoutMs        = 30000
+
+RealBots.IoThreads       = 1
+RealBots.WorkerThreads   = 1
+RealBots.TickIntervalMs  = 100
+RealBots.PingIntervalMs  = 5000
+RealBots.LogoutTimeoutMs = 5000
+RealBots.DefaultTarget   = "vibemangos"
+RealBots.PacketLog       = 0
+RealBots.PacketLogDir    = "realbots-packets"

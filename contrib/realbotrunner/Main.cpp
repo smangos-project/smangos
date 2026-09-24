@@ -6,16 +6,18 @@
 // clear" note about linking `game`'s script loader/world/database symbols -- nothing here needs
 // them).
 //
-// `RealBotTarget`/`BotAccountLease`/`RealBotCommands` (bot-phase-1.md step 6) don't exist yet, so
-// there is no multi-target config and no shared command implementation with `.realbot` chat
-// commands: a bot's login parameters are given inline on the "add" command line, and the console
-// loop below is this host's own, temporary until step 6 replaces it.
+// `RealBotCommands` (bot-phase-1.md step 6) doesn't exist yet, so there is no command
+// implementation shared with a future `.realbot` chat command: the console loop below is this
+// host's own, temporary until step 6 replaces it. `RealBotTarget`/`BotAccountLease` do exist, so
+// "add" takes a target name (RealBots.Target.<name>.* in the -c config) and leases one of its
+// configured accounts, rather than raw connection parameters on the command line.
 #include "BotStage.h"
 #include "BotTaskArgs.h"
 #include "Config/Config.h"
 #include "Crypto/InitializeCrypto.h"
 #include "Log.h"
 #include "RealBotMgr.h"
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <optional>
@@ -26,26 +28,6 @@ char const* g_mainLogFileName = "RealBotRunner.log";
 
 namespace
 {
-RealBotLoginOptions ParseLoginOptions(BotTaskArgs const& args)
-{
-    RealBotLoginOptions options;
-    options.LoginAddress = args.GetString("login", "127.0.0.1");
-    options.RestPort = uint16_t(args.GetUInt32("restport", 8081));
-    options.RpcPort = uint16_t(args.GetUInt32("rpcport", 1119));
-    options.AccountName = args.GetString("account");
-    options.Password = args.GetString("password");
-    options.RealmName = args.GetString("realm");
-    options.RealmId = args.GetUInt32("realmid", 0);
-    options.ClientBuild = int32_t(args.GetUInt32("build", 58797));
-    options.VerifyServerSignature = args.GetBool("verifysig", true);
-    options.CreateIfNone = args.GetBool("create", true);
-    options.CharacterName = args.GetString("character");
-    options.Race = uint8(args.GetUInt32("race", 0));
-    options.Class = uint8(args.GetUInt32("class", 0));
-    options.Gender = uint8(args.GetUInt32("gender", 0));
-    return options;
-}
-
 char const* StageName(BotStage stage)
 {
     switch (stage)
@@ -74,15 +56,29 @@ std::string TrimLeadingSpace(std::string s)
 void PrintHelp()
 {
     std::cout <<
-        "  add <key=value,...>        adds a bot; keys: account, password, login, restport,\n"
-        "                             rpcport, realm, realmid, build, character, race, class,\n"
-        "                             gender, create (0/1)\n"
+        "  targets                    lists every configured target and its free account count\n"
+        "  add <target> [count]       leases account(s) from <target> and adds that many bots\n"
         "  remove <name|all>          removes a bot\n"
         "  list                       lists every bot and its stage\n"
         "  info <name>                shows one bot's stage, latency, character, last error\n"
         "  task <name> <task> [args]  pushes a named task onto a running bot\n"
         "  help                       shows this text\n"
         "  quit                       stops every bot and exits\n";
+}
+
+void PrintTargets()
+{
+    for (RealBotTarget const& target : sRealBotMgr.GetTargets().All())
+    {
+        std::cout << target.Name << "\t" << target.LoginAddress << ":" << target.RestPort << "/" << target.RpcPort << "\ttags:";
+        for (std::string const& tag : target.Tags)
+            std::cout << " " << tag;
+
+        if (std::optional<std::pair<size_t, size_t>> counts = sRealBotMgr.GetLeaseCounts(target.Name))
+            std::cout << "\taccounts " << counts->first << "/" << counts->second << " free";
+
+        std::cout << "\n";
+    }
 }
 
 void HandleCommand(std::string const& line)
@@ -93,20 +89,34 @@ void HandleCommand(std::string const& line)
     if (verb.empty())
         return;
 
-    if (verb == "add")
+    if (verb == "targets")
     {
-        std::string rest;
-        std::getline(iss, rest);
-        BotTaskArgs const args = BotTaskArgs::Parse(TrimLeadingSpace(rest));
-        RealBotLoginOptions const options = ParseLoginOptions(args);
-        if (options.AccountName.empty() || options.Password.empty())
+        PrintTargets();
+    }
+    else if (verb == "add")
+    {
+        std::string targetName;
+        iss >> targetName;
+        uint32_t count = 1;
+        uint32_t parsedCount = 0;
+        if (iss >> parsedCount) // absent (or unparsable) leaves count at its default of 1
+            count = parsedCount;
+
+        if (targetName.empty())
         {
-            std::cout << "add needs at least account=...,password=...\n";
+            std::cout << "add needs a target name -- try 'targets'\n";
             return;
         }
 
-        std::string const name = sRealBotMgr.Add(options);
-        std::cout << "bot '" << name << "' is connecting\n";
+        for (uint32_t i = 0; i < std::max<uint32_t>(1, count); ++i)
+        {
+            std::string error;
+            std::string const name = sRealBotMgr.Add(targetName, "", &error);
+            if (name.empty())
+                std::cout << "add: " << error << "\n";
+            else
+                std::cout << "bot '" << name << "' is connecting\n";
+        }
     }
     else if (verb == "remove")
     {
