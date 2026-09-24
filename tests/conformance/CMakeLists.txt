@@ -37,6 +37,7 @@ add_executable(tests-conformance
   login/LoginTests.cpp
   world_entry/WorldEntryTests.cpp
   world_socket/WorldSocketTests.cpp
+  session/SessionTests.cpp
   framework/FrameworkTests.cpp
   TestMain.cpp
 )
