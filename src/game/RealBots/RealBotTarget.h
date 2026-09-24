@@ -31,6 +31,14 @@ struct RealBotTarget
     bool VerifyServerSignature = true;
     uint32_t ConnectTimeoutMs = 10000;
     uint32_t StageTimeoutMs = 30000;
+    // Conformance-suite knobs (bot-phase-2.md, "Targets"), read only by tests/conformance: how long
+    // the server may take to close a connection it has decided to reject (also the bound for a
+    // vanished client to be able to log in again), how long an in-world bot idling on default
+    // keepalives must stay connected, and the most bots a [load] scenario may use (0: as many
+    // accounts as the pool has).
+    uint32_t ServerCloseTimeoutMs = 30000;
+    uint32_t IdleSessionMs = 120000;
+    uint32_t LoadBots = 0;
 
     bool HasTag(std::string const& tag) const;
 

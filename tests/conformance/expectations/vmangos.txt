@@ -4,7 +4,14 @@
 # lines starting with '#' are comments.
 
 login: a bot reaches the world                                        | login server not ported (port-plan.md step 2)
+login: the portal issues a login ticket                               | login server not ported (port-plan.md step 2)
 login: wrong password fails at the login portal                       | login server not ported (port-plan.md step 2)
+login: an unknown account fails at the login portal                   | login server not ported (port-plan.md step 2)
+login: the RPC logon completes                                        | login server not ported (port-plan.md step 2)
+login: a forged login ticket is rejected at the RPC step              | login server not ported (port-plan.md step 2)
+login: the realm list contains the configured realm and parses        | login server not ported (port-plan.md step 2)
+login: realm join returns an address, a ticket and a server secret    | login server not ported (port-plan.md step 2)
+login: joining a realm that is not listed fails at realm select       | login server not ported (port-plan.md step 2)
 world_entry: an existing character resolves at CharSelect             | world socket not ported (port-plan.md step 3)
 world_entry: ping gets a pong with the same serial                    | world socket not ported (port-plan.md step 3)
 world_entry: the framework's own keepalive ping updates latency       | world socket not ported (port-plan.md step 3)

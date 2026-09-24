@@ -15,7 +15,7 @@ class BotPacketLog
     public:
         BotPacketLog(std::string const& dir, std::string const& botName);
 
-        void Write(uint32 timeMs, BotPacketDir dir, BotConnectionKind connection, uint32 opcode, ByteBuffer const& data);
+        void Write(uint32 timeMs, BotPacketDir dir, BotConnectionKind connection, uint32 opcode, ByteBuffer const& data, bool compressed = false);
 
     private:
         std::ofstream m_file;

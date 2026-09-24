@@ -46,6 +46,9 @@ struct RealBotLoginOptions
     // Holds the login routine at this stage instead of continuing past it -- InWorld (the
     // default) means "don't stop early" (bot-phase-1.md, "Login": "stop_at=<stage>").
     BotStage StopAt = BotStage::InWorld;
+    // Replaces the portal's login ticket at the RPC step (LoginRpc), to exercise a forged or reused
+    // one; empty (the default) uses the ticket the portal issued.
+    std::string LoginTicketOverride;
     // How long the world connections wait to connect, and for each packet a login step expects.
     uint32 ConnectTimeoutMs = 10000;
     uint32 PacketTimeoutMs = 10000;
@@ -70,6 +73,12 @@ struct RealBotInfo
     // "info"'s "stage Failed (was CharSelect)" and TestBot::GetFailedStage() (bot-examples.md #6/#7).
     BotStage FailedStage = BotStage::Disconnected;
     BotDisconnectReason DisconnectReason = BotDisconnectReason::None;
+    // BotIdentity::Session, once the Battle.net half of the login has produced it.
+    BotSessionInfo Session;
+    ClassicGuid CharacterGuid;
+    // The login routine has stopped at RealBotLoginOptions::StopAt (the stage is that one, and
+    // what it has produced is in place): set after the stage is entered, cleared on any stage change.
+    bool Held = false;
 };
 
 // One bot. Touched only from its own worker thread (port-plan.md /
@@ -119,6 +128,10 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         void SetLastError(std::string error) { m_lastError = std::move(error); }
         std::string const& GetLastError() const { return m_lastError; }
+
+        // Marks the bot as held at its current stage (see RealBotInfo::Held); the built-in login task
+        // calls it when it stops at StopAt. Cleared by the next stage change.
+        void SetHeld() { m_held = true; }
 
         BotStage GetFailedStage() const { return m_failedStage; }
         BotDisconnectReason GetDisconnectReason() const { return m_disconnectReason; }
@@ -231,6 +244,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         RealBotLoginOptions m_loginOptions;
 
         BotStage m_stage = BotStage::Disconnected;
+        bool m_held = false;
         uint32 m_stageEnteredMs = 0; // m_elapsedMs when m_stage was entered
         BotStage m_failedStage = BotStage::Disconnected;
         BotDisconnectReason m_disconnectReason = BotDisconnectReason::None;

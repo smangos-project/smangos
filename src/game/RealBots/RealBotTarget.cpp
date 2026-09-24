@@ -58,6 +58,9 @@ bool RealBotTarget::Load(std::string const& name, RealBotTarget& out, std::strin
     target.VerifyServerSignature = sConfig.GetBoolDefault((prefix + "VerifyServerSignature").c_str(), true);
     target.ConnectTimeoutMs = uint32_t(sConfig.GetIntDefault((prefix + "ConnectTimeoutMs").c_str(), 10000));
     target.StageTimeoutMs = uint32_t(sConfig.GetIntDefault((prefix + "StageTimeoutMs").c_str(), 30000));
+    target.ServerCloseTimeoutMs = uint32_t(sConfig.GetIntDefault((prefix + "ServerCloseTimeoutMs").c_str(), 30000));
+    target.IdleSessionMs = uint32_t(sConfig.GetIntDefault((prefix + "IdleSessionMs").c_str(), 120000));
+    target.LoadBots = uint32_t(sConfig.GetIntDefault((prefix + "LoadBots").c_str(), 0));
 
     for (std::string const& token : SplitWords(sConfig.GetStringDefault((prefix + "Accounts").c_str(), "")))
     {

@@ -147,7 +147,8 @@ void BotBnetLogin::OnRestLogin(BotRestClient::LoginResult result)
         Fail("login portal: " + result.Error);
         return;
     }
-    m_loginTicket = result.LoginTicket;
+    m_portalTicket = result.LoginTicket;
+    m_loginTicket = m_options.LoginTicketOverride.empty() ? m_portalTicket : m_options.LoginTicketOverride;
     if (m_options.OnStage)
         m_options.OnStage(BotStage::LoginRpc);
     if (m_options.StopAt == BotStage::LoginRpc)
@@ -458,6 +459,7 @@ void BotBnetLogin::OnRealmJoinResponse(bool success, uint32 status, std::string 
 
     Result result;
     result.Success = true;
+    result.LoginTicket = m_portalTicket;
     result.WorldAddress = worldAddress;
     result.WorldPort = worldPort;
     result.RealmJoinTicket = *ticketBlob;
@@ -509,6 +511,7 @@ void BotBnetLogin::StopEarly()
         Result result;
         result.Success = true;
         result.Stopped = true;
+        result.LoginTicket = m_portalTicket;
         callback(std::move(result));
     }
 }

@@ -34,6 +34,7 @@ void BotLogin::Login(Options options, LoginCallback callback)
     bnetOptions.RealmId = m_options.RealmId;
     bnetOptions.ClientBuild = m_options.ClientBuild;
     bnetOptions.ConnectTimeoutMs = m_options.ConnectTimeoutMs;
+    bnetOptions.LoginTicketOverride = m_options.LoginTicketOverride;
     bnetOptions.OnStage = m_options.OnStage;
     bnetOptions.StopAt = m_options.StopAt;
 
@@ -53,6 +54,7 @@ void BotLogin::OnBnetLogin(BotBnetLogin::Result bnet)
     Result result;
     result.Success = true;
     result.Stopped = bnet.Stopped || m_options.StopAt == BotStage::WorldConnecting;
+    result.LoginTicket = std::move(bnet.LoginTicket);
     result.WorldAddress = std::move(bnet.WorldAddress);
     result.WorldPort = bnet.WorldPort;
     result.SessionKey = std::move(bnet.SessionKey);

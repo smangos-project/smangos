@@ -42,6 +42,7 @@ BotRoutine LoginRoutine(BotContext& ctx)
     options.RealmId = opts.RealmId;
     options.ClientBuild = opts.ClientBuild;
     options.ConnectTimeoutMs = opts.ConnectTimeoutMs;
+    options.LoginTicketOverride = opts.LoginTicketOverride;
     options.StopAt = opts.StopAt;
 
     BotLogin::Result login = co_await ctx.Login(options);
@@ -49,9 +50,16 @@ BotRoutine LoginRoutine(BotContext& ctx)
         co_return FailLogin(ctx, login.Error);
 
     bot.GetIdentity().AccountName = opts.AccountName;
+    bot.GetIdentity().Session.LoginTicket = login.LoginTicket;
+    bot.GetIdentity().Session.WorldAddress = login.WorldAddress;
+    bot.GetIdentity().Session.WorldPort = login.WorldPort;
+    bot.GetIdentity().Session.JoinSessionKey = login.SessionKey;
+    bot.GetIdentity().Session.RealmJoinTicket = login.RealmJoinTicket;
+    bot.GetIdentity().Session.RealmId = opts.RealmId;
     if (login.Stopped)
     {
         ctx.SetStage(opts.StopAt);
+        bot.SetHeld();
         co_return co_await ctx.Hold();
     }
 
@@ -87,6 +95,8 @@ BotRoutine LoginRoutine(BotContext& ctx)
 
     // Stopped is only ever true when it matches opts.StopAt exactly (nothing stops on its own).
     ctx.SetStage(outcome.Stopped ? opts.StopAt : BotStage::InWorld);
+    if (outcome.Stopped)
+        bot.SetHeld();
 
     co_return co_await ctx.Hold();
 }

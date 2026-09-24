@@ -220,6 +220,7 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
 
         BotPacket packet;
         packet.Opcode = innerOpcode;
+        packet.Compressed = true;
         packet.Data.append(decompressed.data() + sizeof(uint32), decompressed.size() - sizeof(uint32));
         packet.Data.rpos(0);
         DispatchPacket(std::move(packet));

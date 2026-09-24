@@ -43,6 +43,9 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             int32_t ClientBuild = 0;
             // How long each of the two connects (REST portal, RPC) may take.
             uint32_t ConnectTimeoutMs = 10000;
+            // Used at the RPC step instead of the ticket the portal issued (a forged or reused one,
+            // for scenarios); empty uses the real one.
+            std::string LoginTicketOverride;
             // Called as each stage begins after LoginPortal (LoginRpc once the portal login is
             // done, RealmSelect once the RPC logon is complete), on whichever IO thread got there;
             // before StopAt is checked, so a held login has reported the stage it holds at.
@@ -61,6 +64,9 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             // Set instead of the rest of a successful Result when Options::StopAt held this
             // call before it finished; never set together with an error.
             bool Stopped = false;
+            // The login ticket the portal issued (not any override), set once the portal login
+            // succeeded, including on a held (Stopped) result.
+            std::string LoginTicket;
             std::string WorldAddress;
             uint16_t WorldPort = 0;
             // clientSecret(32) || serverSecret(32) -- the joinSessionKey WorldHandshakeCrypto's
@@ -109,7 +115,8 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
 
         std::shared_ptr<BotRestClient> m_rest;
         std::shared_ptr<BotBnetConnection> m_rpc;
-        std::string m_loginTicket;
+        std::string m_loginTicket;       // what the RPC step sends (the portal's, or the override)
+        std::string m_portalTicket;      // what the portal issued
 
         bool m_verifyOk = false;
         bool m_logonCompletePushed = false;

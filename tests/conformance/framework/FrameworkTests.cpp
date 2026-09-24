@@ -36,11 +36,12 @@ TEST_CASE("framework: stop_at holds a stage", "[protocol]")
     RunTest([]() -> TestRoutine
     {
         TestBot bot(TestBotOptions().StopAt(BotStage::WorldHandshake));
-        REQUIRE(co_await bot.Stage(BotStage::WorldHandshake, 30000));
+        REQUIRE(co_await bot.Held(BotStage::WorldHandshake, 30000));
 
         // It holds -- waiting again for the same stage (already true) resolves immediately, and
-        // it must never have drifted past it on its own.
-        REQUIRE(co_await bot.Stage(BotStage::WorldHandshake, 1000));
+        // it must never have drifted past it on its own, however long the server keeps talking.
+        co_await TestDelay(1000);
+        REQUIRE(co_await bot.Held(BotStage::WorldHandshake, 1000));
         CHECK(bot.GetStage() == BotStage::WorldHandshake);
     });
 }

@@ -2,8 +2,10 @@
 #define REALBOTS_TESTPACKETRECORDER_H
 
 #include "BotPacket.h"
+#include <deque>
 #include <functional>
 #include <mutex>
+#include <optional>
 #include <vector>
 
 // The bot-side half of TestBot's packet awaitables (bot-phase-1.md's "TestRecorderTask (bot
@@ -24,6 +26,9 @@ class TestPacketRecorder
             std::vector<OnReady> toFire;
             {
                 std::lock_guard<std::mutex> lock(m_lock);
+                m_history.push_back(packet);
+                if (m_history.size() > MaxHistory)
+                    m_history.pop_front();
                 for (auto it = m_pending.begin(); it != m_pending.end();)
                 {
                     if (it->Predicate(packet))
@@ -37,6 +42,35 @@ class TestPacketRecorder
             }
             for (OnReady& ready : toFire)
                 ready(packet);
+        }
+
+        // Every incoming packet the bot has seen (the last MaxHistory of them), for scenarios that
+        // look back rather than wait ("what did the server send while the bot held at CharSelect?",
+        // "did any packet arrive compressed?"). The awaiters below never see the backlog.
+        std::vector<BotPacket> History() const
+        {
+            std::lock_guard<std::mutex> lock(m_lock);
+            return std::vector<BotPacket>(m_history.begin(), m_history.end());
+        }
+
+        // The most recent packet with this opcode, or nothing if none has arrived.
+        std::optional<BotPacket> Last(uint32_t opcode) const
+        {
+            std::lock_guard<std::mutex> lock(m_lock);
+            for (auto it = m_history.rbegin(); it != m_history.rend(); ++it)
+                if (it->Opcode == opcode)
+                    return *it;
+            return std::nullopt;
+        }
+
+        size_t Count(uint32_t opcode) const
+        {
+            std::lock_guard<std::mutex> lock(m_lock);
+            size_t count = 0;
+            for (BotPacket const& packet : m_history)
+                if (packet.Opcode == opcode)
+                    ++count;
+            return count;
         }
 
         // Only ever matches packets from here on -- there's no backlog, exactly like
@@ -70,7 +104,10 @@ class TestPacketRecorder
             OnReady Ready;
         };
 
+        static constexpr size_t MaxHistory = 4096;
+
         mutable std::mutex m_lock;
+        std::deque<BotPacket> m_history;
         std::vector<Pending> m_pending;
         uint64_t m_nextId = 1;
 };

@@ -8,14 +8,23 @@
 
 void TestStageAwaiter::Subscribe(std::function<void()> onReady)
 {
-    std::thread([this, bot = m_bot, target = m_target, timeoutMs = m_timeoutMs, onReady = std::move(onReady)]()
+    std::thread([this, bot = m_bot, target = m_target, timeoutMs = m_timeoutMs, requireHeld = m_requireHeld, onReady = std::move(onReady)]()
     {
         auto const deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
         for (;;)
         {
-            if (bot->GetPublishedInfo().Stage == target)
+            RealBotInfo const info = bot->GetPublishedInfo();
+            if (info.Stage == target && (!requireHeld || info.Held))
             {
                 m_reached = true;
+                onReady();
+                return;
+            }
+            // A failed bot never reaches any other stage: report that now instead of waiting out the
+            // timeout (an expected-to-fail scenario would otherwise take its full bound to say so).
+            if (info.Stage == BotStage::Failed && target != BotStage::Failed)
+            {
+                m_reached = false;
                 onReady();
                 return;
             }

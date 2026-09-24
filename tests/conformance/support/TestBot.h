@@ -15,6 +15,7 @@
 #include <optional>
 #include <string>
 #include <thread>
+#include <vector>
 
 class BotTask;
 
@@ -29,6 +30,27 @@ class TestBotOptions
         TestBotOptions& CreateIfNone(bool value) { m_overrides.CreateIfNone = value; return *this; }
         TestBotOptions& Race(uint8_t race) { m_overrides.Race = race; return *this; }
         TestBotOptions& Class(uint8_t cls) { m_overrides.Class = cls; return *this; }
+        // Log in as this account name instead of the leased one (an account that does not exist).
+        TestBotOptions& AccountName(std::string name) { m_overrides.AccountName = std::move(name); return *this; }
+        // Join this realm by id (clearing the target's RealmName, which would win): one that is not
+        // listed, say. RealmName joins by name instead.
+        TestBotOptions& RealmId(uint32_t id) { m_overrides.RealmId = id; m_overrides.RealmName = std::string(); return *this; }
+        TestBotOptions& RealmName(std::string name) { m_overrides.RealmName = std::move(name); return *this; }
+        TestBotOptions& VerifyServerSignature(bool verify) { m_overrides.VerifyServerSignature = verify; return *this; }
+        // Presents this login ticket at the RPC step instead of the one the portal issued.
+        TestBotOptions& LoginTicket(std::string ticket) { m_overrides.LoginTicket = std::move(ticket); return *this; }
+        // How long each wait inside the world login may take; a scenario checking that the SERVER
+        // gives up on a bot sets it (and StageTimeoutMs 0) far beyond the server's own timeout, so
+        // the bot cannot be the one to fail first.
+        TestBotOptions& PacketTimeoutMs(uint32_t ms) { m_overrides.PacketTimeoutMs = ms; return *this; }
+        TestBotOptions& StageTimeoutMs(uint32_t ms) { m_overrides.StageTimeoutMs = ms; return *this; }
+        // A hook added before the bot's first tick, so it sees the very first packet and every connect
+        // the login makes (a later TestBot::AddHook can race a fast login). `make` runs once.
+        TestBotOptions& Hook(std::function<std::unique_ptr<BotTask>()> make, bool persistent = false)
+        {
+            m_overrides.Hooks.push_back(RealBotAddOverrides::InitialHook{ std::move(make), persistent });
+            return *this;
+        }
         // Leases from a different target than ConformanceRun::Target() (the run's --target) --
         // only "framework: connecting to a dead address fails" needs this, to reach a target
         // that's deliberately unreachable rather than the one under test.
@@ -53,8 +75,10 @@ class TestBotOptions
 class TestStageAwaiter
 {
     public:
-        TestStageAwaiter(std::shared_ptr<RealBot> bot, BotStage target, uint32_t timeoutMs)
-            : m_bot(std::move(bot)), m_target(target), m_timeoutMs(timeoutMs) {}
+        // requireHeld: not just in the stage but held there by StopAt, i.e. the stage's results (the
+        // session info, a resolved character, ...) are in place and nothing further will happen.
+        TestStageAwaiter(std::shared_ptr<RealBot> bot, BotStage target, uint32_t timeoutMs, bool requireHeld = false)
+            : m_bot(std::move(bot)), m_target(target), m_timeoutMs(timeoutMs), m_requireHeld(requireHeld) {}
 
         bool await_ready() const noexcept { return false; }
 
@@ -72,6 +96,7 @@ class TestStageAwaiter
         std::shared_ptr<RealBot> m_bot;
         BotStage m_target;
         uint32_t m_timeoutMs;
+        bool m_requireHeld;
         bool m_reached = false;
 };
 
@@ -216,7 +241,12 @@ class TestBot
         TestBot(TestBot&&) = delete;
         TestBot& operator=(TestBot&&) = delete;
 
+        // Resolves true once the bot is in `stage`; false on the timeout, or as soon as the bot has
+        // Failed (unless that is the stage asked for), since it will never get there then.
         TestStageAwaiter Stage(BotStage stage, uint32_t timeoutMs) const { return TestStageAwaiter(m_bot, stage, timeoutMs); }
+        // Like Stage, but only once the login has stopped there (StopAt): everything that stage
+        // produces is in place, and the bot does nothing more on its own.
+        TestStageAwaiter Held(BotStage stage, uint32_t timeoutMs) const { return TestStageAwaiter(m_bot, stage, timeoutMs, true); }
         TestStageAwaiter Disconnected(uint32_t timeoutMs) const { return Stage(BotStage::Disconnected, timeoutMs); }
 
         template<typename T>
@@ -263,6 +293,28 @@ class TestBot
         // is then a no-op. Non-persistent hooks go when the bot disconnects.
         BotTask* AddHook(std::unique_ptr<BotTask> hook, bool persistent = false) const;
         void RemoveHook(BotTask* hook) const;
+
+        // What the bot's packet observer has recorded since it started (the bot side of
+        // Packet<T>/RawPacket, but looking back instead of waiting): every incoming packet, in order.
+        std::vector<BotPacket> Received() const { return m_recorder->History(); }
+        std::optional<BotPacket> LastReceived(uint32_t opcode) const { return m_recorder->Last(opcode); }
+        size_t CountReceived(uint32_t opcode) const { return m_recorder->Count(opcode); }
+        // The most recent packet of type T received, parsed; nothing if none arrived or it did not parse.
+        template<typename T>
+        std::optional<T> LastReceived() const
+        {
+            std::optional<BotPacket> packet = m_recorder->Last(T::Opcode);
+            if (!packet)
+                return std::nullopt;
+            packet->Data.rpos(0);
+            T value;
+            if (!value.Read(packet->Data))
+                return std::nullopt;
+            return value;
+        }
+
+        // The bot's published state (stage, session info from the Battle.net half, character guid, ...).
+        RealBotInfo Info() const { return m_bot->GetPublishedInfo(); }
 
         std::string GetLastError() const;
         BotStage GetFailedStage() const;

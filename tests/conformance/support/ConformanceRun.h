@@ -14,4 +14,13 @@ namespace ConformanceRun
     std::string const& Target();
 }
 
+struct RealBotTarget;
+
+namespace ConformanceRun
+{
+    // The target's own config block (timeouts, tags, ServerCloseTimeoutMs, ...); the target must
+    // exist, which TestMain checks before anything runs.
+    RealBotTarget const& TargetConfig();
+}
+
 #endif

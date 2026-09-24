@@ -10,14 +10,14 @@ BotPacketLog::BotPacketLog(std::string const& dir, std::string const& botName)
     m_file.open(dir + "/" + botName + ".log", std::ios::out | std::ios::app);
 }
 
-void BotPacketLog::Write(uint32 timeMs, BotPacketDir dir, BotConnectionKind connection, uint32 opcode, ByteBuffer const& data)
+void BotPacketLog::Write(uint32 timeMs, BotPacketDir dir, BotConnectionKind connection, uint32 opcode, ByteBuffer const& data, bool compressed)
 {
     if (!m_file.is_open())
         return;
 
     char header[112];
-    std::snprintf(header, sizeof(header), "[%10u] %-3s %-8s %-28s 0x%06X size=%-6zu ",
-        timeMs, dir == BotPacketDir::Incoming ? "IN" : "OUT", connection == BotConnectionKind::Realm ? "realm" : "instance",
+    std::snprintf(header, sizeof(header), "[%10u] %-3s %-11s %-28s 0x%06X size=%-6zu ",
+        timeMs, dir == BotPacketDir::Incoming ? "IN" : "OUT", compressed ? (connection == BotConnectionKind::Realm ? "realm(z)" : "instance(z)") : (connection == BotConnectionKind::Realm ? "realm" : "instance"),
         ClassicOpcodeName(opcode), opcode, data.size());
     m_file << header;
 

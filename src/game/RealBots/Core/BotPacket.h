@@ -38,6 +38,9 @@ struct BotPacket
     // Incoming: the connection it arrived on. Outgoing: the connection it is bound for (what
     // hooks see in OnPacket before it is written).
     BotConnectionKind Connection = BotConnectionKind::Realm;
+    // Incoming only: it arrived inside an SMSG_COMPRESSED_PACKET and is what came out of the
+    // connection's inflate stream (opcode and body are the inner packet's).
+    bool Compressed = false;
 };
 
 #endif

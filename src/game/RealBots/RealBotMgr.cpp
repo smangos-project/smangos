@@ -224,12 +224,17 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
     options.LoginAddress = target->LoginAddress;
     options.RestPort = target->RestPort;
     options.RpcPort = target->RpcPort;
-    options.AccountName = account->Name;
+    options.AccountName = overrides.AccountName.value_or(account->Name);
     options.Password = overrides.Password.value_or(account->Password);
-    options.RealmName = target->RealmName;
-    options.RealmId = target->RealmId;
+    options.RealmName = overrides.RealmName.value_or(target->RealmName);
+    options.RealmId = overrides.RealmId.value_or(target->RealmId);
     options.ClientBuild = target->ClientBuild;
-    options.VerifyServerSignature = target->VerifyServerSignature;
+    options.VerifyServerSignature = overrides.VerifyServerSignature.value_or(target->VerifyServerSignature);
+    options.LoginTicketOverride = overrides.LoginTicket;
+    if (overrides.PacketTimeoutMs)
+        options.PacketTimeoutMs = *overrides.PacketTimeoutMs;
+    if (overrides.StageTimeoutMs)
+        options.StageTimeoutMs = *overrides.StageTimeoutMs;
     if (overrides.CharacterName)
         options.CharacterName = *overrides.CharacterName;
     if (overrides.CreateIfNone)
@@ -240,7 +245,7 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
         options.Class = *overrides.Class;
     options.StopAt = overrides.StopAt;
 
-    std::string const botName = AddWithOptions(std::move(options), std::move(name));
+    std::string const botName = AddWithOptions(std::move(options), std::move(name), &overrides.Hooks);
 
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
@@ -254,7 +259,7 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
     return botName;
 }
 
-std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string name)
+std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string name, std::vector<RealBotAddOverrides::InitialHook> const* hooks)
 {
     uint32 const id = m_nextId;
 
@@ -267,6 +272,12 @@ std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string 
 
     uint32 const workerIndex = id % m_workerCount;
     bot->SetWakeCallback([this, workerIndex]() { WakeWorker(workerIndex); });
+
+    // Before the login task: hooks see every packet from the first one, and no other thread knows
+    // this bot yet.
+    if (hooks)
+        for (RealBotAddOverrides::InitialHook const& hook : *hooks)
+            bot->GetContext().AddHook(hook.Make(), hook.Persistent);
 
     bot->GetBrain().PushTask(sBotTaskRegistry.Create("login", bot->GetContext(), BotTaskArgs()), bot->GetContext());
 

@@ -35,6 +35,21 @@ bool HasTag(Catch::TestCaseInfo const& info, std::string const& tag)
     return false;
 }
 
+// A scenario name as a Catch2 test-spec term: a comma would end the filter and a bracket start a
+// tag, so those (and the escape character itself) are backslash-escaped. Names with commas are
+// perfectly reasonable ("realm join returns an address, a ticket and a server secret").
+std::string EscapeForTestSpec(std::string const& name)
+{
+    std::string out;
+    for (char c : name)
+    {
+        if (c == ',' || c == '[' || c == ']' || c == '\\')
+            out += '\\';
+        out += c;
+    }
+    return out;
+}
+
 void Trim(std::string& s)
 {
     size_t const first = s.find_first_not_of(" \t\r");
@@ -167,8 +182,10 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    bool const runsProtocol = target->HasTag("protocol");
-    bool const runsGameplay = target->HasTag("gameplay");
+    // The capability tags a scenario can carry. A scenario tagged with one the target's Tags do not
+    // list is left out for good (--strict never overrides it): [protocol]/[gameplay] say what kind of
+    // server it is, [slow] and [load] say the run may take minutes or needs a big account pool.
+    std::vector<std::string> const capabilityTags = { "protocol", "gameplay", "slow", "load" };
     std::string const expectationsPath = FindExpectationsFile(configPath, targetName);
     std::unordered_map<std::string, std::string> const expectations =
         strict ? std::unordered_map<std::string, std::string>{} : LoadExpectations(expectationsPath);
@@ -189,24 +206,32 @@ int main(int argc, char** argv)
         Catch::TestCaseInfo const& info = handle.getTestCaseInfo();
 
         std::string reason;
-        if (!runsProtocol && HasTag(info, "protocol"))
-            reason = "not applicable to " + targetName + " ([protocol])";
-        else if (!runsGameplay && HasTag(info, "gameplay"))
-            reason = "not applicable to " + targetName + " ([gameplay])";
+        for (std::string const& tag : capabilityTags)
+        {
+            if (!target->HasTag(tag) && HasTag(info, tag))
+            {
+                reason = "not applicable to " + targetName + " ([" + tag + "])";
+                break;
+            }
+        }
+
+        if (!reason.empty())
+        {
+            // already excluded by a capability tag
+        }
         else if (auto it = expectations.find(info.name); it != expectations.end())
         {
             reason = it->second;
-            exclusionTerms.push_back("~\"" + info.name + "\"");
+            exclusionTerms.push_back("~\"" + EscapeForTestSpec(info.name) + "\"");
         }
 
         if (!reason.empty())
             excluded.emplace_back(info.name, reason);
     }
 
-    if (!runsProtocol)
-        exclusionTerms.push_back("~[protocol]");
-    if (!runsGameplay)
-        exclusionTerms.push_back("~[gameplay]");
+    for (std::string const& tag : capabilityTags)
+        if (!target->HasTag(tag))
+            exclusionTerms.push_back("~[" + tag + "]");
 
     // Appending here (rather than replacing) ANDs with whatever test-spec the user's own extra
     // Catch2 args already put in configData().testsOrTags -- confirmed against

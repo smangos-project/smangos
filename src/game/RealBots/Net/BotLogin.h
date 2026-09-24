@@ -32,6 +32,7 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
             uint32_t RealmId = 0;
             int32_t ClientBuild = 0;
             uint32_t ConnectTimeoutMs = 10000;
+            std::string LoginTicketOverride; // BotBnetLogin::Options::LoginTicketOverride
             // BotBnetLogin::Options::OnStage: LoginRpc and RealmSelect as they begin.
             std::function<void(BotStage)> OnStage;
 
@@ -50,6 +51,7 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
             // Set instead of the rest of a successful Result when Options::StopAt held the login
             // here; never set together with an error.
             bool Stopped = false;
+            std::string LoginTicket; // BotBnetLogin::Result::LoginTicket
             std::string WorldAddress;
             uint16_t WorldPort = 0;
             // BotBnetLogin::Result::SessionKey: what the world handshake's digests are keyed with.

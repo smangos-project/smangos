@@ -26,6 +26,7 @@ void RealBot::SetStage(BotStage stage)
 
     BotStage from = m_stage;
     m_stage = stage;
+    m_held = false;
     m_stageEnteredMs = m_elapsedMs;
 
     m_brain.DispatchStageChanged(*m_context, from, stage);
@@ -262,6 +263,7 @@ void RealBot::ReconnectNow()
     m_pingTimerMs = 0;
     m_pingInFlight = false;
     m_stageEnteredMs = m_elapsedMs;
+    m_held = false;
 
     // A bot without the built-in tasks registered (the coroutine tests' TestFakeBot) has no login to run.
     if (std::unique_ptr<BotTask> login = sBotTaskRegistry.Create("login", *m_context, BotTaskArgs()))
@@ -429,6 +431,9 @@ void RealBot::PublishInfo()
     m_publishedInfo.TaskStack = m_brain.TaskNames();
     m_publishedInfo.FailedStage = m_failedStage;
     m_publishedInfo.DisconnectReason = m_disconnectReason;
+    m_publishedInfo.Session = m_identity.Session;
+    m_publishedInfo.CharacterGuid = m_identity.CharacterGuid;
+    m_publishedInfo.Held = m_held;
 }
 
 RealBotInfo RealBot::GetPublishedInfo() const
@@ -440,7 +445,7 @@ RealBotInfo RealBot::GetPublishedInfo() const
 void RealBot::LogPacket(BotPacket const& packet, BotPacketDir dir)
 {
     if (m_packetLog)
-        m_packetLog->Write(m_elapsedMs, dir, packet.Connection, packet.Opcode, packet.Data);
+        m_packetLog->Write(m_elapsedMs, dir, packet.Connection, packet.Opcode, packet.Data, packet.Compressed);
 }
 
 void RealBot::TickNow()

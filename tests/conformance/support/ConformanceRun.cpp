@@ -1,4 +1,6 @@
 #include "ConformanceRun.h"
+#include "RealBotMgr.h"
+#include "RealBotTarget.h"
 
 namespace
 {
@@ -13,4 +15,9 @@ void ConformanceRun::SetTarget(std::string target)
 std::string const& ConformanceRun::Target()
 {
     return g_target;
+}
+
+RealBotTarget const& ConformanceRun::TargetConfig()
+{
+    return *sRealBotMgr.GetTargets().Find(g_target);
 }

@@ -400,6 +400,13 @@ None of these is proven against a real 1.15.6 client yet.
   both (`... port, serial, con, key`). Resolve with a captured real-client session
   (`bot-phase-2.md`, "Open questions").
 
+- **Login tickets are not single-use.** `bot-phase-2.md` listed "a reused login ticket is rejected at
+  LoginRpc"; neither reference does that. TrinityCore's bnetserver checks `LoginTicketExpiry`
+  (`AuthenticationService.cpp`) and vibemangos's `LoginTicketStore` is likewise a TTL store
+  (`refreshLoginTicket` extends it): a ticket is *expired*, never *consumed*, so a used one that
+  has not expired logs in again (confirmed live against vibemangos). The scenario was dropped rather
+  than written to encode a rule no server has; a forged ticket is rejected and is covered.
+
 ## Where to look next
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real

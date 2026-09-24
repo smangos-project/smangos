@@ -11,6 +11,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -27,12 +28,28 @@
 // `TestBotOptions().StopAt(...).Password(...)`).
 struct RealBotAddOverrides
 {
+    std::optional<std::string> AccountName;    // logs in as this account name instead of the leased one (an unknown account)
     std::optional<std::string> Password;
     std::optional<std::string> CharacterName;
     std::optional<bool> CreateIfNone;
     std::optional<uint8_t> Race;
     std::optional<uint8_t> Class;
     BotStage StopAt = BotStage::InWorld;
+    std::optional<std::string> RealmName;      // "" joins by RealmId instead
+    std::optional<uint32_t> RealmId;
+    std::optional<bool> VerifyServerSignature;
+    std::string LoginTicket;                   // RealBotLoginOptions::LoginTicketOverride
+    std::optional<uint32_t> PacketTimeoutMs;
+    std::optional<uint32_t> StageTimeoutMs;    // 0 turns the stage watchdog off
+    // Hooks added before the bot's first tick, so a scenario can be sure they see the very first
+    // packet; one factory call per bot (the bot owns what it makes). Persistent hooks survive a
+    // disconnect (and so a Reconnect).
+    struct InitialHook
+    {
+        std::function<std::unique_ptr<BotTask>()> Make;
+        bool Persistent = false;
+    };
+    std::vector<InitialHook> Hooks;
     // The bot's owner manages its lifetime: Update never reaps it (RealBots.ReapAfterMs), however
     // long it sits Disconnected or Failed -- what a test that reconnects it needs.
     bool Keep = false;
@@ -126,7 +143,7 @@ class RealBotMgr
 
         void WorkerLoop(uint32 workerIndex);
         void WakeWorker(uint32 workerIndex);
-        std::string AddWithOptions(RealBotLoginOptions options, std::string name);
+        std::string AddWithOptions(RealBotLoginOptions options, std::string name, std::vector<RealBotAddOverrides::InitialHook> const* hooks = nullptr);
         // Drops one bot's use of its account; the account itself is released when it was the last.
         void ReleaseLease(BotLease const& lease);
         static std::string AccountKey(BotLease const& lease) { return lease.TargetName + "\n" + lease.AccountName; }
