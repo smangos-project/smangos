@@ -4,4 +4,5 @@ add_subdirectory(unit/shared)
 
 if (ENABLE_REALBOTS)
   add_subdirectory(unit/realbots)
+  add_subdirectory(conformance)
 endif()

@@ -1,0 +1,51 @@
+# tests-conformance target config (bot-phase-1.md, "Targets"). Copy next to the tests-conformance
+# executable as tests-conformance.conf (or pass -c/--config a path, or set REALBOTS_CONFIG), fill
+# in real accounts, and run e.g. `tests-conformance --target vibemangos`.
+#
+# vmangos (this tree) is expected to fail everything -- its own expectations file
+# (../expectations/vmangos.txt) lists every scenario until the port lands. trinitycore is a
+# backup reference target, only used by hand when vibemangos is in doubt.
+
+RealBots.Targets = "vibemangos trinitycore vmangos"
+
+RealBots.Target.vibemangos.LoginAddress          = "127.0.0.1"
+RealBots.Target.vibemangos.RestPort              = 8081
+RealBots.Target.vibemangos.RpcPort               = 1119
+RealBots.Target.vibemangos.RealmName             = "VibeMangos"
+RealBots.Target.vibemangos.ClientBuild           = 58797
+RealBots.Target.vibemangos.ClientVersion         = "1.15.6"
+RealBots.Target.vibemangos.Tags                  = "protocol gameplay"
+RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass bot3@bots:pass"
+RealBots.Target.vibemangos.VerifyServerSignature = 1
+RealBots.Target.vibemangos.ConnectTimeoutMs      = 10000
+RealBots.Target.vibemangos.StageTimeoutMs        = 30000
+
+RealBots.Target.trinitycore.LoginAddress          = "127.0.0.1"
+RealBots.Target.trinitycore.RestPort              = 8081
+RealBots.Target.trinitycore.RpcPort               = 1119
+RealBots.Target.trinitycore.RealmName             = ""
+RealBots.Target.trinitycore.ClientBuild           = 58797
+RealBots.Target.trinitycore.ClientVersion         = "1.15.6"
+RealBots.Target.trinitycore.Tags                  = "protocol"
+RealBots.Target.trinitycore.Accounts              = "bot1@bots:pass"
+RealBots.Target.trinitycore.VerifyServerSignature = 1
+RealBots.Target.trinitycore.ConnectTimeoutMs      = 10000
+RealBots.Target.trinitycore.StageTimeoutMs        = 30000
+
+RealBots.Target.vmangos.LoginAddress          = "127.0.0.1"
+RealBots.Target.vmangos.RestPort              = 8081
+RealBots.Target.vmangos.RpcPort              = 1119
+RealBots.Target.vmangos.RealmName             = ""
+RealBots.Target.vmangos.ClientBuild           = 58797
+RealBots.Target.vmangos.ClientVersion         = "1.15.6"
+RealBots.Target.vmangos.Tags                  = "protocol gameplay"
+RealBots.Target.vmangos.Accounts              = "bot1@bots:pass"
+RealBots.Target.vmangos.VerifyServerSignature = 1
+RealBots.Target.vmangos.ConnectTimeoutMs      = 10000
+RealBots.Target.vmangos.StageTimeoutMs        = 30000
+
+RealBots.IoThreads       = 1
+RealBots.WorkerThreads   = 2
+RealBots.TickIntervalMs  = 100
+RealBots.PingIntervalMs  = 5000
+RealBots.LogoutTimeoutMs = 5000
