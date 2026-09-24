@@ -458,6 +458,17 @@ None of these is proven against a real 1.15.6 client yet.
   countdown (about 20 s in the open world, instant when resting) is why that scenario is `[slow]` and
   takes `TestBotOptions().LogoutTimeoutMs(...)`.
 
+- **The glue screen is five packets, not seven.** Captured live (packet log) on the Realm
+  connection right after `SMSG_AUTH_RESPONSE`, before the client would reach the character screen:
+  `SMSG_SET_TIME_ZONE_INFORMATION`, `SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN`,
+  `SMSG_CACHE_VERSION`, `SMSG_AVAILABLE_HOTFIXES`, `SMSG_BATTLE_NET_CONNECTION_STATUS`, in that
+  order. `SMSG_ACCOUNT_DATA_TIMES` and `SMSG_TUTORIAL_FLAGS` never arrived at that point in the
+  same capture (through `SMSG_LOGIN_VERIFY_WORLD`); if vibemangos sends them at all it is later, in
+  the unparsed flood after world entry. **Followed: vibemangos's observed order and set**, since it
+  is a live capture rather than a read of either reference's source; the bots recognize these five
+  opcodes (`ClassicOpcodes.h`) and a `world_socket:` scenario asserts they arrive, but none of the
+  seven bodies are parsed yet (`ClassicPackets.h` has no structs for them).
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
