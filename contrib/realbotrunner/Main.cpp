@@ -17,9 +17,12 @@
 #include "Log.h"
 #include "RealBotCommands.h"
 #include "RealBotMgr.h"
+#include <atomic>
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <thread>
 
 char const* g_mainLogFileName = "RealBotRunner.log";
 
@@ -53,6 +56,24 @@ int main(int argc, char** argv)
 
     sRealBotMgr.Start();
 
+    // RealBotMgr::Update (lifecycle housekeeping -- reaping long-Disconnected/Failed bots, not
+    // ticking, which the worker pool already does on its own threads) needs a periodic caller;
+    // the console loop below blocks on std::cin, so that caller is this small timer thread rather
+    // than the main thread (bot-phase-1.md, "Hosts": "ticks Update every 100 ms").
+    std::atomic<bool> updating{ true };
+    std::thread updateThread([&updating]()
+    {
+        auto last = std::chrono::steady_clock::now();
+        while (updating)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            auto const now = std::chrono::steady_clock::now();
+            uint32_t const diff = uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count());
+            last = now;
+            sRealBotMgr.Update(diff);
+        }
+    });
+
     std::cout << "RealBots runner -- type 'help' for commands, 'quit' to exit.\n";
 
     std::string line;
@@ -70,6 +91,9 @@ int main(int argc, char** argv)
             std::cout << "error: " << e.what() << "\n";
         }
     }
+
+    updating = false;
+    updateThread.join();
 
     sRealBotMgr.Stop();
     return EXIT_SUCCESS;

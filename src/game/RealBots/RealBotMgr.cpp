@@ -83,6 +83,43 @@ void RealBotMgr::Stop()
     m_ioContext.reset();
 }
 
+void RealBotMgr::Update(uint32 diff)
+{
+    uint32 const reapAfterMs = RealBotConfig::ReapAfterMs();
+    if (reapAfterMs == 0)
+        return;
+
+    std::vector<std::string> const names = List();
+    std::vector<std::string> toRemove;
+
+    for (std::string const& name : names)
+    {
+        std::optional<RealBotInfo> info = GetInfo(name);
+        if (!info)
+            continue;
+
+        bool const terminal = info->Stage == BotStage::Disconnected || info->Stage == BotStage::Failed;
+        if (!terminal)
+        {
+            m_terminalSinceMs.erase(name);
+            continue;
+        }
+
+        uint32& elapsed = m_terminalSinceMs[name];
+        elapsed += diff;
+        if (elapsed >= reapAfterMs)
+            toRemove.push_back(name);
+    }
+
+    // Bots removed elsewhere (an explicit "remove") drop out of the timer map too, so it doesn't
+    // grow forever across many short-lived bots.
+    for (auto it = m_terminalSinceMs.begin(); it != m_terminalSinceMs.end();)
+        it = std::find(names.begin(), names.end(), it->first) == names.end() ? m_terminalSinceMs.erase(it) : std::next(it);
+
+    for (std::string const& name : toRemove)
+        Remove(name);
+}
+
 void RealBotMgr::WorkerLoop(uint32 workerIndex)
 {
     uint32 const tickMs = std::max<uint32>(1, RealBotConfig::TickIntervalMs());

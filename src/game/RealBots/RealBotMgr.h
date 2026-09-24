@@ -39,6 +39,12 @@ class RealBotMgr
 
         void Start();
         void Stop();
+        // Lifecycle housekeeping, not ticking (that's the worker pool's job on its own threads):
+        // reaps bots that have sat in Disconnected/Failed for RealBots.ReapAfterMs, releasing
+        // their leases. Both hosts call this periodically (bot-phase-1.md, "Hosts") -- mangosd
+        // from World::Update, the runner from its own timer alongside the console loop. A no-op
+        // when RealBots.ReapAfterMs is 0 (the default).
+        void Update(uint32 diff);
 
         // Leases a free account from the named target, creates a bot with it, gives it a name
         // (or one derived from the account name if empty), and pushes the built-in "login" task --
@@ -92,6 +98,11 @@ class RealBotMgr
         // Which worker thread ticks each bot -- id % m_workerCount, fixed at Add time.
         std::unordered_map<std::string, uint32> m_botWorkerIndex;
         uint32 m_nextId = 1;
+
+        // How long each bot has continuously been Disconnected/Failed, accumulated by Update();
+        // only Update() itself touches this, so it needs no lock beyond the contract that hosts
+        // call Update() from one thread at a time (bot-phase-1.md never has two).
+        std::unordered_map<std::string, uint32> m_terminalSinceMs;
 };
 
 #define sRealBotMgr MaNGOS::Singleton<RealBotMgr>::Instance()

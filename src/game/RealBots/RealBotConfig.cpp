@@ -1,6 +1,11 @@
 #include "RealBotConfig.h"
 #include "Config/Config.h"
 
+bool RealBotConfig::Enabled()
+{
+    return sConfig.GetBoolDefault("RealBots.Enable", false);
+}
+
 uint32 RealBotConfig::IoThreads()
 {
     return uint32(sConfig.GetIntDefault("RealBots.IoThreads", 1));
@@ -44,4 +49,9 @@ bool RealBotConfig::PacketLogEnabled()
 std::string RealBotConfig::PacketLogDir()
 {
     return sConfig.GetStringDefault("RealBots.PacketLogDir", "realbots-packets");
+}
+
+uint32 RealBotConfig::ReapAfterMs()
+{
+    return uint32(sConfig.GetIntDefault("RealBots.ReapAfterMs", 0));
 }
