@@ -25,4 +25,7 @@ enum class BotTaskResult
     Failed,
 };
 
+// For logs, "info"/"list"/"status" command output -- never parsed back.
+char const* BotStageName(BotStage stage);
+
 #endif

@@ -5,6 +5,7 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/RealBotTarget.cpp
   ${REALBOTS_DIR}/Core/RealBot.cpp
   ${REALBOTS_DIR}/Core/BotAccountLease.cpp
+  ${REALBOTS_DIR}/Core/BotStage.cpp
   ${REALBOTS_DIR}/Core/BotPacketLog.cpp
   ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp

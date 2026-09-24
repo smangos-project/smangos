@@ -48,3 +48,12 @@ void BotBrain::Clear()
 {
     m_stack.clear();
 }
+
+std::vector<std::string> BotBrain::TaskNames() const
+{
+    std::vector<std::string> names;
+    names.reserve(m_stack.size());
+    for (auto it = m_stack.rbegin(); it != m_stack.rend(); ++it)
+        names.push_back((*it)->GetName());
+    return names;
+}

@@ -520,10 +520,13 @@ if (ENABLE_REALBOTS)
       RealBots/RealBotMgr.h
       RealBots/RealBotTarget.cpp
       RealBots/RealBotTarget.h
+      RealBots/RealBotCommands.cpp
+      RealBots/RealBotCommands.h
       RealBots/Core/RealBot.cpp
       RealBots/Core/RealBot.h
       RealBots/Core/BotAccountLease.cpp
       RealBots/Core/BotAccountLease.h
+      RealBots/Core/BotStage.cpp
       RealBots/Core/BotStage.h
       RealBots/Core/BotIdentity.h
       RealBots/Core/BotPacket.h

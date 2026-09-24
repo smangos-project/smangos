@@ -6,164 +6,28 @@
 // clear" note about linking `game`'s script loader/world/database symbols -- nothing here needs
 // them).
 //
-// `RealBotCommands` (bot-phase-1.md step 6) doesn't exist yet, so there is no command
-// implementation shared with a future `.realbot` chat command: the console loop below is this
-// host's own, temporary until step 6 replaces it. `RealBotTarget`/`BotAccountLease` do exist, so
-// "add" takes a target name (RealBots.Target.<name>.* in the -c config) and leases one of its
-// configured accounts, rather than raw connection parameters on the command line.
-#include "BotStage.h"
-#include "BotTaskArgs.h"
+// `RealBotCommands` now holds every verb (targets/add/remove/list/info/task/tasks/status/help),
+// shared with a future `.realbot` chat command (step 7) -- this host just wires its console loop
+// to it, printing through std::cout and handling its own "quit"/"exit" (not a RealBotCommands verb:
+// a chat command has no equivalent). `RealBotTarget`/`BotAccountLease` mean "add" takes a target
+// name (RealBots.Target.<name>.* in the -c config) and leases one of its configured accounts,
+// rather than raw connection parameters on the command line.
 #include "Config/Config.h"
 #include "Crypto/InitializeCrypto.h"
 #include "Log.h"
+#include "RealBotCommands.h"
 #include "RealBotMgr.h"
-#include <algorithm>
 #include <cstdlib>
 #include <iostream>
-#include <optional>
-#include <sstream>
 #include <string>
 
 char const* g_mainLogFileName = "RealBotRunner.log";
 
 namespace
 {
-char const* StageName(BotStage stage)
+void PrintLine(std::string const& line)
 {
-    switch (stage)
-    {
-        case BotStage::Disconnected: return "Disconnected";
-        case BotStage::LoginPortal: return "LoginPortal";
-        case BotStage::LoginRpc: return "LoginRpc";
-        case BotStage::RealmSelect: return "RealmSelect";
-        case BotStage::WorldConnecting: return "WorldConnecting";
-        case BotStage::WorldHandshake: return "WorldHandshake";
-        case BotStage::CharSelect: return "CharSelect";
-        case BotStage::EnteringWorld: return "EnteringWorld";
-        case BotStage::InWorld: return "InWorld";
-        case BotStage::LoggingOut: return "LoggingOut";
-        case BotStage::Failed: return "Failed";
-        default: return "Unknown";
-    }
-}
-
-std::string TrimLeadingSpace(std::string s)
-{
-    size_t const pos = s.find_first_not_of(' ');
-    return pos == std::string::npos ? std::string() : s.substr(pos);
-}
-
-void PrintHelp()
-{
-    std::cout <<
-        "  targets                    lists every configured target and its free account count\n"
-        "  add <target> [count]       leases account(s) from <target> and adds that many bots\n"
-        "  remove <name|all>          removes a bot\n"
-        "  list                       lists every bot and its stage\n"
-        "  info <name>                shows one bot's stage, latency, character, last error\n"
-        "  task <name> <task> [args]  pushes a named task onto a running bot\n"
-        "  help                       shows this text\n"
-        "  quit                       stops every bot and exits\n";
-}
-
-void PrintTargets()
-{
-    for (RealBotTarget const& target : sRealBotMgr.GetTargets().All())
-    {
-        std::cout << target.Name << "\t" << target.LoginAddress << ":" << target.RestPort << "/" << target.RpcPort << "\ttags:";
-        for (std::string const& tag : target.Tags)
-            std::cout << " " << tag;
-
-        if (std::optional<std::pair<size_t, size_t>> counts = sRealBotMgr.GetLeaseCounts(target.Name))
-            std::cout << "\taccounts " << counts->first << "/" << counts->second << " free";
-
-        std::cout << "\n";
-    }
-}
-
-void HandleCommand(std::string const& line)
-{
-    std::istringstream iss(line);
-    std::string verb;
-    iss >> verb;
-    if (verb.empty())
-        return;
-
-    if (verb == "targets")
-    {
-        PrintTargets();
-    }
-    else if (verb == "add")
-    {
-        std::string targetName;
-        iss >> targetName;
-        uint32_t count = 1;
-        uint32_t parsedCount = 0;
-        if (iss >> parsedCount) // absent (or unparsable) leaves count at its default of 1
-            count = parsedCount;
-
-        if (targetName.empty())
-        {
-            std::cout << "add needs a target name -- try 'targets'\n";
-            return;
-        }
-
-        for (uint32_t i = 0; i < std::max<uint32_t>(1, count); ++i)
-        {
-            std::string error;
-            std::string const name = sRealBotMgr.Add(targetName, "", &error);
-            if (name.empty())
-                std::cout << "add: " << error << "\n";
-            else
-                std::cout << "bot '" << name << "' is connecting\n";
-        }
-    }
-    else if (verb == "remove")
-    {
-        std::string name;
-        iss >> name;
-        if (name == "all")
-            sRealBotMgr.RemoveAll();
-        else
-            sRealBotMgr.Remove(name);
-    }
-    else if (verb == "list")
-    {
-        for (std::string const& name : sRealBotMgr.List())
-            if (std::optional<RealBotInfo> info = sRealBotMgr.GetInfo(name))
-                std::cout << info->Name << "\t" << StageName(info->Stage) << "\t" << info->LatencyMs << " ms\n";
-    }
-    else if (verb == "info")
-    {
-        std::string name;
-        iss >> name;
-        std::optional<RealBotInfo> info = sRealBotMgr.GetInfo(name);
-        if (!info)
-        {
-            std::cout << "no such bot '" << name << "'\n";
-            return;
-        }
-        std::cout << "stage       " << StageName(info->Stage) << "\n";
-        std::cout << "latency     " << info->LatencyMs << " ms\n";
-        std::cout << "character   " << (info->CharacterName.empty() ? "-" : info->CharacterName) << "\n";
-        std::cout << "error       " << (info->LastError.empty() ? "-" : info->LastError) << "\n";
-    }
-    else if (verb == "task")
-    {
-        std::string name, taskName, rest;
-        iss >> name >> taskName;
-        std::getline(iss, rest);
-        if (!sRealBotMgr.RunTask(name, taskName, BotTaskArgs::Parse(TrimLeadingSpace(rest))))
-            std::cout << "no such bot or task\n";
-    }
-    else if (verb == "help")
-    {
-        PrintHelp();
-    }
-    else
-    {
-        std::cout << "unknown command '" << verb << "' -- try 'help'\n";
-    }
+    std::cout << line << "\n";
 }
 }
 
@@ -199,7 +63,7 @@ int main(int argc, char** argv)
 
         try
         {
-            HandleCommand(line);
+            RealBotCommands::Handle(line, PrintLine);
         }
         catch (std::exception const& e)
         {

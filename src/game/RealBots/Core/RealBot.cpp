@@ -238,6 +238,7 @@ void RealBot::PublishInfo()
     m_publishedInfo.LatencyMs = m_latencyMs;
     m_publishedInfo.CharacterName = m_identity.CharacterName;
     m_publishedInfo.LastError = m_lastError;
+    m_publishedInfo.TaskStack = m_brain.TaskNames();
 }
 
 RealBotInfo RealBot::GetPublishedInfo() const

@@ -51,6 +51,8 @@ struct RealBotInfo
     uint32 LatencyMs = 0;
     std::string CharacterName;
     std::string LastError;
+    // Task names, top of the stack first (BotBrain::TaskNames) -- what "tasks <name>" shows.
+    std::vector<std::string> TaskStack;
 };
 
 // One bot. Touched only from its own worker thread (port-plan.md /

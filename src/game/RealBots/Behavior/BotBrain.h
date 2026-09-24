@@ -3,6 +3,7 @@
 
 #include "BotTask.h"
 #include <memory>
+#include <string>
 #include <vector>
 
 // A bot's task stack. The top task is ticked; every task sees packet hooks,
@@ -24,6 +25,11 @@ class BotBrain
         bool Empty() const { return m_stack.empty(); }
         size_t Size() const { return m_stack.size(); }
         BotTask* Top() const { return m_stack.empty() ? nullptr : m_stack.back().get(); }
+
+        // Task names, top of the stack first -- what the "tasks <name>" command shows
+        // (bot-examples.md #6). Bot-thread only, like everything else here; RealBot::PublishInfo
+        // is what makes this safe to read from another thread (a copy in RealBotInfo).
+        std::vector<std::string> TaskNames() const;
 
     private:
         std::vector<std::unique_ptr<BotTask>> m_stack;
