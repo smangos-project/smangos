@@ -37,6 +37,16 @@ enum ClassicOpcodes : uint32
     CLASSIC_SMSG_CHARACTER_LOGIN_FAILED    = 0x3B01A1,
     CLASSIC_SMSG_LOGOUT_COMPLETE           = 0x3B0120,
     CLASSIC_SMSG_TIME_SYNC_REQUEST         = 0x4C0000,
+
+    // The glue-screen packets a server sends on the Realm connection right after
+    // SMSG_AUTH_RESPONSE, before the client reaches the character screen. Values confirmed live
+    // against vibemangos (opcode only; bodies aren't parsed -- see the README's "vibemangos vs
+    // TrinityCore" section).
+    CLASSIC_SMSG_SET_TIME_ZONE_INFORMATION         = 0x3B0113,
+    CLASSIC_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN = 0x3B0059,
+    CLASSIC_SMSG_CACHE_VERSION                     = 0x3F000E,
+    CLASSIC_SMSG_AVAILABLE_HOTFIXES                = 0x3F0001,
+    CLASSIC_SMSG_BATTLE_NET_CONNECTION_STATUS      = 0x3B02A2,
 };
 
 // Name for the packet log (bot-phase-1.md, "Packet log"); "UNKNOWN" (plus the opcode's own hex

@@ -84,6 +84,25 @@ TEST_CASE("world_socket: encrypted mode is entered and SMSG_AUTH_RESPONSE is OK"
     });
 }
 
+TEST_CASE("world_socket: the glue-screen packets arrive after SMSG_AUTH_RESPONSE", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
+        REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
+
+        // Sent on the Realm connection between SMSG_AUTH_RESPONSE and the character screen; only
+        // the opcodes are asserted here, not their bodies, which the bots don't parse yet (see the
+        // README's "vibemangos vs TrinityCore" section).
+        for (uint32_t opcode : { CLASSIC_SMSG_SET_TIME_ZONE_INFORMATION, CLASSIC_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN,
+            CLASSIC_SMSG_CACHE_VERSION, CLASSIC_SMSG_AVAILABLE_HOTFIXES, CLASSIC_SMSG_BATTLE_NET_CONNECTION_STATUS })
+        {
+            INFO("opcode 0x" << std::hex << opcode);
+            CHECK(co_await bot.WaitReceived(opcode, 10000));
+        }
+    });
+}
+
 TEST_CASE("world_socket: the server's SMSG_ENTER_ENCRYPTED_MODE signature verifies", "[protocol]")
 {
     RunTest([]() -> TestRoutine
