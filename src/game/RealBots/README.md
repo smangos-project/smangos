@@ -433,6 +433,34 @@ None of these is proven against a real 1.15.6 client yet.
   countdown (about 20 s in the open world, instant when resting) is why that scenario is `[slow]` and
   takes `TestBotOptions().LogoutTimeoutMs(...)`.
 
+## TrinityCore as a cross-check (spike outcome: not run)
+
+`bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
+build it, add build 58797, run the scenarios, see how far a 1.15.6 bot gets. **The spike was not run
+here, and no `trinitycore` target has been proven**, for reasons that are about this environment, not
+about the bots:
+
+- A run needs the whole server stack: bnetserver plus worldserver built (Boost is in the tree, but
+  the MySQL client and a full build are not something to do to a shared dev machine unasked), a MySQL
+  server with TrinityCore's own `auth` database, and, past the login server, the `world`/`characters`
+  databases with the multi-gigabyte TDB world data. Creating databases on the MySQL the vibemangos dev
+  server uses was not something to do without being asked, and the login server alone (`login/`) is
+  only the first quarter of the suite.
+- Static reading of its source found what a run would need first: the auth database's `build_info` and
+  `build_auth_key` tables (`sql/base/auth_database.sql`) have **no row for build 58797**, so
+  `AuthenticationService.cpp`'s `HandleLogon` build check rejects the bot until
+  `INSERT INTO build_info VALUES (58797, 1, 15, 6, NULL)` and the matching `build_auth_key` rows exist
+  (the auth key is client key material the bots do not have, so the world-socket half may need
+  TrinityCore-side changes too). Wire-format differences already found by reading both trees are in
+  "vibemangos vs TrinityCore" above (`CMSG_CONNECT_TO_FAILED`'s field order); the handshake and
+  character-screen opcode values are identical in both.
+
+So the by-hand reference TrinityCore already was stays that way: `expectations/trinitycore.txt` stays
+empty (a line there would be a guess without a run), the `trinitycore` block in the conf.dist is the
+starting point for whoever stands one up, and `tests/conformance/run-all.ps1` will run it in turn with
+the others the moment it is configured. Outcome 3's second half of bot-phase-2.md's "Done when" is
+therefore **not met**; the recorded reason above is what the spike's own stop condition asks for.
+
 ## Where to look next
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real

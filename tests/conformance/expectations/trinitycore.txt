@@ -2,3 +2,8 @@
 # used by hand when vibemangos is in doubt; its own Tags ("protocol", no "gameplay") already
 # exclude every [gameplay] scenario without needing an entry here. Only add a line if a specific
 # [protocol] scenario turns out not to apply to TrinityCore cata_classic for some other reason.
+#
+# Phase 2 status: TrinityCore has not been stood up for a run (see the README's "TrinityCore as a
+# cross-check"), so nothing is known to fail there yet and this stays empty rather than guessing.
+# When it is run: 58797 needs rows in its auth `build_info`/`build_auth_key`, and every scenario that
+# fails because cata_classic is 4.4.x and our client is 1.15.6 gets a line here naming the packet.
