@@ -40,7 +40,9 @@ session: a second login on an account already in the world takes the session ove
 session: an idle bot with only default keepalives is not kicked      | world entry not ported (port-plan.md step 5)
 framework: stop_at holds a stage                                      | world socket not ported (port-plan.md step 3)
 framework: Drop keeps a CMSG_PING off the wire                        | world socket not ported (port-plan.md step 3)
-framework: ten bots log in at once                                    | login server not ported (port-plan.md step 2)
+load: ten bots log in at once                                         | login server not ported (port-plan.md step 2)
+load: fifty bots at once are all in the world within the bound and all log out cleanly | login server not ported (port-plan.md step 2)
+load: a hundred bots staggered over twenty seconds are all in the world and all log out cleanly | login server not ported (port-plan.md step 2)
 
 # Not listed: "framework: connecting to a dead address fails cleanly" -- it drives its own
 # deliberately-unreachable "deadhost" target (TestBotOptions().TargetOverride), never vmangos

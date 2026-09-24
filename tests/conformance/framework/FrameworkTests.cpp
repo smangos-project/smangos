@@ -61,23 +61,6 @@ TEST_CASE("framework: Drop keeps a CMSG_PING off the wire", "[protocol]")
     });
 }
 
-TEST_CASE("framework: ten bots log in at once", "[protocol]")
-{
-    RunTest([]() -> TestRoutine
-    {
-        std::vector<std::unique_ptr<TestBot>> bots;
-        for (uint32 i = 0; i < 10; ++i)
-            bots.push_back(std::make_unique<TestBot>());
-
-        std::vector<bool> inWorld = co_await WhenAll(bots, [](std::unique_ptr<TestBot>& bot) { return bot->Stage(BotStage::InWorld, 60000); });
-        CHECK(std::all_of(inWorld.begin(), inWorld.end(), [](bool ok) { return ok; }));
-
-        for (auto& bot : bots)
-            bot->Disconnect(true);
-        co_await WhenAll(bots, [](std::unique_ptr<TestBot>& bot) { return bot->Disconnected(10000); });
-    });
-}
-
 TEST_CASE("framework: connecting to a dead address fails cleanly", "[protocol]")
 {
     RunTest([]() -> TestRoutine

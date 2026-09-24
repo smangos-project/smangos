@@ -437,7 +437,8 @@ None of these is proven against a real 1.15.6 client yet.
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real
 game client (blocked on having one available) and `tests-conformance`'s "ten bots log in at once"
-scenario (needs ten free accounts on the live target; this dev environment has one). Concrete gaps,
+scenario (now `load: ten bots log in at once`, tagged `[load]`, needing ten free accounts on the live
+target; this dev environment has one, so the `[load]` scenarios are only ever seen to SKIP here). Concrete gaps,
 tracked and scheduled in `bot-phase-2.md`:
 
 - Phase 2 (`bot-plan.md`): more `[protocol]` scenarios (reconnect, timeouts under load, many bots

@@ -4,6 +4,10 @@
 
 RealBots.Targets = "vibemangos"
 
+# Accounts are existing logins on the target; bots never create them. To provision a pool (and get the
+# Accounts line below printed for you), run contrib/realbotrunner/provision-accounts.ps1 -Target vibemangos
+# -Count 100 and paste its commands into the server's console. Keep real lists out of the repo.
+
 RealBots.Target.vibemangos.LoginAddress          = "127.0.0.1"
 RealBots.Target.vibemangos.RestPort              = 8081
 RealBots.Target.vibemangos.RpcPort               = 1119

@@ -8,14 +8,28 @@
 
 RealBots.Targets = "vibemangos trinitycore vmangos deadhost"
 
-# framework/FrameworkTests.cpp's "ten bots log in at once" needs at least 10 free accounts here.
+# Accounts. Bots never create accounts (they touch no server state): provision a pool against the
+# target's own console with contrib/realbotrunner/provision-accounts.ps1 (it prints the commands to
+# paste and the Accounts line below), and keep the real list in an untracked config. Real account
+# lists never go in the repo.
+#
+# Tags decide which scenarios a target runs: "protocol" (and "gameplay") for the ordinary ones,
+# "slow" adds the ones that wait on server-side timeouts or long idles (minutes, not seconds),
+# "load" adds the many-bot scenarios in load/, which need as many accounts as they have bots (10, 50,
+# 100; they SKIP and say how many they wanted when the pool is smaller). A plain
+# `tests-conformance --target vibemangos` stays quick; add "slow load" here for the full run.
+#
+# Optional per-target bounds the scenarios use (defaults shown, in milliseconds):
+#   RealBots.Target.X.ServerCloseTimeoutMs = 30000    # how long a server may take to close a connection it rejected
+#   RealBots.Target.X.IdleSessionMs        = 120000   # how long an idle in-world bot must stay connected
+#   RealBots.Target.X.LoadBots             = 0        # cap on bots in a [load] scenario (0: the pool size)
 RealBots.Target.vibemangos.LoginAddress          = "127.0.0.1"
 RealBots.Target.vibemangos.RestPort              = 8081
 RealBots.Target.vibemangos.RpcPort               = 1119
 RealBots.Target.vibemangos.RealmName             = "VibeMangos"
 RealBots.Target.vibemangos.ClientBuild           = 58797
 RealBots.Target.vibemangos.ClientVersion         = "1.15.6"
-RealBots.Target.vibemangos.Tags                  = "protocol gameplay"
+RealBots.Target.vibemangos.Tags                  = "protocol gameplay"    # + "slow load" for the full run
 RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass bot3@bots:pass bot4@bots:pass bot5@bots:pass bot6@bots:pass bot7@bots:pass bot8@bots:pass bot9@bots:pass bot10@bots:pass"
 RealBots.Target.vibemangos.VerifyServerSignature = 1
 RealBots.Target.vibemangos.ConnectTimeoutMs      = 10000
