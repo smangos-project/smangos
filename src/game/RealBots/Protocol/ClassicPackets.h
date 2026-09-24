@@ -467,8 +467,6 @@ struct ClassicCharacterInfo
     std::string Name;
 };
 
-// vibemangos: src/game/Server/Packets/Character.cpp EnumCharactersResult::AppendBodyTo(), which
-// follows TrinityCore cata_classic's EnumCharactersResult::Write() (the two agree on this layout).
 // Read parses every character's fixed-layout block into Characters when the body matches it exactly
 // (no mail senders, which would add variable-length data after a character), so scenarios can see
 // names and guids. When it does not -- a server with a different layout, or a body cut short --
@@ -489,19 +487,31 @@ struct ClassicEnumCharactersResult
     {
         // 9 header bits (Success, Realmless, IsDeletedCharacters, IsNewPlayerRestrictionSkipped,
         // IsNewPlayerRestricted, IsNewPlayer, IsTrialAccountRestricted,
-        // DisabledClassesMask.HasValue, DontCreateCharacterDisplays), flushed to a byte.
+        // DisabledClassesMask.HasValue, DontCreateCharacterDisplays), flushed to a byte. Only
+        // DisabledClassesMask.HasValue (bit 7) changes how many fields follow.
+        bool disabledClassesMaskPresent = false;
         for (int i = 0; i < 9; ++i)
-            data.ReadBit();
+        {
+            bool const bit = data.ReadBit();
+            if (i == 7)
+                disabledClassesMaskPresent = bit;
+        }
         data.ResetBitPos();
 
-        // characters.size(), then 7 more uint32/int32 fields before the per-character list
-        // starts (RegionwideCharacters.Count, MaxCharacterLevel, RaceUnlockData.Count,
-        // UnlockedConditionalAppearances.Count, RaceLimitDisables.Count, WarbandGroups.Count,
-        // DisabledClassesMask value) -- see EnumCharactersResult::AppendBodyTo's own field order.
-        if (data.size() - data.rpos() < sizeof(uint32) * 8)
+        // CharacterCount, then 6 more uint32/int32 fields (RegionwideCharacters.Count,
+        // MaxCharacterLevel, RaceUnlockData.Count, UnlockedConditionalAppearances.Count,
+        // RaceLimitDisables.Count, WarbandGroups.Count), then DisabledClassesMask only if its
+        // header bit was set, before the per-character list starts.
+        size_t const fixedFields = 7 + (disabledClassesMaskPresent ? 1 : 0);
+        if (data.size() - data.rpos() < sizeof(uint32) * fixedFields)
             return false;
         data >> CharacterCount;
-        for (int i = 0; i < 7; ++i)
+        for (int i = 0; i < 6; ++i)
+        {
+            uint32 skip;
+            data >> skip;
+        }
+        if (disabledClassesMaskPresent)
         {
             uint32 skip;
             data >> skip;
@@ -532,8 +542,10 @@ struct ClassicEnumCharactersResult
             data.WriteBit(i == 0);
         data.FlushBits();
 
+        // DisabledClassesMask.HasValue (bit 7 above) is always false, so its field is omitted here
+        // too -- matching Read, which only consumes it when that bit is set.
         data << (Characters.empty() ? CharacterCount : uint32(Characters.size()));
-        for (int i = 0; i < 7; ++i)
+        for (int i = 0; i < 6; ++i)
             data << uint32(0);
 
         if (Characters.empty())

@@ -39,11 +39,12 @@ TEST_CASE("ClassicEnumCharacters::Write produces an empty body", "[packets]")
 
 namespace
 {
-// Builds a body shaped like EnumCharactersResult::AppendBodyTo's own field order (see
-// Character.cpp): 9 header bits flushed, characters.size(), 7 more skipped fields, then
-// characterCount packed guids each followed by `trailingBytesPerCharacter` bytes of
-// deliberately-unparsed per-character data (name/appearance/mail block/...), matching how the
-// real packet keeps going well past what ClassicEnumCharactersResult::Read consumes.
+// Builds a body shaped like the real packet's own field order: 9 header bits flushed,
+// characters.size(), 6 more skipped fields (a 7th, DisabledClassesMask, would follow only if bit 7
+// -- DisabledClassesMask.HasValue -- were set, which it isn't here), then characterCount packed
+// guids each followed by `trailingBytesPerCharacter` bytes of deliberately-unparsed per-character
+// data (name/appearance/mail block/...), matching how the real packet keeps going well past what
+// ClassicEnumCharactersResult::Read consumes.
 ByteBuffer BuildEnumCharactersResultBody(uint32 characterCount, std::vector<ClassicGuid> const& guids, size_t trailingBytesPerCharacter)
 {
     ByteBuffer data;
@@ -52,7 +53,7 @@ ByteBuffer BuildEnumCharactersResultBody(uint32 characterCount, std::vector<Clas
     data.FlushBits();
 
     data << characterCount;
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < 6; ++i)
         data << uint32(0xAAAAAAAA); // deliberately non-zero: Read must skip these without using them
 
     for (uint32 i = 0; i < characterCount; ++i)
