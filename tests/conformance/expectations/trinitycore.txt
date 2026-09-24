@@ -1,0 +1,4 @@
+# Starts empty (bot-plan.md, "Testing model") -- trinitycore is a backup reference target, only
+# used by hand when vibemangos is in doubt; its own Tags ("protocol", no "gameplay") already
+# exclude every [gameplay] scenario without needing an entry here. Only add a line if a specific
+# [protocol] scenario turns out not to apply to TrinityCore cata_classic for some other reason.

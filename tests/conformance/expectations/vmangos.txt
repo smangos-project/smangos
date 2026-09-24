@@ -1,0 +1,18 @@
+# The porting scoreboard (bot-plan.md, "Testing model"): every Phase 1 scenario starts here and
+# is removed once the corresponding piece of port-plan.md lands in this tree (vmangos, root). Read
+# by TestMain.cpp unless --strict is passed. Format: "scenario name | reason", one per line;
+# lines starting with '#' are comments.
+
+login: a bot reaches the world                                        | login server not ported (port-plan.md step 2)
+login: wrong password fails at the login portal                       | login server not ported (port-plan.md step 2)
+world_entry: an existing character resolves at CharSelect             | world socket not ported (port-plan.md step 3)
+world_entry: ping gets a pong with the same serial                    | world socket not ported (port-plan.md step 3)
+world_entry: the framework's own keepalive ping updates latency       | world socket not ported (port-plan.md step 3)
+framework: stop_at holds a stage                                      | world socket not ported (port-plan.md step 3)
+framework: Drop keeps a CMSG_PING off the wire                        | world socket not ported (port-plan.md step 3)
+framework: ten bots log in at once                                    | login server not ported (port-plan.md step 2)
+
+# Not listed: "framework: connecting to a dead address fails cleanly" -- it drives its own
+# deliberately-unreachable "deadhost" target (TestBotOptions().TargetOverride), never vmangos
+# itself, so it's exercising the framework's own timeout handling and should pass regardless of
+# --target. If it doesn't, that's a framework bug, not a porting gap.

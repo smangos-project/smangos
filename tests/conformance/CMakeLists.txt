@@ -36,6 +36,8 @@ add_executable(tests-conformance
   support/ConformanceRun.cpp
   support/TestBot.cpp
   login/LoginTests.cpp
+  world_entry/WorldEntryTests.cpp
+  framework/FrameworkTests.cpp
   TestMain.cpp
 )
 mangos_target_flags(tests-conformance)

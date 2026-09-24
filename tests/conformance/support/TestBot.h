@@ -29,11 +29,17 @@ class TestBotOptions
         TestBotOptions& CreateIfNone(bool value) { m_overrides.CreateIfNone = value; return *this; }
         TestBotOptions& Race(uint8_t race) { m_overrides.Race = race; return *this; }
         TestBotOptions& Class(uint8_t cls) { m_overrides.Class = cls; return *this; }
+        // Leases from a different target than ConformanceRun::Target() (the run's --target) --
+        // only "framework: connecting to a dead address fails" needs this, to reach a target
+        // that's deliberately unreachable rather than the one under test.
+        TestBotOptions& TargetOverride(std::string name) { m_targetOverride = std::move(name); return *this; }
 
         RealBotAddOverrides const& Overrides() const { return m_overrides; }
+        std::string const& TargetOverride() const { return m_targetOverride; }
 
     private:
         RealBotAddOverrides m_overrides;
+        std::string m_targetOverride;
 };
 
 // co_await bot.Stage(stage, timeoutMs) -> bool. Polls RealBot::GetPublishedInfo() (already
@@ -243,6 +249,7 @@ class TestBot
         BotDisconnectReason GetDisconnectReason() const;
         std::string GetCharacterName() const;
         BotStage GetStage() const;
+        uint32_t GetLatencyMs() const;
         std::string const& GetName() const { return m_name; }
 
     private:

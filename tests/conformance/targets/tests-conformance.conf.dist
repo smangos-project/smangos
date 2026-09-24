@@ -6,8 +6,9 @@
 # (../expectations/vmangos.txt) lists every scenario until the port lands. trinitycore is a
 # backup reference target, only used by hand when vibemangos is in doubt.
 
-RealBots.Targets = "vibemangos trinitycore vmangos"
+RealBots.Targets = "vibemangos trinitycore vmangos deadhost"
 
+# framework/FrameworkTests.cpp's "ten bots log in at once" needs at least 10 free accounts here.
 RealBots.Target.vibemangos.LoginAddress          = "127.0.0.1"
 RealBots.Target.vibemangos.RestPort              = 8081
 RealBots.Target.vibemangos.RpcPort               = 1119
@@ -15,7 +16,7 @@ RealBots.Target.vibemangos.RealmName             = "VibeMangos"
 RealBots.Target.vibemangos.ClientBuild           = 58797
 RealBots.Target.vibemangos.ClientVersion         = "1.15.6"
 RealBots.Target.vibemangos.Tags                  = "protocol gameplay"
-RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass bot3@bots:pass"
+RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pass bot3@bots:pass bot4@bots:pass bot5@bots:pass bot6@bots:pass bot7@bots:pass bot8@bots:pass bot9@bots:pass bot10@bots:pass"
 RealBots.Target.vibemangos.VerifyServerSignature = 1
 RealBots.Target.vibemangos.ConnectTimeoutMs      = 10000
 RealBots.Target.vibemangos.StageTimeoutMs        = 30000
@@ -43,6 +44,15 @@ RealBots.Target.vmangos.Accounts              = "bot1@bots:pass"
 RealBots.Target.vmangos.VerifyServerSignature = 1
 RealBots.Target.vmangos.ConnectTimeoutMs      = 10000
 RealBots.Target.vmangos.StageTimeoutMs        = 30000
+
+# Deliberately unreachable (RFC 5737 TEST-NET-3, reserved for documentation) -- only
+# framework/FrameworkTests.cpp's "connecting to a dead address fails cleanly" uses this, via
+# TestBotOptions().TargetOverride("deadhost") rather than --target.
+RealBots.Target.deadhost.LoginAddress = "203.0.113.1"
+RealBots.Target.deadhost.RestPort     = 8081
+RealBots.Target.deadhost.RpcPort      = 1119
+RealBots.Target.deadhost.Tags         = "protocol gameplay"
+RealBots.Target.deadhost.Accounts     = "bot1@bots:pass"
 
 RealBots.IoThreads       = 1
 RealBots.WorkerThreads   = 2

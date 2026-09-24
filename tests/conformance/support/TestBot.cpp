@@ -89,8 +89,10 @@ void TestNoPacketAwaiter::Subscribe(std::function<void()> onReady)
 
 TestBot::TestBot(TestBotOptions options)
 {
+    std::string const targetName = options.TargetOverride().empty() ? ConformanceRun::Target() : options.TargetOverride();
+
     std::string error;
-    m_name = sRealBotMgr.AddWithOverrides(ConformanceRun::Target(), options.Overrides(), "", &error);
+    m_name = sRealBotMgr.AddWithOverrides(targetName, options.Overrides(), "", &error);
     if (m_name.empty())
         throw std::runtime_error("TestBot: " + error);
 
@@ -153,4 +155,9 @@ std::string TestBot::GetCharacterName() const
 BotStage TestBot::GetStage() const
 {
     return m_bot->GetPublishedInfo().Stage;
+}
+
+uint32_t TestBot::GetLatencyMs() const
+{
+    return m_bot->GetPublishedInfo().LatencyMs;
 }
