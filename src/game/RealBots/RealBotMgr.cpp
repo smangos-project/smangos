@@ -51,6 +51,7 @@ void RealBotMgr::Start()
         m_ioThreads.emplace_back([this]() { m_ioContext->RunUntilShutdown(); });
 
     m_workerCount = std::max<uint32>(1, RealBotConfig::WorkerThreads());
+    m_workerSignals.clear();
     for (uint32 i = 0; i < m_workerCount; ++i)
         m_workerSignals.push_back(std::make_unique<WorkerSignal>());
     for (uint32 i = 0; i < m_workerCount; ++i)
@@ -102,8 +103,14 @@ void RealBotMgr::Update(uint32 diff)
         if (!info)
             continue;
 
+        bool const kept = [&]()
+        {
+            std::lock_guard<std::mutex> lock(m_botsLock);
+            return m_keepBots.contains(name);
+        }();
+
         bool const terminal = info->Stage == BotStage::Disconnected || info->Stage == BotStage::Failed;
-        if (!terminal)
+        if (!terminal || kept)
         {
             m_terminalSinceMs.erase(name);
             continue;
@@ -185,13 +192,30 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
         return "";
     }
 
-    auto leaseIt = m_leases.find(targetName);
-    std::optional<RealBotAccountCredential> account = leaseIt != m_leases.end() ? leaseIt->second.Lease() : std::nullopt;
-    if (!account)
+    std::optional<RealBotAccountCredential> account;
+    if (!overrides.ShareAccountWith.empty())
     {
-        if (error)
-            *error = "no free accounts left for target '" + targetName + "'";
-        return "";
+        // Two sessions on one account: the other bot's credential, no second lease.
+        std::lock_guard<std::mutex> lock(m_botsLock);
+        auto sharedIt = m_botLeases.find(overrides.ShareAccountWith);
+        if (sharedIt == m_botLeases.end() || sharedIt->second.TargetName != targetName)
+        {
+            if (error)
+                *error = "no bot '" + overrides.ShareAccountWith + "' on target '" + targetName + "' to share an account with";
+            return "";
+        }
+        account = RealBotAccountCredential{ sharedIt->second.AccountName, sharedIt->second.Password };
+    }
+    else
+    {
+        auto leaseIt = m_leases.find(targetName);
+        account = leaseIt != m_leases.end() ? leaseIt->second.Lease() : std::nullopt;
+        if (!account)
+        {
+            if (error)
+                *error = "no free accounts left for target '" + targetName + "'";
+            return "";
+        }
     }
 
     RealBotLoginOptions options;
@@ -220,7 +244,11 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
 
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
-        m_botLeases[botName] = BotLease{ targetName, account->Name };
+        BotLease lease{ targetName, account->Name, account->Password };
+        ++m_accountUsers[AccountKey(lease)];
+        m_botLeases[botName] = std::move(lease);
+        if (overrides.Keep)
+            m_keepBots.insert(botName);
     }
 
     return botName;
@@ -234,20 +262,27 @@ std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string 
         name = options.AccountName.empty() ? ("bot" + std::to_string(id)) : options.AccountName;
 
     std::shared_ptr<RealBot> bot = std::make_shared<RealBot>();
-    bot->SetName(name);
     bot->SetIoContext(m_ioContext.get());
     bot->GetLoginOptions() = std::move(options);
 
     uint32 const workerIndex = id % m_workerCount;
     bot->SetWakeCallback([this, workerIndex]() { WakeWorker(workerIndex); });
 
-    if (RealBotConfig::PacketLogEnabled())
-        bot->EnablePacketLog(RealBotConfig::PacketLogDir());
-
     bot->GetBrain().PushTask(sBotTaskRegistry.Create("login", bot->GetContext(), BotTaskArgs()), bot->GetContext());
 
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
+
+        // A name is one bot: two on the same account (ShareAccountWith) would otherwise both be
+        // named after it, and the second would silently replace the first.
+        std::string const baseName = name;
+        for (uint32 suffix = 2; m_bots.contains(name); ++suffix)
+            name = baseName + "#" + std::to_string(suffix);
+
+        bot->SetName(name);
+        if (RealBotConfig::PacketLogEnabled())
+            bot->EnablePacketLog(RealBotConfig::PacketLogDir());
+
         m_bots[name] = bot;
         m_botWorkerIndex[name] = workerIndex;
     }
@@ -268,6 +303,7 @@ void RealBotMgr::Remove(std::string const& name)
         bot = std::move(it->second);
         m_bots.erase(it);
         m_botWorkerIndex.erase(name);
+        m_keepBots.erase(name);
 
         auto leaseIt = m_botLeases.find(name);
         if (leaseIt != m_botLeases.end())
@@ -295,6 +331,7 @@ void RealBotMgr::RemoveAll()
         leases = std::move(m_botLeases);
         m_botLeases.clear();
         m_botWorkerIndex.clear();
+        m_keepBots.clear();
     }
 
     for (auto const& [name, lease] : leases)
@@ -303,9 +340,28 @@ void RealBotMgr::RemoveAll()
 
 void RealBotMgr::ReleaseLease(BotLease const& lease)
 {
+    {
+        std::lock_guard<std::mutex> lock(m_botsLock);
+        auto users = m_accountUsers.find(AccountKey(lease));
+        if (users != m_accountUsers.end() && --users->second > 0)
+            return; // another bot is still logged in on it
+        if (users != m_accountUsers.end())
+            m_accountUsers.erase(users);
+    }
+
     auto it = m_leases.find(lease.TargetName);
     if (it != m_leases.end())
         it->second.Release(lease.AccountName);
+}
+
+bool RealBotMgr::Reconnect(std::string const& name)
+{
+    std::shared_ptr<RealBot> bot = GetBot(name);
+    if (!bot)
+        return false;
+
+    bot->Reconnect();
+    return true;
 }
 
 std::optional<std::pair<size_t, size_t>> RealBotMgr::GetLeaseCounts(std::string const& targetName) const

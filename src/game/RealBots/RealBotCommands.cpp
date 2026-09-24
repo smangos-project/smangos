@@ -5,6 +5,7 @@
 #include "RealBotMgr.h"
 #include "RealBotTarget.h"
 #include <algorithm>
+#include <cctype>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -41,9 +42,14 @@ void HandleAdd(std::istringstream& iss, RealBotCommands::Sink const& sink)
         targetName = RealBotConfig::DefaultTarget();
 
     uint32_t count = 1;
-    uint32_t parsedCount = 0;
-    if (iss >> parsedCount) // absent (or unparsable) leaves count at its default of 1
-        count = parsedCount;
+    RealBotAddOverrides overrides;
+    for (std::string token; iss >> token;)
+    {
+        if (token == "keep=1" || token == "keep=true")
+            overrides.Keep = true;
+        else if (token.find('=') == std::string::npos && std::all_of(token.begin(), token.end(), [](unsigned char c) { return std::isdigit(c) != 0; }))
+            count = uint32_t(std::stoul(token));
+    }
 
     if (targetName.empty())
     {
@@ -54,7 +60,7 @@ void HandleAdd(std::istringstream& iss, RealBotCommands::Sink const& sink)
     for (uint32_t i = 0; i < std::max<uint32_t>(1, count); ++i)
     {
         std::string error;
-        std::string const name = sRealBotMgr.Add(targetName, "", &error);
+        std::string const name = sRealBotMgr.AddWithOverrides(targetName, overrides, "", &error);
         sink(name.empty() ? ("add: " + error) : ("bot '" + name + "' is connecting"));
     }
 }
@@ -67,6 +73,13 @@ void HandleRemove(std::istringstream& iss)
         sRealBotMgr.RemoveAll();
     else
         sRealBotMgr.Remove(name);
+}
+
+void HandleRelog(std::istringstream& iss, RealBotCommands::Sink const& sink)
+{
+    std::string name;
+    iss >> name;
+    sink(sRealBotMgr.Reconnect(name) ? ("bot '" + name + "' is logging in again") : ("no such bot '" + name + "'"));
 }
 
 void HandleList(RealBotCommands::Sink const& sink)
@@ -139,8 +152,10 @@ void HandleStatus(RealBotCommands::Sink const& sink)
 void RealBotCommands::PrintHelp(Sink const& sink)
 {
     sink("targets                    lists every configured target and its free account count");
-    sink("add [target] [count]       leases account(s) from [target] (or RealBots.DefaultTarget) and adds that many bots");
+    sink("add [target] [count] [keep=1]  leases account(s) from [target] (or RealBots.DefaultTarget) and adds that many bots;");
+    sink("                           keep=1 stops RealBots.ReapAfterMs from removing them once they are Disconnected/Failed");
     sink("remove <name|all>          removes a bot");
+    sink("relog <name>               drops a bot's session (no logout request) and logs it in again with the same account");
     sink("list                       lists every bot and its stage");
     sink("info <name>                shows one bot's stage, latency, character, last error");
     sink("task <name> <task> [args]  pushes a named task onto a running bot");
@@ -163,6 +178,8 @@ void RealBotCommands::Handle(std::string const& line, Sink const& sink)
         HandleAdd(iss, sink);
     else if (verb == "remove")
         HandleRemove(iss);
+    else if (verb == "relog")
+        HandleRelog(iss, sink);
     else if (verb == "list")
         HandleList(sink);
     else if (verb == "info")

@@ -200,8 +200,17 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         // clean: sends CLASSIC_CMSG_LOGOUT_REQUEST and waits up to RealBots.LogoutTimeoutMs for
         // CLASSIC_SMSG_LOGOUT_COMPLETE before moving to Disconnected; otherwise (or if there's no
-        // connection to ask) moves to Disconnected immediately (bot-phase-1.md, "Login").
+        // connection to ask) moves to Disconnected immediately (bot-phase-1.md, "Login"). Not clean
+        // is the abrupt one, "the client vanished": the sockets are closed with no logout request,
+        // and BotDisconnectReason::Requested is still what gets recorded.
         void Disconnect(bool clean);
+
+        // Logs the bot in again with the identity and login options it already has (bot-phase-2.md,
+        // "Reconnect"): whatever it was doing is dropped abruptly (connections closed, tasks and
+        // non-persistent hooks gone, no logout request), and a fresh built-in "login" task starts.
+        // Works from any stage, Disconnected and Failed included. Posted like everything else, so it
+        // is safe to call from any thread; there is no automatic policy for when (that is behavior).
+        void Reconnect();
 
         RealBotInfo GetPublishedInfo() const;
 
@@ -215,6 +224,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         void PublishInfo();
         void LogPacket(BotPacket const& packet, BotPacketDir dir);
         void OnConnectionLost(BotConnectionKind kind);
+        void ReconnectNow();
 
         std::string m_name;
         IO::IoContext* m_ioContext = nullptr;

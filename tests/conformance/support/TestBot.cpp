@@ -91,8 +91,11 @@ TestBot::TestBot(TestBotOptions options)
 {
     std::string const targetName = options.TargetOverride().empty() ? ConformanceRun::Target() : options.TargetOverride();
 
+    RealBotAddOverrides overrides = options.Overrides();
+    overrides.Keep = true; // the scenario, not the reaper, decides when this bot goes
+
     std::string error;
-    m_name = sRealBotMgr.AddWithOverrides(targetName, options.Overrides(), "", &error);
+    m_name = sRealBotMgr.AddWithOverrides(targetName, overrides, "", &error);
     if (m_name.empty())
         throw std::runtime_error("TestBot: " + error);
 
@@ -123,6 +126,11 @@ void TestBot::Disconnect(bool clean) const
 {
     std::shared_ptr<RealBot> bot = m_bot;
     bot->Post([bot, clean]() { bot->Disconnect(clean); });
+}
+
+void TestBot::Reconnect() const
+{
+    m_bot->Reconnect();
 }
 
 void TestBot::PushTask(std::unique_ptr<BotTask> task) const

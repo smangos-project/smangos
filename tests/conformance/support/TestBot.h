@@ -33,6 +33,10 @@ class TestBotOptions
         // only "framework: connecting to a dead address fails" needs this, to reach a target
         // that's deliberately unreachable rather than the one under test.
         TestBotOptions& TargetOverride(std::string name) { m_targetOverride = std::move(name); return *this; }
+        // Logs in on the same account as `other` (a TestBot) without a second lease, for the
+        // duplicate-login scenarios: two sessions on one account, on purpose.
+        template<typename Bot>
+        TestBotOptions& ShareAccountWith(Bot const& other) { m_overrides.ShareAccountWith = other.GetName(); return *this; }
 
         RealBotAddOverrides const& Overrides() const { return m_overrides; }
         std::string const& TargetOverride() const { return m_targetOverride; }
@@ -243,7 +247,13 @@ class TestBot
             SendRawPacket(std::move(pkt), connection);
         }
 
+        // clean: a CMSG_LOGOUT_REQUEST and the wait for SMSG_LOGOUT_COMPLETE; not clean is the abrupt
+        // one, "the client vanished": the sockets close with no logout request, and the reason
+        // recorded is still Requested.
         void Disconnect(bool clean) const;
+        // Logs in again on the same account and options (RealBot::Reconnect), from any stage.
+        // A TestBot is never reaped while Disconnected or Failed, so this always has a bot to act on.
+        void Reconnect() const;
         void PushTask(std::unique_ptr<BotTask> task) const;
 
         // Hooks live beside the brain's stack (bot-phase-2.md, "Hooks off the stack"): they see

@@ -4,6 +4,7 @@
 #include "BotWorldConnection.h"
 #include "ClassicOpcodes.h"
 #include "ClassicPackets.h"
+#include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>
 
@@ -232,6 +233,39 @@ void RealBot::Disconnect(bool clean)
     {
         SetStage(BotStage::Disconnected);
     }
+}
+
+void RealBot::Reconnect()
+{
+    Post([this]() { ReconnectNow(); });
+}
+
+void RealBot::ReconnectNow()
+{
+    // Down first, the way an abrupt Disconnect does it. SetStage(Disconnected) is a no-op when the
+    // bot already is, so what it does on a change (tasks and hooks, connections) is done directly too.
+    if (m_stage != BotStage::Disconnected)
+    {
+        m_disconnectRequested = true;
+        SetStage(BotStage::Disconnected);
+    }
+    m_brain.Clear();
+    CloseConnections();
+
+    // A new session: nothing of the last one's outcome carries over.
+    m_lastError.clear();
+    m_failedStage = BotStage::Disconnected;
+    m_disconnectReason = BotDisconnectReason::None;
+    m_disconnectRequested = false;
+    m_awaitingLogoutComplete = false;
+    m_latencyMs = 0;
+    m_pingTimerMs = 0;
+    m_pingInFlight = false;
+    m_stageEnteredMs = m_elapsedMs;
+
+    // A bot without the built-in tasks registered (the coroutine tests' TestFakeBot) has no login to run.
+    if (std::unique_ptr<BotTask> login = sBotTaskRegistry.Create("login", *m_context, BotTaskArgs()))
+        m_brain.PushTask(std::move(login), *m_context);
 }
 
 void RealBot::ProcessCommands()

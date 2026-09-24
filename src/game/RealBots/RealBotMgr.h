@@ -17,6 +17,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -32,6 +33,13 @@ struct RealBotAddOverrides
     std::optional<uint8_t> Race;
     std::optional<uint8_t> Class;
     BotStage StopAt = BotStage::InWorld;
+    // The bot's owner manages its lifetime: Update never reaps it (RealBots.ReapAfterMs), however
+    // long it sits Disconnected or Failed -- what a test that reconnects it needs.
+    bool Keep = false;
+    // Name of a running bot whose account this one logs in with too, without a second lease (two
+    // sessions on one account, for the duplicate-login scenarios). The account goes back to the
+    // pool when the last bot using it is removed.
+    std::string ShareAccountWith;
 };
 
 // IoContext.h is included in full (not forward-declared) even though only a pointer to it is
@@ -74,6 +82,8 @@ class RealBotMgr
         std::string AddWithOverrides(std::string const& targetName, RealBotAddOverrides const& overrides, std::string name = "", std::string* error = nullptr);
         void Remove(std::string const& name);
         void RemoveAll();
+        // Logs the named bot in again (RealBot::Reconnect); false if there is no such bot.
+        bool Reconnect(std::string const& name);
 
         std::vector<std::string> List() const;
         std::optional<RealBotInfo> GetInfo(std::string const& name) const;
@@ -100,6 +110,7 @@ class RealBotMgr
         {
             std::string TargetName;
             std::string AccountName;
+            std::string Password; // the leased credential's own, for a bot that shares the account
         };
 
         // What a worker sleeps on: it wakes at its regular tick or as soon as any bot pinned to it
@@ -116,7 +127,9 @@ class RealBotMgr
         void WorkerLoop(uint32 workerIndex);
         void WakeWorker(uint32 workerIndex);
         std::string AddWithOptions(RealBotLoginOptions options, std::string name);
+        // Drops one bot's use of its account; the account itself is released when it was the last.
         void ReleaseLease(BotLease const& lease);
+        static std::string AccountKey(BotLease const& lease) { return lease.TargetName + "\n" + lease.AccountName; }
 
         std::unique_ptr<IO::IoContext> m_ioContext;
         std::vector<std::thread> m_ioThreads;
@@ -134,6 +147,11 @@ class RealBotMgr
         mutable std::mutex m_botsLock;
         std::unordered_map<std::string, std::shared_ptr<RealBot>> m_bots;
         std::unordered_map<std::string, BotLease> m_botLeases;
+        // How many bots are logged in on each leased account (more than one only with
+        // ShareAccountWith), keyed by AccountKey. Guarded by m_botsLock.
+        std::unordered_map<std::string, uint32> m_accountUsers;
+        // Bots Update never reaps (RealBotAddOverrides::Keep). Guarded by m_botsLock.
+        std::unordered_set<std::string> m_keepBots;
         // Which worker thread ticks each bot -- id % m_workerCount, fixed at Add time.
         std::unordered_map<std::string, uint32> m_botWorkerIndex;
         uint32 m_nextId = 1;

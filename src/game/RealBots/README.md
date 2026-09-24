@@ -210,6 +210,21 @@ A bot's `RealBotInfo::FailedStage` records what stage it was at right before `Fa
 ("`info`" prints "`Failed (was CharSelect)`"), and `BotDisconnectReason` (`None` / `Requested` /
 `ConnectionLost`) records whether `Disconnect()` was called first or the connection just dropped.
 
+**Sessions.** `Disconnect(true)` is the clean one (`CMSG_LOGOUT_REQUEST`, wait for
+`SMSG_LOGOUT_COMPLETE`, only from `InWorld`); `Disconnect(false)` is the abrupt "the client vanished":
+the sockets close with no logout request and `Requested` is still what is recorded.
+`RealBot::Reconnect()` (also `TestBot::Reconnect()`, `RealBotMgr::Reconnect(name)`, the `relog <name>`
+console verb) drops whatever the bot is doing the same abrupt way -- connections closed, tasks and
+non-persistent hooks gone -- clears the last session's error/failed stage/disconnect reason, and starts
+a fresh `login` with the same account and options, from any stage. There is no automatic reconnect
+policy; that is behavior. `RealBotMgr::Update` reaps a bot that has sat `Disconnected`/`Failed` for
+`RealBots.ReapAfterMs`, unless it was added with `keep` (`add ... keep=1`, `RealBotAddOverrides::Keep`;
+`TestBot` always does), which is what makes reconnecting a finished bot possible at all. Two sessions
+on one account, for the duplicate-login scenarios, are `TestBotOptions().ShareAccountWith(otherBot)`
+(`RealBotAddOverrides::ShareAccountWith`): it takes the other bot's credential without a second lease,
+and the account only goes back to the pool when the last bot using it is removed. Bot names are
+unique: a second bot on the same account is named `<account>#2`.
+
 ## What vibemangos needs during world entry
 
 Confirmed live against a running vibemangos, and (for the redirect) against TrinityCore
@@ -349,8 +364,8 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   ones). Any extra Catch2 filter still works on top, e.g.
   `tests-conformance --target vibemangos "[protocol]"`.
 - **`contrib/realbotrunner`** (`BUILD_REALBOT_RUNNER`): a standalone console,
-  `realbotrunner -c realbotrunner.conf`. `targets`, `add [target] [count]`, `remove <name|all>`,
-  `list`, `info <name>`, `task <name> <task> [args]`, `tasks <name>`, `status`, `help`, plus its own
+  `realbotrunner -c realbotrunner.conf`. `targets`, `add [target] [count] [keep=1]`, `remove <name|all>`,
+  `relog <name>`, `list`, `info <name>`, `task <name> <task> [args]`, `tasks <name>`, `status`, `help`, plus its own
   `quit`/`exit` -- everything else goes through `RealBotCommands::Handle`
   (`RealBotCommands.h/.cpp`), shared verb-for-verb with:
 - **`.realbot` in mangosd** (`RealBots.Enable = 1`, `SEC_ADMINISTRATOR`, console-allowed): the same

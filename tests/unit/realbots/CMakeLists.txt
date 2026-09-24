@@ -1,7 +1,9 @@
 set(REALBOTS_DIR ${CMAKE_SOURCE_DIR}/src/game/RealBots)
 
 add_executable(tests-realbots
+  ${REALBOTS_DIR}/RealBotCommands.cpp
   ${REALBOTS_DIR}/RealBotConfig.cpp
+  ${REALBOTS_DIR}/RealBotMgr.cpp
   ${REALBOTS_DIR}/RealBotTarget.cpp
   ${REALBOTS_DIR}/Core/RealBot.cpp
   ${REALBOTS_DIR}/Core/BotAccountLease.cpp
@@ -26,6 +28,7 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Net/BotLogin.cpp
   CoroutineTests.cpp
   BotHookTests.cpp
+  BotReconnectTests.cpp
   BotStageWatchdogTests.cpp
   BotDispatchOrderTests.cpp
   TestRoutineTests.cpp
@@ -40,6 +43,7 @@ add_executable(tests-realbots
   BotRestClientTests.cpp
   BotBnetConnectionTests.cpp
   BotBnetLoginTests.cpp
+  RealBotMgrTests.cpp
   RealBotTargetTests.cpp
   BotAccountLeaseTests.cpp
   TestMain.cpp
