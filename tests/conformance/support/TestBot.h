@@ -244,6 +244,14 @@ class TestBot
         void Disconnect(bool clean) const;
         void PushTask(std::unique_ptr<BotTask> task) const;
 
+        // Hooks live beside the brain's stack (bot-phase-2.md, "Hooks off the stack"): they see
+        // packets and stage changes but never bury the running routine, so unlike PushTask they're
+        // safe to add at any stage, including mid-login. The returned handle is only ever compared,
+        // never dereferenced here, so it's safe to hold after the hook is gone; RemoveHook with it
+        // is then a no-op. Non-persistent hooks go when the bot disconnects.
+        BotTask* AddHook(std::unique_ptr<BotTask> hook, bool persistent = false) const;
+        void RemoveHook(BotTask* hook) const;
+
         std::string GetLastError() const;
         BotStage GetFailedStage() const;
         BotDisconnectReason GetDisconnectReason() const;

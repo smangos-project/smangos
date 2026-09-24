@@ -44,6 +44,12 @@ class BotContext
         // Pushes a task without waiting for it.
         void PushTask(std::unique_ptr<BotTask> task);
 
+        // Adds a hook beside the stack: it sees OnPacket (before the stack's tasks) and
+        // OnStageChanged, never Update, and never buries the running routine. Dropped on
+        // disconnect unless persistent. Returns the handle RemoveHook takes.
+        BotTask* AddHook(std::unique_ptr<BotTask> hook, bool persistent = false);
+        void RemoveHook(BotTask* hook);
+
         template<typename T>
         void Send(T const& packet);
 

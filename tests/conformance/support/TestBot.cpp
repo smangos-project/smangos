@@ -132,6 +132,21 @@ void TestBot::PushTask(std::unique_ptr<BotTask> task) const
     bot->Post([bot, shared]() { bot->GetBrain().PushTask(std::move(*shared), bot->GetContext()); });
 }
 
+BotTask* TestBot::AddHook(std::unique_ptr<BotTask> hook, bool persistent) const
+{
+    BotTask* handle = hook.get(); // the caller's thread owns it until the post below runs
+    std::shared_ptr<RealBot> bot = m_bot;
+    auto shared = std::make_shared<std::unique_ptr<BotTask>>(std::move(hook));
+    bot->Post([bot, shared, persistent]() { bot->GetBrain().AddHook(std::move(*shared), bot->GetContext(), persistent); });
+    return handle;
+}
+
+void TestBot::RemoveHook(BotTask* hook) const
+{
+    std::shared_ptr<RealBot> bot = m_bot;
+    bot->Post([bot, hook]() { bot->GetBrain().RemoveHook(hook); });
+}
+
 std::string TestBot::GetLastError() const
 {
     return m_bot->GetPublishedInfo().LastError;

@@ -25,8 +25,7 @@ void RealBot::SetStage(BotStage stage)
     BotStage from = m_stage;
     m_stage = stage;
 
-    if (BotTask* top = m_brain.Top())
-        top->OnStageChanged(*m_context, from, stage);
+    m_brain.DispatchStageChanged(*m_context, from, stage);
 
     if (stage == BotStage::Failed)
         m_failedStage = from;

@@ -149,16 +149,17 @@ class IgnoreTimeSyncTask : public BotTask
 };
 ```
 
-Push it with `ctx.PushTask(std::make_unique<IgnoreTimeSyncTask>())` from inside a routine, or
-`TestBot::PushTask` from a conformance scenario. **`BotBrain` only ticks the top of the stack** --
-every task's `OnPacket` hook fires top-down regardless of what's ticking, but `Update()` does not.
-Pushing a task that never finishes (like this one, or `tests/conformance/framework/
-FrameworkTests.cpp`'s `DropPingTask`) permanently stops whatever was ticking underneath it from
-making progress. That's harmless once the thing underneath has nothing left it needs ticking for
-(an already-`Hold()`ing `login`, or `idle`) -- and a real bug, found by running a scenario live and
-watching it hang, if pushed while `login` is still actively resolving its own awaiters (which *are*
-polled from `Update()`, not pushed some other way). Push denylist-style tasks like this only once
-the bot is already parked where you want it.
+Add it with `ctx.AddHook(std::make_unique<IgnoreTimeSyncTask>())` from inside a routine, or
+`TestBot::AddHook` from a conformance scenario. A **hook** lives beside the brain's task stack, not
+on it: it sees every packet (before the stack's tasks, in insertion order) and every stage change,
+but is never `Update()`d and is never "on top", so it can't bury the routine that's running. It's
+safe at any stage, including mid-login. Hooks go when the bot disconnects unless added with
+`persistent=true`; `RemoveHook(handle)` removes one earlier, even from inside its own `OnPacket`.
+
+`ctx.PushTask` / `TestBot::PushTask` still mean "a task that runs": **`BotBrain` only ticks the top of
+the stack**, so a pushed task that never finishes stops whatever was ticking underneath it from
+making progress. That is right for a task that does the bot's work, and wrong for something that only
+watches or filters packets: use a hook for those.
 
 ## Stages and `stop_at`
 

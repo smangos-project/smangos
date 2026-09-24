@@ -52,11 +52,8 @@ TEST_CASE("framework: Drop keeps a CMSG_PING off the wire", "[protocol]")
         TestBot bot;
         REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
 
-        // Only safe to push once login is done and just holding (BotBrain only ticks the top of
-        // the stack, and login's own awaiters -- e.g. the one behind ctx.Login -- are polled from
-        // there; pushing this while login is still actively progressing buries it and login never
-        // reaches InWorld at all, found by running this scenario live and watching it hang).
-        bot.PushTask(std::make_unique<DropPingTask>());
+        // A hook, not a pushed task: it never sits on the stack, so it can't bury `login`.
+        bot.AddHook(std::make_unique<DropPingTask>());
 
         // RealBots.PingIntervalMs defaults to 5000ms; give it margin past that.
         CHECK(co_await bot.NoPacket(CLASSIC_SMSG_PONG, 8000));
