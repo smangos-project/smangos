@@ -35,8 +35,10 @@ switch, since the server-side port will need it unconditionally.
   inbox (`RealBot::QueueIncoming`, reached through `RealBot::Post` so it's never touched directly
   from another thread); they do nothing else.
 - **Each bot is pinned to one worker** at `Add` time (`id % WorkerThreads`) and never rebalanced.
-  Every worker walks the whole bot map on a jittered `RealBots.TickIntervalMs` interval (±20%, so
-  many workers don't all wake up in lockstep) and ticks only the bots pinned to it.
+  Every worker walks the whole bot map on a jittered `RealBots.TickIntervalMs` interval (plus or
+  minus 20%, so many workers don't all wake up in lockstep) and ticks only the bots pinned to it --
+  and also wakes early to tick a bot the moment something is posted to it (see "Workers wake on
+  work").
 - **`RealBot` itself is touched only from its own worker thread** -- stage, identity, connections,
   brain, the command/inbox queues. The only thread-safe surfaces are `Post` (queue a callback to
   run on the bot's own next `Tick`), `QueueIncoming`, and `GetPublishedInfo()` (a mutex-guarded
@@ -44,10 +46,11 @@ switch, since the server-side port will need it unconditionally.
   `tests/conformance`'s `TestBot` all read from another thread). Anything that needs to *mutate* a
   bot from outside its own thread -- `RealBotMgr::RunTask`, `TestBot::Send`/`Disconnect`/`PushTask`
   -- does it by `Post`ing a closure, never by calling a mutator directly.
-- **`RealBot::Tick`** order: drain posted commands, advance the clock, drain incoming packets
-  (dispatched top-down through the task stack, then default handling), check the logout deadline,
-  maybe send a keepalive ping, update the brain (ticks only the top of the stack), publish the
-  info snapshot.
+- **`RealBot::Tick`** order: drain posted commands, advance the clock, drain incoming packets (each
+  dispatched through the hooks, then the task stack top-down, then default handling, with a
+  zero-time brain update between packets -- see "Ordering guarantee"), check the logout deadline
+  and the stage watchdog, maybe send a keepalive ping (only `InWorld`), update the brain (ticks only
+  the top of the stack), publish the info snapshot.
 
 ## The coroutine layer
 
@@ -318,12 +321,15 @@ RealBots.Target.vibemangos.Accounts              = "bot1@bots:pass bot2@bots:pas
 RealBots.Target.vibemangos.VerifyServerSignature = 1
 ```
 
-`vibemangos` is the only target Phase 1 must actually pass on; `trinitycore` is a backup reference,
-used by hand only when vibemangos itself is in doubt; `vmangos` (this tree's own root server) is
-defined and expected to fail everything until the port lands (that's the whole point of
-`tests/conformance/expectations/vmangos.txt` -- it's the porting scoreboard, and it shrinks as
-`port-plan.md` lands). `Tags` is what `tests-conformance --target <name>` uses to exclude
-`[protocol]`/`[gameplay]`-tagged scenarios the target structurally can't run (see below) --
+`vibemangos` is the target every scenario must pass on; `trinitycore` is a backup reference, used by
+hand only when vibemangos itself is in doubt (not yet stood up, see below); `vmangos` (this tree's own
+root server) is defined and expected to fail everything until the port lands (that's the whole point
+of `tests/conformance/expectations/vmangos.txt` -- it's the porting scoreboard, and it shrinks as
+`port-plan.md` lands; `expectations/vibemangos.txt` is the same file format for what the *reference*
+does not pass). `Tags` is what `tests-conformance --target <name>` uses to exclude
+`[protocol]`/`[gameplay]`/`[slow]`/`[load]`-tagged scenarios the target structurally can't run (see
+below) -- accounts are provisioned out-of-band with `contrib/realbotrunner/provision-accounts.ps1`, and
+`tests/conformance/run-all.ps1` prints one scoreboard per target --
 `contrib/realbotrunner/realbotrunner.conf.dist` and `tests/conformance/targets/
 tests-conformance.conf.dist` both have the full shape, including every global `RealBots.*` key.
 
@@ -365,6 +371,22 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   scenario named in `expectations/<target>.txt` (skipped under `--strict`, to find newly-passing
   ones). Any extra Catch2 filter still works on top, e.g.
   `tests-conformance --target vibemangos "[protocol]"`.
+
+  **The scenarios** (all `[protocol]`, one directory per `port-plan.md` step, each with a line in
+  `expectations/vmangos.txt` naming the step that will make it pass): `login/` (step 2: ticket, wrong
+  password, unknown account, RPC logon, forged ticket, realm list, realm join, unlisted realm),
+  `world_socket/` (step 3: encrypted mode, signature, wrong digest, foreign ticket, never-ack, unknown
+  and truncated packets, compression, time sync, pong routing), `char_screen/` (step 4: enum, create,
+  delete, duplicate and invalid names, a foreign guid), `world_entry/` (step 5: the redirect and its
+  retry, `SMSG_LOGIN_VERIFY_WORLD`, logout), `session/` (reconnect after a clean and an abrupt exit, a
+  second login, idling) and `load/` (`[load]`: 10, 50 and 100 bots). `[slow]` scenarios wait on
+  server-side timeouts or long idles (minutes); `[load]` ones need a big account pool and SKIP,
+  saying how many accounts they wanted, when it is smaller. Both run only if the target's `Tags`
+  list them, so a plain `--target vibemangos` stays quick. `tests/conformance/run-all.ps1` runs every
+  configured target and prints a scoreboard for each (with `-Strict`: which expected-fail scenarios
+  now pass). Against the dev vibemangos, with `slow` in its tags: 35 passed, 0 failed, 2 skipped (the
+  create/delete scenarios: the test account is at the realm's character limit), 1 listed in
+  `expectations/vibemangos.txt`; the `[load]` scenarios were only ever seen to skip (one account).
 - **`contrib/realbotrunner`** (`BUILD_REALBOT_RUNNER`): a standalone console,
   `realbotrunner -c realbotrunner.conf`. `targets`, `add [target] [count] [keep=1]`, `remove <name|all>`,
   `relog <name>`, `list`, `info <name>`, `task <name> <task> [args]`, `tasks <name>`, `status`, `help`, plus its own
