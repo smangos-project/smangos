@@ -151,6 +151,10 @@ class FakeWorldPeer
                 return Fail("DecryptRecv failed");
 
             std::memcpy(&out.Opcode, body.data(), sizeof(uint32));
+            {
+                std::lock_guard<std::mutex> lock(m_receivedLock);
+                m_received.push_back(out.Opcode);
+            }
             out.Data.clear();
             if (body.size() > sizeof(uint32))
                 out.Data.append(body.data() + sizeof(uint32), body.size() - sizeof(uint32));
@@ -175,6 +179,13 @@ class FakeWorldPeer
         }
 
         uint32 LastOpcode() const { return m_lastOpcode; }
+
+        // Every client packet this peer has read, in order (for "the server never saw it" checks).
+        std::vector<uint32> ReceivedOpcodes() const
+        {
+            std::lock_guard<std::mutex> lock(m_receivedLock);
+            return m_received;
+        }
 
         // True once the client has closed its end (or an error/timeout hit): a read of one byte
         // would fail. Only meant for "the client closed the connection" scenarios.
@@ -267,6 +278,8 @@ class FakeWorldPeer
         PacketCrypt m_crypt;
         std::string m_error;
         uint32 m_lastOpcode = 0;
+        mutable std::mutex m_receivedLock;
+        std::vector<uint32> m_received;
 };
 
 // Accepts connections on a fixed port and runs `script` on a thread of its own for each. Destroy it
@@ -324,6 +337,20 @@ class FakeWorldServer
             return m_accepted;
         }
         int Finished() const { return m_finished.load(); }
+
+        // Every client packet any connection to this server has sent, in arrival order per
+        // connection, connections in accept order.
+        std::vector<uint32> ReceivedOpcodes() const
+        {
+            std::vector<uint32> all;
+            std::lock_guard<std::mutex> lock(m_mutex);
+            for (auto const& peer : m_peers)
+            {
+                std::vector<uint32> const opcodes = peer->ReceivedOpcodes();
+                all.insert(all.end(), opcodes.begin(), opcodes.end());
+            }
+            return all;
+        }
 
         // Polls until `count` scripts have returned; false on timeout.
         bool WaitForFinished(int count, std::chrono::milliseconds timeout = std::chrono::milliseconds(5000)) const

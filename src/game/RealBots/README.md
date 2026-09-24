@@ -342,9 +342,11 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   `tests-realbots.exe "[live]" --success`.
   For memory errors, configure a separate tree with `-DENABLE_ASAN=ON` (clang or MSVC; output goes to
   `bin-asan/`, never over a normal build's `bin/`), build `tests-realbots` there and run it with
-  `ASAN_OPTIONS=detect_leaks=0`. The intermittent `BotBnetConnectionTests` crash from Phase 1 did not
-  reproduce in 50 whole-binary runs under ASan, 50 `ctest -L unit --repeat until-fail:50` passes, or
-  100 rapid whole-binary Release runs (2026-09-24); nothing was changed for it.
+  `ASAN_OPTIONS=detect_leaks=0` (or `ctest -C RelWithDebInfo -L unit --repeat until-fail:50` there: the
+  whole unit suite, 159 tests, passed 50 consecutive times under ASan on 2026-09-24, 22 minutes). The
+  intermittent `BotBnetConnectionTests` crash from Phase 1 never reproduced (50 whole-binary ASan runs,
+  100 rapid Release runs, and that repeat), so nothing was changed for it and it is not known to be
+  fixed. Note the suite uses fixed loopback ports: never run two copies at once.
 - The world half of the login has its own scripted fake, `tests/support/FakeWorldServer.h`: one
   straight-line script per accepted connection over a blocking `FakeWorldPeer` (V2 banner, framing,
   `PacketCrypt`, typed `Send`/`Expect`), with the Realm and Instance handshakes as ready-made

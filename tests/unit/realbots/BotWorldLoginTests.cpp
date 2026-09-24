@@ -806,3 +806,118 @@ TEST_CASE("world login: the connect timeout bounds an unreachable world server",
     CHECK(h.Outcome.Error.find("world connect failed") != std::string::npos);
     CHECK(elapsed.count() < 3000);
 }
+
+namespace
+{
+// One packet a hook is told to interfere with: which way, which opcode, on which connection.
+struct PacketRule
+{
+    BotPacketDir Dir;
+    uint32 Opcode;
+    BotConnectionKind Connection;
+};
+
+class RuleHook : public BotTask
+{
+    public:
+        RuleHook(PacketRule rule, BotPacketAction action) : m_rule(rule), m_action(action) {}
+
+        char const* GetName() const override { return "rule_hook"; }
+        BotTaskResult Update(BotContext&, uint32) override { return BotTaskResult::Running; }
+
+        BotPacketAction OnPacket(BotContext&, BotPacket& packet, BotPacketDir dir) override
+        {
+            if (dir == m_rule.Dir && packet.Opcode == m_rule.Opcode && packet.Connection == m_rule.Connection)
+            {
+                ++Matched;
+                return m_action;
+            }
+            return BotPacketAction::Continue;
+        }
+
+        uint32 Matched = 0;
+
+    private:
+        PacketRule m_rule;
+        BotPacketAction m_action;
+};
+}
+
+TEST_CASE("world login: every handshake packet is seen by hooks and the observer, and can be handled or dropped", "[worldlogin]")
+{
+    // The Done-when bar of bot-phase-2.md, one packet at a time: for each packet of the login, on the
+    // connection it belongs to, a hook that swallows an incoming one (the routine waiting for it never
+    // sees it) or drops an outgoing one (the server never receives it) stops the login there, while
+    // the hook still saw the packet and the bot's observer saw every incoming one regardless.
+    using Dir = BotPacketDir;
+    using Conn = BotConnectionKind;
+    std::vector<PacketRule> const incoming = {
+        { Dir::Incoming, CLASSIC_SMSG_AUTH_CHALLENGE, Conn::Realm },
+        { Dir::Incoming, CLASSIC_SMSG_ENTER_ENCRYPTED_MODE, Conn::Realm },
+        { Dir::Incoming, CLASSIC_SMSG_AUTH_RESPONSE, Conn::Realm },
+        { Dir::Incoming, CLASSIC_SMSG_ENUM_CHARACTERS_RESULT, Conn::Realm },
+        { Dir::Incoming, CLASSIC_SMSG_CONNECT_TO, Conn::Realm },
+        { Dir::Incoming, CLASSIC_SMSG_AUTH_CHALLENGE, Conn::Instance },
+        { Dir::Incoming, CLASSIC_SMSG_ENTER_ENCRYPTED_MODE, Conn::Instance },
+        { Dir::Incoming, CLASSIC_SMSG_RESUME_COMMS, Conn::Instance },
+        { Dir::Incoming, CLASSIC_SMSG_LOGIN_VERIFY_WORLD, Conn::Instance },
+    };
+    std::vector<PacketRule> const outgoing = {
+        { Dir::Outgoing, CLASSIC_CMSG_AUTH_SESSION, Conn::Realm },
+        { Dir::Outgoing, CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK, Conn::Realm },
+        { Dir::Outgoing, CLASSIC_CMSG_ENUM_CHARACTERS, Conn::Realm },
+        { Dir::Outgoing, CLASSIC_CMSG_PLAYER_LOGIN, Conn::Realm },
+        { Dir::Outgoing, CLASSIC_CMSG_AUTH_CONTINUED_SESSION, Conn::Instance },
+        { Dir::Outgoing, CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK, Conn::Instance },
+    };
+
+    auto run = [](PacketRule const& rule, BotPacketAction action)
+    {
+        INFO((rule.Dir == BotPacketDir::Incoming ? "IN " : "OUT ") << ClassicOpcodeName(rule.Opcode)
+            << (rule.Connection == BotConnectionKind::Realm ? " realm" : " instance"));
+
+        // Declared before the harness: the bot's thread may still call the observer while the
+        // harness is being torn down.
+        std::vector<uint32> observed;
+
+        Harness h;
+        h.Params.Handshake.PacketTimeoutMs = 400;
+        h.Params.CharSelect.PacketTimeoutMs = 400;
+        h.StartServers();
+        h.StartBot();
+
+        auto* ruleHook = static_cast<RuleHook*>(h.Driver->Query([&](RealBot& bot)
+        {
+            bot.SetPacketObserver([&observed](BotPacket const& packet) { observed.push_back(packet.Opcode); });
+            return bot.GetContext().AddHook(std::make_unique<RuleHook>(rule, action));
+        }));
+
+        REQUIRE(h.RunToEnd(std::chrono::milliseconds(15000)));
+        CHECK_FALSE(h.Outcome.Success);
+
+        // The hook saw it, whichever way it went.
+        CHECK(h.Driver->Query([&](RealBot&) { return ruleHook->Matched; }) >= 1);
+
+        std::vector<uint32> const seenByObserver = h.Driver->Query([&](RealBot&) { return observed; });
+        if (rule.Dir == BotPacketDir::Incoming)
+        {
+            // The observer sits ahead of the hooks: a swallowed packet was still observed.
+            CHECK(std::count(seenByObserver.begin(), seenByObserver.end(), rule.Opcode) >= 1);
+        }
+        else
+        {
+            // A dropped outgoing packet never reached the server. (The other connection's server
+            // may legitimately have received the same opcode, so only the matching one is asked.)
+            FakeWorldServer& server = rule.Connection == BotConnectionKind::Realm ? *h.Realm : *h.Instance;
+            h.Driver->Query([](RealBot& bot) { bot.CloseConnections(); return true; });
+            CHECK(server.WaitForFinished(server.Accepted() > 0 ? 1 : 0));
+            std::vector<uint32> const received = server.ReceivedOpcodes();
+            CHECK(std::count(received.begin(), received.end(), rule.Opcode) == 0);
+        }
+    };
+
+    for (PacketRule const& rule : incoming)
+        run(rule, BotPacketAction::Handled);
+    for (PacketRule const& rule : outgoing)
+        run(rule, BotPacketAction::Drop);
+}
