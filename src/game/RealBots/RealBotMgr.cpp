@@ -7,6 +7,7 @@
 #include "Tasks/BuiltinBotTasks.h"
 #include <algorithm>
 #include <chrono>
+#include <utility>
 
 INSTANTIATE_SINGLETON_1(RealBotMgr);
 
@@ -15,6 +16,13 @@ RealBotMgr::~RealBotMgr() = default;
 void RealBotMgr::Start()
 {
     RegisterBuiltinBotTasks();
+
+    m_targets.Load();
+    for (RealBotTarget const& target : m_targets.All())
+        // try_emplace constructs the BotAccountLease in place (its std::mutex member makes it
+        // neither copyable nor movable, so emplace(name, BotAccountLease(...)) -- which would
+        // move a temporary into the map -- doesn't compile).
+        m_leases.try_emplace(target.Name, target.Accounts);
 
     m_ioContext = IO::IoContext::CreateIoContext();
     if (!m_ioContext)
@@ -79,7 +87,47 @@ void RealBotMgr::WorkerLoop()
     }
 }
 
-std::string RealBotMgr::Add(RealBotLoginOptions options, std::string name)
+std::string RealBotMgr::Add(std::string const& targetName, std::string name, std::string* error)
+{
+    RealBotTarget const* target = m_targets.Find(targetName);
+    if (!target)
+    {
+        if (error)
+            *error = "no such target '" + targetName + "'";
+        return "";
+    }
+
+    auto leaseIt = m_leases.find(targetName);
+    std::optional<RealBotAccountCredential> account = leaseIt != m_leases.end() ? leaseIt->second.Lease() : std::nullopt;
+    if (!account)
+    {
+        if (error)
+            *error = "no free accounts left for target '" + targetName + "'";
+        return "";
+    }
+
+    RealBotLoginOptions options;
+    options.LoginAddress = target->LoginAddress;
+    options.RestPort = target->RestPort;
+    options.RpcPort = target->RpcPort;
+    options.AccountName = account->Name;
+    options.Password = account->Password;
+    options.RealmName = target->RealmName;
+    options.RealmId = target->RealmId;
+    options.ClientBuild = target->ClientBuild;
+    options.VerifyServerSignature = target->VerifyServerSignature;
+
+    std::string const botName = AddWithOptions(std::move(options), std::move(name));
+
+    {
+        std::lock_guard<std::mutex> lock(m_botsLock);
+        m_botLeases[botName] = BotLease{ targetName, account->Name };
+    }
+
+    return botName;
+}
+
+std::string RealBotMgr::AddWithOptions(RealBotLoginOptions options, std::string name)
 {
     if (name.empty())
         name = options.AccountName.empty() ? ("bot" + std::to_string(m_nextId)) : options.AccountName;
@@ -106,6 +154,7 @@ std::string RealBotMgr::Add(RealBotLoginOptions options, std::string name)
 void RealBotMgr::Remove(std::string const& name)
 {
     std::shared_ptr<RealBot> bot;
+    std::optional<BotLease> lease;
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
         auto it = m_bots.find(name);
@@ -113,21 +162,51 @@ void RealBotMgr::Remove(std::string const& name)
             return;
         bot = std::move(it->second);
         m_bots.erase(it);
+
+        auto leaseIt = m_botLeases.find(name);
+        if (leaseIt != m_botLeases.end())
+        {
+            lease = leaseIt->second;
+            m_botLeases.erase(leaseIt);
+        }
     }
     // `bot` is the last shared_ptr once this scope ends (the worker loop only ever borrows a
     // reference under m_botsLock, above, never keeps its own) -- destroying it here runs
     // ~RealBot, which destroys the brain without resuming any suspended coroutine
     // (bot-phase-1.md's rule) and closes its connections.
+    if (lease)
+        ReleaseLease(*lease);
 }
 
 void RealBotMgr::RemoveAll()
 {
     std::unordered_map<std::string, std::shared_ptr<RealBot>> bots;
+    std::unordered_map<std::string, BotLease> leases;
     {
         std::lock_guard<std::mutex> lock(m_botsLock);
         bots = std::move(m_bots);
         m_bots.clear();
+        leases = std::move(m_botLeases);
+        m_botLeases.clear();
     }
+
+    for (auto const& [name, lease] : leases)
+        ReleaseLease(lease);
+}
+
+void RealBotMgr::ReleaseLease(BotLease const& lease)
+{
+    auto it = m_leases.find(lease.TargetName);
+    if (it != m_leases.end())
+        it->second.Release(lease.AccountName);
+}
+
+std::optional<std::pair<size_t, size_t>> RealBotMgr::GetLeaseCounts(std::string const& targetName) const
+{
+    auto it = m_leases.find(targetName);
+    if (it == m_leases.end())
+        return std::nullopt;
+    return std::make_pair(it->second.Free(), it->second.Total());
 }
 
 std::vector<std::string> RealBotMgr::List() const
