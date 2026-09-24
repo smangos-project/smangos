@@ -522,6 +522,7 @@ if (ENABLE_REALBOTS)
       RealBots/RealBotTarget.h
       RealBots/RealBotCommands.cpp
       RealBots/RealBotCommands.h
+      RealBots/RealBotChatCommand.cpp
       RealBots/Core/RealBot.cpp
       RealBots/Core/RealBot.h
       RealBots/Core/BotAccountLease.cpp

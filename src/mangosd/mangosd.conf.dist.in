@@ -3335,3 +3335,96 @@ DynamicRespawn.AffectLevelBelow = 0
 DynamicRespawn.PlayersThreshold = 0
 DynamicRespawn.PlayersMaxLevelDiff = 0
 
+###################################################################################################################
+# REALBOTS CONFIG (only present when built with ENABLE_REALBOTS)
+#
+#    RealBots.Enable
+#        Start the RealBots client-bot framework (src/game/RealBots) alongside the world.
+#        Bots speak the modern protocol like a real client and touch no server-side game state.
+#        Default: 0 (disable)
+#                 1 (enable)
+#
+#    RealBots.IoThreads
+#        Number of IO threads RealBots' own IoContext runs on.
+#        Default: 1
+#
+#    RealBots.WorkerThreads
+#        Number of worker threads ticking bots; each bot is pinned to one (id % WorkerThreads).
+#        Default: 1
+#
+#    RealBots.TickIntervalMs
+#        How often each worker thread ticks its bots, jittered +/- 20%.
+#        Default: 100
+#
+#    RealBots.PingIntervalMs
+#        How often an InWorld bot sends CMSG_PING/CMSG_KEEP_ALIVE.
+#        Default: 5000
+#
+#    RealBots.LogoutTimeoutMs
+#        How long a clean Disconnect() waits for SMSG_LOGOUT_COMPLETE before closing anyway.
+#        Default: 5000
+#
+#    RealBots.ReapAfterMs
+#        How long a bot may sit in the Disconnected/Failed stage before it's automatically
+#        removed and its leased account freed. 0 disables auto-reaping (a Failed bot then stays
+#        inspectable via .realbot info/list until removed by hand).
+#        Default: 0 (disable)
+#
+#    RealBots.DefaultTarget
+#        Target name ".realbot add" uses when none is given on the command line.
+#        Default: "" (a target name is then required on every "add")
+#
+#    RealBots.DefaultTasks
+#        Reserved for a future default task list applied to every new bot; unused so far.
+#        Default: ""
+#
+#    RealBots.PacketLog
+#        Write each bot's traffic (direction, opcode, size, hex) to its own file. The main
+#        debugging tool while bringing the protocol up -- see RealBots.PacketLogDir.
+#        Default: 0 (disable)
+#                 1 (enable)
+#
+#    RealBots.PacketLogDir
+#        Directory RealBots.PacketLog writes into.
+#        Default: "realbots-packets"
+#
+#    RealBots.Targets
+#        Space-separated list of target names. Each one needs its own
+#        RealBots.Target.<name>.* block below; adding a target needs no code.
+#        Default: ""
+#
+#    RealBots.Target.<name>.LoginAddress / .RestPort / .RpcPort
+#        Where <name>'s login portal and Battle.net RPC listen.
+#
+#    RealBots.Target.<name>.RealmName / .RealmId
+#        Which realm to join -- RealmName wins over RealmId when both are set.
+#
+#    RealBots.Target.<name>.ClientBuild / .ClientVersion
+#        The client build/version <name> expects bots to present during login.
+#
+#    RealBots.Target.<name>.Tags
+#        Space-separated tags (e.g. "protocol gameplay") -- what the future conformance suite
+#        filters scenarios by; unused outside that suite so far.
+#
+#    RealBots.Target.<name>.Accounts
+#        Space-separated "name:pass" existing Battle.net logins, leased one per bot.
+#
+#    RealBots.Target.<name>.VerifyServerSignature
+#        Check the server's signature during the world handshake.
+#        Default: 1 (enable)
+#
+###################################################################################################################
+
+RealBots.Enable = 0
+RealBots.IoThreads = 1
+RealBots.WorkerThreads = 1
+RealBots.TickIntervalMs = 100
+RealBots.PingIntervalMs = 5000
+RealBots.LogoutTimeoutMs = 5000
+RealBots.ReapAfterMs = 0
+RealBots.DefaultTarget = ""
+RealBots.DefaultTasks = ""
+RealBots.PacketLog = 0
+RealBots.PacketLogDir = "realbots-packets"
+RealBots.Targets = ""
+

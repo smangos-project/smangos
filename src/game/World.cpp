@@ -85,6 +85,10 @@
 #include "TransportMgr.h"
 #include "RealmZone.h"
 #include "IO/Multithreading/CreateThread.h"
+#ifdef REALBOTS
+#include "RealBotConfig.h"
+#include "RealBotMgr.h"
+#endif
 
 #include <chrono>
 
@@ -200,6 +204,9 @@ World::~World()
 void World::Shutdown()
 {
     sPlayerBotMgr.DeleteAll();
+#ifdef REALBOTS
+    sRealBotMgr.Stop();
+#endif
     KickAll();                                     // save and kick all players
     UpdateSessions(1);                             // real players unload required UpdateSessions call
 
@@ -1893,6 +1900,14 @@ void World::SetInitialWorldSettings()
     m_charDbWorkerThread = IO::Multithreading::CreateThreadPtr("CharDB", [](){ CharactersDatabaseWorkerThread(); });
     m_asyncPacketsThread = IO::Multithreading::CreateThreadPtr("AsyncPacket", [this](){ ProcessAsyncPackets(); });
 
+#ifdef REALBOTS
+    if (RealBotConfig::Enabled())
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Starting RealBots ...");
+        sRealBotMgr.Start();
+    }
+#endif
+
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "==========================================================");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Current content is set to %s.", GetPatchName());
@@ -2129,6 +2144,10 @@ void World::Update(uint32 diff)
 
     // Update PlayerBotMgr
     sPlayerBotMgr.Update(diff);
+#ifdef REALBOTS
+    // Update RealBotMgr (lifecycle housekeeping only -- bots tick on their own worker threads)
+    sRealBotMgr.Update(diff);
+#endif
     // Update AutoBroadcast
     sAutoBroadCastMgr.Update(diff);
     // Update ban list if necessary
