@@ -30,6 +30,13 @@ struct ClassicAuthChallenge
         data >> DosZeroBits;
         return true;
     }
+
+    void Write(ByteBuffer& data) const
+    {
+        data.append(DosChallenge.data(), DosChallenge.size());
+        data.append(ServerChallenge.data(), ServerChallenge.size());
+        data << DosZeroBits;
+    }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp _HandleAuthSession() (read order mirrored here)
@@ -65,6 +72,28 @@ struct ClassicAuthSession
         data << uint32(RealmJoinTicket.size());
         data.WriteString(RealmJoinTicket);
     }
+
+    bool Read(ByteBuffer& data)
+    {
+        size_t const fixedSize = sizeof(DosResponse) + sizeof(RegionId) + sizeof(BattlegroupId) + sizeof(RealmId)
+            + LocalChallenge.size() + Digest.size() + sizeof(uint8) + sizeof(uint32);
+        if (data.size() - data.rpos() < fixedSize)
+            return false;
+
+        data >> DosResponse >> RegionId >> BattlegroupId >> RealmId;
+        data.read(LocalChallenge.data(), LocalChallenge.size());
+        data.read(Digest.data(), Digest.size());
+        uint8 ipv6Byte = 0;
+        data >> ipv6Byte;
+        UseIPv6 = (ipv6Byte & 0x80) != 0;
+
+        uint32 ticketSize = 0;
+        data >> ticketSize;
+        if (data.size() - data.rpos() < ticketSize)
+            return false;
+        RealmJoinTicket = data.ReadString(ticketSize);
+        return true;
+    }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp SendEnterEncryptedMode()
@@ -85,6 +114,12 @@ struct ClassicEnterEncryptedMode
         Enabled = (enabledByte & 0x80) != 0;
         return true;
     }
+
+    void Write(ByteBuffer& data) const
+    {
+        data.append(Signature.data(), Signature.size());
+        data << uint8(Enabled ? 0x80 : 0x00); // one bit, flushed to its own byte
+    }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp _HandleEnterEncryptedModeAck() (empty body)
@@ -93,6 +128,7 @@ struct ClassicEnterEncryptedModeAck
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK;
 
     void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp SendConnectToInstance(). Sent right after
@@ -135,6 +171,17 @@ struct ClassicConnectTo
         data >> Key;
         return true;
     }
+
+    void Write(ByteBuffer& data) const
+    {
+        data.append(Signature.data(), Signature.size());
+        data << uint8(ADDRESS_TYPE_IPV4);
+        data.append(AddressIPv4.data(), AddressIPv4.size());
+        data << Port;
+        data << Serial;
+        data << ConnectionType;
+        data << Key;
+    }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp _HandleAuthContinuedSession() (read order mirrored
@@ -157,6 +204,16 @@ struct ClassicAuthContinuedSession
         data.append(LocalChallenge.data(), LocalChallenge.size());
         data.append(Digest.data(), Digest.size());
     }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(DosResponse) + sizeof(Key) + LocalChallenge.size() + Digest.size())
+            return false;
+        data >> DosResponse >> Key;
+        data.read(LocalChallenge.data(), LocalChallenge.size());
+        data.read(Digest.data(), Digest.size());
+        return true;
+    }
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp SendResumeComms() (empty body) -- sent on the
@@ -167,6 +224,7 @@ struct ClassicResumeComms
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_RESUME_COMMS;
 
     bool Read(ByteBuffer&) { return true; }
+    void Write(ByteBuffer&) const {}
 };
 
 // vibemangos: src/game/Server/WorldSocket.cpp SendAuthResponse(). Only the fields bot-phase-1.md's
@@ -190,6 +248,17 @@ struct ClassicAuthResponse
         WaitInfoPresent = data.ReadBit();
         data.ResetBitPos();
         return true;
+    }
+
+    // Only the parsed subset: Result, then the two presence bits. A real server sends SuccessInfo
+    // right after when its bit is set; Read ignores it either way, so a Write with the bit set
+    // and nothing following still round-trips, but is not a valid real-server packet.
+    void Write(ByteBuffer& data) const
+    {
+        data << Result;
+        data.WriteBit(SuccessInfoPresent);
+        data.WriteBit(WaitInfoPresent);
+        data.FlushBits();
     }
 };
 
@@ -321,6 +390,7 @@ struct ClassicEnumCharacters
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_ENUM_CHARACTERS;
 
     void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
 };
 
 // vibemangos: src/game/Server/Packets/Character.cpp EnumCharactersResult::AppendBodyTo(). Only
@@ -362,6 +432,23 @@ struct ClassicEnumCharactersResult
             return FirstCharacterGuid.Read(data);
         return true;
     }
+
+    // Only the parsed subset (Success set, CharacterCount, the seven skipped fields zeroed, the
+    // first guid): a real server's per-character data (name, appearance, ...) follows the guid,
+    // and Read ignores it.
+    void Write(ByteBuffer& data) const
+    {
+        for (int i = 0; i < 9; ++i)
+            data.WriteBit(i == 0);
+        data.FlushBits();
+
+        data << CharacterCount;
+        for (int i = 0; i < 7; ++i)
+            data << uint32(0);
+
+        if (CharacterCount > 0)
+            FirstCharacterGuid.Write(data);
+    }
 };
 
 // vibemangos: src/game/Server/Packets/Character.cpp CharCreate::ReadFromWorldPacket(). The bot
@@ -396,6 +483,35 @@ struct ClassicCreateCharacter
         data.append(reinterpret_cast<uint8 const*>(Name.data()), Name.size());
         // No templateSetId (hasTemplateSet is false) and no customization pairs (count is 0).
     }
+
+    // Reads what Write produces; a body with a template set or customization pairs is rejected
+    // rather than skipped, since this side never produces one.
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 2) // 6 + 4 bits, flushed to two bytes
+            return false;
+
+        uint32 nameLength = data.ReadBits(6);
+        bool hasTemplateSet = data.ReadBit();
+        data.ReadBit(); // IsTrialBoost
+        data.ReadBit(); // UseNPE
+        data.ReadBit(); // HardcoreSelfFound
+        data.ResetBitPos();
+        if (hasTemplateSet)
+            return false;
+
+        if (data.size() - data.rpos() < sizeof(Race) + sizeof(Class) + sizeof(Gender) + sizeof(uint32) + sizeof(int32) + nameLength)
+            return false;
+
+        uint32 customizationCount = 0;
+        int32 timerunningSeasonId = 0;
+        data >> Race >> Class >> Gender >> customizationCount >> timerunningSeasonId;
+        if (customizationCount != 0)
+            return false;
+
+        Name = data.ReadString(nameLength);
+        return true;
+    }
 };
 
 // vibemangos: src/game/Server/Packets/Character.cpp CharCreateResponse::AppendBodyTo().
@@ -413,6 +529,12 @@ struct ClassicCreateCharResponse
         data >> Result;
         return Guid.Read(data);
     }
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Result;
+        Guid.Write(data);
+    }
 };
 
 // vibemangos: src/game/Server/Packets/Character.cpp PlayerLogin::ReadFromWorldPacket().
@@ -429,6 +551,14 @@ struct ClassicPlayerLogin
     {
         Guid.Write(data);
         data << FarClip;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Guid.Read(data) || data.size() - data.rpos() < sizeof(float))
+            return false;
+        data >> FarClip;
+        return true;
     }
 };
 
@@ -450,6 +580,8 @@ struct ClassicLoginVerifyWorld
         data >> MapId >> X >> Y >> Z >> O >> Reason;
         return true;
     }
+
+    void Write(ByteBuffer& data) const { data << MapId << X << Y << Z << O << Reason; }
 };
 
 // Keepalive/session-liveness packets a bot's default handling drives on its own, independent of
@@ -463,6 +595,7 @@ struct ClassicKeepAlive
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_KEEP_ALIVE;
 
     void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
 };
 
 // vibemangos: src/game/Server/Packets/Misc.cpp TimeSyncRequest::AppendBodyTo().
@@ -479,6 +612,8 @@ struct ClassicTimeSyncRequest
         data >> SequenceIndex;
         return true;
     }
+
+    void Write(ByteBuffer& data) const { data << SequenceIndex; }
 };
 
 // vibemangos: src/game/Server/Packets/Misc.cpp TimeSyncResponse::ReadFromWorldPacket() (field
@@ -495,6 +630,14 @@ struct ClassicTimeSyncResponse
         data << SequenceIndex;
         data << ClientTime;
     }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) * 2)
+            return false;
+        data >> SequenceIndex >> ClientTime;
+        return true;
+    }
 };
 
 // vibemangos: src/game/Server/Packets/Misc.cpp LogoutRequest::ReadFromWorldPacket() -- a single
@@ -508,6 +651,15 @@ struct ClassicLogoutRequest
         data.WriteBit(false); // idleLogout
         data.FlushBits();
     }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        data.ReadBit(); // idleLogout
+        data.ResetBitPos();
+        return true;
+    }
 };
 
 // vibemangos: src/game/Server/Packets/Misc.cpp LogoutComplete::AppendBodyTo() (empty body).
@@ -518,6 +670,7 @@ struct ClassicLogoutComplete
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_COMPLETE;
 
     bool Read(ByteBuffer&) { return true; }
+    void Write(ByteBuffer&) const {}
 };
 
 #endif
