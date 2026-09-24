@@ -366,3 +366,132 @@ TEST_CASE("the ConnectToSerial attempts escalate the way both reference servers 
     CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4 == 71);
     CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5 == 89);
 }
+
+namespace
+{
+ClassicCharacterInfo MakeCharacter(uint64 guidLow, std::string name, uint8 race, uint8 cls, uint8 level)
+{
+    ClassicCharacterInfo c;
+    c.Guid = ClassicGuid{ guidLow, 0x4000 };
+    c.ListPosition = 2;
+    c.Race = race;
+    c.Gender = 1;
+    c.Class = cls;
+    c.Level = level;
+    c.Map = 1;
+    c.Zone = 14;
+    c.X = -618.5f;
+    c.Y = -4251.75f;
+    c.Z = 38.7f;
+    c.CharFlags = 0x20;
+    c.FirstLogin = true;
+    c.Name = std::move(name);
+    return c;
+}
+}
+
+TEST_CASE("ClassicEnumCharactersResult round-trips every character's fixed-layout block", "[packets]")
+{
+    ClassicEnumCharactersResult out;
+    out.Characters.push_back(MakeCharacter(0x111111, "Botto", 1, 1, 12));
+    out.Characters.push_back(MakeCharacter(0x222222, "Zqwertyui", 4, 8, 60));
+
+    ByteBuffer data;
+    out.Write(data);
+
+    ClassicEnumCharactersResult in;
+    REQUIRE(in.Read(data));
+    REQUIRE(in.Characters.size() == 2);
+    CHECK(in.CharacterCount == 2);
+    CHECK(in.FirstCharacterGuid.Low == 0x111111);
+
+    for (size_t i = 0; i < 2; ++i)
+    {
+        ClassicCharacterInfo const& a = out.Characters[i];
+        ClassicCharacterInfo const& b = in.Characters[i];
+        CHECK(a.Guid.Low == b.Guid.Low);
+        CHECK(a.Guid.High == b.Guid.High);
+        CHECK(a.ListPosition == b.ListPosition);
+        CHECK(a.Race == b.Race);
+        CHECK(a.Gender == b.Gender);
+        CHECK(a.Class == b.Class);
+        CHECK(a.Level == b.Level);
+        CHECK(a.Map == b.Map);
+        CHECK(a.Zone == b.Zone);
+        CHECK(a.X == b.X);
+        CHECK(a.Y == b.Y);
+        CHECK(a.Z == b.Z);
+        CHECK(a.CharFlags == b.CharFlags);
+        CHECK(a.FirstLogin == b.FirstLogin);
+        CHECK(a.Name == b.Name);
+    }
+}
+
+TEST_CASE("ClassicEnumCharactersResult: a full-layout body cut short falls back to the count and first guid", "[packets]")
+{
+    ClassicEnumCharactersResult out;
+    out.Characters.push_back(MakeCharacter(0x333333, "Botto", 1, 1, 5));
+    out.Characters.push_back(MakeCharacter(0x444444, "Other", 1, 1, 5));
+
+    ByteBuffer full;
+    out.Write(full);
+
+    // Cut off inside the second character.
+    ByteBuffer cut;
+    cut.append(full.contents(), full.size() - 40);
+
+    ClassicEnumCharactersResult in;
+    REQUIRE(in.Read(cut));
+    CHECK(in.Characters.empty());
+    CHECK(in.CharacterCount == 2);
+    CHECK(in.FirstCharacterGuid.Low == 0x333333);
+}
+
+TEST_CASE("ClassicEnumCharactersResult: a character with mail senders is not walked, only counted", "[packets]")
+{
+    ClassicEnumCharactersResult out;
+    out.Characters.push_back(MakeCharacter(0x555555, "Mailed", 1, 1, 5));
+
+    ByteBuffer data;
+    out.Write(data);
+    // The last twelve bytes are Flags4, MailSenders.Count, MailSenderTypes.Count: make it non-zero.
+    data.put<uint32>(data.size() - 8, 3);
+
+    ClassicEnumCharactersResult in;
+    REQUIRE(in.Read(data));
+    CHECK(in.Characters.empty());
+    CHECK(in.FirstCharacterGuid.Low == 0x555555);
+}
+
+TEST_CASE("ClassicCharDelete, ClassicDeleteCharResponse and ClassicCharacterLoginFailed round-trip", "[packets]")
+{
+    ClassicCharDelete del;
+    del.Guid = ClassicGuid{ 0xABC123, 0x4000 };
+    RoundTrip(del, [](ClassicCharDelete const& a, ClassicCharDelete const& b)
+    {
+        CHECK(a.Guid.Low == b.Guid.Low);
+        CHECK(a.Guid.High == b.Guid.High);
+    });
+    RejectsEveryTruncation(del);
+
+    ClassicDeleteCharResponse response;
+    response.Result = CLASSIC_CHAR_DELETE_SUCCESS;
+    RoundTrip(response, [](ClassicDeleteCharResponse const& a, ClassicDeleteCharResponse const& b) { CHECK(a.Result == b.Result); });
+    RejectsEveryTruncation(response);
+
+    ClassicCharacterLoginFailed failed;
+    failed.Reason = 1;
+    RoundTrip(failed, [](ClassicCharacterLoginFailed const& a, ClassicCharacterLoginFailed const& b) { CHECK(a.Reason == b.Reason); });
+    RejectsEveryTruncation(failed);
+}
+
+TEST_CASE("the character-screen result codes are the client's own", "[packets]")
+{
+    CHECK(CLASSIC_CHAR_CREATE_SUCCESS == 24);
+    CHECK(CLASSIC_CHAR_CREATE_NAME_IN_USE == 27);
+    CHECK(CLASSIC_CHAR_DELETE_SUCCESS == 65);
+    CHECK_FALSE(ClassicIsCharNameResult(CLASSIC_CHAR_CREATE_NAME_IN_USE));
+    CHECK_FALSE(ClassicIsCharNameResult(CLASSIC_CHAR_NAME_SUCCESS));
+    CHECK(ClassicIsCharNameResult(CLASSIC_CHAR_NAME_TOO_SHORT));
+    CHECK(ClassicIsCharNameResult(CLASSIC_CHAR_NAME_INVALID_CHARACTER));
+}
