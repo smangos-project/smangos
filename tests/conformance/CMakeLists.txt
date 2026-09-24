@@ -33,6 +33,7 @@ add_executable(tests-conformance
   ${REALBOTS_DIR}/Net/BotLogin.cpp
   support/ConformanceRun.cpp
   support/TestBot.cpp
+  char_screen/CharScreenTests.cpp
   login/LoginTests.cpp
   world_entry/WorldEntryTests.cpp
   world_socket/WorldSocketTests.cpp

@@ -417,6 +417,13 @@ None of these is proven against a real 1.15.6 client yet.
   held to it while the reference run stays green. `ServerCloseTimeoutMs` (default 30000) is the
   bound a target grants.
 
+- **The create/delete scenarios need a free character slot.** `char_screen: a created character ...`
+  and `... name already in use` create (and delete) a character with a random name; on an account
+  already at the realm's character limit (`CHAR_CREATE_SERVER_LIMIT`, 30) they `SKIP` with that
+  reason instead of failing, and never touch the characters that are there. The dev vibemangos this
+  was developed against caps accounts at three, so they only run on a target whose pool accounts
+  have room (create-and-delete leaves the account as it found it).
+
 ## Where to look next
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real

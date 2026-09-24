@@ -426,6 +426,8 @@ constexpr uint8 CLASSIC_CHAR_CREATE_SUCCESS = 24;
 constexpr uint8 CLASSIC_CHAR_CREATE_ERROR = 25;
 constexpr uint8 CLASSIC_CHAR_CREATE_FAILED = 26;
 constexpr uint8 CLASSIC_CHAR_CREATE_NAME_IN_USE = 27;
+constexpr uint8 CLASSIC_CHAR_CREATE_SERVER_LIMIT = 30;  // this realm holds no more characters
+constexpr uint8 CLASSIC_CHAR_CREATE_ACCOUNT_LIMIT = 31; // this account holds no more
 constexpr uint8 CLASSIC_CHAR_DELETE_SUCCESS = 65;
 constexpr uint8 CLASSIC_CHAR_DELETE_FAILED = 66;
 // Name validation results: CHAR_NAME_FAILURE .. CHAR_NAME_SPACES_DISALLOWED (a create with a bad name
