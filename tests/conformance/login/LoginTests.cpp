@@ -3,11 +3,24 @@
 // lands rather than all at once. A bot's stage is the step in progress and StopAt(X) holds as X
 // begins (README, "Stages and stop_at"); bot.Held(X) is "held there, with everything the steps before
 // it produced in place".
+#include "BnetServiceHash.h"
+#include "BotBnetConnection.h"
+#include "BotRestClient.h"
 #include "ClassicPackets.h"
+#include "ConformanceRun.h"
+#include "IO/Context/IoContext.h"
+#include "IO/Networking/AsyncSocket.h"
+#include "IO/Networking/IpAddress.h"
+#include "IO/Networking/SocketConnector.h"
+#include "RealBotTarget.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
+#include "connection_service.pb.h"
 #include <catch_amalgamated.hpp>
+#include <condition_variable>
+#include <mutex>
 #include <random>
+#include <thread>
 
 namespace
 {
@@ -16,6 +29,56 @@ std::string UnknownAccountName()
 {
     std::random_device device;
     return "nobody" + std::to_string(device()) + "@bots";
+}
+
+// A one-shot cross-thread signal, the same shape as the unit tests' own (BotBnetConnectionTests.cpp
+// etc.) -- these two scenarios talk to the live target directly (BotBnetConnection/BotRestClient,
+// not TestBot) so they need their own IoContext and callback synchronization instead of TestRoutine's.
+class WaitFlag
+{
+    public:
+        void Set()
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_set = true;
+            m_cv.notify_all();
+        }
+
+        bool WaitFor(std::chrono::milliseconds timeout)
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            return m_cv.wait_for(lock, timeout, [this]() { return m_set; });
+        }
+
+    private:
+        std::mutex m_mutex;
+        std::condition_variable m_cv;
+        bool m_set = false;
+};
+
+// A live IoContext/thread pair, torn down on scope exit -- these two scenarios' own connection,
+// independent of RealBotMgr's (TestBot's).
+struct RawIoContext
+{
+    std::unique_ptr<IO::IoContext> ctx = IO::IoContext::CreateIoContext();
+    std::thread ioThread{ [this]() { ctx->RunUntilShutdown(); } };
+
+    ~RawIoContext()
+    {
+        ctx->Shutdown();
+        ioThread.join();
+    }
+};
+
+IO::Networking::AsyncSocket ConnectRaw(IO::IoContext* ctx, std::string const& address, uint16_t port, uint32_t timeoutMs)
+{
+    auto ip = IO::Networking::IpAddress::TryParseFromString(address);
+    REQUIRE(ip.has_value());
+    IO::Networking::IpEndpoint endpoint(*ip, port);
+
+    auto descriptor = IO::Networking::SocketConnector::ConnectBlocking(endpoint, std::chrono::milliseconds(timeoutMs));
+    REQUIRE(descriptor.has_value());
+    return IO::Networking::AsyncSocket(ctx, std::move(descriptor.value()));
 }
 }
 
@@ -131,4 +194,77 @@ TEST_CASE("login: joining a realm that is not listed fails at realm select", "[p
         CHECK(bot.GetFailedStage() == BotStage::RealmSelect);
         INFO("bot said: " << bot.GetLastError());
     });
+}
+
+// Not a TestBot/TestRoutine scenario: it drives its own BotBnetConnection directly at the live
+// target's RPC port, so it can call a method nothing implements -- something a normal login never
+// does. Plain (non-coroutine) TEST_CASE, blocking on WaitFlag, the same style the unit tests use
+// for this class.
+TEST_CASE("login: an RPC call to an unknown method does not drop the connection", "[protocol]")
+{
+    RealBotTarget const& target = ConformanceRun::TargetConfig();
+    RawIoContext io;
+
+    std::shared_ptr<BotBnetConnection> rpc = BotBnetConnection::Create(ConnectRaw(io.ctx.get(), target.LoginAddress, target.RpcPort, target.ConnectTimeoutMs));
+
+    WaitFlag connected;
+    bool connectOk = false;
+    rpc->Connect([&](bool success) { connectOk = success; connected.Set(); });
+    REQUIRE(connected.WaitFor(std::chrono::milliseconds(target.ConnectTimeoutMs)));
+    REQUIRE(connectOk);
+
+    // ConnectionService exists; no method is ever numbered this high.
+    bgs::protocol::connection::v1::ConnectRequest bogus;
+    WaitFlag unknownDone;
+    bool unknownSuccess = false;
+    uint32_t unknownStatus = 0;
+    rpc->Call(uint32_t(BnetOriginalHash::ConnectionService), 0xFFFFFFu, bogus,
+        [&](bool success, uint32_t status, std::string) { unknownSuccess = success; unknownStatus = status; unknownDone.Set(); });
+    REQUIRE(unknownDone.WaitFor(std::chrono::seconds(10)));
+    CHECK(unknownSuccess); // the RPC round trip itself completed
+    CHECK(unknownStatus != 0); // ...with an error status, not Ok
+    CHECK_FALSE(rpc->IsClosing());
+
+    // The connection survives: a real call right after it still gets answered normally.
+    bgs::protocol::connection::v1::ConnectRequest real;
+    WaitFlag realDone;
+    bool realSuccess = false;
+    uint32_t realStatus = 0xFFFFFFFFu;
+    rpc->Call(uint32_t(BnetOriginalHash::ConnectionService), uint32_t(BnetConnectionServiceMethods::Connect), real,
+        [&](bool success, uint32_t status, std::string) { realSuccess = success; realStatus = status; realDone.Set(); });
+    REQUIRE(realDone.WaitFor(std::chrono::seconds(10)));
+    CHECK(realSuccess);
+    CHECK(realStatus == 0);
+
+    rpc->Close();
+}
+
+// Same shape as above: BotRestClient::PostFormInputs is a raw send (design principle: "any task or
+// test can send any packet, typed or raw, malformed on purpose"), no SRP login involved.
+TEST_CASE("login: a malformed REST body gets a 4xx response, not a hang", "[protocol]")
+{
+    RealBotTarget const& target = ConformanceRun::TargetConfig();
+    RawIoContext io;
+
+    std::shared_ptr<BotRestClient> rest = BotRestClient::Create(ConnectRaw(io.ctx.get(), target.LoginAddress, target.RestPort, target.ConnectTimeoutMs));
+
+    WaitFlag connected;
+    bool connectOk = false;
+    rest->Connect([&](bool success) { connectOk = success; connected.Set(); });
+    REQUIRE(connected.WaitFor(std::chrono::milliseconds(target.ConnectTimeoutMs)));
+    REQUIRE(connectOk);
+
+    WaitFlag done;
+    bool ok = false;
+    BotRestClient::HttpResponse response;
+    rest->PostFormInputs("/bnetserver/login/srp/", "{not valid json at all",
+        [&](bool posted, BotRestClient::HttpResponse resp) { ok = posted; response = std::move(resp); done.Set(); });
+
+    // The bound this scenario exists to hold the server to: never a hang.
+    REQUIRE(done.WaitFor(std::chrono::seconds(10)));
+    REQUIRE(ok);
+    CHECK(response.Status >= 400);
+    CHECK(response.Status < 500);
+
+    rest->Close();
 }

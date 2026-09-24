@@ -84,6 +84,11 @@ void BotRestClient::Login(std::string const& accountName, std::string const& pas
     m_stream->Connect([self](bool success) { self->OnConnected(success); });
 }
 
+void BotRestClient::Connect(std::function<void(bool)> callback)
+{
+    m_stream->Connect(std::move(callback));
+}
+
 void BotRestClient::OnConnected(bool success)
 {
     if (!success)
