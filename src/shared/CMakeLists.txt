@@ -326,3 +326,7 @@ SET_TARGET_PROPERTIES(shared PROPERTIES FOLDER "Game Libs")
 if (ENABLE_CPPTRACE)
   target_compile_definitions(shared PRIVATE ENABLE_CPPTRACE)
 endif()
+
+if (ENABLE_REALBOTS)
+  add_subdirectory(Bnet/proto)
+endif()

@@ -571,7 +571,6 @@ if (ENABLE_REALBOTS)
       RealBots/Net/BotLogin.h
       RealBots/Protocol/BnetServiceHash.h
   )
-  add_subdirectory(RealBots/Protocol/proto)
 endif()
 
 if((${CMAKE_VERSION} VERSION_LESS "3.16") OR USE_PCH_OLD)
