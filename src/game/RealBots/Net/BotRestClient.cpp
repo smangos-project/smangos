@@ -204,9 +204,10 @@ void BotRestClient::PostFormInputs(std::string const& path, std::string const& j
     request << "POST " << path << " HTTP/1.1\r\n"
         << "Content-Type: application/json\r\n"
         << "Content-Length: " << jsonBody.size() << "\r\n"
-        << "Connection: keep-alive\r\n"
-        << "\r\n"
-        << jsonBody;
+        << "Connection: keep-alive\r\n";
+    if (!m_sessionCookie.empty())
+        request << "Cookie: " << m_sessionCookie << "\r\n";
+    request << "\r\n" << jsonBody;
     std::string requestString = request.str();
 
     std::shared_ptr<BotRestClient> self = shared_from_this();
@@ -308,18 +309,25 @@ void BotRestClient::ReadStatusAndHeaders(std::function<void(bool, int, size_t)> 
                     return;
                 }
 
-                constexpr char const* prefix = "content-length:";
-                if (line.size() > std::strlen(prefix))
+                auto headerValue = [&line](char const* prefix) -> nonstd::optional<std::string>
                 {
-                    std::string lowered = line.substr(0, std::strlen(prefix));
+                    size_t const prefixLen = std::strlen(prefix);
+                    if (line.size() <= prefixLen)
+                        return nonstd::nullopt;
+                    std::string lowered = line.substr(0, prefixLen);
                     std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) { return std::tolower(c); });
-                    if (lowered == prefix)
-                    {
-                        size_t valueStart = line.find_first_not_of(" \t", std::strlen(prefix));
-                        if (valueStart != std::string::npos)
-                            *contentLength = size_t(strtoull(line.c_str() + valueStart, nullptr, 10));
-                    }
-                }
+                    if (lowered != prefix)
+                        return nonstd::nullopt;
+                    size_t const valueStart = line.find_first_not_of(" \t", prefixLen);
+                    if (valueStart == std::string::npos)
+                        return std::string();
+                    return line.substr(valueStart);
+                };
+
+                if (nonstd::optional<std::string> length = headerValue("content-length:"))
+                    *contentLength = size_t(strtoull(length->c_str(), nullptr, 10));
+                else if (nonstd::optional<std::string> cookie = headerValue("set-cookie:"))
+                    self->m_sessionCookie = cookie->substr(0, cookie->find(';'));
 
                 (*readHeader)();
             });

@@ -7,12 +7,10 @@
 #include <memory>
 #include <string>
 
-// The bot's half of vibemangos's LoginRESTService (src/bnetserver/REST/LoginRESTService.cpp):
-// hand-rolled HTTP-over-TLS carrying the Battle.net SRP6 (v1) login exchange (bot-phase-1.md,
-// "LoginPortal"). One BotRestClient is one TLS connection, and the whole SRP login/srp/ ->
-// login/ exchange happens on that same connection -- LoginRESTService's ConnectionSrpSession is
-// tied to the connection itself, not any ticket/session id, so a second connection can't finish
-// a challenge started on this one.
+// Hand-rolled HTTP-over-TLS carrying the Battle.net SRP6 (v1) login exchange. One BotRestClient is
+// one TLS connection running the whole SRP login/srp/ -> login/ exchange, but the server resolves
+// the in-progress challenge from the session cookie the first response sets, not the connection --
+// the proof request must carry it back (see m_sessionCookie).
 class BotRestClient : public std::enable_shared_from_this<BotRestClient>
 {
     public:
@@ -61,6 +59,10 @@ class BotRestClient : public std::enable_shared_from_this<BotRestClient>
         std::string m_password;
         LoginCallback m_callback;
         BnetSRP6 m_srp;
+        // The server resolves the in-progress SRP challenge from this, not the connection: the
+        // proof POST must carry back whatever Set-Cookie the challenge response sent, or the
+        // server sees a fresh, un-challenged session and rejects the proof.
+        std::string m_sessionCookie;
 };
 
 #endif
