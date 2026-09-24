@@ -44,6 +44,9 @@ class TestBotOptions
         // the bot cannot be the one to fail first.
         TestBotOptions& PacketTimeoutMs(uint32_t ms) { m_overrides.PacketTimeoutMs = ms; return *this; }
         TestBotOptions& StageTimeoutMs(uint32_t ms) { m_overrides.StageTimeoutMs = ms; return *this; }
+        // How long a clean Disconnect waits for SMSG_LOGOUT_COMPLETE (the server's own logout
+        // countdown outlasts the default); on a timeout the bot disconnects anyway.
+        TestBotOptions& LogoutTimeoutMs(uint32_t ms) { m_overrides.LogoutTimeoutMs = ms; return *this; }
         // A hook added before the bot's first tick, so it sees the very first packet and every connect
         // the login makes (a later TestBot::AddHook can race a fast login). `make` runs once.
         TestBotOptions& Hook(std::function<std::unique_ptr<BotTask>()> make, bool persistent = false)

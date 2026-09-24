@@ -55,6 +55,10 @@ struct RealBotLoginOptions
     // A login stage held longer than this fails the bot (RealBot::UpdateStageWatchdog); 0 turns it
     // off. Not applied to InWorld, to a stage held on purpose by StopAt, or to Disconnected.
     uint32 StageTimeoutMs = 0;
+    // How long a clean Disconnect waits for SMSG_LOGOUT_COMPLETE before giving up and disconnecting
+    // anyway; 0 uses RealBots.LogoutTimeoutMs. A server's own logout countdown (about 20 s in the
+    // open world) is longer than the default, which suits a bot that only wants to leave.
+    uint32 LogoutTimeoutMs = 0;
 };
 
 // A snapshot of a bot's state, safe to read from any thread -- published once per Tick, after

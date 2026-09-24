@@ -137,6 +137,14 @@ void RealBot::OnConnectionLost(BotConnectionKind kind)
     if (kind == BotConnectionKind::Instance && m_stage == BotStage::EnteringWorld)
         return;
 
+    // A clean logout in progress: the server answers on the Realm connection
+    // (SMSG_LOGOUT_COMPLETE) and closes the Instance one right after, so its closing is expected and
+    // must not end the wait -- handling it as a disconnect would tear the session down and discard the
+    // very packet being waited for (still in flight from the Realm connection). The wait ends on that
+    // packet, on the Realm connection closing, or on the deadline.
+    if (kind == BotConnectionKind::Instance && m_awaitingLogoutComplete)
+        return;
+
     // Losing a world connection while the login is still running is a failed login, not a
     // disconnect: the bot never got anywhere to be disconnected from.
     if (m_stage >= BotStage::WorldConnecting && m_stage <= BotStage::EnteringWorld)
@@ -228,7 +236,7 @@ void RealBot::Disconnect(bool clean)
         SetStage(BotStage::LoggingOut);
         Send(ClassicLogoutRequest{});
         m_awaitingLogoutComplete = true;
-        m_logoutDeadlineMs = m_elapsedMs + RealBotConfig::LogoutTimeoutMs();
+        m_logoutDeadlineMs = m_elapsedMs + (m_loginOptions.LogoutTimeoutMs ? m_loginOptions.LogoutTimeoutMs : RealBotConfig::LogoutTimeoutMs());
     }
     else
     {

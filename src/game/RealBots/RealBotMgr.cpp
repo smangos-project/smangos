@@ -235,6 +235,8 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
         options.PacketTimeoutMs = *overrides.PacketTimeoutMs;
     if (overrides.StageTimeoutMs)
         options.StageTimeoutMs = *overrides.StageTimeoutMs;
+    if (overrides.LogoutTimeoutMs)
+        options.LogoutTimeoutMs = *overrides.LogoutTimeoutMs;
     if (overrides.CharacterName)
         options.CharacterName = *overrides.CharacterName;
     if (overrides.CreateIfNone)

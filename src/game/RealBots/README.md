@@ -424,6 +424,15 @@ None of these is proven against a real 1.15.6 client yet.
   was developed against caps accounts at three, so they only run on a target whose pool accounts
   have room (create-and-delete leaves the account as it found it).
 
+- **A logout answers on the Realm connection and closes the Instance one.** vibemangos sends
+  `SMSG_LOGOUT_COMPLETE` on the Realm socket and closes the Instance socket right after
+  (`WorldSession::LogoutPlayer`, matching TrinityCore). A bot waiting on a clean logout therefore
+  ignores the Instance connection closing (handling it as a disconnect tore the session down and
+  discarded the very packet still in flight -- found by the logout scenario) and ends on
+  `SMSG_LOGOUT_COMPLETE`, the Realm connection closing, or `LogoutTimeoutMs`. The server's own
+  countdown (about 20 s in the open world, instant when resting) is why that scenario is `[slow]` and
+  takes `TestBotOptions().LogoutTimeoutMs(...)`.
+
 ## Where to look next
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real

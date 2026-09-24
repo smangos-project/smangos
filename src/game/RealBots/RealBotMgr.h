@@ -41,6 +41,7 @@ struct RealBotAddOverrides
     std::string LoginTicket;                   // RealBotLoginOptions::LoginTicketOverride
     std::optional<uint32_t> PacketTimeoutMs;
     std::optional<uint32_t> StageTimeoutMs;    // 0 turns the stage watchdog off
+    std::optional<uint32_t> LogoutTimeoutMs;   // how long a clean logout waits for SMSG_LOGOUT_COMPLETE
     // Hooks added before the bot's first tick, so a scenario can be sure they see the very first
     // packet; one factory call per bot (the bot owns what it makes). Persistent hooks survive a
     // disconnect (and so a Reconnect).
