@@ -104,16 +104,17 @@ BotTaskResult BotBrain::Update(BotContext& ctx, uint32 diff)
     return BotTaskResult::Done;
 }
 
-BotPacketAction BotBrain::DispatchPacket(BotContext& ctx, BotPacket& packet, BotPacketDir dir)
+template<typename Call>
+BotPacketAction BotBrain::DispatchToAll(Call const& call)
 {
     BotPacketAction hookAction = BotPacketAction::Continue;
 
     // Index over a size read up front: a hook added mid-dispatch (appended) waits for the next
-    // packet, and one removed mid-dispatch is only marked, so nothing here dangles.
+    // one, and one removed mid-dispatch is only marked, so nothing here dangles.
     ++m_hookDispatchDepth;
     for (size_t i = 0, n = m_hooks.size(); i < n && hookAction == BotPacketAction::Continue; ++i)
         if (!m_hooks[i].Removed)
-            hookAction = m_hooks[i].Task->OnPacket(ctx, packet, dir);
+            hookAction = call(*m_hooks[i].Task);
     if (--m_hookDispatchDepth == 0)
         SweepRemovedHooks();
 
@@ -123,16 +124,35 @@ BotPacketAction BotBrain::DispatchPacket(BotContext& ctx, BotPacket& packet, Bot
     // By index, from the top, over the size read up front: a task's OnPacket can resume a routine
     // that pushes a child (ctx.Run), which grows m_stack mid-loop. Nothing below the current
     // index ever moves, and a Clear() from inside a hook is deferred by the scope until the loop is
-    // done, so the task being called is never destroyed under its own OnPacket.
+    // done, so the task being called is never destroyed under its own call.
     StackScope scope(*this);
     for (size_t i = m_stack.size(); i > 0; --i)
     {
-        BotPacketAction action = m_stack[i - 1]->OnPacket(ctx, packet, dir);
+        BotPacketAction action = call(*m_stack[i - 1]);
         if (action != BotPacketAction::Continue)
             return action;
     }
 
     return BotPacketAction::Continue;
+}
+
+BotPacketAction BotBrain::DispatchPacket(BotContext& ctx, BotPacket& packet, BotPacketDir dir)
+{
+    return DispatchToAll([&](BotTask& task) { return task.OnPacket(ctx, packet, dir); });
+}
+
+void BotBrain::DispatchConnectionLost(BotContext& ctx, BotConnectionKind kind)
+{
+    DispatchToAll([&](BotTask& task)
+    {
+        task.OnConnectionLost(ctx, kind);
+        return BotPacketAction::Continue;
+    });
+}
+
+BotPacketAction BotBrain::DispatchConnect(BotContext& ctx, BotConnectionKind kind, std::string const& address, uint16_t port)
+{
+    return DispatchToAll([&](BotTask& task) { return task.OnConnect(ctx, kind, address, port); });
 }
 
 void BotBrain::Clear()

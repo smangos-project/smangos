@@ -31,6 +31,9 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
             std::string RealmName;
             uint32_t RealmId = 0;
             int32_t ClientBuild = 0;
+            uint32_t ConnectTimeoutMs = 10000;
+            // BotBnetLogin::Options::OnStage: LoginRpc and RealmSelect as they begin.
+            std::function<void(BotStage)> OnStage;
 
             // Holds the login as this stage begins, before any of its own work (bot-phase-1.md,
             // "Login": "stop_at=<stage>"). Only the stages this class owns are checked here:

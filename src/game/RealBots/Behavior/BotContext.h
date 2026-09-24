@@ -93,6 +93,7 @@ class BotContext
         // next ctx.Packet. Resolves once the TCP connection is up (or failed), with timeoutMs
         // bounding the connect itself.
         ConnectAwaiter Connect(BotConnectionKind kind, std::string address, uint16_t port, uint32 timeoutMs);
+        void CloseConnection(BotConnectionKind kind);
 
     private:
         RealBot& m_bot;

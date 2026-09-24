@@ -81,13 +81,12 @@ TEST_CASE("framework: connecting to a dead address fails cleanly", "[protocol]")
 {
     RunTest([]() -> TestRoutine
     {
-        // RealBotTarget::ConnectTimeoutMs is read and stored but not yet consumed anywhere
-        // (a known gap, bot-phase-2.md "Timeouts, used") -- BotConnector::ConnectAsync's callers all still use a
-        // hardcoded 10s, so this waits comfortably past that rather than the target's configured
-        // value. "deadhost" (targets/tests-conformance.conf.dist) points at 203.0.113.1, RFC
-        // 5737's reserved documentation range -- guaranteed unreachable, never just slow.
+        // "deadhost" (targets/tests-conformance.conf.dist) points at 203.0.113.1, RFC 5737's
+        // reserved documentation range -- guaranteed unreachable, never just slow -- with a 2s
+        // ConnectTimeoutMs (and a 5s StageTimeoutMs behind it): the target's own timeouts are what
+        // bound this, so failing well inside the 10s default proves they are used.
         TestBot bot(TestBotOptions().TargetOverride("deadhost"));
-        REQUIRE(co_await bot.Stage(BotStage::Failed, 15000));
+        REQUIRE(co_await bot.Stage(BotStage::Failed, 6000));
         CHECK(bot.GetFailedStage() == BotStage::LoginPortal);
     });
 }

@@ -49,6 +49,9 @@ struct RealBotLoginOptions
     // How long the world connections wait to connect, and for each packet a login step expects.
     uint32 ConnectTimeoutMs = 10000;
     uint32 PacketTimeoutMs = 10000;
+    // A login stage held longer than this fails the bot (RealBot::UpdateStageWatchdog); 0 turns it
+    // off. Not applied to InWorld, to a stage held on purpose by StopAt, or to Disconnected.
+    uint32 StageTimeoutMs = 0;
 };
 
 // A snapshot of a bot's state, safe to read from any thread -- published once per Tick, after
@@ -149,7 +152,13 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         void AttachConnection(BotConnectionKind kind, std::shared_ptr<BotWorldConnection> connection);
         std::shared_ptr<BotWorldConnection> GetConnection(BotConnectionKind kind) const;
         bool HasConnection(BotConnectionKind kind) const { return GetConnection(kind) != nullptr; }
+        // Closes one connection (a failed Instance attempt, before the next) without touching the
+        // other, and without reporting it as a connection loss.
+        void CloseConnection(BotConnectionKind kind);
         void CloseConnections();
+
+        // Asks the hooks and tasks whether a world connection may be opened (BotTask::OnConnect).
+        bool AllowConnect(BotConnectionKind kind, std::string const& address, uint16_t port);
 
         // Posts a callback to run on this bot's own thread, on its next Tick -- how anything
         // running on another thread (an IO completion, a BotLogin result) safely reaches into a
@@ -200,6 +209,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         void ProcessCommands();
         void ProcessIncoming(uint32 diff);
         void UpdateLogout(uint32 diff);
+        void UpdateStageWatchdog();
         void UpdateKeepalive(uint32 diff);
         void ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir);
         void PublishInfo();
@@ -211,6 +221,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         RealBotLoginOptions m_loginOptions;
 
         BotStage m_stage = BotStage::Disconnected;
+        uint32 m_stageEnteredMs = 0; // m_elapsedMs when m_stage was entered
         BotStage m_failedStage = BotStage::Disconnected;
         BotDisconnectReason m_disconnectReason = BotDisconnectReason::None;
         // Set at the start of Disconnect() (clean or forced), consumed and reset by SetStage once
@@ -228,9 +239,9 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         std::shared_ptr<BotWorldConnection> m_realmConnection;
         std::shared_ptr<BotWorldConnection> m_instanceConnection;
-        // Bumped whenever the connections are closed, so a callback made for an earlier session
+        // Bumped whenever a connection is closed (per kind), so a callback made for an earlier one
         // (see MakeWorldCallbacks) can tell it is stale. Bot-thread only.
-        uint32 m_connectionGeneration = 0;
+        std::array<uint32, 2> m_connectionGeneration{};
         std::unique_ptr<BotPacketLog> m_packetLog;
         std::function<void(BotPacket const&)> m_packetObserver;
 

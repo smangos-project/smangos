@@ -60,6 +60,12 @@ BotPacketAction BotRoutineTask::OnPacket(BotContext& ctx, BotPacket& packet, Bot
     return BotPacketAction::Continue;
 }
 
+void BotRoutineTask::OnConnectionLost(BotContext& ctx, BotConnectionKind kind)
+{
+    if (m_pendingAwaiter && m_pendingAwaiter->OnConnectionLost(ctx.GetBot(), kind))
+        ResumeAndCheckException();
+}
+
 void BotRoutineTask::OnChildComplete(BotContext& ctx, BotTaskResult result)
 {
     if (m_pendingAwaiter && m_pendingAwaiter->OnChildComplete(result))

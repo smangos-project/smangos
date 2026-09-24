@@ -336,3 +336,33 @@ TEST_CASE("ClassicLogoutRequest round-trips and rejects an empty body", "[packet
     RoundTrip(ClassicLogoutRequest{}, [](ClassicLogoutRequest const&, ClassicLogoutRequest const&) {});
     RejectsEveryTruncation(ClassicLogoutRequest{});
 }
+
+TEST_CASE("ClassicConnectToFailed round-trips, serial first then the connection type", "[packets]")
+{
+    ClassicConnectToFailed out;
+    out.Serial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3;
+    out.Connection = 1;
+
+    RoundTrip(out, [](ClassicConnectToFailed const& a, ClassicConnectToFailed const& b)
+    {
+        CHECK(a.Serial == b.Serial);
+        CHECK(a.Connection == b.Connection);
+    });
+    RejectsEveryTruncation(out);
+
+    // The layout vibemangos reads (TrinityCore reads the connection type first; see the struct).
+    ByteBuffer data;
+    out.Write(data);
+    REQUIRE(data.size() == 5);
+    CHECK(data.contents()[0] == 53);
+    CHECK(data.contents()[4] == 1);
+}
+
+TEST_CASE("the ConnectToSerial attempts escalate the way both reference servers number them", "[packets]")
+{
+    CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1 == 17);
+    CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2 == 35);
+    CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3 == 53);
+    CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4 == 71);
+    CHECK(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5 == 89);
+}

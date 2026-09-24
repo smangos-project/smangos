@@ -25,6 +25,7 @@ void RealBot::SetStage(BotStage stage)
 
     BotStage from = m_stage;
     m_stage = stage;
+    m_stageEnteredMs = m_elapsedMs;
 
     m_brain.DispatchStageChanged(*m_context, from, stage);
 
@@ -55,7 +56,7 @@ void RealBot::EnablePacketLog(std::string const& dir)
 RealBot::WorldCallbacks RealBot::MakeWorldCallbacks(BotConnectionKind kind)
 {
     std::weak_ptr<RealBot> weakSelf = weak_from_this();
-    uint32 const generation = m_connectionGeneration;
+    uint32 const generation = m_connectionGeneration[size_t(kind)];
 
     WorldCallbacks callbacks;
     callbacks.OnPacket = [weakSelf, kind, generation](BotPacket packet)
@@ -63,9 +64,9 @@ RealBot::WorldCallbacks RealBot::MakeWorldCallbacks(BotConnectionKind kind)
         packet.Connection = kind;
         if (std::shared_ptr<RealBot> self = weakSelf.lock())
         {
-            self->Post([self, generation, packet = std::move(packet)]() mutable
+            self->Post([self, kind, generation, packet = std::move(packet)]() mutable
             {
-                if (generation == self->m_connectionGeneration)
+                if (generation == self->m_connectionGeneration[size_t(kind)])
                     self->QueueIncoming(std::move(packet));
             });
         }
@@ -76,7 +77,7 @@ RealBot::WorldCallbacks RealBot::MakeWorldCallbacks(BotConnectionKind kind)
         {
             self->Post([self, kind, generation]()
             {
-                if (generation == self->m_connectionGeneration)
+                if (generation == self->m_connectionGeneration[size_t(kind)])
                     self->OnConnectionLost(kind);
             });
         }
@@ -94,26 +95,46 @@ std::shared_ptr<BotWorldConnection> RealBot::GetConnection(BotConnectionKind kin
     return kind == BotConnectionKind::Realm ? m_realmConnection : m_instanceConnection;
 }
 
-void RealBot::CloseConnections()
+void RealBot::CloseConnection(BotConnectionKind kind)
 {
-    ++m_connectionGeneration;
+    // The generation moves on even with nothing attached: a connection still being made for this
+    // kind (see ConnectAwaiter) must not deliver into whatever comes next.
+    ++m_connectionGeneration[size_t(kind)];
 
     // Detach the callbacks first: closing must not report a "connection lost" for a close we
     // asked for.
-    for (std::shared_ptr<BotWorldConnection>* connection : { &m_instanceConnection, &m_realmConnection })
+    std::shared_ptr<BotWorldConnection>& connection = kind == BotConnectionKind::Realm ? m_realmConnection : m_instanceConnection;
+    if (connection)
     {
-        if (*connection)
-        {
-            (*connection)->SetPacketCallback(nullptr);
-            (*connection)->SetDisconnectCallback(nullptr);
-            (*connection)->Close();
-            connection->reset();
-        }
+        connection->SetPacketCallback(nullptr);
+        connection->SetDisconnectCallback(nullptr);
+        connection->Close();
+        connection.reset();
     }
+}
+
+void RealBot::CloseConnections()
+{
+    CloseConnection(BotConnectionKind::Instance);
+    CloseConnection(BotConnectionKind::Realm);
+}
+
+bool RealBot::AllowConnect(BotConnectionKind kind, std::string const& address, uint16_t port)
+{
+    return m_brain.DispatchConnect(*m_context, kind, address, port) == BotPacketAction::Continue;
 }
 
 void RealBot::OnConnectionLost(BotConnectionKind kind)
 {
+    // Whoever is waiting on that connection hears about it first (hooks, and a routine's pending
+    // wait, which resumes as failed).
+    m_brain.DispatchConnectionLost(*m_context, kind);
+
+    // The Instance connection being refused or dropped while entering the world is the login
+    // routine's to handle: it can ask the server for another attempt (CMSG_CONNECT_TO_FAILED).
+    if (kind == BotConnectionKind::Instance && m_stage == BotStage::EnteringWorld)
+        return;
+
     // Losing a world connection while the login is still running is a failed login, not a
     // disconnect: the bot never got anywhere to be disconnected from.
     if (m_stage >= BotStage::WorldConnecting && m_stage <= BotStage::EnteringWorld)
@@ -309,6 +330,34 @@ void RealBot::UpdateLogout(uint32 diff)
     }
 }
 
+void RealBot::UpdateStageWatchdog()
+{
+    uint32 const timeoutMs = m_loginOptions.StageTimeoutMs;
+    if (timeoutMs == 0)
+        return;
+
+    switch (m_stage)
+    {
+        case BotStage::Disconnected:
+        case BotStage::InWorld:
+        case BotStage::LoggingOut: // has its own timeout (UpdateLogout)
+        case BotStage::Failed:
+            return;
+        default:
+            break;
+    }
+
+    // A stage the login was told to stop at is held on purpose, for as long as its owner likes.
+    if (m_loginOptions.StopAt != BotStage::InWorld && m_stage == m_loginOptions.StopAt)
+        return;
+
+    if (m_elapsedMs - m_stageEnteredMs < timeoutMs)
+        return;
+
+    m_lastError = std::string("stage ") + BotStageName(m_stage) + " timed out after " + std::to_string(timeoutMs) + "ms";
+    SetStage(BotStage::Failed);
+}
+
 void RealBot::UpdateKeepalive(uint32 diff)
 {
     // Only once the world session is up: mid-handshake the connections are not yet encrypted, and
@@ -374,6 +423,7 @@ void RealBot::Tick(uint32 diff)
     m_elapsedMs += diff;
     ProcessIncoming(diff);
     UpdateLogout(diff);
+    UpdateStageWatchdog();
     UpdateKeepalive(diff);
     m_brain.Update(*m_context, diff);
     PublishInfo();

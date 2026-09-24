@@ -33,6 +33,8 @@ void BotLogin::Login(Options options, LoginCallback callback)
     bnetOptions.RealmName = m_options.RealmName;
     bnetOptions.RealmId = m_options.RealmId;
     bnetOptions.ClientBuild = m_options.ClientBuild;
+    bnetOptions.ConnectTimeoutMs = m_options.ConnectTimeoutMs;
+    bnetOptions.OnStage = m_options.OnStage;
     bnetOptions.StopAt = m_options.StopAt;
 
     std::shared_ptr<BotLogin> self = shared_from_this();

@@ -195,6 +195,8 @@ std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotA
     }
 
     RealBotLoginOptions options;
+    options.ConnectTimeoutMs = target->ConnectTimeoutMs;
+    options.StageTimeoutMs = target->StageTimeoutMs;
     options.LoginAddress = target->LoginAddress;
     options.RestPort = target->RestPort;
     options.RpcPort = target->RpcPort;

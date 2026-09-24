@@ -20,6 +20,17 @@ BotTaskResult Fail(char const* who, std::string& error, std::string message)
     return BotTaskResult::Failed;
 }
 
+// Why a wait for `what` came back empty: it is either the timeout or, for a packet wait, the
+// connection closing under it (BotContext's awaiters resolve empty on both).
+std::string NoPacket(char const* what)
+{
+    return std::string("timed out waiting for ") + what + " (or the connection closed)";
+}
+
+// How many times the Instance connection is tried before the login is abandoned (vibemangos:
+// WorldSession::HandleConnectToFailedOpcode, TrinityCore: WorldSocket::HandleConnectToFailed).
+constexpr uint32 MaxInstanceConnectAttempts = 5;
+
 std::array<uint8, 32> RandomChallenge()
 {
     BigNumber challengeBn;
@@ -76,7 +87,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
 
     std::optional<ClassicAuthChallenge> challenge = co_await ctx.Packet<ClassicAuthChallenge>(params.PacketTimeoutMs);
     if (!challenge)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_AUTH_CHALLENGE");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_CHALLENGE"));
 
     std::array<uint8, 32> const localChallenge = RandomChallenge();
     std::array<uint8, 32> const& serverChallenge = challenge->ServerChallenge;
@@ -95,7 +106,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
 
     std::optional<ClassicEnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<ClassicEnterEncryptedMode>(params.PacketTimeoutMs);
     if (!enterEncryptedMode)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_ENTER_ENCRYPTED_MODE");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_ENTER_ENCRYPTED_MODE"));
 
     if (params.VerifyServerSignature)
     {
@@ -113,7 +124,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
 
     std::optional<ClassicAuthResponse> response = co_await ctx.Packet<ClassicAuthResponse>(params.PacketTimeoutMs);
     if (!response)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_AUTH_RESPONSE");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_RESPONSE"));
 
     outcome.AuthResult = response->Result;
     if (response->Result != 0)
@@ -134,7 +145,7 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
 
     std::optional<ClassicAuthChallenge> challenge = co_await ctx.Packet<ClassicAuthChallenge>(params.PacketTimeoutMs);
     if (!challenge)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_AUTH_CHALLENGE");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_CHALLENGE"));
 
     std::array<uint8, 32> const localChallenge = RandomChallenge();
     std::array<uint8, 32> const& serverChallenge = challenge->ServerChallenge;
@@ -150,7 +161,7 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
 
     std::optional<ClassicEnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<ClassicEnterEncryptedMode>(params.PacketTimeoutMs);
     if (!enterEncryptedMode)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_ENTER_ENCRYPTED_MODE");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_ENTER_ENCRYPTED_MODE"));
 
     if (params.VerifyServerSignature)
     {
@@ -166,7 +177,7 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
 
     std::optional<ClassicResumeComms> resume = co_await ctx.Packet<ClassicResumeComms>(params.PacketTimeoutMs);
     if (!resume)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_RESUME_COMMS");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_RESUME_COMMS"));
 
     outcome.Success = true;
     co_return BotTaskResult::Done;
@@ -189,7 +200,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
 
     std::optional<ClassicEnumCharactersResult> characters = co_await ctx.Packet<ClassicEnumCharactersResult>(params.PacketTimeoutMs);
     if (!characters)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_ENUM_CHARACTERS_RESULT");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_ENUM_CHARACTERS_RESULT"));
 
     if (characters->CharacterCount > 0)
     {
@@ -209,7 +220,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
 
         std::optional<ClassicCreateCharResponse> created = co_await ctx.Packet<ClassicCreateCharResponse>(params.PacketTimeoutMs);
         if (!created)
-            co_return Fail(who, outcome.Error, "timed out waiting for SMSG_CREATE_CHAR");
+            co_return Fail(who, outcome.Error, NoPacket("SMSG_CREATE_CHAR"));
         if (created->Result != CLASSIC_CHAR_CREATE_SUCCESS)
             co_return Fail(who, outcome.Error, "character creation failed, result " + std::to_string(created->Result));
 
@@ -234,7 +245,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
     // servers, the server first redirects it to a second connection.
     std::optional<BotPacket> arrived = co_await ctx.RawPacket({ CLASSIC_SMSG_LOGIN_VERIFY_WORLD, CLASSIC_SMSG_CONNECT_TO }, params.PacketTimeoutMs);
     if (!arrived)
-        co_return Fail(who, outcome.Error, "timed out waiting for SMSG_CONNECT_TO or SMSG_LOGIN_VERIFY_WORLD");
+        co_return Fail(who, outcome.Error, NoPacket("SMSG_CONNECT_TO or SMSG_LOGIN_VERIFY_WORLD"));
 
     arrived->Data.rpos(0);
     if (arrived->Opcode == CLASSIC_SMSG_CONNECT_TO)
@@ -244,26 +255,49 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
             co_return Fail(who, outcome.Error, "malformed SMSG_CONNECT_TO");
 
         char addressStr[16];
-        std::snprintf(addressStr, sizeof(addressStr), "%u.%u.%u.%u",
-            connectTo.AddressIPv4[0], connectTo.AddressIPv4[1], connectTo.AddressIPv4[2], connectTo.AddressIPv4[3]);
 
-        BotInstanceConnectParams instanceParams;
-        instanceParams.WorldAddress = addressStr;
-        instanceParams.WorldPort = connectTo.Port;
-        instanceParams.SessionKey = params.SessionKey;
-        instanceParams.PackedKey = connectTo.Key;
-        instanceParams.VerifyServerSignature = params.VerifyServerSignature;
-        instanceParams.ConnectTimeoutMs = params.ConnectTimeoutMs;
-        instanceParams.PacketTimeoutMs = params.PacketTimeoutMs;
+        // Up to five attempts, the way both reference servers count them: each failure is reported
+        // on the Realm connection (CMSG_CONNECT_TO_FAILED, echoing the attempt's serial) and the
+        // server answers with the next SMSG_CONNECT_TO, until the fifth failure aborts the login.
+        for (uint32 attempt = 1;; ++attempt)
+        {
+            std::snprintf(addressStr, sizeof(addressStr), "%u.%u.%u.%u",
+                connectTo.AddressIPv4[0], connectTo.AddressIPv4[1], connectTo.AddressIPv4[2], connectTo.AddressIPv4[3]);
 
-        BotInstanceConnectOutcome instanceOutcome;
-        co_await ctx.Run(BotInstanceConnectRoutine(ctx, std::move(instanceParams), instanceOutcome));
-        if (!instanceOutcome.Success)
-            co_return Fail(who, outcome.Error, "instance connect: " + instanceOutcome.Error);
+            BotInstanceConnectParams instanceParams;
+            instanceParams.WorldAddress = addressStr;
+            instanceParams.WorldPort = connectTo.Port;
+            instanceParams.SessionKey = params.SessionKey;
+            instanceParams.PackedKey = connectTo.Key;
+            instanceParams.VerifyServerSignature = params.VerifyServerSignature;
+            instanceParams.ConnectTimeoutMs = params.ConnectTimeoutMs;
+            instanceParams.PacketTimeoutMs = params.PacketTimeoutMs;
+
+            BotInstanceConnectOutcome instanceOutcome;
+            co_await ctx.Run(BotInstanceConnectRoutine(ctx, std::move(instanceParams), instanceOutcome));
+            if (instanceOutcome.Success)
+                break;
+
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "%s: instance connect attempt %u failed: %s", who, attempt, instanceOutcome.Error.c_str());
+            ctx.CloseConnection(BotConnectionKind::Instance);
+
+            ClassicConnectToFailed failed;
+            failed.Serial = connectTo.Serial;
+            failed.Connection = connectTo.ConnectionType;
+            ctx.Send(failed, BotConnectionKind::Realm);
+
+            if (attempt >= MaxInstanceConnectAttempts)
+                co_return Fail(who, outcome.Error, "instance connect failed " + std::to_string(attempt) + " times, last: " + instanceOutcome.Error);
+
+            std::optional<ClassicConnectTo> next = co_await ctx.Packet<ClassicConnectTo>(params.PacketTimeoutMs);
+            if (!next)
+                co_return Fail(who, outcome.Error, "instance connect: " + instanceOutcome.Error + "; then " + NoPacket("SMSG_CONNECT_TO after CMSG_CONNECT_TO_FAILED"));
+            connectTo = *next;
+        }
 
         std::optional<ClassicLoginVerifyWorld> verify = co_await ctx.Packet<ClassicLoginVerifyWorld>(params.PacketTimeoutMs);
         if (!verify)
-            co_return Fail(who, outcome.Error, "timed out waiting for SMSG_LOGIN_VERIFY_WORLD");
+            co_return Fail(who, outcome.Error, NoPacket("SMSG_LOGIN_VERIFY_WORLD"));
     }
     else
     {

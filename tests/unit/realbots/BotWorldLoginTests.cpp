@@ -8,6 +8,7 @@
 #include "FakeWorldServer.h"
 #include "TestBotDriver.h"
 #include <algorithm>
+#include <atomic>
 #include <catch_amalgamated.hpp>
 #include <chrono>
 #include <memory>
@@ -45,8 +46,10 @@ struct Scenario
     bool GoSilentAfterBanner = false;
     bool CloseAfterChallenge = false; // closes after CMSG_AUTH_SESSION arrives
     bool StopAfterEnterEncryptedMode = false;
+    uint32 ExpectedInstanceFailures = 0; // CMSG_CONNECT_TO_FAILED the Realm script waits for (a new SMSG_CONNECT_TO answers each)
     // Instance
-    bool InstanceDropsImmediately = false;
+    bool InstanceDropsImmediately = false; // every Instance connection is closed on accept
+    uint32 InstanceDropsFirst = 0;         // ... only this many of them
     bool BatchResumeAndVerify = true; // SMSG_RESUME_COMMS and SMSG_LOGIN_VERIFY_WORLD in one write
 
     FakeWorldRealmResult Realm;
@@ -57,7 +60,26 @@ struct Scenario
     bool SawCreateCharacter = false;
     std::string CreatedName;
     bool InstanceConnected = false;
+    std::atomic<uint32> InstanceConnections{ 0 };
+    std::vector<ClassicConnectToFailed> ReportedFailures; // written by the Realm script
+    std::vector<uint32> SentSerials;                       // the serial of every SMSG_CONNECT_TO the Realm script sent
 };
+
+constexpr uint32 AttemptSerials[5] = {
+    CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1, CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2, CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3,
+    CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4, CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5,
+};
+
+ClassicConnectTo MakeConnectTo(uint32 serial)
+{
+    ClassicConnectTo connectTo;
+    connectTo.AddressIPv4 = { 127, 0, 0, 1 };
+    connectTo.Port = InstancePort;
+    connectTo.Serial = serial;
+    connectTo.Key = RedirectKey;
+    connectTo.ConnectionType = 1;
+    return connectTo;
+}
 
 void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
 {
@@ -135,13 +157,26 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
 
     if (s.Redirect)
     {
-        ClassicConnectTo connectTo;
-        connectTo.AddressIPv4 = { 127, 0, 0, 1 };
-        connectTo.Port = InstancePort;
-        connectTo.Key = RedirectKey;
-        connectTo.ConnectionType = 1;
-        if (!peer.Send(connectTo))
+        s.SentSerials.push_back(AttemptSerials[0]);
+        if (!peer.Send(MakeConnectTo(AttemptSerials[0])))
             return;
+
+        // Each CMSG_CONNECT_TO_FAILED is answered with the next attempt, the way both reference
+        // servers do; the fifth failure ends the escalation.
+        for (uint32 failure = 0; failure < s.ExpectedInstanceFailures; ++failure)
+        {
+            ClassicConnectToFailed failed;
+            if (!peer.Expect(failed))
+                return;
+            s.ReportedFailures.push_back(failed);
+
+            if (failure + 1 < 5)
+            {
+                s.SentSerials.push_back(AttemptSerials[failure + 1]);
+                if (!peer.Send(MakeConnectTo(AttemptSerials[failure + 1])))
+                    return;
+            }
+        }
     }
     else
     {
@@ -157,7 +192,8 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
 void RunInstanceScript(FakeWorldPeer& peer, Scenario& s)
 {
     s.InstanceConnected = true;
-    if (s.InstanceDropsImmediately)
+    uint32 const connection = ++s.InstanceConnections;
+    if (s.InstanceDropsImmediately || connection <= s.InstanceDropsFirst)
     {
         peer.Close();
         return;
@@ -208,9 +244,27 @@ class RecordingHook : public BotTask
             return Filter(packet, dir);
         }
 
+        // Refuses the first RefuseInstanceConnects Instance connects: a forced connection failure.
+        BotPacketAction OnConnect(BotContext&, BotConnectionKind kind, std::string const&, uint16_t) override
+        {
+            m_log.push_back(std::string("CONNECT ") + (kind == BotConnectionKind::Realm ? "realm" : "instance"));
+            if (kind == BotConnectionKind::Instance && RefuseInstanceConnects > 0)
+            {
+                --RefuseInstanceConnects;
+                return BotPacketAction::Drop;
+            }
+            return BotPacketAction::Continue;
+        }
+
+        void OnConnectionLost(BotContext&, BotConnectionKind kind) override
+        {
+            m_log.push_back(std::string("LOST ") + (kind == BotConnectionKind::Realm ? "realm" : "instance"));
+        }
+
         std::vector<std::string> const& Log() const { return m_log; }
 
         // A hook can act on what it sees: drop or swallow one opcode in one direction.
+        uint32 RefuseInstanceConnects = 0;
         uint32 DropOpcode = 0;
         BotPacketDir DropDir = BotPacketDir::Outgoing;
         BotPacketAction DropAction = BotPacketAction::Drop;
@@ -320,6 +374,7 @@ TEST_CASE("world login: the whole handshake and redirect, every packet visible t
 
     // Every handshake packet, in order, on the connection it belongs to: the "Done when" bar.
     std::vector<std::string> const expected = {
+        "CONNECT realm",
         "IN SMSG_AUTH_CHALLENGE realm",
         "OUT CMSG_AUTH_SESSION realm",
         "IN SMSG_ENTER_ENCRYPTED_MODE realm",
@@ -329,6 +384,7 @@ TEST_CASE("world login: the whole handshake and redirect, every packet visible t
         "IN SMSG_ENUM_CHARACTERS_RESULT realm",
         "OUT CMSG_PLAYER_LOGIN realm",
         "IN SMSG_CONNECT_TO realm",
+        "CONNECT instance",
         "IN SMSG_AUTH_CHALLENGE instance",
         "OUT CMSG_AUTH_CONTINUED_SESSION instance",
         "IN SMSG_ENTER_ENCRYPTED_MODE instance",
@@ -396,8 +452,8 @@ TEST_CASE("world login: StopAt WorldHandshake holds once the socket is up, befor
     CHECK(h.Driver->Info().Stage == BotStage::WorldHandshake);
 
     // The server's challenge reaches the hooks (nothing answers it), and no CMSG_AUTH_SESSION goes out.
-    REQUIRE(h.Driver->WaitUntil([&]() { return h.HookLog().size() >= 1; }));
-    CHECK(h.HookLog() == std::vector<std::string>{ "IN SMSG_AUTH_CHALLENGE realm" });
+    REQUIRE(h.Driver->WaitUntil([&]() { return h.HookLog().size() >= 2; }));
+    CHECK(h.HookLog() == std::vector<std::string>{ "CONNECT realm", "IN SMSG_AUTH_CHALLENGE realm" });
     h.Driver->Query([](RealBot& bot) { bot.CloseConnections(); return true; });
     REQUIRE(h.Realm->WaitForFinished(1));
     CHECK_FALSE(h.State.Realm.Completed);
@@ -564,8 +620,8 @@ TEST_CASE("world login: a hook that swallows SMSG_AUTH_CHALLENGE keeps the routi
     CHECK(h.Outcome.Error.find("timed out waiting for SMSG_AUTH_CHALLENGE") != std::string::npos);
     // The hook saw it even though it swallowed it, and nothing was sent in reply.
     std::vector<std::string> const log = h.HookLog();
-    REQUIRE_FALSE(log.empty());
-    CHECK(log[0] == "IN SMSG_AUTH_CHALLENGE realm");
+    REQUIRE(log.size() >= 2);
+    CHECK(log[1] == "IN SMSG_AUTH_CHALLENGE realm");
     CHECK(std::none_of(log.begin(), log.end(), [](std::string const& line) { return line.rfind("OUT ", 0) == 0; }));
 }
 
@@ -598,19 +654,108 @@ TEST_CASE("world login: the Realm connection closing mid-handshake fails the bot
     CHECK(info.TaskStack.empty());
 }
 
-TEST_CASE("world login: a failed Instance connection fails the whole login", "[worldlogin]")
+TEST_CASE("world login: a hook-forced Instance connect failure is reported and the next SMSG_CONNECT_TO tried", "[worldlogin][connectto]")
 {
     Harness h;
-    h.State.InstanceDropsImmediately = true;
+    h.State.ExpectedInstanceFailures = 2;
     h.StartServers();
-    h.StartBot(false);
+    h.StartBot();
+    h.Driver->Query([&](RealBot&) { h.Hook->RefuseInstanceConnects = 2; return true; });
 
-    h.RunRoutine();
-    // Either the routine's own failure or the connection loss lands first; both leave the bot
-    // Failed or the routine failed with an instance error.
-    REQUIRE(h.Driver->WaitUntil([&]() { return h.Driver->Info().Stage == BotStage::Failed; }));
-    CHECK(h.Driver->Info().LastError.find("instance") != std::string::npos);
-    CHECK(h.State.InstanceConnected);
+    REQUIRE(h.RunToEnd());
+    INFO("error: " << h.Outcome.Error);
+    REQUIRE(h.Outcome.Success);
+
+    h.Driver->Query([](RealBot& bot) { bot.CloseConnections(); return true; });
+    REQUIRE(h.Realm->WaitForFinished(1));
+    REQUIRE(h.Instance->WaitForFinished(1));
+
+    // Two failures reported, each echoing the serial of the attempt that failed and its connection
+    // type; the third attempt reached the Instance server, which saw exactly one connection.
+    REQUIRE(h.State.ReportedFailures.size() == 2);
+    CHECK(h.State.ReportedFailures[0].Serial == CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1);
+    CHECK(h.State.ReportedFailures[1].Serial == CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2);
+    CHECK(h.State.ReportedFailures[0].Connection == 1);
+    CHECK(h.State.SentSerials == std::vector<uint32>{ 17, 35, 53 });
+    CHECK(h.State.InstanceConnections == 1);
+    CHECK(h.State.Instance.Completed);
+
+    // The refused connects never touched the network, and each failure went out on the Realm
+    // connection where a hook could see it.
+    std::vector<std::string> const log = h.HookLog();
+    CHECK(std::count(log.begin(), log.end(), "CONNECT instance") == 3);
+    CHECK(std::count(log.begin(), log.end(), "OUT CMSG_CONNECT_TO_FAILED realm") == 2);
+    CHECK(std::count(log.begin(), log.end(), "IN SMSG_CONNECT_TO realm") == 3);
+}
+
+TEST_CASE("world login: five failed Instance connects abort the login", "[worldlogin][connectto]")
+{
+    Harness h;
+    h.State.ExpectedInstanceFailures = 5;
+    h.StartServers();
+    h.StartBot();
+    h.Driver->Query([&](RealBot&) { h.Hook->RefuseInstanceConnects = 100; return true; });
+
+    REQUIRE(h.RunToEnd());
+    CHECK_FALSE(h.Outcome.Success);
+    CHECK(h.Outcome.Error.find("instance connect failed 5 times") != std::string::npos);
+
+    h.Driver->Query([](RealBot& bot) { bot.CloseConnections(); return true; });
+    REQUIRE(h.Realm->WaitForFinished(1));
+
+    // Every attempt's failure was reported, with the escalating serials, the fifth included (that is
+    // what makes the server abort its side of the login too), and no sixth SMSG_CONNECT_TO exists.
+    REQUIRE(h.State.ReportedFailures.size() == 5);
+    for (size_t i = 0; i < 5; ++i)
+        CHECK(h.State.ReportedFailures[i].Serial == AttemptSerials[i]);
+    CHECK(h.State.SentSerials == std::vector<uint32>{ 17, 35, 53, 71, 89 });
+    CHECK(h.State.InstanceConnections == 0);
+}
+
+TEST_CASE("world login: an Instance server that hangs up is retried promptly, not after a timeout", "[worldlogin][connectto]")
+{
+    Harness h;
+    h.State.ExpectedInstanceFailures = 1;
+    h.State.InstanceDropsFirst = 1;
+    // A timeout long enough to fail the test if the bot waited it out instead of noticing the close.
+    h.Params.Handshake.PacketTimeoutMs = 20000;
+    h.Params.CharSelect.PacketTimeoutMs = 20000;
+    h.StartServers();
+    h.StartBot();
+
+    auto const start = std::chrono::steady_clock::now();
+    REQUIRE(h.RunToEnd(std::chrono::milliseconds(8000)));
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
+    INFO("error: " << h.Outcome.Error);
+    REQUIRE(h.Outcome.Success);
+    CHECK(elapsed.count() < 5000);
+
+    h.Driver->Query([](RealBot& bot) { bot.CloseConnections(); return true; });
+    REQUIRE(h.Realm->WaitForFinished(1));
+    CHECK(h.State.InstanceConnections == 2);
+    REQUIRE(h.State.ReportedFailures.size() == 1);
+    CHECK(h.State.ReportedFailures[0].Serial == CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1);
+
+    // The Instance connection closing during EnteringWorld was the routine's to handle: the bot did
+    // not fail, and its hooks were told.
+    std::vector<std::string> const log = h.HookLog();
+    CHECK(std::find(log.begin(), log.end(), "LOST instance") != log.end());
+}
+
+TEST_CASE("world login: an Instance server that always hangs up fails the login after five attempts", "[worldlogin][connectto]")
+{
+    Harness h;
+    h.State.ExpectedInstanceFailures = 5;
+    h.State.InstanceDropsImmediately = true;
+    h.Params.Handshake.PacketTimeoutMs = 20000;
+    h.Params.CharSelect.PacketTimeoutMs = 20000;
+    h.StartServers();
+    h.StartBot();
+
+    REQUIRE(h.RunToEnd(std::chrono::milliseconds(15000)));
+    CHECK_FALSE(h.Outcome.Success);
+    CHECK(h.Outcome.Error.find("instance connect failed 5 times") != std::string::npos);
+    CHECK(h.State.InstanceConnections == 5);
 }
 
 TEST_CASE("world login: nothing is left connected or running after a failure", "[worldlogin]")
@@ -642,4 +787,22 @@ TEST_CASE("world login: the same flow at the real host's tick rate, every packet
     INFO("error: " << h.Outcome.Error);
     CHECK(h.Outcome.Success);
     CHECK(h.HookLog().back() == "IN SMSG_LOGIN_VERIFY_WORLD instance");
+}
+
+TEST_CASE("world login: the connect timeout bounds an unreachable world server", "[worldlogin]")
+{
+    Harness h;
+    // TEST-NET-3 (RFC 5737): reserved for documentation, never routable, so the connect can only
+    // time out. 300ms must be what bounds it, not the 10s default.
+    h.Params.Handshake.WorldAddress = "203.0.113.1";
+    h.Params.Handshake.ConnectTimeoutMs = 300;
+    h.StartBot();
+
+    auto const start = std::chrono::steady_clock::now();
+    REQUIRE(h.RunToEnd(std::chrono::milliseconds(5000)));
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
+
+    CHECK_FALSE(h.Outcome.Success);
+    CHECK(h.Outcome.Error.find("world connect failed") != std::string::npos);
+    CHECK(elapsed.count() < 3000);
 }

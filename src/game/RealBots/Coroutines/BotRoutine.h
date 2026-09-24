@@ -26,6 +26,10 @@ class IBotAwaiter
 
         // Fired when a task pushed by this awaiter (ctx.Run) finishes.
         virtual bool OnChildComplete(BotTaskResult result) { return false; }
+
+        // Fired when a world connection closes on its own (not one the bot closed itself). Returning
+        // true resolves the wait, as a failure for the awaiters that have one (an empty result).
+        virtual bool OnConnectionLost(RealBot& bot, BotConnectionKind kind) { return false; }
 };
 
 // A bot procedure: a coroutine resumed only from a bot's own worker thread, via
@@ -93,6 +97,7 @@ class BotRoutineTask : public BotTask
         BotTaskResult Update(BotContext& ctx, uint32 diff) override;
         BotPacketAction OnPacket(BotContext& ctx, BotPacket& packet, BotPacketDir dir) override;
         void OnChildComplete(BotContext& ctx, BotTaskResult result) override;
+        void OnConnectionLost(BotContext& ctx, BotConnectionKind kind) override;
 
         void SetPendingAwaiter(IBotAwaiter* awaiter) { m_pendingAwaiter = awaiter; }
         BotRoutine::HandleType GetHandle() const { return m_routine.GetHandle(); }

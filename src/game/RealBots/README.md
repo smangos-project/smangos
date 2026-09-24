@@ -249,11 +249,33 @@ cata_classic's source directly, since it looked at first like it might be a vibe
    through it, per vibemangos's `Opcodes.cpp` `PacketRoute::Realm` table); `SMSG_UPDATE_OBJECT` is
    received on the Instance connection and skipped, unparsed.
 
-Not yet ported: the up-to-5-attempt `CMSG_CONNECT_TO_FAILED` retry
-(`Net/BotWorldLogin.h`'s `TODO(port)`) -- a failed Instance connect just fails the whole
-login instead. `RealBotTarget::ConnectTimeoutMs`/`StageTimeoutMs` are read and stored but not
-consumed anywhere yet; every real connect attempt hardcodes 10 seconds
-(`Net/BotConnector.h`'s callers).
+**A failed Instance connect is retried**, as both reference servers do it: the failure (a refused or
+dropped connection, a handshake that times out) is reported on the Realm connection with
+`CMSG_CONNECT_TO_FAILED`, echoing the failed attempt's serial (17, 35, 53, 71, 89) and connection
+type, and the server answers with the next `SMSG_CONNECT_TO`; the fifth failure aborts the login
+(`Net/BotWorldLogin.cpp`, `MaxInstanceConnectAttempts`). A hook can force a failure without
+touching the network: `BotTask::OnConnect` runs before every world connect and refusing it
+(`Drop`/`Handled`) makes that connect fail at once -- the way to test the retry against a live
+server. An Instance connection closing during `EnteringWorld` does not fail the bot by itself (the
+routine is woken and decides); every other world connection closing during the login does.
+
+**Timeouts are the target's** (`RealBots.Target.X.ConnectTimeoutMs`, default 10000, bounds every
+connect: portal, RPC, world; `StageTimeoutMs`, default 30000, is the per-stage watchdog in
+`RealBot::Tick`): a login stage held longer fails the bot with `FailedStage` set and `LastError`
+"stage X timed out after Nms", except `InWorld`, `LoggingOut` (own timeout), `Disconnected`, and a
+stage held on purpose by `StopAt`. Every individual packet wait inside the world routines is also
+bounded (`RealBotLoginOptions::PacketTimeoutMs`, 10000), so the watchdog is the backstop, not the
+usual failure. Stages are reported as they begin, including `LoginRpc` and `RealmSelect` from the
+Battle.net side, so `FailedStage` says where a login really died ("forged ticket rejected at
+`LoginRpc`").
+
+**Workers wake on work.** `RealBotMgr`'s worker threads tick every bot on `RealBots.TickIntervalMs`
+(100 ms, jittered) but also wake as soon as any bot pinned to them has something to do (a packet, a
+finished connect, another thread's command; `RealBot::SetWakeCallback`). That matters for protocol
+timing, not just latency: vibemangos sends `SMSG_CONNECT_TO` in parallel with loading the
+character, and a client that opens the Instance connection late loses the race --
+`SMSG_LOGIN_VERIFY_WORLD` is then never delivered on it. A bot ticking only every 100 ms did exactly
+that (found by running the conformance suite live), a real client never would.
 
 **Default packet handling** (only when no task's hook already handled the packet): `SMSG_PONG`
 bookkeeping (updates latency), `CMSG_TIME_SYNC_RESPONSE` to a `SMSG_TIME_SYNC_REQUEST`, and
@@ -347,6 +369,22 @@ provider search path at `ToAbsolutePath(".")`. Run from the directory `legacy.dl
 (the build's shared output directory, e.g. `bin/RelWithDebInfo/`), not from the repo root or
 elsewhere, even with the DLL correctly copied there by `mangos_copy_openssl_dlls`.
 
+## vibemangos vs TrinityCore
+
+Where the two references disagree, the bots follow the one named here and say why (`port-plan.md`:
+wire format favors TrinityCore unless our client build says otherwise; gameplay favors vibemangos).
+None of these is proven against a real 1.15.6 client yet.
+
+- **`CMSG_CONNECT_TO_FAILED` field order.** vibemangos reads `Serial` (u32) then `Con` (u8)
+  (`Character.cpp`, `ConnectToFailed::ReadFromWorldPacket`, "confirmed against jimsproxy");
+  TrinityCore cata_classic reads `Con` (u8) then `Serial` (u32) (`AuthenticationPackets.cpp`,
+  `ConnectToFailed::Read`). The escalation itself (a failure of attempt N asks for N+1, five in all,
+  serials 17/35/53/71/89, connection type 1 for the Instance) is identical. **Followed: vibemangos**,
+  since it is the server the bots are proven against first and the tree the port lands in; a 4.4.x
+  layout difference or a bug in either is equally possible. `SMSG_CONNECT_TO` itself is identical in
+  both (`... port, serial, con, key`). Resolve with a captured real-client session
+  (`bot-phase-2.md`, "Open questions").
+
 ## Where to look next
 
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real
@@ -354,7 +392,6 @@ game client (blocked on having one available) and `tests-conformance`'s "ten bot
 scenario (needs ten free accounts on the live target; this dev environment has one). Concrete gaps,
 tracked and scheduled in `bot-phase-2.md`:
 
-- `RealBotTarget::ConnectTimeoutMs`/`StageTimeoutMs` are unconsumed (see above).
 - Phase 2 (`bot-plan.md`): more `[protocol]` scenarios (reconnect, timeouts under load, many bots
   at once for real), TrinityCore as a routine cross-check rather than an emergency-only one, and
   starting to port login/world-entry backwards into this tree so `vmangos.txt`'s scoreboard starts

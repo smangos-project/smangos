@@ -117,7 +117,7 @@ void BotBnetLogin::ConnectRest()
     IO::Networking::IpEndpoint endpoint(*ip, m_options.RestPort);
 
     std::shared_ptr<BotBnetLogin> self = shared_from_this();
-    BotConnector::ConnectAsync(endpoint, std::chrono::seconds(10), [self](nonstd::expected<IO::Networking::SocketDescriptor, IO::NetworkError> descriptor)
+    BotConnector::ConnectAsync(endpoint, std::chrono::milliseconds(m_options.ConnectTimeoutMs), [self](nonstd::expected<IO::Networking::SocketDescriptor, IO::NetworkError> descriptor)
     {
         if (!descriptor.has_value())
         {
@@ -148,6 +148,8 @@ void BotBnetLogin::OnRestLogin(BotRestClient::LoginResult result)
         return;
     }
     m_loginTicket = result.LoginTicket;
+    if (m_options.OnStage)
+        m_options.OnStage(BotStage::LoginRpc);
     if (m_options.StopAt == BotStage::LoginRpc)
     {
         StopEarly();
@@ -167,7 +169,7 @@ void BotBnetLogin::ConnectRpc()
     IO::Networking::IpEndpoint endpoint(*ip, m_options.RpcPort);
 
     std::shared_ptr<BotBnetLogin> self = shared_from_this();
-    BotConnector::ConnectAsync(endpoint, std::chrono::seconds(10), [self](nonstd::expected<IO::Networking::SocketDescriptor, IO::NetworkError> descriptor)
+    BotConnector::ConnectAsync(endpoint, std::chrono::milliseconds(m_options.ConnectTimeoutMs), [self](nonstd::expected<IO::Networking::SocketDescriptor, IO::NetworkError> descriptor)
     {
         if (!descriptor.has_value())
         {
@@ -276,6 +278,8 @@ void BotBnetLogin::MaybeStartRealmSelect()
         return;
     }
 
+    if (m_options.OnStage)
+        m_options.OnStage(BotStage::RealmSelect);
     if (m_options.StopAt == BotStage::RealmSelect)
     {
         StopEarly();

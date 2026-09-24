@@ -41,6 +41,7 @@ BotRoutine LoginRoutine(BotContext& ctx)
     options.RealmName = opts.RealmName;
     options.RealmId = opts.RealmId;
     options.ClientBuild = opts.ClientBuild;
+    options.ConnectTimeoutMs = opts.ConnectTimeoutMs;
     options.StopAt = opts.StopAt;
 
     BotLogin::Result login = co_await ctx.Login(options);

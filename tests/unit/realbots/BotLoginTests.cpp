@@ -611,6 +611,20 @@ void RunFakeBnetRpcServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* 
 
 }
 
+namespace
+{
+// Notes every stage the bot enters, in order.
+class StageRecorder : public BotTask
+{
+    public:
+        char const* GetName() const override { return "stage_recorder"; }
+        BotTaskResult Update(BotContext&, uint32) override { return BotTaskResult::Running; }
+        void OnStageChanged(BotContext&, BotStage, BotStage to) override { Seen.push_back(to); }
+
+        std::vector<BotStage> Seen;
+};
+}
+
 TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
 {
     constexpr uint16_t RestPort = 28550;
@@ -728,8 +742,13 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
     RegisterBuiltinBotTasks();
     {
         TestBotDriver driver(ctx.get());
+        StageRecorder* stages = nullptr;
         driver.Query([&](RealBot& bot)
         {
+            auto recorder = std::make_unique<StageRecorder>();
+            stages = recorder.get();
+            bot.GetContext().AddHook(std::move(recorder));
+
             RealBotLoginOptions& options = bot.GetLoginOptions();
             options.LoginAddress = "127.0.0.1";
             options.RestPort = RestPort;
@@ -748,6 +767,12 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
         bool const inWorld = driver.WaitForStage(BotStage::InWorld, std::chrono::seconds(10));
         INFO("last error: " << driver.Info().LastError << ", stage " << BotStageName(driver.Info().Stage));
         REQUIRE(inWorld);
+
+        // Every stage on the way, in order, each seen as it began (the Battle.net ones reported from
+        // the IO threads, the world ones by the routines).
+        CHECK(driver.Query([&](RealBot&) { return stages->Seen; }) == std::vector<BotStage>{
+            BotStage::LoginPortal, BotStage::LoginRpc, BotStage::RealmSelect, BotStage::WorldConnecting,
+            BotStage::WorldHandshake, BotStage::CharSelect, BotStage::EnteringWorld, BotStage::InWorld });
 
         CHECK(driver.Query([&](RealBot& bot)
         {

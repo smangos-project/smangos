@@ -32,6 +32,9 @@ class BotBrain
         void DispatchStageChanged(BotContext& ctx, BotStage from, BotStage to);
         BotTaskResult Update(BotContext& ctx, uint32 diff);
         BotPacketAction DispatchPacket(BotContext& ctx, BotPacket& packet, BotPacketDir dir);
+        // OnConnect for every hook, then every stack task: the first that does not Continue wins.
+        BotPacketAction DispatchConnect(BotContext& ctx, BotConnectionKind kind, std::string const& address, uint16_t port);
+        void DispatchConnectionLost(BotContext& ctx, BotConnectionKind kind);
 
         // Destroys every task on the stack without resuming any of them
         // (bot-phase-1.md: "Removing a bot destroys its tasks ... never resumed"), and every
@@ -58,6 +61,11 @@ class BotBrain
         };
 
         void SweepRemovedHooks();
+
+        // Calls `call(task)` on every hook (insertion order), then every stack task (top down),
+        // stopping at the first result that is not Continue.
+        template<typename Call>
+        BotPacketAction DispatchToAll(Call const& call);
 
         // Marks a stretch of Update/DispatchPacket during which the stack must not be destroyed.
         class StackScope

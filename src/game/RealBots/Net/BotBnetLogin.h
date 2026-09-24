@@ -41,10 +41,16 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             std::string RealmName;
             uint32_t RealmId = 0;
             int32_t ClientBuild = 0;
-            // Holds after LoginPortal's or LoginRpc's own work, instead of continuing into the
-            // next stage (bot-phase-1.md, "Login": "stop_at=<stage>"). RealmSelect completing is
-            // just this call's normal success, so only these two earlier stages need a check
-            // here -- BotLogin (the composer) handles StopAt for everything at or after
+            // How long each of the two connects (REST portal, RPC) may take.
+            uint32_t ConnectTimeoutMs = 10000;
+            // Called as each stage begins after LoginPortal (LoginRpc once the portal login is
+            // done, RealmSelect once the RPC logon is complete), on whichever IO thread got there;
+            // before StopAt is checked, so a held login has reported the stage it holds at.
+            std::function<void(BotStage)> OnStage;
+            // Holds as LoginRpc or RealmSelect begins, instead of continuing (bot-phase-1.md,
+            // "Login": "stop_at=<stage>"): after the portal login, or after the RPC logon. Realm
+            // select completing is just this call's normal success, so only these two stages need
+            // a check here -- BotLogin (the composer) handles StopAt for LoginPortal and
             // WorldConnecting itself.
             BotStage StopAt = BotStage::InWorld;
         };

@@ -62,6 +62,11 @@ void BotContext::PushTask(std::unique_ptr<BotTask> task)
     m_bot.GetBrain().PushTask(std::move(task), *this);
 }
 
+void BotContext::CloseConnection(BotConnectionKind kind)
+{
+    m_bot.CloseConnection(kind);
+}
+
 BotTask* BotContext::AddHook(std::unique_ptr<BotTask> hook, bool persistent)
 {
     return m_bot.GetBrain().AddHook(std::move(hook), *this, persistent);

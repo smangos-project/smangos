@@ -68,6 +68,9 @@ class PacketAwaiter : public BotAwaiterBase
             return true;
         }
 
+        // The connection the packet would have come on is gone: no packet is coming.
+        bool OnConnectionLost(RealBot&, BotConnectionKind) override { return true; }
+
         std::optional<T> await_resume() { return std::move(m_result); }
 
     private:
@@ -86,6 +89,7 @@ class RawPacketAwaiter : public BotAwaiterBase
 
         bool Poll(RealBot&, uint32 diffMs) override;
         bool OnPacket(RealBot&, BotPacket const& packet, BotPacketDir dir) override;
+        bool OnConnectionLost(RealBot&, BotConnectionKind) override { return true; }
         std::optional<BotPacket> await_resume() { return std::move(m_result); }
 
     private:
@@ -175,6 +179,15 @@ class LoginAwaiter : public BotAwaiterBase
             std::shared_ptr<Shared> shared = m_shared;
             std::weak_ptr<RealBot> weakBot = m_bot.weak_from_this();
             std::shared_ptr<BotLogin> login = BotLogin::Create(m_bot.GetIoContext());
+
+            // Stage progress from the IO thread lands on the bot's thread in order with the
+            // completion below, so a stage is never set after the login it belongs to has ended.
+            m_options.OnStage = [weakBot](BotStage stage)
+            {
+                if (std::shared_ptr<RealBot> bot = weakBot.lock())
+                    bot->Post([bot, stage]() { bot->SetStage(stage); });
+            };
+
             login->Login(m_options, [weakBot, shared](BotLogin::Result result)
             {
                 if (std::shared_ptr<RealBot> bot = weakBot.lock())
@@ -251,6 +264,13 @@ class ConnectAwaiter : public BotAwaiterBase
             }
             IO::Networking::IpEndpoint endpoint(*ip, m_port);
 
+            if (!m_bot.AllowConnect(m_kind, m_address, m_port))
+            {
+                m_shared->Result.Error = "connect refused by a hook";
+                m_shared->Done = true;
+                return;
+            }
+
             std::shared_ptr<Shared> shared = m_shared;
             std::weak_ptr<RealBot> weakBot = m_bot.weak_from_this();
             RealBot::WorldCallbacks callbacks = m_bot.MakeWorldCallbacks(m_kind);
@@ -302,8 +322,19 @@ class ConnectAwaiter : public BotAwaiterBase
 
             if (m_shared->Connection)
             {
-                bot.AttachConnection(m_kind, std::move(m_shared->Connection));
-                m_shared->Result.Success = true;
+                // A server that hangs up at once can close the connection before this completion
+                // runs; its loss event was then handled with nobody waiting, so it has to be noticed
+                // here (Close() marks the socket closing before it reports the loss).
+                if (m_shared->Connection->IsClosing())
+                {
+                    m_shared->Connection->Close();
+                    m_shared->Result.Error = "connection closed while connecting";
+                }
+                else
+                {
+                    bot.AttachConnection(m_kind, std::move(m_shared->Connection));
+                    m_shared->Result.Success = true;
+                }
             }
             return true;
         }

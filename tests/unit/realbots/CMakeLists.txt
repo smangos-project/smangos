@@ -26,6 +26,7 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Net/BotLogin.cpp
   CoroutineTests.cpp
   BotHookTests.cpp
+  BotStageWatchdogTests.cpp
   BotDispatchOrderTests.cpp
   TestRoutineTests.cpp
   WorldHandshakeCryptoTests.cpp

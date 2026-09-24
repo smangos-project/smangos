@@ -53,6 +53,10 @@ RealBots.Target.deadhost.RestPort     = 8081
 RealBots.Target.deadhost.RpcPort      = 1119
 RealBots.Target.deadhost.Tags         = "protocol gameplay"
 RealBots.Target.deadhost.Accounts     = "bot1@bots:pass"
+# Short on purpose: framework/FrameworkTests.cpp checks the target's own timeouts are what bound a
+# dead address, so this must be well under the 10 s default.
+RealBots.Target.deadhost.ConnectTimeoutMs = 2000
+RealBots.Target.deadhost.StageTimeoutMs   = 5000
 
 RealBots.IoThreads       = 1
 RealBots.WorkerThreads   = 2
