@@ -76,6 +76,12 @@ else()
   message(STATUS "Build tests           : No (default)")
 endif()
 
+if(ENABLE_ASAN)
+  message(STATUS "AddressSanitizer      : Yes")
+else()
+  message(STATUS "AddressSanitizer      : No (default)")
+endif()
+
 if(BUILD_REALBOT_RUNNER)
   message(STATUS "Build realbotrunner   : Yes")
 else()

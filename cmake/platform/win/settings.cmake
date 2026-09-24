@@ -36,7 +36,22 @@ elseif(MINGW) # Allows same flags as GCC
 endif()
 
 # Added by Giperion, in WIN32 output all compiled files in one directory
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
+# ASan builds get their own output directories so they never overwrite a normal build's binaries,
+# and the ASan runtime DLL (found by asking the compiler) is dropped next to them so freshly built
+# tools like protoc can run during the build.
+if(ENABLE_ASAN)
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin-asan )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib-asan )
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-resource-dir OUTPUT_VARIABLE _clang_resource_dir OUTPUT_STRIP_TRAILING_WHITESPACE)
+    file(GLOB _asan_dlls "${_clang_resource_dir}/lib/windows/clang_rt.asan_dynamic-*.dll")
+    foreach(_config ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+      file(COPY ${_asan_dlls} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${_config})
+    endforeach()
+  endif()
+else()
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
+endif()
 # Allow creating folders in solution
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

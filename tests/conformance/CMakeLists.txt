@@ -42,6 +42,8 @@ add_executable(tests-conformance
 )
 mangos_target_flags(tests-conformance)
 set_target_properties(tests-conformance PROPERTIES FOLDER "Tests")
+# Last-resort location of expectations/<target>.txt when neither the config file's directory nor its parent has one.
+target_compile_definitions(tests-conformance PRIVATE CONFORMANCE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_include_directories(tests-conformance PRIVATE
   ${CMAKE_SOURCE_DIR}/tests/support
@@ -80,4 +82,4 @@ mangos_copy_openssl_dlls(tests-conformance)
 # Never part of `ctest -L unit` (bot-plan.md's testing model: conformance talks to the network,
 # unit doesn't) -- no catch_discover_tests call here at all. Run by hand:
 #   tests-conformance --target vibemangos
-# from this directory (targets/*.conf and expectations/*.txt are read as relative paths).
+# from anywhere: expectations/*.txt is found relative to the config file, not the working directory.

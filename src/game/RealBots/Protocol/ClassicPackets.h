@@ -512,7 +512,7 @@ struct ClassicLogoutRequest
 
 // vibemangos: src/game/Server/Packets/Misc.cpp LogoutComplete::AppendBodyTo() (empty body).
 // Routed PacketRoute::Realm (Opcodes.cpp) -- arrives on the Realm connection even when the
-// logout request itself was sent on the Instance one (bot-phase-1-progress-6.md).
+// logout request itself was sent on the Instance one.
 struct ClassicLogoutComplete
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_COMPLETE;

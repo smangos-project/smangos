@@ -14,7 +14,7 @@
 // Composes BotRestClient (LoginPortal) and BotBnetConnection (LoginRpc, RealmSelect) into the
 // full sequence bot-phase-1.md's "Login" describes up through JoinRealm: account name/password
 // in, a world server address + session key out. Not yet a BotRoutine coroutine (ctx.Bnet and the
-// rest of the coroutine layer aren't wired to real networking -- see bot-phase-1-progress-1.md);
+// rest of the coroutine layer aren't wired to real networking);
 // this is the plain callback-based network step the eventual LoginRoutine will drive, same
 // relationship BotRestClient/BotBnetConnection already have to their own callers.
 //

@@ -85,7 +85,7 @@ TEST_CASE("framework: connecting to a dead address fails cleanly", "[protocol]")
     RunTest([]() -> TestRoutine
     {
         // RealBotTarget::ConnectTimeoutMs is read and stored but not yet consumed anywhere
-        // (progress-9's own noted gap) -- BotConnector::ConnectAsync's callers all still use a
+        // (a known gap, bot-phase-2.md "Timeouts, used") -- BotConnector::ConnectAsync's callers all still use a
         // hardcoded 10s, so this waits comfortably past that rather than the target's configured
         // value. "deadhost" (targets/tests-conformance.conf.dist) points at 203.0.113.1, RFC
         // 5737's reserved documentation range -- guaranteed unreachable, never just slow.

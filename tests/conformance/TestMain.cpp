@@ -15,6 +15,7 @@
 #include "RealBotTarget.h"
 #include <catch_amalgamated.hpp>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -70,6 +71,33 @@ std::unordered_map<std::string, std::string> LoadExpectations(std::string const&
     }
     return out;
 }
+
+// Where expectations/<target>.txt lives, independent of the working directory (bot-phase-2.md,
+// "Targets"): next to the config file, then one level up (the .dist sits in targets/, the
+// expectations beside it), then the source tree this binary was built from. First hit wins.
+std::string FindExpectationsFile(std::string const& configPath, std::string const& targetName)
+{
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    std::string const leaf = "expectations/" + targetName + ".txt";
+
+    std::vector<fs::path> candidates;
+    fs::path const configDir = fs::absolute(fs::path(configPath), ec).parent_path();
+    if (!configDir.empty())
+    {
+        candidates.push_back(configDir / leaf);
+        candidates.push_back(configDir.parent_path() / leaf);
+    }
+#ifdef CONFORMANCE_SOURCE_DIR
+    candidates.push_back(fs::path(CONFORMANCE_SOURCE_DIR) / leaf);
+#endif
+
+    for (fs::path const& candidate : candidates)
+        if (fs::exists(candidate, ec))
+            return candidate.string();
+
+    return leaf; // not found anywhere; LoadExpectations returns empty for a missing file
+}
 }
 
 int main(int argc, char** argv)
@@ -83,6 +111,8 @@ int main(int argc, char** argv)
     if (char const* env = std::getenv("REALBOTS_CONFIG"))
         configPath = env;
 
+    bool configGiven = std::getenv("REALBOTS_CONFIG") != nullptr;
+
     std::vector<char*> passthrough;
     passthrough.push_back(argv[0]);
     for (int i = 1; i < argc; ++i)
@@ -91,11 +121,23 @@ int main(int argc, char** argv)
         if (arg == "--target" && i + 1 < argc)
             targetName = argv[++i];
         else if (arg == "--config" && i + 1 < argc)
+        {
             configPath = argv[++i];
+            configGiven = true;
+        }
         else if (arg == "--strict")
             strict = true;
         else
             passthrough.push_back(argv[i]);
+    }
+
+    // Default config: the working directory's tests-conformance.conf, else the one next to the binary.
+    if (!configGiven && !std::filesystem::exists(configPath))
+    {
+        std::error_code ec;
+        std::filesystem::path const besideExe = std::filesystem::absolute(std::filesystem::path(argv[0]), ec).parent_path() / configPath;
+        if (std::filesystem::exists(besideExe, ec))
+            configPath = besideExe.string();
     }
 
     if (targetName.empty())
@@ -127,8 +169,9 @@ int main(int argc, char** argv)
 
     bool const runsProtocol = target->HasTag("protocol");
     bool const runsGameplay = target->HasTag("gameplay");
+    std::string const expectationsPath = FindExpectationsFile(configPath, targetName);
     std::unordered_map<std::string, std::string> const expectations =
-        strict ? std::unordered_map<std::string, std::string>{} : LoadExpectations("expectations/" + targetName + ".txt");
+        strict ? std::unordered_map<std::string, std::string>{} : LoadExpectations(expectationsPath);
 
     Catch::Session session;
     int const cliResult = session.applyCommandLine(int(passthrough.size()), passthrough.data());
@@ -173,6 +216,8 @@ int main(int argc, char** argv)
     for (std::string const& term : exclusionTerms)
         session.configData().testsOrTags.push_back(term);
 
+    if (!strict)
+        std::cout << "expectations: " << expectationsPath << (expectations.empty() ? " (none loaded)" : "") << "\n";
     std::cout << "target " << targetName << ": " << excluded.size()
         << " scenario" << (excluded.size() == 1 ? "" : "s") << " excluded\n";
     for (auto const& [name, reason] : excluded)

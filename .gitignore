@@ -125,3 +125,8 @@ Progression.h
 
 # client
 .client/*
+
+# sanitizer builds (ENABLE_ASAN)
+/build-asan/
+/bin-asan/
+/lib-asan/

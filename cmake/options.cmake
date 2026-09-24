@@ -10,6 +10,7 @@ option(ENABLE_CPPTRACE                "Enables cpptrace stack tracing; can be di
 option(ENABLE_REALBOTS                "Build the RealBots client bot framework"                                                       ON)
 option(BUILD_TESTING                  "Build unit and conformance test suites"                                                        OFF)
 option(BUILD_REALBOT_RUNNER           "Build the RealBots console host (contrib/realbotrunner)"                                       OFF)
+option(ENABLE_ASAN                    "Build the whole tree with AddressSanitizer (MSVC /fsanitize=address, clang -fsanitize=address)" OFF)
 
 if (BUILD_REALBOT_RUNNER AND NOT ENABLE_REALBOTS)
   message(FATAL_ERROR "BUILD_REALBOT_RUNNER requires ENABLE_REALBOTS to be ON")
@@ -84,6 +85,7 @@ message(STATUS
     ENABLE_REALBOTS           Build the RealBots client bot framework
     BUILD_TESTING             Build unit and conformance test suites
     BUILD_REALBOT_RUNNER      Build the RealBots console host (contrib/realbotrunner)
+    ENABLE_ASAN               Build the whole tree with AddressSanitizer
 
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.

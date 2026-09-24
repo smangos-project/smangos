@@ -21,7 +21,7 @@
 // as Result::RealmConnection.
 //
 // Not yet a BotRoutine (same reason as BotBnetLogin/BotWorldHandshake -- ctx.Packet isn't wired
-// to real networking yet, see bot-phase-1-progress-1.md). Takes over the connection's
+// to real networking yet). Takes over the connection's
 // packet/disconnect callbacks via SetPacketCallback/SetDisconnectCallback in EnterWorld(); the
 // caller must not keep driving the connection through its own callbacks afterward.
 class BotCharSelect : public std::enable_shared_from_this<BotCharSelect>

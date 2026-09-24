@@ -119,7 +119,7 @@ if(WIN32)
   # so a second library appended to that same variable would leak in unconditionally.
   set(OPENSSL_SSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libssl.lib)
   set(OPENSSL_SSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libssl.lib)
-  set(OPENSSL_RUNTIME_DLLS ${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll ${OPENSSL_ROOT_DIR}/bin/libssl-3-x64.dll)
+  set(OPENSSL_RUNTIME_DLLS ${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll ${OPENSSL_ROOT_DIR}/bin/libssl-3-x64.dll ${OPENSSL_ROOT_DIR}/bin/legacy.dll)
   set(ZLIB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/dep/windows/include/zlib)
   if (REQUIRES_LIBCURL AND MSVC)
     # MinGW falls through to find_package(CURL) below, which picks up
@@ -224,6 +224,19 @@ if(MSVC)
   #endif()
 
   set(MANGOS_CXX_FLAGS "${MANGOS_CXX_FLAGS} /bigobj")
+endif()
+
+# AddressSanitizer: applied to the whole tree (compile and link), since an instrumented target linked
+# against uninstrumented dependencies misses their heap errors. Clang (also clang-cl) and GCC take the
+# GNU spelling; MSVC proper takes /fsanitize=address, and its ASan runtime requires /Zi rather than /ZI.
+if(ENABLE_ASAN)
+  if(MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(/fsanitize=address)
+    string(REGEX REPLACE "/ZI" "/Zi" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  else()
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+  endif()
 endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)

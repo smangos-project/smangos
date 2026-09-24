@@ -4,8 +4,7 @@ A client bot framework, embedded in `mangosd` and in a standalone console host
 (`contrib/realbotrunner`), that speaks the **modern** (1.15.x classic-era) WoW protocol as a real
 client would. It drives the vmangos-to-modern-client port described in `.local/plan/bot/port-plan.md`
 and its own conformance suite (`tests/conformance/`). Spec: `.local/plan/bot/bot-phase-1.md`;
-design direction: `.local/plan/bot/bot-plan.md`; progress history:
-`.local/plan/bot/bot-phase-1-progress-*.md`.
+design direction: `.local/plan/bot/bot-plan.md`; current spec: `.local/plan/bot/bot-phase-2.md`.
 
 Everything here lives behind `ENABLE_REALBOTS` (`#ifdef REALBOTS` at every touch point outside this
 directory: three lines in `World.cpp`, a chat command in `Chat.h`/`Chat.cpp`). Protocol code the
@@ -171,9 +170,9 @@ Disconnected -> LoginPortal -> LoginRpc -> RealmSelect -> WorldConnecting -> Wor
 (`Core/BotStage.h`.) `RealBotLoginOptions::StopAt` (default `BotStage::InWorld`, meaning "don't
 stop early") holds the `login` routine once that stage is reached, *before* that stage's own
 network step runs -- e.g. `StopAt(CharSelect)` resolves a character but never sends
-`CMSG_PLAYER_LOGIN`. Exactly which function checks each of the seven stoppable values is tabulated
-in `bot-phase-1-progress-10.md`; `tests/conformance/support/TestBot.h`'s `TestBotOptions().StopAt(...)`
-is how a conformance scenario uses it (`RealBotMgr::AddWithOverrides` is the entry point behind
+`CMSG_PLAYER_LOGIN`. Each stoppable value is checked at its own stage's step (`BotLogin.cpp`,
+`BotBnetLogin.cpp`, `BotCharSelect.cpp`: grep `m_options.StopAt`);
+`tests/conformance/support/TestBot.h`'s `TestBotOptions().StopAt(...)` is how a conformance scenario uses it (`RealBotMgr::AddWithOverrides` is the entry point behind
 it -- the plain runner/.realbot `add <target>` still goes through the unmodified `Add`).
 
 A bot's `RealBotInfo::FailedStage` records what stage it was at right before `Failed`
@@ -265,18 +264,24 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   (crypto). `[live]`-tagged cases (`tests/unit/realbots/BotLoginLiveTests.cpp`) are excluded from
   this (`TEST_SPEC "~[live]"`) and only ever run by hand, against a real server, with
   `tests-realbots.exe "[live]" --success`.
+  For memory errors, configure a separate tree with `-DENABLE_ASAN=ON` (clang or MSVC; output goes to
+  `bin-asan/`, never over a normal build's `bin/`), build `tests-realbots` there and run it with
+  `ASAN_OPTIONS=detect_leaks=0`. The intermittent `BotBnetConnectionTests` crash from Phase 1 did not
+  reproduce in 50 whole-binary runs under ASan, 50 `ctest -L unit --repeat until-fail:50` passes, or
+  100 rapid whole-binary Release runs (2026-09-24); nothing was changed for it.
 - **`tests-conformance`** (`BUILD_TESTING`, `ENABLE_REALBOTS`): talks to a real target over the
   network, driven through `TestBot`/`TestBotOptions` (`tests/conformance/support/`), the same
   awaitable vocabulary as `BotContext` bridged across threads (`Stage`/`Disconnected` poll
   `RealBot::GetPublishedInfo()`; `Packet<T>`/`RawPacket`/`NoPacket` are event-driven, through a
   `RealBot::SetPacketObserver` hook that -- deliberately unlike a pushed `BotTask` -- survives
-  `BotBrain::Clear()` on disconnect). Run **from `tests/conformance/`** (its `targets/*.conf` and
-  `expectations/*.txt` are read as paths relative to the process's current working directory):
+  `BotBrain::Clear()` on disconnect). Runs from any working directory (apart from the OpenSSL
+  `legacy.dll` note below): `expectations/<target>.txt` is found relative to the config file (its
+  directory, then its parent), falling back to the source tree the binary was built from:
   ```
   tests-conformance --target vibemangos --config targets/tests-conformance.conf
   ```
   `--target` (or `REALBOTS_TARGET`) is required; `--config`/`REALBOTS_CONFIG` defaults to
-  `tests-conformance.conf`. It prints what it excluded and why before running -- every scenario
+  `tests-conformance.conf` in the working directory, else next to the executable. It prints what it excluded and why before running -- every scenario
   tagged with something the target's own `Tags` don't list (always, `--strict` never overrides
   this, since it's a structural capability mismatch, not a "not yet ported" placeholder) plus every
   scenario named in `expectations/<target>.txt` (skipped under `--strict`, to find newly-passing
@@ -308,7 +313,7 @@ elsewhere, even with the DLL correctly copied there by `mangos_copy_openssl_dlls
 `bot-phase-1.md`'s "Done when" bar is now fully met except live-verifying `.realbot` against a real
 game client (blocked on having one available) and `tests-conformance`'s "ten bots log in at once"
 scenario (needs ten free accounts on the live target; this dev environment has one). Concrete gaps,
-all still open as of `bot-phase-1-progress-11.md`:
+tracked and scheduled in `bot-phase-2.md`:
 
 - Packets still aren't observable while a bot is mid-handshake (`WorldConnecting` through
   `CharSelect`) -- `BotWorldHandshake`/`BotCharSelect` still take a connection's packet callback
