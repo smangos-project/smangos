@@ -11,7 +11,9 @@ add_executable(realbotrunner
   Main.cpp
   ${REALBOTS_DIR}/RealBotConfig.cpp
   ${REALBOTS_DIR}/RealBotMgr.cpp
+  ${REALBOTS_DIR}/RealBotTarget.cpp
   ${REALBOTS_DIR}/Core/RealBot.cpp
+  ${REALBOTS_DIR}/Core/BotAccountLease.cpp
   ${REALBOTS_DIR}/Core/BotPacketLog.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
