@@ -551,8 +551,6 @@ if (ENABLE_REALBOTS)
       RealBots/Protocol/ClassicOpcodes.cpp
       RealBots/Protocol/ClassicOpcodes.h
       RealBots/Protocol/ClassicPackets.h
-      RealBots/Protocol/WorldHandshakeCrypto.cpp
-      RealBots/Protocol/WorldHandshakeCrypto.h
       RealBots/Net/BotConnector.cpp
       RealBots/Net/BotConnector.h
       RealBots/Net/BotWorldConnection.cpp

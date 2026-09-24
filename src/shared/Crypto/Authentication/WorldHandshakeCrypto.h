@@ -1,20 +1,14 @@
-#ifndef REALBOTS_WORLDHANDSHAKECRYPTO_H
-#define REALBOTS_WORLDHANDSHAKECRYPTO_H
+#ifndef SHARED_WORLDHANDSHAKECRYPTO_H
+#define SHARED_WORLDHANDSHAKECRYPTO_H
 
 #include "Common.h"
 #include <array>
 #include <vector>
 
-// The key-derivation math behind CMSG_AUTH_SESSION and CLASSIC_SMSG_ENTER_ENCRYPTED_MODE.
-// Ported from vibemangos's src/game/Server/WorldSocket.cpp (_HandleAuthSession,
-// SendEnterEncryptedMode) -- that file only has the server side (it verifies a client's
-// values); the client-side functions here (ComputeAuthCheckDigest, ComputeEncryptKey from the
-// bot's own perspective) are new, built from the exact same primitives so both sides are
-// provably the same protocol (see tests-realbots's half-against-half test).
-//
-// All of localChallenge/serverChallenge/joinSessionKey/sessionKey below are exactly what
-// WorldSocket.cpp names them; the fixed 32-byte seeds are vibemangos's own constants (copied
-// verbatim from TrinityCore's cata classic WorldSocket.cpp/AuthenticationPackets.cpp).
+// The key-derivation math behind CMSG_AUTH_SESSION and CLASSIC_SMSG_ENTER_ENCRYPTED_MODE. Every
+// function here is the same formula either side of the handshake runs: a client computes a value
+// this way to send it, a server computes it this way to check what it received. The fixed 32-byte
+// seeds are the protocol's own constants, not a secret either side derives.
 class WorldHandshakeCrypto
 {
     public:

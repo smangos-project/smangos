@@ -1,11 +1,10 @@
-#include "WorldHandshakeCrypto.h"
+#include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include <catch_amalgamated.hpp>
 
 // These check the implementation is self-consistent (deterministic, correct output sizes) and
-// guard against accidental regressions. They cannot prove wire-compatibility with vibemangos's
-// server-side WorldSocket.cpp -- that needs a real handshake against a live target (bot-phase-1.md
-// step 5); the algorithm here was transcribed from vibemangos's source with citations (see
-// WorldHandshakeCrypto.h/.cpp).
+// guard against accidental regressions. They cannot prove wire-compatibility with a real server --
+// that needs a real handshake against a live target, which the conformance suite's
+// world_socket: scenarios cover.
 
 namespace
 {

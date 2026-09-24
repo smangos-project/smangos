@@ -50,6 +50,8 @@ set (shared_SRCS
     Crypto/Authentication/SRP6.cpp
     Crypto/Authentication/BnetSRP6.h
     Crypto/Authentication/BnetSRP6.cpp
+    Crypto/Authentication/WorldHandshakeCrypto.h
+    Crypto/Authentication/WorldHandshakeCrypto.cpp
     Crypto/Encoding/Base32.h
     Crypto/Encoding/Base32.cpp
     Crypto/Encryption/RC4.h

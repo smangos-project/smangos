@@ -22,7 +22,7 @@
 #include "Compression/ZLib.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "Crypto/Ed25519.h"
-#include "WorldHandshakeCrypto.h"
+#include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
 #include "IO/Networking/AsyncSocket.h"

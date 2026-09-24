@@ -22,7 +22,7 @@
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocket.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
-#include "WorldHandshakeCrypto.h"
+#include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include <array>
 #include <atomic>
 #include <chrono>

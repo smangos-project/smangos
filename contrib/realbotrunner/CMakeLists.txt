@@ -25,7 +25,6 @@ add_executable(realbotrunner
   ${REALBOTS_DIR}/Coroutines/BotRoutine.cpp
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
   ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
-  ${REALBOTS_DIR}/Protocol/WorldHandshakeCrypto.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
   ${REALBOTS_DIR}/Net/BotTlsStream.cpp

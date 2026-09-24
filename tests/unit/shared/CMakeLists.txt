@@ -2,6 +2,7 @@ add_executable(tests-shared
   PlaceholderTest.cpp
   CryptoTests.cpp
   ByteBufferTests.cpp
+  WorldHandshakeCryptoTests.cpp
   TestMain.cpp
 )
 

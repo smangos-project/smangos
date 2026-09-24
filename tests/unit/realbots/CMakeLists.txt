@@ -17,7 +17,6 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Behavior/Tasks/BuiltinBotTasks.cpp
   ${REALBOTS_DIR}/Coroutines/BotRoutine.cpp
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
-  ${REALBOTS_DIR}/Protocol/WorldHandshakeCrypto.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
   ${REALBOTS_DIR}/Net/BotTlsStream.cpp
@@ -33,7 +32,6 @@ add_executable(tests-realbots
   BotStageWatchdogTests.cpp
   BotDispatchOrderTests.cpp
   TestRoutineTests.cpp
-  WorldHandshakeCryptoTests.cpp
   ClassicPacketsTests.cpp
   ClassicPacketsRoundTripTests.cpp
   BotWorldConnectionTests.cpp

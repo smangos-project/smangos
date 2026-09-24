@@ -2,7 +2,7 @@
 #include "BotAwaitables.h"
 #include "BotContext.h"
 #include "ClassicOpcodes.h"
-#include "WorldHandshakeCrypto.h"
+#include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Log.h"

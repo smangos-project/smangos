@@ -11,7 +11,7 @@
 #include "RealBotTarget.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
-#include "WorldHandshakeCrypto.h"
+#include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include <algorithm>
 #include <catch_amalgamated.hpp>
 #include <random>
