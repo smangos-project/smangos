@@ -147,6 +147,11 @@ void RealBotMgr::WorkerLoop(uint32 workerIndex)
 
 std::string RealBotMgr::Add(std::string const& targetName, std::string name, std::string* error)
 {
+    return AddWithOverrides(targetName, RealBotAddOverrides{}, std::move(name), error);
+}
+
+std::string RealBotMgr::AddWithOverrides(std::string const& targetName, RealBotAddOverrides const& overrides, std::string name, std::string* error)
+{
     RealBotTarget const* target = m_targets.Find(targetName);
     if (!target)
     {
@@ -169,11 +174,20 @@ std::string RealBotMgr::Add(std::string const& targetName, std::string name, std
     options.RestPort = target->RestPort;
     options.RpcPort = target->RpcPort;
     options.AccountName = account->Name;
-    options.Password = account->Password;
+    options.Password = overrides.Password.value_or(account->Password);
     options.RealmName = target->RealmName;
     options.RealmId = target->RealmId;
     options.ClientBuild = target->ClientBuild;
     options.VerifyServerSignature = target->VerifyServerSignature;
+    if (overrides.CharacterName)
+        options.CharacterName = *overrides.CharacterName;
+    if (overrides.CreateIfNone)
+        options.CreateIfNone = *overrides.CreateIfNone;
+    if (overrides.Race)
+        options.Race = *overrides.Race;
+    if (overrides.Class)
+        options.Class = *overrides.Class;
+    options.StopAt = overrides.StopAt;
 
     std::string const botName = AddWithOptions(std::move(options), std::move(name));
 

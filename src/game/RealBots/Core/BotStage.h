@@ -25,7 +25,18 @@ enum class BotTaskResult
     Failed,
 };
 
+// Why a bot last reached BotStage::Disconnected (bot-examples.md #7's
+// `bot.GetDisconnectReason() == BotDisconnectReason::Requested`). Set once, when SetStage
+// actually transitions to Disconnected; overwritten on every later disconnect.
+enum class BotDisconnectReason
+{
+    None,          // never disconnected (still connecting, connected, or brand new)
+    Requested,     // RealBot::Disconnect() was called first, clean or not
+    ConnectionLost, // the connection's own onDisconnect fired without Disconnect() being called
+};
+
 // For logs, "info"/"list"/"status" command output -- never parsed back.
 char const* BotStageName(BotStage stage);
+char const* BotDisconnectReasonName(BotDisconnectReason reason);
 
 #endif

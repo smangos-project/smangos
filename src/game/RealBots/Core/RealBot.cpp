@@ -28,8 +28,14 @@ void RealBot::SetStage(BotStage stage)
     if (BotTask* top = m_brain.Top())
         top->OnStageChanged(*m_context, from, stage);
 
+    if (stage == BotStage::Failed)
+        m_failedStage = from;
+
     if (stage == BotStage::Disconnected)
     {
+        m_disconnectReason = m_disconnectRequested ? BotDisconnectReason::Requested : BotDisconnectReason::ConnectionLost;
+        m_disconnectRequested = false;
+
         m_brain.Clear();
         CloseConnections();
     }
@@ -113,6 +119,8 @@ void RealBot::SendRaw(BotPacket packet)
 
 void RealBot::Disconnect(bool clean)
 {
+    m_disconnectRequested = true;
+
     if (clean && m_connection)
     {
         SetStage(BotStage::LoggingOut);
@@ -239,6 +247,8 @@ void RealBot::PublishInfo()
     m_publishedInfo.CharacterName = m_identity.CharacterName;
     m_publishedInfo.LastError = m_lastError;
     m_publishedInfo.TaskStack = m_brain.TaskNames();
+    m_publishedInfo.FailedStage = m_failedStage;
+    m_publishedInfo.DisconnectReason = m_disconnectReason;
 }
 
 RealBotInfo RealBot::GetPublishedInfo() const

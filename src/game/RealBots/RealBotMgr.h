@@ -2,12 +2,14 @@
 #define REALBOTS_REALBOTMGR_H
 
 #include "BotAccountLease.h"
+#include "BotStage.h"
 #include "BotTaskArgs.h"
 #include "IO/Context/IoContext.h"
 #include "Policies/Singleton.h"
 #include "RealBot.h"
 #include "RealBotTarget.h"
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -16,6 +18,20 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+// Per-bot overrides on top of a target's own defaults -- what TestBot (tests/conformance) needs
+// to drive scenarios the plain `Add(target)` can't: a wrong password to fail on purpose, a stable
+// or unique character name, and StopAt for mid-login scenarios (bot-examples.md's
+// `TestBotOptions().StopAt(...).Password(...)`).
+struct RealBotAddOverrides
+{
+    std::optional<std::string> Password;
+    std::optional<std::string> CharacterName;
+    std::optional<bool> CreateIfNone;
+    std::optional<uint8_t> Race;
+    std::optional<uint8_t> Class;
+    BotStage StopAt = BotStage::InWorld;
+};
 
 // IoContext.h is included in full (not forward-declared) even though only a pointer to it is
 // stored: any translation unit that includes Config.h (almost all of them -- it drags in
@@ -51,6 +67,10 @@ class RealBotMgr
         // it starts logging in on its very next Tick. Empty return (with *error* set, if given)
         // means no such target or no free account left in its lease pool.
         std::string Add(std::string const& targetName, std::string name = "", std::string* error = nullptr);
+        // Same lease-and-login as Add, with overrides applied on top of the target's own defaults
+        // (RealBotAddOverrides) -- the entry point TestBot uses; Add() itself is unchanged so the
+        // runner/.realbot's plain "add <target>" keeps working exactly as before.
+        std::string AddWithOverrides(std::string const& targetName, RealBotAddOverrides const& overrides, std::string name = "", std::string* error = nullptr);
         void Remove(std::string const& name);
         void RemoveAll();
 

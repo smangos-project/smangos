@@ -18,3 +18,14 @@ char const* BotStageName(BotStage stage)
         default: return "Unknown";
     }
 }
+
+char const* BotDisconnectReasonName(BotDisconnectReason reason)
+{
+    switch (reason)
+    {
+        case BotDisconnectReason::None: return "None";
+        case BotDisconnectReason::Requested: return "Requested";
+        case BotDisconnectReason::ConnectionLost: return "ConnectionLost";
+        default: return "Unknown";
+    }
+}

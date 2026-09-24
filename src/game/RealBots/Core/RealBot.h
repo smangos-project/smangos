@@ -56,6 +56,10 @@ struct RealBotInfo
     std::string LastError;
     // Task names, top of the stack first (BotBrain::TaskNames) -- what "tasks <name>" shows.
     std::vector<std::string> TaskStack;
+    // The stage the bot was at right before it became BotStage::Failed (Disconnected otherwise);
+    // "info"'s "stage Failed (was CharSelect)" and TestBot::GetFailedStage() (bot-examples.md #6/#7).
+    BotStage FailedStage = BotStage::Disconnected;
+    BotDisconnectReason DisconnectReason = BotDisconnectReason::None;
 };
 
 // One bot. Touched only from its own worker thread (port-plan.md /
@@ -92,6 +96,9 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         void SetLastError(std::string error) { m_lastError = std::move(error); }
         std::string const& GetLastError() const { return m_lastError; }
+
+        BotStage GetFailedStage() const { return m_failedStage; }
+        BotDisconnectReason GetDisconnectReason() const { return m_disconnectReason; }
 
         BotIdentity const& GetIdentity() const { return m_identity; }
         BotIdentity& GetIdentity() { return m_identity; }
@@ -155,6 +162,12 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         RealBotLoginOptions m_loginOptions;
 
         BotStage m_stage = BotStage::Disconnected;
+        BotStage m_failedStage = BotStage::Disconnected;
+        BotDisconnectReason m_disconnectReason = BotDisconnectReason::None;
+        // Set at the start of Disconnect() (clean or forced), consumed and reset by SetStage once
+        // it actually reaches Disconnected -- distinguishes a requested disconnect from the
+        // connection's own onDisconnect firing unprompted (bot-plan.md's BotDisconnectReason).
+        bool m_disconnectRequested = false;
         BotIdentity m_identity;
         std::string m_lastError;
         BotBrain m_brain;

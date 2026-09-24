@@ -86,7 +86,10 @@ void HandleInfo(std::istringstream& iss, RealBotCommands::Sink const& sink)
         sink("no such bot '" + name + "'");
         return;
     }
-    sink("stage       " + std::string(BotStageName(info->Stage)));
+    std::string stageLine = BotStageName(info->Stage);
+    if (info->Stage == BotStage::Failed)
+        stageLine += " (was " + std::string(BotStageName(info->FailedStage)) + ")";
+    sink("stage       " + stageLine);
     sink("latency     " + std::to_string(info->LatencyMs) + " ms");
     sink("character   " + (info->CharacterName.empty() ? "-" : info->CharacterName));
     sink("error       " + (info->LastError.empty() ? "-" : info->LastError));
