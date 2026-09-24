@@ -3,6 +3,7 @@
 
 #include "BotBnetLogin.h"
 #include "BotCharSelect.h"
+#include "BotStage.h"
 #include "BotWorldHandshake.h"
 #include "IO/Context/IoContext.h"
 #include <cstdint>
@@ -44,11 +45,23 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
             uint8 Class = 0;
             uint8 Gender = 0;
             float FarClip = 533.0f;
+
+            // Holds the whole chain at this stage instead of continuing past it
+            // (bot-phase-1.md, "Login": "stop_at=<stage>", the framework's per-stage awaitable
+            // granularity). InWorld (the default) means "don't stop early". Threaded down into
+            // whichever of BotBnetLogin/BotCharSelect owns that stage's own step; WorldConnecting
+            // and WorldHandshake are checked here instead, since they sit at the seam between
+            // BotBnetLogin and BotWorldHandshake/BotCharSelect rather than inside either one.
+            BotStage StopAt = BotStage::InWorld;
         };
 
         struct Result
         {
             bool Success = false;
+            // Set instead of the rest of a successful Result when Options::StopAt held the
+            // chain before it reached InWorld; never set together with an error. Connection/
+            // RealmConnection/CharacterGuid are filled in as far as the stopped-at stage got.
+            bool Stopped = false;
             // The Instance connection once CLASSIC_SMSG_CONNECT_TO redirected to one (see
             // BotCharSelect::Result); falls back to the Realm connection if no redirect happened.
             std::shared_ptr<BotWorldConnection> Connection;
@@ -73,6 +86,7 @@ class BotLogin : public std::enable_shared_from_this<BotLogin>
 
         void Fail(std::string const& error);
         void Succeed(std::shared_ptr<BotWorldConnection> connection, std::shared_ptr<BotWorldConnection> realmConnection, ClassicGuid const& guid);
+        void StopEarly(std::shared_ptr<BotWorldConnection> connection = nullptr, std::shared_ptr<BotWorldConnection> realmConnection = nullptr, ClassicGuid const& guid = ClassicGuid());
 
         IO::IoContext* m_ioContext;
         Options m_options;

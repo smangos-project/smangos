@@ -71,6 +71,11 @@ void BotCharSelect::HandleEnumCharactersResult(BotPacket& packet)
 
     if (result.CharacterCount > 0)
     {
+        if (m_options.StopAt == BotStage::CharSelect)
+        {
+            StopEarly(result.FirstCharacterGuid);
+            return;
+        }
         m_step = Step::WaitingLoginVerifyWorld;
         SendPlayerLogin(result.FirstCharacterGuid);
         return;
@@ -107,6 +112,12 @@ void BotCharSelect::HandleCreateCharResponse(BotPacket& packet)
         return;
     }
 
+    if (m_options.StopAt == BotStage::CharSelect)
+    {
+        StopEarly(response.Guid);
+        return;
+    }
+
     m_step = Step::WaitingLoginVerifyWorld;
     SendPlayerLogin(response.Guid);
 }
@@ -129,6 +140,12 @@ void BotCharSelect::HandleConnectTo(BotPacket& packet)
     if (!connectTo.Read(packet.Data))
     {
         Fail("malformed SMSG_CONNECT_TO");
+        return;
+    }
+
+    if (m_options.StopAt == BotStage::EnteringWorld)
+    {
+        StopEarly(m_characterGuid);
         return;
     }
 
@@ -220,6 +237,31 @@ void BotCharSelect::Succeed()
         m_callback = nullptr;
         Result result;
         result.Success = true;
+        result.CharacterGuid = m_characterGuid;
+        result.Connection = m_connection;
+        result.RealmConnection = m_realmConnection;
+        callback(std::move(result));
+    }
+}
+
+void BotCharSelect::StopEarly(ClassicGuid const& guid)
+{
+    m_characterGuid = guid;
+    m_step = Step::Done;
+    // Same cleanup Fail/Succeed do -- breaks the m_connection <-> callback(self) cycle so the
+    // caller (BotLogin, or whoever attaches this connection next) can retarget it cleanly.
+    if (m_connection)
+    {
+        m_connection->SetPacketCallback(nullptr);
+        m_connection->SetDisconnectCallback(nullptr);
+    }
+    if (m_callback)
+    {
+        CharSelectCallback callback = std::move(m_callback);
+        m_callback = nullptr;
+        Result result;
+        result.Success = true;
+        result.Stopped = true;
         result.CharacterGuid = m_characterGuid;
         result.Connection = m_connection;
         result.RealmConnection = m_realmConnection;

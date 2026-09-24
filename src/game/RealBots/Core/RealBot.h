@@ -39,6 +39,9 @@ struct RealBotLoginOptions
     uint8 Class = 0;
     uint8 Gender = 0;
     float FarClip = 533.0f;
+    // Holds the login routine at this stage instead of continuing past it -- InWorld (the
+    // default) means "don't stop early" (bot-phase-1.md, "Login": "stop_at=<stage>").
+    BotStage StopAt = BotStage::InWorld;
 };
 
 // A snapshot of a bot's state, safe to read from any thread -- published once per Tick, after

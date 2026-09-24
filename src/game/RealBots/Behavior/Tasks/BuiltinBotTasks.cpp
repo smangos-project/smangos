@@ -34,6 +34,7 @@ BotRoutine LoginRoutine(BotContext& ctx)
     options.Class = opts.Class;
     options.Gender = opts.Gender;
     options.FarClip = opts.FarClip;
+    options.StopAt = opts.StopAt;
 
     BotLogin::Result result = co_await ctx.Login(options);
     if (!result.Success)
@@ -44,13 +45,17 @@ BotRoutine LoginRoutine(BotContext& ctx)
         co_return BotTaskResult::Failed;
     }
 
-    bot.AttachConnections(result.Connection, result.RealmConnection);
+    if (result.Connection || result.RealmConnection)
+        bot.AttachConnections(result.Connection, result.RealmConnection);
     bot.GetIdentity().AccountName = opts.AccountName;
     if (!opts.CharacterName.empty())
         bot.GetIdentity().CharacterName = opts.CharacterName;
     bot.GetIdentity().CharacterGuid = result.CharacterGuid;
 
-    ctx.SetStage(BotStage::InWorld);
+    // Options::StopAt (bot-phase-1.md's "stop_at=<stage>") holds the routine wherever BotLogin
+    // stopped instead of treating it as InWorld -- result.Stopped is only ever true when it
+    // matches opts.StopAt exactly (BotLogin never stops on its own).
+    ctx.SetStage(result.Stopped ? opts.StopAt : BotStage::InWorld);
 
     co_return co_await ctx.Hold();
 }

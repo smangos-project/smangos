@@ -959,3 +959,269 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
 
     SSL_CTX_free(serverSslCtx);
 }
+
+TEST_CASE("BotLogin: StopAt LoginPortal holds immediately, without any network call", "[botlogin]")
+{
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
+
+    BotLogin::Options options;
+    // Deliberately unroutable -- StopAt(LoginPortal) must never try to reach it.
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = 1; // nothing listens here
+    options.RpcPort = 1;
+    options.AccountName = TEST_ACCOUNT;
+    options.Password = TEST_PASSWORD;
+    options.StopAt = BotStage::LoginPortal;
+
+    WaitFlag done;
+    BotLogin::Result result;
+    login->Login(options, [&](BotLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(1)));
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.Connection == nullptr);
+
+    ctx->Shutdown();
+    ioThread.join();
+}
+
+TEST_CASE("BotLogin: StopAt WorldHandshake holds after the auth response, before CharSelect", "[botlogin]")
+{
+    constexpr uint16_t RestPort = 28553;
+    constexpr uint16_t RpcPort = 28554;
+    constexpr uint16_t WorldPort = 28555;
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    SelfSignedCert serverCert = GenerateSelfSignedCert();
+    SSL_CTX* serverSslCtx = SSL_CTX_new(TLS_server_method());
+    REQUIRE(serverSslCtx != nullptr);
+    REQUIRE(SSL_CTX_use_certificate(serverSslCtx, serverCert.cert) == 1);
+    REQUIRE(SSL_CTX_use_PrivateKey(serverSslCtx, serverCert.key) == 1);
+
+    auto restAcceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", RestPort);
+    REQUIRE(restAcceptor != nullptr);
+    WaitFlag restServerDone;
+    std::thread restServerThread;
+    restAcceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        restServerThread = std::thread([&restServerDone, &serverSslCtx, descriptor = std::move(descriptor)]() mutable
+        {
+            RunFakeLoginRestServer(std::move(descriptor), serverSslCtx, restServerDone);
+        });
+    });
+
+    auto rpcAcceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", RpcPort);
+    REQUIRE(rpcAcceptor != nullptr);
+    WaitFlag rpcServerDone;
+    WaitFlag joinSessionKeyReady;
+    std::vector<uint8> joinSessionKey;
+    std::thread rpcServerThread;
+    rpcAcceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        rpcServerThread = std::thread([&rpcServerDone, &serverSslCtx, &joinSessionKey, &joinSessionKeyReady, descriptor = std::move(descriptor)]() mutable
+        {
+            RunFakeBnetRpcServer(std::move(descriptor), serverSslCtx, WorldPort, joinSessionKey, joinSessionKeyReady, rpcServerDone);
+        });
+    });
+
+    auto worldAcceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", WorldPort);
+    REQUIRE(worldAcceptor != nullptr);
+    WaitFlag worldServerDone;
+
+    worldAcceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        REQUIRE(joinSessionKeyReady.WaitFor(std::chrono::seconds(5)));
+
+        auto serverSocket = std::make_shared<IO::Networking::AsyncSocket>(ctx.get(), std::move(descriptor));
+        MANGOS_ASSERT(!(serverSocket->InitializeAndFixateMemoryLocation()));
+
+        auto serverCrypt = std::make_shared<PacketCrypt>(PacketCryptRole::Server);
+
+        std::string banner = "WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT - V2\n";
+        auto bannerBuf = std::make_shared<std::vector<uint8>>(banner.begin(), banner.end());
+
+        serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(bannerBuf) }, [&, serverSocket, serverCrypt](IO::NetworkError const& err)
+        {
+            REQUIRE_FALSE(err);
+
+            std::string expectedClientBanner = "WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER - V2\n";
+            auto clientBannerBuf = std::make_shared<std::vector<char>>(expectedClientBanner.size());
+
+            serverSocket->Read(clientBannerBuf->data(), clientBannerBuf->size(), [&, serverSocket, serverCrypt, clientBannerBuf, expectedClientBanner](IO::NetworkError const& err, size_t) -> void
+            {
+                REQUIRE_FALSE(err);
+                CHECK(std::string(clientBannerBuf->begin(), clientBannerBuf->end()) == expectedClientBanner);
+
+                BigNumber serverChallengeBn;
+                serverChallengeBn.SetRand(32 * 8);
+                std::vector<uint8> serverChallengeBytes = serverChallengeBn.AsByteArray(32, false);
+                auto serverChallenge = std::make_shared<std::array<uint8, 32>>();
+                std::copy(serverChallengeBytes.begin(), serverChallengeBytes.end(), serverChallenge->begin());
+
+                ByteBuffer challengeBody;
+                challengeBody.append(std::array<uint8, 32>{}); // DosChallenge, all zero
+                challengeBody.append(*serverChallenge);
+                challengeBody << uint8(0); // DosZeroBits
+
+                auto framedChallenge = std::make_shared<std::vector<uint8>>(Frame(CLASSIC_SMSG_AUTH_CHALLENGE, challengeBody, *serverCrypt));
+                serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(framedChallenge) }, [&, serverSocket, serverCrypt, serverChallenge](IO::NetworkError const& err)
+                {
+                    REQUIRE_FALSE(err);
+
+                    auto sessionHeader = std::make_shared<WireHeader>();
+                    serverSocket->Read(reinterpret_cast<char*>(sessionHeader.get()), sizeof(WireHeader), [&, serverSocket, serverCrypt, serverChallenge, sessionHeader](IO::NetworkError const& err, size_t) -> void
+                    {
+                        REQUIRE_FALSE(err);
+                        auto sessionBody = std::make_shared<std::vector<uint8>>(sessionHeader->size);
+                        serverSocket->Read(reinterpret_cast<char*>(sessionBody->data()), sessionBody->size(), [&, serverSocket, serverCrypt, serverChallenge, sessionHeader, sessionBody](IO::NetworkError const& err, size_t) -> void
+                        {
+                            REQUIRE_FALSE(err);
+
+                            std::array<uint8, 12> tag;
+                            std::memcpy(tag.data(), sessionHeader->tag, tag.size());
+                            Unframe(*sessionBody, tag, *serverCrypt);
+
+                            ByteBuffer data;
+                            data.append(sessionBody->data(), sessionBody->size());
+                            data.rpos(0);
+
+                            uint32 opcode;
+                            data >> opcode;
+                            CHECK(opcode == CLASSIC_CMSG_AUTH_SESSION);
+
+                            uint64 dosResponse; uint32 regionId, battlegroupId, realmId;
+                            std::array<uint8, 32> localChallenge{};
+                            std::array<uint8, 24> receivedDigest{};
+                            data >> dosResponse >> regionId >> battlegroupId >> realmId;
+                            data.read(localChallenge.data(), localChallenge.size());
+                            data.read(receivedDigest.data(), receivedDigest.size());
+                            uint8 useIPv6Byte; data >> useIPv6Byte;
+                            uint32 ticketSize; data >> ticketSize;
+                            std::string ticket = data.ReadString(ticketSize);
+                            CHECK(ticket == TEST_JOIN_TICKET);
+
+                            auto expectedDigest = WorldHandshakeCrypto::ComputeAuthCheckDigest(joinSessionKey, localChallenge, *serverChallenge);
+                            CHECK(receivedDigest == expectedDigest);
+
+                            auto sessionKey = WorldHandshakeCrypto::ComputeSessionKey(joinSessionKey, localChallenge, *serverChallenge);
+                            auto encryptKey = std::make_shared<std::array<uint8, 32>>(WorldHandshakeCrypto::ComputeEncryptKey(sessionKey, localChallenge, *serverChallenge));
+
+                            auto toSign = WorldHandshakeCrypto::ComputeEnterEncryptedModeDigest(*encryptKey, true);
+                            Ed25519 ed25519;
+                            REQUIRE(ed25519.LoadFromByteArray(WorldHandshakeCrypto::EnterEncryptedModePrivateKey()));
+                            std::vector<uint8> signContext(WorldHandshakeCrypto::EnableEncryptionContext().begin(), WorldHandshakeCrypto::EnableEncryptionContext().end());
+                            std::vector<uint8> signature = ed25519.SignWithContext(toSign, signContext);
+                            REQUIRE(signature.size() == 64);
+
+                            ByteBuffer enterEncryptedModeBody;
+                            enterEncryptedModeBody.append(signature.data(), signature.size());
+                            enterEncryptedModeBody << uint8(0x80); // Enabled
+
+                            auto framedEnterEncryptedMode = std::make_shared<std::vector<uint8>>(Frame(CLASSIC_SMSG_ENTER_ENCRYPTED_MODE, enterEncryptedModeBody, *serverCrypt));
+                            serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(framedEnterEncryptedMode) }, [&, serverSocket, serverCrypt, encryptKey](IO::NetworkError const& err)
+                            {
+                                REQUIRE_FALSE(err);
+
+                                auto ackHeader = std::make_shared<WireHeader>();
+                                serverSocket->Read(reinterpret_cast<char*>(ackHeader.get()), sizeof(WireHeader), [&, serverSocket, serverCrypt, encryptKey, ackHeader](IO::NetworkError const& err, size_t) -> void
+                                {
+                                    REQUIRE_FALSE(err);
+                                    auto ackBody = std::make_shared<std::vector<uint8>>(ackHeader->size);
+                                    serverSocket->Read(reinterpret_cast<char*>(ackBody->data()), ackBody->size(), [&, serverSocket, serverCrypt, encryptKey, ackHeader, ackBody](IO::NetworkError const& err, size_t) -> void
+                                    {
+                                        REQUIRE_FALSE(err);
+
+                                        std::array<uint8, 12> ackTag;
+                                        std::memcpy(ackTag.data(), ackHeader->tag, ackTag.size());
+                                        Unframe(*ackBody, ackTag, *serverCrypt);
+
+                                        uint32 ackOpcode;
+                                        std::memcpy(&ackOpcode, ackBody->data(), sizeof(ackOpcode));
+                                        REQUIRE(ackOpcode == CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK);
+
+                                        AES_GCM::Key key;
+                                        std::copy(encryptKey->begin(), encryptKey->end(), key.begin());
+                                        serverCrypt->Init(key);
+
+                                        ByteBuffer authResponseBody;
+                                        authResponseBody << uint32(0); // BattlenetRpcErrorCode::Ok
+                                        authResponseBody.WriteBit(false);
+                                        authResponseBody.WriteBit(false);
+                                        authResponseBody.FlushBits();
+
+                                        auto framedAuthResponse = std::make_shared<std::vector<uint8>>(Frame(CLASSIC_SMSG_AUTH_RESPONSE, authResponseBody, *serverCrypt));
+                                        serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(framedAuthResponse) }, [&, serverSocket](IO::NetworkError const& err)
+                                        {
+                                            REQUIRE_FALSE(err);
+                                            // StopAt(WorldHandshake) must never send CMSG_ENUM_CHARACTERS --
+                                            // nothing further is read here.
+                                            worldServerDone.Set();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
+
+    BotLogin::Options options;
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = RestPort;
+    options.RpcPort = RpcPort;
+    options.AccountName = TEST_ACCOUNT;
+    options.Password = TEST_PASSWORD;
+    options.RealmName = TEST_REALM_NAME;
+    options.ClientBuild = 58797;
+    options.StopAt = BotStage::WorldHandshake;
+
+    WaitFlag done;
+    BotLogin::Result result;
+    login->Login(options, [&](BotLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(10)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    REQUIRE(result.Connection != nullptr);
+
+    REQUIRE(worldServerDone.WaitFor(std::chrono::seconds(5)));
+
+    restAcceptor->ClosePortAndStopAcceptingNewConnections();
+    rpcAcceptor->ClosePortAndStopAcceptingNewConnections();
+    worldAcceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+
+    if (result.Connection)
+        result.Connection->Close();
+
+    REQUIRE(restServerDone.WaitFor(std::chrono::seconds(5)));
+    REQUIRE(rpcServerDone.WaitFor(std::chrono::seconds(5)));
+    if (restServerThread.joinable())
+        restServerThread.join();
+    if (rpcServerThread.joinable())
+        rpcServerThread.join();
+
+    SSL_CTX_free(serverSslCtx);
+}

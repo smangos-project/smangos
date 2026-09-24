@@ -3,6 +3,7 @@
 
 #include "BotBnetConnection.h"
 #include "BotRestClient.h"
+#include "BotStage.h"
 #include "IO/Context/IoContext.h"
 #include <cstdint>
 #include <functional>
@@ -40,11 +41,20 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             std::string RealmName;
             uint32_t RealmId = 0;
             int32_t ClientBuild = 0;
+            // Holds after LoginPortal's or LoginRpc's own work, instead of continuing into the
+            // next stage (bot-phase-1.md, "Login": "stop_at=<stage>"). RealmSelect completing is
+            // just this call's normal success, so only these two earlier stages need a check
+            // here -- BotLogin (the composer) handles StopAt for everything at or after
+            // WorldConnecting itself.
+            BotStage StopAt = BotStage::InWorld;
         };
 
         struct Result
         {
             bool Success = false;
+            // Set instead of the rest of a successful Result when Options::StopAt held this
+            // call before it finished; never set together with an error.
+            bool Stopped = false;
             std::string WorldAddress;
             uint16_t WorldPort = 0;
             // clientSecret(32) || serverSecret(32) -- the joinSessionKey WorldHandshakeCrypto's
@@ -85,6 +95,7 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
 
         void Fail(std::string const& error);
         void Succeed(Result result);
+        void StopEarly();
 
         IO::IoContext* m_ioContext;
         Options m_options;

@@ -148,6 +148,11 @@ void BotBnetLogin::OnRestLogin(BotRestClient::LoginResult result)
         return;
     }
     m_loginTicket = result.LoginTicket;
+    if (m_options.StopAt == BotStage::LoginRpc)
+    {
+        StopEarly();
+        return;
+    }
     ConnectRpc();
 }
 
@@ -268,6 +273,12 @@ void BotBnetLogin::MaybeStartRealmSelect()
     if (m_logonErrorCode != 0)
     {
         Fail("logon failed, error_code " + std::to_string(m_logonErrorCode));
+        return;
+    }
+
+    if (m_options.StopAt == BotStage::RealmSelect)
+    {
+        StopEarly();
         return;
     }
 
@@ -476,6 +487,24 @@ void BotBnetLogin::Succeed(Result result)
     {
         LoginCallback callback = std::move(m_callback);
         m_callback = nullptr;
+        callback(std::move(result));
+    }
+}
+
+void BotBnetLogin::StopEarly()
+{
+    // Nothing left open on this side worth keeping past LoginPortal/LoginRpc -- REST already
+    // closed itself in OnRestLogin, and RPC (if connected at all) has no further use once the
+    // caller isn't going to drive RealmSelect.
+    if (m_rpc)
+        m_rpc->Close();
+    if (m_callback)
+    {
+        LoginCallback callback = std::move(m_callback);
+        m_callback = nullptr;
+        Result result;
+        result.Success = true;
+        result.Stopped = true;
         callback(std::move(result));
     }
 }

@@ -260,6 +260,111 @@ TEST_CASE("BotCharSelect: an existing character logs straight in", "[botcharsele
     connection->Close();
 }
 
+TEST_CASE("BotCharSelect: StopAt CharSelect holds after resolving a character, before CMSG_PLAYER_LOGIN", "[botcharselect]")
+{
+    constexpr uint16_t TestPort = 28543;
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    auto acceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", TestPort);
+    REQUIRE(acceptor != nullptr);
+
+    ClassicGuid const existingGuid{ 0x1234ull, 0 };
+    WaitFlag serverDone;
+    WaitFlag bannerDone;
+
+    acceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        auto serverSocket = std::make_shared<IO::Networking::AsyncSocket>(ctx.get(), std::move(descriptor));
+        MANGOS_ASSERT(!(serverSocket->InitializeAndFixateMemoryLocation()));
+
+        std::string banner = "WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT - V2\n";
+        auto bannerBuf = std::make_shared<std::vector<uint8>>(banner.begin(), banner.end());
+
+        serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(bannerBuf) }, [&, serverSocket](IO::NetworkError const& err)
+        {
+            REQUIRE_FALSE(err);
+
+            std::string expectedClientBanner = "WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER - V2\n";
+            auto clientBannerBuf = std::make_shared<std::vector<char>>(expectedClientBanner.size());
+
+            serverSocket->Read(clientBannerBuf->data(), clientBannerBuf->size(), [&, serverSocket, clientBannerBuf, expectedClientBanner](IO::NetworkError const& err, size_t) -> void
+            {
+                REQUIRE_FALSE(err);
+                CHECK(std::string(clientBannerBuf->begin(), clientBannerBuf->end()) == expectedClientBanner);
+                bannerDone.Set();
+
+                // Read CMSG_ENUM_CHARACTERS, answer it, and stop -- StopAt(CharSelect) must never
+                // send CMSG_PLAYER_LOGIN, so nothing further is read here.
+                auto enumHeader = std::make_shared<WireHeader>();
+                serverSocket->Read(reinterpret_cast<char*>(enumHeader.get()), sizeof(WireHeader), [&, serverSocket, enumHeader](IO::NetworkError const& err, size_t) -> void
+                {
+                    REQUIRE_FALSE(err);
+                    auto enumBody = std::make_shared<std::vector<uint8>>(enumHeader->size);
+                    serverSocket->Read(reinterpret_cast<char*>(enumBody->data()), enumBody->size(), [&, serverSocket, enumBody](IO::NetworkError const& err, size_t) -> void
+                    {
+                        REQUIRE_FALSE(err);
+                        REQUIRE(enumBody->size() >= sizeof(uint32));
+                        uint32 opcode;
+                        std::memcpy(&opcode, enumBody->data(), sizeof(opcode));
+                        CHECK(opcode == CLASSIC_CMSG_ENUM_CHARACTERS);
+
+                        ByteBuffer resultBody = BuildEnumCharactersResultBody(1, existingGuid);
+                        auto framedResult = std::make_shared<std::vector<uint8>>(FrameUnencrypted(CLASSIC_SMSG_ENUM_CHARACTERS_RESULT, resultBody));
+                        serverSocket->Write({ std::shared_ptr<std::vector<uint8> const>(framedResult) }, [&, serverSocket](IO::NetworkError const& err)
+                        {
+                            REQUIRE_FALSE(err);
+                            serverDone.Set();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    auto ip = IO::Networking::IpAddress::TryParseFromString("127.0.0.1");
+    REQUIRE(ip.has_value());
+    IO::Networking::IpEndpoint endpoint(*ip, TestPort);
+    auto descriptor = IO::Networking::SocketConnector::ConnectBlocking(endpoint, std::chrono::seconds(5));
+    REQUIRE(descriptor.has_value());
+
+    IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(descriptor.value()));
+    std::shared_ptr<BotWorldConnection> connection = BotWorldConnection::Create(std::move(clientSocket), [](BotPacket) {}, []() {});
+    connection->StartHandshake();
+
+    REQUIRE(bannerDone.WaitFor(std::chrono::seconds(5)));
+
+    std::shared_ptr<BotCharSelect> charSelect = BotCharSelect::Create(ctx.get(), connection);
+
+    WaitFlag done;
+    BotCharSelect::Result result;
+    BotCharSelect::Options options;
+    options.CreateIfNone = true;
+    options.CharacterName = TEST_CHARACTER_NAME;
+    options.StopAt = BotStage::CharSelect;
+    charSelect->EnterWorld(options, [&](BotCharSelect::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(5)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.CharacterGuid.Low == existingGuid.Low);
+    REQUIRE(result.Connection != nullptr);
+
+    REQUIRE(serverDone.WaitFor(std::chrono::seconds(5)));
+
+    acceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+    connection->Close();
+}
+
 TEST_CASE("BotCharSelect: creates a character when none exist, then logs in", "[botcharselect]")
 {
     constexpr uint16_t TestPort = 28541;

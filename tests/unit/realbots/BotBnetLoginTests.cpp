@@ -683,3 +683,67 @@ TEST_CASE("BotBnetLogin: a wrong password fails at the login portal", "[botbnetl
     // arrives (RunFakeBnetRpcServer only runs once AutoAcceptSocketsUntilClose sees one).
     fixture.rpcServerDone.Set();
 }
+
+TEST_CASE("BotBnetLogin: StopAt LoginRpc holds after the login portal ticket, before connecting RPC", "[botbnetlogin]")
+{
+    TestFixture fixture(28528, 28529);
+
+    BotBnetLogin::Options options;
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = fixture.restPort;
+    options.RpcPort = fixture.rpcPort;
+    options.AccountName = TEST_ACCOUNT;
+    options.Password = TEST_PASSWORD;
+    options.ClientBuild = 58797;
+    options.StopAt = BotStage::LoginRpc;
+
+    std::shared_ptr<BotBnetLogin> login = BotBnetLogin::Create(fixture.ctx.get());
+
+    WaitFlag done;
+    BotBnetLogin::Result result;
+    login->Login(options, [&](BotBnetLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(5)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.WorldAddress.empty());
+
+    // Never reaches ConnectRpc() -- same teardown as the wrong-password test above.
+    fixture.rpcServerDone.Set();
+}
+
+TEST_CASE("BotBnetLogin: StopAt RealmSelect holds after logon completes, before requesting the realm list", "[botbnetlogin]")
+{
+    TestFixture fixture(28530, 28531);
+
+    BotBnetLogin::Options options;
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = fixture.restPort;
+    options.RpcPort = fixture.rpcPort;
+    options.AccountName = TEST_ACCOUNT;
+    options.Password = TEST_PASSWORD;
+    options.RealmName = TEST_REALM_NAME;
+    options.ClientBuild = 58797;
+    options.StopAt = BotStage::RealmSelect;
+
+    std::shared_ptr<BotBnetLogin> login = BotBnetLogin::Create(fixture.ctx.get());
+
+    WaitFlag done;
+    BotBnetLogin::Result result;
+    login->Login(options, [&](BotBnetLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(5)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.WorldAddress.empty());
+}

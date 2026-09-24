@@ -118,3 +118,51 @@ TEST_CASE("BotLogin: reaches InWorld against a live vibemangos target", "[live]"
     ctx->Shutdown();
     ioThread.join();
 }
+
+TEST_CASE("BotLogin: StopAt CharSelect holds mid-login against a live vibemangos target", "[live]")
+{
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    BotLogin::Options options;
+    options.LoginAddress = "127.0.0.1";
+    options.RestPort = 8081;
+    options.RpcPort = 1119;
+    options.AccountName = "lol";
+    options.Password = "lol";
+    options.RealmName = "VibeMangos";
+    options.ClientBuild = 58797;
+    options.CreateIfNone = true;
+    options.CharacterName = "Realbot1";
+    options.Race = 1; // RACE_HUMAN
+    options.Class = 1; // CLASS_WARRIOR
+    options.StopAt = BotStage::CharSelect;
+
+    std::shared_ptr<BotLogin> login = BotLogin::Create(ctx.get());
+
+    WaitFlag done;
+    BotLogin::Result result;
+    login->Login(options, [&](BotLogin::Result r)
+    {
+        result = std::move(r);
+        done.Set();
+    });
+
+    REQUIRE(done.WaitFor(std::chrono::seconds(30)));
+    INFO("error: " << result.Error);
+    CHECK(result.Success);
+    CHECK(result.Stopped);
+    CHECK(result.Connection != nullptr);
+    // A character was resolved (existing "Realbot1" or freshly created) but CMSG_PLAYER_LOGIN
+    // was never sent, so the connection is still the plain Realm one, never redirected.
+    CHECK(result.CharacterGuid.Low != 0);
+
+    if (result.Connection)
+        result.Connection->Close();
+    if (result.RealmConnection)
+        result.RealmConnection->Close();
+
+    ctx->Shutdown();
+    ioThread.join();
+}

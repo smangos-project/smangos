@@ -1,6 +1,7 @@
 #ifndef REALBOTS_BOTCHARSELECT_H
 #define REALBOTS_BOTCHARSELECT_H
 
+#include "BotStage.h"
 #include "BotWorldConnection.h"
 #include "ClassicPackets.h"
 #include "IO/Context/IoContext.h"
@@ -41,11 +42,19 @@ class BotCharSelect : public std::enable_shared_from_this<BotCharSelect>
             // VerifyServerSignature choice that handshake used (BotInstanceConnect mirrors it).
             std::array<uint8, 40> SessionKey{};
             bool VerifyServerSignature = true;
+            // Holds after CharSelect's or EnteringWorld's own work, instead of continuing
+            // (bot-phase-1.md, "Login": "stop_at=<stage>"): CharSelect stops once a character is
+            // resolved but before CMSG_PLAYER_LOGIN is sent; EnteringWorld stops once
+            // CLASSIC_SMSG_CONNECT_TO arrives but before following the redirect.
+            BotStage StopAt = BotStage::InWorld;
         };
 
         struct Result
         {
             bool Success = false;
+            // Set instead of the rest of a successful Result when Options::StopAt held this
+            // call before it finished; never set together with an error.
+            bool Stopped = false;
             ClassicGuid CharacterGuid;
             // The Instance connection once CLASSIC_SMSG_CONNECT_TO redirected to one (the usual
             // case against vibemangos/TrinityCore); falls back to the original connection if no
@@ -84,6 +93,7 @@ class BotCharSelect : public std::enable_shared_from_this<BotCharSelect>
 
         void Fail(std::string const& error);
         void Succeed();
+        void StopEarly(ClassicGuid const& guid);
 
         IO::IoContext* m_ioContext;
         std::shared_ptr<BotWorldConnection> m_connection;
