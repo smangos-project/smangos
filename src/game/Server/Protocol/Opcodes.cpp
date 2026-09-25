@@ -954,7 +954,48 @@ Handlers const handlerList = BuildOpcodeList();
 // DEFINE_HANDLER line above.
 std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
 {
-    return {};
+    std::unordered_map<uint32, OpcodeHandler> list;
+
+    // For classic handlers: same shape as DEFINE_HANDLER, but the read side goes through
+    // Handle_ClassicRead/Handle_ClassicPacket, which unwrap the ClassicClient<T> adapter so the
+    // handler itself still takes a bare `T const&` (get_packet_class already derives PacketT that
+    // way from handlerPtr). The static_assert catches a table line wired to the wrong struct at
+    // compile time instead of at runtime.
+    #define DEFINE_CLASSIC_HANDLER(opcode, requiredState, schedulingStrategy, handlerPtr) \
+    { \
+        using PacketT = get_packet_class<decltype(handlerPtr)>::type; \
+        static_assert(uint32(PacketT::Opcode) == uint32(opcode), #opcode " is wired to a struct for another opcode"); \
+        OpcodeHandler& ref = list[uint32(opcode)]; \
+        ref.name = #opcode; \
+        ref.impl = OpcodeHandlerPacketImplDetails{ (requiredState), (schedulingStrategy), \
+            &WorldSession::Handle_ClassicRead<PacketT>, \
+            static_cast<void (WorldSession::*)(ClientPacket const&)>(&WorldSession::Handle_ClassicPacket<PacketT, (handlerPtr)>) }; \
+    }
+
+    // For classic opcodes WorldSocket handles itself (handshake-stage packets, and CMSG_PING per
+    // decision 5): a table entry so a reader of this list sees the whole split, never dispatched
+    // through it.
+    #define CLASSIC_INVALID_PACKET(opcode, reason) \
+    { \
+        OpcodeHandler& ref = list[uint32(opcode)]; \
+        ref.name = #opcode; \
+        ref.impl = nonstd::make_unexpected((reason)); \
+    }
+
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_AUTH_SESSION,              UnhandleReason::AlreadyHandledElsewhere);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_AUTH_CONTINUED_SESSION,    UnhandleReason::AlreadyHandledElsewhere);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK,  UnhandleReason::AlreadyHandledElsewhere);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_PING,                      UnhandleReason::AlreadyHandledElsewhere);
+
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ENUM_CHARACTERS,     STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicCharEnumOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CREATE_CHARACTER,    STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleCharCreateOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CHAR_DELETE,         STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleCharDeleteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PLAYER_LOGIN,        STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandlePlayerLoginOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CONNECT_TO_FAILED,   STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicConnectToFailedOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOGOUT_REQUEST,      STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleClassicLogoutRequestOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TIME_SYNC_RESPONSE,  STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicTimeSyncResponseOpcode);
+
+    return list;
 }
 
 std::unordered_map<uint32, OpcodeHandler> const classicHandlerList = BuildClassicOpcodeList();

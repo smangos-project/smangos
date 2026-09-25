@@ -28,16 +28,16 @@
 #include "AccountMgr.h"
 #include "SharedDefines.h"
 #include "Protocol/ClassicOpcodes.h"
+#include "Protocol/Opcodes.h"
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
-#include "Packets/CharScreen.h"
-#include "Packets/Classic/Character.h"
 #include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Database/SqlPreparedStatement.h"
 #include "Database/DatabaseEnv.h"
 #include "Config/Config.h"
+#include "Timer.h"
 #include "Util.h"
 #include "Errors.h"
 
@@ -266,69 +266,6 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
                 }
                 return HandlePing(data);
 
-            case CLASSIC_CMSG_ENUM_CHARACTERS:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_ENUM_CHARACTERS before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleEnumCharacters(data);
-
-            case CLASSIC_CMSG_CREATE_CHARACTER:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CREATE_CHARACTER before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleCreateCharacter(data);
-
-            case CLASSIC_CMSG_CHAR_DELETE:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CHAR_DELETE before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleCharDelete(data);
-
-            case CLASSIC_CMSG_PLAYER_LOGIN:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_PLAYER_LOGIN before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandlePlayerLogin(data);
-
-            case CLASSIC_CMSG_CONNECT_TO_FAILED:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CONNECT_TO_FAILED before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleConnectToFailed(data);
-
-            case CLASSIC_CMSG_LOGOUT_REQUEST:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_LOGOUT_REQUEST before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleLogoutRequest(data);
-
-            case CLASSIC_CMSG_TIME_SYNC_RESPONSE:
-                if (m_Session == nullptr)
-                {
-                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_TIME_SYNC_RESPONSE before authentication", GetRemoteIpString().c_str());
-                    CloseSocket();
-                    return HandlerResult::Fail;
-                }
-                return HandleTimeSyncResponse(data);
-
             default:
                 if (m_Session == nullptr)
                 {
@@ -337,9 +274,21 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
                     return HandlerResult::Fail;
                 }
 
-                // No classic handler is wired up yet (port-plan.md's later steps): logged and
-                // dropped, never fatal to the connection.
-                sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[%s] WorldSocket: unhandled opcode 0x%X (%s)", GetRemoteIpString().c_str(), opcode, ClassicOpcodeName(opcode));
+                if (!LookupOpcodeHandler(opcode).impl.has_value())
+                {
+                    // A real client sends plenty of opcodes nothing here handles yet; logged quietly
+                    // and dropped, never fatal to the connection.
+                    sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[%s] WorldSocket: unhandled opcode 0x%X (%s)", GetRemoteIpString().c_str(), opcode, ClassicOpcodeName(opcode));
+                    return HandlerResult::Okay;
+                }
+
+                {
+                    auto packet = std::make_unique<WorldPacket>(opcode, bodySize);
+                    if (bodySize)
+                        packet->append(bodyStart, bodySize);
+                    packet->FillPacketTime(WorldTimer::getMSTime());
+                    m_Session->QueueBinaryPacket(packet);
+                }
                 return HandlerResult::Okay;
         }
     }
@@ -572,66 +521,6 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
     return HandlerResult::Okay;
 }
 
-WorldSocket::HandlerResult WorldSocket::HandleTimeSyncResponse(ByteBuffer& data)
-{
-    TimeSyncResponse response;
-    if (!response.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_TIME_SYNC_RESPONSE, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleClassicTimeSyncResponseOpcode(response);
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandleEnumCharacters(ByteBuffer& data)
-{
-    ClassicEnumCharacters packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_ENUM_CHARACTERS, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleClassicCharEnumOpcode(packet);
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandleCreateCharacter(ByteBuffer& data)
-{
-    CharCreate packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CREATE_CHARACTER, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleCharCreateOpcode(packet);
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandleCharDelete(ByteBuffer& data)
-{
-    CharDelete packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CHAR_DELETE, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleCharDeleteOpcode(packet);
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandlePlayerLogin(ByteBuffer& data)
-{
-    PlayerLogin packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_PLAYER_LOGIN, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandlePlayerLoginOpcode(packet);
-    return HandlerResult::Okay;
-}
-
 WorldSocket::HandlerResult WorldSocket::FailAuthContinuedSession(char const* reason)
 {
     sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_AUTH_CONTINUED_SESSION rejected: %s", GetRemoteIpString().c_str(), reason);
@@ -665,30 +554,6 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthContinuedSession(ByteBuffer& d
 
     m_stage = HandshakeStage::AwaitingEncryptedModeAck;
     SendEnterEncryptedMode();
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandleConnectToFailed(ByteBuffer& data)
-{
-    ConnectToFailed packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CONNECT_TO_FAILED, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleClassicConnectToFailedOpcode(packet);
-    return HandlerResult::Okay;
-}
-
-WorldSocket::HandlerResult WorldSocket::HandleLogoutRequest(ByteBuffer& data)
-{
-    ClassicLogoutRequest packet;
-    if (!packet.Read(data))
-    {
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_LOGOUT_REQUEST, dropped", GetRemoteIpString().c_str());
-        return HandlerResult::Okay;
-    }
-    m_Session->HandleClassicLogoutRequestOpcode(packet);
     return HandlerResult::Okay;
 }
 

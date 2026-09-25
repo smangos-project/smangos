@@ -114,27 +114,12 @@ private:
     /// Called on CMSG_PING.
     HandlerResult HandlePing(ByteBuffer& data);
 
-    /// Called on CMSG_TIME_SYNC_RESPONSE, pairing it back to the session's own pending request.
-    HandlerResult HandleTimeSyncResponse(ByteBuffer& data);
-
-    /// Character-screen opcodes (port-plan.md step 4); parsed here, handled on the session.
-    HandlerResult HandleEnumCharacters(ByteBuffer& data);
-    HandlerResult HandleCreateCharacter(ByteBuffer& data);
-    HandlerResult HandleCharDelete(ByteBuffer& data);
-    HandlerResult HandlePlayerLogin(ByteBuffer& data);
-
     /// Called on CMSG_AUTH_CONTINUED_SESSION (the Instance connection's own handshake): looks the
     /// session up by the packed key CMSG_PLAYER_LOGIN's SMSG_CONNECT_TO handed out, checks the
     /// digest against the Realm connection's existing session key, and attaches this socket as the
     /// session's Instance one.
     HandlerResult HandleAuthContinuedSession(ByteBuffer& data);
     HandlerResult FailAuthContinuedSession(char const* reason);
-
-    /// Called on CMSG_CONNECT_TO_FAILED (Realm connection, port step 5).
-    HandlerResult HandleConnectToFailed(ByteBuffer& data);
-
-    /// Called on CMSG_LOGOUT_REQUEST.
-    HandlerResult HandleLogoutRequest(ByteBuffer& data);
 
     void SendRaw(uint32 opcode, ByteBuffer const& body);
 
