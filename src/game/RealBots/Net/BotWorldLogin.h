@@ -93,6 +93,9 @@ struct BotCharSelectOutcome
     bool Success = false;
     bool Stopped = false; // held at StopAt; CharacterGuid is only set if the character was resolved by then
     ClassicGuid CharacterGuid;
+    // Empty when an existing character was picked and the enum result didn't parse into named
+    // entries (ClassicEnumCharactersResult::Characters, a lenient-parse fallback).
+    std::string CharacterName;
     std::string Error;
 };
 
@@ -139,6 +142,7 @@ struct BotWorldLoginOutcome
     // finishing the login; the stage the bot is at then is that StopAt.
     bool Stopped = false;
     ClassicGuid CharacterGuid;
+    std::string CharacterName;
     std::string Error;
 };
 

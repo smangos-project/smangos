@@ -112,8 +112,10 @@ BotRoutine LoginRoutine(BotContext& ctx)
     if (!outcome.Success)
         co_return FailLogin(ctx, outcome.Error);
 
-    if (!opts.CharacterName.empty())
-        bot.GetIdentity().CharacterName = opts.CharacterName;
+    // The enum result's own name wins (it's what the server actually resolved to, which for an
+    // existing character need not match a caller-supplied name at all); the requested name is a
+    // fallback for when that didn't parse (ClassicEnumCharactersResult's lenient path).
+    bot.GetIdentity().CharacterName = outcome.CharacterName.empty() ? opts.CharacterName : outcome.CharacterName;
     bot.GetIdentity().CharacterGuid = outcome.CharacterGuid;
 
     // Stopped is only ever true when it matches opts.StopAt exactly (nothing stops on its own).

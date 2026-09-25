@@ -207,6 +207,8 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
     if (characters->CharacterCount > 0)
     {
         outcome.CharacterGuid = characters->FirstCharacterGuid;
+        if (!characters->Characters.empty())
+            outcome.CharacterName = characters->Characters[0].Name;
     }
     else
     {
@@ -227,6 +229,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
             co_return Fail(who, outcome.Error, "character creation failed, result " + std::to_string(created->Result));
 
         outcome.CharacterGuid = created->Guid;
+        outcome.CharacterName = params.CharacterName;
     }
 
     ctx.SetStage(BotStage::EnteringWorld);
@@ -341,5 +344,6 @@ BotRoutine BotWorldLoginRoutine(BotContext& ctx, BotWorldLoginParams params, Bot
     outcome.Success = true;
     outcome.Stopped = charSelect.Stopped;
     outcome.CharacterGuid = charSelect.CharacterGuid;
+    outcome.CharacterName = charSelect.CharacterName;
     co_return BotTaskResult::Done;
 }
