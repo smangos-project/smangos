@@ -45,36 +45,6 @@ namespace WorldPackets { namespace Character
         CharEnumEquipmentSlot equipment[CHAR_ENUM_EQUIPMENT_SLOTS] = {};
     };
 
-    class CharCreate final : public ClientPacket
-    {
-    public:
-        std::string name;
-        uint8 race, class_;
-        uint8 gender, skin, face, hairStyle, hairColor, facialHair, outfitId;
-
-        explicit CharCreate() : ClientPacket(CMSG_CHAR_CREATE),
-        race(0), class_(0), gender(0), skin(0), face(0), hairStyle(0), hairColor(0), facialHair(0), outfitId(0) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class CharDelete final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit CharDelete() : ClientPacket(CMSG_CHAR_DELETE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class PlayerLogin final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit PlayerLogin() : ClientPacket(CMSG_PLAYER_LOGIN) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class CharRename final : public ClientPacket
     {
     public:
@@ -85,46 +55,6 @@ namespace WorldPackets { namespace Character
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
     // --- Server Packets ---
-
-    class CharCreateResponse final : public ServerPacket
-    {
-    public:
-        uint8 result = 0;
-
-        explicit CharCreateResponse() : ServerPacket(SMSG_CHAR_CREATE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class CharDeleteResponse final : public ServerPacket
-    {
-    public:
-        uint8 result = 0;
-
-        explicit CharDeleteResponse() : ServerPacket(SMSG_CHAR_DELETE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class CharacterLoginFailed final : public ServerPacket
-    {
-    public:
-        uint8 result = 0;
-
-        explicit CharacterLoginFailed() : ServerPacket(SMSG_CHARACTER_LOGIN_FAILED) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class LoginVerifyWorld final : public ServerPacket
-    {
-    public:
-        WorldLocation location;
-
-        explicit LoginVerifyWorld() : ServerPacket(SMSG_LOGIN_VERIFY_WORLD) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
     class CharRenameResponse final : public ServerPacket
     {

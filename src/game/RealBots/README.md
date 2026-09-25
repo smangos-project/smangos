@@ -596,7 +596,7 @@ None of these is proven against a real 1.15.6 client yet.
   the live cache instead, needing no prior enum.
 
 - **A zero-customization create gets a random valid vanilla appearance, not a fixed one.** The bots
-  never send `ChrCustomization` choices (`ClassicCreateCharacter::Read` rejects a nonzero count
+  never send `ChrCustomization` choices (`CharCreate::Read` rejects a nonzero count
   outright), so there is nothing to convert to vanilla skin/face/hair yet (decision 7's mapping table).
   `Player::SelectRandomAppearance` is used instead of hardcoded zeros, since an all-zero appearance
   fails `ValidateAppearance` for some race/gender pairs. A real client's actual choices still can't be

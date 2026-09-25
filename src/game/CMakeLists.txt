@@ -106,8 +106,6 @@ set (game_SRCS
     Handlers/ChannelHandler.cpp
     Handlers/CharacterHandler.cpp
     Handlers/ChatHandler.cpp
-    Handlers/ClassicCharacterHandler.cpp
-    Handlers/ClassicMiscHandler.cpp
     Handlers/CombatHandler.cpp
     Handlers/DuelHandler.cpp
     Handlers/GMTicketHandler.cpp
@@ -440,6 +438,7 @@ set (game_SRCS
     Server/Protocol/ClassicOpcodes.h
     Server/Packet.h
     Server/Packets/Auth.h
+    Server/Packets/CharScreen.h
     Server/Packets/Session.h
     Server/Packets/Classic/Character.h
     Server/Packets/Classic/Guid.h

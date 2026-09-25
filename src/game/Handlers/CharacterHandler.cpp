@@ -43,6 +43,8 @@
 #include "PlayerBotMgr.h"
 #include "MapManager.h"
 #include "AccountMgr.h"
+#include "Packets/Auth.h"
+#include "Packets/Classic/GuidMapping.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -184,212 +186,6 @@ void WorldSession::HandleCharEnumOpcode(NullClientPacket const& /*packet*/)
                                   PET_SAVE_AS_CURRENT, GetAccountId());
 }
 
-void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CharCreate const& packet)
-{
-    auto sendResponse = [this](uint8 result) {
-        auto response = std::make_unique<WorldPackets::Character::CharCreateResponse>();
-        response->result = result;
-        SendPacket(std::move(response));
-    };
-
-    if (GetSecurity() == SEC_PLAYER)
-    {
-        if (uint32 mask = sWorld.getConfig(CONFIG_UINT32_CHARACTERS_CREATING_DISABLED))
-        {
-            bool disabled = false;
-
-            Team team = Player::TeamForRace(packet.race);
-            switch (team)
-            {
-                case ALLIANCE:
-                    disabled = mask & (1 << 0);
-                    break;
-                case HORDE:
-                    disabled = mask & (1 << 1);
-                    break;
-            }
-
-            if (disabled)
-            {
-                sendResponse(CHAR_CREATE_DISABLED);
-                return;
-            }
-        }
-    }
-
-    ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(packet.class_);
-    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(packet.race);
-
-    if (!classEntry || !raceEntry)
-    {
-        sendResponse(CHAR_CREATE_FAILED);
-        std::stringstream oss;
-        oss << "Attempt to create character of invalid Class (" << int(packet.class_) << ") or Race (" << int(packet.race) << ")";
-        ProcessAnticheatAction("PassiveAnticheat", oss.str().c_str(), CHEAT_ACTION_LOG);
-        return;
-    }
-
-    if (raceEntry->HasFlag(CHRRACES_FLAGS_NOT_PLAYABLE))
-    {
-        sendResponse(CHAR_CREATE_DISABLED);
-        std::stringstream oss;
-        oss << "Attempt to create character of non-playable Race (" << int(packet.race) << ")";
-        ProcessAnticheatAction("PassiveAnticheat", oss.str().c_str(), CHEAT_ACTION_LOG);
-        return;
-    }
-
-    if (!Player::ValidateAppearance(packet.race, packet.gender, packet.hairStyle, packet.hairColor, packet.face, packet.facialHair, packet.skin))
-    {
-        sendResponse(CHAR_CREATE_FAILED);
-        ProcessAnticheatAction("PassiveAnticheat", "Attempt to create character with invalid appearance attributes", CHEAT_ACTION_LOG);
-        return;
-    }
-
-    std::string safeName = packet.name;
-
-    // prevent character creating with invalid name
-    if (!normalizePlayerName(safeName))
-    {
-        sendResponse(CHAR_NAME_NO_NAME);
-        ProcessAnticheatAction("PassiveAnticheat", "Attempt to create character with invalid name", CHEAT_ACTION_LOG);
-        return;
-    }
-
-    // check name limitations
-    uint8 res = ObjectMgr::CheckPlayerName(safeName, true);
-    if (res != CHAR_NAME_SUCCESS)
-    {
-        sendResponse(res);
-        return;
-    }
-
-    if (GetSecurity() == SEC_PLAYER && sObjectMgr.IsReservedName(safeName))
-    {
-        sendResponse(CHAR_NAME_RESERVED);
-        return;
-    }
-
-    if (sObjectMgr.GetPlayerGuidByName(safeName))
-    {
-        sendResponse(CHAR_CREATE_NAME_IN_USE);
-        return;
-    }
-
-    if (m_charactersCount >= sWorld.getConfig(CONFIG_UINT32_CHARACTERS_PER_REALM))
-    {
-        sendResponse(CHAR_CREATE_SERVER_LIMIT);
-        return;
-    }
-
-    bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_PLAYER;
-
-    if (!AllowTwoSideAccounts)
-    {
-        std::vector<PlayerCacheData const*> characters;
-        sObjectMgr.GetPlayerDataForAccount(GetAccountId(), characters);
-
-        if (!characters.empty())
-        {
-            PlayerCacheData const* cData = characters.front();
-            Team team_ = Player::TeamForRace(packet.race);
-
-            uint8 acc_race = cData->uiRace;
-
-            // need to check team only for first character
-            // TODO: what to if account already has characters of both races?
-            if (!AllowTwoSideAccounts)
-            {
-                if (acc_race == 0 || Player::TeamForRace(acc_race) != team_)
-                {
-                    sendResponse(CHAR_CREATE_PVP_TEAMS_VIOLATION);
-                    return;
-                }
-            }
-        }
-    }
-
-    uint32 const guidLow = sObjectMgr.GeneratePlayerLowGuid();
-    if (Player::SaveNewPlayer(this, guidLow, safeName, packet.race, packet.class_, packet.gender, packet.skin, packet.face, packet.hairStyle, packet.hairColor, packet.facialHair))
-    {
-        m_charactersCount += 1;
-
-        LoginDatabase.PExecute("REPLACE INTO `realmcharacters` (`numchars`, `acctid`, `realmid`) VALUES (%u, %u, %u)", m_charactersCount, GetAccountId(), realmID);
-
-        sendResponse(CHAR_CREATE_SUCCESS);
-    }
-    else
-    {
-        sendResponse(CHAR_CREATE_ERROR);
-    }
-}
-
-void WorldSession::HandleCharDeleteOpcode(WorldPackets::Character::CharDelete const& packet)
-{
-    auto sendResponse = [this](uint8 result) {
-        auto response = std::make_unique<WorldPackets::Character::CharDeleteResponse>();
-        response->result = result;
-        SendPacket(std::move(response));
-    };
-
-    // can't delete loaded character
-    if (ObjectAccessor::FindPlayerNotInWorld(packet.guid))
-        return;
-
-    uint32 accountId = 0;
-    std::string name;
-
-    // is guild leader
-    if (sGuildMgr.GetGuildByLeader(packet.guid))
-    {
-        sendResponse(CHAR_DELETE_FAILED);
-        return;
-    }
-
-    uint32 lowguid = packet.guid.GetCounter();
-
-    PlayerCacheData* cacheData = sObjectMgr.GetPlayerDataByGUID(lowguid);
-    if (!cacheData)
-        return; // Character not found
-
-    accountId = cacheData->uiAccount;
-    name = cacheData->sName;
-
-    // prevent deleting other players' characters using cheating tools
-    if (accountId != GetAccountId())
-        return;
-
-    sLog.Player(this, LOG_CHAR, "Delete", LOG_LVL_BASIC, "Character %s guid %u", name.c_str(), packet.guid);
-
-    // If the character is online (ALT-F4 logout for example)
-    if (Player* onlinePlayer = sObjectAccessor.FindPlayer(packet.guid))
-        onlinePlayer->GetSession()->LogoutPlayer(true);
-
-    Player::DeleteFromDB(packet.guid, GetAccountId());
-
-    sendResponse(CHAR_DELETE_SUCCESS);
-}
-
-void WorldSession::HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin const& packet)
-{
-    if ((!sWorld.getConfig(CONFIG_BOOL_WORLD_AVAILABLE) && GetSecurity() == SEC_PLAYER) ||
-        PlayerLoading() || GetPlayer() != nullptr || !packet.guid.IsPlayer())
-    {
-        auto loginFailedPacket = std::make_unique<WorldPackets::Character::CharacterLoginFailed>();
-        loginFailedPacket->result = 1;
-        SendPacket(std::move(loginFailedPacket));
-        return;
-    }
-
-    LoginQueryHolder* holder = new LoginQueryHolder(GetAccountId(), packet.guid);
-    if (!holder->Initialize())
-    {
-        delete holder;                                      // delete all unprocessed queries
-        return;
-    }
-    m_playerLoading = true;
-    CharacterDatabase.DelayQueryHolderUnsafe(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
-}
-
 void WorldSession::LoginPlayer(ObjectGuid loginPlayerGuid)
 {
     ASSERT(loginPlayerGuid.IsPlayer());
@@ -518,7 +314,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
                              ? pCurrChar->m_movementInfo.GetTransportPos()
                              : pCurrChar->GetPosition();
 
-    ClassicLoginVerifyWorld loginVerifyWorld;
+    LoginVerifyWorld loginVerifyWorld;
     loginVerifyWorld.MapId = pCurrChar->GetMapId();
     loginVerifyWorld.X = position.x;
     loginVerifyWorld.Y = position.y;
@@ -844,4 +640,286 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(std::unique_ptr<QueryRes
 
     sObjectMgr.ChangePlayerNameInCache(guidLow, oldname, newname);
     sWorld.InvalidatePlayerDataToAllClient(guid);
+}
+
+namespace
+{
+// Maps the vanilla ResponseCodes this tree's name/create checks still return onto the modern
+// wire's numbering (Packets/Classic/Character.h), since the two are not numerically related. Only
+// the values CheckPlayerName/normalizePlayerName actually produce are translated; anything else
+// (a reserved name, a disabled race, ...) falls back to the closest generic failure -- their exact
+// modern codes aren't confirmed yet.
+uint8 ClassicNameResult(uint8 vanillaResult)
+{
+    switch (vanillaResult)
+    {
+        case CHAR_NAME_SUCCESS:           return CLASSIC_CHAR_NAME_SUCCESS;
+        case CHAR_NAME_NO_NAME:           return CLASSIC_CHAR_NAME_NO_NAME;
+        case CHAR_NAME_TOO_SHORT:         return CLASSIC_CHAR_NAME_TOO_SHORT;
+        case CHAR_NAME_TOO_LONG:          return CLASSIC_CHAR_NAME_TOO_LONG;
+        case CHAR_NAME_INVALID_CHARACTER: return CLASSIC_CHAR_NAME_INVALID_CHARACTER;
+        default:                          return CLASSIC_CHAR_NAME_FAILURE;
+    }
+}
+
+// Looks up an account's character by its classic wire guid, refusing anything that doesn't map to
+// a player guid this account owns. Used by both delete and player-login.
+PlayerCacheData const* FindOwnedCharacter(WorldSession& session, ClassicGuid const& wireGuid, ObjectGuid& outGuid)
+{
+    nonstd::optional<ObjectGuid> guid = ClassicGuidMapping::FromClassic(wireGuid);
+    if (!guid || !guid->IsPlayer())
+        return nullptr;
+
+    PlayerCacheData const* cacheData = sObjectMgr.GetPlayerDataByGUID(guid->GetCounter());
+    if (!cacheData || cacheData->uiAccount != session.GetAccountId())
+        return nullptr;
+
+    outGuid = *guid;
+    return cacheData;
+}
+
+}
+
+void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*packet*/)
+{
+    // Built from ObjectMgr's in-memory player cache, not a fresh DB query: the cache is what
+    // HandleCharCreateOpcode/HandleCharDeleteOpcode update synchronously, so a create or delete is
+    // always reflected in the very next enum -- a DB round trip on a worker thread can lag behind
+    // the transaction that made the change.
+    std::vector<PlayerCacheData const*> accountCharacters;
+    sObjectMgr.GetPlayerDataForAccount(GetAccountId(), accountCharacters);
+
+    ClassicEnumCharactersResult response;
+    uint8 listPosition = 1; // 0 is treated as unset by the client; hand out 1-based positions
+    for (PlayerCacheData const* cacheData : accountCharacters)
+    {
+        ClassicCharacterInfo info;
+        info.Guid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, cacheData->uiGuid), realmID);
+        info.Name = cacheData->sName;
+        info.Race = uint8(cacheData->uiRace);
+        info.Class = uint8(cacheData->uiClass);
+        info.Gender = uint8(cacheData->uiGender);
+        info.Level = uint8(cacheData->uiLevel);
+        info.Zone = int32(cacheData->uiZoneId);
+        info.Map = int32(cacheData->uiMapId);
+        info.X = cacheData->fPosX;
+        info.Y = cacheData->fPosY;
+        info.Z = cacheData->fPosZ;
+        info.ListPosition = listPosition++;
+
+        if (info.Level > m_characterMaxLevel)
+            m_characterMaxLevel = info.Level;
+
+        response.Characters.push_back(std::move(info));
+    }
+
+    response.CharacterCount = uint32(response.Characters.size());
+    m_charactersCount = uint8(response.Characters.size());
+
+    SendClassic(response);
+}
+
+void WorldSession::HandleCharCreateOpcode(CharCreate const& packet)
+{
+    auto sendResponse = [this](uint8 result, ClassicGuid const& guid = ClassicGuid{})
+    {
+        CharCreateResponse response;
+        response.Result = result;
+        response.Guid = guid;
+        SendClassic(response);
+    };
+
+    if (GetSecurity() == SEC_PLAYER)
+    {
+        if (uint32 mask = sWorld.getConfig(CONFIG_UINT32_CHARACTERS_CREATING_DISABLED))
+        {
+            bool disabled = false;
+            switch (Player::TeamForRace(packet.Race))
+            {
+                case ALLIANCE: disabled = mask & (1 << 0); break;
+                case HORDE:    disabled = mask & (1 << 1); break;
+            }
+            if (disabled)
+            {
+                sendResponse(CLASSIC_CHAR_CREATE_FAILED);
+                return;
+            }
+        }
+    }
+
+    ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(packet.Class);
+    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(packet.Race);
+    if (!classEntry || !raceEntry || raceEntry->HasFlag(CHRRACES_FLAGS_NOT_PLAYABLE))
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_FAILED);
+        return;
+    }
+
+    // The bots never send customization choices (CharCreate::CustomizationCount is always 0),
+    // which maps to a random valid vanilla appearance rather than always the same one -- a real
+    // client's own customization choices aren't converted to vanilla appearance bytes yet.
+    uint8 skin = 0, face = 0, hairStyle = 0, hairColor = 0, facialHair = 0;
+    Player::SelectRandomAppearance(packet.Race, packet.Gender, hairStyle, hairColor, face, facialHair, skin);
+    if (!Player::ValidateAppearance(packet.Race, packet.Gender, hairStyle, hairColor, face, facialHair, skin))
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_FAILED);
+        return;
+    }
+
+    std::string safeName = packet.Name;
+    if (!normalizePlayerName(safeName))
+    {
+        sendResponse(CLASSIC_CHAR_NAME_NO_NAME);
+        return;
+    }
+
+    uint8 const nameResult = ObjectMgr::CheckPlayerName(safeName, true);
+    if (nameResult != CHAR_NAME_SUCCESS)
+    {
+        sendResponse(ClassicNameResult(nameResult));
+        return;
+    }
+
+    if (GetSecurity() == SEC_PLAYER && sObjectMgr.IsReservedName(safeName))
+    {
+        sendResponse(CLASSIC_CHAR_NAME_FAILURE);
+        return;
+    }
+
+    if (sObjectMgr.GetPlayerGuidByName(safeName))
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_NAME_IN_USE);
+        return;
+    }
+
+    // The account's live character list, straight from the cache rather than m_charactersCount:
+    // that counter only gets a real value once CMSG_ENUM_CHARACTERS runs (it starts at UINT32_MAX
+    // precisely so a create can't race ahead of it), and nothing requires the classic client to
+    // enumerate before it creates.
+    std::vector<PlayerCacheData const*> accountCharacters;
+    sObjectMgr.GetPlayerDataForAccount(GetAccountId(), accountCharacters);
+
+    if (accountCharacters.size() >= sWorld.getConfig(CONFIG_UINT32_CHARACTERS_PER_REALM))
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_SERVER_LIMIT);
+        return;
+    }
+
+    bool const allowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_PLAYER;
+    if (!allowTwoSideAccounts && !accountCharacters.empty())
+    {
+        PlayerCacheData const* cData = accountCharacters.front();
+        if (cData->uiRace == 0 || Player::TeamForRace(cData->uiRace) != Player::TeamForRace(packet.Race))
+        {
+            sendResponse(CLASSIC_CHAR_CREATE_FAILED);
+            return;
+        }
+    }
+
+    uint32 const guidLow = sObjectMgr.GeneratePlayerLowGuid();
+    if (Player::SaveNewPlayer(this, guidLow, safeName, packet.Race, packet.Class, packet.Gender, skin, face, hairStyle, hairColor, facialHair))
+    {
+        uint32 const newCount = uint32(accountCharacters.size()) + 1;
+        m_charactersCount = newCount;
+        LoginDatabase.PExecute("REPLACE INTO `realmcharacters` (`numchars`, `acctid`, `realmid`) VALUES (%u, %u, %u)", newCount, GetAccountId(), realmID);
+        sendResponse(CLASSIC_CHAR_CREATE_SUCCESS, ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, guidLow), realmID));
+    }
+    else
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_ERROR);
+    }
+}
+
+void WorldSession::HandleCharDeleteOpcode(CharDelete const& packet)
+{
+    auto sendResponse = [this](uint8 result)
+    {
+        CharDeleteResponse response;
+        response.Result = result;
+        SendClassic(response);
+    };
+
+    ObjectGuid guid;
+    PlayerCacheData const* cacheData = FindOwnedCharacter(*this, packet.Guid, guid);
+    if (!cacheData)
+    {
+        sendResponse(CLASSIC_CHAR_DELETE_FAILED);
+        return;
+    }
+
+    // Can't delete a loaded character, or a guild leader; matches the vanilla handler's own
+    // silent-ignore and failure responses for the same two cases.
+    if (ObjectAccessor::FindPlayerNotInWorld(guid))
+        return;
+
+    if (sGuildMgr.GetGuildByLeader(guid))
+    {
+        sendResponse(CLASSIC_CHAR_DELETE_FAILED);
+        return;
+    }
+
+    sLog.Player(this, LOG_CHAR, "Delete", LOG_LVL_BASIC, "Character %s guid %u", cacheData->sName.c_str(), guid.GetCounter());
+
+    if (Player* onlinePlayer = sObjectAccessor.FindPlayer(guid))
+        onlinePlayer->GetSession()->LogoutPlayer(true);
+
+    Player::DeleteFromDB(guid, GetAccountId());
+
+    sendResponse(CLASSIC_CHAR_DELETE_SUCCESS);
+}
+
+void WorldSession::HandlePlayerLoginOpcode(PlayerLogin const& packet)
+{
+    auto sendFailed = [this](uint8 reason)
+    {
+        CharacterLoginFailed failed;
+        failed.Reason = reason;
+        SendClassic(failed);
+    };
+
+    if ((!sWorld.getConfig(CONFIG_BOOL_WORLD_AVAILABLE) && GetSecurity() == SEC_PLAYER) || PlayerLoading() || GetPlayer() != nullptr)
+    {
+        sendFailed(1); // NoWorld
+        return;
+    }
+
+    ObjectGuid guid;
+    if (!FindOwnedCharacter(*this, packet.Guid, guid))
+    {
+        sendFailed(1); // NoWorld
+        return;
+    }
+
+    // The redirect to the Instance connection starts in parallel with the player load, not after
+    // it: a slow load shouldn't hold up the client's own retries.
+    SendConnectToInstance(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1);
+    LoginPlayer(guid);
+}
+
+void WorldSession::HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet)
+{
+    if (!m_awaitingInstanceConnect || packet.Serial != m_pendingInstanceConnectSerial)
+        return; // stale or unexpected; the pending attempt (if any) is what still matters
+
+    uint32 nextSerial = 0;
+    switch (packet.Serial)
+    {
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5; break;
+        default: break; // attempt 5 (or unknown) exhausts the retries
+    }
+
+    if (nextSerial == 0)
+    {
+        m_awaitingInstanceConnect = false;
+        ClearPendingInstanceConnect();
+        CharacterLoginFailed failed;
+        failed.Reason = 1; // NoWorld
+        SendClassic(failed);
+        return;
+    }
+
+    SendConnectToInstance(nextSerial);
 }

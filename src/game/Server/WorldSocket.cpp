@@ -30,6 +30,7 @@
 #include "Protocol/ClassicOpcodes.h"
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
@@ -597,37 +598,37 @@ WorldSocket::HandlerResult WorldSocket::HandleEnumCharacters(ByteBuffer& data)
 
 WorldSocket::HandlerResult WorldSocket::HandleCreateCharacter(ByteBuffer& data)
 {
-    ClassicCreateCharacter packet;
+    CharCreate packet;
     if (!packet.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CREATE_CHARACTER, dropped", GetRemoteIpString().c_str());
         return HandlerResult::Okay;
     }
-    m_Session->HandleClassicCharCreateOpcode(packet);
+    m_Session->HandleCharCreateOpcode(packet);
     return HandlerResult::Okay;
 }
 
 WorldSocket::HandlerResult WorldSocket::HandleCharDelete(ByteBuffer& data)
 {
-    ClassicCharDelete packet;
+    CharDelete packet;
     if (!packet.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CHAR_DELETE, dropped", GetRemoteIpString().c_str());
         return HandlerResult::Okay;
     }
-    m_Session->HandleClassicCharDeleteOpcode(packet);
+    m_Session->HandleCharDeleteOpcode(packet);
     return HandlerResult::Okay;
 }
 
 WorldSocket::HandlerResult WorldSocket::HandlePlayerLogin(ByteBuffer& data)
 {
-    ClassicPlayerLogin packet;
+    PlayerLogin packet;
     if (!packet.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_PLAYER_LOGIN, dropped", GetRemoteIpString().c_str());
         return HandlerResult::Okay;
     }
-    m_Session->HandleClassicPlayerLoginOpcode(packet);
+    m_Session->HandlePlayerLoginOpcode(packet);
     return HandlerResult::Okay;
 }
 

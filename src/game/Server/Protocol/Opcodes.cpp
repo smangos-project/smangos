@@ -136,14 +136,14 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_AUTH_SRP6_BEGIN,              UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTH_SRP6_PROOF,              UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTH_SRP6_RECODE,             UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CHAR_CREATE,                  STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandleCharCreateOpcode);
+    INVALID_PACKET(CMSG_CHAR_CREATE,                  UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_CHAR_ENUM,                    STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandleCharEnumOpcode);
-    DEFINE_HANDLER(CMSG_CHAR_DELETE,                  STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandleCharDeleteOpcode);
+    INVALID_PACKET(CMSG_CHAR_DELETE,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_AUTH_SRP6_RESPONSE,           UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAR_CREATE,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAR_ENUM,                    UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAR_DELETE,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PLAYER_LOGIN,                 STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandlePlayerLoginOpcode);
+    INVALID_PACKET(CMSG_PLAYER_LOGIN,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_NEW_WORLD,                    UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_TRANSFER_PENDING,             UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_TRANSFER_ABORTED,             UnhandleReason::SendByServer);

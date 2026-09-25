@@ -7,6 +7,7 @@
 #include "Crypto/Ed25519.h"
 #include "Log.h"
 #include "Packets/Auth.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include <algorithm>
 #include <cstdio>
@@ -212,14 +213,14 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
         if (!params.CreateIfNone)
             co_return Fail(who, outcome.Error, "no characters and CreateIfNone is false");
 
-        ClassicCreateCharacter create;
+        CharCreate create;
         create.Name = params.CharacterName;
         create.Race = params.Race;
         create.Class = params.Class;
         create.Gender = params.Gender;
         ctx.Send(create, BotConnectionKind::Realm);
 
-        std::optional<ClassicCreateCharResponse> created = co_await ctx.Packet<ClassicCreateCharResponse>(params.PacketTimeoutMs);
+        std::optional<CharCreateResponse> created = co_await ctx.Packet<CharCreateResponse>(params.PacketTimeoutMs);
         if (!created)
             co_return Fail(who, outcome.Error, NoPacket("SMSG_CREATE_CHAR"));
         if (created->Result != CLASSIC_CHAR_CREATE_SUCCESS)
@@ -237,7 +238,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
         co_return BotTaskResult::Done;
     }
 
-    ClassicPlayerLogin login;
+    PlayerLogin login;
     login.Guid = outcome.CharacterGuid;
     login.FarClip = params.FarClip;
     ctx.Send(login, BotConnectionKind::Realm);
@@ -296,13 +297,13 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
             connectTo = *next;
         }
 
-        std::optional<ClassicLoginVerifyWorld> verify = co_await ctx.Packet<ClassicLoginVerifyWorld>(params.PacketTimeoutMs);
+        std::optional<LoginVerifyWorld> verify = co_await ctx.Packet<LoginVerifyWorld>(params.PacketTimeoutMs);
         if (!verify)
             co_return Fail(who, outcome.Error, NoPacket("SMSG_LOGIN_VERIFY_WORLD"));
     }
     else
     {
-        ClassicLoginVerifyWorld verify;
+        LoginVerifyWorld verify;
         if (!verify.Read(arrived->Data))
             co_return Fail(who, outcome.Error, "malformed SMSG_LOGIN_VERIFY_WORLD");
     }

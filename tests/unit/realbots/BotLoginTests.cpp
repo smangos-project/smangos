@@ -38,6 +38,7 @@
 #include "rpc_types.pb.h"
 #include "Packets/Auth.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 
 #include <openssl/err.h>
@@ -680,7 +681,7 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
         if (!peer.Send(characters))
             return;
 
-        ClassicPlayerLogin playerLogin;
+        PlayerLogin playerLogin;
         if (!peer.Expect(playerLogin))
             return;
 
@@ -707,7 +708,7 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
         if (!instanceResult.Completed)
             return;
 
-        ClassicLoginVerifyWorld verify;
+        LoginVerifyWorld verify;
         verify.MapId = 1;
         if (!peer.Send(verify))
             return;

@@ -267,7 +267,7 @@ void WorldSession::SendConnectToInstance(uint32 serial)
 {
     auto sendFailed = [this]()
     {
-        SendClassic(ClassicCharacterLoginFailed{ 1 }); // NoWorld
+        SendClassic(CharacterLoginFailed{ 1 }); // NoWorld
         m_awaitingInstanceConnect = false;
     };
 

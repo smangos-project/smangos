@@ -1,11 +1,12 @@
 // Round-trip / wire-shape coverage for the CharSelect/EnteringWorld packets in ClassicPackets.h
 // (bot-phase-1.md's packet rule: every Classic* struct gets a round-trip test). CMSG structs
-// (ClassicEnumCharacters, ClassicCreateCharacter, ClassicPlayerLogin) only have Write() -- the
+// (ClassicEnumCharacters, CharCreate, PlayerLogin) only have Write() -- the
 // bot uses one direction, per bot-examples.md -- so those are checked against hand-verified wire
 // bytes instead of round-tripped through a Read() that doesn't exist on this side.
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
 
@@ -103,9 +104,9 @@ TEST_CASE("ClassicEnumCharactersResult::Read rejects a body truncated before the
     CHECK_FALSE(result.Read(data));
 }
 
-TEST_CASE("ClassicCreateCharacter::Write matches the expected bit-packed wire shape", "[packets]")
+TEST_CASE("CharCreate::Write matches the expected bit-packed wire shape", "[packets]")
 {
-    ClassicCreateCharacter create;
+    CharCreate create;
     create.Name = "Botto";
     create.Race = 1;
     create.Class = 4;
@@ -144,7 +145,7 @@ TEST_CASE("ClassicCreateCharacter::Write matches the expected bit-packed wire sh
     CHECK(data.rpos() == data.size()); // nothing else was written -- no templateSetId, no customizations
 }
 
-TEST_CASE("ClassicCreateCharResponse::Read parses the result and guid", "[packets]")
+TEST_CASE("CharCreateResponse::Read parses the result and guid", "[packets]")
 {
     ClassicGuid newCharacter{ 0x42ull, 0 };
 
@@ -152,22 +153,22 @@ TEST_CASE("ClassicCreateCharResponse::Read parses the result and guid", "[packet
     data << CLASSIC_CHAR_CREATE_SUCCESS;
     newCharacter.Write(data);
 
-    ClassicCreateCharResponse response;
+    CharCreateResponse response;
     REQUIRE(response.Read(data));
     CHECK(response.Result == CLASSIC_CHAR_CREATE_SUCCESS);
     CHECK(response.Guid.Low == newCharacter.Low);
 }
 
-TEST_CASE("ClassicCreateCharResponse::Read rejects an empty body", "[packets]")
+TEST_CASE("CharCreateResponse::Read rejects an empty body", "[packets]")
 {
     ByteBuffer data;
-    ClassicCreateCharResponse response;
+    CharCreateResponse response;
     CHECK_FALSE(response.Read(data));
 }
 
-TEST_CASE("ClassicPlayerLogin::Write matches the expected guid-then-float wire shape", "[packets]")
+TEST_CASE("PlayerLogin::Write matches the expected guid-then-float wire shape", "[packets]")
 {
-    ClassicPlayerLogin login;
+    PlayerLogin login;
     login.Guid = ClassicGuid{ 0x99ull, 0 };
     login.FarClip = 533.0f;
 
@@ -184,12 +185,12 @@ TEST_CASE("ClassicPlayerLogin::Write matches the expected guid-then-float wire s
     CHECK(data.rpos() == data.size());
 }
 
-TEST_CASE("ClassicLoginVerifyWorld::Read round-trips a world location", "[packets]")
+TEST_CASE("LoginVerifyWorld::Read round-trips a world location", "[packets]")
 {
     ByteBuffer data;
     data << uint32(1) << 100.0f << -200.5f << 50.25f << 3.14f << uint32(0);
 
-    ClassicLoginVerifyWorld verify;
+    LoginVerifyWorld verify;
     REQUIRE(verify.Read(data));
     CHECK(verify.MapId == 1);
     CHECK(verify.X == 100.0f);
@@ -199,12 +200,12 @@ TEST_CASE("ClassicLoginVerifyWorld::Read round-trips a world location", "[packet
     CHECK(verify.Reason == 0);
 }
 
-TEST_CASE("ClassicLoginVerifyWorld::Read rejects a truncated body", "[packets]")
+TEST_CASE("LoginVerifyWorld::Read rejects a truncated body", "[packets]")
 {
     ByteBuffer data;
     data << uint32(1) << 100.0f;
 
-    ClassicLoginVerifyWorld verify;
+    LoginVerifyWorld verify;
     CHECK_FALSE(verify.Read(data));
 }
 

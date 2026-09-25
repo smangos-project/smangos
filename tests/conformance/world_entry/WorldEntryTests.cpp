@@ -6,6 +6,7 @@
 #include "BotTask.h"
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
@@ -139,11 +140,11 @@ TEST_CASE("world_entry: SMSG_LOGIN_VERIFY_WORLD carries the character's map and 
 {
     RunTest([]() -> TestRoutine
     {
-        std::optional<ClassicLoginVerifyWorld> verify;
+        std::optional<LoginVerifyWorld> verify;
         {
             TestBot bot;
             REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
-            verify = bot.LastReceived<ClassicLoginVerifyWorld>();
+            verify = bot.LastReceived<LoginVerifyWorld>();
             REQUIRE(verify);
         }
 

@@ -41,6 +41,7 @@
 #include "Packets/Channel.h"
 #include "Packets/Character.h"
 #include "Packets/Auth.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Session.h"
 #include "Packets/Classic/Character.h"
 #include "Packets/Chat.h"
@@ -538,18 +539,15 @@ class WorldSession
         void Handle_ServerSide(WorldPacket& recvPacket);    // sever side only, can't be accepted from client
 
         void HandleCharEnumOpcode(NullClientPacket const& packet);
-        void HandleCharCreateOpcode(WorldPackets::Character::CharCreate const& packet);
-        void HandleCharDeleteOpcode(WorldPackets::Character::CharDelete const& packet);
-        void HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin const& packet);
         void HandleCharEnum(std::unique_ptr<QueryResult> result);
         void HandlePlayerLogin(LoginQueryHolder* holder);
 
-        // Classic (modern-client) character screen; the vanilla handlers above stay for their own
-        // legacy opcodes, which nothing sends anymore but which still compile (the legacy lane).
+        // Classic (modern-client) character screen; HandleCharEnumOpcode above stays for its own
+        // legacy opcode, which nothing sends anymore but which still compiles (the legacy lane).
         void HandleClassicCharEnumOpcode(ClassicEnumCharacters const& packet);
-        void HandleClassicCharCreateOpcode(ClassicCreateCharacter const& packet);
-        void HandleClassicCharDeleteOpcode(ClassicCharDelete const& packet);
-        void HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& packet);
+        void HandleCharCreateOpcode(CharCreate const& packet);
+        void HandleCharDeleteOpcode(CharDelete const& packet);
+        void HandlePlayerLoginOpcode(PlayerLogin const& packet);
         void HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet);
         void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
         void HandleClassicTimeSyncResponseOpcode(TimeSyncResponse const& packet);

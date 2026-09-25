@@ -6,6 +6,7 @@
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
 
@@ -222,15 +223,15 @@ TEST_CASE("ClassicEnumCharactersResult round-trips its parsed subset", "[packets
     });
 }
 
-TEST_CASE("ClassicCreateCharacter round-trips", "[packets]")
+TEST_CASE("CharCreate round-trips", "[packets]")
 {
-    ClassicCreateCharacter out;
+    CharCreate out;
     out.Name = "Botto";
     out.Race = 1;
     out.Class = 4;
     out.Gender = 1;
 
-    RoundTrip(out, [](ClassicCreateCharacter const& a, ClassicCreateCharacter const& b)
+    RoundTrip(out, [](CharCreate const& a, CharCreate const& b)
     {
         CHECK(a.Name == b.Name);
         CHECK(a.Race == b.Race);
@@ -240,7 +241,7 @@ TEST_CASE("ClassicCreateCharacter round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicCreateCharacter::Read rejects a template set and customization pairs", "[packets]")
+TEST_CASE("CharCreate::Read rejects a template set and customization pairs", "[packets]")
 {
     ByteBuffer withTemplate;
     withTemplate.WriteBits(1, 6);
@@ -250,7 +251,7 @@ TEST_CASE("ClassicCreateCharacter::Read rejects a template set and customization
     withTemplate.WriteBit(false);
     withTemplate.FlushBits();
     withTemplate << uint8(1) << uint8(1) << uint8(0) << uint32(0) << int32(0) << uint8('A');
-    ClassicCreateCharacter in;
+    CharCreate in;
     CHECK_FALSE(in.Read(withTemplate));
 
     ByteBuffer withCustomization;
@@ -261,17 +262,17 @@ TEST_CASE("ClassicCreateCharacter::Read rejects a template set and customization
     withCustomization.WriteBit(false);
     withCustomization.FlushBits();
     withCustomization << uint8(1) << uint8(1) << uint8(0) << uint32(1) << int32(0) << uint8('A');
-    ClassicCreateCharacter in2;
+    CharCreate in2;
     CHECK_FALSE(in2.Read(withCustomization));
 }
 
-TEST_CASE("ClassicCreateCharResponse round-trips", "[packets]")
+TEST_CASE("CharCreateResponse round-trips", "[packets]")
 {
-    ClassicCreateCharResponse out;
+    CharCreateResponse out;
     out.Result = CLASSIC_CHAR_CREATE_SUCCESS;
     out.Guid = ClassicGuid{ 0xABCDEFull, 0 };
 
-    RoundTrip(out, [](ClassicCreateCharResponse const& a, ClassicCreateCharResponse const& b)
+    RoundTrip(out, [](CharCreateResponse const& a, CharCreateResponse const& b)
     {
         CHECK(a.Result == b.Result);
         CHECK(a.Guid.Low == b.Guid.Low);
@@ -279,13 +280,13 @@ TEST_CASE("ClassicCreateCharResponse round-trips", "[packets]")
     });
 }
 
-TEST_CASE("ClassicPlayerLogin round-trips", "[packets]")
+TEST_CASE("PlayerLogin round-trips", "[packets]")
 {
-    ClassicPlayerLogin out;
+    PlayerLogin out;
     out.Guid = ClassicGuid{ 0x55AA55ull, 0x1000ull };
     out.FarClip = 533.0f;
 
-    RoundTrip(out, [](ClassicPlayerLogin const& a, ClassicPlayerLogin const& b)
+    RoundTrip(out, [](PlayerLogin const& a, PlayerLogin const& b)
     {
         CHECK(a.Guid.Low == b.Guid.Low);
         CHECK(a.Guid.High == b.Guid.High);
@@ -294,9 +295,9 @@ TEST_CASE("ClassicPlayerLogin round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicLoginVerifyWorld round-trips", "[packets]")
+TEST_CASE("LoginVerifyWorld round-trips", "[packets]")
 {
-    ClassicLoginVerifyWorld out;
+    LoginVerifyWorld out;
     out.MapId = 1;
     out.X = -618.5f;
     out.Y = -4251.75f;
@@ -304,7 +305,7 @@ TEST_CASE("ClassicLoginVerifyWorld round-trips", "[packets]")
     out.O = 1.25f;
     out.Reason = 0;
 
-    RoundTrip(out, [](ClassicLoginVerifyWorld const& a, ClassicLoginVerifyWorld const& b)
+    RoundTrip(out, [](LoginVerifyWorld const& a, LoginVerifyWorld const& b)
     {
         CHECK(a.MapId == b.MapId);
         CHECK(a.X == b.X);
@@ -466,25 +467,25 @@ TEST_CASE("ClassicEnumCharactersResult: a character with mail senders is not wal
     CHECK(in.FirstCharacterGuid.Low == 0x555555);
 }
 
-TEST_CASE("ClassicCharDelete, ClassicDeleteCharResponse and ClassicCharacterLoginFailed round-trip", "[packets]")
+TEST_CASE("CharDelete, CharDeleteResponse and CharacterLoginFailed round-trip", "[packets]")
 {
-    ClassicCharDelete del;
+    CharDelete del;
     del.Guid = ClassicGuid{ 0xABC123, 0x4000 };
-    RoundTrip(del, [](ClassicCharDelete const& a, ClassicCharDelete const& b)
+    RoundTrip(del, [](CharDelete const& a, CharDelete const& b)
     {
         CHECK(a.Guid.Low == b.Guid.Low);
         CHECK(a.Guid.High == b.Guid.High);
     });
     RejectsEveryTruncation(del);
 
-    ClassicDeleteCharResponse response;
+    CharDeleteResponse response;
     response.Result = CLASSIC_CHAR_DELETE_SUCCESS;
-    RoundTrip(response, [](ClassicDeleteCharResponse const& a, ClassicDeleteCharResponse const& b) { CHECK(a.Result == b.Result); });
+    RoundTrip(response, [](CharDeleteResponse const& a, CharDeleteResponse const& b) { CHECK(a.Result == b.Result); });
     RejectsEveryTruncation(response);
 
-    ClassicCharacterLoginFailed failed;
+    CharacterLoginFailed failed;
     failed.Reason = 1;
-    RoundTrip(failed, [](ClassicCharacterLoginFailed const& a, ClassicCharacterLoginFailed const& b) { CHECK(a.Reason == b.Reason); });
+    RoundTrip(failed, [](CharacterLoginFailed const& a, CharacterLoginFailed const& b) { CHECK(a.Reason == b.Reason); });
     RejectsEveryTruncation(failed);
 }
 

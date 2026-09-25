@@ -5,6 +5,7 @@
 // an assertion fails), so reruns and parallel targets never collide and the account's own character
 // is never touched.
 #include "Packets/Classic/Guid.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
@@ -25,9 +26,9 @@ std::string RandomCharacterName()
     return name;
 }
 
-ClassicCreateCharacter MakeCreate(std::string name)
+CharCreate MakeCreate(std::string name)
 {
-    ClassicCreateCharacter create;
+    CharCreate create;
     create.Name = std::move(name);
     create.Race = 1;   // human
     create.Class = 1;  // warrior
@@ -61,7 +62,7 @@ struct DeleteOnExit
     {
         if (Armed)
         {
-            ClassicCharDelete del;
+            CharDelete del;
             del.Guid = Guid;
             Bot.Send(del);
         }
@@ -102,7 +103,7 @@ TEST_CASE("char_screen: a created character shows up in the enum, and a deleted 
 
         std::string const name = RandomCharacterName();
         bot.Send(MakeCreate(name));
-        auto created = co_await bot.Packet<ClassicCreateCharResponse>(10000);
+        auto created = co_await bot.Packet<CharCreateResponse>(10000);
         REQUIRE(created);
         if (IsFullResult(created->Result))
             SKIP("the account has no free character slot (result " << int(created->Result) << ")");
@@ -119,10 +120,10 @@ TEST_CASE("char_screen: a created character shows up in the enum, and a deleted 
         CHECK(std::any_of(afterCreate->Characters.begin(), afterCreate->Characters.end(),
             [&](ClassicCharacterInfo const& c) { return c.Name == name; }));
 
-        ClassicCharDelete del;
+        CharDelete del;
         del.Guid = created->Guid;
         bot.Send(del);
-        auto deleted = co_await bot.Packet<ClassicDeleteCharResponse>(10000);
+        auto deleted = co_await bot.Packet<CharDeleteResponse>(10000);
         REQUIRE(deleted);
         CHECK(deleted->Result == CLASSIC_CHAR_DELETE_SUCCESS);
         cleanup.Armed = false;
@@ -143,7 +144,7 @@ TEST_CASE("char_screen: creating a character with a name already in use fails wi
 
         std::string const name = RandomCharacterName();
         bot.Send(MakeCreate(name));
-        auto first = co_await bot.Packet<ClassicCreateCharResponse>(10000);
+        auto first = co_await bot.Packet<CharCreateResponse>(10000);
         REQUIRE(first);
         if (IsFullResult(first->Result))
             SKIP("the account has no free character slot (result " << int(first->Result) << ")");
@@ -151,7 +152,7 @@ TEST_CASE("char_screen: creating a character with a name already in use fails wi
         DeleteOnExit cleanup{ bot, first->Guid, true };
 
         bot.Send(MakeCreate(name));
-        auto second = co_await bot.Packet<ClassicCreateCharResponse>(10000);
+        auto second = co_await bot.Packet<CharCreateResponse>(10000);
         REQUIRE(second);
         CHECK(second->Result == CLASSIC_CHAR_CREATE_NAME_IN_USE);
         CHECK(second->Guid.IsEmpty());
@@ -170,7 +171,7 @@ TEST_CASE("char_screen: creating a character with an invalid name fails with a n
         for (std::string const& bad : { std::string("Zq1234"), std::string("A"), std::string("Bad_Name!") })
         {
             bot.Send(MakeCreate(bad));
-            auto response = co_await bot.Packet<ClassicCreateCharResponse>(10000);
+            auto response = co_await bot.Packet<CharCreateResponse>(10000);
             REQUIRE(response);
             INFO("name \"" << bad << "\" -> result " << int(response->Result));
             CHECK(response->Result != CLASSIC_CHAR_CREATE_SUCCESS);
@@ -188,7 +189,7 @@ TEST_CASE("char_screen: CMSG_PLAYER_LOGIN for a guid that is not the account's i
         REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
 
         // A player guid nobody on this account owns.
-        ClassicPlayerLogin login;
+        PlayerLogin login;
         login.Guid = ClassicGuid{ 0x7FFFFFF0ull, 0x0000000000004000ull };
         login.FarClip = 533.0f;
         bot.Send(login);

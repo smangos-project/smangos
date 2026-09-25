@@ -9,6 +9,7 @@
 #include "TestBotDriver.h"
 #include "Packets/Auth.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
 #include <algorithm>
 #include <atomic>
@@ -133,7 +134,7 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
 
     if (s.Characters == 0)
     {
-        ClassicCreateCharacter create;
+        CharCreate create;
         if (!peer.Expect(create, std::chrono::milliseconds(1500)))
         {
             peer.WaitForClientClose();
@@ -142,14 +143,14 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
         s.SawCreateCharacter = true;
         s.CreatedName = create.Name;
 
-        ClassicCreateCharResponse created;
+        CharCreateResponse created;
         created.Result = CLASSIC_CHAR_CREATE_SUCCESS;
         created.Guid = CreatedGuid;
         if (!peer.Send(created))
             return;
     }
 
-    ClassicPlayerLogin login;
+    PlayerLogin login;
     if (!peer.Expect(login, std::chrono::milliseconds(1500)))
     {
         peer.WaitForClientClose();
@@ -183,7 +184,7 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
     }
     else
     {
-        ClassicLoginVerifyWorld verify;
+        LoginVerifyWorld verify;
         verify.MapId = 1;
         if (!peer.Send(verify))
             return;
@@ -210,7 +211,7 @@ void RunInstanceScript(FakeWorldPeer& peer, Scenario& s)
     if (!s.Instance.Completed)
         return;
 
-    ClassicLoginVerifyWorld verify;
+    LoginVerifyWorld verify;
     verify.MapId = 1;
     verify.X = 10.0f;
     verify.Y = 20.0f;
