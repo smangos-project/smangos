@@ -432,6 +432,34 @@ holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server avai
    its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
    commands and the `Accounts` line.
 6. `tests-conformance --target vmangos` with the `vmangos` block of `tests-conformance.conf.dist`.
+7. `debug unported` on the `mangosd` console (or in game, `.debug unported`) lists every vanilla SMSG a
+   session tried to send and the legacy lane dropped, with counts. This is the server-side list of
+   what Phase 4 still has to port. After one `world_entry:` login (`SMSG_LOGIN_VERIFY_WORLD carries
+   the character's map...`) on a fresh server it reads:
+
+   ```
+   SMSG_SET_PROFICIENCY 9
+   SMSG_COMPRESSED_UPDATE_OBJECT 3
+   SMSG_AUTH_RESPONSE 2
+   SMSG_ACTION_BUTTONS 2
+   SMSG_CANCEL_COMBAT 2
+   SMSG_FRIEND_LIST 1
+   SMSG_ACCOUNT_DATA_MD5 1
+   SMSG_IGNORE_LIST 1
+   SMSG_BINDPOINTUPDATE 1
+   SMSG_MESSAGECHAT 1
+   SMSG_SET_REST_START 1
+   SMSG_TUTORIAL_FLAGS 1
+   SMSG_INITIAL_SPELLS 1
+   SMSG_INITIALIZE_FACTIONS 1
+   SMSG_LOGIN_SETTIMESPEED 1
+   SMSG_INIT_WORLD_STATES 1
+   SMSG_WEATHER 1
+   ```
+
+   The counter is process-wide and cumulative. `SMSG_AUTH_RESPONSE` here is the vanilla session-queue
+   reply (`World::AddSession_`/`AddQueuedSession`, `WorldSession::SendAuthWaitQue`), still sent per
+   session and dropped; a queued modern client needs its own queue packet instead.
 
 ## vibemangos vs TrinityCore
 
@@ -576,14 +604,21 @@ None of these is proven against a real 1.15.6 client yet.
   real. Left for whenever a real 58797 client is available to check against, or Step D needs the
   same race/class data for character creation.
 
-- **The character screen has no opcode table yet.** `bot-phase-3.md` decision 3/4 describes a
-  classic-keyed `uint32` handler table and a generic `WorldPackets::ClassicClient<T>` adapter; neither
-  exists. `CMSG_ENUM_CHARACTERS`/`CREATE_CHARACTER`/`CHAR_DELETE`/`PLAYER_LOGIN` (Step D), like
-  `CMSG_PING` before them (Step C), are hand-written `case`s in `WorldSocket::HandleCompletePacket`
-  that parse the `Classic*` struct and call a `WorldSession` method directly. **Followed: neither
-  reference** -- this is a vmangos-side shortcut that keeps `PacketProcessing`/the handler table out
-  of the classic path entirely; only the legacy-lane counter half of decision 3 actually landed. Worth
-  reconciling before more opcodes make the switch statement the de facto architecture.
+- **Classic opcodes go through the handler table, split between socket and session.** The
+  classic-keyed `uint32` table (`BuildClassicOpcodeList()` in `Opcodes.cpp`) and the
+  `ClassicClient<T>` adapter (`Packets/ClassicClient.h`) carry the session-level opcodes, so they take
+  the same `QueueBinaryPacket`/`PacketProcessing` path as every vanilla one. Seven are table-dispatched
+  and run on the **world thread**: `CMSG_ENUM_CHARACTERS`, `CMSG_CREATE_CHARACTER`, `CMSG_CHAR_DELETE`,
+  `CMSG_PLAYER_LOGIN`, `CMSG_CONNECT_TO_FAILED` (`STATUS_AUTHED`), `CMSG_LOGOUT_REQUEST`
+  (`STATUS_LOGGEDIN`) and `CMSG_TIME_SYNC_RESPONSE` (`STATUS_AUTHED`). Four stay in `WorldSocket`
+  because they belong to the connection, not the session: `CMSG_AUTH_SESSION`,
+  `CMSG_AUTH_CONTINUED_SESSION`, `CMSG_ENTER_ENCRYPTED_MODE_ACK` and `CMSG_PING`. The table and
+  dispatch mechanism are vmangos's; the split itself is a vmangos-side choice (an opcode is
+  table-dispatched when it needs a session), not compared against either reference's own split. One
+  consequence worth knowing: a
+  `CMSG_CHAR_DELETE` sent right before the connection closes can now lose the race and never run, since
+  it used to execute synchronously on the IO thread. The conformance suite's own cleanup no longer
+  relies on that.
 
 - **`SMSG_ENUM_CHARACTERS_RESULT` is built from `ObjectMgr`'s player cache, not a DB query.** A DB-backed
   enum run immediately after a create can race the create's own transaction commit and come back short
