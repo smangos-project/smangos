@@ -6,6 +6,9 @@
 #include "BotWorldLogin.h"
 #include "RealBot.h"
 
+#include <cctype>
+#include <string>
+
 namespace
 {
 // A failed login step: the reason is kept where "info" and TestBot::GetLastError() read it, and
@@ -16,6 +19,26 @@ BotTaskResult FailLogin(BotContext& ctx, std::string const& error)
     ctx.Log("login failed: %s", error.c_str());
     ctx.SetStage(BotStage::Failed);
     return BotTaskResult::Failed;
+}
+
+// A character name for a bot that wasn't given one: letters only, stable per account (digits become
+// letters), so a pool never collides with itself.
+std::string DefaultCharacterName(std::string const& accountName)
+{
+    std::string name;
+    for (char c : accountName)
+    {
+        if (name.size() == 12)
+            break;
+        if (c >= '0' && c <= '9')
+            name += char('a' + (c - '0'));
+        else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+            name += char(std::tolower(static_cast<unsigned char>(c)));
+    }
+    if (name.size() < 2)
+        name += "bot";
+    name[0] = char(std::toupper(static_cast<unsigned char>(name[0])));
+    return name;
 }
 
 // The default bottom task of a new bot (bot-phase-1.md, "Login"): the whole account-in to
@@ -74,7 +97,7 @@ BotRoutine LoginRoutine(BotContext& ctx)
     world.Handshake.PacketTimeoutMs = opts.PacketTimeoutMs;
     world.Handshake.StopAt = opts.StopAt;
     world.CharSelect.CreateIfNone = opts.CreateIfNone;
-    world.CharSelect.CharacterName = opts.CharacterName;
+    world.CharSelect.CharacterName = opts.CharacterName.empty() ? DefaultCharacterName(opts.AccountName) : opts.CharacterName;
     world.CharSelect.Race = opts.Race;
     world.CharSelect.Class = opts.Class;
     world.CharSelect.Gender = opts.Gender;

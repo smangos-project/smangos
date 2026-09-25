@@ -40,8 +40,8 @@ struct RealBotLoginOptions
     bool VerifyServerSignature = true;
     bool CreateIfNone = true;
     std::string CharacterName;
-    uint8 Race = 0;
-    uint8 Class = 0;
+    uint8 Race = 1;  // human
+    uint8 Class = 1; // warrior
     uint8 Gender = 0;
     float FarClip = 533.0f;
     // Holds the login routine at this stage instead of continuing past it -- InWorld (the

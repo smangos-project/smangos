@@ -25,7 +25,8 @@
 
 .PARAMETER Flavor
     vibemangos, vmangos: `account create <name> <password>` (also provisions the battlenet_accounts row and
-    link, AccountMgr::ProvisionBattlenetAccount). trinitycore: `bnetaccount create <name>@<EmailDomain> <password>`.
+    link, AccountMgr::ProvisionBattlenetAccount). vibemangos additionally gets `account set password`
+    lines after all the creates, which is what provisions its Battle.net row reliably. trinitycore: `bnetaccount create <name>@<EmailDomain> <password>`.
 
 .PARAMETER Password
     One password for every account. Default: a random one per account.
@@ -73,6 +74,7 @@ function New-RandomPassword {
 
 $commands = New-Object System.Collections.Generic.List[string]
 $entries = New-Object System.Collections.Generic.List[string]
+$followUps = New-Object System.Collections.Generic.List[string]
 
 for ($i = $Start; $i -lt $Start + $Count; $i++) {
     $number = '{0:000}' -f $i
@@ -92,7 +94,12 @@ for ($i = $Start; $i -lt $Start + $Count; $i++) {
         $commands.Add("bnetaccount create $login $pass")
     }
     $entries.Add("${login}:${pass}")
+    if ($Flavor -eq 'vibemangos') { $followUps.Add("account set password $name $pass $pass") }
 }
+
+# vibemangos's `account create` reads the new row back before its async INSERT has landed and so skips
+# the battlenet_accounts row; changing the password afterwards provisions it.
+foreach ($command in $followUps) { $commands.Add($command) }
 
 Write-Host "# Paste into the $Flavor server console ($Count account(s)):"
 $commands | ForEach-Object { Write-Host $_ }
