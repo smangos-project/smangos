@@ -82,6 +82,7 @@
 #include "GameEventMgr.h"
 #include "world/scourge_invasion.h"
 #include "world/world_event_wareffort.h"
+#include "Packets/PlayerSetup.h"
 
 #include <climits>
 
@@ -19129,21 +19130,20 @@ void Player::SetGroup(Group* group, int8 subgroup)
     }
 }
 
+void Player::SendBindPointUpdate() const
+{
+    BindPointUpdate packet;
+    packet.X = m_homebind.x;
+    packet.Y = m_homebind.y;
+    packet.Z = m_homebind.z;
+    packet.MapId = m_homebind.mapId;
+    packet.AreaId = m_homebindAreaId;
+    GetSession()->SendClassic(packet);
+}
+
 void Player::SendInitialPacketsBeforeAddToMap()
 {
-    {
-        auto packet = std::make_unique<WorldPackets::Misc::SetRestStart>();
-        packet->restStateTime = 0;
-        GetSession()->SendPacket(std::move(packet));
-    }
-
-    // Homebind
-    {
-        auto packet = std::make_unique<WorldPackets::Misc::BindpointUpdate>();
-        packet->location = m_homebind;
-        packet->areaId = m_homebindAreaId;
-        GetSession()->SendPacket(std::move(packet));
-    }
+    SendBindPointUpdate();
 
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
@@ -19162,10 +19162,11 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_AURA_SINGLE
 
     {
-        auto packet = std::make_unique<WorldPackets::Misc::LoginSetTimeSpeed>();
-        packet->gameTime = sWorld.GetGameTime();
-        packet->gameSpeedMinutesPerSecond = 1.0f/60.0f; // 1 minute per 60 seconds
-        GetSession()->SendPacket(std::move(packet));
+        LoginSetTimeSpeed packet;
+        packet.ServerTime = PackWowTime(sWorld.GetGameTime());
+        packet.GameTime = packet.ServerTime;
+        packet.NewSpeed = 1.0f / 60.0f; // one game minute per real minute
+        GetSession()->SendClassic(packet);
     }
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment

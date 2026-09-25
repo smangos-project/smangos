@@ -1825,6 +1825,7 @@ class Player final: public Unit
         void SendRaidGroupOnlyError(uint32 timer, RaidGroupError error) const;
         void SendInitialPacketsBeforeAddToMap();
         void SendInitialPacketsAfterAddToMap(bool login = true);
+        void SendBindPointUpdate() const;
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/

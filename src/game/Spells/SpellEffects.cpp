@@ -5855,11 +5855,7 @@ void Spell::EffectBind(SpellEffectIndex effIdx)
 
     player->SetHomebindToLocation(loc, areaId);
 
-    // binding
-    auto packet = std::make_unique<WorldPackets::Misc::BindpointUpdate>();
-    packet->location = loc;
-    packet->areaId = areaId;
-    player->GetSession()->SendPacket(std::move(packet));
+    player->SendBindPointUpdate();
 
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "New Home Position X is %f", loc.x);
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "New Home Position Y is %f", loc.y);

@@ -3347,7 +3347,7 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }
-        case SMSG_LOGIN_SETTIMESPEED:
+        case CLASSIC_SMSG_LOGIN_SET_TIME_SPEED:
         {
             if (!me)
                 return;

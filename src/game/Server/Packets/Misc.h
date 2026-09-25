@@ -946,27 +946,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class SetRestStart final : public ServerPacket
-    {
-    public:
-        uint32 restStateTime = 0; // rest state time (always 0 in original code)
-
-        explicit SetRestStart() : ServerPacket(SMSG_SET_REST_START) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class BindpointUpdate final : public ServerPacket
-    {
-    public:
-        WorldLocation location;
-        uint32 areaId = 0;
-
-        explicit BindpointUpdate() : ServerPacket(SMSG_BINDPOINTUPDATE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class PlayerBound final : public ServerPacket
     {
     public:
@@ -974,17 +953,6 @@ namespace WorldPackets { namespace Misc
         uint32 areaId = 0;
 
         explicit PlayerBound() : ServerPacket(SMSG_PLAYERBOUND) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class LoginSetTimeSpeed final : public ServerPacket
-    {
-    public:
-        uint32 gameTime = 0;
-        float gameSpeedMinutesPerSecond = 0.0f; // game speed
-
-        explicit LoginSetTimeSpeed() : ServerPacket(SMSG_LOGIN_SETTIMESPEED) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

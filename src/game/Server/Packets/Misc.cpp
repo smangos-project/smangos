@@ -899,34 +899,6 @@ void WorldPackets::Misc::RaidGroupOnly::AppendBodyTo(ByteBuffer& buffer) const
     buffer << errorCode;
 }
 
-size_t WorldPackets::Misc::SetRestStart::EstimateFinalSize() const
-{
-    return sizeof(restStateTime);
-}
-
-void WorldPackets::Misc::SetRestStart::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << restStateTime;
-}
-
-size_t WorldPackets::Misc::BindpointUpdate::EstimateFinalSize() const
-{
-    return sizeof(WorldLocation::x) +
-           sizeof(WorldLocation::y) +
-           sizeof(WorldLocation::z) +
-           sizeof(WorldLocation::mapId) +
-           sizeof(areaId);
-}
-
-void WorldPackets::Misc::BindpointUpdate::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << location.x;
-    buffer << location.y;
-    buffer << location.z;
-    buffer << location.mapId;
-    buffer << areaId;
-}
-
 size_t WorldPackets::Misc::PlayerBound::EstimateFinalSize() const
 {
     return sizeof(binderGuid) +
@@ -939,28 +911,6 @@ void WorldPackets::Misc::PlayerBound::AppendBodyTo(ByteBuffer& buffer) const
     buffer << areaId;
 }
 
-static uint32 secsToTimeBitFields(time_t secs)
-{
-    tm localTime;
-#if PLATFORM == PLATFORM_WINDOWS
-    localtime_s(&localTime, &secs);
-#else
-    localtime_r(&secs, &localTime);
-#endif
-    return (localTime.tm_year - 100) << 24 | localTime.tm_mon  << 20 | (localTime.tm_mday - 1) << 14 | localTime.tm_wday << 11 | localTime.tm_hour << 6 | localTime.tm_min;
-}
-
-size_t WorldPackets::Misc::LoginSetTimeSpeed::EstimateFinalSize() const
-{
-    return sizeof(decltype(secsToTimeBitFields(0))) +
-           sizeof(gameSpeedMinutesPerSecond);
-}
-
-void WorldPackets::Misc::LoginSetTimeSpeed::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << secsToTimeBitFields(gameTime);
-    buffer << gameSpeedMinutesPerSecond;
-}
 
 size_t WorldPackets::Misc::TransferAborted::EstimateFinalSize() const
 {

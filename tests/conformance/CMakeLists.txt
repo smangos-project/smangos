@@ -36,6 +36,7 @@ add_executable(tests-conformance
   char_screen/CharScreenTests.cpp
   login/LoginTests.cpp
   world_entry/WorldEntryTests.cpp
+  world_entry/LoginBurstTests.cpp
   world_socket/WorldSocketTests.cpp
   session/SessionTests.cpp
   load/LoadTests.cpp

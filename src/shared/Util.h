@@ -71,6 +71,8 @@ void stripLineInvisibleChars(char* str);
 std::string secsToTimeString(time_t timeInSecs, bool shortText = false, bool hoursOnly = false);
 uint32 TimeStringToSecs(std::string const& timestring);
 std::string TimeToTimestampStr(time_t t);
+// Local time as the client's packed date: minute, hour, weekday, day, month, year - 2000.
+uint32 PackWowTime(time_t t);
 
 inline void ApplyModUInt32Var(uint32& var, int32 val, bool apply)
 {

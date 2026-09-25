@@ -295,6 +295,17 @@ std::string TimeToTimestampStr(time_t t)
     return std::string(buf);
 }
 
+uint32 PackWowTime(time_t t)
+{
+    tm localTime;
+#if PLATFORM == PLATFORM_WINDOWS
+    localtime_s(&localTime, &t);
+#else
+    localtime_r(&t, &localTime);
+#endif
+    return (localTime.tm_year - 100) << 24 | localTime.tm_mon << 20 | (localTime.tm_mday - 1) << 14 | localTime.tm_wday << 11 | localTime.tm_hour << 6 | localTime.tm_min;
+}
+
 /// Check if the string is a valid ip address representation
 bool IsIPAddress(char const* ipAddressString)
 {
