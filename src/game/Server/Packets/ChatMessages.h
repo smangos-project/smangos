@@ -1,18 +1,15 @@
 #ifndef MANGOS_PACKETS_CHATMESSAGES_H
 #define MANGOS_PACKETS_CHATMESSAGES_H
 
-// The 13 modern CMSG_CHAT_MESSAGE_* opcodes that replaced the single legacy CMSG_MESSAGECHAT, each
-// with its own wire shape, and the SMSG_CHAT that replaced SMSG_MESSAGECHAT. Kept out of
-// Packets/Chat.h deliberately: that header pulls in SharedDefines.h and Packet.h for the vanilla
-// classes RealBots must not depend on (see RealBots/README.md) -- these structs stay as light as
-// Packets/CharScreen.h/Social.h.
+// The modern chat message opcodes, each with its own wire shape. Kept out of Packets/Chat.h: that
+// header pulls in SharedDefines.h/Packet.h, which RealBots must not depend on.
 
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
 #include "Packets/Classic/Guid.h"
 
 // Base shape shared by SAY/PARTY/RAID/RAID_WARNING/INSTANCE_CHAT: a language, an 11-bit
-// length-prefixed message, and a trailing "is secure" gate bit TrinityCore never sets.
+// length-prefixed message, and a trailing "is secure" gate bit, never set here.
 struct ChatMessageSay
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CHAT_MESSAGE_SAY;
@@ -51,8 +48,7 @@ struct ChatMessageRaid : ChatMessageSay { static constexpr ClassicOpcodes Opcode
 struct ChatMessageRaidWarning : ChatMessageSay { static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CHAT_MESSAGE_RAID_WARNING; };
 struct ChatMessageInstanceChat : ChatMessageSay { static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CHAT_MESSAGE_INSTANCE_CHAT; };
 
-// Base shape shared by YELL/GUILD/OFFICER: same as ChatMessageSay but with no secure-gate bit at
-// all (TrinityCore's ChatMessage::Read() only reads it for the say-shaped subset above).
+// Base shape shared by YELL/GUILD/OFFICER: same as ChatMessageSay but with no secure-gate bit.
 struct ChatMessageYell
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CHAT_MESSAGE_YELL;
@@ -233,15 +229,13 @@ struct ChatMessageChannel
     }
 };
 
-// Replaces the vanilla SMSG_MESSAGECHAT. RealBots-side reader for ChatHandler::BuildChatPacket's
-// modern output; the server keeps building it directly into a WorldPacket (every existing call
-// site stays as-is), so this struct's Write is for bot-side tests only.
+// RealBots-side reader for ChatHandler::BuildChatPacket's output; the server keeps building it
+// directly into a WorldPacket, so this struct's Write is for bot-side tests only.
 struct Chat
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CHAT;
 
-    uint8 MsgType = 0;    // TrinityCore's ChatMsg wire values (see ToModernChatMsgType, Chat/Chat.cpp) --
-                          // *not* vmangos's own ChatMsg (SharedDefines.h), a different numbering
+    uint8 MsgType = 0;    // the modern client's ChatMsg values, not vmangos's own numbering
     uint32 Language = 0;
     ClassicGuid SenderGuid;
     ClassicGuid TargetGuid;

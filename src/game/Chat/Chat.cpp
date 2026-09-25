@@ -2546,8 +2546,7 @@ bool ChatHandler::isValidChatMessage(std::string const& msg)
     return validSequence == validSequenceIterator;
 }
 
-// Modern SMSG_CHAT's per-message Flags field (Packets/Chat.h's Chat::ChatFlags): a bitmask, unlike
-// vmangos's own PlayerChatTag (Chat.h), which is a sequential index and so still needs translating.
+// A bitmask, unlike vmangos's own sequential PlayerChatTag.
 enum ChatFlags
 {
     CHAT_FLAG_NONE = 0x00,
@@ -2567,12 +2566,9 @@ static uint8 ChatTagToModernChatFlags(uint32 chatTag)
     }
 }
 
-// vmangos's own ChatMsg (SharedDefines.h) is a numbering inherited from the 1.12 client and bears
-// no relation to the modern client's: TrinityCore's ChatMsg (Miscellaneous/SharedDefines.h) is what
-// the modern chat window actually keys its display on. Covers every ChatMsg BuildChatPacket is
-// actually called with in this codebase; anything else falls back to a plain system line.
-// Battlegrounds have no modern equivalent (not yet ported, bot-phase-4.md Slice E) and fall back to
-// a raid warning, the closest-looking broadcast.
+// vmangos's ChatMsg values don't match the modern client's own numbering. Covers every type
+// BuildChatPacket is actually called with; battlegrounds have no modern equivalent and fall back to
+// a raid warning.
 static uint8 ToModernChatMsgType(ChatMsg type)
 {
     switch (type)
@@ -2616,10 +2612,6 @@ static uint8 ToModernChatMsgType(ChatMsg type)
     }
 }
 
-// Modern SMSG_CHAT (Packets/Chat.h's Chat struct is the RealBots-side reader for this same wire
-// shape). Unlike the vanilla SMSG_MESSAGECHAT this replaces, sender/target guid and name are plain
-// fields present for every message type -- no more per-type branching (monster vs. player, whisper
-// vs. say, ...).
 void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const* message, Language language /*= LANG_UNIVERSAL*/, uint32 chatTag /*= CHAT_TAG_NONE*/,
                                   ObjectGuid const& senderGuid /*= ObjectGuid()*/, char const* senderName /*= nullptr*/,
                                   ObjectGuid const& targetGuid /*= ObjectGuid()*/, char const* targetName /*= nullptr*/,
@@ -2627,10 +2619,8 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const
 {
     MANGOS_ASSERT(message);
 
-    // The modern client suppresses a chat line whose sender name it cannot resolve from its name
-    // cache, which for a player sender is only populated by CMSG_QUERY_PLAYER_NAME round-trips this
-    // server doesn't drive for chat; sending the name inline (as the SenderName field allows for
-    // every sender type, not just monsters) avoids depending on that cache at all.
+    // Sent inline for every sender type: the client can't resolve a player name from its own cache
+    // without a query round-trip this server doesn't drive for chat.
     std::string const senderNameStr = (senderGuid && senderName) ? senderName : "";
     std::string const targetNameStr = (targetGuid && targetName) ? targetName : "";
     std::string const channelNameStr = (msgtype == CHAT_MSG_CHANNEL && channelName) ? channelName : "";

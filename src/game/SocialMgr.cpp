@@ -241,8 +241,7 @@ void SocialMgr::SendFriendStatus(MasterPlayer* player, FriendsResult result, Obj
     FriendStatusUpdate packet;
     packet.Result = result;
     packet.FriendGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, friend_lowguid), realmID);
-    // The real wire format sends status/area/level/class unconditionally, not only for
-    // FRIEND_ADDED_ONLINE/FRIEND_ONLINE (TrinityCore's FriendStatus::Write).
+    // Status/area/level/class go out unconditionally, not only for FRIEND_ADDED_ONLINE/ONLINE.
     packet.Notes = fi.Note;
     packet.Status = fi.Status;
     packet.Area = fi.Area;

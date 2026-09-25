@@ -1,4 +1,4 @@
-// Friends, ignores and the contact list that replaced them (bot-phase-4.md, slice B).
+// Friends, ignores and the contact list that replaced them.
 #include "Packets/Social.h"
 #include "TestBot.h"
 #include "TestRoutine.h"

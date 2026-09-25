@@ -1,5 +1,4 @@
-// SMSG_CHAT and the CMSG_CHAT_MESSAGE_* opcodes that replaced SMSG_MESSAGECHAT/CMSG_MESSAGECHAT
-// (bot-phase-4.md, slice B).
+// SMSG_CHAT and the CMSG_CHAT_MESSAGE_* opcodes that replaced SMSG_MESSAGECHAT/CMSG_MESSAGECHAT.
 #include "Packets/ChatMessages.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
