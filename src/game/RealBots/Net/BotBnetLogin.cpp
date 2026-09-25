@@ -1,7 +1,7 @@
 #include "BotBnetLogin.h"
 #include "BotConnector.h"
+#include "Bnet/BnetRealmListJson.h"
 #include "Bnet/BnetServiceHash.h"
-#include "Compression/ZLib.h"
 #include "Crypto/BigNumber.h"
 #include "Errors.h"
 #include "IO/Networking/IpAddress.h"
@@ -12,7 +12,6 @@
 #include "game_utilities_service.pb.h"
 
 #include <nlohmann/json.hpp>
-#include <cstring>
 
 namespace
 {
@@ -52,41 +51,6 @@ std::string const* FindBlobAttribute(bgs::protocol::game_utilities::v1::ClientRe
         if (attr.name() == name && attr.value().has_blob_value())
             return &attr.value().blob_value();
     return nullptr;
-}
-
-// Reverses GameUtilitiesService.cpp's DeflateJson: [u32 LE uncompressedLength]
-// [zlib_compress(name + ":" + json.dump() + '\0')]. The name prefix itself isn't validated here
-// (the server doesn't validate it on the way in either, see GetRealmListTicket's own comment).
-nonstd::optional<nlohmann::json> InflateNamedJson(std::string const& blob)
-{
-    if (blob.size() < 4)
-        return nonstd::nullopt;
-
-    uint32 uncompressedLen;
-    std::memcpy(&uncompressedLen, blob.data(), sizeof(uncompressedLen));
-
-    std::vector<uint8> compressed(blob.begin() + 4, blob.end());
-    auto decompressed = Compression::ZLib::Decompress(compressed, uncompressedLen);
-    if (!decompressed)
-        return nonstd::nullopt;
-
-    std::string plain(reinterpret_cast<char const*>(decompressed->data()), decompressed->size());
-    size_t colon = plain.find(':');
-    if (colon == std::string::npos)
-        return nonstd::nullopt;
-
-    std::string jsonPart = plain.substr(colon + 1);
-    if (!jsonPart.empty() && jsonPart.back() == '\0')
-        jsonPart.pop_back();
-
-    try
-    {
-        return nlohmann::json::parse(jsonPart);
-    }
-    catch (nlohmann::json::exception const&)
-    {
-        return nonstd::nullopt;
-    }
 }
 }
 
@@ -312,8 +276,8 @@ void BotBnetLogin::RequestRealmListTicket()
     identity["gameAccountRegion"] = m_gameAccountRegion;
 
     bgs::protocol::game_utilities::v1::ClientRequest request;
-    AddBlobAttribute(request, "Param_Identity", "RealmListTicketIdentity:" + identity.dump());
-    AddBlobAttribute(request, "Param_ClientInfo", "RealmListTicketClientInformation:" + clientInfo.dump());
+    AddBlobAttribute(request, "Param_Identity", BnetRealmListJson::EncodePlain("RealmListTicketIdentity", identity));
+    AddBlobAttribute(request, "Param_ClientInfo", BnetRealmListJson::EncodePlain("RealmListTicketClientInformation", clientInfo));
     AddBoolAttribute(request, std::string("Command_RealmListTicketRequest_v1_") + COMMAND_VERSION_SUFFIX, true);
 
     std::shared_ptr<BotBnetLogin> self = shared_from_this();
@@ -363,7 +327,7 @@ void BotBnetLogin::OnRealmListResponse(bool success, uint32 status, std::string 
         return;
     }
 
-    nonstd::optional<nlohmann::json> listJson = InflateNamedJson(*listBlob);
+    nonstd::optional<nlohmann::json> listJson = BnetRealmListJson::DecodeCompressed(*listBlob);
     if (!listJson)
     {
         Fail("RealmList response had an unreadable Param_RealmList blob");
@@ -446,7 +410,7 @@ void BotBnetLogin::OnRealmJoinResponse(bool success, uint32 status, std::string 
         return;
     }
 
-    nonstd::optional<nlohmann::json> addressesJson = InflateNamedJson(*addressesBlob);
+    nonstd::optional<nlohmann::json> addressesJson = BnetRealmListJson::DecodeCompressed(*addressesBlob);
     if (!addressesJson)
     {
         Fail("RealmJoin response had an unreadable Param_ServerAddresses blob");

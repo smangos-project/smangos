@@ -5,8 +5,9 @@
 // address + session key, the way vibemangos's bnetserver would (see GameUtilitiesService.cpp for
 // the exact attribute/JSON shapes this mirrors).
 #include "BotBnetLogin.h"
+#include "Bnet/BnetLoginForms.h"
+#include "Bnet/BnetRealmListJson.h"
 #include "Bnet/BnetServiceHash.h"
-#include "Compression/ZLib.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
@@ -154,21 +155,6 @@ std::string HexEncode(std::vector<uint8> const& bytes)
     return hex;
 }
 
-// [u32 LE uncompressedLength][zlib_compress(name + ":" + json.dump() + '\0')] -- matches
-// GameUtilitiesService.cpp's DeflateJson exactly, the counterpart to BotBnetLogin's own
-// InflateNamedJson.
-std::string DeflateJson(std::string const& name, json const& j)
-{
-    std::string plain = name + ":" + j.dump() + '\0';
-    auto compressed = Compression::ZLib::Compress(reinterpret_cast<uint8 const*>(plain.data()), plain.size());
-    MANGOS_ASSERT(compressed);
-
-    uint32 uncompressedLen = uint32(plain.size());
-    std::string out(reinterpret_cast<char const*>(&uncompressedLen), sizeof(uncompressedLen));
-    out.append(reinterpret_cast<char const*>(compressed->data()), compressed->size());
-    return out;
-}
-
 // ---- fake LoginRESTService (SRP6 portal), same shape as BotRestClientTests.cpp's ----
 
 bool ReadLineSsl(SSL* ssl, std::string& outLine)
@@ -245,21 +231,6 @@ void SendHttpResponse(SSL* ssl, int statusCode, std::string const& body)
     SSL_write(ssl, out.data(), int(out.size()));
 }
 
-bool ParseFormInputs(std::string const& body, std::unordered_map<std::string, std::string>& out)
-{
-    try
-    {
-        json request = json::parse(body);
-        for (auto const& input : request.at("inputs"))
-            out[input.at("input_id").get<std::string>()] = input.at("value").get<std::string>();
-        return true;
-    }
-    catch (json::exception const&)
-    {
-        return false;
-    }
-}
-
 constexpr char const* TEST_ACCOUNT = "bot1@bots";
 constexpr char const* TEST_PASSWORD = "correct-password";
 constexpr char const* TEST_LOGIN_TICKET = "test-login-ticket";
@@ -310,7 +281,9 @@ void RunFakeLoginRestServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX
         else if (request.method == "POST" && request.path == "/bnetserver/login/")
         {
             std::unordered_map<std::string, std::string> inputs;
-            ParseFormInputs(request.content, inputs);
+            if (nonstd::optional<std::vector<std::pair<std::string, std::string>>> parsed = BnetLoginForms::Parse(request.content))
+                for (auto const& [id, value] : *parsed)
+                    inputs[id] = value;
             std::vector<uint8> A = HexDecode(inputs["public_A"]);
             std::vector<uint8> clientM1 = HexDecode(inputs["client_evidence_M1"]);
 
@@ -510,11 +483,12 @@ void RunFakeBnetRpcServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* 
                     { "flags", 0 }
                 };
                 json updates = json::array({ { { "update", realm }, { "deleting", false } } });
-                std::string blob = DeflateJson("JSONRealmListUpdates", { { "updates", updates } });
+                nonstd::optional<std::string> blob = BnetRealmListJson::EncodeCompressed("JSONRealmListUpdates", { { "updates", updates } });
+                MANGOS_ASSERT(blob);
 
                 auto* attr = response.add_attribute();
                 attr->set_name("Param_RealmList");
-                attr->mutable_value()->set_blob_value(blob);
+                attr->mutable_value()->set_blob_value(*blob);
             }
             else if (HasCommand(request, "Command_RealmJoinRequest_v1_c1"))
             {
@@ -523,7 +497,8 @@ void RunFakeBnetRpcServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* 
                         { { "family", 1 }, { "addresses", json::array({ { { "ip", TEST_WORLD_IP }, { "port", int32_t(TEST_WORLD_PORT) } } }) } }
                     }) }
                 };
-                std::string addressesBlob = DeflateJson("JSONRealmListServerIPAddresses", addresses);
+                nonstd::optional<std::string> addressesBlob = BnetRealmListJson::EncodeCompressed("JSONRealmListServerIPAddresses", addresses);
+                MANGOS_ASSERT(addressesBlob);
 
                 auto* ticketAttr = response.add_attribute();
                 ticketAttr->set_name("Param_RealmJoinTicket");
@@ -531,7 +506,7 @@ void RunFakeBnetRpcServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* 
 
                 auto* addressesAttr = response.add_attribute();
                 addressesAttr->set_name("Param_ServerAddresses");
-                addressesAttr->mutable_value()->set_blob_value(addressesBlob);
+                addressesAttr->mutable_value()->set_blob_value(*addressesBlob);
 
                 std::string serverSecret(32, 'S');
                 auto* secretAttr = response.add_attribute();

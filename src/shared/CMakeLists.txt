@@ -54,6 +54,10 @@ set (shared_SRCS
     Crypto/Authentication/WorldHandshakeCrypto.cpp
     Http/HttpMessage.h
     Http/HttpMessage.cpp
+    Bnet/BnetLoginForms.h
+    Bnet/BnetLoginForms.cpp
+    Bnet/BnetRealmListJson.h
+    Bnet/BnetRealmListJson.cpp
     Crypto/Encoding/Base32.h
     Crypto/Encoding/Base32.cpp
     Crypto/Encryption/RC4.h

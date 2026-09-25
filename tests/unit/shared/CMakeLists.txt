@@ -4,6 +4,8 @@ add_executable(tests-shared
   ByteBufferTests.cpp
   WorldHandshakeCryptoTests.cpp
   HttpMessageTests.cpp
+  BnetLoginFormsTests.cpp
+  BnetRealmListJsonTests.cpp
   TestMain.cpp
 )
 

@@ -1,4 +1,5 @@
 #include "BotRestClient.h"
+#include "Bnet/BnetLoginForms.h"
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
@@ -221,21 +222,6 @@ void SendHttpResponse(SSL* ssl, int statusCode, std::string const& body)
     SSL_write(ssl, out.data(), int(out.size()));
 }
 
-bool ParseFormInputs(std::string const& body, std::unordered_map<std::string, std::string>& out)
-{
-    try
-    {
-        json request = json::parse(body);
-        for (auto const& input : request.at("inputs"))
-            out[input.at("input_id").get<std::string>()] = input.at("value").get<std::string>();
-        return true;
-    }
-    catch (json::exception const&)
-    {
-        return false;
-    }
-}
-
 // Minimal stand-in for vibemangos's LoginRESTService (src/bnetserver/REST/LoginRESTService.cpp):
 // enough of the SRP6 login/srp/ -> login/ exchange to drive BotRestClient end to end, run on a
 // raw blocking socket like the reference implementation itself does.
@@ -281,7 +267,9 @@ void RunFakeLoginRestServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX
         else if (request.method == "POST" && request.path == "/bnetserver/login/")
         {
             std::unordered_map<std::string, std::string> inputs;
-            ParseFormInputs(request.content, inputs);
+            if (nonstd::optional<std::vector<std::pair<std::string, std::string>>> parsed = BnetLoginForms::Parse(request.content))
+                for (auto const& [id, value] : *parsed)
+                    inputs[id] = value;
             std::vector<uint8> A = HexDecode(inputs["public_A"]);
             std::vector<uint8> clientM1 = HexDecode(inputs["client_evidence_M1"]);
 

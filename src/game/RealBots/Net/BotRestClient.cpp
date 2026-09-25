@@ -1,5 +1,6 @@
 #include "BotRestClient.h"
 #include "BotConnector.h"
+#include "Bnet/BnetLoginForms.h"
 #include "Errors.h"
 #include "Http/HttpMessage.h"
 #include "Log.h"
@@ -27,16 +28,6 @@ std::string HexEncode(std::vector<uint8> const& bytes)
     std::string hex;
     hexEncodeByteArray(const_cast<uint8*>(bytes.data()), uint32(bytes.size()), hex);
     return hex;
-}
-
-// Matches LoginRESTService's ParseFormInputs: {"inputs":[{"input_id":"...","value":"..."}]}.
-std::string BuildFormInputsJson(std::vector<std::pair<std::string, std::string>> const& inputs)
-{
-    json body;
-    body["inputs"] = json::array();
-    for (auto const& [id, value] : inputs)
-        body["inputs"].push_back({ { "input_id", id }, { "value", value } });
-    return body.dump();
 }
 
 // Real Battle.net clients uppercase (Latin-only) both the account name and password before any
@@ -96,7 +87,7 @@ void BotRestClient::OnConnected(bool success)
         return;
     }
 
-    std::string body = BuildFormInputsJson({ { "account_name", m_accountName } });
+    std::string body = BnetLoginForms::Build({ { "account_name", m_accountName } });
     std::shared_ptr<BotRestClient> self = shared_from_this();
     PostFormInputs("/bnetserver/login/srp/", body, [self](bool ok, HttpResponse response)
     {
@@ -147,7 +138,7 @@ void BotRestClient::OnSrpChallengeResponse(bool ok, HttpResponse response)
         return;
     }
 
-    std::string body = BuildFormInputsJson({
+    std::string body = BnetLoginForms::Build({
         { "public_A", HexEncode(m_srp.GetClientPublicEphemeral()) },
         { "client_evidence_M1", HexEncode(clientEvidenceM1) },
     });
