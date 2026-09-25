@@ -61,6 +61,7 @@ bool RealBotTarget::Load(std::string const& name, RealBotTarget& out, std::strin
     target.ServerCloseTimeoutMs = uint32_t(sConfig.GetIntDefault((prefix + "ServerCloseTimeoutMs").c_str(), 30000));
     target.IdleSessionMs = uint32_t(sConfig.GetIntDefault((prefix + "IdleSessionMs").c_str(), 120000));
     target.LoadBots = uint32_t(sConfig.GetIntDefault((prefix + "LoadBots").c_str(), 0));
+    target.PlayerLimit = uint32_t(sConfig.GetIntDefault((prefix + "PlayerLimit").c_str(), 0));
 
     // Config lines are read with a fixed-size buffer (Config.cpp), so a pool of 50-100 accounts on
     // one "Accounts" line overflows it silently. AccountsN (N = 2, 3, ...) continues the pool across

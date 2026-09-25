@@ -343,16 +343,8 @@ void World::AddSession_(WorldSession* s)
         return;
     }
 
-    // Checked for 1.12.2
-    WorldPacket packet(SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4);
-    packet << uint8(AUTH_OK);
-    packet << uint32(0);                                    // BillingTimeRemaining
-                                                            // BillingPlanFlags
-    packet << uint8(s->HasTrialRestrictions() ? (BILLING_FLAG_TRIAL | BILLING_FLAG_RESTRICTED) : BILLING_FLAG_NONE);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    packet << uint32(0);                                    // BillingTimeRested
-#endif
-    s->SendPacket(&packet);
+    // The real AuthResponse already went out during the handshake; the vanilla-format
+    // SMSG_AUTH_RESPONSE this used to send here isn't parseable by this client.
 
     UpdateMaxSessionCounters();
 
@@ -388,20 +380,7 @@ void World::AddQueuedSession(WorldSession* sess)
     sess->SetInQueue(true);
     m_QueuedSessions.push_back(sess);
 
-    // [-ZERO] Possible wrong
-    // The 1st SMSG_AUTH_RESPONSE needs to contain other info too.
-    WorldPacket packet(SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4 + 4);
-    packet << uint8(AUTH_WAIT_QUEUE);
-    packet << uint32(0);                                    // BillingTimeRemaining
-                                                            // BillingPlanFlags
-    packet << uint8(sess->HasTrialRestrictions() ? (BILLING_FLAG_TRIAL | BILLING_FLAG_RESTRICTED) : BILLING_FLAG_NONE);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    packet << uint32(0);                                    // BillingTimeRested
-#endif
-    packet << uint32(GetQueuedSessionPos(sess));            // position in queue
-    sess->SendPacket(&packet);
-
-    //sess->SendAuthWaitQue (GetQueuePos (sess));
+    sess->SendAuthWaitQue(GetQueuedSessionPos(sess));
 }
 
 bool World::RemoveQueuedSession(WorldSession* sess)

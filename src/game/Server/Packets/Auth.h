@@ -302,4 +302,44 @@ struct AuthResponse
     }
 };
 
+// Replaces the queue-position half of vanilla's SMSG_AUTH_RESPONSE (the initial AUTH_OK/
+// AUTH_WAIT_QUEUE send moved into AuthResponse's WaitInfo, unconditionally absent since that packet
+// goes out before queue status is known -- see World::AddSession_). Sent for every position update
+// while queued.
+struct WaitQueueUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_WAIT_QUEUE_UPDATE;
+
+    uint32 WaitCount = 0;
+    uint32 WaitTime = 0;  // minutes; 0 shows "unknown time" clientside
+    bool HasFCM = false;  // forced character migration; not implemented here
+
+    void Write(ByteBuffer& data) const
+    {
+        data << WaitCount;
+        data << WaitTime;
+        data.WriteBit(HasFCM);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) * 2 + 1)
+            return false;
+        data >> WaitCount >> WaitTime;
+        HasFCM = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// Sent when the queue clears (empty body).
+struct WaitQueueFinish
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_WAIT_QUEUE_FINISH;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
 #endif

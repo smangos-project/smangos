@@ -39,6 +39,8 @@ struct RealBotTarget
     uint32_t ServerCloseTimeoutMs = 30000;
     uint32_t IdleSessionMs = 120000;
     uint32_t LoadBots = 0;
+    // The server's own PlayerLimit, when forced low for the session-queue scenario; 0 skips it.
+    uint32_t PlayerLimit = 0;
 
     bool HasTag(std::string const& tag) const;
 

@@ -158,6 +158,31 @@ TEST_CASE("AuthResponse round-trips its parsed subset", "[packets]")
     CHECK_FALSE(in.WaitInfoPresent);
 }
 
+TEST_CASE("WaitQueueUpdate round-trips", "[packets]")
+{
+    WaitQueueUpdate out;
+    out.WaitCount = 3;
+    out.WaitTime = 0;
+    out.HasFCM = false;
+
+    RoundTrip(out, [](WaitQueueUpdate const& a, WaitQueueUpdate const& b)
+    {
+        CHECK(a.WaitCount == b.WaitCount);
+        CHECK(a.WaitTime == b.WaitTime);
+        CHECK(a.HasFCM == b.HasFCM);
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("WaitQueueFinish is an empty body", "[packets]")
+{
+    ByteBuffer data;
+    WaitQueueFinish{}.Write(data);
+    CHECK(data.empty());
+    WaitQueueFinish in;
+    CHECK(in.Read(data));
+}
+
 TEST_CASE("ClassicEnumCharactersResult round-trips its parsed subset", "[packets]")
 {
     ClassicEnumCharactersResult out;

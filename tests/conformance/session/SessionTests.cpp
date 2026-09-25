@@ -4,9 +4,12 @@
 
 #include "ConformanceRun.h"
 #include "RealBotTarget.h"
+#include "Packets/Auth.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
+#include <memory>
+#include <vector>
 
 namespace
 {
@@ -92,5 +95,36 @@ TEST_CASE("session: an idle bot with only default keepalives is not kicked", "[p
         bool const leftWorld = co_await TestWaitUntil([&bot]() { return bot.GetStage() != BotStage::InWorld; }, idleMs);
         CHECK_FALSE(leftWorld);
         CHECK(bot.GetStage() == BotStage::InWorld);
+    });
+}
+
+TEST_CASE("session: a queued session is told its wait-queue position, then that the queue cleared", "[protocol][slow]")
+{
+    // Needs PlayerLimit forced low on the target; skips otherwise. Doesn't drive the queued bot to
+    // InWorld (queued sessions drop CLASSIC_CMSG_ENUM_CHARACTERS until dequeued, and the bot has no
+    // retry for that) -- just checks WaitQueueUpdate then WaitQueueFinish arrive.
+    RunTest([]() -> TestRoutine
+    {
+        uint32_t const limit = ConformanceRun::TargetConfig().PlayerLimit;
+        if (limit == 0)
+            SKIP("target's PlayerLimit isn't configured for this scenario (RealBots.Target.<name>.PlayerLimit)");
+
+        std::vector<std::unique_ptr<TestBot>> bots;
+        for (uint32_t i = 0; i < limit; ++i)
+        {
+            bots.push_back(std::make_unique<TestBot>());
+            REQUIRE(co_await bots.back()->Stage(BotStage::InWorld, 30000));
+        }
+
+        TestBot queued;
+        auto update = co_await queued.Packet<WaitQueueUpdate>(15000);
+        REQUIRE(update);
+        CHECK(update->WaitCount == 1);
+
+        bots.front()->Disconnect(true);
+        REQUIRE(co_await bots.front()->Stage(BotStage::Disconnected, 50000));
+
+        auto finish = co_await queued.Packet<WaitQueueFinish>(15000);
+        REQUIRE(finish);
     });
 }

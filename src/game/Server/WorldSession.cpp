@@ -1154,17 +1154,12 @@ void WorldSession::Handle_ServerSide(WorldPacket& recvPacket)
 void WorldSession::SendAuthWaitQue(uint32 position)
 {
     if (position == 0)
-    {
-        WorldPacket packet(SMSG_AUTH_RESPONSE, 1);
-        packet << uint8(AUTH_OK);
-        SendPacket(&packet);
-    }
+        SendClassic(WaitQueueFinish{});
     else
     {
-        WorldPacket packet(SMSG_AUTH_RESPONSE, 5);
-        packet << uint8(AUTH_WAIT_QUEUE);
-        packet << uint32(position);
-        SendPacket(&packet);
+        WaitQueueUpdate packet;
+        packet.WaitCount = position;
+        SendClassic(packet);
     }
 }
 
