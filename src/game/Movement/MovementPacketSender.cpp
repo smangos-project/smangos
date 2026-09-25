@@ -337,7 +337,7 @@ void MovementPacketSender::AddMovementFlagChangeToController(Unit* unit, Movemen
 
 void MovementPacketSender::SendMovementFlagChangeToController(Unit* unit, Player* mover, PlayerMovementPendingChange& pendingChange)
 {
-    uint16 opcode;
+    uint32 opcode;
     switch (pendingChange.movementChangeType)
     {
         case ROOT: opcode = pendingChange.apply ? SMSG_FORCE_MOVE_ROOT : SMSG_FORCE_MOVE_UNROOT; break;
@@ -374,7 +374,7 @@ void MovementPacketSender::SendMovementFlagChangeToObservers(Unit* unit, Movemen
         return;
     }
 
-    uint16 opcode;
+    uint32 opcode;
     switch (mFlag)
     {
         case MOVEFLAG_ROOT:                 opcode = apply ? MSG_MOVE_ROOT : MSG_MOVE_UNROOT; break;
@@ -398,7 +398,7 @@ void MovementPacketSender::SendMovementFlagChangeToObservers(Unit* unit, Movemen
 
 void MovementPacketSender::SendMovementFlagChangeToAll(Unit* unit, MovementFlags mFlag, bool apply)
 {
-    uint16 opcode;
+    uint32 opcode;
     switch (mFlag)
     {
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4

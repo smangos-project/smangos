@@ -340,7 +340,7 @@ class WorldSession
         void QueueBinaryPacket(std::unique_ptr<WorldPacket> const& binaryPacket);
         bool CanProcessPackets() const; // Returns true iif we can process packets (ie logged in Player, not a bot, etc ...
         void ProcessPackets(PacketFilter& updater);
-        bool AllowPacket(uint16 opcode);
+        bool AllowPacket(uint32 opcode);
         void ClearIncomingPacketsByType(PacketProcessing type);
         inline bool HasRecentPacket(PacketProcessing type) const { return m_receivedPacketType[type]; }
 

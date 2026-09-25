@@ -513,7 +513,7 @@ void Unit::SendHeartBeat(bool includingSelf)
     SendMovementPacket(MSG_MOVE_HEARTBEAT, includingSelf);
 }
 
-void Unit::SendMovementPacket(uint16 opcode, bool includingSelf)
+void Unit::SendMovementPacket(uint32 opcode, bool includingSelf)
 {
     m_movementInfo.SetAsServerSide();
     WorldPacket data(opcode);

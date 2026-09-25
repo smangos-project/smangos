@@ -153,7 +153,7 @@ void WorldSocket::DoRecvIncomingData()
 
 WorldSocket::HandlerResult WorldSocket::_HandleCompleteReceivedPacket(std::unique_ptr<WorldPacket> packet)
 {
-    uint16 const opcode = packet->GetOpcode();
+    uint32 const opcode = packet->GetOpcode();
 
     if (IsClosing())
         return HandlerResult::Fail;
@@ -596,7 +596,7 @@ void WorldSocket::HandleResultOfAsyncWrite(IO::NetworkError const& error, std::s
 
         ServerPktHeader header{};
 
-        header.cmd = packet.GetOpcode();
+        header.cmd = uint16(packet.GetOpcode());
         EndianConvert(header.cmd);
 
         header.size = static_cast<uint16>(packet.size() + 2);

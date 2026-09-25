@@ -948,14 +948,14 @@ Handlers const handlerList = BuildOpcodeList();
 
 OpcodeHandler emptyHandler;
 
-OpcodeHandler const& LookupOpcodeHandler(uint16 id)
+OpcodeHandler const& LookupOpcodeHandler(uint32 id)
 {
     if (id >= NUM_MSG_TYPES)
         return emptyHandler;
     return handlerList.handlers[id];
 }
 
-char const* LookupOpcodeName(uint16 id)
+char const* LookupOpcodeName(uint32 id)
 {
     return LookupOpcodeHandler(id).name;
 }

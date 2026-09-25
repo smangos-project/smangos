@@ -83,14 +83,14 @@ class MovementAnticheat
         uint32 Finalize(Player* pPlayer, std::stringstream& reason);
 
         // Public methods called from the movement handler upon received a packet.
-        uint32 HandlePositionTests(Player* pPlayer, MovementInfo& movementInfo, uint16 opcode);
-        uint32 HandleFlagTests(Player* pPlayer, MovementInfo& movementInfo, uint16 opcode);
+        uint32 HandlePositionTests(Player* pPlayer, MovementInfo& movementInfo, uint32 opcode);
+        uint32 HandleFlagTests(Player* pPlayer, MovementInfo& movementInfo, uint32 opcode);
         bool HandleSplineDone(Player* pPlayer, MovementInfo const& movementInfo, uint32 splineId);
 
         // Will save a copy of the ServerPacket
         void LogMovementPacket(ServerPacket const& packet);
         void LogMovementPacket(bool isClientPacket, WorldPacket const& packet);
-        static bool IsLoggedOpcode(uint16 opcode);
+        static bool IsLoggedOpcode(uint32 opcode);
 
         bool IsInKnockBack() const { return m_knockBack; }
 
@@ -104,20 +104,20 @@ class MovementAnticheat
     private:
         bool HasEnoughBottingData();
         void ResetBottingStats();
-        void CheckBotting(uint16 opcode, MovementInfo const& movementInfo);
+        void CheckBotting(uint32 opcode, MovementInfo const& movementInfo);
         bool CheckTeleport(MovementInfo const& movementInfo) const;
         bool IsTeleportAllowed3D(MovementInfo const& movementInfo) const;
         bool IsInTransportArea() const;
         bool CheckForbiddenArea(MovementInfo const& movementInfo) const;
-        bool CheckMultiJump(uint16 opcode);
-        bool CheckWallClimb(MovementInfo const& movementInfo, uint16 opcode) const;
-        bool CheckNoFallTime(MovementInfo const& movementInfo, uint16 opcode);
+        bool CheckMultiJump(uint32 opcode);
+        bool CheckWallClimb(MovementInfo const& movementInfo, uint32 opcode) const;
+        bool CheckNoFallTime(MovementInfo const& movementInfo, uint32 opcode);
         bool CheckFallReset(MovementInfo const& movementInfo) const;
-        bool CheckFallStop(MovementInfo const& movementInfo, uint16 opcode);
-        bool CheckMoveStart(MovementInfo const& movementInfo, uint16 opcode);
+        bool CheckFallStop(MovementInfo const& movementInfo, uint32 opcode);
+        bool CheckMoveStart(MovementInfo const& movementInfo, uint32 opcode);
         bool CheckFakeTransport(MovementInfo const& movementInfo);
         bool CheckTeleportToTransport(MovementInfo const& movementInfo) const;
-        uint32 CheckSpeedHack(MovementInfo const& movementInfo, uint16 opcode);
+        uint32 CheckSpeedHack(MovementInfo const& movementInfo, uint32 opcode);
         uint32 CheckTimeDesync(MovementInfo const& movementInfo);
 
         void AddMessageToPacketLog(std::string const& message);

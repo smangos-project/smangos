@@ -364,7 +364,7 @@ void WorldSession::QueueBinaryPacket(std::unique_ptr<WorldPacket> const& binaryP
 // Logging helper for unexpected opcodes
 void WorldSession::LogUnexpectedOpcode(ClientPacket const& packet, std::string const& reason)
 {
-    uint16 opcode = packet.GetOpcode();
+    uint32 opcode = packet.GetOpcode();
     char const* opcodeName = LookupOpcodeName(opcode);
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "SESSION: received unexpected opcode %s (0x%.4X) %s", opcodeName, opcode, reason.c_str());
 }
@@ -1278,7 +1278,7 @@ bool WorldSession::HasUsedClickToMove() const
     return false;
 }
 
-bool WorldSession::AllowPacket(uint16 opcode)
+bool WorldSession::AllowPacket(uint32 opcode)
 {
     // Do not count packets that are often spamed by the client when loading a zone for example.
     switch (opcode)

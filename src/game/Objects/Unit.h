@@ -1295,7 +1295,7 @@ class Unit : public SpellCaster
         MotionMaster m_motionMaster;
     public:
         void SendHeartBeat(bool includingSelf = true);
-        void SendMovementPacket(uint16 opcode, bool includingSelf = true);
+        void SendMovementPacket(uint32 opcode, bool includingSelf = true);
         virtual void SetFly(bool enable);
 
         void SetRooted(bool apply);

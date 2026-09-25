@@ -303,7 +303,7 @@ void MovementAnticheat::AddMessageToPacketLog(std::string const& message)
     LogMovementPacket(notificationPacket);
 }
 
-bool MovementAnticheat::IsLoggedOpcode(uint16 opcode)
+bool MovementAnticheat::IsLoggedOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -623,7 +623,7 @@ void MovementAnticheat::OnDeath()
     m_deathTime = WorldTimer::getMSTime();
 }
 
-uint32 MovementAnticheat::HandlePositionTests(Player* pPlayer, MovementInfo& movementInfo, uint16 opcode)
+uint32 MovementAnticheat::HandlePositionTests(Player* pPlayer, MovementInfo& movementInfo, uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_ENABLED) ||
         (sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_PLAYERS_ONLY) && (m_session->GetSecurity() != SEC_PLAYER)) ||
@@ -747,7 +747,7 @@ uint32 MovementAnticheat::HandlePositionTests(Player* pPlayer, MovementInfo& mov
 #undef HAS_CHEAT
 }
 
-uint32 MovementAnticheat::HandleFlagTests(Player* pPlayer, MovementInfo& movementInfo, uint16 opcode)
+uint32 MovementAnticheat::HandleFlagTests(Player* pPlayer, MovementInfo& movementInfo, uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_ENABLED) ||
         (sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_PLAYERS_ONLY) && (m_session->GetSecurity() != SEC_PLAYER)))
@@ -901,7 +901,7 @@ bool MovementAnticheat::HandleSplineDone(Player* pPlayer, MovementInfo const& mo
 #define JUMP_FLAG_THRESHOLD 3
 #define MIN_FALLING_TIME 1000u
 
-bool MovementAnticheat::CheckNoFallTime(MovementInfo const& movementInfo, uint16 opcode)
+bool MovementAnticheat::CheckNoFallTime(MovementInfo const& movementInfo, uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_NO_FALL_TIME_ENABLED))
         return false;
@@ -964,7 +964,7 @@ bool MovementAnticheat::CheckFallReset(MovementInfo const& movementInfo) const
     return movementInfo.fallTime != 0 || movementInfo.jump.zspeed != 0.0f;
 }
 
-bool MovementAnticheat::CheckFallStop(MovementInfo const& movementInfo, uint16 opcode)
+bool MovementAnticheat::CheckFallStop(MovementInfo const& movementInfo, uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_BAD_FALL_STOP_ENABLED))
         return false;
@@ -991,7 +991,7 @@ bool MovementAnticheat::CheckFallStop(MovementInfo const& movementInfo, uint16 o
     return false;
 }
 
-bool MovementAnticheat::CheckMoveStart(MovementInfo const& movementInfo, uint16 opcode)
+bool MovementAnticheat::CheckMoveStart(MovementInfo const& movementInfo, uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_BAD_MOVE_START_ENABLED))
         return false;
@@ -1141,7 +1141,7 @@ uint32 MovementAnticheat::CheckTimeDesync(MovementInfo const& movementInfo)
 #undef APPEND_CHEAT
 }
 
-bool MovementAnticheat::CheckMultiJump(uint16 opcode)
+bool MovementAnticheat::CheckMultiJump(uint32 opcode)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_MULTI_JUMP_ENABLED))
         return false;
@@ -1169,7 +1169,7 @@ bool MovementAnticheat::CheckMultiJump(uint16 opcode)
 #define NO_WALL_CLIMB_CHECK_MOVE_FLAGS (MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING | MOVEFLAG_FLYING | MOVEFLAG_PITCH_UP | MOVEFLAG_PITCH_DOWN | MOVEFLAG_ONTRANSPORT | MOVEFLAG_SPLINE_ELEVATION)
 #define NO_WALL_CLIMB_CHECK_UNIT_FLAGS (UNIT_FLAG_SERVER_CONTROLLED | UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_CONFUSED | UNIT_FLAG_FLEEING | UNIT_FLAG_POSSESSED)
 
-bool MovementAnticheat::CheckWallClimb(MovementInfo const& movementInfo, uint16 opcode) const
+bool MovementAnticheat::CheckWallClimb(MovementInfo const& movementInfo, uint32 opcode) const
 {
     // Not currently handled cases.
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_WALL_CLIMB_ENABLED) ||
@@ -1273,7 +1273,7 @@ bool MovementAnticheat::CheckForbiddenArea(MovementInfo const& movementInfo) con
     return false;
 }
 
-uint32 MovementAnticheat::CheckSpeedHack(MovementInfo const& movementInfo, uint16 opcode)
+uint32 MovementAnticheat::CheckSpeedHack(MovementInfo const& movementInfo, uint32 opcode)
 {
     if ((opcode == CMSG_MOVE_KNOCK_BACK_ACK) ||
         (opcode == CMSG_MOVE_SPLINE_DONE) ||
@@ -1401,7 +1401,7 @@ void MovementAnticheat::ResetBottingStats()
     m_cheatOccuranceTotal[CHEAT_TYPE_BOTTING] = 0;
 }
 
-void MovementAnticheat::CheckBotting(uint16 opcode, MovementInfo const& movementInfo)
+void MovementAnticheat::CheckBotting(uint32 opcode, MovementInfo const& movementInfo)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_AC_MOVEMENT_CHEAT_BOTTING_ENABLED))
         return;

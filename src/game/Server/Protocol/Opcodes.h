@@ -36,7 +36,7 @@
 #include "Opcodes_active.h"
 #include "nonstd/expected.hpp"
 
-inline bool IsAnyMoveAckOpcode(uint16 opcode)
+inline bool IsAnyMoveAckOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -63,7 +63,7 @@ inline bool IsAnyMoveAckOpcode(uint16 opcode)
     return false;
 }
 
-inline bool IsFlagAckOpcode(uint16 opcode)
+inline bool IsFlagAckOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -78,7 +78,7 @@ inline bool IsFlagAckOpcode(uint16 opcode)
     return false;
 }
 
-inline bool IsSpeedAckOpcode(uint16 opcode)
+inline bool IsSpeedAckOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -96,7 +96,7 @@ inline bool IsSpeedAckOpcode(uint16 opcode)
     return false;
 }
 
-inline bool IsStopOpcode(uint16 opcode)
+inline bool IsStopOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -111,7 +111,7 @@ inline bool IsStopOpcode(uint16 opcode)
     return false;
 }
 
-inline bool IsFallEndOpcode(uint16 opcode)
+inline bool IsFallEndOpcode(uint32 opcode)
 {
     switch (opcode)
     {
@@ -159,12 +159,12 @@ struct OpcodeHandler
 };
 
 // returns true if it's completely out of range
-inline bool IsDefinitelyBogusOpcode(uint16 opcode) { return opcode >= NUM_MSG_TYPES; }
+inline bool IsDefinitelyBogusOpcode(uint32 opcode) { return opcode >= NUM_MSG_TYPES; }
 
 // Will work for any opcode, might return `<unknown opcode>` and without impl
-OpcodeHandler const& LookupOpcodeHandler(uint16 id);
+OpcodeHandler const& LookupOpcodeHandler(uint32 id);
 // Will work for any opcode, might return `<unknown opcode>`
-char const* LookupOpcodeName(uint16 id);
+char const* LookupOpcodeName(uint32 id);
 
 #endif
 // @}

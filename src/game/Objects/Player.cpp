@@ -17673,7 +17673,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 
 void Player::SendSpellMod(SpellModifier const* mod) const
 {
-    uint16 Opcode = (mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER;
+    uint32 Opcode = (mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER;
 
     for (int eff = 0; eff < 64; ++eff)
     {
@@ -20820,7 +20820,7 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
     return true;
 }
 
-void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode)
+void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo, uint32 opcode)
 {
     if (opcode == MSG_MOVE_FALL_LAND || opcode == MSG_MOVE_START_SWIM ||
         minfo.HasMovementFlag(MOVEFLAG_HOVER | MOVEFLAG_SAFE_FALL) ||

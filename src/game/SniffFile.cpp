@@ -68,7 +68,7 @@ void SniffFile::WritePacket(WorldPacket const& packet, bool isClientPacket, time
     {
         uint32 packetSize = packet.size() + sizeof(uint16);
         fwrite(&packetSize, sizeof(uint32), 1, m_file);
-        uint16 opcode = packet.GetOpcode();
+        uint16 opcode = uint16(packet.GetOpcode());
         fwrite(&opcode, sizeof(uint16), 1, m_file);
     }
 

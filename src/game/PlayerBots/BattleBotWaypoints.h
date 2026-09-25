@@ -22,9 +22,9 @@
 
 struct RecordedMovementPacket
 {
-    RecordedMovementPacket(uint16 opcode_, uint32 timeDiff_, uint32 moveFlags_, float x, float y, float z, float o) :
+    RecordedMovementPacket(uint32 opcode_, uint32 timeDiff_, uint32 moveFlags_, float x, float y, float z, float o) :
         opcode(opcode_), timeDiff(timeDiff_), moveFlags(moveFlags_), position(x, y, z, o) {};
-    uint16 opcode = 0;
+    uint32 opcode = 0;
     uint32 timeDiff = 0;
     uint32 moveFlags = 0;
     Position position;

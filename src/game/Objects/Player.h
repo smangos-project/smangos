@@ -1716,7 +1716,7 @@ class Player final: public Unit
         void ProcessDelayedOperations();
 
         bool HasMovementFlag(MovementFlags f) const;        // for script access to m_movementInfo.HasMovementFlag
-        void UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode);
+        void UpdateFallInformationIfNeed(MovementInfo const& minfo, uint32 opcode);
         void SetFallInformation(float fallStartZ)
         {
             m_fallStartZ = fallStartZ;

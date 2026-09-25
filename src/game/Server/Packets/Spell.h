@@ -306,7 +306,7 @@ namespace WorldPackets { namespace Spell
         uint8 modOp = 0;       // SpellModOp enum value
         int32 value = 0;       // flat or percent modifier value
 
-        explicit SetSpellModifier(uint16 opcode) : ServerPacket(opcode) {}
+        explicit SetSpellModifier(uint32 opcode) : ServerPacket(opcode) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
