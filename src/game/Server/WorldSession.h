@@ -252,20 +252,18 @@ class WorldSession
         // The Instance connection SMSG_CONNECT_TO redirects a session to (decision 5); null until
         // CMSG_AUTH_CONTINUED_SESSION attaches one.
         std::shared_ptr<WorldSocket> GetInstanceSocket() { return m_instanceSocket; }
-        void SetInstanceSocket(std::shared_ptr<WorldSocket> socket)
-        {
-            m_instanceSocket = std::move(socket);
-            m_awaitingInstanceConnect = false; // attached; no more SMSG_CONNECT_TO retries needed
-        }
+        void SetInstanceSocket(std::shared_ptr<WorldSocket> socket);
 
         // The 40-byte world session key CMSG_AUTH_SESSION established on the Realm connection;
         // CMSG_AUTH_CONTINUED_SESSION's digest is checked against it rather than a fresh exchange.
         void SetWorldSessionKeyBytes(std::array<uint8, 40> const& key) { m_worldSessionKey = key; }
         std::array<uint8, 40> const& GetWorldSessionKeyBytes() const { return m_worldSessionKey; }
 
-        // The most recently issued SMSG_CONNECT_TO key, checked against CMSG_AUTH_CONTINUED_SESSION.
-        void SetPendingInstanceConnectKey(uint64 key) { m_pendingInstanceConnectKey = key; }
-        uint64 GetPendingInstanceConnectKey() const { return m_pendingInstanceConnectKey; }
+        // Resolves a CMSG_AUTH_CONTINUED_SESSION's key to the session SendConnectToInstance issued
+        // it for. A synchronous, dedicated lookup rather than sWorld.FindSession(accountId): a
+        // freshly authenticated session isn't visible there until the next world tick drains
+        // World::AddSession's queue, which a same-host bot's round trip can easily beat.
+        static WorldSession* FindPendingInstanceConnect(uint64 key);
 
         // Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -385,8 +383,11 @@ class WorldSession
         void SendPacketImpl(WorldPacket const* packet);
 
         // Issues a fresh ConnectToKey, sends SMSG_CONNECT_TO for it (serial = the attempt number,
-        // decision 5's escalation), and remembers the key for CMSG_AUTH_CONTINUED_SESSION to check.
+        // decision 5's escalation), and registers the key for FindPendingInstanceConnect.
         void SendConnectToInstance(uint32 serial);
+        // Drops this session's pending-instance-connect registration, if any: attached, given up
+        // on, or the session itself going away.
+        void ClearPendingInstanceConnect();
 
         static void VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket);
 

@@ -109,6 +109,7 @@ WorldSession::~WorldSession()
         m_instanceSocket->FinalizeSession();
         m_instanceSocket = nullptr;
     }
+    ClearPendingInstanceConnect(); // don't leave a dangling entry for a redirect never followed
 
     // empty incoming packet queue
     for (auto& i : m_recvQueue)
@@ -178,6 +179,11 @@ namespace
 {
 std::mutex unportedSendLock;
 std::unordered_map<uint32, uint64> unportedSendCounts;
+
+// Pending SMSG_CONNECT_TO keys, by the packed key CMSG_AUTH_CONTINUED_SESSION echoes back. A
+// dedicated registry rather than sWorld.FindSession(accountId): see FindPendingInstanceConnect.
+std::mutex pendingInstanceConnectsLock;
+std::unordered_map<uint64, WorldSession*> pendingInstanceConnects;
 }
 
 std::vector<std::pair<uint32, uint64>> WorldSession::GetUnportedSendCounts()
@@ -315,11 +321,41 @@ void WorldSession::SendConnectToInstance(uint32 serial)
             std::copy(signature.begin(), signature.end(), connectTo.Signature.begin());
     }
 
+    ClearPendingInstanceConnect(); // drop the previous attempt's registration, if any
+    {
+        std::lock_guard<std::mutex> lock(pendingInstanceConnectsLock);
+        pendingInstanceConnects[packedKey] = this;
+    }
     m_pendingInstanceConnectKey = packedKey;
     m_pendingInstanceConnectSerial = serial;
     m_awaitingInstanceConnect = true;
 
     SendClassic(connectTo);
+}
+
+void WorldSession::SetInstanceSocket(std::shared_ptr<WorldSocket> socket)
+{
+    m_instanceSocket = std::move(socket);
+    m_awaitingInstanceConnect = false; // attached; no more SMSG_CONNECT_TO retries needed
+    ClearPendingInstanceConnect();
+}
+
+WorldSession* WorldSession::FindPendingInstanceConnect(uint64 key)
+{
+    std::lock_guard<std::mutex> lock(pendingInstanceConnectsLock);
+    auto itr = pendingInstanceConnects.find(key);
+    return itr != pendingInstanceConnects.end() ? itr->second : nullptr;
+}
+
+void WorldSession::ClearPendingInstanceConnect()
+{
+    if (!m_pendingInstanceConnectKey)
+        return;
+    {
+        std::lock_guard<std::mutex> lock(pendingInstanceConnectsLock);
+        pendingInstanceConnects.erase(m_pendingInstanceConnectKey);
+    }
+    m_pendingInstanceConnectKey = 0;
 }
 
 void WorldSession::VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket)

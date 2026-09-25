@@ -307,6 +307,7 @@ void WorldSession::HandleClassicConnectToFailedOpcode(ClassicConnectToFailed con
     if (nextSerial == 0)
     {
         m_awaitingInstanceConnect = false;
+        ClearPendingInstanceConnect();
         ClassicCharacterLoginFailed failed;
         failed.Reason = 1; // NoWorld
         SendClassic(failed);

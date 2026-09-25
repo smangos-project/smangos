@@ -527,7 +527,10 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
         std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(now - m_lastPingTime);
         m_lastPingTime = now;
 
-        if (seconds.count() < 27)
+        // The modern client's own keepalive cadence is a few seconds, well under the ~30s a
+        // vanilla client pinged at; the flood threshold has to follow it or every real session
+        // trips it within a minute of being in the world.
+        if (seconds.count() < 3)
         {
             ++m_overSpeedPings;
 
@@ -621,8 +624,8 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthContinuedSession(ByteBuffer& d
     if (key.ConnectionType != uint8(ClassicConnectionType::Instance))
         return FailAuthContinuedSession("key is not for the Instance connection");
 
-    WorldSession* session = sWorld.FindSession(key.AccountId);
-    if (!session || session->GetPendingInstanceConnectKey() != packet.Key || session->GetInstanceSocket() != nullptr)
+    WorldSession* session = WorldSession::FindPendingInstanceConnect(packet.Key);
+    if (!session || session->GetAccountId() != key.AccountId || session->GetInstanceSocket() != nullptr)
         return FailAuthContinuedSession("no pending Instance connect for that key");
 
     std::array<uint8, 40> const& sessionKey = session->GetWorldSessionKeyBytes();
