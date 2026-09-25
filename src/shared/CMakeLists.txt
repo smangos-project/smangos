@@ -64,8 +64,8 @@ set (shared_SRCS
     Bnet/BnetRealmList.cpp
     Tls/TlsStream.h
     Tls/TlsStream.cpp
-    ClassicPacketFraming.h
-    ClassicPacketFraming.cpp
+    PacketFraming.h
+    PacketFraming.cpp
     Crypto/Encoding/Base32.h
     Crypto/Encoding/Base32.cpp
     Crypto/Encoding/Base64.h

@@ -1,5 +1,5 @@
-#ifndef SHARED_CLASSICPACKETFRAMING_H
-#define SHARED_CLASSICPACKETFRAMING_H
+#ifndef SHARED_PACKETFRAMING_H
+#define SHARED_PACKETFRAMING_H
 
 #include "Common.h"
 #include <vector>
@@ -9,7 +9,7 @@ struct z_stream_s;
 // Identical shape both directions: [size:u32 LE][tag:12 bytes], prefixing PacketCrypt's
 // (Crypto/Encryption/PacketCrypt.h) ciphertext on every world-socket frame.
 #pragma pack(push, 1)
-struct ClassicPacketHeader
+struct PacketHeader
 {
     uint32 Size;
     uint8 Tag[12];
@@ -20,7 +20,7 @@ struct ClassicPacketHeader
 // Prefixes CLASSIC_SMSG_COMPRESSED_PACKET's deflate payload: adler32 checksums of the plaintext
 // and the compressed bytes, and the plaintext's own size (inflate needs it up front to size the
 // output buffer; a raw deflate stream carries no end marker of its own).
-struct ClassicCompressedPacketHeader
+struct CompressedPacketHeader
 {
     uint32 UncompressedSize;
     uint32 UncompressedAdler;
@@ -35,7 +35,7 @@ struct ClassicCompressedPacketHeader
 // packet in a direction shares one sliding history, so both ends must process every packet
 // through the same stream in order), so one instance of this class owns them, mirroring
 // PacketCrypt's own per-connection state.
-class ClassicPacketFraming
+class PacketFraming
 {
     public:
         // [opcode:u32 LE][body], the plaintext PacketCrypt::EncryptSend/DecryptRecv encrypts (or
@@ -49,13 +49,13 @@ class ClassicPacketFraming
 
         // Computes both adler32 checksums for a CLASSIC_SMSG_COMPRESSED_PACKET header around
         // already-compressed bytes.
-        static ClassicCompressedPacketHeader BuildCompressedHeader(uint8 const* uncompressed, size_t uncompressedSize,
+        static CompressedPacketHeader BuildCompressedHeader(uint8 const* uncompressed, size_t uncompressedSize,
             uint8 const* compressed, size_t compressedSize);
 
-        ClassicPacketFraming();
-        ~ClassicPacketFraming();
-        ClassicPacketFraming(ClassicPacketFraming const&) = delete;
-        ClassicPacketFraming& operator=(ClassicPacketFraming const&) = delete;
+        PacketFraming();
+        ~PacketFraming();
+        PacketFraming(PacketFraming const&) = delete;
+        PacketFraming& operator=(PacketFraming const&) = delete;
 
         // Inflates `compressed` into exactly `uncompressedSize` bytes, continuing this instance's
         // ongoing raw-inflate window (windowBits=-15, no zlib header). False on a zlib error.

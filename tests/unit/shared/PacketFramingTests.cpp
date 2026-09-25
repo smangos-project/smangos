@@ -1,49 +1,49 @@
-#include "ClassicPacketFraming.h"
+#include "PacketFraming.h"
 
 #include <catch_amalgamated.hpp>
 #include <zlib.h>
 
-TEST_CASE("ClassicPacketFraming round-trips a plaintext build/parse", "[classicpacketframing]")
+TEST_CASE("PacketFraming round-trips a plaintext build/parse", "[classicpacketframing]")
 {
     std::vector<uint8> const body = { 1, 2, 3, 4, 5 };
-    std::vector<uint8> const plaintext = ClassicPacketFraming::BuildPlaintext(0x390016, body.data(), body.size());
+    std::vector<uint8> const plaintext = PacketFraming::BuildPlaintext(0x390016, body.data(), body.size());
 
     uint32 opcode = 0;
     uint8 const* bodyStart = nullptr;
     size_t bodySize = 0;
-    REQUIRE(ClassicPacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize));
+    REQUIRE(PacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize));
     CHECK(opcode == 0x390016u);
     CHECK(bodySize == body.size());
     CHECK(std::vector<uint8>(bodyStart, bodyStart + bodySize) == body);
 }
 
-TEST_CASE("ClassicPacketFraming round-trips a plaintext with an empty body", "[classicpacketframing]")
+TEST_CASE("PacketFraming round-trips a plaintext with an empty body", "[classicpacketframing]")
 {
-    std::vector<uint8> const plaintext = ClassicPacketFraming::BuildPlaintext(0x3A0004, nullptr, 0);
+    std::vector<uint8> const plaintext = PacketFraming::BuildPlaintext(0x3A0004, nullptr, 0);
 
     uint32 opcode = 0;
     uint8 const* bodyStart = nullptr;
     size_t bodySize = 0;
-    REQUIRE(ClassicPacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize));
+    REQUIRE(PacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize));
     CHECK(opcode == 0x3A0004u);
     CHECK(bodySize == 0);
 }
 
-TEST_CASE("ClassicPacketFraming::ParsePlaintext rejects a buffer too small for an opcode", "[classicpacketframing]")
+TEST_CASE("PacketFraming::ParsePlaintext rejects a buffer too small for an opcode", "[classicpacketframing]")
 {
     std::vector<uint8> const tooSmall = { 1, 2, 3 };
     uint32 opcode = 0;
     uint8 const* bodyStart = nullptr;
     size_t bodySize = 0;
-    CHECK_FALSE(ClassicPacketFraming::ParsePlaintext(tooSmall, opcode, bodyStart, bodySize));
+    CHECK_FALSE(PacketFraming::ParsePlaintext(tooSmall, opcode, bodyStart, bodySize));
 }
 
-TEST_CASE("ClassicPacketFraming::BuildCompressedHeader computes both adler32 checksums", "[classicpacketframing]")
+TEST_CASE("PacketFraming::BuildCompressedHeader computes both adler32 checksums", "[classicpacketframing]")
 {
     std::vector<uint8> const uncompressed = { 10, 20, 30, 40, 50 };
     std::vector<uint8> const compressed = { 9, 8, 7 };
 
-    ClassicCompressedPacketHeader const header = ClassicPacketFraming::BuildCompressedHeader(
+    CompressedPacketHeader const header = PacketFraming::BuildCompressedHeader(
         uncompressed.data(), uncompressed.size(), compressed.data(), compressed.size());
 
     CHECK(header.UncompressedSize == uncompressed.size());
@@ -52,13 +52,13 @@ TEST_CASE("ClassicPacketFraming::BuildCompressedHeader computes both adler32 che
 }
 
 // The half-against-half proof for the stateful raw-deflate/-inflate windows: one
-// ClassicPacketFraming instance deflating, a separate one inflating, across several packets in a
+// PacketFraming instance deflating, a separate one inflating, across several packets in a
 // row -- proves both the raw (windowBits=-15, no zlib header) framing and that each instance's
 // sliding window stays in lockstep call to call, not just for a single message.
-TEST_CASE("ClassicPacketFraming: a deflate instance and a separate inflate instance stay in lockstep across several packets", "[classicpacketframing]")
+TEST_CASE("PacketFraming: a deflate instance and a separate inflate instance stay in lockstep across several packets", "[classicpacketframing]")
 {
-    ClassicPacketFraming compressor;
-    ClassicPacketFraming decompressor;
+    PacketFraming compressor;
+    PacketFraming decompressor;
 
     std::vector<std::string> const messages = {
         "the quick brown fox jumps over the lazy dog",

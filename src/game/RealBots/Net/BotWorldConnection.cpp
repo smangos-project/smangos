@@ -71,9 +71,9 @@ void BotWorldConnection::SendClientBanner()
 
 void BotWorldConnection::ReadNextHeader()
 {
-    auto header = std::make_shared<ClassicPacketHeader>();
+    auto header = std::make_shared<PacketHeader>();
 
-    m_socket.Read(reinterpret_cast<char*>(header.get()), sizeof(ClassicPacketHeader), [self = shared_from_this(), header](IO::NetworkError const& error, size_t) -> void
+    m_socket.Read(reinterpret_cast<char*>(header.get()), sizeof(PacketHeader), [self = shared_from_this(), header](IO::NetworkError const& error, size_t) -> void
     {
         if (error)
         {
@@ -126,7 +126,7 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
     uint32 opcode;
     uint8 const* bodyStart;
     size_t bodySize;
-    if (!ClassicPacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize))
+    if (!PacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotWorldConnection: packet too small to contain an opcode (size = %zu)", plaintext.size());
         Close();
@@ -135,14 +135,14 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
 
     if (opcode == CLASSIC_SMSG_COMPRESSED_PACKET)
     {
-        if (bodySize < sizeof(ClassicCompressedPacketHeader))
+        if (bodySize < sizeof(CompressedPacketHeader))
         {
             sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotWorldConnection: compressed packet too small for its header");
             Close();
             return;
         }
 
-        ClassicCompressedPacketHeader cmp;
+        CompressedPacketHeader cmp;
         std::memcpy(&cmp, bodyStart, sizeof(cmp));
 
         std::vector<uint8> decompressed;
@@ -156,7 +156,7 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
         uint32 innerOpcode;
         uint8 const* innerBodyStart;
         size_t innerBodySize;
-        if (!ClassicPacketFraming::ParsePlaintext(decompressed, innerOpcode, innerBodyStart, innerBodySize))
+        if (!PacketFraming::ParsePlaintext(decompressed, innerOpcode, innerBodyStart, innerBodySize))
         {
             sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotWorldConnection: decompressed packet too small to contain an opcode");
             Close();
@@ -208,9 +208,9 @@ void BotWorldConnection::SendRaw(uint32 opcode, ByteBuffer const& body, AES_GCM:
     if (IsClosing())
         return;
 
-    std::vector<uint8> plaintext = ClassicPacketFraming::BuildPlaintext(opcode, body.contents(), body.size());
+    std::vector<uint8> plaintext = PacketFraming::BuildPlaintext(opcode, body.contents(), body.size());
 
-    ClassicPacketHeader header{};
+    PacketHeader header{};
     header.Size = uint32(plaintext.size());
 
     std::vector<uint8> framed(sizeof(header) + plaintext.size());

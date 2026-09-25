@@ -25,7 +25,7 @@
 
 #include "IO/Networking/AsyncSocket.h"
 #include "Crypto/Encryption/PacketCrypt.h"
-#include "ClassicPacketFraming.h"
+#include "PacketFraming.h"
 #include "Protocol/ClassicOpcodes.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -35,7 +35,7 @@
 class WorldSocketMgr;
 
 // The world socket's wire format: the V2 banner handshake, then every packet framed as
-// ClassicPacketHeader + PacketCrypt ciphertext (see ClassicPacketFraming), from the very first
+// PacketHeader + PacketCrypt ciphertext (see PacketFraming), from the very first
 // SMSG_AUTH_CHALLENGE on -- there is no unencrypted vanilla-style header phase. PacketCrypt itself
 // is a no-op cipher (framing/counters still run, but the tag is never checked) until CMSG_AUTH_SESSION
 // succeeds and CMSG_ENTER_ENCRYPTED_MODE_ACK arms it.
@@ -68,7 +68,7 @@ private:
     /// Keep track of over-speed pings, to prevent ping flood.
     uint32 m_overSpeedPings;
 
-    /// AES-256-GCM cipher over every packet after the header (see ClassicPacketFraming); a no-op
+    /// AES-256-GCM cipher over every packet after the header (see PacketFraming); a no-op
     /// until CMSG_ENTER_ENCRYPTED_MODE_ACK arms it with the handshake's derived key.
     PacketCrypt m_crypt;
 
@@ -152,7 +152,7 @@ private:
 
     // The outgoing deflate window CLASSIC_SMSG_COMPRESSED_PACKET packets share for this
     // connection's whole lifetime; only its deflate half is used server-side.
-    ClassicPacketFraming m_outboundFraming;
+    PacketFraming m_outboundFraming;
 
     std::shared_ptr<IO::Timer::TimerHandle> m_handshakeTimeout; // nullptr once the handshake completes, or if the feature is disabled
 

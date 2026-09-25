@@ -9,7 +9,7 @@ add_executable(tests-shared
   BnetLoginFormsTests.cpp
   BnetRealmListJsonTests.cpp
   TlsStreamTests.cpp
-  ClassicPacketFramingTests.cpp
+  PacketFramingTests.cpp
   BnetRpcFramingTests.cpp
   TestMain.cpp
 )

@@ -156,9 +156,9 @@ void WorldSocket::SendAuthChallenge()
 
 void WorldSocket::ReadNextHeader()
 {
-    auto header = std::make_shared<ClassicPacketHeader>();
+    auto header = std::make_shared<PacketHeader>();
 
-    m_socket.Read(reinterpret_cast<char*>(header.get()), sizeof(ClassicPacketHeader), [self = shared_from_this(), header](IO::NetworkError const& error, std::size_t) -> void
+    m_socket.Read(reinterpret_cast<char*>(header.get()), sizeof(PacketHeader), [self = shared_from_this(), header](IO::NetworkError const& error, std::size_t) -> void
     {
         if (error)
         {
@@ -213,7 +213,7 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
     uint32 opcode;
     uint8 const* bodyStart;
     size_t bodySize;
-    if (!ClassicPacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize))
+    if (!PacketFraming::ParsePlaintext(plaintext, opcode, bodyStart, bodySize))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] WorldSocket: packet too small to contain an opcode", GetRemoteIpString().c_str());
         CloseSocket();
@@ -704,19 +704,19 @@ std::vector<uint8> WorldSocket::BuildCompressedPlaintext(uint32 opcode, uint8 co
     if (bodySize <= ClassicCompressionThreshold || opcode == CLASSIC_SMSG_COMPRESSED_PACKET)
         return {};
 
-    std::vector<uint8> const inner = ClassicPacketFraming::BuildPlaintext(opcode, body, bodySize);
+    std::vector<uint8> const inner = PacketFraming::BuildPlaintext(opcode, body, bodySize);
     std::vector<uint8> compressed;
     if (!m_outboundFraming.Deflate(inner.data(), inner.size(), compressed))
         return {};
 
-    ClassicCompressedPacketHeader const header = ClassicPacketFraming::BuildCompressedHeader(
+    CompressedPacketHeader const header = PacketFraming::BuildCompressedHeader(
         inner.data(), inner.size(), compressed.data(), compressed.size());
 
     std::vector<uint8> outerBody(sizeof(header) + compressed.size());
     std::memcpy(outerBody.data(), &header, sizeof(header));
     std::memcpy(outerBody.data() + sizeof(header), compressed.data(), compressed.size());
 
-    return ClassicPacketFraming::BuildPlaintext(CLASSIC_SMSG_COMPRESSED_PACKET, outerBody.data(), outerBody.size());
+    return PacketFraming::BuildPlaintext(CLASSIC_SMSG_COMPRESSED_PACKET, outerBody.data(), outerBody.size());
 }
 
 void WorldSocket::SendPacket(WorldPacket packet)
@@ -794,9 +794,9 @@ void WorldSocket::HandleResultOfAsyncWrite(IO::NetworkError const& error, std::s
         uint8 const* body = packet.empty() ? nullptr : packet.contents();
         std::vector<uint8> plaintext = BuildCompressedPlaintext(packet.GetOpcode(), body, packet.size());
         if (plaintext.empty())
-            plaintext = ClassicPacketFraming::BuildPlaintext(packet.GetOpcode(), body, packet.size());
+            plaintext = PacketFraming::BuildPlaintext(packet.GetOpcode(), body, packet.size());
 
-        ClassicPacketHeader header{};
+        PacketHeader header{};
         header.Size = uint32(plaintext.size());
 
         AES_GCM::Tag tag;

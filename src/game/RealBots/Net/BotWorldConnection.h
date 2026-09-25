@@ -3,7 +3,7 @@
 
 #include "BotPacket.h"
 #include "ByteBuffer.h"
-#include "ClassicPacketFraming.h"
+#include "PacketFraming.h"
 #include "Crypto/Encryption/PacketCrypt.h"
 #include "IO/Networking/AsyncSocket.h"
 #include "Packets/Classic/Auth.h"
@@ -15,7 +15,7 @@
 
 // The client (bot) side of the modern world socket: the V2 banner handshake, packet header
 // framing, PacketCrypt, and incoming decompression -- the other end of the wire a server's
-// WorldSocket speaks (see ClassicPacketFraming for the shared wire shape).
+// WorldSocket speaks (see PacketFraming for the shared wire shape).
 //
 // Owns no bot/session state: every decoded packet is handed to onPacket as an opaque BotPacket;
 // what a caller does with it (feed a coroutine await, dispatch to task hooks) is not this
@@ -84,7 +84,7 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
 
         IO::Networking::AsyncSocket m_socket;
         PacketCrypt m_crypt;
-        ClassicPacketFraming m_framing;
+        PacketFraming m_framing;
 
         std::mutex m_callbackLock;
         PacketCallback m_onPacket;

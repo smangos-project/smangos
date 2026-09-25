@@ -1,8 +1,8 @@
-#include "ClassicPacketFraming.h"
+#include "PacketFraming.h"
 #include <zlib.h>
 #include <cstring>
 
-std::vector<uint8> ClassicPacketFraming::BuildPlaintext(uint32 opcode, uint8 const* body, size_t bodySize)
+std::vector<uint8> PacketFraming::BuildPlaintext(uint32 opcode, uint8 const* body, size_t bodySize)
 {
     std::vector<uint8> plaintext(sizeof(uint32) + bodySize);
     plaintext[0] = uint8(opcode & 0xFF);
@@ -14,7 +14,7 @@ std::vector<uint8> ClassicPacketFraming::BuildPlaintext(uint32 opcode, uint8 con
     return plaintext;
 }
 
-bool ClassicPacketFraming::ParsePlaintext(std::vector<uint8> const& plaintext, uint32& opcode, uint8 const*& bodyStart, size_t& bodySize)
+bool PacketFraming::ParsePlaintext(std::vector<uint8> const& plaintext, uint32& opcode, uint8 const*& bodyStart, size_t& bodySize)
 {
     if (plaintext.size() < sizeof(uint32))
         return false;
@@ -25,17 +25,17 @@ bool ClassicPacketFraming::ParsePlaintext(std::vector<uint8> const& plaintext, u
     return true;
 }
 
-ClassicCompressedPacketHeader ClassicPacketFraming::BuildCompressedHeader(uint8 const* uncompressed, size_t uncompressedSize,
+CompressedPacketHeader PacketFraming::BuildCompressedHeader(uint8 const* uncompressed, size_t uncompressedSize,
     uint8 const* compressed, size_t compressedSize)
 {
-    ClassicCompressedPacketHeader header{};
+    CompressedPacketHeader header{};
     header.UncompressedSize = uint32(uncompressedSize);
     header.UncompressedAdler = uint32(adler32(adler32(0L, nullptr, 0), uncompressed, uInt(uncompressedSize)));
     header.CompressedAdler = uint32(adler32(adler32(0L, nullptr, 0), compressed, uInt(compressedSize)));
     return header;
 }
 
-ClassicPacketFraming::ClassicPacketFraming()
+PacketFraming::PacketFraming()
 {
     // One stateful raw-inflate stream for the connection's lifetime (windowBits=-15 for raw
     // deflate, no zlib header) -- mirrors the other side's deflate stream below.
@@ -62,7 +62,7 @@ ClassicPacketFraming::ClassicPacketFraming()
     }
 }
 
-ClassicPacketFraming::~ClassicPacketFraming()
+PacketFraming::~PacketFraming()
 {
     if (m_inflateStream)
     {
@@ -76,7 +76,7 @@ ClassicPacketFraming::~ClassicPacketFraming()
     }
 }
 
-bool ClassicPacketFraming::Inflate(uint8 const* compressed, size_t compressedSize, uint32 uncompressedSize, std::vector<uint8>& out)
+bool PacketFraming::Inflate(uint8 const* compressed, size_t compressedSize, uint32 uncompressedSize, std::vector<uint8>& out)
 {
     if (!m_inflateStream)
         return false;
@@ -91,7 +91,7 @@ bool ClassicPacketFraming::Inflate(uint8 const* compressed, size_t compressedSiz
     return result == Z_OK || result == Z_STREAM_END;
 }
 
-bool ClassicPacketFraming::Deflate(uint8 const* plaintext, size_t plaintextSize, std::vector<uint8>& out)
+bool PacketFraming::Deflate(uint8 const* plaintext, size_t plaintextSize, std::vector<uint8>& out)
 {
     if (!m_deflateStream)
         return false;
