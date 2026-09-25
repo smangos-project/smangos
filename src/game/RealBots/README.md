@@ -438,24 +438,16 @@ holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server avai
    the character's map...`) on a fresh server it reads:
 
    ```
-   SMSG_SET_PROFICIENCY 9
-   SMSG_COMPRESSED_UPDATE_OBJECT 3
-   SMSG_AUTH_RESPONSE 2
-   SMSG_ACTION_BUTTONS 2
-   SMSG_CANCEL_COMBAT 2
-   SMSG_FRIEND_LIST 1
-   SMSG_ACCOUNT_DATA_MD5 1
-   SMSG_IGNORE_LIST 1
-   SMSG_BINDPOINTUPDATE 1
-   SMSG_MESSAGECHAT 1
-   SMSG_SET_REST_START 1
-   SMSG_TUTORIAL_FLAGS 1
-   SMSG_INITIAL_SPELLS 1
-   SMSG_INITIALIZE_FACTIONS 1
-   SMSG_LOGIN_SETTIMESPEED 1
-   SMSG_INIT_WORLD_STATES 1
-   SMSG_WEATHER 1
+   SMSG_COMPRESSED_UPDATE_OBJECT
+   SMSG_AUTH_RESPONSE
+   SMSG_FRIEND_LIST
+   SMSG_IGNORE_LIST
+   SMSG_MESSAGECHAT
    ```
+
+   (Slice A of Phase 4 is done, so the per-character packets are gone from the list; the counts differ
+   per process. Movement, spell and object-destroy packets show up once a session does more than
+   log in. The reference for what is left is `bot-phase-4.md`.)
 
    The counter is process-wide and cumulative. `SMSG_AUTH_RESPONSE` here is the vanilla session-queue
    reply (`World::AddSession_`/`AddQueuedSession`, `WorldSession::SendAuthWaitQue`), still sent per
@@ -504,6 +496,31 @@ None of these is proven against a real 1.15.6 client yet.
   (`refreshLoginTicket` extends it): a ticket is *expired*, never *consumed*, so a used one that
   has not expired logs in again (confirmed live against vibemangos). The scenario was dropped rather
   than written to encode a rule no server has; a forged ticket is rejected and is covered.
+
+- **`SMSG_INITIALIZE_FACTIONS` body.** TrinityCore: two counts, then `FactionID`, `u16 Flags`,
+  `Standing` per faction, then a `FactionID` + bonus bit per faction (a bonus entry for every one).
+  vibemangos: a fixed 400-slot array of `u8 flags` and `Standing` (2050 bytes), then 400 bonus bits.
+  **Followed: TrinityCore.** Unverified. The scenario is listed in `vibemangos.txt`.
+
+- **`SMSG_ACCOUNT_DATA_TIMES` length.** TrinityCore sends 17 account data times, vibemangos 13.
+  **Followed: TrinityCore** (17; the server's own types fill the first eight, the rest are zero).
+  Unverified. Listed in `vibemangos.txt`.
+
+- **`SMSG_UPDATE_ACTION_BUTTONS`.** TrinityCore sends 180 `u64` buttons plus a reason byte at login.
+  vibemangos never sends it: its buttons ride the active-player create block. **Followed:
+  TrinityCore** for the standalone packet (the create-block copy comes with the object-update work).
+  Listed in `vibemangos.txt`.
+
+- **The client binary can't settle any of these.** `WowClassic.exe` 58797 is loaded in Ghidra, but its
+  code is protected: the opcode constant `0x3B01A6` appears neither as an instruction operand nor as
+  bytes in the analyzed image. A disputed body waits for a real-client session or a packet capture.
+
+- **vibemangos's `account create` skips the Battle.net row.** `AccountMgr::CreateAccount` reads the new
+  account back before its asynchronous INSERT has landed, so `ProvisionBattlenetAccount` never runs and
+  the account can't log in through the portal. `account set password <name> <pw> <pw>` afterwards
+  provisions it (`provision-accounts.ps1 -Flavor vibemangos` emits both). Running
+  `contrib/realbotrunner/start-vibemangos.ps1` starts vibemangos with a console the script feeds from a
+  file, so accounts are created by script without editing its live config.
 
 - **No timeout for a connection stuck before the encrypted-mode ack.** A bot that never sends
   `CMSG_ENTER_ENCRYPTED_MODE_ACK` (`world_socket: never acking ...`, `[slow]`) leaves vibemangos's
