@@ -427,6 +427,17 @@ None of these is proven against a real 1.15.6 client yet.
   (`vibemangos.txt`). `SMSG_CONNECT_TO` itself is identical in both (`... port, serial, con, key`).
   Resolve with a captured real-client session.
 
+- **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
+  vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
+  also lists 166 more names at value `0` (retail-only systems with no known classic value); they are
+  left out of `ClassicOpcodes.h` rather than given invented numbers. vibemangos has no per-SMSG
+  connection route (it serves one socket), so `ClassicSendRoute` comes from TrinityCore's server-opcode
+  table: 964 of the 977 SMSGs have an entry there, 324 of them Instance. The other 13 (`SPECTATE_*`,
+  `WOW_LABS_*`, `HARDCORE_*` and similar retail features) have none and default to Realm.
+  **Followed: TrinityCore** for routes. One surprise worth knowing before wiring it: TrinityCore puts
+  `SMSG_RESUME_COMMS` on the Realm connection, not the Instance one; `SMSG_LOGIN_VERIFY_WORLD` and
+  `SMSG_TIME_SYNC_REQUEST` are Instance. Not yet checked against a real client.
+
 - **Login tickets are not single-use.** `bot-phase-2.md` listed "a reused login ticket is rejected at
   LoginRpc"; neither reference does that. TrinityCore's bnetserver checks `LoginTicketExpiry`
   (`AuthenticationService.cpp`) and vibemangos's `LoginTicketStore` is likewise a TTL store
