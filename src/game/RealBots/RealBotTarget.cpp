@@ -62,14 +62,24 @@ bool RealBotTarget::Load(std::string const& name, RealBotTarget& out, std::strin
     target.IdleSessionMs = uint32_t(sConfig.GetIntDefault((prefix + "IdleSessionMs").c_str(), 120000));
     target.LoadBots = uint32_t(sConfig.GetIntDefault((prefix + "LoadBots").c_str(), 0));
 
-    for (std::string const& token : SplitWords(sConfig.GetStringDefault((prefix + "Accounts").c_str(), "")))
+    // Config lines are read with a fixed-size buffer (Config.cpp), so a pool of 50-100 accounts on
+    // one "Accounts" line overflows it silently. AccountsN (N = 2, 3, ...) continues the pool across
+    // as many lines as needed; the split point doesn't matter since entries are whitespace-separated.
+    std::vector<std::string> accountKeys = { prefix + "Accounts" };
+    for (uint32_t n = 2; sConfig.IsSet((prefix + "Accounts" + std::to_string(n)).c_str()); ++n)
+        accountKeys.push_back(prefix + "Accounts" + std::to_string(n));
+
+    for (std::string const& key : accountKeys)
     {
-        RealBotAccountCredential account;
-        if (ParseAccount(token, account))
-            target.Accounts.push_back(std::move(account));
-        else
-            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "RealBots: target '%s': malformed account entry '%s' (expected name:pass)",
-                name.c_str(), token.c_str());
+        for (std::string const& token : SplitWords(sConfig.GetStringDefault(key.c_str(), "")))
+        {
+            RealBotAccountCredential account;
+            if (ParseAccount(token, account))
+                target.Accounts.push_back(std::move(account));
+            else
+                sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "RealBots: target '%s': malformed account entry '%s' (expected name:pass)",
+                    name.c_str(), token.c_str());
+        }
     }
 
     out = std::move(target);
