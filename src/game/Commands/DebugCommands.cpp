@@ -370,6 +370,21 @@ bool ChatHandler::HandleDebugSendOpenBagCommand(char *args)
     return true;
 }
 
+bool ChatHandler::HandleDebugUnportedCommand(char* /*args*/)
+{
+    auto const counts = WorldSession::GetUnportedSendCounts();
+    if (counts.empty())
+    {
+        SendSysMessage("No unported packets sent.");
+        return true;
+    }
+
+    SendSysMessage("Unported packets a session tried to send (opcode, count):");
+    for (auto const& [opcode, count] : counts)
+        SendSysMessage(std::string(LookupOpcodeName(opcode)).append(" ").append(std::to_string(count)).c_str());
+    return true;
+}
+
 bool ChatHandler::HandleDebugSendOpcodeCommand(char* /*args*/)
 {
     Unit* unit = GetSelectedUnit();

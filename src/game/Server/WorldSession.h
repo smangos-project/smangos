@@ -361,10 +361,14 @@ class WorldSession
 
     private:
         void SendPacketImpl(WorldPacket const* packet);
+
         static void VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket);
 
     public:
         /// Sends a packet to the client.
+        // Every legacy-opcode packet a session tried to send since startup, by opcode with its count,
+        // most frequent first: what is left to port.
+        static std::vector<std::pair<uint32, uint64>> GetUnportedSendCounts();
         void SendPacket(std::unique_ptr<ServerPacket const> packet);
         /// @deprecated Use SendPacket with ServerPacket class
         void SendPacket(WorldPacket const* packet);

@@ -486,6 +486,7 @@ class ChatHandler
         bool HandleDebugSendChatMsgCommand(char* args);
         bool HandleDebugSendEquipErrorCommand(char* args);
         bool HandleDebugSendOpcodeCommand(char* args);
+        bool HandleDebugUnportedCommand(char* args);
         bool HandleDebugSendPoiCommand(char* args);
         bool HandleDebugSendQuestPartyMsgCommand(char* args);
         bool HandleDebugSendQuestInvalidMsgCommand(char* args);

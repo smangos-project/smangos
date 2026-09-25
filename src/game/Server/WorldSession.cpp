@@ -44,7 +44,10 @@
 #include "PlayerBroadcaster.h"
 #include "Crypto/Hash/MD5.h"
 
+#include <algorithm>
 #include <limits>
+#include <mutex>
+#include <unordered_map>
 
 // select opcodes appropriate for processing in Map::Update context for current session state
 static bool MapSessionFilterHelper(WorldSession* session, OpcodeHandler const& opHandle)
@@ -160,8 +163,39 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     SendPacketImpl(packet);
 }
 
+namespace
+{
+std::mutex unportedSendLock;
+std::unordered_map<uint32, uint64> unportedSendCounts;
+}
+
+std::vector<std::pair<uint32, uint64>> WorldSession::GetUnportedSendCounts()
+{
+    std::vector<std::pair<uint32, uint64>> counts;
+    {
+        std::lock_guard<std::mutex> lock(unportedSendLock);
+        counts.assign(unportedSendCounts.begin(), unportedSendCounts.end());
+    }
+    std::sort(counts.begin(), counts.end(), [](auto const& a, auto const& b) { return a.second > b.second; });
+    return counts;
+}
+
 void WorldSession::SendPacketImpl(WorldPacket const* packet)
 {
+    // A packet still carrying a vanilla opcode has no classic counterpart yet: it never reaches a
+    // socket, and is counted so the ones a session still sends are visible.
+    if (IsLegacyOpcode(packet->GetOpcode()))
+    {
+        bool firstTime;
+        {
+            std::lock_guard<std::mutex> lock(unportedSendLock);
+            firstTime = ++unportedSendCounts[packet->GetOpcode()] == 1;
+        }
+        if (firstTime)
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[NETWORK] unported %s dropped", LookupOpcodeName(packet->GetOpcode()));
+        return;
+    }
+
 #ifdef _DEBUG
 
     // Code for network use statistic
