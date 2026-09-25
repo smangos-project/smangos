@@ -1,6 +1,5 @@
 #include "InitializeCrypto.h"
-#include "Util.h"
-#include "Authentication/SRP6.h"
+#include "Authentication/BnetSRP6.h"
 #include "Encoding/Base32.h"
 #include "Encryption/RC4.h"
 #include "Hash/MD5.h"
@@ -23,30 +22,34 @@ static bool ArrayEqual(C1 const& a, C2 const& b)
     return std::equal(a.begin(), a.end(), b.begin());
 }
 
-static std::string CalculateShaPassHash(std::string const& name, std::string const& password)
-{
-    auto pwHash = Crypto::Hash::SHA1::ComputeFrom(name + ":" + password);
-
-    std::string encoded;
-    hexEncodeByteArray(pwHash.data(), pwHash.size(), encoded);
-
-    return encoded;
-}
-
+// Full client/host handshake round trip (registration -> ephemeral exchange -> mutual evidence
+// check), the same protocol path bnetserver's REST login exercises -- see CryptoTests.cpp's
+// "BnetSRP6 client and server halves agree" for the same shape as a proper unit test.
 static bool Check_SRP6()
 {
-    SRP6 srp;
+    std::string const username = "VMANGOS";
+    std::string const password = "4EVER";
 
-    char const* salt = "D04E6342FE6CB5FAE54C6182F885778D0AEFE4BFCDDC6B5C7DF7DC25FF6E3C2D";
-    char const* expectedHashResult = "46FD48476D925C4422DD1761C299C79FD6C92B5243E4F3C6C62576C0DABD8260";
+    BnetSRP6 registration;
+    registration.CalculateVerifier(username, password);
 
-    if (!srp.CalculateVerifier(CalculateShaPassHash("VMANGOS", "4EVER"), salt))
+    BnetSRP6 host;
+    host.Initialize(registration.GetSalt(), registration.GetVerifier());
+    host.CalculateHostPublicEphemeral();
+
+    BnetSRP6 client;
+    client.CalculateClientPublicEphemeral();
+
+    std::vector<uint8> clientM1 = client.CalculateClientEvidence(
+        username, password, registration.GetSalt(), host.GetHostPublicEphemeral());
+    if (clientM1.empty())
         return false;
 
-    if (!srp.ProofVerifier(expectedHashResult))
+    if (!host.VerifyClientEvidence(client.GetClientPublicEphemeral(), clientM1))
         return false;
 
-    return true;
+    std::vector<uint8> serverM2 = host.CalculateServerEvidence();
+    return client.VerifyServerEvidence(serverM2);
 }
 
 static bool Check_Base32()
