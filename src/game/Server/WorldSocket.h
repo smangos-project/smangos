@@ -24,13 +24,20 @@
 #define MANGOS_GAME_SERVER_WORLDSOCKET_H
 
 #include "IO/Networking/AsyncSocket.h"
-#include "Auth/AuthCrypt.h"
+#include "Crypto/Encryption/PacketCrypt.h"
+#include "ClassicPacketFraming.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "IO/Timer/TimerHandle.h"
+#include <array>
 
 class WorldSocketMgr;
 
+// The world socket's wire format: the V2 banner handshake, then every packet framed as
+// ClassicPacketHeader + PacketCrypt ciphertext (see ClassicPacketFraming), from the very first
+// SMSG_AUTH_CHALLENGE on -- there is no unencrypted vanilla-style header phase. PacketCrypt itself
+// is a no-op cipher (framing/counters still run, but the tag is never checked) until CMSG_AUTH_SESSION
+// succeeds and CMSG_ENTER_ENCRYPTED_MODE_ACK arms it.
 class WorldSocket final : public std::enable_shared_from_this<WorldSocket>
 {
     friend WorldSocketMgr;
@@ -42,21 +49,13 @@ private:
         Fail,
     };
 
-#if defined( __GNUC__ )
-#pragma pack(1)
-#else
-#pragma pack(push,1)
-#endif
-    struct ClientPktHeader
+    // Where a connection is in the handshake; gates which opcode is expected next.
+    enum class HandshakeStage
     {
-        uint16 size; // size including `sizeof(cmd)`
-        uint32 cmd;
+        AwaitingAuthSession,
+        AwaitingEncryptedModeAck,
+        Done,
     };
-#if defined( __GNUC__ )
-#pragma pack()
-#else
-#pragma pack(pop)
-#endif
 
     /// Time in which the last ping was received
     std::chrono::system_clock::time_point m_lastPingTime;
@@ -64,39 +63,63 @@ private:
     /// Keep track of over-speed pings, to prevent ping flood.
     uint32 m_overSpeedPings;
 
-    /// Class used for managing encryption of the headers
-    AuthCrypt m_Crypt; // TODO: Rename me to m_crypt
+    /// AES-256-GCM cipher over every packet after the header (see ClassicPacketFraming); a no-op
+    /// until CMSG_ENTER_ENCRYPTED_MODE_ACK arms it with the handshake's derived key.
+    PacketCrypt m_crypt;
 
     /// Session to which received packets are routed
     WorldSession* m_Session; // TODO: Rename me to m_session
 
-    /// Random seed used in SMSG_AUTH_CHALLENGE and CMSG_AUTH_SESSION
-    uint32 const m_authSeed;
+    HandshakeStage m_stage;
 
-    /// Session key used to authenticate the client (value from db `account` table)
-    //BigNumber m_authSessionKey;
+    /// Sent in SMSG_AUTH_CHALLENGE; combined with the client's own LocalChallenge to derive the
+    /// session key and encryption key (WorldHandshakeCrypto).
+    std::array<uint8, 32> m_serverChallenge;
+
+    /// Derived once CMSG_AUTH_SESSION's digest checks out; arms m_crypt once the client acks
+    /// SMSG_ENTER_ENCRYPTED_MODE.
+    std::array<uint8, 32> m_encryptKey{};
 
     /// Starting the recv loop
     void Start();
 
-    /// Called by WorldSocketMgr when a new connection is made
-    void SendInitialPacketAndStartRecvLoop();
+    void SendServerBanner();
+    void ReadClientBanner();
+    void SendAuthChallenge();
 
     /// process one incoming packet.
-    void DoRecvIncomingData();
+    void ReadNextHeader();
+    void ReadBody(uint32 bodySize, std::array<uint8, 12> tag);
 
     /// Encrypt and write to queue
     void HandleResultOfAsyncWrite(IO::NetworkError const& error, std::shared_ptr<ByteBuffer> const& alreadyAllocatedBuffer);
 
-    HandlerResult _HandleCompleteReceivedPacket(std::unique_ptr<WorldPacket> packet);
+    void OnIoError(IO::NetworkError const& error, char const* where);
 
-    /// Called by ProcessIncoming() on CMSG_AUTH_SESSION.
-    HandlerResult _HandleAuthSession(WorldPacket& recvPacket);
+    HandlerResult HandleCompletePacket(std::vector<uint8> plaintext);
 
-    /// Called by ProcessIncoming() on CMSG_PING.
-    HandlerResult _HandlePing(WorldPacket& recvPacket);
+    /// Called on CMSG_AUTH_SESSION.
+    HandlerResult HandleAuthSession(ByteBuffer& data);
+    HandlerResult FailAuthSession(char const* reason);
 
-    std::shared_ptr<IO::Timer::TimerHandle> m_sessionNoAuthTimeout; // nullptr after auth, or if feature is disabled
+    void SendEnterEncryptedMode();
+    /// Called on CMSG_ENTER_ENCRYPTED_MODE_ACK.
+    HandlerResult HandleEnterEncryptedModeAck(ByteBuffer& data);
+
+    /// Called on CMSG_PING.
+    HandlerResult HandlePing(ByteBuffer& data);
+
+    void SendRaw(uint32 opcode, ByteBuffer const& body);
+
+    template<typename T>
+    void SendClassic(T const& packet)
+    {
+        ByteBuffer body;
+        packet.Write(body);
+        SendRaw(uint32(T::Opcode), body);
+    }
+
+    std::shared_ptr<IO::Timer::TimerHandle> m_handshakeTimeout; // nullptr once the handshake completes, or if the feature is disabled
 
     std::mutex m_sendQueueLock;
     std::queue<WorldPacket> m_sendQueue;
@@ -104,6 +127,9 @@ private:
 
     IO::Networking::AsyncSocket m_socket;
     std::string m_remoteIpAddressStringAfterProxy; // might differ from `m_socket.m_descriptor` if behind proxy
+
+    static std::string const ServerBanner;
+    static std::string const ClientBanner;
 
 public:
     explicit WorldSocket(IO::Networking::AsyncSocket socket);
