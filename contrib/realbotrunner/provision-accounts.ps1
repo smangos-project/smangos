@@ -39,8 +39,13 @@
 .PARAMETER CommandsFile
     Also write just the console commands to this file (one per line).
 
+.PARAMETER ConsoleInputFile
+    Append the console commands to this file instead of only printing them: the input file a running
+    start-vibemangos.ps1 forwards to mangosd's console.
+
 .EXAMPLE
     ./provision-accounts.ps1 -Target vibemangos -Count 100 -Prefix bot
+    ./provision-accounts.ps1 -Target vibemangos -Count 10 -Prefix vbot -ConsoleInputFile ../../.local/vmport/vibemangos-console-in.txt
     ./provision-accounts.ps1 -Target trinitycore -Flavor trinitycore -Count 10 -Prefix bot -EmailDomain bots
 #>
 [CmdletBinding()]
@@ -52,7 +57,8 @@ param(
     [string] $Password,
     [string] $EmailDomain = 'bots',
     [int] $Start = 1,
-    [string] $CommandsFile
+    [string] $CommandsFile,
+    [string] $ConsoleInputFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -98,4 +104,17 @@ if ($CommandsFile) {
     Set-Content -Path $CommandsFile -Value $commands -Encoding ascii
     Write-Host ''
     Write-Host "# Commands also written to $CommandsFile"
+}
+
+if ($ConsoleInputFile) {
+    # The file is held open for reading by start-vibemangos.ps1; Add-Content's share mode conflicts with that.
+    $stream = New-Object System.IO.FileStream([IO.Path]::GetFullPath($ConsoleInputFile), 'Append', 'Write', 'ReadWrite')
+    try {
+        $writer = New-Object System.IO.StreamWriter($stream, [System.Text.Encoding]::ASCII)
+        foreach ($command in $commands) { $writer.WriteLine($command) }
+        $writer.Flush()
+    }
+    finally { $stream.Dispose() }
+    Write-Host ''
+    Write-Host "# Commands appended to $ConsoleInputFile"
 }
