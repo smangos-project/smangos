@@ -552,14 +552,10 @@ uint32 JoinRealm(BnetRpcSession& session, RequestParams const& params, bgs::prot
         return BNET_ERROR_INTERNAL;
     }
 
-    nlohmann::json joinTicket = {
-        { "gameAccount", state.gameAccount->name },
-        { "platform", state.clientPlatform },
-        { "clientArch", state.clientArch },
-        { "type", state.clientType },
-    };
-
-    AddBlob(response, "Param_RealmJoinTicket", joinTicket.dump());
+    // Opaque to the client either way, so this is just the account id as a decimal string rather
+    // than TrinityCore's JSON shape: nothing downstream needs platform/arch/type yet, and the world
+    // socket's only job with it is to resolve the account.
+    AddBlob(response, "Param_RealmJoinTicket", std::to_string(state.gameAccount->id));
     AddBlob(response, "Param_ServerAddresses", *serverAddressesBlob);
     AddBlob(response, "Param_JoinSecret", std::string(reinterpret_cast<char const*>(serverSecret.data()), serverSecret.size()));
     return BNET_ERROR_OK;
