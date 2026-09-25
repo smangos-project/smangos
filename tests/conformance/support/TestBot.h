@@ -378,6 +378,7 @@ class TestBot
         BotStage GetFailedStage() const;
         BotDisconnectReason GetDisconnectReason() const;
         std::string GetCharacterName() const;
+        ClassicGuid GetCharacterGuid() const;
         BotStage GetStage() const;
         uint32_t GetLatencyMs() const;
         std::string const& GetName() const { return m_name; }

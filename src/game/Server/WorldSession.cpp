@@ -42,7 +42,8 @@
 #include "Chat.h"
 #include "MasterPlayer.h"
 #include "PlayerBroadcaster.h"
-#include "Crypto/Hash/MD5.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/PlayerSetup.h"
 #include "Crypto/Hash/SHA256.h"
 #include "Crypto/RsaSign.h"
 #include "Bnet/BnetRealmList.h"
@@ -1249,28 +1250,15 @@ void WorldSession::SetAccountData(NewAccountData::AccountDataType type, const st
 
 void WorldSession::SendAccountDataTimes()
 {
-    using namespace Crypto::Hash;
+    static_assert(NewAccountData::NUM_ACCOUNT_DATA_TYPES <= CLASSIC_ACCOUNT_DATA_TYPES);
 
-    bool const isOldClient = GetGameBuild() <= CLIENT_BUILD_1_8_4;
-    uint32 const dataCount = isOldClient
-                ? static_cast<uint32>(OldAccountData::NUM_ACCOUNT_DATA_TYPES)
-                : static_cast<uint32>(NewAccountData::NUM_ACCOUNT_DATA_TYPES);
-    WorldPacket data(SMSG_ACCOUNT_DATA_MD5, dataCount * MD5::Digest::size());
+    AccountDataTimes packet;
+    if (Player* player = GetPlayer())
+        packet.PlayerGuid = ClassicGuidMapping::ToClassic(player->GetObjectGuid(), realmID);
+    packet.ServerTime = time(nullptr);
     for (uint32 index = 0; index < NewAccountData::NUM_ACCOUNT_DATA_TYPES; ++index)
-    {
-        // Skip indexes that dont exist in old clients
-        if (isOldClient)
-        {
-            OldAccountData::AccountDataType oldIndex = ConvertNewAccountDataToOld(index);
-            if (oldIndex == OldAccountData::NUM_ACCOUNT_DATA_TYPES)
-                continue;
-        }
-
-        std::string const& accountData = m_accountData[index].data;
-        MD5::Digest hash = accountData.empty() ? MD5::CreateEmpty() : MD5::ComputeFrom(accountData);
-        data.append(hash.data(), hash.size());
-    }
-    SendPacket(&data);
+        packet.Times[index] = m_accountData[index].timestamp;
+    SendClassic(packet);
 }
 
 void WorldSession::LoadTutorialsData()

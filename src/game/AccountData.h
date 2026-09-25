@@ -79,24 +79,6 @@ inline NewAccountData::AccountDataType ConvertOldAccountDataToNew(uint32 index)
     return NewAccountData::NUM_ACCOUNT_DATA_TYPES;
 }
 
-inline OldAccountData::AccountDataType ConvertNewAccountDataToOld(uint32 index)
-{
-    switch (index)
-    {
-        case NewAccountData::GLOBAL_CONFIG_CACHE:
-            return OldAccountData::GLOBAL_CONFIG_CACHE;
-        case NewAccountData::GLOBAL_BINDINGS_CACHE:
-            return OldAccountData::GLOBAL_BINDINGS_CACHE;
-        case NewAccountData::GLOBAL_MACROS_CACHE:
-            return OldAccountData::GLOBAL_MACROS_CACHE;
-        case NewAccountData::PER_CHARACTER_LAYOUT_CACHE:
-            return OldAccountData::PER_CHARACTER_LAYOUT_CACHE;
-        case NewAccountData::PER_CHARACTER_CHAT_CACHE:
-            return OldAccountData::PER_CHARACTER_CHAT_CACHE;
-    }
-    return OldAccountData::NUM_ACCOUNT_DATA_TYPES;
-}
-
 struct AccountData
 {
     AccountData() : timestamp(0), data("") {}

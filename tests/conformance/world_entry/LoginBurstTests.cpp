@@ -165,3 +165,21 @@ TEST_CASE("world_entry: the login burst carries the character's reputations", "[
         CHECK(std::ranges::all_of(factions->Factions, [](InitializeFactions::Faction const& faction) { return faction.FactionId > 0; }));
     });
 }
+
+TEST_CASE("world_entry: the login burst carries the account data times for the character", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(AccountDataTimes::Opcode, 10000));
+
+        std::optional<AccountDataTimes> times = ParsedExactly<AccountDataTimes>(bot, BotConnectionKind::Realm);
+        REQUIRE(times);
+        ClassicGuid const guid = bot.GetCharacterGuid();
+        CHECK_FALSE(guid.IsEmpty());
+        CHECK(times->PlayerGuid.Low == guid.Low);
+        CHECK(times->PlayerGuid.High == guid.High);
+        CHECK(times->ServerTime > 1700000000);
+    });
+}

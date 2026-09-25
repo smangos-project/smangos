@@ -184,6 +184,11 @@ std::string TestBot::GetCharacterName() const
     return m_bot->GetPublishedInfo().CharacterName;
 }
 
+ClassicGuid TestBot::GetCharacterGuid() const
+{
+    return m_bot->GetPublishedInfo().CharacterGuid;
+}
+
 BotStage TestBot::GetStage() const
 {
     return m_bot->GetPublishedInfo().Stage;
