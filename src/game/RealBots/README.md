@@ -548,6 +548,34 @@ None of these is proven against a real 1.15.6 client yet.
 - **Login tickets live in memory in bnetserver** rather than in a database column (TrinityCore) or a
   file-static map (vibemangos); a restart logs everyone out of the portal.
 
+- **`Param_RealmJoinTicket` is the account id as a decimal string**, not TrinityCore's JSON
+  (`gameAccount`/`platform`/`clientArch`/`type`) or a Battle.net-shaped identifier. The client treats
+  the ticket as opaque either way, and this server has one game account per Battle.net account, so
+  nothing else needs to travel in it; `WorldSocket::HandleAuthSession` (root `mangosd`) reads it
+  straight as the account id, no lookup by name needed. **Followed: neither reference** -- this is a
+  vmangos-side simplification (`bot-phase-3.md` step C), recorded here since it deviates from step
+  B's original design. Not proven against a real client, which is expected to echo the ticket back
+  verbatim regardless of its shape.
+
+- **The world handshake has its own timeout on root `mangosd`.** Neither reference closes a
+  connection that never finishes the V2 handshake (see "No timeout for a connection stuck before the
+  encrypted-mode ack" above, about vibemangos); the port does, reusing `Network.TimeoutSecsIfNoAuth`
+  (default 10s) to cover the whole handshake rather than just the pre-`CMSG_AUTH_SESSION` leg.
+  `world_socket: never acking SMSG_ENTER_ENCRYPTED_MODE gets the connection closed` passes on vmangos
+  for this reason and is `vibemangos.txt`'s only entry.
+
+- **CMSG_AUTH_SESSION carries no OS/platform/build on the modern protocol** (unlike vanilla's), so
+  root `mangosd`'s `WorldSession` never learns them at auth time; `SetGameBuild` is set to the known
+  constant (58797) and `SetOS`/`SetPlatform` are left at their defaults. Nothing in this tree reads
+  them yet. The vanilla "same IP as realmd" check is dropped entirely (there is no realmd in this
+  session's path); the ordinary `account_banned`/`ip_banned` checks still apply.
+
+- **`SMSG_AUTH_RESPONSE`'s `SuccessInfo` (race/class availability, realm data) isn't built.** The
+  port sends `Result = Ok` with no `SuccessInfo`, which is enough for every bot scenario (none parse
+  it) but not for a real client, which is expected to need it to reach the character screen for
+  real. Left for whenever a real 58797 client is available to check against, or Step D needs the
+  same race/class data for character creation.
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
