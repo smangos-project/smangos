@@ -8,6 +8,7 @@
 #include "ObjectAccessor.h"
 #include "WorldPacket.h"
 #include "Opcodes.h"
+#include "Packets/PlayerSetup.h"
 
 MasterPlayer::MasterPlayer(WorldSession* s):
     m_session(s)
@@ -323,17 +324,17 @@ Mail* MasterPlayer::GetMail(uint32 id)
 // ######################## ACTION BUTTONS ###########################
 void MasterPlayer::SendInitialActionButtons() const
 {
-    WorldPacket data(SMSG_ACTION_BUTTONS, (MAX_ACTION_BUTTONS * 4));
+    static_assert(MAX_ACTION_BUTTONS <= CLASSIC_ACTION_BUTTON_COUNT);
+
+    UpdateActionButtons packet;
     for (int button = 0; button < MAX_ACTION_BUTTONS; ++button)
     {
         ActionButtonList::const_iterator itr = m_actionButtons.find(button);
         if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
-            data << uint32(itr->second.packedData);
-        else
-            data << uint32(0);
+            packet.Buttons[button] = itr->second.packedData;
     }
 
-    GetSession()->SendPacket(&data);
+    GetSession()->SendClassic(packet);
 }
 
 ActionButton* MasterPlayer::addActionButton(uint8 button, uint32 action, uint8 type)

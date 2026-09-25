@@ -132,3 +132,20 @@ TEST_CASE("world_entry: the login burst carries the spell book", "[protocol]")
         CHECK(ParsedExactly<SendSpellHistory>(bot, BotConnectionKind::Instance));
     });
 }
+
+TEST_CASE("world_entry: the login burst sends the action buttons once", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(UpdateActionButtons::Opcode, 10000));
+        co_await TestDelay(500);
+
+        CHECK(bot.CountReceived(UpdateActionButtons::Opcode) == 1);
+        std::optional<UpdateActionButtons> buttons = ParsedExactly<UpdateActionButtons>(bot, BotConnectionKind::Instance);
+        REQUIRE(buttons);
+        CHECK(buttons->Reason == UpdateActionButtons::REASON_INITIAL);
+        CHECK(std::ranges::any_of(buttons->Buttons, [](uint64 button) { return button != 0; }));
+    });
+}

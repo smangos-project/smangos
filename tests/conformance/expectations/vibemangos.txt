@@ -6,3 +6,4 @@
 world_socket: never acking SMSG_ENTER_ENCRYPTED_MODE gets the connection closed | vibemangos has no timeout for a connection stuck before CMSG_ENTER_ENCRYPTED_MODE_ACK (still open after 420s)
 world_entry: a failed Instance connect is reported and the next SMSG_CONNECT_TO tried | vibemangos reads CMSG_CONNECT_TO_FAILED as Serial then Con; the bots now send TrinityCore's order (Con then Serial), see README "vibemangos vs TrinityCore"
 login: a malformed REST body gets a 4xx response, not a hang | vibemangos answers a malformed /bnetserver/login/srp/ body with 500, not a 4xx -- it doesn't hang, but a client error isn't a server error
+world_entry: the login burst sends the action buttons once | vibemangos never sends SMSG_UPDATE_ACTION_BUTTONS; its buttons ride the active-player create block, see README "vibemangos vs TrinityCore"

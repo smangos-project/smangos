@@ -375,7 +375,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
         pCurrChar->SendCorpseReclaimDelay(true);
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
-    GetMasterPlayer()->SendInitialActionButtons();
 
     // Show cinematic at the first time that player login
     if (pCurrChar->m_playedTime[PLAYED_TIME_TOTAL] == 0 && !sWorld.getConfig(CONFIG_BOOL_SKIP_CINEMATICS))
