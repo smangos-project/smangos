@@ -24,6 +24,10 @@
 */
 
 #include "Opcodes.h"
+#include "ClassicOpcodes.h"
+
+#include <cstring>
+#include <unordered_map>
 
 struct Handlers
 {
@@ -946,16 +950,31 @@ Handlers BuildOpcodeList()
 
 Handlers const handlerList = BuildOpcodeList();
 
+// Ported handlers register here, keyed by their classic opcode, when they replace their vanilla
+// DEFINE_HANDLER line above.
+std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
+{
+    return {};
+}
+
+std::unordered_map<uint32, OpcodeHandler> const classicHandlerList = BuildClassicOpcodeList();
+
 OpcodeHandler emptyHandler;
 
 OpcodeHandler const& LookupOpcodeHandler(uint32 id)
 {
-    if (id >= NUM_MSG_TYPES)
-        return emptyHandler;
-    return handlerList.handlers[id];
+    if (IsLegacyOpcode(id))
+        return id < NUM_MSG_TYPES ? handlerList.handlers[id] : emptyHandler;
+
+    auto const itr = classicHandlerList.find(id);
+    return itr != classicHandlerList.end() ? itr->second : emptyHandler;
 }
 
 char const* LookupOpcodeName(uint32 id)
 {
-    return LookupOpcodeHandler(id).name;
+    if (IsLegacyOpcode(id))
+        return LookupOpcodeHandler(id).name;
+
+    char const* name = ClassicOpcodeName(id);
+    return std::strcmp(name, "UNKNOWN") != 0 ? name : emptyHandler.name;
 }

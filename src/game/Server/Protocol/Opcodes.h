@@ -158,6 +158,9 @@ struct OpcodeHandler
     nonstd::expected<OpcodeHandlerPacketImplDetails, UnhandleReason> impl = nonstd::unexpected<UnhandleReason>(UnhandleReason::Unhandled);
 };
 
+// Vanilla opcodes live below 0x10000, classic ones (ClassicOpcodes.h) at 0x2E0000 and up.
+inline bool IsLegacyOpcode(uint32 opcode) { return opcode < 0x10000; }
+
 // returns true if it's completely out of range
 inline bool IsDefinitelyBogusOpcode(uint32 opcode) { return opcode >= NUM_MSG_TYPES; }
 
