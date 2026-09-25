@@ -410,6 +410,29 @@ provider search path at `ToAbsolutePath(".")`. Run from the directory `legacy.dl
 (the build's shared output directory, e.g. `bin/RelWithDebInfo/`), not from the repo root or
 elsewhere, even with the DLL correctly copied there by `mangos_copy_openssl_dlls`.
 
+## Running the port target
+
+The root server (`bnetserver` + `mangosd`) runs beside the live vibemangos on its own database
+instance, ports and data links; it never touches the live server or its databases. `contrib/vmport/`
+holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server available:
+
+1. Create the four schemas (`vmport_realmd`, `vmport_world`, `vmport_characters`, `vmport_logs`) and a
+   user with all privileges on them. This setup used a second `mariadbd` on `127.0.0.1:3309` started
+   from the installed binaries with its own data directory under `.local/vmport`.
+2. `contrib/vmport/setup-databases.ps1 -WorldDump <a world database dump>` loads `sql/logon.sql`,
+   `characters.sql`, `logs.sql`, the world dump, then every migration in `sql/migrations` (the world
+   ones take a while). `CheckRequiredMigrations` at startup is the check that the dump was current.
+3. `contrib/vmport/setup-run-dir.ps1 -ClientData <the 5875 folder holding dbc\>` links the client
+   data (never copies or writes it), writes `mangosd.conf` and `bnetserver.conf` from the `.dist`
+   files with this setup's databases and ports (REST 8091, RPC 1129, world 8095), copies the
+   development certificate from `contrib/bnetserver/` and adds the realm row.
+4. Run `bin\Release\bnetserver.exe -c <run>\bnetserver.conf` and `mangosd.exe -c <run>\mangosd.conf`
+   from the build output directory (the OpenSSL and `libmySQL` DLLs are found there).
+5. `account create <name> <password>` on the `mangosd` console provisions each bot account, including
+   its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
+   commands and the `Accounts` line.
+6. `tests-conformance --target vmangos` with the `vmangos` block of `tests-conformance.conf.dist`.
+
 ## vibemangos vs TrinityCore
 
 Where the two references disagree, the bots follow the one named here and say why (`port-plan.md`:
@@ -488,6 +511,42 @@ None of these is proven against a real 1.15.6 client yet.
   is a live capture rather than a read of either reference's source; the bots recognize these five
   opcodes (`ClassicOpcodes.h`) and a `world_socket:` scenario asserts they arrive, but none of the
   seven bodies are parsed yet (`ClassicPackets.h` has no structs for them).
+
+- **bnetserver's RPC status codes are TrinityCore's.** vibemangos returns values of its own
+  (`0x33000006` for a bad program, `5` for not-implemented, ...); TrinityCore's numbers are the
+  real `BattlenetRpcErrorCodes` (`ERROR_BAD_PROGRAM` `0x4D`, `ERROR_RPC_NOT_IMPLEMENTED` `0xBC7`,
+  `ERROR_DENIED` `3`, ...). **Followed: TrinityCore.** The bots only test for a non-zero status.
+
+- **`Command_RealmListRequest_v1` with an empty sub-region lists every realm.** TrinityCore filters
+  by the sub-region and an empty one matches nothing; the real client always asks for one it got from
+  `GetAllValuesForAttribute`, the bots ask with none. **Followed: vibemangos.** A non-empty
+  sub-region that is not `region-battlegroup-0` gets an empty list.
+
+- **`Command_LastCharPlayedRequest_v1` answers OK with no attributes when the realm is offline or
+  gone.** TrinityCore fails the call; the client takes `Param_RealmEntry` as "connect to this realm
+  now", so an offline realm there would skip the realm list and then fail the join. **Followed:
+  vibemangos.**
+
+- **`ResourcesService.GetContentHandle` is answered with an empty OK.** TrinityCore leaves the
+  service unimplemented; vibemangos found the client treats an error there as fatal on the character
+  screen. **Followed: vibemangos.**
+
+- **The logon announces the plain login form URL** (`https://host:port/bnetserver/login/`), as
+  TrinityCore does; vibemangos adds platform, build and locale path segments and serves them.
+  Game-account entity ids use TrinityCore's `0x200000200576F57` (vibemangos's ends in `51`).
+  **Followed: TrinityCore.** Neither is proven against a real client here.
+
+- **An unknown account gets a challenge like a known one.** TrinityCore answers the SRP challenge
+  for an unknown account with a bare `DONE` and no challenge, which tells a scanner which accounts
+  exist. bnetserver derives a stable fake salt from the login and a random verifier, so the failure
+  only shows at the proof, the same as a wrong password.
+
+- **Realm flags are vmangos's.** `realmlist.realmflags` uses vmangos's values (`0x20` new players,
+  `0x40` recommended), not TrinityCore's (`0x20` recommended, `0x40` new), and every realm reports
+  the one modern build, so the version-mismatch flag is never set.
+
+- **Login tickets live in memory in bnetserver** rather than in a database column (TrinityCore) or a
+  file-static map (vibemangos); a restart logs everyone out of the portal.
 
 ## TrinityCore as a cross-check (spike outcome: not run)
 
