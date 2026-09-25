@@ -1993,7 +1993,7 @@ class Player final: public Unit
         void SendMessageToSet(WorldPacket* data, bool self) const override;
         void SendMessageToSetInRange(WorldPacket* data, float fist, bool self) const override;
         void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only) const;
-        void SendInitWorldStates(uint32 zone) const;
+        void SendInitWorldStates(uint32 zone, uint32 area) const;
         void SendUpdateWorldState(uint32 state, uint32 value) const;
         void SendDirectMessage(WorldPacket* data) const;
 

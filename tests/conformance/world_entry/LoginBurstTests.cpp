@@ -4,6 +4,7 @@
 #include "Packets/CharScreen.h"
 #include "Packets/PlayerSetup.h"
 #include "Packets/SpellBook.h"
+#include "Packets/WorldStates.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
@@ -181,5 +182,21 @@ TEST_CASE("world_entry: the login burst carries the account data times for the c
         CHECK(times->PlayerGuid.Low == guid.Low);
         CHECK(times->PlayerGuid.High == guid.High);
         CHECK(times->ServerTime > 1700000000);
+    });
+}
+
+TEST_CASE("world_entry: the login burst carries the world states for the character's zone", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(InitWorldStates::Opcode, 10000));
+
+        std::optional<InitWorldStates> states = ParsedExactly<InitWorldStates>(bot, BotConnectionKind::Instance);
+        REQUIRE(states);
+        CHECK(states->MapId < 10000);
+        CHECK(states->AreaId != 0);
+        CHECK(states->SubareaId != 0);
     });
 }

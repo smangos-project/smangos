@@ -6603,7 +6603,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     if (m_zoneUpdateId != newZone)
     {
         sZoneScriptMgr.HandlePlayerLeaveZone(this, oldZoneId);
-        SendInitWorldStates(newZone);                       // only if really enters to new zone, not just area change, works strange...
+        SendInitWorldStates(newZone, newArea);                       // only if really enters to new zone, not just area change, works strange...
         sZoneScriptMgr.HandlePlayerEnterZone(this, newZone);
 
         if (sWorld.getConfig(CONFIG_BOOL_WEATHER))
@@ -8162,22 +8162,21 @@ static WorldStatePair def_world_states[] =
 
 
 
-void Player::SendInitWorldStates(uint32 zoneid) const
+void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid) const
 {
     uint32 mapId = GetMapId();
 
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Sending SMSG_INIT_WORLD_STATES to Map:%u, Zone: %u", mapId, zoneid);
 
-    uint32 count = 1; // count of world states in packet, 1 extra for the terminator
+    uint32 count = 0;
 
-    WorldPacket data(SMSG_INIT_WORLD_STATES, (4 + 4 + 2 + 6));
-    data << uint32(mapId);                              // map id
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-    data << uint32(zoneid);                             // zone id
-#endif
+    WorldPacket data(uint32(CLASSIC_SMSG_INIT_WORLD_STATES), 4 * 4);
+    data << uint32(mapId);
+    data << uint32(zoneid);
+    data << uint32(areaid);
 
     size_t countPos = data.wpos();
-    data << uint16(0);                                  // count of uint32 blocks, placeholder
+    data << uint32(0);                                  // count of states, placeholder
 
     // Scourge Invasion - Patch 1.11
     if (sGameEventMgr.IsActiveEvent(GAME_EVENT_SCOURGE_INVASION))
@@ -8233,8 +8232,7 @@ void Player::SendInitWorldStates(uint32 zoneid) const
         count += BuildWarEffortWorldStates(data);
     }
 
-    data << uint32(0) << uint32(0);     // [-ZERO] Add terminator to prevent repeating audio bug.
-    data.put<uint16>(countPos, count);  // set actual world state amount
+    data.put<uint32>(countPos, count);
     GetSession()->SendPacket(&data);
 }
 
