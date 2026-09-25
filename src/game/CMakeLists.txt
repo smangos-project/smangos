@@ -440,6 +440,9 @@ set (game_SRCS
     Server/Packets/Auth.h
     Server/Packets/CharScreen.h
     Server/Packets/Session.h
+    Server/Packets/PlayerSetup.h
+    Server/Packets/SpellBook.h
+    Server/Packets/WorldStates.h
     Server/Packets/Classic/Character.h
     Server/Packets/Classic/Guid.h
     Server/Packets/Classic/GuidMapping.h
