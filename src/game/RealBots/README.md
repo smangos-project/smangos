@@ -424,8 +424,8 @@ holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server avai
    ones take a while). `CheckRequiredMigrations` at startup is the check that the dump was current.
 3. `contrib/vmport/setup-run-dir.ps1 -ClientData <the 5875 folder holding dbc\>` links the client
    data (never copies or writes it), writes `mangosd.conf` and `bnetserver.conf` from the `.dist`
-   files with this setup's databases and ports (REST 8091, RPC 1129, world 8095), copies the
-   development certificate from `contrib/bnetserver/` and adds the realm row.
+   files with this setup's databases and ports (REST 8091, RPC 1129, world 8095, instance 8096),
+   copies the development certificate from `contrib/bnetserver/` and adds the realm row.
 4. Run `bin\Release\bnetserver.exe -c <run>\bnetserver.conf` and `mangosd.exe -c <run>\mangosd.conf`
    from the build output directory (the OpenSSL and `libmySQL` DLLs are found there).
 5. `account create <name> <password>` on the `mangosd` console provisions each bot account, including

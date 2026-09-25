@@ -18,6 +18,7 @@ param(
     [int]$RestPort = 8091,
     [int]$RpcPort = 1129,
     [int]$WorldPort = 8095,
+    [int]$InstancePort = 8096,
     [int]$RealmId = 1,
     [string]$RealmName = "VMangosPort"
 )
@@ -81,6 +82,7 @@ Set-ConfigValues (Join-Path $repo "src\mangosd\mangosd.conf.dist.in") (Join-Path
     "CharacterDatabase.Info"    = Database-Info "characters"
     "LogsDatabase.Info"         = Database-Info "logs"
     "WorldServerPort"           = $WorldPort
+    "InstanceServerPort"        = $InstancePort
     "vmap.enableLOS"            = 0
     "vmap.enableHeight"         = 0
     "vmap.enableIndoorCheck"    = 0
