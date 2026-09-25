@@ -46,6 +46,10 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         // Fills `target` with exactly `size` plaintext bytes, like AsyncSocket::Read.
         void Read(char* target, size_t size, ReadCallback callback);
 
+        // Completes as soon as at least one plaintext byte is available, with up to `maxSize`
+        // bytes in `target` and the count in the callback.
+        void ReadSome(char* target, size_t maxSize, ReadCallback callback);
+
         // Encrypts and sends `data`. Callbacks fire in the order Write() was called.
         void Write(std::vector<uint8> data, WriteCallback callback);
 
@@ -75,6 +79,7 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         char* m_readTarget = nullptr;
         size_t m_readTargetSize = 0;
         size_t m_readFilled = 0;
+        bool m_readSome = false;
         ReadCallback m_readCallback;
 
         std::mutex m_writeQueueLock;

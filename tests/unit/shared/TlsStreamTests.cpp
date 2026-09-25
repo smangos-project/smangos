@@ -390,3 +390,80 @@ TEST_CASE("TlsStream: a client and a server TlsStream complete a handshake and e
 
     SSL_CTX_free(serverCtx);
 }
+
+TEST_CASE("TlsStream: ReadSome completes with whatever plaintext is available, up to the buffer size", "[tlsstream]")
+{
+    SelfSignedCert serverCert = GenerateSelfSignedCert();
+
+    SSL_CTX* serverCtx = SSL_CTX_new(TLS_server_method());
+    REQUIRE(serverCtx != nullptr);
+    REQUIRE(SSL_CTX_use_certificate(serverCtx, serverCert.cert) == 1);
+    REQUIRE(SSL_CTX_use_PrivateKey(serverCtx, serverCert.key) == 1);
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    auto acceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", TestPort + 3);
+    REQUIRE(acceptor != nullptr);
+
+    std::string const message = "ten bytes!";
+    std::shared_ptr<TlsStream> serverStream;
+    std::vector<char> serverBuffer(4096);
+    size_t serverReceivedSize = 0;
+    WaitFlag serverReadDone;
+
+    acceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        IO::Networking::AsyncSocket serverSocket(ctx.get(), std::move(descriptor));
+        serverStream = TlsStream::CreateServer(std::move(serverSocket), serverCtx);
+        serverStream->Handshake([&](bool success)
+        {
+            if (!success)
+                return;
+            serverStream->ReadSome(serverBuffer.data(), serverBuffer.size(), [&](IO::NetworkError const& error, size_t received)
+            {
+                CHECK_FALSE(error);
+                serverReceivedSize = received;
+                serverReadDone.Set();
+            });
+        });
+    });
+
+    auto ip = IO::Networking::IpAddress::TryParseFromString("127.0.0.1");
+    REQUIRE(ip.has_value());
+    IO::Networking::IpEndpoint endpoint(*ip, TestPort + 3);
+
+    auto maybeDescriptor = IO::Networking::SocketConnector::ConnectBlocking(endpoint, std::chrono::seconds(5));
+    REQUIRE(maybeDescriptor.has_value());
+
+    IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(maybeDescriptor.value()));
+    std::shared_ptr<TlsStream> clientStream = TlsStream::CreateClient(std::move(clientSocket));
+
+    WaitFlag clientHandshakeDone;
+    bool clientHandshakeOk = false;
+    clientStream->Handshake([&](bool success)
+    {
+        clientHandshakeOk = success;
+        clientHandshakeDone.Set();
+    });
+    REQUIRE(clientHandshakeDone.WaitFor(std::chrono::seconds(5)));
+    REQUIRE(clientHandshakeOk);
+
+    WaitFlag clientWrote;
+    clientStream->Write(std::vector<uint8>(message.begin(), message.end()), [&](IO::NetworkError const&) { clientWrote.Set(); });
+    REQUIRE(clientWrote.WaitFor(std::chrono::seconds(5)));
+
+    REQUIRE(serverReadDone.WaitFor(std::chrono::seconds(5)));
+    CHECK(serverReceivedSize == message.size());
+    CHECK(std::string(serverBuffer.data(), serverReceivedSize) == message);
+
+    clientStream->Close();
+    if (serverStream)
+        serverStream->Close();
+    acceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+
+    SSL_CTX_free(serverCtx);
+}

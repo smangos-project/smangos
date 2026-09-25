@@ -163,6 +163,17 @@ void TlsStream::Read(char* target, size_t size, ReadCallback callback)
     m_readTarget = target;
     m_readTargetSize = size;
     m_readFilled = 0;
+    m_readSome = false;
+    m_readCallback = std::move(callback);
+    ContinueRead();
+}
+
+void TlsStream::ReadSome(char* target, size_t maxSize, ReadCallback callback)
+{
+    m_readTarget = target;
+    m_readTargetSize = maxSize;
+    m_readFilled = 0;
+    m_readSome = true;
     m_readCallback = std::move(callback);
     ContinueRead();
 }
@@ -177,6 +188,8 @@ void TlsStream::ContinueRead()
         if (n > 0)
         {
             m_readFilled += size_t(n);
+            if (m_readSome)
+                break;
             continue;
         }
 
