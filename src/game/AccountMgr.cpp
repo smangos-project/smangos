@@ -31,7 +31,7 @@
 #include "WorldSession.h"
 #include "MasterPlayer.h"
 #include "Anticheat.h"
-#include "Crypto/Authentication/SRP6.h"
+#include "Crypto/Authentication/BnetSRP6.h"
 #include "Crypto/Hash/SHA1.h"
 
 INSTANTIATE_SINGLETON_1(AccountMgr);
@@ -55,17 +55,18 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
         return AOR_NAME_ALREDY_EXIST;                       // username does already exist
     }
 
-    SRP6 srp;
-    srp.CalculateVerifier(CalculateShaPassHash(username, password));
-    std::string s_hex = srp.GetSalt().AsHexStr();
-    std::string v_hex = srp.GetVerifier().AsHexStr();
+    std::string safe_username = username;
+    LoginDatabase.escape_string(safe_username);
 
-    bool update_sv = LoginDatabase.PExecute(
-        "INSERT INTO account(`username`, `v`, `s`, `joindate`) VALUES('%s','%s','%s',NOW())",
-        username.c_str(), v_hex.c_str(), s_hex.c_str());
+    // Synchronous: the Battle.net row below links to this account by its id.
+    bool inserted = LoginDatabase.PExecute(DbExecMode::MustBeSync,
+        "INSERT INTO account(`username`, `joindate`) VALUES('%s',NOW())", safe_username.c_str());
 
-    if (!update_sv)
+    if (!inserted)
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+
+    if (!ProvisionBattlenetAccount(GetId(username), username, password))
+        return AOR_DB_INTERNAL_ERROR;
 
     LoginDatabase.Execute("REPLACE INTO `realmcharacters` (`realmid`, `acctid`, `numchars`) SELECT `realmlist`.`id`, `account`.`id`, 0 FROM `realmlist`,`account` LEFT JOIN `realmcharacters` ON `acctid`=`account`.`id` WHERE `acctid` IS NULL");
 
@@ -98,11 +99,17 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
     // table realm specific but common for all characters of account for realm
     CharacterDatabase.PExecute("DELETE FROM `character_tutorial` WHERE `account` = '%u'", accid);
 
+    result = LoginDatabase.PQuery("SELECT `battlenet_account` FROM `account` WHERE `id`='%u'", accid);
+    uint32 const bnetAccountId = result && !result->Fetch()[0].IsNULL() ? result->Fetch()[0].GetUInt32() : 0;
+
     LoginDatabase.BeginTransaction();
 
     bool res =
         LoginDatabase.PExecute("DELETE FROM `account` WHERE `id`='%u'", accid) &&
-        LoginDatabase.PExecute("DELETE FROM `realmcharacters` WHERE `acctid`='%u'", accid);
+        LoginDatabase.PExecute("DELETE FROM `realmcharacters` WHERE `acctid`='%u'", accid) &&
+        LoginDatabase.PExecute("DELETE FROM `account_last_played_character` WHERE `accountId`='%u'", accid);
+    if (bnetAccountId)
+        res = res && LoginDatabase.PExecute("DELETE FROM `battlenet_accounts` WHERE `id`='%u'", bnetAccountId);
 
     LoginDatabase.CommitTransaction();
 
@@ -128,21 +135,13 @@ AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, 
     normalizeString(new_uname);
     normalizeString(new_passwd);
 
-    SRP6 srp;
-
-    srp.CalculateVerifier(CalculateShaPassHash(new_uname, new_passwd));
-
     std::string safe_new_uname = new_uname;
     LoginDatabase.escape_string(safe_new_uname);
 
-    std::string s_hex = srp.GetSalt().AsHexStr();
-    std::string v_hex = srp.GetVerifier().AsHexStr();
+    bool update_name = LoginDatabase.PExecute(DbExecMode::MustBeSync,
+        "UPDATE `account` SET `username`='%s' WHERE `id`='%u'", safe_new_uname.c_str(), accid);
 
-    bool update_sv = LoginDatabase.PExecute(
-        "UPDATE `account` SET `v`='%s', `s`='%s', `username`='%s' WHERE `id`='%u'",
-        v_hex.c_str(), s_hex.c_str(), safe_new_uname.c_str(), accid);
-
-    if (!update_sv)
+    if (!update_name || !ProvisionBattlenetAccount(accid, new_uname, new_passwd))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     GetAccountPersistentData(accid).m_username = new_uname;
@@ -165,22 +164,57 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd,
 
     normalizeString(new_passwd);
 
-    SRP6 srp;
-
-    srp.CalculateVerifier(CalculateShaPassHash(username, new_passwd));
-
-    std::string s_hex = srp.GetSalt().AsHexStr();
-    std::string v_hex = srp.GetVerifier().AsHexStr();
-
-    bool update_sv = LoginDatabase.PExecute(
-        "UPDATE `account` SET `v`='%s', `s`='%s' WHERE `id`='%u'",
-        v_hex.c_str(), s_hex.c_str(), accid);
-
-    // also reset s and v to force update at next realmd login
-    if (!update_sv)
+    if (!ProvisionBattlenetAccount(accid, username, new_passwd))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
+}
+
+bool AccountMgr::ProvisionBattlenetAccount(uint32 accid, std::string const& username, std::string const& password)
+{
+    // The SRP identity is hex(SHA256(username)), the same one the login portal derives when it
+    // challenges the client; username and password are already normalized.
+    BnetSRP6 srp;
+    srp.CalculateVerifier(BnetSRP6::ComputeSrpUsername(username), password);
+
+    // Hex text, not raw bytes: Field::GetCppString() stops at the first zero byte.
+    std::string const saltHex = ByteArrayToHexStr(srp.GetSalt().data(), uint32(srp.GetSalt().size()));
+    std::vector<uint8> const verifier = srp.GetVerifier();
+    std::string const verifierHex = ByteArrayToHexStr(verifier.data(), uint32(verifier.size()));
+
+    // One Battle.net account per game account, logging in with the game account's username.
+    std::string email = username;
+    LoginDatabase.escape_string(email);
+
+    std::unique_ptr<QueryResult> linked = LoginDatabase.PQuery("SELECT `battlenet_account` FROM `account` WHERE `id` = '%u'", accid);
+    if (!linked)
+        return false;
+
+    if (!linked->Fetch()[0].IsNULL())
+    {
+        return LoginDatabase.PExecute(DbExecMode::MustBeSync,
+            "UPDATE `battlenet_accounts` SET `email`='%s', `srp_version`=1, `salt`='%s', `verifier`='%s' WHERE `id`='%u'",
+            email.c_str(), saltHex.c_str(), verifierHex.c_str(), linked->Fetch()[0].GetUInt32());
+    }
+
+    // Synchronous, so the id can be read straight back.
+    if (!LoginDatabase.PExecute(DbExecMode::MustBeSync,
+        "INSERT INTO `battlenet_accounts` (`email`, `srp_version`, `salt`, `verifier`) VALUES ('%s', 1, '%s', '%s') "
+        "ON DUPLICATE KEY UPDATE `salt`='%s', `verifier`='%s'",
+        email.c_str(), saltHex.c_str(), verifierHex.c_str(), saltHex.c_str(), verifierHex.c_str()))
+    {
+        return false;
+    }
+
+    std::unique_ptr<QueryResult> inserted = LoginDatabase.PQuery("SELECT `id` FROM `battlenet_accounts` WHERE `email` = '%s'", email.c_str());
+    if (!inserted)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "ProvisionBattlenetAccount: no battlenet_accounts row for '%s' after inserting it", email.c_str());
+        return false;
+    }
+
+    return LoginDatabase.PExecute(DbExecMode::MustBeSync,
+        "UPDATE `account` SET `battlenet_account`='%u', `battlenet_index`=1 WHERE `id`='%u'", inserted->Fetch()[0].GetUInt32(), accid);
 }
 
 uint32 AccountMgr::GetId(std::string username)
@@ -273,21 +307,25 @@ bool AccountMgr::CheckPassword(uint32 accid, std::string passwd, std::string use
 
     normalizeString(passwd);
 
-    std::unique_ptr<QueryResult> result = LoginDatabase.PQuery("SELECT `s`, `v` FROM `account` WHERE `id`='%u'", accid);
-    if (result)
-    {
-        Field* fields = result->Fetch();
-        SRP6 srp;
+    std::unique_ptr<QueryResult> result = LoginDatabase.PQuery(
+        "SELECT ba.`salt`, ba.`verifier` FROM `account` a JOIN `battlenet_accounts` ba ON ba.`id` = a.`battlenet_account` WHERE a.`id`='%u'", accid);
+    if (!result)
+        return false;
 
-        bool calcv = srp.CalculateVerifier(CalculateShaPassHash(username, passwd), fields[0].GetCppString().c_str());
+    Field* fields = result->Fetch();
+    std::string const saltHex = fields[0].GetCppString();
+    std::string const verifierHex = fields[1].GetCppString();
+    if (saltHex.empty() || verifierHex.empty() || (saltHex.size() % 2) != 0 || (verifierHex.size() % 2) != 0)
+        return false;
 
-        if (calcv && srp.ProofVerifier(fields[1].GetCppString()))
-        {
-            return true;
-        }
-    }
+    std::vector<uint8> salt(saltHex.size() / 2);
+    std::vector<uint8> verifier(verifierHex.size() / 2);
+    HexStrToByteArray(saltHex, salt.data());
+    HexStrToByteArray(verifierHex, verifier.data());
 
-    return false;
+    BnetSRP6 srp;
+    srp.Initialize(salt, verifier);
+    return srp.CheckCredentials(BnetSRP6::ComputeSrpUsername(username), passwd);
 }
 
 bool AccountMgr::normalizeString(std::string& utf8str)
