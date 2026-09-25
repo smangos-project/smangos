@@ -59,14 +59,6 @@ namespace WorldPackets { namespace Combat
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class CancelCombat final : public ServerPacket
-    {
-    public:
-        explicit CancelCombat() : ServerPacket(SMSG_CANCEL_COMBAT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class AttackSwingBadFacing final : public ServerPacket
     {
     public:

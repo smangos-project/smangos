@@ -215,3 +215,17 @@ TEST_CASE("world_entry: the login burst carries the weather of the character's z
         CHECK(weather->Intensity <= 1.0f);
     });
 }
+
+TEST_CASE("world_entry: logging out stops combat with SMSG_CANCEL_COMBAT", "[protocol][slow]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot(TestBotOptions().LogoutTimeoutMs(45000));
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+
+        bot.Disconnect(true);
+        REQUIRE(co_await bot.Stage(BotStage::Disconnected, 50000));
+
+        CHECK(ParsedExactly<CancelCombat>(bot, BotConnectionKind::Realm));
+    });
+}

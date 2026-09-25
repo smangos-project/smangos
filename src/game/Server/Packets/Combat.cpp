@@ -48,15 +48,6 @@ void WorldPackets::Combat::AttackSwingCantAttack::AppendBodyTo(ByteBuffer& /*buf
 {
 }
 
-size_t WorldPackets::Combat::CancelCombat::EstimateFinalSize() const
-{
-    return 0;
-}
-
-void WorldPackets::Combat::CancelCombat::AppendBodyTo(ByteBuffer& /*buffer*/) const
-{
-}
-
 size_t WorldPackets::Combat::AttackSwingBadFacing::EstimateFinalSize() const
 {
     return 0;

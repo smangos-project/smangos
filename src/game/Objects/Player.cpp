@@ -17069,7 +17069,7 @@ void Player::SendAttackSwingCantAttack() const
 
 void Player::SendAttackSwingCancelAttack() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::CancelCombat>());
+    GetSession()->SendClassic(CancelCombat{});
 }
 
 void Player::SendAttackSwingBadFacingAttack() const
