@@ -576,6 +576,39 @@ None of these is proven against a real 1.15.6 client yet.
   real. Left for whenever a real 58797 client is available to check against, or Step D needs the
   same race/class data for character creation.
 
+- **The character screen has no opcode table yet.** `bot-phase-3.md` decision 3/4 describes a
+  classic-keyed `uint32` handler table and a generic `WorldPackets::ClassicClient<T>` adapter; neither
+  exists. `CMSG_ENUM_CHARACTERS`/`CREATE_CHARACTER`/`CHAR_DELETE`/`PLAYER_LOGIN` (Step D), like
+  `CMSG_PING` before them (Step C), are hand-written `case`s in `WorldSocket::HandleCompletePacket`
+  that parse the `Classic*` struct and call a `WorldSession` method directly. **Followed: neither
+  reference** -- this is a vmangos-side shortcut that keeps `PacketProcessing`/the handler table out
+  of the classic path entirely; only the legacy-lane counter half of decision 3 actually landed. Worth
+  reconciling before more opcodes make the switch statement the de facto architecture.
+
+- **`SMSG_ENUM_CHARACTERS_RESULT` is built from `ObjectMgr`'s player cache, not a DB query.** A DB-backed
+  enum run immediately after a create can race the create's own transaction commit and come back short
+  a character -- found live (`char_screen: a created character shows up in the enum...` failed
+  intermittently) before switching to the same in-memory cache `Player::SaveNewPlayer`/`DeleteFromDB`
+  already update synchronously. The vanilla `SMSG_CHAR_ENUM` handler still queries the DB directly and
+  is unaffected. The same fix uncovered that vanilla's own per-session `m_charactersCount` guard (starts
+  at `UINT32_MAX` until a first enum runs, "to prevent character creation before amount is recalculated")
+  assumes a client always enumerates before it creates; the classic create/two-side-account checks read
+  the live cache instead, needing no prior enum.
+
+- **A zero-customization create gets a random valid vanilla appearance, not a fixed one.** The bots
+  never send `ChrCustomization` choices (`ClassicCreateCharacter::Read` rejects a nonzero count
+  outright), so there is nothing to convert to vanilla skin/face/hair yet (decision 7's mapping table).
+  `Player::SelectRandomAppearance` is used instead of hardcoded zeros, since an all-zero appearance
+  fails `ValidateAppearance` for some race/gender pairs. A real client's actual choices still can't be
+  honored.
+
+- **A handful of `ResponseCodes` have no confirmed modern wire value.** `Packets/Classic/Character.h`
+  defines the classic-numbered codes the bots and this tree's checks actually exercise
+  (`CLASSIC_CHAR_CREATE_*`, `CLASSIC_CHAR_NAME_*`); a disabled-race create, a reserved name, and the
+  PvP-teams-violation check all still block creation but answer with the closest generic failure code
+  rather than a precise one, since TrinityCore's exact numbers for those specific results aren't
+  confirmed here yet.
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
