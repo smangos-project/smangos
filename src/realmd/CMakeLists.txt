@@ -20,8 +20,6 @@ set(EXECUTABLE_SRCS
   AuthPackets.h
   AuthCodes.h
   AuthSocket.h
-  LoginThrottle.h
-  LoginThrottle.cpp
   RealmList.h
   AuthSocket.cpp
   RealmList.cpp

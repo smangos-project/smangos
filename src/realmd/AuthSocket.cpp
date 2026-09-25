@@ -33,7 +33,7 @@
 #include "RealmList.h"
 #include "AuthSocket.h"
 #include "AuthCodes.h"
-#include "LoginThrottle.h"
+#include "Auth/LoginThrottle.h"
 #include "Util.h"
 #include "ClientPatchCache.h"
 #include "Memory/NoDeleter.h"

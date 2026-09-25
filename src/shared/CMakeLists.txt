@@ -127,6 +127,8 @@ set (shared_SRCS
     Duration.h
     Auth/AuthCrypt.h
     Auth/AuthCrypt.cpp
+    Auth/LoginThrottle.h
+    Auth/LoginThrottle.cpp
     Config/Config.cpp
     Database/Database.cpp
     Database/DatabaseMysql.cpp

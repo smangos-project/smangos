@@ -32,7 +32,7 @@
 #include "Log.h"
 #include "Errors.h"
 #include "AuthSocket.h"
-#include "LoginThrottle.h"
+#include "Auth/LoginThrottle.h"
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
