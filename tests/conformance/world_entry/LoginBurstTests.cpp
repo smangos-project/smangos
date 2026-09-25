@@ -10,6 +10,7 @@
 #include <catch_amalgamated.hpp>
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace
 {
@@ -227,5 +228,42 @@ TEST_CASE("world_entry: logging out stops combat with SMSG_CANCEL_COMBAT", "[pro
         REQUIRE(co_await bot.Stage(BotStage::Disconnected, 50000));
 
         CHECK(ParsedExactly<CancelCombat>(bot, BotConnectionKind::Realm));
+    });
+}
+
+TEST_CASE("world_entry: the login burst sends the character's state in a fixed order", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(LoginSetTimeSpeed::Opcode, 10000));
+        co_await TestDelay(500);
+
+        std::vector<BotPacket> const received = bot.Received();
+        auto indexOf = [&](uint32 opcode) -> int
+        {
+            auto it = std::ranges::find_if(received, [&](BotPacket const& packet) { return packet.Opcode == opcode; });
+            return it == received.end() ? -1 : int(it - received.begin());
+        };
+
+        std::vector<uint32> const order = {
+            BindPointUpdate::Opcode,
+            SendKnownSpells::Opcode,
+            SendUnlearnSpells::Opcode,
+            SendSpellHistory::Opcode,
+            UpdateActionButtons::Opcode,
+            InitializeFactions::Opcode,
+            LoginSetTimeSpeed::Opcode,
+        };
+        int previous = -1;
+        for (uint32 opcode : order)
+        {
+            int const index = indexOf(opcode);
+            INFO("opcode " << opcode);
+            REQUIRE(index >= 0);
+            CHECK(index > previous);
+            previous = index;
+        }
     });
 }

@@ -19154,9 +19154,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
 
-    // tutorial stuff
-    GetSession()->SendTutorialsData();
-
     SendInitialSpells();
 
     if (MasterPlayer* masterPlayer = GetSession()->GetMasterPlayer())
