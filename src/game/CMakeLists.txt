@@ -220,7 +220,6 @@ set (game_SRCS
     Server/Packets/Query.cpp
     Server/Packets/Quest.cpp
     Server/Packets/Skill.cpp
-    Server/Packets/Social.cpp
     Server/Packets/Spell.cpp
     Server/Packets/Taxi.cpp
     Server/Packets/Trade.cpp

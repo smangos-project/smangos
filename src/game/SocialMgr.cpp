@@ -23,6 +23,8 @@
 #include "Policies/SingletonImp.h"
 #include "Database/DatabaseEnv.h"
 #include "Opcodes.h"
+#include "Packets/Social.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "MasterPlayer.h"
@@ -107,50 +109,45 @@ void PlayerSocial::RemoveFromSocialList(ObjectGuid friend_guid, bool ignore)
         CharacterDatabase.PExecute("UPDATE character_social SET flags = (flags & ~%u) WHERE guid = '%u' AND friend = '%u'", flag, m_playerLowGuid, friend_guid.GetCounter());
 }
 
-void PlayerSocial::SendFriendList()
+void PlayerSocial::SendContactList(uint32 flags)
 {
     MasterPlayer* plr = GetMasterPlayer();
     ASSERT(plr);
 
-    auto packet = std::make_unique<WorldPackets::Social::FriendList>();
-    packet->friends.reserve(GetNumberOfSocialsWithFlag(SOCIAL_FLAG_FRIEND));
+    ContactList packet;
+    packet.Flags = flags;
+    packet.Contacts.reserve(m_playerSocialMap.size());
 
     for (auto& itr : m_playerSocialMap)
     {
-        if (itr.second.Flags & SOCIAL_FLAG_FRIEND)         // if IsFriend()
-        {
-            FriendInfo& friendInfo = itr.second;
+        if (!(itr.second.Flags & flags))
+            continue;
+
+        FriendInfo& friendInfo = itr.second;
+        if (itr.second.Flags & SOCIAL_FLAG_FRIEND)
             sSocialMgr.GetFriendInfo(plr, itr.first, friendInfo);
 
-            WorldPackets::Social::FriendList::Entry entry;
-            entry.playerGuid = ObjectGuid(HIGHGUID_PLAYER, itr.first);
-            entry.status = friendInfo.Status;
-            if (friendInfo.Status) // if online
-            {
-                entry.area = friendInfo.Area;
-                entry.level = friendInfo.Level;
-                entry.class_ = friendInfo.Class;
-            }
-            packet->friends.push_back(entry);
-        }
+        ContactInfo contact;
+        contact.Guid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, itr.first), realmID);
+        contact.TypeFlags = friendInfo.Flags;
+        contact.Notes = friendInfo.Note;
+        contact.Status = friendInfo.Status;
+        contact.Area = friendInfo.Area;
+        contact.Level = friendInfo.Level;
+        contact.ClassId = friendInfo.Class;
+        packet.Contacts.push_back(std::move(contact));
     }
 
-    plr->GetSession()->SendPacket(std::move(packet));
+    plr->GetSession()->SendClassic(packet);
 }
 
-void PlayerSocial::SendIgnoreList()
+void PlayerSocial::SetFriendNote(ObjectGuid friend_guid, std::string note)
 {
-    MasterPlayer* plr = GetMasterPlayer();
-    ASSERT(plr);
+    PlayerSocialMap::iterator itr = m_playerSocialMap.find(friend_guid.GetCounter());
+    if (itr == m_playerSocialMap.end())
+        return;
 
-    auto packet = std::make_unique<WorldPackets::Social::IgnoreList>();
-    packet->ignoredPlayers.reserve(GetNumberOfSocialsWithFlag(SOCIAL_FLAG_IGNORED));
-
-    for (const auto& itr : m_playerSocialMap)
-        if (itr.second.Flags & SOCIAL_FLAG_IGNORED)
-            packet->ignoredPlayers.emplace_back(HIGHGUID_PLAYER, itr.first); // player guid
-
-    plr->GetSession()->SendPacket(std::move(packet));
+    itr->second.Note = std::move(note);
 }
 
 bool PlayerSocial::HasFriend(ObjectGuid friend_guid) const
@@ -241,35 +238,28 @@ void SocialMgr::SendFriendStatus(MasterPlayer* player, FriendsResult result, Obj
     FriendInfo fi;
     GetFriendInfo(player, friend_lowguid, fi);
 
-    auto packet = std::make_unique<WorldPackets::Social::FriendStatus>();
-    packet->result = result;
-    packet->friendGuid = ObjectGuid(HIGHGUID_PLAYER, friend_lowguid);
-
-    switch (result)
-    {
-        case FRIEND_ADDED_ONLINE:
-        case FRIEND_ONLINE:
-            packet->hasOnlineInfo = true;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-            packet->status = fi.Status;
-#endif
-            packet->area = fi.Area;
-            packet->level = fi.Level;
-            packet->class_ = fi.Class;
-            break;
-        default:
-            break;
-    }
+    FriendStatusUpdate packet;
+    packet.Result = result;
+    packet.FriendGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, friend_lowguid), realmID);
+    // The real wire format sends status/area/level/class unconditionally, not only for
+    // FRIEND_ADDED_ONLINE/FRIEND_ONLINE (TrinityCore's FriendStatus::Write).
+    packet.Notes = fi.Note;
+    packet.Status = fi.Status;
+    packet.Area = fi.Area;
+    packet.Level = fi.Level;
+    packet.ClassId = fi.Class;
 
     if (broadcast)
     {
-        // TODO Use broadcaster which does the binary conversion automatically
-        WorldPacket data;
-        packet->WritePacket(data);
+        ByteBuffer body;
+        packet.Write(body);
+        WorldPacket data(uint32(FriendStatusUpdate::Opcode), body.size());
+        if (!body.empty())
+            data.append(body.contents(), body.size());
         BroadcastToFriendListers(player, &data);
     }
     else
-        player->GetSession()->SendPacket(std::move(packet));
+        player->GetSession()->SendClassic(packet);
 }
 
 void SocialMgr::BroadcastToFriendListers(MasterPlayer const* player, WorldPacket const* packet)

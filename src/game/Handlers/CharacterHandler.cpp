@@ -328,8 +328,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
     SendTutorialsData();
     SendAccountDataTimes();
 
-    pCurrChar->GetSocial()->SendFriendList();
-    pCurrChar->GetSocial()->SendIgnoreList();
+    pCurrChar->GetSocial()->SendContactList(SOCIAL_FLAG_FRIEND | SOCIAL_FLAG_IGNORED);
 
     // Send MOTD (1.12.1 not have SMSG_MOTD, so do it in another way)
     {

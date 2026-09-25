@@ -32,6 +32,7 @@
 #include "GuildMgr.h"
 #include "ObjectMgr.h"
 #include "WorldSession.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "ScriptMgr.h"
 #include "Compression/ZLib.h"
 #include "ObjectAccessor.h"
@@ -456,23 +457,35 @@ void WorldSession::HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateCh
     _player->SetStandState(packet.animState);
 }
 
-void WorldSession::HandleFriendListOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleFriendListOpcode(SendContactList const& packet)
 {
     ASSERT(GetMasterPlayer());
-    GetMasterPlayer()->GetSocial()->SendFriendList();
+    GetMasterPlayer()->GetSocial()->SendContactList(packet.Flags);
 }
 
-void WorldSession::HandleAddFriendOpcode(WorldPackets::Misc::AddFriend const& packet)
+void WorldSession::HandleSetContactNotesOpcode(SetContactNotes const& packet)
 {
     ASSERT(GetMasterPlayer());
 
-    if (!normalizePlayerName(const_cast<std::string&>(packet.friendName)))
+    nonstd::optional<ObjectGuid> friendGuid = ClassicGuidMapping::FromClassic(packet.Player.Guid);
+    if (!friendGuid)
+        return;
+
+    GetMasterPlayer()->GetSocial()->SetFriendNote(*friendGuid, packet.Notes);
+}
+
+void WorldSession::HandleAddFriendOpcode(AddFriend const& packet)
+{
+    ASSERT(GetMasterPlayer());
+
+    std::string friendName = packet.FriendName;
+    if (!normalizePlayerName(friendName))
         return;
 
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: %s asked to add friend : '%s'",
-              GetMasterPlayer()->GetName(), packet.friendName.c_str());
+              GetMasterPlayer()->GetName(), friendName.c_str());
 
-    PlayerCacheData const* pData = sObjectMgr.GetPlayerDataByName(packet.friendName);
+    PlayerCacheData const* pData = sObjectMgr.GetPlayerDataByName(friendName);
     if (!pData)
         return;
 
@@ -503,32 +516,39 @@ void WorldSession::HandleAddFriendOpcode(WorldPackets::Misc::AddFriend const& pa
                 friendResult = FRIEND_LIST_FULL;
                 sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: %s's friend list is full.", GetMasterPlayer()->GetName());
             }
+            else
+                GetMasterPlayer()->GetSocial()->SetFriendNote(friendGuid, packet.Notes);
         }
     }
 
     sSocialMgr.SendFriendStatus(GetMasterPlayer(), friendResult, friendGuid, false);
 }
 
-void WorldSession::HandleDelFriendOpcode(WorldPackets::Misc::DelFriend const& packet)
+void WorldSession::HandleDelFriendOpcode(DelFriend const& packet)
 {
     ASSERT(GetMasterPlayer());
 
-    GetMasterPlayer()->GetSocial()->RemoveFromSocialList(packet.friendGuid, false);
+    nonstd::optional<ObjectGuid> friendGuid = ClassicGuidMapping::FromClassic(packet.Player.Guid);
+    if (!friendGuid)
+        return;
 
-    sSocialMgr.SendFriendStatus(GetMasterPlayer(), FRIEND_REMOVED, packet.friendGuid, false);
+    GetMasterPlayer()->GetSocial()->RemoveFromSocialList(*friendGuid, false);
+
+    sSocialMgr.SendFriendStatus(GetMasterPlayer(), FRIEND_REMOVED, *friendGuid, false);
 }
 
-void WorldSession::HandleAddIgnoreOpcode(WorldPackets::Misc::AddIgnore const& packet)
+void WorldSession::HandleAddIgnoreOpcode(AddIgnore const& packet)
 {
     ASSERT(GetMasterPlayer());
 
-    if (!normalizePlayerName(const_cast<std::string&>(packet.ignoreName)))
+    std::string ignoreName = packet.IgnoreName;
+    if (!normalizePlayerName(ignoreName))
         return;
 
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: %s asked to Ignore: '%s'",
-              GetMasterPlayer()->GetName(), packet.ignoreName.c_str());
+              GetMasterPlayer()->GetName(), ignoreName.c_str());
 
-    PlayerCacheData const* pData = sObjectMgr.GetPlayerDataByName(packet.ignoreName);
+    PlayerCacheData const* pData = sObjectMgr.GetPlayerDataByName(ignoreName);
     if (!pData)
         return;
 
@@ -555,13 +575,17 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPackets::Misc::AddIgnore const& pa
     sSocialMgr.SendFriendStatus(GetMasterPlayer(), ignoreResult, ignoreGuid, false);
 }
 
-void WorldSession::HandleDelIgnoreOpcode(WorldPackets::Misc::DelIgnore const& packet)
+void WorldSession::HandleDelIgnoreOpcode(DelIgnore const& packet)
 {
     ASSERT(GetMasterPlayer());
 
-    GetMasterPlayer()->GetSocial()->RemoveFromSocialList(packet.ignoreGuid, true);
+    nonstd::optional<ObjectGuid> ignoreGuid = ClassicGuidMapping::FromClassic(packet.Player.Guid);
+    if (!ignoreGuid)
+        return;
 
-    sSocialMgr.SendFriendStatus(GetMasterPlayer(), FRIEND_IGNORE_REMOVED, packet.ignoreGuid, false);
+    GetMasterPlayer()->GetSocial()->RemoveFromSocialList(*ignoreGuid, true);
+
+    sSocialMgr.SendFriendStatus(GetMasterPlayer(), FRIEND_IGNORE_REMOVED, *ignoreGuid, false);
 }
 
 void WorldSession::HandleBugOpcode(WorldPackets::Misc::Bug const& packet)

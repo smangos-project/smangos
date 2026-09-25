@@ -627,11 +627,12 @@ class WorldSession
         void HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget const& packet);
         void HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateChange const& packet);
         void HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet);
-        void HandleFriendListOpcode(NullClientPacket const& packet);
-        void HandleAddFriendOpcode(WorldPackets::Misc::AddFriend const& packet);
-        void HandleDelFriendOpcode(WorldPackets::Misc::DelFriend const& packet);
-        void HandleAddIgnoreOpcode(WorldPackets::Misc::AddIgnore const& packet);
-        void HandleDelIgnoreOpcode(WorldPackets::Misc::DelIgnore const& packet);
+        void HandleFriendListOpcode(SendContactList const& packet);
+        void HandleSetContactNotesOpcode(SetContactNotes const& packet);
+        void HandleAddFriendOpcode(AddFriend const& packet);
+        void HandleDelFriendOpcode(DelFriend const& packet);
+        void HandleAddIgnoreOpcode(AddIgnore const& packet);
+        void HandleDelIgnoreOpcode(DelIgnore const& packet);
         void HandleBugOpcode(WorldPackets::Misc::Bug const& packet);
         void HandleSetAmmoOpcode(WorldPackets::Item::SetAmmo const& packet);
         void HandleItemNameQueryOpcode(WorldPackets::Query::ItemNameQuery const& packet);

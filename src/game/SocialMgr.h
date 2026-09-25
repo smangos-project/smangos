@@ -26,6 +26,7 @@
 #include "Database/DatabaseEnv.h"
 #include "ObjectGuid.h"
 #include <shared_mutex>
+#include <string>
 
 class SocialMgr;
 class PlayerSocial;
@@ -56,6 +57,9 @@ struct FriendInfo
     uint32 Area;
     uint32 Level;
     uint32 Class;
+    // Per-contact note, set via CLASSIC_CMSG_SET_CONTACT_NOTES. In-memory only: not persisted to
+    // character_social (no `note` column), so it is lost on relog.
+    std::string Note;
 
     FriendInfo()
     {
@@ -125,8 +129,10 @@ class PlayerSocial
         void RemoveFromSocialList(ObjectGuid friend_guid, bool ignore);
         void SetFriendNote(ObjectGuid friend_guid, std::string note);
         // Packet send's
-        void SendFriendList();
-        void SendIgnoreList();
+        // Replaces the old separate SendFriendList()/SendIgnoreList() (SMSG_FRIEND_LIST/
+        // SMSG_IGNORE_LIST) -- the modern client requests and receives friends and ignores
+        // together in one SMSG_CONTACT_LIST, filtered by the requested SocialFlag bitmask.
+        void SendContactList(uint32 flags);
         // Misc
         bool HasFriend(ObjectGuid friend_guid) const;
         bool HasIgnore(ObjectGuid ignore_guid) const;

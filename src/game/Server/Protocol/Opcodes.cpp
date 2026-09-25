@@ -184,14 +184,14 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_WHO,                          UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_WHOIS,                        STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleWhoisOpcode);
     INVALID_PACKET(SMSG_WHOIS,                        UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_FRIEND_LIST,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleFriendListOpcode);
+    INVALID_PACKET(CMSG_FRIEND_LIST,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FRIEND_LIST,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_FRIEND_STATUS,                UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_ADD_FRIEND,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleAddFriendOpcode);
-    DEFINE_HANDLER(CMSG_DEL_FRIEND,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleDelFriendOpcode);
+    INVALID_PACKET(CMSG_ADD_FRIEND,                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_DEL_FRIEND,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_IGNORE_LIST,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_ADD_IGNORE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleAddIgnoreOpcode);
-    DEFINE_HANDLER(CMSG_DEL_IGNORE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleDelIgnoreOpcode);
+    INVALID_PACKET(CMSG_ADD_IGNORE,                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_DEL_IGNORE,                   UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_GROUP_INVITE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GROUP,         &WorldSession::HandleGroupInviteOpcode);
     INVALID_PACKET(SMSG_GROUP_INVITE,                 UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GROUP_CANCEL,                 UnhandleReason::Unhandled);
@@ -994,6 +994,12 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CONNECT_TO_FAILED,   STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicConnectToFailedOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOGOUT_REQUEST,      STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleClassicLogoutRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TIME_SYNC_RESPONSE,  STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicTimeSyncResponseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SEND_CONTACT_LIST,   STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleFriendListOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_CONTACT_NOTES,   STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleSetContactNotesOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ADD_FRIEND,          STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleAddFriendOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DEL_FRIEND,          STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleDelFriendOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ADD_IGNORE,          STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleAddIgnoreOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DEL_IGNORE,          STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleDelIgnoreOpcode);
 
     return list;
 }

@@ -37,6 +37,7 @@ add_executable(tests-realbots
   ClassicPacketsTests.cpp
   ClassicPacketsRoundTripTests.cpp
   PlayerStatePacketsTests.cpp
+  SocialPacketsTests.cpp
   BotWorldConnectionTests.cpp
   BotWorldLoginTests.cpp
   BotLoginTests.cpp
