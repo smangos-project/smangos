@@ -35,16 +35,29 @@ bool WorldSocketMgr::StartWorldNetworking(IO::IoContext* ioCtx, WorldSocketMgrOp
     m_ioContext = ioCtx;
     m_settings = options;
 
-    // Launch the listening network socket
-    m_listener = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ioCtx, options.bindIp, options.bindPort);
-    if (m_listener == nullptr)
+    // Launch both listening network sockets: the Realm connection (character screen onward) and
+    // the Instance connection SMSG_CONNECT_TO redirects a session to (decision 5).
+    m_realmListener = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ioCtx, options.bindIp, options.realmPort);
+    if (m_realmListener == nullptr)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Failed to start WorldSocket network");
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Failed to start WorldSocket (Realm) network");
         return false;
     }
-    m_listener->AutoAcceptSocketsUntilClose([this](IO::Networking::SocketDescriptor socketDescriptor)
+    m_instanceListener = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ioCtx, options.bindIp, options.instancePort);
+    if (m_instanceListener == nullptr)
     {
-        this->OnNewClientConnected(std::move(socketDescriptor));
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Failed to start WorldSocket (Instance) network");
+        m_realmListener = nullptr;
+        return false;
+    }
+
+    m_realmListener->AutoAcceptSocketsUntilClose([this](IO::Networking::SocketDescriptor socketDescriptor)
+    {
+        this->OnNewClientConnected(std::move(socketDescriptor), ClassicConnectionType::Realm);
+    });
+    m_instanceListener->AutoAcceptSocketsUntilClose([this](IO::Networking::SocketDescriptor socketDescriptor)
+    {
+        this->OnNewClientConnected(std::move(socketDescriptor), ClassicConnectionType::Instance);
     });
 
     return true;
@@ -53,18 +66,23 @@ bool WorldSocketMgr::StartWorldNetworking(IO::IoContext* ioCtx, WorldSocketMgrOp
 void WorldSocketMgr::StopWorldNetworking()
 {
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Stop world networking...");
-    if (m_listener != nullptr)
+    if (m_realmListener != nullptr)
     {
-        m_listener->ClosePortAndStopAcceptingNewConnections();
-        m_listener = nullptr;
+        m_realmListener->ClosePortAndStopAcceptingNewConnections();
+        m_realmListener = nullptr;
+    }
+    if (m_instanceListener != nullptr)
+    {
+        m_instanceListener->ClosePortAndStopAcceptingNewConnections();
+        m_instanceListener = nullptr;
     }
 }
 
-void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socketDescriptor)
+void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socketDescriptor, ClassicConnectionType connectionType)
 {
     // Attach descriptor to AsyncSocket and configure it before attaching it to the WorldSocket
     IO::IoContext* ioContext = GetLeastUsedIoContext();
-    auto worldSocket = std::make_shared<WorldSocket>(IO::Networking::AsyncSocket(ioContext, std::move(socketDescriptor)));
+    auto worldSocket = std::make_shared<WorldSocket>(IO::Networking::AsyncSocket(ioContext, std::move(socketDescriptor)), connectionType);
     std::string const& socketIp = worldSocket->m_socket.GetRemoteIpString();
 
     if (IO::NetworkError initError = worldSocket->m_socket.InitializeAndFixateMemoryLocation())

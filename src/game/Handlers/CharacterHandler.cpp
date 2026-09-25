@@ -516,9 +516,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
                              ? pCurrChar->m_movementInfo.GetTransportPos()
                              : pCurrChar->GetPosition();
 
-    auto loginVerifyWorld = std::make_unique<WorldPackets::Character::LoginVerifyWorld>();
-    loginVerifyWorld->location = position.WithMapId(pCurrChar->GetMapId());
-    SendPacket(std::move(loginVerifyWorld));
+    ClassicLoginVerifyWorld loginVerifyWorld;
+    loginVerifyWorld.MapId = pCurrChar->GetMapId();
+    loginVerifyWorld.X = position.x;
+    loginVerifyWorld.Y = position.y;
+    loginVerifyWorld.Z = position.z;
+    loginVerifyWorld.O = position.o;
+    SendClassic(loginVerifyWorld);
 
     // load player specific part before send times
     LoadAccountData(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), NewAccountData::PER_CHARACTER_CACHE_MASK);

@@ -114,6 +114,32 @@ struct ClassicLogoutRequest
     }
 };
 
+// A LogoutResult (0 == Ok) then an Instant bit, flushed to its own byte.
+struct ClassicLogoutResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_RESPONSE;
+
+    int32 Reason = 0;
+    bool Instant = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Reason;
+        data.WriteBit(Instant);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        data >> Reason;
+        Instant = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 // Empty body. Arrives on the Realm connection even when the logout request was sent on the
 // Instance one.
 struct ClassicLogoutComplete

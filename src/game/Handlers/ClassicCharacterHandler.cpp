@@ -32,6 +32,7 @@
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
 #include "Util.h"
+#include "Packets/Classic/Auth.h"
 #include "Packets/Classic/GuidMapping.h"
 
 namespace
@@ -282,8 +283,35 @@ void WorldSession::HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& pack
         return;
     }
 
-    // World entry (SMSG_CONNECT_TO, the Instance connection, SMSG_LOGIN_VERIFY_WORLD) is
-    // port-plan.md step 5, not built yet -- a valid login is acknowledged with nothing further.
-    sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[%s] WorldSession: CMSG_PLAYER_LOGIN for guid %u validated; world entry not ported yet",
-        GetRemoteAddress().c_str(), guid.GetCounter());
+    // The redirect to the Instance connection starts in parallel with the player load, not after
+    // it: a slow load shouldn't hold up the client's own retries.
+    SendConnectToInstance(CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1);
+    LoginPlayer(guid);
+}
+
+void WorldSession::HandleClassicConnectToFailedOpcode(ClassicConnectToFailed const& packet)
+{
+    if (!m_awaitingInstanceConnect || packet.Serial != m_pendingInstanceConnectSerial)
+        return; // stale or unexpected; the pending attempt (if any) is what still matters
+
+    uint32 nextSerial = 0;
+    switch (packet.Serial)
+    {
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4; break;
+        case CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4: nextSerial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5; break;
+        default: break; // attempt 5 (or unknown) exhausts the retries
+    }
+
+    if (nextSerial == 0)
+    {
+        m_awaitingInstanceConnect = false;
+        ClassicCharacterLoginFailed failed;
+        failed.Reason = 1; // NoWorld
+        SendClassic(failed);
+        return;
+    }
+
+    SendConnectToInstance(nextSerial);
 }

@@ -28,13 +28,15 @@
 #include "Policies/Singleton.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
+#include "Protocol/ClassicOpcodes.h"
 
 class WorldSocket;
 
 struct WorldSocketMgrOptions
 {
     std::string bindIp;
-    uint16 bindPort;
+    uint16 realmPort;
+    uint16 instancePort;
     int socketOutByteBufferSize;
     bool doExplicitTcpNoDelay;
     std::vector<std::string> trustedProxyIps;
@@ -45,16 +47,18 @@ class WorldSocketMgr : public MaNGOS::Singleton<WorldSocketMgr, MaNGOS::ClassLev
 public:
     explicit WorldSocketMgr() = default;
 
-    /// Will return true start was okay
+    /// Will return true start was okay. Starts both the Realm and Instance listeners (decision 5:
+    /// one WorldSocket class, tagged by which listener accepted it).
     bool StartWorldNetworking(IO::IoContext* ioCtx, WorldSocketMgrOptions const& options);
     void StopWorldNetworking();
-    void OnNewClientConnected(IO::Networking::SocketDescriptor socketDescriptor);
+    void OnNewClientConnected(IO::Networking::SocketDescriptor socketDescriptor, ClassicConnectionType connectionType);
 
 private:
     IO::IoContext* GetLeastUsedIoContext();
 
     IO::IoContext* m_ioContext{nullptr};
-    std::unique_ptr<IO::Networking::AsyncSocketAcceptor> m_listener{nullptr};
+    std::unique_ptr<IO::Networking::AsyncSocketAcceptor> m_realmListener{nullptr};
+    std::unique_ptr<IO::Networking::AsyncSocketAcceptor> m_instanceListener{nullptr};
     WorldSocketMgrOptions m_settings{};
 };
 

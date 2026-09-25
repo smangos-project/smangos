@@ -43,6 +43,7 @@
 #include "MassMailMgr.h"
 #include "DBCStores.h"
 #include "WorldSocketMgr.h"
+#include "Bnet/BnetRealmList.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Multithreading/CreateThread.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
@@ -168,6 +169,10 @@ int Master::Run()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "World server is running realm ID: %d Name: \"%s\"", realmID, realmName.c_str());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
+
+    // Region/battlegroup only matter for the bnet-encoded realm address (bnetserver's own use);
+    // this realm's row (address, port) is all SendConnectToInstance needs.
+    sBnetRealmList.Initialize(1, 1, sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
 
     std::unique_ptr<IO::IoContext> ioCtxUniquePtr = IO::IoContext::CreateIoContext();
     IO::IoContext* ioCtx = ioCtxUniquePtr.get();
@@ -296,7 +301,8 @@ int Master::Run()
 
     // Launch the world listener socket
     std::string bindIp = sConfig.GetStringDefault("BindIP", "0.0.0.0");
-    uint16 bindPort = sWorld.getConfig(CONFIG_UINT32_PORT_WORLD);
+    uint16 realmPort = uint16(sWorld.getConfig(CONFIG_UINT32_PORT_WORLD));
+    uint16 instancePort = uint16(sWorld.getConfig(CONFIG_UINT32_PORT_WORLD_INSTANCE));
     int socketOutByteBufferSize = sConfig.GetIntDefault("Network.SystemSendBuffer", -1);
     bool doExplicitTcpNoDelay = sConfig.GetBoolDefault("Network.TcpNoDelay", true);
     std::vector<std::string> trustedProxyIps = SplitStringByDelimiter(sConfig.GetStringDefault("Network.TrustedProxyServers", ""), ',');
@@ -304,7 +310,8 @@ int Master::Run()
     WorldSocketMgrOptions socketOptions
     {
         bindIp,
-        bindPort,
+        realmPort,
+        instancePort,
         socketOutByteBufferSize,
         doExplicitTcpNoDelay,
         trustedProxyIps,

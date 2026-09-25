@@ -43,6 +43,12 @@
 #include "MasterPlayer.h"
 #include "PlayerBroadcaster.h"
 #include "Crypto/Hash/MD5.h"
+#include "Crypto/Hash/SHA256.h"
+#include "Crypto/RsaSign.h"
+#include "Bnet/BnetRealmList.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Misc.h"
+#include "Utilities/Random.h"
 
 #include <algorithm>
 #include <limits>
@@ -92,11 +98,16 @@ WorldSession::~WorldSession()
     if (_player)
         LogoutPlayer(!m_bot || sPlayerBotMgr.IsSavingAllowed());
 
-    // If have unclosed socket, close it
+    // If have unclosed sockets, close them
     if (m_socket)
     {
         m_socket->FinalizeSession();
         m_socket = nullptr; // <-- technically this is unnecessary, since we are in the destructor that will destruct all other members soon anyway
+    }
+    if (m_instanceSocket)
+    {
+        m_instanceSocket->FinalizeSession();
+        m_instanceSocket = nullptr;
     }
 
     // empty incoming packet queue
@@ -236,7 +247,79 @@ void WorldSession::SendPacketImpl(WorldPacket const* packet)
     if (m_sniffFile)
         m_sniffFile->WritePacket(*packet, false, time(nullptr));
 
-    m_socket->SendPacket(*packet);
+    // Every classic opcode has a fixed connection (decision 5); a packet whose socket isn't up yet
+    // (most commonly the Instance one, before SMSG_CONNECT_TO's redirect lands) is dropped rather
+    // than sent on the wrong socket.
+    WorldSocket* target = ClassicSendRoute(packet->GetOpcode()) == ClassicConnectionType::Instance ? m_instanceSocket.get() : m_socket.get();
+    if (!target)
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[NETWORK] %s has no socket to send %s on yet, dropped", GetPlayerName(), LookupOpcodeName(packet->GetOpcode()));
+        return;
+    }
+    target->SendPacket(*packet);
+}
+
+void WorldSession::SendConnectToInstance(uint32 serial)
+{
+    auto sendFailed = [this]()
+    {
+        SendClassic(ClassicCharacterLoginFailed{ 1 }); // NoWorld
+        m_awaitingInstanceConnect = false;
+    };
+
+    nonstd::optional<BnetRealm> realm = sBnetRealmList.FindById(realmID);
+    if (!realm)
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] WorldSession: this realm's own row is missing from `realmlist`, can't redirect to the Instance connection", GetRemoteAddress().c_str());
+        sendFailed();
+        return;
+    }
+
+    nonstd::optional<IO::Networking::IpAddress> clientAddress = IO::Networking::IpAddress::TryParseFromString(GetRemoteAddress());
+    IO::Networking::IpAddress const& address = clientAddress ? realm->GetAddressForClient(*clientAddress) : realm->externalAddress;
+    if (address.GetType() != IO::Networking::IpAddress::Type::IPv4)
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] WorldSession: the realm's address isn't IPv4, can't redirect to the Instance connection", GetRemoteAddress().c_str());
+        sendFailed();
+        return;
+    }
+
+    ConnectToKey key;
+    key.AccountId = GetAccountId();
+    key.ConnectionType = uint8(ClassicConnectionType::Instance);
+    key.Value = urand(0, 0x7FFFFFFF);
+    uint64 const packedKey = key.Pack();
+
+    ClassicConnectTo connectTo;
+    uint32_t const ipv4 = address._getInternalIPv4ReprAsUint32();
+    connectTo.AddressIPv4 = { uint8(ipv4 >> 24), uint8(ipv4 >> 16), uint8(ipv4 >> 8), uint8(ipv4) };
+    connectTo.Port = uint16(sWorld.getConfig(CONFIG_UINT32_PORT_WORLD_INSTANCE));
+    connectTo.Serial = serial;
+    connectTo.ConnectionType = key.ConnectionType;
+    connectTo.Key = packedKey;
+
+    // The signed message is the "where" (address type + address) and port only -- Serial/Con/Key
+    // aren't covered, only the destination the client is being redirected to.
+    ByteBuffer signBuffer;
+    signBuffer << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    signBuffer.append(connectTo.AddressIPv4.data(), connectTo.AddressIPv4.size());
+    signBuffer << uint32(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    signBuffer << connectTo.Port;
+    SHA256::Digest const digest = SHA256::ComputeFrom(signBuffer.contents(), signBuffer.size());
+
+    RsaSign rsa;
+    if (rsa.LoadBlizzardKey())
+    {
+        std::vector<uint8> const signature = rsa.SignDigest(digest.data(), digest.size());
+        if (signature.size() == connectTo.Signature.size())
+            std::copy(signature.begin(), signature.end(), connectTo.Signature.begin());
+    }
+
+    m_pendingInstanceConnectKey = packedKey;
+    m_pendingInstanceConnectSerial = serial;
+    m_awaitingInstanceConnect = true;
+
+    SendClassic(connectTo);
 }
 
 void WorldSession::VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket)
@@ -511,6 +594,15 @@ bool WorldSession::Update(PacketFilter& updater)
         {
             LogoutPlayer(sPlayerBotMgr.IsSavingAllowed());
             return false;
+        }
+
+        // The Instance connection can close on its own (a clean logout closes it right after
+        // SMSG_LOGOUT_COMPLETE) without that being the whole session ending; only the Realm socket
+        // going away below drives that decision.
+        if (m_instanceSocket && m_instanceSocket->IsClosing())
+        {
+            m_instanceSocket->FinalizeSession();
+            m_instanceSocket = nullptr;
         }
 
         // Cleanup socket pointer if needed
@@ -874,8 +966,14 @@ void WorldSession::LogoutPlayer(bool Save)
 
         SetPlayer(nullptr);                                    // deleted in Remove/DeleteFromWorld call
 
-        // Send the 'logout complete' packet to the client
-        SendPacket(std::make_unique<WorldPackets::Misc::LogoutComplete>());
+        // Answers on the Realm connection (the route table) even though the logout request came in
+        // on the Instance one; the Instance connection is then done and closes right behind it.
+        SendClassic(ClassicLogoutComplete{});
+        if (m_instanceSocket)
+        {
+            m_instanceSocket->CloseSocket();
+            m_instanceSocket = nullptr;
+        }
 
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
     }
@@ -905,6 +1003,9 @@ void WorldSession::LogoutPlayer(bool Save)
 // Kick a player out of the World
 void WorldSession::KickPlayer()
 {
+    if (m_instanceSocket)
+        m_instanceSocket->CloseSocket();
+
     if (m_socket)
         m_socket->CloseSocket();
     else if (m_bot)

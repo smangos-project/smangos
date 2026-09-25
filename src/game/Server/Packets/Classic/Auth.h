@@ -168,6 +168,32 @@ struct ClassicConnectTo
     }
 };
 
+// What ClassicConnectTo::Key / ClassicAuthContinuedSession::Key packs: the account it was issued
+// for, which connection it redirects to (always Instance today), and a random value that ties a
+// CMSG_AUTH_CONTINUED_SESSION back to the SMSG_CONNECT_TO that caused it. A fresh key is issued on
+// every attempt (WorldSession::SendConnectToInstance), so only the most recently issued one for an
+// account is ever accepted.
+struct ConnectToKey
+{
+    uint32 AccountId = 0;
+    uint8 ConnectionType = 0;
+    uint32 Value = 0; // 31 bits
+
+    uint64 Pack() const
+    {
+        return (uint64(AccountId) << 32) | (uint64(ConnectionType & 0x1) << 31) | uint64(Value & 0x7FFFFFFF);
+    }
+
+    static ConnectToKey Unpack(uint64 packed)
+    {
+        ConnectToKey key;
+        key.AccountId = uint32(packed >> 32);
+        key.ConnectionType = uint8((packed >> 31) & 0x1);
+        key.Value = uint32(packed & 0x7FFFFFFF);
+        return key;
+    }
+};
+
 // SMSG_CONNECT_TO carries the attempt it belongs to, and CMSG_CONNECT_TO_FAILED echoes the one
 // that failed.
 constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1 = 17;

@@ -40,7 +40,9 @@
 #include "Packets/Battleground.h"
 #include "Packets/Channel.h"
 #include "Packets/Character.h"
+#include "Packets/Classic/Auth.h"
 #include "Packets/Classic/Character.h"
+#include "Packets/Classic/Misc.h"
 #include "Packets/Chat.h"
 #include "Packets/Combat.h"
 #include "Packets/Duel.h"
@@ -64,6 +66,7 @@
 #include "Packets/Trade.h"
 #include "Packets/Warden.h"
 
+#include <array>
 #include <memory>
 
 struct ItemPrototype;
@@ -246,6 +249,24 @@ class WorldSession
         void LoginPlayer(ObjectGuid playerGuid);
         std::shared_ptr<WorldSocket> GetSocket() { return m_socket; }
 
+        // The Instance connection SMSG_CONNECT_TO redirects a session to (decision 5); null until
+        // CMSG_AUTH_CONTINUED_SESSION attaches one.
+        std::shared_ptr<WorldSocket> GetInstanceSocket() { return m_instanceSocket; }
+        void SetInstanceSocket(std::shared_ptr<WorldSocket> socket)
+        {
+            m_instanceSocket = std::move(socket);
+            m_awaitingInstanceConnect = false; // attached; no more SMSG_CONNECT_TO retries needed
+        }
+
+        // The 40-byte world session key CMSG_AUTH_SESSION established on the Realm connection;
+        // CMSG_AUTH_CONTINUED_SESSION's digest is checked against it rather than a fresh exchange.
+        void SetWorldSessionKeyBytes(std::array<uint8, 40> const& key) { m_worldSessionKey = key; }
+        std::array<uint8, 40> const& GetWorldSessionKeyBytes() const { return m_worldSessionKey; }
+
+        // The most recently issued SMSG_CONNECT_TO key, checked against CMSG_AUTH_CONTINUED_SESSION.
+        void SetPendingInstanceConnectKey(uint64 key) { m_pendingInstanceConnectKey = key; }
+        uint64 GetPendingInstanceConnectKey() const { return m_pendingInstanceConnectKey; }
+
         // Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
 
@@ -362,6 +383,10 @@ class WorldSession
 
     private:
         void SendPacketImpl(WorldPacket const* packet);
+
+        // Issues a fresh ConnectToKey, sends SMSG_CONNECT_TO for it (serial = the attempt number,
+        // decision 5's escalation), and remembers the key for CMSG_AUTH_CONTINUED_SESSION to check.
+        void SendConnectToInstance(uint32 serial);
 
         static void VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket);
 
@@ -523,6 +548,8 @@ class WorldSession
         void HandleClassicCharCreateOpcode(ClassicCreateCharacter const& packet);
         void HandleClassicCharDeleteOpcode(ClassicCharDelete const& packet);
         void HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& packet);
+        void HandleClassicConnectToFailedOpcode(ClassicConnectToFailed const& packet);
+        void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
         void HandlePlayedTime(NullClientPacket const& packet);
 
         // Movement
@@ -882,6 +909,11 @@ class WorldSession
 
         uint32 const m_guid; // unique identifier for each session
         std::shared_ptr<WorldSocket> m_socket;
+        std::shared_ptr<WorldSocket> m_instanceSocket; // SMSG_CONNECT_TO's target; null until attached
+        std::array<uint8, 40> m_worldSessionKey{}; // set once, by CMSG_AUTH_SESSION on the Realm connection
+        uint64 m_pendingInstanceConnectKey = 0; // the most recently issued SMSG_CONNECT_TO's key
+        uint32 m_pendingInstanceConnectSerial = 0; // ... and the attempt serial it went out with
+        bool m_awaitingInstanceConnect = false; // true from the first SMSG_CONNECT_TO until one lands
         std::string m_remoteIpAddress; // might also be "<BOT>"
         LockedQueue<std::unique_ptr<ClientPacket const>, std::mutex> m_recvQueue[PACKET_PROCESS_MAX_TYPE];
         bool m_receivedPacketType[PACKET_PROCESS_MAX_TYPE];

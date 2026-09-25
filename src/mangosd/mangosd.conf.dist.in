@@ -57,7 +57,11 @@ ConfVersion=2025040601
 #        Default: 600 (10 min)
 #
 #    WorldServerPort
-#        Port on which the server will listen
+#        Port on which the server will listen for the Realm connection (character screen)
+#
+#    InstanceServerPort
+#        Port on which the server will listen for the Instance connection (in the world),
+#        which SMSG_CONNECT_TO redirects a session to after CMSG_PLAYER_LOGIN
 #
 #    BindIP
 #        Bind World Server to IP/hostname
@@ -85,6 +89,7 @@ LogsDatabase.Connections = 1
 LogsDatabase.WorkerThreads = 1
 Database.AliveCheckInternal = 600
 WorldServerPort = 8085
+InstanceServerPort = 8086
 BindIP = "0.0.0.0"
 
 ###################################################################################################################

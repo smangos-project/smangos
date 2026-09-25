@@ -66,8 +66,9 @@ std::array<uint8, 32> RandomChallenge32()
 std::string const WorldSocket::ServerBanner = "WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT - V2";
 std::string const WorldSocket::ClientBanner = "WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER - V2";
 
-WorldSocket::WorldSocket(IO::Networking::AsyncSocket socket)
-    : m_socket(std::move(socket)),
+WorldSocket::WorldSocket(IO::Networking::AsyncSocket socket, ClassicConnectionType connectionType)
+    : m_connectionType(connectionType),
+      m_socket(std::move(socket)),
       m_lastPingTime(std::chrono::system_clock::time_point::min()),
       m_overSpeedPings(0),
       m_crypt(PacketCryptRole::Server),
@@ -226,13 +227,22 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
         switch (opcode)
         {
             case CLASSIC_CMSG_AUTH_SESSION:
-                if (m_stage != HandshakeStage::AwaitingAuthSession)
+                if (m_stage != HandshakeStage::AwaitingAuthSession || m_connectionType != ClassicConnectionType::Realm)
                 {
                     sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: unexpected CMSG_AUTH_SESSION", GetRemoteIpString().c_str());
                     CloseSocket();
                     return HandlerResult::Fail;
                 }
                 return HandleAuthSession(data);
+
+            case CLASSIC_CMSG_AUTH_CONTINUED_SESSION:
+                if (m_stage != HandshakeStage::AwaitingAuthSession || m_connectionType != ClassicConnectionType::Instance)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: unexpected CMSG_AUTH_CONTINUED_SESSION", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleAuthContinuedSession(data);
 
             case CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK:
                 if (m_stage != HandshakeStage::AwaitingEncryptedModeAck)
@@ -287,6 +297,24 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
                     return HandlerResult::Fail;
                 }
                 return HandlePlayerLogin(data);
+
+            case CLASSIC_CMSG_CONNECT_TO_FAILED:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CONNECT_TO_FAILED before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleConnectToFailed(data);
+
+            case CLASSIC_CMSG_LOGOUT_REQUEST:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_LOGOUT_REQUEST before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleLogoutRequest(data);
 
             default:
                 if (m_Session == nullptr)
@@ -394,6 +422,7 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthSession(ByteBuffer& data)
     m_Session->SetGameBuild(58797);
     m_Session->SetAccountFlags(accFlags);
     m_Session->SetVerifiedEmail(verifiedEmail);
+    m_Session->SetWorldSessionKeyBytes(sessionKey);
     m_Session->LoadGlobalAccountData();
     m_Session->LoadTutorialsData();
     sAccountMgr.UpdateAccountData(accountId, username, email, verifiedEmail, security);
@@ -449,10 +478,16 @@ WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& 
         m_handshakeTimeout = nullptr;
     }
 
-    // Every packet from here on (starting with SMSG_AUTH_RESPONSE below) is encrypted; the ack
-    // itself was decrypted above while still unarmed, exactly as the client sent it.
+    // Every packet from here on (starting with SMSG_AUTH_RESPONSE/SMSG_RESUME_COMMS below) is
+    // encrypted; the ack itself was decrypted above while still unarmed, exactly as the client sent it.
     m_crypt.Init(m_encryptKey);
     m_stage = HandshakeStage::Done;
+
+    if (m_connectionType == ClassicConnectionType::Instance)
+    {
+        SendClassic(ClassicResumeComms{});
+        return HandlerResult::Okay;
+    }
 
     ClassicAuthResponse response;
     response.Result = 0; // Ok
@@ -566,6 +601,66 @@ WorldSocket::HandlerResult WorldSocket::HandlePlayerLogin(ByteBuffer& data)
         return HandlerResult::Okay;
     }
     m_Session->HandleClassicPlayerLoginOpcode(packet);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::FailAuthContinuedSession(char const* reason)
+{
+    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_AUTH_CONTINUED_SESSION rejected: %s", GetRemoteIpString().c_str(), reason);
+    CloseSocket();
+    return HandlerResult::Fail;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleAuthContinuedSession(ByteBuffer& data)
+{
+    ClassicAuthContinuedSession packet;
+    if (!packet.Read(data))
+        return FailAuthContinuedSession("malformed packet");
+
+    ConnectToKey const key = ConnectToKey::Unpack(packet.Key);
+    if (key.ConnectionType != uint8(ClassicConnectionType::Instance))
+        return FailAuthContinuedSession("key is not for the Instance connection");
+
+    WorldSession* session = sWorld.FindSession(key.AccountId);
+    if (!session || session->GetPendingInstanceConnectKey() != packet.Key || session->GetInstanceSocket() != nullptr)
+        return FailAuthContinuedSession("no pending Instance connect for that key");
+
+    std::array<uint8, 40> const& sessionKey = session->GetWorldSessionKeyBytes();
+    std::array<uint8, 24> const expectedDigest = WorldHandshakeCrypto::ComputeContinuedSessionDigest(sessionKey, packet.Key, packet.LocalChallenge, m_serverChallenge);
+    if (expectedDigest != packet.Digest)
+        return FailAuthContinuedSession("auth-check digest mismatch");
+
+    m_encryptKey = WorldHandshakeCrypto::ComputeEncryptKey(sessionKey, packet.LocalChallenge, m_serverChallenge);
+
+    m_Session = session;
+    m_Session->SetInstanceSocket(shared_from_this());
+
+    m_stage = HandshakeStage::AwaitingEncryptedModeAck;
+    SendEnterEncryptedMode();
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleConnectToFailed(ByteBuffer& data)
+{
+    ClassicConnectToFailed packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CONNECT_TO_FAILED, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicConnectToFailedOpcode(packet);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleLogoutRequest(ByteBuffer& data)
+{
+    ClassicLogoutRequest packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_LOGOUT_REQUEST, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicLogoutRequestOpcode(packet);
     return HandlerResult::Okay;
 }
 

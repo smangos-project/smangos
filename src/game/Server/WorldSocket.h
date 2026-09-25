@@ -26,6 +26,7 @@
 #include "IO/Networking/AsyncSocket.h"
 #include "Crypto/Encryption/PacketCrypt.h"
 #include "ClassicPacketFraming.h"
+#include "Protocol/ClassicOpcodes.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "IO/Timer/TimerHandle.h"
@@ -56,6 +57,10 @@ private:
         AwaitingEncryptedModeAck,
         Done,
     };
+
+    /// Whether the listener that accepted this socket was the Realm or Instance one (decision 5);
+    /// gates which of CMSG_AUTH_SESSION/CMSG_AUTH_CONTINUED_SESSION is accepted.
+    ClassicConnectionType m_connectionType;
 
     /// Time in which the last ping was received
     std::chrono::system_clock::time_point m_lastPingTime;
@@ -115,6 +120,19 @@ private:
     HandlerResult HandleCharDelete(ByteBuffer& data);
     HandlerResult HandlePlayerLogin(ByteBuffer& data);
 
+    /// Called on CMSG_AUTH_CONTINUED_SESSION (the Instance connection's own handshake): looks the
+    /// session up by the packed key CMSG_PLAYER_LOGIN's SMSG_CONNECT_TO handed out, checks the
+    /// digest against the Realm connection's existing session key, and attaches this socket as the
+    /// session's Instance one.
+    HandlerResult HandleAuthContinuedSession(ByteBuffer& data);
+    HandlerResult FailAuthContinuedSession(char const* reason);
+
+    /// Called on CMSG_CONNECT_TO_FAILED (Realm connection, port step 5).
+    HandlerResult HandleConnectToFailed(ByteBuffer& data);
+
+    /// Called on CMSG_LOGOUT_REQUEST.
+    HandlerResult HandleLogoutRequest(ByteBuffer& data);
+
     void SendRaw(uint32 opcode, ByteBuffer const& body);
 
     template<typename T>
@@ -138,7 +156,7 @@ private:
     static std::string const ClientBanner;
 
 public:
-    explicit WorldSocket(IO::Networking::AsyncSocket socket);
+    explicit WorldSocket(IO::Networking::AsyncSocket socket, ClassicConnectionType connectionType = ClassicConnectionType::Realm);
     /// The destructor will automatically close the socket
     ~WorldSocket();
     WorldSocket(WorldSocket const&) = delete;
@@ -152,6 +170,8 @@ public:
     {
         m_Session = nullptr;
     }
+
+    inline ClassicConnectionType GetConnectionType() const { return m_connectionType; }
 
     // ----- Exposing `m_socket` features -----
     inline std::string const& GetRemoteIpString() const { return m_remoteIpAddressStringAfterProxy; }
