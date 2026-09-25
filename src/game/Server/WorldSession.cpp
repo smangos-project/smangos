@@ -520,6 +520,14 @@ void WorldSession::QueueBinaryPacket(std::unique_ptr<WorldPacket> const& binaryP
 
     // parsing the packet
     std::unique_ptr<ClientPacket const> clientPacket = opHandle.impl->readPacket(*binaryPacket);
+    if (!clientPacket) // a classic wire struct reported a malformed body; drop the packet, not the connection
+    {
+        if (m_socket)
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] malformed %s, dropped", m_socket->GetRemoteIpString().c_str(), opHandle.name);
+        else
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[SESSION] malformed %s, dropped", opHandle.name);
+        return;
+    }
     VerifyPacketWasCorrectlyRead(*binaryPacket, *clientPacket);
 
     QueuePacket(std::move(clientPacket));

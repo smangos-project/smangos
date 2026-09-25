@@ -1,6 +1,7 @@
 add_executable(tests-game
   ${CMAKE_SOURCE_DIR}/src/game/Server/Packets/Classic/GuidMapping.cpp
   ClassicGuidMappingTests.cpp
+  ClassicClientTests.cpp
   TestMain.cpp
 )
 
@@ -9,6 +10,7 @@ add_executable(tests-game
 target_include_directories(tests-game PRIVATE
   ${CMAKE_SOURCE_DIR}/src/game
   ${CMAKE_SOURCE_DIR}/src/game/Server
+  ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/framework
 )

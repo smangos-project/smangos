@@ -44,6 +44,7 @@
 #include "Packets/CharScreen.h"
 #include "Packets/Session.h"
 #include "Packets/Classic/Character.h"
+#include "Packets/ClassicClient.h"
 #include "Packets/Chat.h"
 #include "Packets/Combat.h"
 #include "Packets/Duel.h"
@@ -532,6 +533,26 @@ class WorldSession
         {
             auto const& packetInCorrectForm = dynamic_cast<TClientPacket const&>(packet);
             (this->*THandler)(packetInCorrectForm);
+        }
+
+        // Same shape as Handle_GenericRead/Handle_GenericPacket, but for a classic wire struct: T's
+        // own Read reports success with a bool instead of always succeeding, so a malformed body
+        // comes back as nullptr rather than a packet VerifyPacketWasCorrectlyRead would misjudge.
+        template<typename T>
+        static std::unique_ptr<ClientPacket> Handle_ClassicRead(WorldPacket& recvPacket)
+        {
+            auto packet = std::make_unique<ClassicClient<T>>();
+            packet->ReadFromWorldPacket(recvPacket);
+            if (!packet->IsValid())
+                return nullptr;
+            VerifyPacketWasCorrectlyRead(recvPacket, *packet);
+            return packet;
+        }
+
+        template<typename T, void (WorldSession::*THandler)(T const& packet)>
+        void Handle_ClassicPacket(ClientPacket const& packet)
+        {
+            (this->*THandler)(dynamic_cast<ClassicClient<T> const&>(packet).Body);
         }
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
