@@ -3,6 +3,7 @@ add_executable(tests-shared
   CryptoTests.cpp
   ByteBufferTests.cpp
   WorldHandshakeCryptoTests.cpp
+  HttpMessageTests.cpp
   TestMain.cpp
 )
 

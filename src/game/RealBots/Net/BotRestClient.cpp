@@ -1,14 +1,13 @@
 #include "BotRestClient.h"
 #include "BotConnector.h"
 #include "Errors.h"
+#include "Http/HttpMessage.h"
 #include "Log.h"
 #include "Util.h"
 
 #include <nlohmann/json.hpp>
 #include <algorithm>
-#include <cctype>
-#include <cstring>
-#include <sstream>
+#include <cstdlib>
 
 using json = nlohmann::json;
 
@@ -205,15 +204,14 @@ void BotRestClient::OnSrpProofResponse(bool ok, HttpResponse response)
 
 void BotRestClient::PostFormInputs(std::string const& path, std::string const& jsonBody, HttpCallback callback)
 {
-    std::ostringstream request;
-    request << "POST " << path << " HTTP/1.1\r\n"
-        << "Content-Type: application/json\r\n"
-        << "Content-Length: " << jsonBody.size() << "\r\n"
-        << "Connection: keep-alive\r\n";
+    std::vector<HttpMessage::Header> headers = {
+        { "Content-Type", "application/json" },
+        { "Content-Length", std::to_string(jsonBody.size()) },
+        { "Connection", "keep-alive" },
+    };
     if (!m_sessionCookie.empty())
-        request << "Cookie: " << m_sessionCookie << "\r\n";
-    request << "\r\n" << jsonBody;
-    std::string requestString = request.str();
+        headers.push_back({ "Cookie", m_sessionCookie });
+    std::string requestString = HttpMessage::BuildRequest("POST", path, headers, jsonBody);
 
     std::shared_ptr<BotRestClient> self = shared_from_this();
     m_stream->Write(std::vector<uint8>(requestString.begin(), requestString.end()), [self, callback](IO::NetworkError const& error)
@@ -281,26 +279,24 @@ void BotRestClient::ReadStatusAndHeaders(std::function<void(bool, int, size_t)> 
             return;
         }
 
-        std::istringstream iss(statusLine);
-        std::string version;
-        int status = 0;
-        if (!(iss >> version >> status))
+        nonstd::optional<HttpMessage::StatusLine> parsed = HttpMessage::ParseStatusLine(statusLine);
+        if (!parsed)
         {
             sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotRestClient: malformed status line '%s'", statusLine.c_str());
             callback(false, 0, 0);
             return;
         }
+        int const status = parsed->Status;
 
-        auto contentLength = std::make_shared<size_t>(0);
+        auto headers = std::make_shared<std::vector<HttpMessage::Header>>();
 
-        // Reads header lines until the blank line separator, tracking Content-Length. Each
-        // readHeader call reads one line and, unless it was the blank separator, schedules
-        // itself again -- kept alive across calls via its own shared_ptr since it captures
-        // itself by value.
+        // Reads header lines until the blank line separator. Each readHeader call reads one
+        // line and, unless it was the blank separator, schedules itself again -- kept alive
+        // across calls via its own shared_ptr since it captures itself by value.
         std::shared_ptr<std::function<void()>> readHeader = std::make_shared<std::function<void()>>();
-        *readHeader = [self, callback, status, contentLength, readHeader]()
+        *readHeader = [self, callback, status, headers, readHeader]()
         {
-            self->ReadLine(std::make_shared<std::string>(), [self, callback, status, contentLength, readHeader](bool ok, std::string line)
+            self->ReadLine(std::make_shared<std::string>(), [self, callback, status, headers, readHeader](bool ok, std::string line)
             {
                 if (!ok)
                 {
@@ -310,29 +306,15 @@ void BotRestClient::ReadStatusAndHeaders(std::function<void(bool, int, size_t)> 
 
                 if (line.empty())
                 {
-                    callback(true, status, *contentLength);
+                    nonstd::optional<std::string> length = HttpMessage::FindHeader(*headers, "content-length");
+                    if (nonstd::optional<std::string> cookie = HttpMessage::FindHeader(*headers, "set-cookie"))
+                        self->m_sessionCookie = cookie->substr(0, cookie->find(';'));
+                    callback(true, status, length ? size_t(strtoull(length->c_str(), nullptr, 10)) : 0);
                     return;
                 }
 
-                auto headerValue = [&line](char const* prefix) -> nonstd::optional<std::string>
-                {
-                    size_t const prefixLen = std::strlen(prefix);
-                    if (line.size() <= prefixLen)
-                        return nonstd::nullopt;
-                    std::string lowered = line.substr(0, prefixLen);
-                    std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) { return std::tolower(c); });
-                    if (lowered != prefix)
-                        return nonstd::nullopt;
-                    size_t const valueStart = line.find_first_not_of(" \t", prefixLen);
-                    if (valueStart == std::string::npos)
-                        return std::string();
-                    return line.substr(valueStart);
-                };
-
-                if (nonstd::optional<std::string> length = headerValue("content-length:"))
-                    *contentLength = size_t(strtoull(length->c_str(), nullptr, 10));
-                else if (nonstd::optional<std::string> cookie = headerValue("set-cookie:"))
-                    self->m_sessionCookie = cookie->substr(0, cookie->find(';'));
+                if (nonstd::optional<HttpMessage::Header> header = HttpMessage::ParseHeaderLine(line))
+                    headers->push_back(std::move(*header));
 
                 (*readHeader)();
             });
