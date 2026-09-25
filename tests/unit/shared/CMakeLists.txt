@@ -7,6 +7,7 @@ add_executable(tests-shared
   BnetLoginFormsTests.cpp
   BnetRealmListJsonTests.cpp
   TlsStreamTests.cpp
+  ClassicPacketFramingTests.cpp
   TestMain.cpp
 )
 

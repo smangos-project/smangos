@@ -3,6 +3,7 @@
 
 #include "BotPacket.h"
 #include "ByteBuffer.h"
+#include "ClassicPacketFraming.h"
 #include "Crypto/Encryption/PacketCrypt.h"
 #include "IO/Networking/AsyncSocket.h"
 #include <deque>
@@ -10,8 +11,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-
-struct z_stream_s;
 
 // The client (bot) side of the modern world socket: the V2 banner handshake, PacketHeader
 // framing, PacketCrypt, and incoming decompression. Mirrors vibemangos's WorldSocket
@@ -31,7 +30,6 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
         static std::shared_ptr<BotWorldConnection> Create(IO::Networking::AsyncSocket socket,
             PacketCallback onPacket, DisconnectCallback onDisconnect);
 
-        ~BotWorldConnection();
         BotWorldConnection(BotWorldConnection const&) = delete;
         BotWorldConnection& operator=(BotWorldConnection const&) = delete;
 
@@ -87,7 +85,7 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
 
         IO::Networking::AsyncSocket m_socket;
         PacketCrypt m_crypt;
-        z_stream_s* m_decompressionStream = nullptr;
+        ClassicPacketFraming m_framing;
 
         std::mutex m_callbackLock;
         PacketCallback m_onPacket;
