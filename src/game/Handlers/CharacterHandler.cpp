@@ -126,9 +126,11 @@ public:
         if (!holder)
             return;
 
-        WorldSession* session = sWorld.FindSession(((LoginQueryHolder*)holder)->GetAccountId());
+        uint32 const accountId = ((LoginQueryHolder*)holder)->GetAccountId();
+        WorldSession* session = sWorld.FindSession(accountId);
         if (!session)
         {
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "HandlePlayerLoginCallback: no session for account %u, login result dropped", accountId);
             delete holder;
             return;
         }

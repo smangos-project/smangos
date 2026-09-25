@@ -39,6 +39,7 @@
 
 #include <atomic>
 #include <map>
+#include <mutex>
 #include <set>
 #include <list>
 #include <chrono>
@@ -682,6 +683,9 @@ class World
         SessionMap GetAllSessions() { return m_sessions; }
         WorldSession* FindSession(uint32 accountId) const;
         void AddSession(WorldSession* session);
+        // Drops a session added via AddSession but never drained into m_sessions (AddSession_):
+        // superseded by a newer session for the account, or destroyed before that drain ran.
+        void ClearPendingSession(WorldSession* session);
         bool RemoveSession(uint32 accountId);
         // Get the number of current active sessions
         void UpdateMaxSessionCounters();
@@ -933,6 +937,11 @@ class World
         IntervalTimer m_timers[WUPDATE_COUNT];
 
         SessionMap m_sessions; // Sessions by accountId
+        // AddSession() queues a session onto addSessQueue for the world thread's next tick to drain
+        // into m_sessions; a session is visible here immediately, so FindSession still resolves a
+        // session whose async login-DB callback completes before that drain runs.
+        mutable std::mutex m_pendingSessionsLock;
+        SessionMap m_pendingSessions;
         SessionSet m_disconnectedSessions;
         std::map<uint32 /*accountId*/, AccountPlayHistory> m_accountsPlayHistory;
         bool CanSkipQueue(WorldSession const* session);

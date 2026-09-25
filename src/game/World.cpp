@@ -230,7 +230,10 @@ WorldSession* World::FindSession(uint32 accountId) const
     if (itr != m_sessions.end())
         return itr->second;                                 // also can return nullptr for kicked session
 
-    return nullptr;
+    // Not drained from addSessQueue into m_sessions yet (AddSession, ClearPendingSession).
+    std::lock_guard<std::mutex> lock(m_pendingSessionsLock);
+    SessionMap::const_iterator pending = m_pendingSessions.find(accountId);
+    return pending != m_pendingSessions.end() ? pending->second : nullptr;
 }
 
 /// Remove a given session by its accountId
@@ -252,7 +255,19 @@ bool World::RemoveSession(uint32 accountId)
 
 void World::AddSession(WorldSession* s)
 {
+    {
+        std::lock_guard<std::mutex> lock(m_pendingSessionsLock);
+        m_pendingSessions[s->GetAccountId()] = s;
+    }
     addSessQueue.add(s);
+}
+
+void World::ClearPendingSession(WorldSession* s)
+{
+    std::lock_guard<std::mutex> lock(m_pendingSessionsLock);
+    auto itr = m_pendingSessions.find(s->GetAccountId());
+    if (itr != m_pendingSessions.end() && itr->second == s)
+        m_pendingSessions.erase(itr);
 }
 
 void World::AddSessionToSessionsMap(WorldSession* sess)
@@ -271,6 +286,7 @@ void World::AddSession_(WorldSession* s)
     if (!RemoveSession(s->GetAccountId()))
     {
         s->KickPlayer();
+        ClearPendingSession(s);
         delete s;                                           // session not added yet in session list, so not listed in queue
         return;
     }
@@ -310,6 +326,7 @@ void World::AddSession_(WorldSession* s)
     }
 
     m_sessions[s->GetAccountId()] = s;
+    ClearPendingSession(s); // now findable through m_sessions; the fallback copy is redundant
 
     uint32 activeSessions = GetActiveSessionCount();
     uint32 playerLimit = GetPlayerAmountLimit();

@@ -110,6 +110,7 @@ WorldSession::~WorldSession()
         m_instanceSocket = nullptr;
     }
     ClearPendingInstanceConnect(); // don't leave a dangling entry for a redirect never followed
+    sWorld.ClearPendingSession(this); // don't leave a dangling entry if never drained into m_sessions
 
     // empty incoming packet queue
     for (auto& i : m_recvQueue)
