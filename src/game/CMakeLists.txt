@@ -226,7 +226,6 @@ set (game_SRCS
     Server/Packets/Spell.cpp
     Server/Packets/Taxi.cpp
     Server/Packets/Trade.cpp
-    Server/Packets/Warden.cpp
     Server/WorldSession.cpp
     Server/WorldSocket.cpp
     Server/WorldSocketMgr.cpp
@@ -315,21 +314,6 @@ set (game_SRCS
     Anticheat/Anticheat.h
     Anticheat/MovementAnticheat/MovementAnticheat.cpp
     Anticheat/MovementAnticheat/MovementAnticheat.h
-    Anticheat/WardenAnticheat/Warden.cpp
-    Anticheat/WardenAnticheat/Warden.hpp
-    Anticheat/WardenAnticheat/WardenKeyGenerator.h
-    Anticheat/WardenAnticheat/WardenMac.cpp
-    Anticheat/WardenAnticheat/WardenMac.hpp
-    Anticheat/WardenAnticheat/WardenModule.cpp
-    Anticheat/WardenAnticheat/WardenModule.hpp
-    Anticheat/WardenAnticheat/WardenModuleMgr.cpp
-    Anticheat/WardenAnticheat/WardenModuleMgr.hpp
-    Anticheat/WardenAnticheat/WardenScan.cpp
-    Anticheat/WardenAnticheat/WardenScan.hpp
-    Anticheat/WardenAnticheat/WardenScanMgr.cpp
-    Anticheat/WardenAnticheat/WardenScanMgr.hpp
-    Anticheat/WardenAnticheat/WardenWin.cpp
-    Anticheat/WardenAnticheat/WardenWin.hpp
     AuctionHouse/AuctionHouseBotMgr.h
     AuctionHouse/AuctionHouseMgr.h
     Battlegrounds/BattleGround.h
@@ -486,7 +470,6 @@ set (game_SRCS
     Server/Packets/Spell.h
     Server/Packets/Taxi.h
     Server/Packets/Trade.h
-    Server/Packets/Warden.h
     Server/WorldPacket.h
     Server/WorldSession.h
     Server/WorldSocket.h

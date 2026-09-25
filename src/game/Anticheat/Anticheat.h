@@ -21,14 +21,6 @@
 #include "AbstractPlayer.h"
 #include "UnitDefines.h"
 
-enum WardenActions
-{
-    WARDEN_ACTION_LOG,
-    WARDEN_ACTION_KICK,
-    WARDEN_ACTION_BAN,
-    WARDEN_ACTION_MAX
-};
-
 enum CheatAction
 {
     CHEAT_ACTION_NONE             = 0x00,
@@ -45,11 +37,9 @@ enum CheatAction
 class Unit;
 class Player;
 class MovementInfo;
-class BigNumber;
 class WorldPacket;
 class WorldSession;
 class ChatHandler;
-class Warden;
 class MovementAnticheat;
 class AccountPersistentData;
 struct AreaEntry;
@@ -73,36 +63,15 @@ public:
     virtual void showMuted(WorldSession* session) {}
 };
 
-#include "WardenAnticheat/Warden.hpp"
 #include "MovementAnticheat/MovementAnticheat.h"
-#include <mutex>
-#include <thread>
 
 class AnticheatManager
 {
 public:
-    ~AnticheatManager();
+    ~AnticheatManager() = default;
     void LoadAnticheatData();
 
-    Warden * CreateWardenFor(WorldSession* client, BigNumber* K);
     MovementAnticheat* CreateAnticheatFor(Player* player);
-
-    void StartWardenUpdateThread();
-    void StopWardenUpdateThread();
-    void UpdateWardenSessions();
-    void AddWardenSession(Warden* warden);
-    void RemoveWardenSession(Warden* warden);
-
-private:
-    Warden * CreateWardenForInternal(WorldSession* client, BigNumber* K);
-    void AddWardenSessionInternal(Warden* warden);
-    void RemoveWardenSessionInternal(Warden* warden);
-    void AddOrRemovePendingSessions();
-    std::vector<Warden*> m_wardenSessions;
-    std::vector<Warden*> m_wardenSessionsToAdd;
-    std::vector<Warden*> m_wardenSessionsToRemove;
-    std::mutex m_wardenSessionsMutex;
-    std::thread m_wardenUpdateThread;
 
 public:
     // Antispam wrappers

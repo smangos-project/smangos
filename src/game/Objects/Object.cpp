@@ -859,8 +859,6 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* u
                 }
                 else if (target == this && (index == PLAYER_TRACK_CREATURES || index == PLAYER_TRACK_RESOURCES))
                 {
-                    //if (Warden* base = target->GetSession()->GetWarden())
-                        //base->TrackingUpdateSent(index, m_uint32Values[index]);
                     *data << m_uint32Values[index];
                 }
                 // This is done to make creatures face the target they are casting on.

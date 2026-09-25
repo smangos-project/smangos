@@ -843,7 +843,7 @@ Handlers BuildOpcodeList()
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_WARDEN_DATA,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_WARDEN_DATA,                  STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandleWardenDataOpcode);
+    INVALID_PACKET(CMSG_WARDEN_DATA,                  UnhandleReason::Unhandled);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(SMSG_GROUP_JOINED_BATTLEGROUND,    UnhandleReason::SendByServer);

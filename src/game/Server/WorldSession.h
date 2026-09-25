@@ -64,7 +64,6 @@
 #include "Packets/Spell.h"
 #include "Packets/Taxi.h"
 #include "Packets/Trade.h"
-#include "Packets/Warden.h"
 
 #include <array>
 #include <map>
@@ -87,7 +86,6 @@ class LoginQueryHolder;
 class CharacterHandler;
 class MovementInfo;
 class WorldSession;
-class Warden;
 class MovementAnticheat;
 class BigNumber;
 class MasterPlayer;
@@ -331,16 +329,13 @@ class WorldSession
         PlayerBotEntry* GetBot() const { return m_bot.get(); }
         void SetBot(std::shared_ptr<PlayerBotEntry> const& b) { m_bot = b; }
 
-        // Warden / Anticheat
-        void InitWarden();
+        // Anticheat
         void SetSessionKey(BigNumber const& sessionKey) { m_sessionKey = sessionKey; }
-        Warden* GetWarden() const { return m_warden; }
         void InitCheatData(Player* pPlayer);
         MovementAnticheat* GetCheatData();
         void ProcessAnticheatAction(char const* detector, char const* reason, uint32 cheatAction, uint32 banSeconds = 0 /* Perm ban */);
         uint32 GetFingerprint() const { return 0; } // TODO
         void CleanupFingerprintHistory() {} // TODO
-        bool HasUsedClickToMove() const;
 
         // Movement
         Unit* GetMoverFromGuid(ObjectGuid const& guid) const;
@@ -888,9 +883,6 @@ class WorldSession
         void HandleLeaveBattlefieldOpcode(WorldPackets::Battleground::LeaveBattlefield const& packet);
 #endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-        void HandleWardenDataOpcode(WorldPackets::Warden::WardenData const& packet);
-#endif
         void HandleMinimapPingOpcode(WorldPackets::Group::MinimapPing const& packet);
         void HandleRandomRollOpcode(WorldPackets::Group::RandomRoll const& packet);
         void HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet);
@@ -950,7 +942,6 @@ class WorldSession
         std::shared_ptr<PlayerBotEntry> m_bot;
         std::unique_ptr<SniffFile> m_sniffFile;
 
-        Warden* m_warden;
         MovementAnticheat* m_cheatData;
 
         Player* _player;

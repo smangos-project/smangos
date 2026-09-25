@@ -218,8 +218,6 @@ void World::Shutdown()
 
     if (m_asyncPacketsThread && m_asyncPacketsThread->joinable())
         m_asyncPacketsThread->join();
-
-    sAnticheatMgr->StopWardenUpdateThread();
 }
 
 /// Find a session by its accountId. Might return nullptr if not found.
@@ -358,9 +356,6 @@ void World::AddSession_(WorldSession* s)
 
     UpdateMaxSessionCounters();
 
-    // Only init warden after session has been added
-    s->InitWarden();
-
     // Updates the population
     if (playerLimit > 0)
     {
@@ -449,7 +444,6 @@ bool World::RemoveQueuedSession(WorldSession* sess)
         pop_sess->SetInQueue(false);
         pop_sess->m_idleTime = WorldTimer::getMSTime();
         pop_sess->SendAuthWaitQue(0);
-        pop_sess->InitWarden();
         m_QueuedSessions.pop_front();
 
         // update iter to point first queued socket or end() if queue is empty now
@@ -1258,17 +1252,6 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_AC_MOVEMENT_CHEAT_BOTTING_PENALTY, "Anticheat.Botting.Penalty", CHEAT_ACTION_LOG | CHEAT_ACTION_REPORT_GMS);
     MovementAnticheat::InitWallClimbLimits();
 
-    // Warden Anticheat
-    setConfig(CONFIG_BOOL_AC_WARDEN_WIN_ENABLED, "Warden.WinEnabled", false);
-    setConfig(CONFIG_BOOL_AC_WARDEN_OSX_ENABLED, "Warden.OSXEnabled", false);
-    setConfig(CONFIG_BOOL_AC_WARDEN_PLAYERS_ONLY, "Warden.PlayersOnly", false);
-    setConfig(CONFIG_UINT32_AC_WARDEN_NUM_SCANS, "Warden.NumScans", 10);
-    setConfig(CONFIG_UINT32_AC_WARDEN_CLIENT_RESPONSE_DELAY, "Warden.ClientResponseDelay", 30);
-    setConfig(CONFIG_UINT32_AC_WARDEN_SCAN_FREQUENCY, "Warden.ScanFrequency", 15);
-    setConfigMinMax(CONFIG_UINT32_AC_WARDEN_DEFAULT_PENALTY, "Warden.DefaultPenalty", WARDEN_ACTION_LOG, WARDEN_ACTION_LOG, WARDEN_ACTION_BAN);
-    setConfig(CONFIG_UINT32_AC_WARDEN_CLIENT_BAN_DURATION, "Warden.BanDuration", 86400);
-    m_wardenModuleDirectory = sConfig.GetStringDefault("Warden.ModuleDir", "warden_modules");
-
     setConfig(CONFIG_UINT32_CREATURE_SUMMON_LIMIT, "MaxCreatureSummonLimit", DEFAULT_CREATURE_SUMMON_LIMIT);
 
     // Smartlog data
@@ -1910,8 +1893,6 @@ void World::SetInitialWorldSettings()
     {
         m_lfgQueueThread = IO::Multithreading::CreateThreadPtr("LfgUpdate", [&] { m_lfgQueue.Update(); });
     }
-
-    sAnticheatMgr->StartWardenUpdateThread();
 
     m_broadcaster =
         std::make_unique<MovementBroadcaster>(getConfig(CONFIG_UINT32_PACKET_BCAST_THREADS),
@@ -2841,7 +2822,6 @@ void World::UpdateSessions(uint32 diff)
                 pop_sess->SetInQueue(false);
                 pop_sess->m_idleTime = WorldTimer::getMSTime();
                 pop_sess->SendAuthWaitQue(0);
-                pop_sess->InitWarden();
                 m_QueuedSessions.pop_front();
             }
 

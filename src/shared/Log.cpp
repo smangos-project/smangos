@@ -80,7 +80,6 @@ Log::Log() :
     logFiles[LOG_BASIC] = OpenLogFile("LogFile.Basic", g_mainLogFileName, log_file_timestamp, true);
 
     // Main log file settings
-    m_wardenDebug = sConfig.GetBoolDefault("Warden.DebugLog", false);
     m_includeTime = sConfig.GetBoolDefault("LogTime", false);
     m_consoleLevel = LogLevel(sConfig.GetIntDefault("LogLevel.Console", 2));
     m_fileLevel = LogLevel(sConfig.GetIntDefault("LogLevel.File", 2));

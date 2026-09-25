@@ -65,14 +65,6 @@ struct PInfoData
     std::string m_lastIp;
     std::string m_lastLogin;
     bool m_hasAccount = false;
-
-    // Warden data
-    std::string m_wardenClock;
-    std::string m_wardenFingerprint;
-    std::string m_wardenHypervisors;
-    std::string m_wardenRenderer;
-    std::string m_wardenProxifier;
-    bool m_hasUsedClickToMove = false;
 };
 
 class WorldSession;

@@ -54,13 +54,6 @@ void PInfoHandler::HandlePInfoCommand(WorldSession* session, Player* target, Obj
         data->m_locale = target->GetSession()->GetSessionDbcLocale();
         data->m_online = true;
 
-        if (auto const warden = target->GetSession()->GetWarden())
-        {
-            warden->GetPlayerInfo(data->m_wardenClock, data->m_wardenFingerprint, data->m_wardenHypervisors,
-                data->m_wardenRenderer, data->m_wardenProxifier);
-            data->m_hasUsedClickToMove = warden->HasUsedClickToMove();
-        }
-
         HandleDataAfterPlayerLookup(data);
     }
     else
@@ -218,19 +211,6 @@ void PInfoHandler::HandleResponse(WorldSession* session, PInfoData* data)
     cHandler.PSendSysMessage(LANG_PINFO_LEVEL, timeStr.c_str(), data->m_level, gold, silv, copp, gold_in, silv_in, copp_in, gold_out, silv_out, copp_out);
     if (Guild* guild = sGuildMgr.GetPlayerGuild(data->m_targetGuid))
         cHandler.PSendSysMessage("Guild: %s", cHandler.playerLink(guild->GetName()).c_str());
-
-    if (!data->m_wardenClock.empty())
-        cHandler.SendSysMessage(data->m_wardenClock.c_str());
-    if (!data->m_wardenFingerprint.empty())
-        cHandler.SendSysMessage(data->m_wardenFingerprint.c_str());
-    if (!data->m_wardenHypervisors.empty())
-        cHandler.SendSysMessage(data->m_wardenHypervisors.c_str());
-    if (!data->m_wardenRenderer.empty())
-        cHandler.SendSysMessage(data->m_wardenRenderer.c_str());
-    if (!data->m_wardenProxifier.empty())
-        cHandler.SendSysMessage(data->m_wardenProxifier.c_str());
-    if (data->m_hasUsedClickToMove)
-        cHandler.SendSysMessage("Using Click to Move!");
 
     delete data;
 }

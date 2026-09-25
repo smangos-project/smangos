@@ -600,7 +600,6 @@ class ChatHandler
 
         bool HandleListAurasCommand(char* args);
         bool HandleListCreatureCommand(char* args);
-        bool HandleListClickToMoveCommand(char* args);
         bool HandleListExploredAreasCommand(char* args);
         bool HandleListItemCommand(char* args);
         bool HandleListObjectCommand(char* args);

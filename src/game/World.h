@@ -350,11 +350,6 @@ enum eConfigUInt32Values
     CONFIG_UINT32_AC_MOVEMENT_CHEAT_BOTTING_MIN_TURNS_ABNORMAL,
     CONFIG_UINT32_AC_MOVEMENT_CHEAT_BOTTING_PENALTY,
     CONFIG_UINT32_MOVEMENT_CHANGE_ACK_TIME,
-    CONFIG_UINT32_AC_WARDEN_NUM_SCANS,
-    CONFIG_UINT32_AC_WARDEN_CLIENT_RESPONSE_DELAY,
-    CONFIG_UINT32_AC_WARDEN_SCAN_FREQUENCY,
-    CONFIG_UINT32_AC_WARDEN_DEFAULT_PENALTY,
-    CONFIG_UINT32_AC_WARDEN_CLIENT_BAN_DURATION,
     CONFIG_UINT32_AUTOBROADCAST_INTERVAL,
     CONFIG_UINT32_PARTY_BOT_MAX_BOTS,
     CONFIG_UINT32_PARTY_BOT_AUTO_EQUIP,
@@ -610,9 +605,6 @@ enum eConfigBoolValues
     CONFIG_BOOL_AC_MOVEMENT_CHEAT_EXPLORE_HIGH_LEVEL_ENABLED,
     CONFIG_BOOL_AC_MOVEMENT_CHEAT_FORBIDDEN_AREA_ENABLED,
     CONFIG_BOOL_AC_MOVEMENT_CHEAT_BOTTING_ENABLED,
-    CONFIG_BOOL_AC_WARDEN_PLAYERS_ONLY,
-    CONFIG_BOOL_AC_WARDEN_OSX_ENABLED,
-    CONFIG_BOOL_AC_WARDEN_WIN_ENABLED,
     CONFIG_BOOL_VISIBILITY_FORCE_ACTIVE_OBJECTS,
     CONFIG_BOOL_PLAYER_BOT_SHOW_IN_WHO_LIST,
     CONFIG_BOOL_PARTY_BOT_SKIP_CHECKS,
@@ -826,8 +818,6 @@ class World
         static float GetRelocationLowerLimitSq()            { return m_relocation_lower_limit_sq; }
         static uint32 GetRelocationAINotifyDelay()          { return m_relocation_ai_notify_delay; }
 
-        std::string const& GetWardenModuleDirectory() const { return m_wardenModuleDirectory; }
-
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -964,7 +954,6 @@ class World
         std::string m_motd;
         std::string m_dataPath;
         std::string m_honorPath;
-        std::string m_wardenModuleDirectory;
 
         // Housing this here but logically it is completely asynchronous - TODO: Separate this and unify with BG queue
         LFGQueue m_lfgQueue;

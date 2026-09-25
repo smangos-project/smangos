@@ -83,7 +83,7 @@ WorldSession::WorldSession(uint32 id, std::shared_ptr<WorldSocket> sock, Account
     m_accountFlags(0), m_idleTime(WorldTimer::getMSTime()), _player(nullptr), m_socket(sock), m_security(sec), m_accountId(id),
     m_exhaustionState(0), m_createTime(time(nullptr)), m_previousPlayTime(0), m_logoutTime(0), m_inQueue(false),
     m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_playerSave(false), m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)),
-    m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)), m_latency(0), m_tutorialState(TUTORIALDATA_UNCHANGED), m_warden(nullptr), m_cheatData(nullptr),
+    m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)), m_latency(0), m_tutorialState(TUTORIALDATA_UNCHANGED), m_cheatData(nullptr),
     m_bot(nullptr), m_clientOS(CLIENT_OS_UNKNOWN), m_clientPlatform(CLIENT_PLATFORM_UNKNOWN), m_gameBuild(0), m_verifiedEmail(true),
     m_charactersCount(std::numeric_limits<uint32>::max()), m_characterMaxLevel(0), m_lastPubChannelMsgTime(0), m_moveRejectTime(0), m_masterPlayer(nullptr), m_receivedPacketType{},
     m_floodPacketsCount{}, m_tutorials{}
@@ -115,9 +115,6 @@ WorldSession::~WorldSession()
     // empty incoming packet queue
     for (auto& i : m_recvQueue)
         i.clear();
-
-    if (m_warden)
-        sAnticheatMgr->RemoveWardenSession(m_warden);
 
     delete m_cheatData;
 }
@@ -660,12 +657,6 @@ bool WorldSession::Update(PacketFilter& updater, uint32 diff)
         {
             m_socket->FinalizeSession();
             m_socket = nullptr;
-
-            if (m_warden)
-            {
-                sAnticheatMgr->RemoveWardenSession(m_warden);
-                m_warden = nullptr;
-            }
 
             if (GetPlayer() && GetPlayer()->m_broadcaster)
                 GetPlayer()->m_broadcaster->ChangeSocket(nullptr);
@@ -1370,12 +1361,6 @@ void WorldSession::ExecuteOpcode(OpcodeHandlerPacketImplDetails const& opHandler
     }
 }
 
-void WorldSession::InitWarden()
-{
-    MANGOS_ASSERT(!m_warden);
-    m_warden = sAnticheatMgr->CreateWardenFor(this, &m_sessionKey);
-}
-
 void WorldSession::InitCheatData(Player* pPlayer)
 {
     if (m_cheatData)
@@ -1462,13 +1447,6 @@ void WorldSession::ProcessAnticheatAction(char const* detector, char const* reas
 
     sLog.Player(this, LOG_ANTICHEAT, detector, LOG_LVL_MINIMAL, "[%s] Player %s, Cheat %s, Penalty: %s",
         detector, playerDesc.c_str(), reason, action);
-}
-
-bool WorldSession::HasUsedClickToMove() const
-{
-    if (m_warden)
-        return m_warden->HasUsedClickToMove();
-    return false;
 }
 
 bool WorldSession::AllowPacket(uint32 opcode)
