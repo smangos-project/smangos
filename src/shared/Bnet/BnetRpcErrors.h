@@ -10,6 +10,7 @@ enum BnetRpcError : uint32
     BNET_ERROR_INTERNAL                          = 0x00000001,
     BNET_ERROR_TIMED_OUT                         = 0x00000002,
     BNET_ERROR_DENIED                            = 0x00000003,
+    BNET_ERROR_BAD_VERSION                       = 0x0000001C,
     BNET_ERROR_GAME_ACCOUNT_BANNED               = 0x00000034,
     BNET_ERROR_GAME_ACCOUNT_SUSPENDED            = 0x00000035,
     BNET_ERROR_BAD_PROGRAM                       = 0x0000004D,
