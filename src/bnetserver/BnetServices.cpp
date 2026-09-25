@@ -660,5 +660,7 @@ uint32 BnetServices::Dispatch(BnetRpcSession& session, uint32 serviceHash, uint3
         sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[%s] RPC: no handler for service 0x%08X method %u", session.GetClientIp().c_str(), serviceHash, methodId);
         return BNET_ERROR_RPC_NOT_IMPLEMENTED;
     }
-    return handlers->second(session, request, response);
+    uint32 const status = handlers->second(session, request, response);
+    sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[%s] RPC: service 0x%08X method %u answered with status 0x%X", session.GetClientIp().c_str(), serviceHash, methodId, status);
+    return status;
 }

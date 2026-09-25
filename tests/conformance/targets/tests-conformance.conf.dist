@@ -49,9 +49,9 @@ RealBots.Target.trinitycore.ConnectTimeoutMs      = 10000
 RealBots.Target.trinitycore.StageTimeoutMs        = 30000
 
 RealBots.Target.vmangos.LoginAddress          = "127.0.0.1"
-RealBots.Target.vmangos.RestPort              = 8081
-RealBots.Target.vmangos.RpcPort              = 1119
-RealBots.Target.vmangos.RealmName             = ""
+RealBots.Target.vmangos.RestPort              = 8091
+RealBots.Target.vmangos.RpcPort               = 1129
+RealBots.Target.vmangos.RealmName             = "VMangosPort"
 RealBots.Target.vmangos.ClientBuild           = 58797
 RealBots.Target.vmangos.ClientVersion         = "1.15.6"
 RealBots.Target.vmangos.Tags                  = "protocol gameplay"

@@ -24,8 +24,8 @@
     Account name prefix; accounts are <Prefix>001, <Prefix>002, ... (vibemangos caps names at 16 characters).
 
 .PARAMETER Flavor
-    vibemangos: `account create <name> <password>` (also provisions the battlenet_accounts row and link,
-    AccountMgr::ProvisionBattlenetAccount). trinitycore: `bnetaccount create <name>@<EmailDomain> <password>`.
+    vibemangos, vmangos: `account create <name> <password>` (also provisions the battlenet_accounts row and
+    link, AccountMgr::ProvisionBattlenetAccount). trinitycore: `bnetaccount create <name>@<EmailDomain> <password>`.
 
 .PARAMETER Password
     One password for every account. Default: a random one per account.
@@ -48,7 +48,7 @@ param(
     [Parameter(Mandatory = $true)] [string] $Target,
     [int] $Count = 10,
     [string] $Prefix = 'bot',
-    [ValidateSet('vibemangos', 'trinitycore')] [string] $Flavor = 'vibemangos',
+    [ValidateSet('vibemangos', 'vmangos', 'trinitycore')] [string] $Flavor = 'vibemangos',
     [string] $Password,
     [string] $EmailDomain = 'bots',
     [int] $Start = 1,
@@ -71,13 +71,13 @@ $entries = New-Object System.Collections.Generic.List[string]
 for ($i = $Start; $i -lt $Start + $Count; $i++) {
     $number = '{0:000}' -f $i
     $name = "$Prefix$number"
-    if ($Flavor -eq 'vibemangos' -and $name.Length -gt 16) {
+    if ($Flavor -ne 'trinitycore' -and $name.Length -gt 16) {
         throw "account name '$name' is longer than vibemangos's 16-character limit; use a shorter -Prefix"
     }
 
     $pass = if ($Password) { $Password } else { New-RandomPassword }
 
-    if ($Flavor -eq 'vibemangos') {
+    if ($Flavor -ne 'trinitycore') {
         $login = $name
         $commands.Add("account create $name $pass")
     }
