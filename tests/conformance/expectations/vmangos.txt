@@ -2,10 +2,8 @@
 # is removed once the corresponding piece of port-plan.md lands in this tree (vmangos, root). Read
 # by TestMain.cpp unless --strict is passed. Format: "scenario name | reason", one per line;
 # lines starting with '#' are comments.
-
-load: ten bots log in at once | not run against this target's small (2-account) pool yet; the mechanism it exercises (world entry) is ported and passes for a single bot
-load: fifty bots at once are all in the world within the bound and all log out cleanly | not run against this target's small (2-account) pool yet; the mechanism it exercises (world entry) is ported and passes for a single bot
-load: a hundred bots staggered over twenty seconds are all in the world and all log out cleanly | not run against this target's small (2-account) pool yet; the mechanism it exercises (world entry) is ported and passes for a single bot
+#
+# Empty: with a 100-account pool provisioned, all three load: scenarios pass (see bot-phase-3-10.md).
 
 # Not listed: "framework: connecting to a dead address fails cleanly" -- it drives its own
 # deliberately-unreachable "deadhost" target (TestBotOptions().TargetOverride), never vmangos

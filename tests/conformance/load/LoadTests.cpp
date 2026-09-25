@@ -9,6 +9,7 @@
 #include "TestRoutine.h"
 #include <algorithm>
 #include <catch_amalgamated.hpp>
+#include <random>
 
 namespace
 {
@@ -18,12 +19,28 @@ struct LoadBot
     std::shared_ptr<StageTimings> Timings;
 };
 
+// A valid, unique character name (char_screen/CharScreenTests.cpp's RandomCharacterName): the pool's
+// accounts are freshly provisioned and have no character yet, so every load bot creates one.
+std::string RandomCharacterName()
+{
+    static constexpr char Letters[] = "abcdefghijklmnopqrstuvwxyz";
+    std::random_device device;
+    std::string name = "Zl";
+    for (int i = 0; i < 8; ++i)
+        name += Letters[device() % 26];
+    return name;
+}
+
 LoadBot MakeLoadBot()
 {
     LoadBot loadBot;
     loadBot.Timings = std::make_shared<StageTimings>();
     std::shared_ptr<StageTimings> timings = loadBot.Timings;
-    loadBot.Bot = std::make_unique<TestBot>(TestBotOptions().Hook([timings]() { return std::make_unique<StageTimingHook>(timings); }));
+    loadBot.Bot = std::make_unique<TestBot>(TestBotOptions()
+        .CharacterName(RandomCharacterName())
+        .Race(1)  // human
+        .Class(1) // warrior
+        .Hook([timings]() { return std::make_unique<StageTimingHook>(timings); }));
     return loadBot;
 }
 
