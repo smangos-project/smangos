@@ -48,6 +48,7 @@
 #include "Bnet/BnetRealmList.h"
 #include "Packets/Auth.h"
 #include "Packets/Session.h"
+#include "Packets/PlayerSetup.h"
 #include "Utilities/Random.h"
 
 #include <algorithm>
@@ -1299,10 +1300,11 @@ void WorldSession::LoadTutorialsData()
 
 void WorldSession::SendTutorialsData()
 {
-    WorldPacket data(SMSG_TUTORIAL_FLAGS, 4 * 8);
-    for (uint32 tutorial : m_tutorials)
-        data << tutorial;
-    SendPacket(&data);
+    static_assert(ACCOUNT_TUTORIALS_COUNT == CLASSIC_TUTORIAL_FLAG_WORDS);
+
+    TutorialFlags packet;
+    std::copy(std::begin(m_tutorials), std::end(m_tutorials), packet.Flags.begin());
+    SendClassic(packet);
 }
 
 void WorldSession::SaveTutorialsData()

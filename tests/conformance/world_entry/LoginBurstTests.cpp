@@ -68,3 +68,15 @@ TEST_CASE("world_entry: the login burst sets the game clock to real time", "[pro
         CHECK(minute < 60);
     });
 }
+
+TEST_CASE("world_entry: the login burst carries the account's tutorial flags", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(TutorialFlags::Opcode, 10000));
+
+        CHECK(ParsedExactly<TutorialFlags>(bot, BotConnectionKind::Realm));
+    });
+}
