@@ -30,6 +30,7 @@
 #include "Protocol/ClassicOpcodes.h"
 #include "Packets/Classic/Auth.h"
 #include "Packets/Classic/Misc.h"
+#include "Packets/Classic/Character.h"
 #include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
@@ -250,6 +251,42 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
                     return HandlerResult::Fail;
                 }
                 return HandlePing(data);
+
+            case CLASSIC_CMSG_ENUM_CHARACTERS:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_ENUM_CHARACTERS before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleEnumCharacters(data);
+
+            case CLASSIC_CMSG_CREATE_CHARACTER:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CREATE_CHARACTER before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleCreateCharacter(data);
+
+            case CLASSIC_CMSG_CHAR_DELETE:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_CHAR_DELETE before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleCharDelete(data);
+
+            case CLASSIC_CMSG_PLAYER_LOGIN:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_PLAYER_LOGIN before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandlePlayerLogin(data);
 
             default:
                 if (m_Session == nullptr)
@@ -481,6 +518,54 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
     ClassicPong pong;
     pong.Serial = ping.Serial;
     SendClassic(pong);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleEnumCharacters(ByteBuffer& data)
+{
+    ClassicEnumCharacters packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_ENUM_CHARACTERS, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicCharEnumOpcode(packet);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleCreateCharacter(ByteBuffer& data)
+{
+    ClassicCreateCharacter packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CREATE_CHARACTER, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicCharCreateOpcode(packet);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandleCharDelete(ByteBuffer& data)
+{
+    ClassicCharDelete packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CHAR_DELETE, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicCharDeleteOpcode(packet);
+    return HandlerResult::Okay;
+}
+
+WorldSocket::HandlerResult WorldSocket::HandlePlayerLogin(ByteBuffer& data)
+{
+    ClassicPlayerLogin packet;
+    if (!packet.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_PLAYER_LOGIN, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicPlayerLoginOpcode(packet);
     return HandlerResult::Okay;
 }
 

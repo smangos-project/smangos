@@ -40,6 +40,7 @@
 #include "Packets/Battleground.h"
 #include "Packets/Channel.h"
 #include "Packets/Character.h"
+#include "Packets/Classic/Character.h"
 #include "Packets/Chat.h"
 #include "Packets/Combat.h"
 #include "Packets/Duel.h"
@@ -372,6 +373,20 @@ class WorldSession
         void SendPacket(std::unique_ptr<ServerPacket const> packet);
         /// @deprecated Use SendPacket with ServerPacket class
         void SendPacket(WorldPacket const* packet);
+
+        // Sends a Classic* wire struct (Packets/Classic/*.h): writes T::Opcode and T::Write, then
+        // goes through the same path as any other SendPacket (legacy-lane check included, though a
+        // classic opcode never is one).
+        template<typename T>
+        void SendClassic(T const& packet)
+        {
+            ByteBuffer body;
+            packet.Write(body);
+            WorldPacket data(uint32(T::Opcode), body.size());
+            if (!body.empty())
+                data.append(body.contents(), body.size());
+            SendPacket(&data);
+        }
         void SendMovementPacket(WorldPacket const* packet);
         void SendNotification(char const* format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(int32 string_id, ...);
@@ -501,6 +516,13 @@ class WorldSession
         void HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin const& packet);
         void HandleCharEnum(std::unique_ptr<QueryResult> result);
         void HandlePlayerLogin(LoginQueryHolder* holder);
+
+        // Classic (modern-client) character screen; the vanilla handlers above stay for their own
+        // legacy opcodes, which nothing sends anymore but which still compile (the legacy lane).
+        void HandleClassicCharEnumOpcode(ClassicEnumCharacters const& packet);
+        void HandleClassicCharCreateOpcode(ClassicCreateCharacter const& packet);
+        void HandleClassicCharDeleteOpcode(ClassicCharDelete const& packet);
+        void HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& packet);
         void HandlePlayedTime(NullClientPacket const& packet);
 
         // Movement

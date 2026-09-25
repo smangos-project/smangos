@@ -109,6 +109,12 @@ private:
     /// Called on CMSG_PING.
     HandlerResult HandlePing(ByteBuffer& data);
 
+    /// Character-screen opcodes (port-plan.md step 4); parsed here, handled on the session.
+    HandlerResult HandleEnumCharacters(ByteBuffer& data);
+    HandlerResult HandleCreateCharacter(ByteBuffer& data);
+    HandlerResult HandleCharDelete(ByteBuffer& data);
+    HandlerResult HandlePlayerLogin(ByteBuffer& data);
+
     void SendRaw(uint32 opcode, ByteBuffer const& body);
 
     template<typename T>
