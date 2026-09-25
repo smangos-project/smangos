@@ -615,23 +615,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    struct FactionInitEntry
-    {
-        uint8 flags = 0;    // Faction flags
-        int32 standing = 0; // Reputation standing
-    };
-
-    class InitializeFactions final : public ServerPacket
-    {
-    public:
-        static constexpr uint32 MAX_FACTION_COUNT = 64;
-        std::array<FactionInitEntry, MAX_FACTION_COUNT> factions;
-
-        explicit InitializeFactions() : ServerPacket(SMSG_INITIALIZE_FACTIONS) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class SetFactionVisible final : public ServerPacket
     {
     public:

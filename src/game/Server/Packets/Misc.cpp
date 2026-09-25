@@ -541,22 +541,6 @@ void WorldPackets::Misc::SetFactionStanding::AppendBodyTo(ByteBuffer& buffer) co
     }
 }
 
-size_t WorldPackets::Misc::InitializeFactions::EstimateFinalSize() const
-{
-    return sizeof(uint32) /*size*/ +
-           factions.size() * (sizeof(FactionInitEntry::flags) + sizeof(FactionInitEntry::standing));
-}
-
-void WorldPackets::Misc::InitializeFactions::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << static_cast<uint32>(factions.size());
-    for (const auto& faction : factions)
-    {
-        buffer << faction.flags;
-        buffer << faction.standing;
-    }
-}
-
 size_t WorldPackets::Misc::SetFactionVisible::EstimateFinalSize() const
 {
     return sizeof(reputationListId);

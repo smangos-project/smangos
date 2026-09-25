@@ -24,6 +24,7 @@
 #include "Opcodes.h"
 #include "ObjectMgr.h"
 #include "Packets/Misc.h"
+#include "Packets/PlayerSetup.h"
 
 #include <numeric>
 
@@ -161,17 +162,16 @@ void ReputationMgr::SendState(FactionState const* faction)
 
 void ReputationMgr::SendInitialReputations()
 {
-    auto packet = std::make_unique<WorldPackets::Misc::InitializeFactions>();
+    InitializeFactions packet;
 
     for (auto& itr : m_factions)
     {
-        // fill in encountered data
-        packet->factions[itr.first].flags = static_cast<uint8>(itr.second.Flags);
-        packet->factions[itr.first].standing = itr.second.Standing;
+        packet.Factions.push_back({ int32(itr.second.ID), uint16(itr.second.Flags), itr.second.Standing });
+        packet.Bonuses.push_back({ int32(itr.second.ID), false });
         itr.second.needSend = false;
     }
 
-    m_player->GetSession()->SendPacket(std::move(packet));
+    m_player->GetSession()->SendClassic(packet);
 }
 
 void ReputationMgr::SendVisible(FactionState const* faction) const

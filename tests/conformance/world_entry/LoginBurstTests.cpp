@@ -149,3 +149,19 @@ TEST_CASE("world_entry: the login burst sends the action buttons once", "[protoc
         CHECK(std::ranges::any_of(buttons->Buttons, [](uint64 button) { return button != 0; }));
     });
 }
+
+TEST_CASE("world_entry: the login burst carries the character's reputations", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(InitializeFactions::Opcode, 10000));
+
+        std::optional<InitializeFactions> factions = ParsedExactly<InitializeFactions>(bot, BotConnectionKind::Instance);
+        REQUIRE(factions);
+        CHECK_FALSE(factions->Factions.empty());
+        CHECK(factions->Bonuses.size() == factions->Factions.size());
+        CHECK(std::ranges::all_of(factions->Factions, [](InitializeFactions::Faction const& faction) { return faction.FactionId > 0; }));
+    });
+}
