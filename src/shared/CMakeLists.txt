@@ -131,8 +131,6 @@ set (shared_SRCS
     Util.cpp
     Utilities/Random.cpp
     Duration.h
-    Auth/AuthCrypt.h
-    Auth/AuthCrypt.cpp
     Auth/LoginThrottle.h
     Auth/LoginThrottle.cpp
     Config/Config.cpp
