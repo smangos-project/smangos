@@ -1,8 +1,8 @@
 #ifndef REALBOTS_BOTBNETCONNECTION_H
 #define REALBOTS_BOTBNETCONNECTION_H
 
-#include "BotTlsStream.h"
 #include "Common.h"
+#include "Tls/TlsStream.h"
 #include <functional>
 #include <map>
 #include <memory>
@@ -53,7 +53,7 @@ class BotBnetConnection : public std::enable_shared_from_this<BotBnetConnection>
         void Dispatch(bgs::protocol::Header const& header, std::string payload);
         void OnError(IO::NetworkError const& error);
 
-        std::shared_ptr<BotTlsStream> m_stream;
+        std::shared_ptr<TlsStream> m_stream;
         PushHandler m_pushHandler;
 
         uint32 m_nextToken = 0;

@@ -19,7 +19,6 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
-  ${REALBOTS_DIR}/Net/BotTlsStream.cpp
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
   ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   ${REALBOTS_DIR}/Net/BotBnetLogin.cpp
@@ -38,7 +37,6 @@ add_executable(tests-realbots
   BotWorldLoginTests.cpp
   BotLoginTests.cpp
   BotLoginLiveTests.cpp
-  BotTlsStreamTests.cpp
   BotRestClientTests.cpp
   BotBnetConnectionTests.cpp
   BotBnetLoginTests.cpp

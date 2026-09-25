@@ -6,6 +6,7 @@ add_executable(tests-shared
   HttpMessageTests.cpp
   BnetLoginFormsTests.cpp
   BnetRealmListJsonTests.cpp
+  TlsStreamTests.cpp
   TestMain.cpp
 )
 
@@ -30,6 +31,8 @@ if (WIN32)
     optimized ${OPENSSL_LIBRARIES}
     debug ${MYSQL_DEBUG_LIBRARY}
     debug ${OPENSSL_DEBUG_LIBRARIES}
+    $<$<CONFIG:Debug>:${OPENSSL_SSL_DEBUG_LIBRARIES}>
+    $<$<NOT:$<CONFIG:Debug>>:${OPENSSL_SSL_LIBRARIES}>
   )
 endif()
 

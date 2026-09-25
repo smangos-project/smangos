@@ -24,7 +24,6 @@ add_executable(tests-conformance
   ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
-  ${REALBOTS_DIR}/Net/BotTlsStream.cpp
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
   ${REALBOTS_DIR}/Net/BotBnetConnection.cpp
   ${REALBOTS_DIR}/Net/BotBnetLogin.cpp

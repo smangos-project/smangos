@@ -42,8 +42,8 @@ class WaitFlag
         bool m_set = false;
 };
 
-// Same move-only footgun avoidance as BotRestClientTests.cpp/BotTlsStreamTests.cpp's copy of
-// this helper -- see those files for why the copy assignment must be explicitly deleted.
+// Same move-only footgun avoidance as BotRestClientTests.cpp/tests/unit/shared/TlsStreamTests.cpp's
+// copy of this helper -- see those files for why the copy assignment must be explicitly deleted.
 struct SelfSignedCert
 {
     EVP_PKEY* key = nullptr;

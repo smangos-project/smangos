@@ -12,13 +12,13 @@ std::shared_ptr<BotBnetConnection> BotBnetConnection::Create(IO::Networking::Asy
 
 BotBnetConnection::BotBnetConnection(IO::Networking::AsyncSocket socket)
 {
-    m_stream = BotTlsStream::Create(std::move(socket));
+    m_stream = TlsStream::CreateClient(std::move(socket));
 }
 
 void BotBnetConnection::Connect(ConnectCallback callback)
 {
     std::shared_ptr<BotBnetConnection> self = shared_from_this();
-    m_stream->Connect([self, callback](bool success)
+    m_stream->Handshake([self, callback](bool success)
     {
         if (!success)
         {

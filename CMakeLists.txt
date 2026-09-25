@@ -106,14 +106,14 @@ if(WIN32)
   # OPENSSL_VERSION_NUMBER and picks its modern-OpenSSL path under this automatically.
   set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64" CACHE PATH "OpenSSL install used on Windows (needs >=1.1.1 for Ed25519)")
   set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include)
-  # libcrypto only for now (hashes/AES/SRP6/Ed25519); libssl joins once BotTlsStream needs real
-  # TLS (bot-phase-1.md step 4). Kept single-item: OPENSSL_LIBRARIES/OPENSSL_DEBUG_LIBRARIES are
-  # used with the legacy optimized/debug target_link_libraries keywords elsewhere (mangosd,
-  # realmd), which only scope the single list item immediately following the keyword.
+  # libcrypto only for now (hashes/AES/SRP6/Ed25519); libssl joins for real TLS (TlsStream).
+  # Kept single-item: OPENSSL_LIBRARIES/OPENSSL_DEBUG_LIBRARIES are used with the legacy
+  # optimized/debug target_link_libraries keywords elsewhere (mangosd, realmd), which only
+  # scope the single list item immediately following the keyword.
   set(OPENSSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libcrypto.lib)
   set(OPENSSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libcrypto.lib)
-  # libssl, for BotTlsStream (bot-phase-1.md step 4). Kept as its own variable, linked with
-  # generator expressions (see BotTlsStream's consumers) rather than added to OPENSSL_LIBRARIES:
+  # libssl, for TlsStream. Kept as its own variable, linked with generator expressions
+  # (see TlsStream's consumers) rather than added to OPENSSL_LIBRARIES:
   # the legacy `optimized <list>`/`debug <list>` target_link_libraries keyword form used with
   # OPENSSL_LIBRARIES elsewhere only scopes the single list item immediately after the keyword,
   # so a second library appended to that same variable would leak in unconditionally.

@@ -1,4 +1,4 @@
-#include "BotTlsStream.h"
+#include "Tls/TlsStream.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocketAcceptor.h"
 #include "IO/Networking/AsyncSocket.h"
@@ -44,9 +44,8 @@ class WaitFlag
 
 constexpr uint16_t TestPort = 28518;
 
-// An ephemeral, self-signed certificate for the server half of the test -- BotTlsStream never
-// verifies its peer (bot-phase-1.md, "No certificate verification"), so nothing about this cert
-// needs to be trustworthy, only present.
+// An ephemeral, self-signed certificate for the server half of a test -- a client-role TlsStream
+// never verifies its peer, so nothing about this cert needs to be trustworthy, only present.
 // Move-only: a user-declared destructor suppresses the implicit move ctor/assignment but NOT
 // the implicit (shallow, pointer-copying) copy assignment -- `member = GenerateSelfSignedCert()`
 // would compile, shallow-copy the raw pointers, then immediately double-free them when the
@@ -106,7 +105,7 @@ SelfSignedCert GenerateSelfSignedCert()
     X509_set_pubkey(out.cert, out.key);
 
     X509_NAME* name = X509_get_subject_name(out.cert);
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<unsigned char const*>("bottlsstream-test"), -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<unsigned char const*>("tlsstream-test"), -1, -1, 0);
     X509_set_issuer_name(out.cert, name);
 
     MANGOS_ASSERT(X509_sign(out.cert, out.key, EVP_sha256()) > 0);
@@ -114,8 +113,9 @@ SelfSignedCert GenerateSelfSignedCert()
 }
 
 // Plays the server half of a TLS connection by hand, with blocking OpenSSL calls on a raw
-// socket fd (same shape as vibemangos's LoginRESTService, which this eventually talks to) --
-// simpler than making the test server non-blocking too, and BotTlsStream is what's under test.
+// socket fd -- proves the client role against an independent TLS implementation, simpler than
+// making this stand-in non-blocking too, and the client role is what's under test here (the
+// server role gets its own test below, TlsStream on both ends).
 // Takes ownership of `descriptor` for the connection's whole lifetime: SSL_set_fd's BIO doesn't
 // close the fd on SSL_free (matching LoginRESTService, which closes it itself afterwards), so
 // this closes it explicitly at the end -- required before SocketDescriptor's destructor runs.
@@ -153,7 +153,7 @@ void RunBlockingTlsServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* 
 }
 }
 
-TEST_CASE("BotTlsStream: completes a TLS handshake and exchanges plaintext both ways", "[bottlsstream]")
+TEST_CASE("TlsStream: completes a TLS handshake and exchanges plaintext both ways", "[tlsstream]")
 {
     SelfSignedCert serverCert = GenerateSelfSignedCert();
 
@@ -191,11 +191,11 @@ TEST_CASE("BotTlsStream: completes a TLS handshake and exchanges plaintext both 
     REQUIRE(maybeDescriptor.has_value());
 
     IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(maybeDescriptor.value()));
-    std::shared_ptr<BotTlsStream> stream = BotTlsStream::Create(std::move(clientSocket));
+    std::shared_ptr<TlsStream> stream = TlsStream::CreateClient(std::move(clientSocket));
 
     WaitFlag connected;
     bool connectSucceeded = false;
-    stream->Connect([&](bool success)
+    stream->Handshake([&](bool success)
     {
         connectSucceeded = success;
         connected.Set();
@@ -237,7 +237,7 @@ TEST_CASE("BotTlsStream: completes a TLS handshake and exchanges plaintext both 
     SSL_CTX_free(serverCtx);
 }
 
-TEST_CASE("BotTlsStream: connecting to a non-TLS peer fails the handshake instead of hanging", "[bottlsstream]")
+TEST_CASE("TlsStream: connecting to a non-TLS peer fails the handshake instead of hanging", "[tlsstream]")
 {
     auto ctx = IO::IoContext::CreateIoContext();
     REQUIRE(ctx != nullptr);
@@ -264,11 +264,11 @@ TEST_CASE("BotTlsStream: connecting to a non-TLS peer fails the handshake instea
     REQUIRE(maybeDescriptor.has_value());
 
     IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(maybeDescriptor.value()));
-    std::shared_ptr<BotTlsStream> stream = BotTlsStream::Create(std::move(clientSocket));
+    std::shared_ptr<TlsStream> stream = TlsStream::CreateClient(std::move(clientSocket));
 
     WaitFlag connected;
     bool connectSucceeded = true;
-    stream->Connect([&](bool success)
+    stream->Handshake([&](bool success)
     {
         connectSucceeded = success;
         connected.Set();
@@ -280,4 +280,113 @@ TEST_CASE("BotTlsStream: connecting to a non-TLS peer fails the handshake instea
     acceptor->ClosePortAndStopAcceptingNewConnections();
     ctx->Shutdown();
     ioThread.join();
+}
+
+// The server role's own half-against-half: a TlsStream on both ends of the same loopback
+// connection, instead of the blocking-OpenSSL stand-in the client-role test above uses.
+TEST_CASE("TlsStream: a client and a server TlsStream complete a handshake and exchange plaintext both ways", "[tlsstream]")
+{
+    SelfSignedCert serverCert = GenerateSelfSignedCert();
+
+    SSL_CTX* serverCtx = SSL_CTX_new(TLS_server_method());
+    REQUIRE(serverCtx != nullptr);
+    REQUIRE(SSL_CTX_use_certificate(serverCtx, serverCert.cert) == 1);
+    REQUIRE(SSL_CTX_use_PrivateKey(serverCtx, serverCert.key) == 1);
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    auto acceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", TestPort + 2);
+    REQUIRE(acceptor != nullptr);
+
+    std::string const clientMessage = "hello from the client";
+    std::string const serverMessage = "hello from the server";
+
+    std::shared_ptr<TlsStream> serverStream;
+    WaitFlag serverHandshakeDone;
+    bool serverHandshakeOk = false;
+    std::string serverReceived(clientMessage.size(), '\0');
+    WaitFlag serverExchangeDone;
+
+    acceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        IO::Networking::AsyncSocket serverSocket(ctx.get(), std::move(descriptor));
+        serverStream = TlsStream::CreateServer(std::move(serverSocket), serverCtx);
+        serverStream->Handshake([&](bool success)
+        {
+            serverHandshakeOk = success;
+            serverHandshakeDone.Set();
+            if (!success)
+                return;
+
+            serverStream->Read(serverReceived.data(), serverReceived.size(), [&](IO::NetworkError const& error, size_t)
+            {
+                CHECK_FALSE(error);
+                std::vector<uint8> responseBytes(serverMessage.begin(), serverMessage.end());
+                serverStream->Write(std::move(responseBytes), [&](IO::NetworkError const& writeError)
+                {
+                    CHECK_FALSE(writeError);
+                    serverExchangeDone.Set();
+                });
+            });
+        });
+    });
+
+    auto ip = IO::Networking::IpAddress::TryParseFromString("127.0.0.1");
+    REQUIRE(ip.has_value());
+    IO::Networking::IpEndpoint endpoint(*ip, TestPort + 2);
+
+    auto maybeDescriptor = IO::Networking::SocketConnector::ConnectBlocking(endpoint, std::chrono::seconds(5));
+    REQUIRE(maybeDescriptor.has_value());
+
+    IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(maybeDescriptor.value()));
+    std::shared_ptr<TlsStream> clientStream = TlsStream::CreateClient(std::move(clientSocket));
+
+    WaitFlag clientHandshakeDone;
+    bool clientHandshakeOk = false;
+    clientStream->Handshake([&](bool success)
+    {
+        clientHandshakeOk = success;
+        clientHandshakeDone.Set();
+    });
+    REQUIRE(clientHandshakeDone.WaitFor(std::chrono::seconds(5)));
+    CHECK(clientHandshakeOk);
+    REQUIRE(serverHandshakeDone.WaitFor(std::chrono::seconds(5)));
+    CHECK(serverHandshakeOk);
+
+    WaitFlag clientWrote;
+    IO::NetworkError clientWriteError(IO::NetworkError::ErrorType::NoError);
+    std::vector<uint8> clientMessageBytes(clientMessage.begin(), clientMessage.end());
+    clientStream->Write(std::move(clientMessageBytes), [&](IO::NetworkError const& error)
+    {
+        clientWriteError = error;
+        clientWrote.Set();
+    });
+    REQUIRE(clientWrote.WaitFor(std::chrono::seconds(5)));
+    CHECK_FALSE(clientWriteError);
+
+    REQUIRE(serverExchangeDone.WaitFor(std::chrono::seconds(5)));
+    CHECK(serverReceived == clientMessage);
+
+    std::vector<char> clientResponseBuffer(serverMessage.size());
+    WaitFlag clientReadDone;
+    IO::NetworkError clientReadError(IO::NetworkError::ErrorType::NoError);
+    clientStream->Read(clientResponseBuffer.data(), clientResponseBuffer.size(), [&](IO::NetworkError const& error, size_t)
+    {
+        clientReadError = error;
+        clientReadDone.Set();
+    });
+    REQUIRE(clientReadDone.WaitFor(std::chrono::seconds(5)));
+    CHECK_FALSE(clientReadError);
+    CHECK(std::string(clientResponseBuffer.begin(), clientResponseBuffer.end()) == serverMessage);
+
+    clientStream->Close();
+    if (serverStream)
+        serverStream->Close();
+    acceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+
+    SSL_CTX_free(serverCtx);
 }

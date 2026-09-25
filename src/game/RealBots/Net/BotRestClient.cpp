@@ -61,7 +61,7 @@ std::shared_ptr<BotRestClient> BotRestClient::Create(IO::Networking::AsyncSocket
 
 BotRestClient::BotRestClient(IO::Networking::AsyncSocket socket)
 {
-    m_stream = BotTlsStream::Create(std::move(socket));
+    m_stream = TlsStream::CreateClient(std::move(socket));
 }
 
 void BotRestClient::Login(std::string const& accountName, std::string const& password, LoginCallback callback)
@@ -71,12 +71,12 @@ void BotRestClient::Login(std::string const& accountName, std::string const& pas
     m_callback = std::move(callback);
 
     std::shared_ptr<BotRestClient> self = shared_from_this();
-    m_stream->Connect([self](bool success) { self->OnConnected(success); });
+    m_stream->Handshake([self](bool success) { self->OnConnected(success); });
 }
 
 void BotRestClient::Connect(std::function<void(bool)> callback)
 {
-    m_stream->Connect(std::move(callback));
+    m_stream->Handshake(std::move(callback));
 }
 
 void BotRestClient::OnConnected(bool success)

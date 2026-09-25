@@ -1,26 +1,35 @@
-#include "BotTlsStream.h"
+#include "TlsStream.h"
 #include "Errors.h"
 #include "Log.h"
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-std::shared_ptr<BotTlsStream> BotTlsStream::Create(IO::Networking::AsyncSocket socket)
+std::shared_ptr<TlsStream> TlsStream::CreateClient(IO::Networking::AsyncSocket socket)
 {
-    auto self = std::shared_ptr<BotTlsStream>(new BotTlsStream(std::move(socket)));
+    SSL_CTX* ctx = SSL_CTX_new(TLS_client_method());
+    MANGOS_ASSERT(ctx);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
+
+    auto self = std::shared_ptr<TlsStream>(new TlsStream(std::move(socket), Role::Client, ctx, /*ownsSslCtx*/ true));
     IO::NetworkError err = self->m_socket.InitializeAndFixateMemoryLocation();
     MANGOS_ASSERT(!err);
     return self;
 }
 
-BotTlsStream::BotTlsStream(IO::Networking::AsyncSocket socket) : m_socket(std::move(socket))
+std::shared_ptr<TlsStream> TlsStream::CreateServer(IO::Networking::AsyncSocket socket, SSL_CTX* sslCtx)
 {
-    m_sslCtx = SSL_CTX_new(TLS_client_method());
-    MANGOS_ASSERT(m_sslCtx);
-    // No certificate verification: the references (vibemangos's bnetserver, TrinityCore) serve
-    // self-signed certificates, same as the real Battle.net login flow does for a private server.
-    SSL_CTX_set_verify(m_sslCtx, SSL_VERIFY_NONE, nullptr);
+    MANGOS_ASSERT(sslCtx);
 
+    auto self = std::shared_ptr<TlsStream>(new TlsStream(std::move(socket), Role::Server, sslCtx, /*ownsSslCtx*/ false));
+    IO::NetworkError err = self->m_socket.InitializeAndFixateMemoryLocation();
+    MANGOS_ASSERT(!err);
+    return self;
+}
+
+TlsStream::TlsStream(IO::Networking::AsyncSocket socket, Role role, SSL_CTX* sslCtx, bool ownsSslCtx)
+    : m_socket(std::move(socket)), m_sslCtx(sslCtx), m_ownsSslCtx(ownsSslCtx)
+{
     m_ssl = SSL_new(m_sslCtx);
     MANGOS_ASSERT(m_ssl);
 
@@ -35,26 +44,29 @@ BotTlsStream::BotTlsStream(IO::Networking::AsyncSocket socket) : m_socket(std::m
 
     // SSL takes ownership of both BIOs from this point on; they're freed by SSL_free.
     SSL_set_bio(m_ssl, m_readBio, m_writeBio);
-    SSL_set_connect_state(m_ssl);
+    if (role == Role::Client)
+        SSL_set_connect_state(m_ssl);
+    else
+        SSL_set_accept_state(m_ssl);
 }
 
-BotTlsStream::~BotTlsStream()
+TlsStream::~TlsStream()
 {
     if (m_ssl)
         SSL_free(m_ssl);
-    if (m_sslCtx)
+    if (m_ownsSslCtx && m_sslCtx)
         SSL_CTX_free(m_sslCtx);
 }
 
-void BotTlsStream::Connect(ConnectCallback callback)
+void TlsStream::Handshake(ConnectCallback callback)
 {
     m_onConnect = std::move(callback);
     PumpHandshake();
 }
 
-void BotTlsStream::PumpHandshake()
+void TlsStream::PumpHandshake()
 {
-    std::shared_ptr<BotTlsStream> self = shared_from_this();
+    std::shared_ptr<TlsStream> self = shared_from_this();
 
     int ret = SSL_do_handshake(m_ssl);
     if (ret == 1)
@@ -85,7 +97,7 @@ void BotTlsStream::PumpHandshake()
     }
     else
     {
-        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotTlsStream: handshake failed (SSL error %d)", sslError);
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "TlsStream: handshake failed (SSL error %d)", sslError);
         if (m_onConnect)
         {
             ConnectCallback callback = std::move(m_onConnect);
@@ -95,7 +107,7 @@ void BotTlsStream::PumpHandshake()
     }
 }
 
-void BotTlsStream::FlushOutgoing(std::function<void()> then)
+void TlsStream::FlushOutgoing(std::function<void()> then)
 {
     int pending = BIO_ctrl_pending(m_writeBio);
     if (pending <= 0)
@@ -113,7 +125,7 @@ void BotTlsStream::FlushOutgoing(std::function<void()> then)
     }
     buffer->resize(size_t(n));
 
-    std::shared_ptr<BotTlsStream> self = shared_from_this();
+    std::shared_ptr<TlsStream> self = shared_from_this();
     m_socket.Write({ std::shared_ptr<std::vector<uint8> const>(buffer) }, [self, then = std::move(then)](IO::NetworkError const& error)
     {
         if (error)
@@ -125,10 +137,10 @@ void BotTlsStream::FlushOutgoing(std::function<void()> then)
     });
 }
 
-void BotTlsStream::PullIncoming(std::function<void()> then)
+void TlsStream::PullIncoming(std::function<void()> then)
 {
     auto buffer = std::make_shared<std::vector<char>>(16384);
-    std::shared_ptr<BotTlsStream> self = shared_from_this();
+    std::shared_ptr<TlsStream> self = shared_from_this();
     m_socket.ReadSome(buffer->data(), buffer->size(), [self, buffer, then = std::move(then)](IO::NetworkError const& error, size_t received)
     {
         if (error)
@@ -146,7 +158,7 @@ void BotTlsStream::PullIncoming(std::function<void()> then)
     });
 }
 
-void BotTlsStream::Read(char* target, size_t size, ReadCallback callback)
+void TlsStream::Read(char* target, size_t size, ReadCallback callback)
 {
     m_readTarget = target;
     m_readTargetSize = size;
@@ -155,9 +167,9 @@ void BotTlsStream::Read(char* target, size_t size, ReadCallback callback)
     ContinueRead();
 }
 
-void BotTlsStream::ContinueRead()
+void TlsStream::ContinueRead()
 {
-    std::shared_ptr<BotTlsStream> self = shared_from_this();
+    std::shared_ptr<TlsStream> self = shared_from_this();
 
     while (m_readFilled < m_readTargetSize)
     {
@@ -180,7 +192,7 @@ void BotTlsStream::ContinueRead()
             return;
         }
 
-        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotTlsStream: SSL_read failed (SSL error %d)", sslError);
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "TlsStream: SSL_read failed (SSL error %d)", sslError);
         OnError(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
         return;
     }
@@ -190,7 +202,7 @@ void BotTlsStream::ContinueRead()
     callback(IO::NetworkError(IO::NetworkError::ErrorType::NoError), m_readFilled);
 }
 
-void BotTlsStream::Write(std::vector<uint8> data, WriteCallback callback)
+void TlsStream::Write(std::vector<uint8> data, WriteCallback callback)
 {
     if (IsClosing())
         return;
@@ -199,7 +211,7 @@ void BotTlsStream::Write(std::vector<uint8> data, WriteCallback callback)
     if (n <= 0)
     {
         int sslError = SSL_get_error(m_ssl, n);
-        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotTlsStream: SSL_write failed (SSL error %d)", sslError);
+        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "TlsStream: SSL_write failed (SSL error %d)", sslError);
         callback(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
         return;
     }
@@ -216,7 +228,7 @@ void BotTlsStream::Write(std::vector<uint8> data, WriteCallback callback)
     if (!startFlush)
         return;
 
-    std::shared_ptr<BotTlsStream> self = shared_from_this();
+    std::shared_ptr<TlsStream> self = shared_from_this();
     FlushOutgoing([self]()
     {
         std::deque<WriteCallback> callbacks;
@@ -231,10 +243,10 @@ void BotTlsStream::Write(std::vector<uint8> data, WriteCallback callback)
     });
 }
 
-void BotTlsStream::OnError(IO::NetworkError const& error)
+void TlsStream::OnError(IO::NetworkError const& error)
 {
     if (error.GetErrorType() != IO::NetworkError::ErrorType::SocketClosed || !IsClosing())
-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "BotTlsStream: %s", error.ToString().c_str());
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "TlsStream: %s", error.ToString().c_str());
 
     if (m_readCallback)
     {
@@ -263,7 +275,7 @@ void BotTlsStream::OnError(IO::NetworkError const& error)
     Close();
 }
 
-void BotTlsStream::Close()
+void TlsStream::Close()
 {
     if (m_closed)
         return;

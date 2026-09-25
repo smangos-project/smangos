@@ -1,8 +1,8 @@
 #ifndef REALBOTS_BOTRESTCLIENT_H
 #define REALBOTS_BOTRESTCLIENT_H
 
-#include "BotTlsStream.h"
 #include "Crypto/Authentication/BnetSRP6.h"
+#include "Tls/TlsStream.h"
 #include <functional>
 #include <memory>
 #include <string>
@@ -62,7 +62,7 @@ class BotRestClient : public std::enable_shared_from_this<BotRestClient>
         void Fail(std::string const& error);
         void Succeed(std::string const& ticket);
 
-        std::shared_ptr<BotTlsStream> m_stream;
+        std::shared_ptr<TlsStream> m_stream;
         std::string m_accountName;
         std::string m_password;
         LoginCallback m_callback;
