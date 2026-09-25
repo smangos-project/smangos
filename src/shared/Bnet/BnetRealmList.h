@@ -1,5 +1,5 @@
-#ifndef BNETSERVER_BNETREALMLIST_H
-#define BNETSERVER_BNETREALMLIST_H
+#ifndef SHARED_BNETREALMLIST_H
+#define SHARED_BNETREALMLIST_H
 
 #include "Common.h"
 #include "IO/Networking/IpAddress.h"
@@ -31,7 +31,9 @@ struct BnetRealm
 
 // The realms in `realmlist`, re-read after the update interval so a realm going offline or coming
 // back shows up without a restart. Realm addresses are (region << 24) | (battlegroup << 16) | id,
-// with region and battlegroup coming from configuration.
+// with region and battlegroup coming from configuration. Shared between bnetserver (which needs
+// the full realm list) and mangosd (which only needs its own row's address, to redirect a session
+// to the Instance connection without re-querying the database on every redirect).
 class BnetRealmList
 {
     public:
@@ -49,6 +51,7 @@ class BnetRealmList
         // Refreshed if due; a copy, so callers hold no lock.
         std::vector<BnetRealm> GetRealms();
         nonstd::optional<BnetRealm> FindByAddress(uint32 realmAddress);
+        nonstd::optional<BnetRealm> FindById(uint32 realmId);
 
         // The JSON objects the client reads; `security` is the asking account's level on that realm.
         nlohmann::json BuildRealmEntry(BnetRealm const& realm, AccountTypes security) const;

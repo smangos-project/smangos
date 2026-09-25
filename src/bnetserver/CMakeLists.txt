@@ -8,8 +8,6 @@ set(EXECUTABLE_SRCS
   BnetLoginPortal.cpp
   BnetLoginTickets.h
   BnetLoginTickets.cpp
-  BnetRealmList.h
-  BnetRealmList.cpp
   BnetRestSession.h
   BnetRestSession.cpp
   BnetRpcSession.h

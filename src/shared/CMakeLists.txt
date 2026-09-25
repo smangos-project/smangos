@@ -60,6 +60,8 @@ set (shared_SRCS
     Bnet/BnetLoginForms.cpp
     Bnet/BnetRealmListJson.h
     Bnet/BnetRealmListJson.cpp
+    Bnet/BnetRealmList.h
+    Bnet/BnetRealmList.cpp
     Tls/TlsStream.h
     Tls/TlsStream.cpp
     ClassicPacketFraming.h

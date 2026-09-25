@@ -24,7 +24,7 @@
 #include "BnetListener.h"
 #include "BnetLoginPortal.h"
 #include "BnetLoginTickets.h"
-#include "BnetRealmList.h"
+#include "Bnet/BnetRealmList.h"
 #include "BnetRestSession.h"
 #include "BnetRpcSession.h"
 #include "BnetSslContext.h"

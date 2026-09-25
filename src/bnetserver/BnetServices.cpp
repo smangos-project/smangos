@@ -1,7 +1,7 @@
 #include "BnetServices.h"
 #include "BnetLoginPortal.h"
 #include "BnetLoginTickets.h"
-#include "BnetRealmList.h"
+#include "Bnet/BnetRealmList.h"
 #include "BnetRpcSession.h"
 #include "Bnet/BnetClientBuild.h"
 #include "Bnet/BnetRealmListJson.h"

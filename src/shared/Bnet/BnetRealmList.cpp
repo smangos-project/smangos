@@ -77,6 +77,17 @@ nonstd::optional<BnetRealm> BnetRealmList::FindByAddress(uint32 realmAddress)
     return nonstd::nullopt;
 }
 
+nonstd::optional<BnetRealm> BnetRealmList::FindById(uint32 realmId)
+{
+    std::lock_guard<std::mutex> lock(m_lock);
+    UpdateIfNeeded();
+
+    for (BnetRealm const& realm : m_realms)
+        if (realm.id == realmId)
+            return realm;
+    return nonstd::nullopt;
+}
+
 void BnetRealmList::UpdateIfNeeded()
 {
     if (!m_updateInterval || m_nextUpdate > time(nullptr))
