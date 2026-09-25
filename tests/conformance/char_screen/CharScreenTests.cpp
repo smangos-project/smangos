@@ -7,6 +7,7 @@
 #include "Packets/Classic/Guid.h"
 #include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
+#include "Packets/Session.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <algorithm>
@@ -49,9 +50,10 @@ bool Contains(ClassicEnumCharactersResult const& result, ClassicGuid const& guid
         [&](ClassicCharacterInfo const& c) { return c.Guid.Low == guid.Low && c.Guid.High == guid.High; });
 }
 
-// Deletes `guid` when the scope ends, whatever happened before (an assertion that throws included),
-// so a failing scenario does not leave its test character behind. Sent without waiting: the bot is
-// about to go away, and the delete is processed before its connection closes.
+// Best-effort cleanup for a scenario that fails before it can confirm its own delete (an assertion
+// that throws included): sent without waiting, so it can race the connection tearing down and never
+// run (CMSG_CHAR_DELETE is PACKET_PROCESS_WORLD -- Step 9 -- not handled before the socket closes).
+// A scenario on its success path should send its own CharDelete and await CharDeleteResponse instead.
 struct DeleteOnExit
 {
     TestBot& Bot;
@@ -156,6 +158,17 @@ TEST_CASE("char_screen: creating a character with a name already in use fails wi
         REQUIRE(second);
         CHECK(second->Result == CLASSIC_CHAR_CREATE_NAME_IN_USE);
         CHECK(second->Guid.IsEmpty());
+
+        // Confirmed, not fire-and-forget: CMSG_CHAR_DELETE is PACKET_PROCESS_WORLD (Step 9), so a
+        // delete sent right before the connection tears down can lose the race against the next
+        // world tick and never run. Waiting for the response here is what actually frees the slot.
+        CharDelete del;
+        del.Guid = first->Guid;
+        bot.Send(del);
+        auto deleted = co_await bot.Packet<CharDeleteResponse>(10000);
+        REQUIRE(deleted);
+        CHECK(deleted->Result == CLASSIC_CHAR_DELETE_SUCCESS);
+        cleanup.Armed = false;
     });
 }
 
@@ -203,5 +216,32 @@ TEST_CASE("char_screen: CMSG_PLAYER_LOGIN for a guid that is not the account's i
         }, 15000);
         CHECK(refused);
         CHECK(bot.CountReceived(CLASSIC_SMSG_LOGIN_VERIFY_WORLD) == 0);
+    });
+}
+
+TEST_CASE("char_screen: a logout request from the character screen is ignored", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        // Nothing is logged in yet at CharSelect, so CLASSIC_CMSG_LOGOUT_REQUEST (STATUS_LOGGEDIN)
+        // has no player to act on; the fix for the null-GetPlayer() crash this used to hit is that
+        // the opcode is dropped rather than dereferencing one.
+        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
+        REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
+
+        bot.Send(ClassicLogoutRequest{});
+        CHECK(co_await bot.NoPacket(CLASSIC_SMSG_LOGOUT_RESPONSE, 2000));
+
+        // Still there: a ping gets its pong.
+        Ping ping;
+        ping.Serial = 0x70000001;
+        bot.Send(ping);
+        auto pong = co_await bot.Packet<Pong>(10000, [](Pong const& p) { return p.Serial == 0x70000001; });
+        REQUIRE(pong);
+        CHECK(bot.GetStage() == BotStage::CharSelect);
+
+        // The server itself is still healthy, not just this one connection.
+        TestBot second;
+        CHECK(co_await second.Stage(BotStage::InWorld, 30000));
     });
 }
