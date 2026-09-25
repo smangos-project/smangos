@@ -658,37 +658,3 @@ void WorldPackets::Spell::SpellDelayed::AppendBodyTo(ByteBuffer& buffer) const
     buffer << casterGuid;
     buffer << delayTime;
 }
-
-size_t WorldPackets::Spell::InitialSpells::EstimateFinalSize() const
-{
-    return sizeof(talentSpec) +
-           sizeof(uint16) + /*known spells count*/
-           knownSpells.size() * (sizeof(KnownSpell::spellId) +
-                                 sizeof(KnownSpell::unk)) +
-           sizeof(uint16) + /*cooldowns count*/
-           cooldowns.size() * (sizeof(CurrentCooldown::spellId) +
-                               sizeof(CurrentCooldown::itemId) +
-                               sizeof(CurrentCooldown::category) +
-                               sizeof(CurrentCooldown::recoveryTime) +
-                               sizeof(CurrentCooldown::categoryRecoveryTime));
-}
-
-void WorldPackets::Spell::InitialSpells::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << talentSpec;
-    buffer << uint16(knownSpells.size());
-    for (auto const& itr : knownSpells)
-    {
-        buffer << itr.spellId;
-        buffer << itr.unk;
-    }
-    buffer << uint16(cooldowns.size());
-    for (auto const& itr : cooldowns)
-    {
-        buffer << itr.spellId;
-        buffer << itr.itemId;
-        buffer << itr.category;
-        buffer << itr.recoveryTime;
-        buffer << itr.categoryRecoveryTime;
-    }
-}

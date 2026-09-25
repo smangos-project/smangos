@@ -492,34 +492,6 @@ namespace WorldPackets { namespace Spell
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class InitialSpells final : public ServerPacket
-    {
-    public:
-        struct KnownSpell
-        {
-            KnownSpell(uint16 spellId_, int16 unk_) : spellId(spellId_), unk(unk_) {};
-            uint16 spellId = 0;
-            int16 unk = 0;
-        };
-        struct CurrentCooldown
-        {
-            CurrentCooldown(uint16 spellId_, uint16 itemId_, uint16 category_, int32 recoveryTime_, int32 categoryRecoveryTime_) :
-                spellId(spellId_), itemId(itemId_), category(category_), recoveryTime(recoveryTime_), categoryRecoveryTime(categoryRecoveryTime_) {};
-            uint16 spellId = 0;
-            uint16 itemId = 0;
-            uint16 category = 0;
-            int32 recoveryTime = 0;
-            int32 categoryRecoveryTime = 0;
-        };
-        uint8 talentSpec = 0; // always 0
-        std::vector<KnownSpell> knownSpells;
-        std::vector<CurrentCooldown> cooldowns;
-
-        explicit InitialSpells() : ServerPacket(SMSG_INITIAL_SPELLS) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 }} // namespace WorldPackets::Spell
 
 #endif // MANGOS_PACKETS_SPELL_H

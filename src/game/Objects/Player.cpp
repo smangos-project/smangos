@@ -83,6 +83,7 @@
 #include "world/scourge_invasion.h"
 #include "world/world_event_wareffort.h"
 #include "Packets/PlayerSetup.h"
+#include "Packets/SpellBook.h"
 
 #include <climits>
 
@@ -3412,8 +3413,8 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
 void Player::SendInitialSpells() const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::InitialSpells>();
-
+    SendKnownSpells known;
+    known.InitialLogin = true;
     for (const auto& spell : m_spells)
     {
         if (spell.second.state == PLAYERSPELL_REMOVED)
@@ -3422,10 +3423,12 @@ void Player::SendInitialSpells() const
         if (!spell.second.active || spell.second.disabled)
             continue;
 
-        packet->knownSpells.emplace_back(uint16(spell.first), int16(0));
+        known.KnownSpells.push_back(spell.first);
     }
+    GetSession()->SendClassic(known);
+    GetSession()->SendClassic(SendUnlearnSpells{});
 
-    // write cooldown data
+    SendSpellHistory history;
     auto currTime = sWorld.GetCurrentClockTime();
     for (auto& cdItr : m_cooldownMap)
     {
@@ -3444,15 +3447,20 @@ void Player::SendInitialSpells() const
         if (!spellCDDuration && !catCDDuration && !cdData->IsPermanent())
             continue;
 
+        SpellHistoryEntry entry;
+        entry.SpellId = cdData->GetSpellEntry()->Id;
+        entry.ItemId = cdData->GetItemId();
+        entry.Category = cdData->GetCategory();
         if (cdData->IsPermanent())
+            entry.OnHold = true;
+        else
         {
-            spellCDDuration = uint32(1);                              // cooldown
-            catCDDuration |= 0x80000000;
+            entry.RecoveryTime = int32(spellCDDuration);
+            entry.CategoryRecoveryTime = int32(catCDDuration);
         }
-
-        packet->cooldowns.emplace_back(uint16(cdData->GetSpellEntry()->Id), uint16(cdData->GetItemId()), uint16(cdData->GetCategory()), int32(spellCDDuration), int32(catCDDuration));
+        history.Entries.push_back(entry);
     }
-    GetSession()->SendPacket(std::move(packet));
+    GetSession()->SendClassic(history);
 
     sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "CHARACTER: Sent Initial Spells");
 }

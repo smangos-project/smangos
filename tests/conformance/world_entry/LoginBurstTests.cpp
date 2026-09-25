@@ -3,9 +3,11 @@
 // left over.
 #include "Packets/CharScreen.h"
 #include "Packets/PlayerSetup.h"
+#include "Packets/SpellBook.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
+#include <algorithm>
 #include <cmath>
 
 namespace
@@ -107,5 +109,26 @@ TEST_CASE("world_entry: the login burst carries weapon and armor proficiencies",
         }
         CHECK(weapon);
         CHECK(armor);
+    });
+}
+
+TEST_CASE("world_entry: the login burst carries the spell book", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(SendKnownSpells::Opcode, 10000));
+        REQUIRE(co_await bot.WaitReceived(SendUnlearnSpells::Opcode, 10000));
+        REQUIRE(co_await bot.WaitReceived(SendSpellHistory::Opcode, 10000));
+
+        std::optional<SendKnownSpells> known = ParsedExactly<SendKnownSpells>(bot, BotConnectionKind::Instance);
+        REQUIRE(known);
+        CHECK(known->InitialLogin);
+        // Every class starts with the auto attack.
+        CHECK(std::ranges::find(known->KnownSpells, 6603u) != known->KnownSpells.end());
+
+        CHECK(ParsedExactly<SendUnlearnSpells>(bot, BotConnectionKind::Instance));
+        CHECK(ParsedExactly<SendSpellHistory>(bot, BotConnectionKind::Instance));
     });
 }
