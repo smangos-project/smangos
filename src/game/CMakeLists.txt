@@ -197,6 +197,7 @@ set (game_SRCS
     PlayerBots/PlayerBotMgr.cpp
     Server/Protocol/Opcodes.cpp
     Server/Protocol/ClassicOpcodes.cpp
+    Server/Packets/Classic/GuidMapping.cpp
     Server/Packets/Battleground.cpp
     Server/Packets/AuctionHouse.cpp
     Server/Packets/Channel.cpp
@@ -455,6 +456,7 @@ set (game_SRCS
     Server/Packets/Classic/Auth.h
     Server/Packets/Classic/Character.h
     Server/Packets/Classic/Guid.h
+    Server/Packets/Classic/GuidMapping.h
     Server/Packets/Classic/Misc.h
     Server/Packets/Battleground.h
     Server/Packets/AuctionHouse.h
