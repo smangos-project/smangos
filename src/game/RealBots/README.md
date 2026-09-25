@@ -440,6 +440,13 @@ None of these is proven against a real 1.15.6 client yet.
   for its combat-log packets, nothing else. So a `SendPacket` that routes by the table needs a
   per-packet override. `SMSG_LOGIN_VERIFY_WORLD` and `SMSG_TIME_SYNC_REQUEST` default to Instance.
 
+- **A transport guid carries its entry (vibemangos's layout, not TrinityCore's).** TrinityCore's
+  transport guid is `type << 58 | counter << 38` with no entry; vibemangos also puts the 23-bit entry
+  in the low bits of `high` (a live capture against a real client is what led it to give transports
+  their own layout at all). `ClassicGuidMapping` follows vibemangos so the entry survives a round
+  trip; with an entry of 0 the two are identical. Unverified against a real client. `HIGHGUID_MO_TRANSPORT`
+  and `HIGHGUID_TRANSPORT` both map to the classic transport type and come back as the latter.
+
 - **Login tickets are not single-use.** `bot-phase-2.md` listed "a reused login ticket is rejected at
   LoginRpc"; neither reference does that. TrinityCore's bnetserver checks `LoginTicketExpiry`
   (`AuthenticationService.cpp`) and vibemangos's `LoginTicketStore` is likewise a TTL store
