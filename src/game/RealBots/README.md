@@ -434,9 +434,11 @@ None of these is proven against a real 1.15.6 client yet.
   connection route (it serves one socket), so `ClassicSendRoute` comes from TrinityCore's server-opcode
   table: 964 of the 977 SMSGs have an entry there, 324 of them Instance. The other 13 (`SPECTATE_*`,
   `WOW_LABS_*`, `HARDCORE_*` and similar retail features) have none and default to Realm.
-  **Followed: TrinityCore** for routes. One surprise worth knowing before wiring it: TrinityCore puts
-  `SMSG_RESUME_COMMS` on the Realm connection, not the Instance one; `SMSG_LOGIN_VERIFY_WORLD` and
-  `SMSG_TIME_SYNC_REQUEST` are Instance. Not yet checked against a real client.
+  **Followed: TrinityCore** for routes. The table is only a *default*: a packet can be constructed
+  with an explicit connection that overrides it, and TrinityCore does so for `SMSG_RESUME_COMMS`
+  (table says Realm, sent on Instance in `HandleContinuePlayerLogin`, matching what the bots see) and
+  for its combat-log packets, nothing else. So a `SendPacket` that routes by the table needs a
+  per-packet override. `SMSG_LOGIN_VERIFY_WORLD` and `SMSG_TIME_SYNC_REQUEST` default to Instance.
 
 - **Login tickets are not single-use.** `bot-phase-2.md` listed "a reused login ticket is rejected at
   LoginRpc"; neither reference does that. TrinityCore's bnetserver checks `LoginTicketExpiry`

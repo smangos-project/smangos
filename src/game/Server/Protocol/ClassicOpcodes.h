@@ -1688,19 +1688,19 @@ enum ClassicOpcodes : uint32
     CLASSIC_SMSG_ZONE_UNDER_ATTACK                      = 0x400009,
 };
 
-// Which world-socket connection a server sends a given SMSG on. The client side of the
-// same choice isn't a static per-opcode table (bot-plan.md/port-plan.md: which connection
-// a client sends a CMSG on is a call-site choice once the Instance connection exists),
-// so only SMSGs get a route here.
+// Which world-socket connection a server sends a given SMSG on by default. A particular send
+// can override it (SMSG_RESUME_COMMS defaults to Realm but goes out on Instance). Which
+// connection a client sends a CMSG on is a call-site choice, not a per-opcode fact, so only
+// SMSGs get a default here.
 enum class ClassicConnectionType
 {
     Realm,
     Instance,
 };
 
-// Realm for anything not an SMSG in the table above (including every CMSG -- a server
-// never sends one, so the question doesn't apply) and for the handful of SMSGs this
-// table has no route for.
+// The default route. Realm for anything not an SMSG in the table above (including every
+// CMSG -- a server never sends one, so the question doesn't apply) and for the handful of
+// SMSGs with no known route.
 ClassicConnectionType ClassicSendRoute(uint32 opcode);
 
 // Name for the packet log; "UNKNOWN" (plus the opcode's own hex value, printed alongside
