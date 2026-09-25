@@ -66,6 +66,8 @@ set (shared_SRCS
     ClassicPacketFraming.cpp
     Crypto/Encoding/Base32.h
     Crypto/Encoding/Base32.cpp
+    Crypto/Encoding/Base64.h
+    Crypto/Encoding/Base64.cpp
     Crypto/Encryption/RC4.h
     Crypto/Encryption/RC4.cpp
     Crypto/Encryption/AES_GCM.h

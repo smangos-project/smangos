@@ -1,6 +1,7 @@
 add_executable(tests-shared
   PlaceholderTest.cpp
   CryptoTests.cpp
+  Base64Tests.cpp
   ByteBufferTests.cpp
   WorldHandshakeCryptoTests.cpp
   HttpMessageTests.cpp
