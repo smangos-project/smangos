@@ -32,7 +32,7 @@
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
 #include "Util.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Packets/Classic/GuidMapping.h"
 
 namespace
@@ -289,7 +289,7 @@ void WorldSession::HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& pack
     LoginPlayer(guid);
 }
 
-void WorldSession::HandleClassicConnectToFailedOpcode(ClassicConnectToFailed const& packet)
+void WorldSession::HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet)
 {
     if (!m_awaitingInstanceConnect || packet.Serial != m_pendingInstanceConnectSerial)
         return; // stale or unexpected; the pending attempt (if any) is what still matters

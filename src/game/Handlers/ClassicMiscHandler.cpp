@@ -2,7 +2,7 @@
 #include "WorldSession.h"
 #include "Player.h"
 #include "World.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Session.h"
 
 void WorldSession::HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& /*packet*/)
 {
@@ -20,7 +20,7 @@ void WorldSession::HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& 
 
     if (reason)
     {
-        SendClassic(ClassicLogoutResponse{ int32(reason), false });
+        SendClassic(LogoutResponse{ int32(reason), false });
         LogoutRequest(0);
         return;
     }
@@ -30,7 +30,7 @@ void WorldSession::HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& 
         GetPlayer()->IsTaxiFlying() ||
         GetSecurity() >= (AccountTypes)sWorld.getConfig(CONFIG_UINT32_INSTANT_LOGOUT))
     {
-        SendClassic(ClassicLogoutResponse{ 0, true });
+        SendClassic(LogoutResponse{ 0, true });
         LogoutPlayer(true);
         return;
     }
@@ -49,11 +49,11 @@ void WorldSession::HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& 
 
     GetPlayer()->ApplyModByteFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_FLAGS, PLAYER_FIELD_BYTE_LOGGING_OUT, true);
 
-    SendClassic(ClassicLogoutResponse{ 0, false });
+    SendClassic(LogoutResponse{ 0, false });
     LogoutRequest(time(nullptr));
 }
 
-void WorldSession::HandleClassicTimeSyncResponseOpcode(ClassicTimeSyncResponse const& packet)
+void WorldSession::HandleClassicTimeSyncResponseOpcode(TimeSyncResponse const& packet)
 {
     auto it = m_pendingTimeSyncRequests.find(packet.SequenceIndex);
     if (it == m_pendingTimeSyncRequests.end())

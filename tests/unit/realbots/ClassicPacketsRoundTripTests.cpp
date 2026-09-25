@@ -3,8 +3,8 @@
 // only sent gained a Read (the server port and the fake world server in tests/support need it), and
 // what the bot only received gained a Write. ClassicPacketsTests.cpp keeps the wire-shape checks
 // from Phase 1.
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Packets/Classic/Guid.h"
 #include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
@@ -54,14 +54,14 @@ std::array<uint8, N> Pattern(uint8 seed)
 }
 }
 
-TEST_CASE("ClassicAuthChallenge round-trips", "[packets]")
+TEST_CASE("AuthChallenge round-trips", "[packets]")
 {
-    ClassicAuthChallenge out;
+    AuthChallenge out;
     out.DosChallenge = Pattern<32>(1);
     out.ServerChallenge = Pattern<32>(9);
     out.DosZeroBits = 4;
 
-    RoundTrip(out, [](ClassicAuthChallenge const& a, ClassicAuthChallenge const& b)
+    RoundTrip(out, [](AuthChallenge const& a, AuthChallenge const& b)
     {
         CHECK(a.DosChallenge == b.DosChallenge);
         CHECK(a.ServerChallenge == b.ServerChallenge);
@@ -70,9 +70,9 @@ TEST_CASE("ClassicAuthChallenge round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicAuthSession round-trips, including the variable-length ticket", "[packets]")
+TEST_CASE("AuthSession round-trips, including the variable-length ticket", "[packets]")
 {
-    ClassicAuthSession out;
+    AuthSession out;
     out.DosResponse = 0x1122334455667788ull;
     out.RegionId = 3;
     out.BattlegroupId = 4;
@@ -82,7 +82,7 @@ TEST_CASE("ClassicAuthSession round-trips, including the variable-length ticket"
     out.UseIPv6 = true;
     out.RealmJoinTicket = "12345";
 
-    RoundTrip(out, [](ClassicAuthSession const& a, ClassicAuthSession const& b)
+    RoundTrip(out, [](AuthSession const& a, AuthSession const& b)
     {
         CHECK(a.DosResponse == b.DosResponse);
         CHECK(a.RegionId == b.RegionId);
@@ -96,9 +96,9 @@ TEST_CASE("ClassicAuthSession round-trips, including the variable-length ticket"
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicAuthSession::Read rejects a ticket length that runs past the body", "[packets]")
+TEST_CASE("AuthSession::Read rejects a ticket length that runs past the body", "[packets]")
 {
-    ClassicAuthSession out;
+    AuthSession out;
     out.RealmJoinTicket = "abc";
     ByteBuffer data;
     out.Write(data);
@@ -107,28 +107,28 @@ TEST_CASE("ClassicAuthSession::Read rejects a ticket length that runs past the b
     size_t const lengthOffset = data.size() - out.RealmJoinTicket.size() - sizeof(uint32);
     data.put<uint32>(lengthOffset, 0xFFFFFFFFu);
 
-    ClassicAuthSession in;
+    AuthSession in;
     CHECK_FALSE(in.Read(data));
 }
 
-TEST_CASE("ClassicEnterEncryptedMode round-trips both values of Enabled", "[packets]")
+TEST_CASE("EnterEncryptedMode round-trips both values of Enabled", "[packets]")
 {
     for (bool enabled : { true, false })
     {
-        ClassicEnterEncryptedMode out;
+        EnterEncryptedMode out;
         out.Signature = Pattern<64>(5);
         out.Enabled = enabled;
 
-        RoundTrip(out, [](ClassicEnterEncryptedMode const& a, ClassicEnterEncryptedMode const& b)
+        RoundTrip(out, [](EnterEncryptedMode const& a, EnterEncryptedMode const& b)
         {
             CHECK(a.Signature == b.Signature);
             CHECK(a.Enabled == b.Enabled);
         });
     }
-    RejectsEveryTruncation(ClassicEnterEncryptedMode{});
+    RejectsEveryTruncation(EnterEncryptedMode{});
 }
 
-TEST_CASE("ClassicEnterEncryptedModeAck, ClassicResumeComms, ClassicEnumCharacters, ClassicKeepAlive and ClassicLogoutComplete are empty bodies", "[packets]")
+TEST_CASE("EnterEncryptedModeAck, ResumeComms, ClassicEnumCharacters, KeepAlive and LogoutComplete are empty bodies", "[packets]")
 {
     auto emptyBody = [](auto packet)
     {
@@ -137,16 +137,16 @@ TEST_CASE("ClassicEnterEncryptedModeAck, ClassicResumeComms, ClassicEnumCharacte
         CHECK(data.size() == 0);
         CHECK(packet.Read(data));
     };
-    emptyBody(ClassicEnterEncryptedModeAck{});
-    emptyBody(ClassicResumeComms{});
+    emptyBody(EnterEncryptedModeAck{});
+    emptyBody(ResumeComms{});
     emptyBody(ClassicEnumCharacters{});
-    emptyBody(ClassicKeepAlive{});
-    emptyBody(ClassicLogoutComplete{});
+    emptyBody(KeepAlive{});
+    emptyBody(LogoutComplete{});
 }
 
-TEST_CASE("ClassicConnectTo round-trips", "[packets]")
+TEST_CASE("ConnectTo round-trips", "[packets]")
 {
-    ClassicConnectTo out;
+    ConnectTo out;
     out.Signature = Pattern<256>(6);
     out.AddressIPv4 = { 127, 0, 0, 1 };
     out.Port = 8086;
@@ -154,7 +154,7 @@ TEST_CASE("ClassicConnectTo round-trips", "[packets]")
     out.ConnectionType = 1;
     out.Key = 0xAABBCCDD11223344ull;
 
-    RoundTrip(out, [](ClassicConnectTo const& a, ClassicConnectTo const& b)
+    RoundTrip(out, [](ConnectTo const& a, ConnectTo const& b)
     {
         CHECK(a.Signature == b.Signature);
         CHECK(a.AddressIPv4 == b.AddressIPv4);
@@ -166,15 +166,15 @@ TEST_CASE("ClassicConnectTo round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicAuthContinuedSession round-trips", "[packets]")
+TEST_CASE("AuthContinuedSession round-trips", "[packets]")
 {
-    ClassicAuthContinuedSession out;
+    AuthContinuedSession out;
     out.DosResponse = 9;
     out.Key = 0x0102030405060708ull;
     out.LocalChallenge = Pattern<32>(11);
     out.Digest = Pattern<24>(12);
 
-    RoundTrip(out, [](ClassicAuthContinuedSession const& a, ClassicAuthContinuedSession const& b)
+    RoundTrip(out, [](AuthContinuedSession const& a, AuthContinuedSession const& b)
     {
         CHECK(a.DosResponse == b.DosResponse);
         CHECK(a.Key == b.Key);
@@ -184,9 +184,9 @@ TEST_CASE("ClassicAuthContinuedSession round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicAuthResponse round-trips its parsed subset", "[packets]")
+TEST_CASE("AuthResponse round-trips its parsed subset", "[packets]")
 {
-    ClassicAuthResponse out;
+    AuthResponse out;
     out.Result = 12;
     out.SuccessInfoPresent = true;
     out.WaitInfoPresent = false;
@@ -194,7 +194,7 @@ TEST_CASE("ClassicAuthResponse round-trips its parsed subset", "[packets]")
     ByteBuffer data;
     out.Write(data);
 
-    ClassicAuthResponse in;
+    AuthResponse in;
     REQUIRE(in.Read(data));
     CHECK(in.Result == 12);
     CHECK(in.SuccessInfoPresent);
@@ -316,17 +316,17 @@ TEST_CASE("ClassicLoginVerifyWorld round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("ClassicTimeSyncRequest and ClassicTimeSyncResponse round-trip", "[packets]")
+TEST_CASE("TimeSyncRequest and TimeSyncResponse round-trip", "[packets]")
 {
-    ClassicTimeSyncRequest request;
+    TimeSyncRequest request;
     request.SequenceIndex = 21;
-    RoundTrip(request, [](ClassicTimeSyncRequest const& a, ClassicTimeSyncRequest const& b) { CHECK(a.SequenceIndex == b.SequenceIndex); });
+    RoundTrip(request, [](TimeSyncRequest const& a, TimeSyncRequest const& b) { CHECK(a.SequenceIndex == b.SequenceIndex); });
     RejectsEveryTruncation(request);
 
-    ClassicTimeSyncResponse response;
+    TimeSyncResponse response;
     response.SequenceIndex = 21;
     response.ClientTime = 987654;
-    RoundTrip(response, [](ClassicTimeSyncResponse const& a, ClassicTimeSyncResponse const& b)
+    RoundTrip(response, [](TimeSyncResponse const& a, TimeSyncResponse const& b)
     {
         CHECK(a.SequenceIndex == b.SequenceIndex);
         CHECK(a.ClientTime == b.ClientTime);
@@ -340,13 +340,13 @@ TEST_CASE("ClassicLogoutRequest round-trips and rejects an empty body", "[packet
     RejectsEveryTruncation(ClassicLogoutRequest{});
 }
 
-TEST_CASE("ClassicConnectToFailed round-trips, connection type first then the serial", "[packets]")
+TEST_CASE("ConnectToFailed round-trips, connection type first then the serial", "[packets]")
 {
-    ClassicConnectToFailed out;
+    ConnectToFailed out;
     out.Serial = CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_3;
     out.Connection = 1;
 
-    RoundTrip(out, [](ClassicConnectToFailed const& a, ClassicConnectToFailed const& b)
+    RoundTrip(out, [](ConnectToFailed const& a, ConnectToFailed const& b)
     {
         CHECK(a.Serial == b.Serial);
         CHECK(a.Connection == b.Connection);

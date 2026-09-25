@@ -126,11 +126,11 @@ BotRoutine LatencyProbe(BotContext& ctx, uint32 intervalMs, uint32 count)
 
     for (uint32 i = 0; i < count; ++i)
     {
-        ClassicPing ping;
+        Ping ping;
         ping.Serial = 0x40000000 + i;
         ctx.Send(ping);
 
-        auto pong = co_await ctx.Packet<ClassicPong>(5000, [&](ClassicPong const& p) { return p.Serial == ping.Serial; });
+        auto pong = co_await ctx.Packet<Pong>(5000, [&](Pong const& p) { return p.Serial == ping.Serial; });
         if (!pong)
             co_return BotTaskResult::Failed;
 

@@ -3,7 +3,7 @@
 #include "BotPacketLog.h"
 #include "BotWorldConnection.h"
 #include "ClassicOpcodes.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Session.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>
@@ -334,7 +334,7 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
     {
         case CLASSIC_SMSG_PONG:
         {
-            ClassicPong pong;
+            Pong pong;
             if (pong.Read(body) && m_pingInFlight && pong.Serial == m_pingSerial)
             {
                 // Measured on the wall clock, in whole milliseconds rounded up, so a localhost round
@@ -347,10 +347,10 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
         }
         case CLASSIC_SMSG_TIME_SYNC_REQUEST:
         {
-            ClassicTimeSyncRequest request;
+            TimeSyncRequest request;
             if (request.Read(body))
             {
-                ClassicTimeSyncResponse response;
+                TimeSyncResponse response;
                 response.SequenceIndex = request.SequenceIndex;
                 response.ClientTime = m_elapsedMs;
                 Send(response);
@@ -418,14 +418,14 @@ void RealBot::UpdateKeepalive(uint32 diff)
         return;
     m_pingTimerMs = 0;
 
-    ClassicPing ping;
+    Ping ping;
     ping.Serial = ++m_pingSerial;
     ping.Latency = m_latencyMs;
     m_pingSentAt = std::chrono::steady_clock::now();
     m_pingInFlight = true;
     Send(ping);
 
-    Send(ClassicKeepAlive{});
+    Send(KeepAlive{});
 }
 
 void RealBot::PublishInfo()

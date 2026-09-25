@@ -3,7 +3,7 @@
 
 #include "BotRoutine.h"
 #include "BotStage.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Packets/Classic/Guid.h"
 #include <array>
 #include <cstdint>
@@ -108,7 +108,7 @@ struct BotInstanceConnectParams
     std::string WorldAddress;
     uint16_t WorldPort = 0;
     std::array<uint8, 40> SessionKey{}; // BotWorldHandshakeOutcome::SessionKey
-    uint64 PackedKey = 0; // ClassicConnectTo::Key
+    uint64 PackedKey = 0; // ConnectTo::Key
     bool VerifyServerSignature = true;
     uint32 ConnectTimeoutMs = 10000;
     uint32 PacketTimeoutMs = 10000;

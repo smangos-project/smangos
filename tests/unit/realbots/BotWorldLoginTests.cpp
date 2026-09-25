@@ -7,7 +7,7 @@
 #include "BotWorldLogin.h"
 #include "FakeWorldServer.h"
 #include "TestBotDriver.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Packets/Classic/Guid.h"
 #include "Packets/Classic/Character.h"
 #include <algorithm>
@@ -64,7 +64,7 @@ struct Scenario
     std::string CreatedName;
     bool InstanceConnected = false;
     std::atomic<uint32> InstanceConnections{ 0 };
-    std::vector<ClassicConnectToFailed> ReportedFailures; // written by the Realm script
+    std::vector<ConnectToFailed> ReportedFailures; // written by the Realm script
     std::vector<uint32> SentSerials;                       // the serial of every SMSG_CONNECT_TO the Realm script sent
 };
 
@@ -73,9 +73,9 @@ constexpr uint32 AttemptSerials[5] = {
     CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_4, CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5,
 };
 
-ClassicConnectTo MakeConnectTo(uint32 serial)
+ConnectTo MakeConnectTo(uint32 serial)
 {
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     connectTo.AddressIPv4 = { 127, 0, 0, 1 };
     connectTo.Port = InstancePort;
     connectTo.Serial = serial;
@@ -96,8 +96,8 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
     {
         // Closes only once the bot has answered the challenge, so the bot is certainly past
         // connecting and inside the handshake proper when the connection goes.
-        ClassicAuthSession session;
-        if (peer.ExchangeBanners() && peer.Send(ClassicAuthChallenge{}) && peer.Expect(session))
+        AuthSession session;
+        if (peer.ExchangeBanners() && peer.Send(AuthChallenge{}) && peer.Expect(session))
             peer.Close();
         return;
     }
@@ -168,7 +168,7 @@ void RunRealmScript(FakeWorldPeer& peer, Scenario& s)
         // servers do; the fifth failure ends the escalation.
         for (uint32 failure = 0; failure < s.ExpectedInstanceFailures; ++failure)
         {
-            ClassicConnectToFailed failed;
+            ConnectToFailed failed;
             if (!peer.Expect(failed))
                 return;
             s.ReportedFailures.push_back(failed);

@@ -6,7 +6,7 @@
 #include "PacketFraming.h"
 #include "Crypto/Encryption/PacketCrypt.h"
 #include "IO/Networking/AsyncSocket.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include <deque>
 #include <functional>
 #include <memory>
@@ -59,7 +59,7 @@ class BotWorldConnection : public std::enable_shared_from_this<BotWorldConnectio
         void SetDisconnectCallback(DisconnectCallback onDisconnect);
 
         // Arms PacketCrypt with the session's derived AES-256 key (see WorldHandshakeCrypto).
-        // Called once, right after sending ClassicEnterEncryptedModeAck -- every packet from
+        // Called once, right after sending EnterEncryptedModeAck -- every packet from
         // either side after that point is encrypted (bot-phase-1.md, "WorldHandshake").
         void ArmEncryption(AES_GCM::Key const& key);
 

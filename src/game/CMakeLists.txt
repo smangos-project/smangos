@@ -455,11 +455,11 @@ set (game_SRCS
     Server/Protocol/Opcodes_active.h
     Server/Protocol/ClassicOpcodes.h
     Server/Packet.h
-    Server/Packets/Classic/Auth.h
+    Server/Packets/Auth.h
+    Server/Packets/Session.h
     Server/Packets/Classic/Character.h
     Server/Packets/Classic/Guid.h
     Server/Packets/Classic/GuidMapping.h
-    Server/Packets/Classic/Misc.h
     Server/Packets/Battleground.h
     Server/Packets/AuctionHouse.h
     Server/Packets/Channel.h

@@ -59,7 +59,7 @@ class WorldHandshakeCrypto
         // digest = HMAC-SHA512(sessionKey, packedKey(8 bytes, native/little-endian) ||
         // localChallenge || serverChallenge || ContinuedSessionSeed)[0..24] -- the
         // CMSG_AUTH_CONTINUED_SESSION Digest field the Instance connection sends in place of
-        // CMSG_AUTH_SESSION's auth-check digest (see ClassicAuthContinuedSession). `sessionKey`
+        // CMSG_AUTH_SESSION's auth-check digest (see AuthContinuedSession). `sessionKey`
         // here is the *existing* 40-byte session key the Realm connection's CMSG_AUTH_SESSION
         // already established, not a fresh derivation.
         static std::array<uint8, 24> ComputeContinuedSessionDigest(

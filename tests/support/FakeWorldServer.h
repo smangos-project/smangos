@@ -14,7 +14,7 @@
 // instead of hanging it.
 #include "BotPacket.h"
 #include "ByteBuffer.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Crypto/Encryption/PacketCrypt.h"
@@ -447,12 +447,12 @@ inline FakeWorldRealmResult FakeWorldRunRealmHandshake(FakeWorldPeer& peer, Fake
     if (!peer.ExchangeBanners())
         return fail();
 
-    ClassicAuthChallenge challenge;
+    AuthChallenge challenge;
     challenge.ServerChallenge = FakeWorldDetail::RandomChallenge();
     if (!peer.Send(challenge))
         return fail();
 
-    ClassicAuthSession session;
+    AuthSession session;
     if (!peer.Expect(session))
         return fail();
 
@@ -462,7 +462,7 @@ inline FakeWorldRealmResult FakeWorldRunRealmHandshake(FakeWorldPeer& peer, Fake
     result.SessionKey = WorldHandshakeCrypto::ComputeSessionKey(options.JoinSessionKey, session.LocalChallenge, challenge.ServerChallenge);
     auto encryptKey = WorldHandshakeCrypto::ComputeEncryptKey(result.SessionKey, session.LocalChallenge, challenge.ServerChallenge);
 
-    ClassicEnterEncryptedMode enter;
+    EnterEncryptedMode enter;
     enter.Signature = FakeWorldDetail::SignEnterEncryptedMode(encryptKey, options.TamperSignature);
     enter.Enabled = true;
     if (!peer.Send(enter))
@@ -470,12 +470,12 @@ inline FakeWorldRealmResult FakeWorldRunRealmHandshake(FakeWorldPeer& peer, Fake
     if (options.StopAfterEnterEncryptedMode)
         return result;
 
-    ClassicEnterEncryptedModeAck ack;
+    EnterEncryptedModeAck ack;
     if (!peer.Expect(ack))
         return fail();
     peer.Crypt().Init(FakeWorldDetail::ToKey(encryptKey));
 
-    ClassicAuthResponse response;
+    AuthResponse response;
     response.Result = options.AuthResult;
     if (!peer.Send(response))
         return fail();
@@ -487,7 +487,7 @@ inline FakeWorldRealmResult FakeWorldRunRealmHandshake(FakeWorldPeer& peer, Fake
 struct FakeWorldInstanceOptions
 {
     std::array<uint8, 40> SessionKey{}; // the Realm connection's session key
-    uint64 ExpectedPackedKey = 0;       // the ClassicConnectTo::Key the redirect carried
+    uint64 ExpectedPackedKey = 0;       // the ConnectTo::Key the redirect carried
     bool TamperSignature = false;
     // Stops after the client's ack, sending no SMSG_RESUME_COMMS.
     bool SkipResumeComms = false;
@@ -512,12 +512,12 @@ inline FakeWorldInstanceResult FakeWorldRunInstanceHandshake(FakeWorldPeer& peer
     if (!peer.ExchangeBanners())
         return fail();
 
-    ClassicAuthChallenge challenge;
+    AuthChallenge challenge;
     challenge.ServerChallenge = FakeWorldDetail::RandomChallenge();
     if (!peer.Send(challenge))
         return fail();
 
-    ClassicAuthContinuedSession session;
+    AuthContinuedSession session;
     if (!peer.Expect(session))
         return fail();
 
@@ -526,18 +526,18 @@ inline FakeWorldInstanceResult FakeWorldRunInstanceHandshake(FakeWorldPeer& peer
 
     auto encryptKey = WorldHandshakeCrypto::ComputeEncryptKey(options.SessionKey, session.LocalChallenge, challenge.ServerChallenge);
 
-    ClassicEnterEncryptedMode enter;
+    EnterEncryptedMode enter;
     enter.Signature = FakeWorldDetail::SignEnterEncryptedMode(encryptKey, options.TamperSignature);
     enter.Enabled = true;
     if (!peer.Send(enter))
         return fail();
 
-    ClassicEnterEncryptedModeAck ack;
+    EnterEncryptedModeAck ack;
     if (!peer.Expect(ack))
         return fail();
     peer.Crypt().Init(FakeWorldDetail::ToKey(encryptKey));
 
-    if (!options.SkipResumeComms && !peer.Send(ClassicResumeComms{}))
+    if (!options.SkipResumeComms && !peer.Send(ResumeComms{}))
         return fail();
 
     result.Completed = true;

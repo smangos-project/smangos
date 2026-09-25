@@ -6,8 +6,8 @@
 // Negative scenarios assert "rejected, and the connection closed" (the bot fails at WorldHandshake
 // because its Realm connection dropped), never an exact result code.
 #include "BotTask.h"
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "ConformanceRun.h"
 #include "RealBotTarget.h"
 #include "TestBot.h"
@@ -48,11 +48,11 @@ std::array<uint8, 32> RandomChallenge()
 
 // A CMSG_AUTH_SESSION the way the bot itself would send it for `bot`'s session and the server's
 // `challenge`: correct digest, the session's ticket. Callers then break one thing.
-ClassicAuthSession CorrectAuthSession(TestBot const& bot, ClassicAuthChallenge const& challenge)
+AuthSession CorrectAuthSession(TestBot const& bot, AuthChallenge const& challenge)
 {
     BotSessionInfo const session = bot.Info().Session;
 
-    ClassicAuthSession out;
+    AuthSession out;
     out.RealmId = session.RealmId;
     out.LocalChallenge = RandomChallenge();
     out.Digest = WorldHandshakeCrypto::ComputeAuthCheckDigest(session.JoinSessionKey, out.LocalChallenge, challenge.ServerChallenge);
@@ -75,11 +75,11 @@ TEST_CASE("world_socket: encrypted mode is entered and SMSG_AUTH_RESPONSE is OK"
         TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
         REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
 
-        std::optional<ClassicEnterEncryptedMode> enter = bot.LastReceived<ClassicEnterEncryptedMode>();
+        std::optional<EnterEncryptedMode> enter = bot.LastReceived<EnterEncryptedMode>();
         REQUIRE(enter);
         CHECK(enter->Enabled);
 
-        std::optional<ClassicAuthResponse> response = bot.LastReceived<ClassicAuthResponse>();
+        std::optional<AuthResponse> response = bot.LastReceived<AuthResponse>();
         REQUIRE(response);
         CHECK(response->Result == 0);
     });
@@ -123,10 +123,10 @@ TEST_CASE("world_socket: a wrong CMSG_AUTH_SESSION digest is rejected and the co
         REQUIRE(co_await bot.Held(BotStage::WorldHandshake, 30000));
         REQUIRE(co_await bot.WaitReceived(CLASSIC_SMSG_AUTH_CHALLENGE, 10000));
 
-        std::optional<ClassicAuthChallenge> challenge = bot.LastReceived<ClassicAuthChallenge>();
+        std::optional<AuthChallenge> challenge = bot.LastReceived<AuthChallenge>();
         REQUIRE(challenge);
 
-        ClassicAuthSession session = CorrectAuthSession(bot, *challenge);
+        AuthSession session = CorrectAuthSession(bot, *challenge);
         session.Digest[0] ^= 0xFF; // one flipped byte
         bot.Send(session);
 
@@ -145,11 +145,11 @@ TEST_CASE("world_socket: a join ticket for a different account is rejected", "[p
         REQUIRE(co_await bot.Held(BotStage::WorldHandshake, 30000));
         REQUIRE(co_await bot.WaitReceived(CLASSIC_SMSG_AUTH_CHALLENGE, 10000));
 
-        std::optional<ClassicAuthChallenge> challenge = bot.LastReceived<ClassicAuthChallenge>();
+        std::optional<AuthChallenge> challenge = bot.LastReceived<AuthChallenge>();
         REQUIRE(challenge);
 
         // This server's join ticket is the account id as a decimal string; the next id is somebody else.
-        ClassicAuthSession session = CorrectAuthSession(bot, *challenge);
+        AuthSession session = CorrectAuthSession(bot, *challenge);
         REQUIRE_FALSE(session.RealmJoinTicket.empty());
         session.RealmJoinTicket = std::to_string(std::stoull(session.RealmJoinTicket) + 1);
         bot.Send(session);
@@ -190,10 +190,10 @@ TEST_CASE("world_socket: an unknown opcode after auth does not drop the connecti
         bot.SendRaw(0x3FFFEE, body);
 
         // Still there: a ping gets its pong.
-        ClassicPing ping;
+        Ping ping;
         ping.Serial = 0x60000001;
         bot.Send(ping);
-        auto pong = co_await bot.Packet<ClassicPong>(10000, [](ClassicPong const& p) { return p.Serial == 0x60000001; });
+        auto pong = co_await bot.Packet<Pong>(10000, [](Pong const& p) { return p.Serial == 0x60000001; });
         REQUIRE(pong);
         CHECK(bot.GetStage() == BotStage::CharSelect);
     });
@@ -251,8 +251,8 @@ TEST_CASE("world_socket: time sync requests arrive and their responses are accep
         // The bot answers each SMSG_TIME_SYNC_REQUEST with CMSG_TIME_SYNC_RESPONSE by default. If the
         // server did not accept them it would stop sending (or drop the session): a second request
         // arriving, on a bot still InWorld, is the proof.
-        REQUIRE(co_await bot.Packet<ClassicTimeSyncRequest>(30000));
-        REQUIRE(co_await bot.Packet<ClassicTimeSyncRequest>(30000));
+        REQUIRE(co_await bot.Packet<TimeSyncRequest>(30000));
+        REQUIRE(co_await bot.Packet<TimeSyncRequest>(30000));
         CHECK(bot.GetStage() == BotStage::InWorld);
     });
 }
@@ -271,11 +271,11 @@ TEST_CASE("world_socket: SMSG_PONG comes back on the connection the ping was sen
         {
             uint32_t const serial = connection == BotConnectionKind::Realm ? 0x60000002u : 0x60000003u;
 
-            ClassicPing ping;
+            Ping ping;
             ping.Serial = serial;
             bot.Send(ping, connection);
 
-            auto pong = co_await bot.Packet<ClassicPong>(10000, [serial](ClassicPong const& p) { return p.Serial == serial; });
+            auto pong = co_await bot.Packet<Pong>(10000, [serial](Pong const& p) { return p.Serial == serial; });
             REQUIRE(pong);
             std::optional<BotPacket> raw = bot.LastReceived(CLASSIC_SMSG_PONG);
             REQUIRE(raw);

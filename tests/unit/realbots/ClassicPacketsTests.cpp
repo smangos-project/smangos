@@ -3,8 +3,8 @@
 // (ClassicEnumCharacters, ClassicCreateCharacter, ClassicPlayerLogin) only have Write() -- the
 // bot uses one direction, per bot-examples.md -- so those are checked against hand-verified wire
 // bytes instead of round-tripped through a Read() that doesn't exist on this side.
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Packets/Classic/Guid.h"
 #include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
@@ -208,7 +208,7 @@ TEST_CASE("ClassicLoginVerifyWorld::Read rejects a truncated body", "[packets]")
     CHECK_FALSE(verify.Read(data));
 }
 
-TEST_CASE("ClassicConnectTo::Read parses an IPv4 redirect", "[packets]")
+TEST_CASE("ConnectTo::Read parses an IPv4 redirect", "[packets]")
 {
     std::array<uint8, 256> signature{};
     for (size_t i = 0; i < signature.size(); ++i)
@@ -216,14 +216,14 @@ TEST_CASE("ClassicConnectTo::Read parses an IPv4 redirect", "[packets]")
 
     ByteBuffer data;
     data.append(signature.data(), signature.size());
-    data << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    data << uint8(ConnectTo::ADDRESS_TYPE_IPV4);
     data << uint8(127) << uint8(0) << uint8(0) << uint8(1);
     data << uint16(8085);
     data << uint32(17); // ConnectToSerial::WorldAttempt1
     data << uint8(1);   // WorldSocketConnectionType::Instance
     data << uint64(0x0123456789ABCDEFull);
 
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     REQUIRE(connectTo.Read(data));
     CHECK(connectTo.Signature == signature);
     CHECK(connectTo.AddressIPv4 == std::array<uint8, 4>{ 127, 0, 0, 1 });
@@ -233,41 +233,41 @@ TEST_CASE("ClassicConnectTo::Read parses an IPv4 redirect", "[packets]")
     CHECK(connectTo.Key == 0x0123456789ABCDEFull);
 }
 
-TEST_CASE("ClassicConnectTo::Read rejects an address type other than IPv4", "[packets]")
+TEST_CASE("ConnectTo::Read rejects an address type other than IPv4", "[packets]")
 {
     ByteBuffer data;
     std::array<uint8, 256> signature{};
     data.append(signature.data(), signature.size());
     data << uint8(2); // not ADDRESS_TYPE_IPV4
 
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     CHECK_FALSE(connectTo.Read(data));
 }
 
-TEST_CASE("ClassicConnectTo::Read rejects a body truncated before the signature ends", "[packets]")
+TEST_CASE("ConnectTo::Read rejects a body truncated before the signature ends", "[packets]")
 {
     ByteBuffer data;
     data << uint32(1); // far too short for even the signature
 
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     CHECK_FALSE(connectTo.Read(data));
 }
 
-TEST_CASE("ClassicConnectTo::Read rejects a body truncated after the address type", "[packets]")
+TEST_CASE("ConnectTo::Read rejects a body truncated after the address type", "[packets]")
 {
     ByteBuffer data;
     std::array<uint8, 256> signature{};
     data.append(signature.data(), signature.size());
-    data << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    data << uint8(ConnectTo::ADDRESS_TYPE_IPV4);
     data << uint8(127) << uint8(0); // short of the remaining address/port/serial/type/key fields
 
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     CHECK_FALSE(connectTo.Read(data));
 }
 
-TEST_CASE("ClassicAuthContinuedSession::Write matches the expected wire shape", "[packets]")
+TEST_CASE("AuthContinuedSession::Write matches the expected wire shape", "[packets]")
 {
-    ClassicAuthContinuedSession session;
+    AuthContinuedSession session;
     session.DosResponse = 0x11ull;
     session.Key = 0x2233445566778899ull;
     session.LocalChallenge.fill(uint8(0x42));
@@ -291,43 +291,43 @@ TEST_CASE("ClassicAuthContinuedSession::Write matches the expected wire shape", 
     CHECK(data.rpos() == data.size());
 }
 
-TEST_CASE("ClassicResumeComms::Read always succeeds on an empty body", "[packets]")
+TEST_CASE("ResumeComms::Read always succeeds on an empty body", "[packets]")
 {
     ByteBuffer data;
-    ClassicResumeComms resumeComms;
+    ResumeComms resumeComms;
     CHECK(resumeComms.Read(data));
 }
 
-TEST_CASE("ClassicKeepAlive::Write produces an empty body", "[packets]")
+TEST_CASE("KeepAlive::Write produces an empty body", "[packets]")
 {
     ByteBuffer data;
-    ClassicKeepAlive{}.Write(data);
+    KeepAlive{}.Write(data);
     CHECK(data.size() == 0);
 }
 
-TEST_CASE("ClassicTimeSyncRequest round-trips", "[packets]")
+TEST_CASE("TimeSyncRequest round-trips", "[packets]")
 {
-    ClassicTimeSyncRequest out;
+    TimeSyncRequest out;
     out.SequenceIndex = 0x12345678;
 
     ByteBuffer data;
     data << out.SequenceIndex;
 
-    ClassicTimeSyncRequest in;
+    TimeSyncRequest in;
     REQUIRE(in.Read(data));
     CHECK(in.SequenceIndex == out.SequenceIndex);
 }
 
-TEST_CASE("ClassicTimeSyncRequest::Read rejects a truncated body", "[packets]")
+TEST_CASE("TimeSyncRequest::Read rejects a truncated body", "[packets]")
 {
     ByteBuffer data;
-    ClassicTimeSyncRequest in;
+    TimeSyncRequest in;
     CHECK_FALSE(in.Read(data));
 }
 
-TEST_CASE("ClassicTimeSyncResponse::Write matches the expected field order", "[packets]")
+TEST_CASE("TimeSyncResponse::Write matches the expected field order", "[packets]")
 {
-    ClassicTimeSyncResponse out;
+    TimeSyncResponse out;
     out.SequenceIndex = 7;
     out.ClientTime = 424242;
 
@@ -348,9 +348,9 @@ TEST_CASE("ClassicLogoutRequest::Write produces a single flushed bit", "[packets
     CHECK(data.size() == 1);
 }
 
-TEST_CASE("ClassicLogoutComplete::Read always succeeds on an empty body", "[packets]")
+TEST_CASE("LogoutComplete::Read always succeeds on an empty body", "[packets]")
 {
     ByteBuffer data;
-    ClassicLogoutComplete complete;
+    LogoutComplete complete;
     CHECK(complete.Read(data));
 }

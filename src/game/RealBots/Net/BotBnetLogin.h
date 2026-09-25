@@ -5,7 +5,7 @@
 #include "BotRestClient.h"
 #include "BotStage.h"
 #include "IO/Context/IoContext.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -73,7 +73,7 @@ class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
             // ComputeAuthCheckDigest/ComputeSessionKey take, per GameUtilitiesService.cpp's
             // JoinRealm ("World session key = client-supplied secret || server-generated secret").
             std::vector<uint8> SessionKey;
-            // An opaque blob the world socket echoes back as ClassicAuthSession::RealmJoinTicket;
+            // An opaque blob the world socket echoes back as AuthSession::RealmJoinTicket;
             // never parsed here, so its exact shape (which varies by server) doesn't matter.
             std::string RealmJoinTicket;
             std::string Error;

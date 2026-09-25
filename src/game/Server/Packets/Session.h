@@ -1,10 +1,15 @@
-#ifndef MANGOS_CLASSIC_MISC_H
-#define MANGOS_CLASSIC_MISC_H
+#ifndef MANGOS_PACKETS_SESSION_H
+#define MANGOS_PACKETS_SESSION_H
+
+// Connection-housekeeping wire structs (ping/keepalive/time-sync/logout) for the world socket.
+// Kept out of Packets/Misc.h deliberately: that header pulls in ObjectGuid.h and the rest of the
+// WorldPackets machinery, which RealBots must not depend on (see RealBots/README.md) -- these
+// structs stay as light as Packets/Auth.h.
 
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
 
-struct ClassicPing
+struct Ping
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_PING;
 
@@ -27,7 +32,7 @@ struct ClassicPing
     }
 };
 
-struct ClassicPong
+struct Pong
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PONG;
 
@@ -45,7 +50,7 @@ struct ClassicPong
 };
 
 // Empty body.
-struct ClassicKeepAlive
+struct KeepAlive
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_KEEP_ALIVE;
 
@@ -53,7 +58,7 @@ struct ClassicKeepAlive
     bool Read(ByteBuffer&) { return true; }
 };
 
-struct ClassicTimeSyncRequest
+struct TimeSyncRequest
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_TIME_SYNC_REQUEST;
 
@@ -71,7 +76,7 @@ struct ClassicTimeSyncRequest
 };
 
 // Field order: sequenceIndex then clientTime.
-struct ClassicTimeSyncResponse
+struct TimeSyncResponse
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TIME_SYNC_RESPONSE;
 
@@ -93,7 +98,9 @@ struct ClassicTimeSyncResponse
     }
 };
 
-// A single IdleLogout bit, flushed to its own byte; always false from a bot.
+// A single IdleLogout bit, flushed to its own byte; always false from a bot. Keeps the Classic
+// prefix: WorldSession::LogoutRequest(time_t) is a live, unrelated vanilla method, and the bare
+// name would collide with it wherever this struct and WorldSession are both in scope.
 struct ClassicLogoutRequest
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_LOGOUT_REQUEST;
@@ -115,7 +122,7 @@ struct ClassicLogoutRequest
 };
 
 // A LogoutResult (0 == Ok) then an Instant bit, flushed to its own byte.
-struct ClassicLogoutResponse
+struct LogoutResponse
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_RESPONSE;
 
@@ -142,7 +149,7 @@ struct ClassicLogoutResponse
 
 // Empty body. Arrives on the Realm connection even when the logout request was sent on the
 // Instance one.
-struct ClassicLogoutComplete
+struct LogoutComplete
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LOGOUT_COMPLETE;
 

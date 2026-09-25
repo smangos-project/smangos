@@ -6,7 +6,7 @@
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Log.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Packets/Classic/Character.h"
 #include <algorithm>
 #include <cstdio>
@@ -46,7 +46,7 @@ std::array<uint8, 32> RandomChallenge()
 // The server signs SMSG_ENTER_ENCRYPTED_MODE under a fixed key both reference implementations
 // hardcode (WorldHandshakeCrypto::EnterEncryptedModePrivateKey); returns whether the signature on
 // `message` is the one this session's encrypt key calls for.
-bool VerifyEnterEncryptedModeSignature(std::array<uint8, 32> const& encryptKey, ClassicEnterEncryptedMode const& message, std::string& error)
+bool VerifyEnterEncryptedModeSignature(std::array<uint8, 32> const& encryptKey, EnterEncryptedMode const& message, std::string& error)
 {
     std::array<uint8, 64> toSign = WorldHandshakeCrypto::ComputeEnterEncryptedModeDigest(encryptKey, message.Enabled);
 
@@ -86,7 +86,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
         co_return BotTaskResult::Done;
     }
 
-    std::optional<ClassicAuthChallenge> challenge = co_await ctx.Packet<ClassicAuthChallenge>(params.PacketTimeoutMs);
+    std::optional<AuthChallenge> challenge = co_await ctx.Packet<AuthChallenge>(params.PacketTimeoutMs);
     if (!challenge)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_CHALLENGE"));
 
@@ -96,7 +96,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
     std::array<uint8, 40> const sessionKey = WorldHandshakeCrypto::ComputeSessionKey(params.JoinSessionKey, localChallenge, serverChallenge);
     std::array<uint8, 32> const encryptKey = WorldHandshakeCrypto::ComputeEncryptKey(sessionKey, localChallenge, serverChallenge);
 
-    ClassicAuthSession session;
+    AuthSession session;
     session.RegionId = params.RegionId;
     session.BattlegroupId = params.BattlegroupId;
     session.RealmId = params.RealmId;
@@ -105,7 +105,7 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
     session.RealmJoinTicket = params.RealmJoinTicket;
     ctx.Send(session, BotConnectionKind::Realm);
 
-    std::optional<ClassicEnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<ClassicEnterEncryptedMode>(params.PacketTimeoutMs);
+    std::optional<EnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<EnterEncryptedMode>(params.PacketTimeoutMs);
     if (!enterEncryptedMode)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_ENTER_ENCRYPTED_MODE"));
 
@@ -119,11 +119,11 @@ BotRoutine BotWorldHandshakeRoutine(BotContext& ctx, BotWorldHandshakeParams par
     // The ack goes out unencrypted; encryption is armed as it is sent (only if it is: a hook that
     // drops it leaves the connection in plain mode, and the server waits forever for it).
     if (enterEncryptedMode->Enabled)
-        ctx.SendAndArmEncryption(ClassicEnterEncryptedModeAck{}, BotConnectionKind::Realm, encryptKey);
+        ctx.SendAndArmEncryption(EnterEncryptedModeAck{}, BotConnectionKind::Realm, encryptKey);
     else
-        ctx.Send(ClassicEnterEncryptedModeAck{}, BotConnectionKind::Realm);
+        ctx.Send(EnterEncryptedModeAck{}, BotConnectionKind::Realm);
 
-    std::optional<ClassicAuthResponse> response = co_await ctx.Packet<ClassicAuthResponse>(params.PacketTimeoutMs);
+    std::optional<AuthResponse> response = co_await ctx.Packet<AuthResponse>(params.PacketTimeoutMs);
     if (!response)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_RESPONSE"));
 
@@ -144,7 +144,7 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
     if (!connected.Success)
         co_return Fail(who, outcome.Error, "instance " + connected.Error);
 
-    std::optional<ClassicAuthChallenge> challenge = co_await ctx.Packet<ClassicAuthChallenge>(params.PacketTimeoutMs);
+    std::optional<AuthChallenge> challenge = co_await ctx.Packet<AuthChallenge>(params.PacketTimeoutMs);
     if (!challenge)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_AUTH_CHALLENGE"));
 
@@ -153,14 +153,14 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
 
     std::array<uint8, 32> const encryptKey = WorldHandshakeCrypto::ComputeEncryptKey(params.SessionKey, localChallenge, serverChallenge);
 
-    ClassicAuthContinuedSession session;
+    AuthContinuedSession session;
     session.DosResponse = 0;
     session.Key = params.PackedKey;
     session.LocalChallenge = localChallenge;
     session.Digest = WorldHandshakeCrypto::ComputeContinuedSessionDigest(params.SessionKey, params.PackedKey, localChallenge, serverChallenge);
     ctx.Send(session, BotConnectionKind::Instance);
 
-    std::optional<ClassicEnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<ClassicEnterEncryptedMode>(params.PacketTimeoutMs);
+    std::optional<EnterEncryptedMode> enterEncryptedMode = co_await ctx.Packet<EnterEncryptedMode>(params.PacketTimeoutMs);
     if (!enterEncryptedMode)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_ENTER_ENCRYPTED_MODE"));
 
@@ -172,11 +172,11 @@ BotRoutine BotInstanceConnectRoutine(BotContext& ctx, BotInstanceConnectParams p
     }
 
     if (enterEncryptedMode->Enabled)
-        ctx.SendAndArmEncryption(ClassicEnterEncryptedModeAck{}, BotConnectionKind::Instance, encryptKey);
+        ctx.SendAndArmEncryption(EnterEncryptedModeAck{}, BotConnectionKind::Instance, encryptKey);
     else
-        ctx.Send(ClassicEnterEncryptedModeAck{}, BotConnectionKind::Instance);
+        ctx.Send(EnterEncryptedModeAck{}, BotConnectionKind::Instance);
 
-    std::optional<ClassicResumeComms> resume = co_await ctx.Packet<ClassicResumeComms>(params.PacketTimeoutMs);
+    std::optional<ResumeComms> resume = co_await ctx.Packet<ResumeComms>(params.PacketTimeoutMs);
     if (!resume)
         co_return Fail(who, outcome.Error, NoPacket("SMSG_RESUME_COMMS"));
 
@@ -251,7 +251,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
     arrived->Data.rpos(0);
     if (arrived->Opcode == CLASSIC_SMSG_CONNECT_TO)
     {
-        ClassicConnectTo connectTo;
+        ConnectTo connectTo;
         if (!connectTo.Read(arrived->Data))
             co_return Fail(who, outcome.Error, "malformed SMSG_CONNECT_TO");
 
@@ -282,7 +282,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
             sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "%s: instance connect attempt %u failed: %s", who, attempt, instanceOutcome.Error.c_str());
             ctx.CloseConnection(BotConnectionKind::Instance);
 
-            ClassicConnectToFailed failed;
+            ConnectToFailed failed;
             failed.Serial = connectTo.Serial;
             failed.Connection = connectTo.ConnectionType;
             ctx.Send(failed, BotConnectionKind::Realm);
@@ -290,7 +290,7 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
             if (attempt >= MaxInstanceConnectAttempts)
                 co_return Fail(who, outcome.Error, "instance connect failed " + std::to_string(attempt) + " times, last: " + instanceOutcome.Error);
 
-            std::optional<ClassicConnectTo> next = co_await ctx.Packet<ClassicConnectTo>(params.PacketTimeoutMs);
+            std::optional<ConnectTo> next = co_await ctx.Packet<ConnectTo>(params.PacketTimeoutMs);
             if (!next)
                 co_return Fail(who, outcome.Error, "instance connect: " + instanceOutcome.Error + "; then " + NoPacket("SMSG_CONNECT_TO after CMSG_CONNECT_TO_FAILED"));
             connectTo = *next;

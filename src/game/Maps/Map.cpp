@@ -56,7 +56,7 @@
 #include "world/world_event_wareffort.h"
 #include "CreatureGroups.h"
 #include "Geometry.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Session.h"
 
 Map::~Map()
 {
@@ -3500,7 +3500,7 @@ void Map::CrashUnload()
 
 
             // Go back to character selection
-            session->SendClassic(ClassicLogoutComplete{});
+            session->SendClassic(LogoutComplete{});
             session->LogoutPlayer(false);
         }
     }

@@ -36,7 +36,7 @@
 #include "authentication_service.pb.h"
 #include "game_utilities_service.pb.h"
 #include "rpc_types.pb.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
 #include "Packets/Classic/Guid.h"
 #include "Packets/Classic/Character.h"
 
@@ -684,7 +684,7 @@ TEST_CASE("BotLogin: account name and password in, InWorld out", "[botlogin]")
         if (!peer.Expect(playerLogin))
             return;
 
-        ClassicConnectTo connectTo;
+        ConnectTo connectTo;
         connectTo.AddressIPv4 = { 127, 0, 0, 1 };
         connectTo.Port = InstancePort;
         connectTo.Key = RedirectKey;

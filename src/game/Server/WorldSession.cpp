@@ -46,8 +46,8 @@
 #include "Crypto/Hash/SHA256.h"
 #include "Crypto/RsaSign.h"
 #include "Bnet/BnetRealmList.h"
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Utilities/Random.h"
 
 #include <algorithm>
@@ -297,7 +297,7 @@ void WorldSession::SendConnectToInstance(uint32 serial)
     key.Value = urand(0, 0x7FFFFFFF);
     uint64 const packedKey = key.Pack();
 
-    ClassicConnectTo connectTo;
+    ConnectTo connectTo;
     uint32_t const ipv4 = address._getInternalIPv4ReprAsUint32();
     connectTo.AddressIPv4 = { uint8(ipv4 >> 24), uint8(ipv4 >> 16), uint8(ipv4 >> 8), uint8(ipv4) };
     connectTo.Port = uint16(sWorld.getConfig(CONFIG_UINT32_PORT_WORLD_INSTANCE));
@@ -308,9 +308,9 @@ void WorldSession::SendConnectToInstance(uint32 serial)
     // The signed message is the "where" (address type + address) and port only -- Serial/Con/Key
     // aren't covered, only the destination the client is being redirected to.
     ByteBuffer signBuffer;
-    signBuffer << uint8(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    signBuffer << uint8(ConnectTo::ADDRESS_TYPE_IPV4);
     signBuffer.append(connectTo.AddressIPv4.data(), connectTo.AddressIPv4.size());
-    signBuffer << uint32(ClassicConnectTo::ADDRESS_TYPE_IPV4);
+    signBuffer << uint32(ConnectTo::ADDRESS_TYPE_IPV4);
     signBuffer << connectTo.Port;
     SHA256::Digest const digest = SHA256::ComputeFrom(signBuffer.contents(), signBuffer.size());
 
@@ -343,7 +343,7 @@ void WorldSession::SetInstanceSocket(std::shared_ptr<WorldSocket> socket)
 
 void WorldSession::SendTimeSync()
 {
-    ClassicTimeSyncRequest request;
+    TimeSyncRequest request;
     request.SequenceIndex = m_timeSyncNextIndex;
     SendClassic(request);
 
@@ -1026,7 +1026,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         // Answers on the Realm connection (the route table) even though the logout request came in
         // on the Instance one; the Instance connection is then done and closes right behind it.
-        SendClassic(ClassicLogoutComplete{});
+        SendClassic(LogoutComplete{});
         if (m_instanceSocket)
         {
             m_instanceSocket->CloseSocket();

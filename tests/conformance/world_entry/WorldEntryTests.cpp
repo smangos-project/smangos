@@ -4,8 +4,8 @@
 // actually triggers with the account pools available; BotCharSelectTests.cpp (unit, fake server)
 // is what actually exercises that path today.
 #include "BotTask.h"
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Packets/Classic/Character.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
@@ -38,15 +38,15 @@ class RefuseFirstInstanceConnectHook : public BotTask
 };
 
 // Every SMSG_CONNECT_TO the bot received, in order.
-std::vector<ClassicConnectTo> ReceivedConnectTos(TestBot const& bot)
+std::vector<ConnectTo> ReceivedConnectTos(TestBot const& bot)
 {
-    std::vector<ClassicConnectTo> out;
+    std::vector<ConnectTo> out;
     for (BotPacket packet : bot.Received())
     {
         if (packet.Opcode != CLASSIC_SMSG_CONNECT_TO)
             continue;
         packet.Data.rpos(0);
-        ClassicConnectTo connectTo;
+        ConnectTo connectTo;
         if (connectTo.Read(packet.Data))
             out.push_back(connectTo);
     }
@@ -75,11 +75,11 @@ TEST_CASE("world_entry: ping gets a pong with the same serial", "[protocol]")
         TestBot bot;
         REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
 
-        ClassicPing ping;
+        Ping ping;
         ping.Serial = 0x50000001;
         bot.Send(ping);
 
-        auto pong = co_await bot.Packet<ClassicPong>(5000, [](ClassicPong const& p) { return p.Serial == 0x50000001; });
+        auto pong = co_await bot.Packet<Pong>(5000, [](Pong const& p) { return p.Serial == 0x50000001; });
         REQUIRE(pong);
     });
 }
@@ -127,7 +127,7 @@ TEST_CASE("world_entry: a failed Instance connect is reported and the next SMSG_
         TestBot bot(TestBotOptions().Hook([]() { return std::make_unique<RefuseFirstInstanceConnectHook>(); }));
         REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
 
-        std::vector<ClassicConnectTo> const redirects = ReceivedConnectTos(bot);
+        std::vector<ConnectTo> const redirects = ReceivedConnectTos(bot);
         REQUIRE(redirects.size() == 2);
         CHECK(redirects[0].Serial == CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_1);
         CHECK(redirects[1].Serial == CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_2);

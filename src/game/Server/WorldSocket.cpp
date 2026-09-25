@@ -28,8 +28,8 @@
 #include "AccountMgr.h"
 #include "SharedDefines.h"
 #include "Protocol/ClassicOpcodes.h"
-#include "Packets/Classic/Auth.h"
-#include "Packets/Classic/Misc.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Packets/Classic/Character.h"
 #include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
@@ -145,7 +145,7 @@ void WorldSocket::ReadClientBanner()
 
 void WorldSocket::SendAuthChallenge()
 {
-    ClassicAuthChallenge challenge;
+    AuthChallenge challenge;
     challenge.DosChallenge = RandomChallenge32();
     challenge.ServerChallenge = m_serverChallenge;
     challenge.DosZeroBits = 0;
@@ -358,7 +358,7 @@ WorldSocket::HandlerResult WorldSocket::FailAuthSession(char const* reason)
 
 WorldSocket::HandlerResult WorldSocket::HandleAuthSession(ByteBuffer& data)
 {
-    ClassicAuthSession session;
+    AuthSession session;
     if (!session.Read(data))
         return FailAuthSession("malformed packet");
 
@@ -448,7 +448,7 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthSession(ByteBuffer& data)
 
 void WorldSocket::SendEnterEncryptedMode()
 {
-    ClassicEnterEncryptedMode enter;
+    EnterEncryptedMode enter;
     enter.Enabled = true;
 
     std::array<uint8, 64> const toSign = WorldHandshakeCrypto::ComputeEnterEncryptedModeDigest(m_encryptKey, enter.Enabled);
@@ -476,7 +476,7 @@ void WorldSocket::SendEnterEncryptedMode()
 
 WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& data)
 {
-    ClassicEnterEncryptedModeAck ack;
+    EnterEncryptedModeAck ack;
     if (!ack.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_ENTER_ENCRYPTED_MODE_ACK", GetRemoteIpString().c_str());
@@ -497,11 +497,11 @@ WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& 
 
     if (m_connectionType == ClassicConnectionType::Instance)
     {
-        SendClassic(ClassicResumeComms{});
+        SendClassic(ResumeComms{});
         return HandlerResult::Okay;
     }
 
-    ClassicAuthResponse response;
+    AuthResponse response;
     response.Result = 0; // Ok
     // SuccessInfo (derived race/class availability, realm data) isn't built yet -- no bot parses
     // it and no real client has reached this far to check it either; see the README.
@@ -524,7 +524,7 @@ WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& 
 
 WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
 {
-    ClassicPing ping;
+    Ping ping;
     if (!ping.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_PING, dropped", GetRemoteIpString().c_str());
@@ -565,7 +565,7 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
 
     m_Session->SetLatency(ping.Latency);
 
-    ClassicPong pong;
+    Pong pong;
     pong.Serial = ping.Serial;
     SendClassic(pong);
     return HandlerResult::Okay;
@@ -573,7 +573,7 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
 
 WorldSocket::HandlerResult WorldSocket::HandleTimeSyncResponse(ByteBuffer& data)
 {
-    ClassicTimeSyncResponse response;
+    TimeSyncResponse response;
     if (!response.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_TIME_SYNC_RESPONSE, dropped", GetRemoteIpString().c_str());
@@ -640,7 +640,7 @@ WorldSocket::HandlerResult WorldSocket::FailAuthContinuedSession(char const* rea
 
 WorldSocket::HandlerResult WorldSocket::HandleAuthContinuedSession(ByteBuffer& data)
 {
-    ClassicAuthContinuedSession packet;
+    AuthContinuedSession packet;
     if (!packet.Read(data))
         return FailAuthContinuedSession("malformed packet");
 
@@ -669,7 +669,7 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthContinuedSession(ByteBuffer& d
 
 WorldSocket::HandlerResult WorldSocket::HandleConnectToFailed(ByteBuffer& data)
 {
-    ClassicConnectToFailed packet;
+    ConnectToFailed packet;
     if (!packet.Read(data))
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_CONNECT_TO_FAILED, dropped", GetRemoteIpString().c_str());

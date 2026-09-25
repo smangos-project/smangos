@@ -1,12 +1,12 @@
-#ifndef MANGOS_CLASSIC_AUTH_H
-#define MANGOS_CLASSIC_AUTH_H
+#ifndef MANGOS_PACKETS_AUTH_H
+#define MANGOS_PACKETS_AUTH_H
 
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
 #include <array>
 #include <string>
 
-struct ClassicAuthChallenge
+struct AuthChallenge
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUTH_CHALLENGE;
 
@@ -32,7 +32,7 @@ struct ClassicAuthChallenge
     }
 };
 
-struct ClassicAuthSession
+struct AuthSession
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUTH_SESSION;
 
@@ -85,7 +85,7 @@ struct ClassicAuthSession
     }
 };
 
-struct ClassicEnterEncryptedMode
+struct EnterEncryptedMode
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_ENTER_ENCRYPTED_MODE;
 
@@ -110,7 +110,7 @@ struct ClassicEnterEncryptedMode
     }
 };
 
-struct ClassicEnterEncryptedModeAck
+struct EnterEncryptedModeAck
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK;
 
@@ -123,7 +123,7 @@ struct ClassicEnterEncryptedModeAck
 // connection stays open for what still routes through it (SMSG_LOGOUT_COMPLETE, and the answer to
 // anything sent on it: a pong comes back on the socket its ping went out on). Only address type 1
 // (IPv4) is parsed. The RSA signature isn't verified on read: RsaSign has no verify half.
-struct ClassicConnectTo
+struct ConnectTo
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CONNECT_TO;
     static constexpr uint8 ADDRESS_TYPE_IPV4 = 1;
@@ -168,7 +168,7 @@ struct ClassicConnectTo
     }
 };
 
-// What ClassicConnectTo::Key / ClassicAuthContinuedSession::Key packs: the account it was issued
+// What ConnectTo::Key / AuthContinuedSession::Key packs: the account it was issued
 // for, which connection it redirects to (always Instance today), and a random value that ties a
 // CMSG_AUTH_CONTINUED_SESSION back to the SMSG_CONNECT_TO that caused it. A fresh key is issued on
 // every attempt (WorldSession::SendConnectToInstance), so only the most recently issued one for an
@@ -205,12 +205,12 @@ constexpr uint32 CLASSIC_CONNECT_TO_SERIAL_WORLD_ATTEMPT_5 = 89;
 // The escalation is a failure of attempt N asking for attempt N+1, up to five, then the login is
 // aborted. Sent on the Realm connection. Field order (connection type, then serial) is unconfirmed
 // against a real 1.15.6 client.
-struct ClassicConnectToFailed
+struct ConnectToFailed
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CONNECT_TO_FAILED;
 
-    uint8 Connection = 0;  // the ClassicConnectTo::ConnectionType of the attempt that failed
-    uint32 Serial = 0;     // the ClassicConnectTo::Serial of that attempt
+    uint8 Connection = 0;  // the ConnectTo::ConnectionType of the attempt that failed
+    uint32 Serial = 0;     // the ConnectTo::Serial of that attempt
 
     void Write(ByteBuffer& data) const
     {
@@ -230,12 +230,12 @@ struct ClassicConnectToFailed
 // Sent on the Instance connection in place of CMSG_AUTH_SESSION: it reuses the world session key
 // the Realm connection's CMSG_AUTH_SESSION already established rather than a fresh exchange (see
 // WorldHandshakeCrypto::ComputeContinuedSessionDigest).
-struct ClassicAuthContinuedSession
+struct AuthContinuedSession
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUTH_CONTINUED_SESSION;
 
-    uint64 DosResponse = 0; // see ClassicAuthSession::DosResponse
-    uint64 Key = 0; // ClassicConnectTo::Key, echoed back to identify the pending Instance connection
+    uint64 DosResponse = 0; // see AuthSession::DosResponse
+    uint64 Key = 0; // ConnectTo::Key, echoed back to identify the pending Instance connection
     std::array<uint8, 32> LocalChallenge{};
     std::array<uint8, 24> Digest{};
 
@@ -260,7 +260,7 @@ struct ClassicAuthContinuedSession
 
 // Empty body. Sent on the Instance connection right after CMSG_ENTER_ENCRYPTED_MODE_ACK, in place
 // of SMSG_AUTH_RESPONSE (which only ever goes out on the Realm connection).
-struct ClassicResumeComms
+struct ResumeComms
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_RESUME_COMMS;
 
@@ -271,7 +271,7 @@ struct ClassicResumeComms
 // Only Result and whether SuccessInfo was sent are parsed; the rest of the body (virtual realm
 // list, character templates, ...) is left unread, which is safe: every packet is length-framed,
 // not delimited by how much of it gets consumed.
-struct ClassicAuthResponse
+struct AuthResponse
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUTH_RESPONSE;
 

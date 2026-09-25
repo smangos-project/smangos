@@ -40,9 +40,9 @@
 #include "Packets/Battleground.h"
 #include "Packets/Channel.h"
 #include "Packets/Character.h"
-#include "Packets/Classic/Auth.h"
+#include "Packets/Auth.h"
+#include "Packets/Session.h"
 #include "Packets/Classic/Character.h"
-#include "Packets/Classic/Misc.h"
 #include "Packets/Chat.h"
 #include "Packets/Combat.h"
 #include "Packets/Duel.h"
@@ -555,9 +555,9 @@ class WorldSession
         void HandleClassicCharCreateOpcode(ClassicCreateCharacter const& packet);
         void HandleClassicCharDeleteOpcode(ClassicCharDelete const& packet);
         void HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& packet);
-        void HandleClassicConnectToFailedOpcode(ClassicConnectToFailed const& packet);
+        void HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet);
         void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
-        void HandleClassicTimeSyncResponseOpcode(ClassicTimeSyncResponse const& packet);
+        void HandleClassicTimeSyncResponseOpcode(TimeSyncResponse const& packet);
         void HandlePlayedTime(NullClientPacket const& packet);
 
         // Movement

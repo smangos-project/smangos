@@ -65,7 +65,7 @@ struct ClassicCharacterInfo
 // Read still succeeds with what CharSelect needs, the count and the first guid, and leaves
 // Characters empty: the rest of the body (race-unlock list, ...) is real wire shape but not needed,
 // and leaving it unread is safe, every packet being length-framed (the same reasoning
-// ClassicAuthResponse::Read above relies on).
+// AuthResponse::Read above relies on).
 struct ClassicEnumCharactersResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_ENUM_CHARACTERS_RESULT;
