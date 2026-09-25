@@ -114,6 +114,9 @@ private:
     /// Called on CMSG_PING.
     HandlerResult HandlePing(ByteBuffer& data);
 
+    /// Called on CMSG_TIME_SYNC_RESPONSE, pairing it back to the session's own pending request.
+    HandlerResult HandleTimeSyncResponse(ByteBuffer& data);
+
     /// Character-screen opcodes (port-plan.md step 4); parsed here, handled on the session.
     HandlerResult HandleEnumCharacters(ByteBuffer& data);
     HandlerResult HandleCreateCharacter(ByteBuffer& data);
@@ -142,6 +145,14 @@ private:
         packet.Write(body);
         SendRaw(uint32(T::Opcode), body);
     }
+
+    // Wraps [opcode, body] in CLASSIC_SMSG_COMPRESSED_PACKET on this connection's own deflate
+    // stream. Empty if compression isn't worth it (small body) or fails.
+    std::vector<uint8> BuildCompressedPlaintext(uint32 opcode, uint8 const* body, size_t bodySize);
+
+    // The outgoing deflate window CLASSIC_SMSG_COMPRESSED_PACKET packets share for this
+    // connection's whole lifetime; only its deflate half is used server-side.
+    ClassicPacketFraming m_outboundFraming;
 
     std::shared_ptr<IO::Timer::TimerHandle> m_handshakeTimeout; // nullptr once the handshake completes, or if the feature is disabled
 

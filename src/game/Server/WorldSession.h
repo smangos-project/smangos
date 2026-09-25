@@ -67,6 +67,7 @@
 #include "Packets/Warden.h"
 
 #include <array>
+#include <map>
 #include <memory>
 
 struct ItemPrototype;
@@ -355,7 +356,7 @@ class WorldSession
         bool ReceivedAHListRequest() const { return m_ah_list_recvd; }
         bool m_ah_list_recvd;
 
-        bool Update(PacketFilter& updater);
+        bool Update(PacketFilter& updater, uint32 diff = 0);
         void QueuePacket(std::unique_ptr<ClientPacket const> packet);
         void QueueBinaryPacket(std::unique_ptr<WorldPacket> const& binaryPacket);
         bool CanProcessPackets() const; // Returns true iif we can process packets (ie logged in Player, not a bot, etc ...
@@ -388,6 +389,11 @@ class WorldSession
         // Drops this session's pending-instance-connect registration, if any: attached, given up
         // on, or the session itself going away.
         void ClearPendingInstanceConnect();
+
+        // Kicks off the periodic SMSG_TIME_SYNC_REQUEST cadence (first right after
+        // SMSG_LOGIN_VERIFY_WORLD, then every 10s); HandleClassicTimeSyncResponseOpcode pairs the
+        // client's CMSG_TIME_SYNC_RESPONSE back to it by sequence index.
+        void SendTimeSync();
 
         static void VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, ClientPacket const& clientPacket);
 
@@ -551,6 +557,7 @@ class WorldSession
         void HandleClassicPlayerLoginOpcode(ClassicPlayerLogin const& packet);
         void HandleClassicConnectToFailedOpcode(ClassicConnectToFailed const& packet);
         void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
+        void HandleClassicTimeSyncResponseOpcode(ClassicTimeSyncResponse const& packet);
         void HandlePlayedTime(NullClientPacket const& packet);
 
         // Movement
@@ -922,6 +929,13 @@ class WorldSession
         bool m_connected;
         uint32 m_disconnectTimer;
         uint32 m_latency;
+
+        // Sent index -> WorldTimer::getMSTime() at send, until the matching CMSG_TIME_SYNC_RESPONSE
+        // arrives.
+        std::map<uint32, uint32> m_pendingTimeSyncRequests;
+        uint32 m_timeSyncNextIndex = 0;
+        uint32 m_timeSyncTimer = 0; // ms until the next SMSG_TIME_SYNC_REQUEST; 0 == not running yet
+        int32 m_timeSyncClockDeltaMs = 0; // latest server-minus-client delta; not consumed yet
 
         uint32 m_accountId;
         std::string m_username;

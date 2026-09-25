@@ -523,6 +523,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
     loginVerifyWorld.Z = position.z;
     loginVerifyWorld.O = position.o;
     SendClassic(loginVerifyWorld);
+    SendTimeSync();
 
     // load player specific part before send times
     LoadAccountData(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), NewAccountData::PER_CHARACTER_CACHE_MASK);

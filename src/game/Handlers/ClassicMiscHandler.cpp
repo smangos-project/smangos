@@ -52,3 +52,17 @@ void WorldSession::HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& 
     SendClassic(ClassicLogoutResponse{ 0, false });
     LogoutRequest(time(nullptr));
 }
+
+void WorldSession::HandleClassicTimeSyncResponseOpcode(ClassicTimeSyncResponse const& packet)
+{
+    auto it = m_pendingTimeSyncRequests.find(packet.SequenceIndex);
+    if (it == m_pendingTimeSyncRequests.end())
+        return;
+
+    uint32 const roundTripMs = WorldTimer::getMSTimeDiff(it->second, WorldTimer::getMSTime());
+    m_pendingTimeSyncRequests.erase(it);
+
+    // Half the round trip approximates the one-way delay to the client, so adding it to ClientTime
+    // gives the server's own clock at the moment the client actually sent the response.
+    m_timeSyncClockDeltaMs = int32(WorldTimer::getMSTime()) - int32(packet.ClientTime + roundTripMs / 2);
+}

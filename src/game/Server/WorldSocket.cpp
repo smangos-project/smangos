@@ -61,6 +61,9 @@ std::array<uint8, 32> RandomChallenge32()
     std::copy(bytes.begin(), bytes.end(), out.begin());
     return out;
 }
+
+// Below this size, wrapping a packet in CLASSIC_SMSG_COMPRESSED_PACKET costs more than it saves.
+constexpr size_t ClassicCompressionThreshold = 0x400;
 }
 
 std::string const WorldSocket::ServerBanner = "WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT - V2";
@@ -316,6 +319,15 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
                 }
                 return HandleLogoutRequest(data);
 
+            case CLASSIC_CMSG_TIME_SYNC_RESPONSE:
+                if (m_Session == nullptr)
+                {
+                    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: CMSG_TIME_SYNC_RESPONSE before authentication", GetRemoteIpString().c_str());
+                    CloseSocket();
+                    return HandlerResult::Fail;
+                }
+                return HandleTimeSyncResponse(data);
+
             default:
                 if (m_Session == nullptr)
                 {
@@ -559,6 +571,18 @@ WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
     return HandlerResult::Okay;
 }
 
+WorldSocket::HandlerResult WorldSocket::HandleTimeSyncResponse(ByteBuffer& data)
+{
+    ClassicTimeSyncResponse response;
+    if (!response.Read(data))
+    {
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: malformed CMSG_TIME_SYNC_RESPONSE, dropped", GetRemoteIpString().c_str());
+        return HandlerResult::Okay;
+    }
+    m_Session->HandleClassicTimeSyncResponseOpcode(response);
+    return HandlerResult::Okay;
+}
+
 WorldSocket::HandlerResult WorldSocket::HandleEnumCharacters(ByteBuffer& data)
 {
     ClassicEnumCharacters packet;
@@ -675,6 +699,26 @@ void WorldSocket::SendRaw(uint32 opcode, ByteBuffer const& body)
     SendPacket(std::move(packet));
 }
 
+std::vector<uint8> WorldSocket::BuildCompressedPlaintext(uint32 opcode, uint8 const* body, size_t bodySize)
+{
+    if (bodySize <= ClassicCompressionThreshold || opcode == CLASSIC_SMSG_COMPRESSED_PACKET)
+        return {};
+
+    std::vector<uint8> const inner = ClassicPacketFraming::BuildPlaintext(opcode, body, bodySize);
+    std::vector<uint8> compressed;
+    if (!m_outboundFraming.Deflate(inner.data(), inner.size(), compressed))
+        return {};
+
+    ClassicCompressedPacketHeader const header = ClassicPacketFraming::BuildCompressedHeader(
+        inner.data(), inner.size(), compressed.data(), compressed.size());
+
+    std::vector<uint8> outerBody(sizeof(header) + compressed.size());
+    std::memcpy(outerBody.data(), &header, sizeof(header));
+    std::memcpy(outerBody.data() + sizeof(header), compressed.data(), compressed.size());
+
+    return ClassicPacketFraming::BuildPlaintext(CLASSIC_SMSG_COMPRESSED_PACKET, outerBody.data(), outerBody.size());
+}
+
 void WorldSocket::SendPacket(WorldPacket packet)
 {
     if (IsClosing())
@@ -748,7 +792,9 @@ void WorldSocket::HandleResultOfAsyncWrite(IO::NetworkError const& error, std::s
         m_sendQueueLock.unlock();
 
         uint8 const* body = packet.empty() ? nullptr : packet.contents();
-        std::vector<uint8> plaintext = ClassicPacketFraming::BuildPlaintext(packet.GetOpcode(), body, packet.size());
+        std::vector<uint8> plaintext = BuildCompressedPlaintext(packet.GetOpcode(), body, packet.size());
+        if (plaintext.empty())
+            plaintext = ClassicPacketFraming::BuildPlaintext(packet.GetOpcode(), body, packet.size());
 
         ClassicPacketHeader header{};
         header.Size = uint32(plaintext.size());

@@ -340,6 +340,19 @@ void WorldSession::SetInstanceSocket(std::shared_ptr<WorldSocket> socket)
     ClearPendingInstanceConnect();
 }
 
+void WorldSession::SendTimeSync()
+{
+    ClassicTimeSyncRequest request;
+    request.SequenceIndex = m_timeSyncNextIndex;
+    SendClassic(request);
+
+    m_pendingTimeSyncRequests[m_timeSyncNextIndex] = WorldTimer::getMSTime();
+
+    // The first two requests are spaced closer together than the steady 10s cadence.
+    m_timeSyncTimer = m_timeSyncNextIndex == 0 ? 5000 : 10000;
+    ++m_timeSyncNextIndex;
+}
+
 WorldSession* WorldSession::FindPendingInstanceConnect(uint64 key)
 {
     std::lock_guard<std::mutex> lock(pendingInstanceConnectsLock);
@@ -605,7 +618,7 @@ bool WorldSession::ForcePlayerLogoutDelay()
 }
 
 // Update the WorldSession (triggered by World update)
-bool WorldSession::Update(PacketFilter& updater)
+bool WorldSession::Update(PacketFilter& updater, uint32 diff)
 {
     uint32 sessionUpdateTime = WorldTimer::getMSTime();
     for (uint32 & i : m_floodPacketsCount)
@@ -661,6 +674,14 @@ bool WorldSession::Update(PacketFilter& updater)
         }
 
         time_t const currTime = time(nullptr);
+
+        if (m_timeSyncTimer > 0)
+        {
+            if (diff >= m_timeSyncTimer)
+                SendTimeSync();
+            else
+                m_timeSyncTimer -= diff;
+        }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         // send these out every world update

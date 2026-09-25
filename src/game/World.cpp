@@ -2850,7 +2850,7 @@ void World::UpdateSessions(uint32 diff)
         WorldSession* pSession = itr->second;
         WorldSessionFilter updater(pSession);
 
-        if (!pSession->Update(updater))
+        if (!pSession->Update(updater, diff))
         {
             if (pSession->PlayerLoading())
                 sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "[CRASH] World::UpdateSession attempt to delete session %u loading a player.", pSession->GetAccountId());
