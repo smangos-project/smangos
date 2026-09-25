@@ -1294,13 +1294,14 @@ enum ChatMsg
     CHAT_MSG_FILTERED                             = 0x5B,
     CHAT_MSG_BATTLEGROUND                         = 0x5C,
     CHAT_MSG_BATTLEGROUND_LEADER                  = 0x5D,
+    CHAT_MSG_INSTANCE_CHAT                        = 0x5E, // CLASSIC_CMSG_CHAT_MESSAGE_INSTANCE_CHAT; no vanilla client sends this
 #else
     CHAT_MSG_RAID_BOSS_WHISPER                    = CHAT_MSG_MONSTER_WHISPER,
     CHAT_MSG_RAID_BOSS_EMOTE                      = CHAT_MSG_MONSTER_EMOTE, // added in 1.11.2, but is broken, ChatFrame.lua was edited in 1.12 to fix it
 #endif
 };
 
-#define MAX_CHAT_MSG_TYPE 0x5E
+#define MAX_CHAT_MSG_TYPE 0x5F
 
 enum ChatLinkColors
 {

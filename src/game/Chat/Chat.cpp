@@ -25,6 +25,8 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
+#include "ClassicOpcodes.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Log.h"
 #include "World.h"
 #include "ObjectMgr.h"
@@ -2544,63 +2546,131 @@ bool ChatHandler::isValidChatMessage(std::string const& msg)
     return validSequence == validSequenceIterator;
 }
 
+// Modern SMSG_CHAT's per-message Flags field (Packets/Chat.h's Chat::ChatFlags): a bitmask, unlike
+// vmangos's own PlayerChatTag (Chat.h), which is a sequential index and so still needs translating.
+enum ChatFlags
+{
+    CHAT_FLAG_NONE = 0x00,
+    CHAT_FLAG_AFK  = 0x01,
+    CHAT_FLAG_DND  = 0x02,
+    CHAT_FLAG_GM   = 0x04,
+};
+
+static uint8 ChatTagToModernChatFlags(uint32 chatTag)
+{
+    switch (chatTag)
+    {
+        case CHAT_TAG_AFK: return CHAT_FLAG_AFK;
+        case CHAT_TAG_DND: return CHAT_FLAG_DND;
+        case CHAT_TAG_GM:  return CHAT_FLAG_GM;
+        default:           return CHAT_FLAG_NONE;
+    }
+}
+
+// vmangos's own ChatMsg (SharedDefines.h) is a numbering inherited from the 1.12 client and bears
+// no relation to the modern client's: TrinityCore's ChatMsg (Miscellaneous/SharedDefines.h) is what
+// the modern chat window actually keys its display on. Covers every ChatMsg BuildChatPacket is
+// actually called with in this codebase; anything else falls back to a plain system line.
+// Battlegrounds have no modern equivalent (not yet ported, bot-phase-4.md Slice E) and fall back to
+// a raid warning, the closest-looking broadcast.
+static uint8 ToModernChatMsgType(ChatMsg type)
+{
+    switch (type)
+    {
+        case CHAT_MSG_SAY:               return 0x01;
+        case CHAT_MSG_PARTY:             return 0x02;
+        case CHAT_MSG_RAID:              return 0x03;
+        case CHAT_MSG_GUILD:             return 0x04;
+        case CHAT_MSG_OFFICER:           return 0x05;
+        case CHAT_MSG_YELL:              return 0x06;
+        case CHAT_MSG_WHISPER:           return 0x07;
+        case CHAT_MSG_WHISPER_INFORM:    return 0x09;
+        case CHAT_MSG_EMOTE:             return 0x0A;
+        case CHAT_MSG_TEXT_EMOTE:        return 0x0B;
+        case CHAT_MSG_MONSTER_SAY:       return 0x0C;
+        case CHAT_MSG_MONSTER_YELL:      return 0x0E;
+        case CHAT_MSG_MONSTER_WHISPER:   return 0x0F;
+        case CHAT_MSG_MONSTER_EMOTE:     return 0x10;
+        case CHAT_MSG_CHANNEL:           return 0x11;
+        case CHAT_MSG_AFK:               return 0x17;
+        case CHAT_MSG_DND:               return 0x18;
+        case CHAT_MSG_IGNORED:           return 0x19;
+        case CHAT_MSG_SKILL:             return 0x1A;
+        case CHAT_MSG_LOOT:              return 0x1B;
+        case CHAT_MSG_MONEY:             return 0x1C;
+        case CHAT_MSG_BG_SYSTEM_NEUTRAL:
+        case CHAT_MSG_BG_SYSTEM_ALLIANCE:
+        case CHAT_MSG_BG_SYSTEM_HORDE:   return 0x24;
+        case CHAT_MSG_RAID_LEADER:       return 0x27;
+        case CHAT_MSG_RAID_WARNING:      return 0x28;
+        case CHAT_MSG_RAID_BOSS_EMOTE:   return 0x29;
+        case CHAT_MSG_RAID_BOSS_WHISPER: return 0x2A;
+        case CHAT_MSG_FILTERED:          return 0x2B;
+        case CHAT_MSG_INSTANCE_CHAT:     return 0x3E;
+        case CHAT_MSG_BATTLEGROUND:
+        case CHAT_MSG_BATTLEGROUND_LEADER:
+            return 0x28; // no modern equivalent -- shown as a raid warning
+        case CHAT_MSG_SYSTEM:
+        default:
+            return 0x00; // the modern CHAT_MSG_SYSTEM value
+    }
+}
+
+// Modern SMSG_CHAT (Packets/Chat.h's Chat struct is the RealBots-side reader for this same wire
+// shape). Unlike the vanilla SMSG_MESSAGECHAT this replaces, sender/target guid and name are plain
+// fields present for every message type -- no more per-type branching (monster vs. player, whisper
+// vs. say, ...).
 void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const* message, Language language /*= LANG_UNIVERSAL*/, uint32 chatTag /*= CHAT_TAG_NONE*/,
                                   ObjectGuid const& senderGuid /*= ObjectGuid()*/, char const* senderName /*= nullptr*/,
                                   ObjectGuid const& targetGuid /*= ObjectGuid()*/, char const* targetName /*= nullptr*/,
                                   char const* channelName /*= nullptr*/, uint8 playerRank /*= 0*/)
 {
-    data.Initialize(SMSG_MESSAGECHAT);
-    data << uint8(msgtype);
-    data << uint32(language);
-
-    switch (msgtype)
-    {
-        case CHAT_MSG_MONSTER_WHISPER:
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-        case CHAT_MSG_RAID_BOSS_WHISPER:
-        case CHAT_MSG_RAID_BOSS_EMOTE:
-#endif
-        case CHAT_MSG_MONSTER_EMOTE:
-            MANGOS_ASSERT(senderName);
-            data << uint32(strlen(senderName) + 1);
-            data << senderName;
-            data << ObjectGuid(targetGuid);
-            break;
-
-        case CHAT_MSG_SAY:
-        case CHAT_MSG_PARTY:
-        case CHAT_MSG_YELL:
-            data << ObjectGuid(senderGuid);
-            data << ObjectGuid(senderGuid);
-            break;
-
-        case CHAT_MSG_MONSTER_SAY:
-        case CHAT_MSG_MONSTER_YELL:
-            MANGOS_ASSERT(senderName);
-            data << ObjectGuid(senderGuid);
-            data << uint32(strlen(senderName) + 1);
-            data << senderName;
-            data << ObjectGuid(targetGuid);
-            break;
-
-        case CHAT_MSG_CHANNEL:
-            MANGOS_ASSERT(channelName);
-            data << channelName;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-            data << uint32(playerRank);
-#endif
-            data << ObjectGuid(senderGuid);
-            break;
-
-        default:
-            data << ObjectGuid(senderGuid);
-            break;
-    }
-
     MANGOS_ASSERT(message);
-    data << uint32(strlen(message) + 1);
-    data << message;
-    data << uint8(chatTag);
+
+    // The modern client suppresses a chat line whose sender name it cannot resolve from its name
+    // cache, which for a player sender is only populated by CMSG_QUERY_PLAYER_NAME round-trips this
+    // server doesn't drive for chat; sending the name inline (as the SenderName field allows for
+    // every sender type, not just monsters) avoids depending on that cache at all.
+    std::string const senderNameStr = (senderGuid && senderName) ? senderName : "";
+    std::string const targetNameStr = (targetGuid && targetName) ? targetName : "";
+    std::string const channelNameStr = (msgtype == CHAT_MSG_CHANNEL && channelName) ? channelName : "";
+    std::string const messageStr = message;
+
+    data.Initialize(CLASSIC_SMSG_CHAT);
+    data << ToModernChatMsgType(msgtype);
+    data << uint32(language);
+    ClassicGuidMapping::ToClassic(senderGuid, realmID).Write(data);
+    ClassicGuid().Write(data); // SenderGuildGUID; no guild-icon-in-chat support here
+    ClassicGuid().Write(data); // SenderAccountGUID; no Battle.net account linking here
+    ClassicGuidMapping::ToClassic(targetGuid, realmID).Write(data);
+    data << uint32(0); // TargetVirtualRealmAddress
+    data << uint32(0); // SenderVirtualRealmAddress
+    data << uint32(0); // AchievementID
+    data << uint16(ChatTagToModernChatFlags(chatTag));
+    data << float(0.0f); // DisplayTime
+    data << int32(0); // SpellID
+
+    data.WriteBits(uint32(senderNameStr.size()), 11);
+    data.WriteBits(uint32(targetNameStr.size()), 11);
+    data.WriteBits(uint32(0), 5); // Prefix (addon chat); not supported here
+    data.WriteBits(uint32(channelNameStr.size()), 7);
+    data.WriteBits(uint32(messageStr.size()), 12);
+    data.WriteBit(false); // HideChatLog
+    data.WriteBit(false); // FakeSenderName
+    data.WriteBit(false); // Unused_801
+    data.WriteBit(false); // ChannelGUID present; channel join isn't modernized yet
+    data.FlushBits();
+
+    if (!senderNameStr.empty())
+        data.append(reinterpret_cast<uint8 const*>(senderNameStr.data()), senderNameStr.size());
+    if (!targetNameStr.empty())
+        data.append(reinterpret_cast<uint8 const*>(targetNameStr.data()), targetNameStr.size());
+    if (!channelNameStr.empty())
+        data.append(reinterpret_cast<uint8 const*>(channelNameStr.data()), channelNameStr.size());
+    if (!messageStr.empty())
+        data.append(reinterpret_cast<uint8 const*>(messageStr.data()), messageStr.size());
+
+    (void)playerRank; // HARDCODE: modern SMSG_CHAT has no per-message channel-rank field
 }
 
 Player* ChatHandler::GetSelectedPlayer() const

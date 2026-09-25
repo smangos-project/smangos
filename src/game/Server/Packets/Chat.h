@@ -6,16 +6,15 @@
 
 namespace WorldPackets { namespace Chat
 {
-    class ChatMessage final : public ClientPacket
+    // Normalized fields every CMSG_CHAT_MESSAGE_* opcode (Packets/ChatMessages.h) is unpacked into
+    // before reaching WorldSession::HandleChatMessageOpcode, whose routing logic keys off `type`
+    // and never needed to change when the wire opcodes did -- only how these get populated did.
+    struct ChatMessage
     {
-    public:
-        uint32 type;
-        uint32 lang;
+        uint32 type = 0;
+        uint32 lang = 0;
         std::string whisperTargetOrChannel;
         std::string message;
-
-        explicit ChatMessage() : ClientPacket(CMSG_MESSAGECHAT), type(0), lang(0) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
     // --- Server Packets ---
 

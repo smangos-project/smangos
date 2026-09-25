@@ -46,6 +46,7 @@
 #include "Packets/Classic/Character.h"
 #include "Packets/ClassicClient.h"
 #include "Packets/Chat.h"
+#include "Packets/ChatMessages.h"
 #include "Packets/Combat.h"
 #include "Packets/Duel.h"
 #include "Packets/GmTicket.h"
@@ -832,6 +833,21 @@ class WorldSession
         void SendWrongFactionNotice();
         void SendChatRestrictedNotice();
         void HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage const& packet);
+        // Thin wrappers over HandleChatMessageOpcode, one per modern CMSG_CHAT_MESSAGE_* opcode:
+        // each just normalizes its own wire shape into a ChatMessage and forwards.
+        void HandleChatMessageSayOpcode(ChatMessageSay const& packet);
+        void HandleChatMessageYellOpcode(ChatMessageYell const& packet);
+        void HandleChatMessageEmoteOpcode(ChatMessageEmote const& packet);
+        void HandleChatMessageWhisperOpcode(ChatMessageWhisper const& packet);
+        void HandleChatMessageChannelOpcode(ChatMessageChannel const& packet);
+        void HandleChatMessageGuildOpcode(ChatMessageGuild const& packet);
+        void HandleChatMessageOfficerOpcode(ChatMessageOfficer const& packet);
+        void HandleChatMessagePartyOpcode(ChatMessageParty const& packet);
+        void HandleChatMessageRaidOpcode(ChatMessageRaid const& packet);
+        void HandleChatMessageRaidWarningOpcode(ChatMessageRaidWarning const& packet);
+        void HandleChatMessageInstanceChatOpcode(ChatMessageInstanceChat const& packet);
+        void HandleChatMessageAfkOpcode(ChatMessageAfk const& packet);
+        void HandleChatMessageDndOpcode(ChatMessageDnd const& packet);
         void HandleTextEmoteOpcode(WorldPackets::Misc::TextEmote const& packet);
         void HandleChatIgnoredOpcode(WorldPackets::Misc::ChatIgnored const& packet);
         uint32 ChatCooldown();

@@ -148,6 +148,125 @@ uint32 WorldSession::ChatCooldown()
     return 0;
 }
 
+void WorldSession::HandleChatMessageSayOpcode(ChatMessageSay const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_SAY;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageYellOpcode(ChatMessageYell const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_YELL;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageEmoteOpcode(ChatMessageEmote const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_EMOTE;
+    message.lang = LANG_UNIVERSAL;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageWhisperOpcode(ChatMessageWhisper const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_WHISPER;
+    message.lang = packet.Language;
+    message.whisperTargetOrChannel = packet.TargetName;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageChannelOpcode(ChatMessageChannel const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_CHANNEL;
+    message.lang = packet.Language;
+    message.whisperTargetOrChannel = packet.ChannelName;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageGuildOpcode(ChatMessageGuild const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_GUILD;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageOfficerOpcode(ChatMessageOfficer const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_OFFICER;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessagePartyOpcode(ChatMessageParty const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_PARTY;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageRaidOpcode(ChatMessageRaid const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_RAID;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageRaidWarningOpcode(ChatMessageRaidWarning const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_RAID_WARNING;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageInstanceChatOpcode(ChatMessageInstanceChat const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_INSTANCE_CHAT;
+    message.lang = packet.Language;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageAfkOpcode(ChatMessageAfk const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_AFK;
+    message.lang = LANG_UNIVERSAL;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
+void WorldSession::HandleChatMessageDndOpcode(ChatMessageDnd const& packet)
+{
+    WorldPackets::Chat::ChatMessage message;
+    message.type = CHAT_MSG_DND;
+    message.lang = LANG_UNIVERSAL;
+    message.message = packet.Message;
+    HandleChatMessageOpcode(message);
+}
+
 void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage const& packet)
 {
     if (packet.type >= MAX_CHAT_MSG_TYPE)

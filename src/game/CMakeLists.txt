@@ -450,6 +450,7 @@ set (game_SRCS
     Server/Packets/Channel.h
     Server/Packets/Character.h
     Server/Packets/Chat.h
+    Server/Packets/ChatMessages.h
     Server/Packets/Combat.h
     Server/Packets/Duel.h
     Server/Packets/GmTicket.h
