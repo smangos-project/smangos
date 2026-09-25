@@ -54,6 +54,8 @@ set (shared_SRCS
     Crypto/Authentication/WorldHandshakeCrypto.cpp
     Http/HttpMessage.h
     Http/HttpMessage.cpp
+    Http/HttpRequestParser.h
+    Http/HttpRequestParser.cpp
     Bnet/BnetLoginForms.h
     Bnet/BnetLoginForms.cpp
     Bnet/BnetRealmListJson.h
@@ -193,16 +195,14 @@ set (shared_SRCS
     TimePeriod.cpp
 )
 
-if (ENABLE_REALBOTS)
-  set (shared_SRCS
-    ${shared_SRCS}
-    Bnet/BnetServiceHash.h
-    Bnet/BnetRpcErrors.h
-    Bnet/BnetClientBuild.h
-    Bnet/BnetRpcFraming.h
-    Bnet/BnetRpcFraming.cpp
-  )
-endif()
+set (shared_SRCS
+  ${shared_SRCS}
+  Bnet/BnetServiceHash.h
+  Bnet/BnetRpcErrors.h
+  Bnet/BnetClientBuild.h
+  Bnet/BnetRpcFraming.h
+  Bnet/BnetRpcFraming.cpp
+)
 
 if (ENABLE_MAILSENDER)
   set (shared_SRCS
@@ -352,7 +352,5 @@ if (ENABLE_CPPTRACE)
   target_compile_definitions(shared PRIVATE ENABLE_CPPTRACE)
 endif()
 
-if (ENABLE_REALBOTS)
-  add_subdirectory(Bnet/proto)
-  target_link_libraries(shared PUBLIC bnetproto)
-endif()
+add_subdirectory(Bnet/proto)
+target_link_libraries(shared PUBLIC bnetproto)

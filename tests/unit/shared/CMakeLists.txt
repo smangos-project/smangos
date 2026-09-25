@@ -4,27 +4,21 @@ add_executable(tests-shared
   ByteBufferTests.cpp
   WorldHandshakeCryptoTests.cpp
   HttpMessageTests.cpp
+  HttpRequestParserTests.cpp
   BnetLoginFormsTests.cpp
   BnetRealmListJsonTests.cpp
   TlsStreamTests.cpp
   ClassicPacketFramingTests.cpp
+  BnetRpcFramingTests.cpp
   TestMain.cpp
 )
-
-if (ENABLE_REALBOTS)
-  target_sources(tests-shared PRIVATE BnetRpcFramingTests.cpp)
-endif()
 
 target_include_directories(tests-shared PRIVATE
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/framework
 )
 
-target_link_libraries(tests-shared PRIVATE shared framework Catch2)
-
-if (ENABLE_REALBOTS)
-  target_link_libraries(tests-shared PRIVATE bnetproto)
-endif()
+target_link_libraries(tests-shared PRIVATE shared framework Catch2 bnetproto)
 
 if (WIN32)
   target_link_libraries(tests-shared PRIVATE
