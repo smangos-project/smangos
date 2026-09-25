@@ -197,6 +197,8 @@ if (ENABLE_REALBOTS)
   set (shared_SRCS
     ${shared_SRCS}
     Bnet/BnetServiceHash.h
+    Bnet/BnetRpcErrors.h
+    Bnet/BnetClientBuild.h
     Bnet/BnetRpcFraming.h
     Bnet/BnetRpcFraming.cpp
   )

@@ -1,0 +1,29 @@
+#ifndef SHARED_BNETRPCERRORS_H
+#define SHARED_BNETRPCERRORS_H
+
+#include "Common.h"
+
+// Status codes carried in the RPC response header. Only the ones the login flow produces.
+enum BnetRpcError : uint32
+{
+    BNET_ERROR_OK                                = 0x00000000,
+    BNET_ERROR_INTERNAL                          = 0x00000001,
+    BNET_ERROR_TIMED_OUT                         = 0x00000002,
+    BNET_ERROR_DENIED                            = 0x00000003,
+    BNET_ERROR_GAME_ACCOUNT_BANNED               = 0x00000034,
+    BNET_ERROR_GAME_ACCOUNT_SUSPENDED            = 0x00000035,
+    BNET_ERROR_BAD_PROGRAM                       = 0x0000004D,
+    BNET_ERROR_BAD_LOCALE                        = 0x0000004E,
+    BNET_ERROR_BAD_PLATFORM                      = 0x0000004F,
+    BNET_ERROR_RPC_MALFORMED_REQUEST             = 0x00000BC5,
+    BNET_ERROR_RPC_NOT_IMPLEMENTED               = 0x00000BC7,
+    BNET_ERROR_RISK_ACCOUNT_LOCKED               = 0x0000A413,
+    BNET_ERROR_UTIL_SERVER_UNKNOWN_REALM         = 0x80000069,
+    BNET_ERROR_UTIL_SERVER_INVALID_IDENTITY_ARGS = 0x8000006E,
+    BNET_ERROR_UTIL_SERVER_FAILED_TO_SERIALIZE   = 0x80000073,
+    BNET_ERROR_USER_SERVER_NOT_PERMITTED_ON_REALM = 0x800000E1,
+    BNET_ERROR_WOW_SERVICES_INVALID_JOIN_TICKET  = 0x8000012E,
+    BNET_ERROR_WOW_SERVICES_DENIED_REALM_LIST_TICKET = 0x80000132,
+};
+
+#endif
