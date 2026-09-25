@@ -3,7 +3,7 @@
 #include "BotPacketLog.h"
 #include "BotWorldConnection.h"
 #include "ClassicOpcodes.h"
-#include "ClassicPackets.h"
+#include "Packets/Classic/Misc.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>

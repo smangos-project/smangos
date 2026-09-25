@@ -7,6 +7,9 @@
 #include "BotWorldLogin.h"
 #include "FakeWorldServer.h"
 #include "TestBotDriver.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Guid.h"
+#include "Packets/Classic/Character.h"
 #include <algorithm>
 #include <atomic>
 #include <catch_amalgamated.hpp>

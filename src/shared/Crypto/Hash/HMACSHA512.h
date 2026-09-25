@@ -20,7 +20,6 @@ typedef struct evp_mac_st EVP_MAC;
 typedef struct evp_mac_ctx_st EVP_MAC_CTX;
 #endif
 
-// vibemangos: src/shared/Crypto/Hash/HMACSHA512.h Crypto::Hash::HMACSHA512 (ported, de-namespaced)
 // Used for the modern world handshake's CMSG_AUTH_SESSION digest (bot-phase-1.md, "WorldHandshake").
 class HMACSHA512
 {

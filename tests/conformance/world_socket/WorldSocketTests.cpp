@@ -6,7 +6,8 @@
 // Negative scenarios assert "rejected, and the connection closed" (the bot fails at WorldHandshake
 // because its Realm connection dropped), never an exact result code.
 #include "BotTask.h"
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Misc.h"
 #include "ConformanceRun.h"
 #include "RealBotTarget.h"
 #include "TestBot.h"
@@ -92,8 +93,7 @@ TEST_CASE("world_socket: the glue-screen packets arrive after SMSG_AUTH_RESPONSE
         REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
 
         // Sent on the Realm connection between SMSG_AUTH_RESPONSE and the character screen; only
-        // the opcodes are asserted here, not their bodies, which the bots don't parse yet (see the
-        // README's "vibemangos vs TrinityCore" section).
+        // the opcodes are asserted here, not their bodies, which the bots don't parse yet.
         for (uint32_t opcode : { CLASSIC_SMSG_SET_TIME_ZONE_INFORMATION, CLASSIC_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN,
             CLASSIC_SMSG_CACHE_VERSION, CLASSIC_SMSG_AVAILABLE_HOTFIXES, CLASSIC_SMSG_BATTLE_NET_CONNECTION_STATUS })
         {

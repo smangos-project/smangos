@@ -22,8 +22,7 @@
 
 namespace
 {
-    // Algorithm parameters for Battle.net SRP6 v1 (matches the reference TrinityCore
-    // implementation's BnetSRP6v1Base::N/g).
+    // Algorithm parameters for Battle.net SRP6 v1 (N and g).
     BigNumber const& GetN()
     {
         static BigNumber const n = []

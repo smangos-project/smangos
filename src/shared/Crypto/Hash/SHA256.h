@@ -17,8 +17,6 @@ typedef struct evp_md_ctx_st EVP_MD_CTX;
 typedef struct SHA256state_st SHA256_CTX;
 #endif
 
-// TrinityCore cata_classic: src/server/shared/Cryptography/HmacHash.h SHA256Hash (shape)
-// vibemangos:               src/shared/Crypto/Hash/SHA256.h            Crypto::Hash::SHA256 (ported, de-namespaced)
 class SHA256
 {
     public:

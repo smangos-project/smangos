@@ -30,17 +30,13 @@ std::string HexEncode(std::vector<uint8> const& bytes)
     return hex;
 }
 
-// Real Battle.net clients uppercase (Latin-only) both the account name and password before any
-// SRP math -- vibemangos's own account provisioning does the same
-// (AccountMgr::CreateAccount's normalizeString calls; LoginRESTService::NormalizeAccountString
-// mirrors it for the account name at login time). The account name doesn't strictly need this
-// here since the server independently normalizes whatever it receives and echoes back the
+// Battle.net clients uppercase (Latin-only) both the account name and password before any SRP
+// math, and account provisioning stores the same normalized form. The account name doesn't
+// strictly need this here since the server normalizes whatever it receives and echoes back the
 // resulting srpUsername either way (see OnSrpChallengeResponse), but the password never crosses
 // the wire in plaintext during login: there's no server-side chance to fix a case mismatch, so a
 // password normalized to uppercase at account-creation time will never produce a matching M1
-// unless this side uppercases it too first. Confirmed against a live vibemangos instance this
-// session -- a lowercase-typed password that logs into the real game client (which does this
-// same normalization) was otherwise rejected here.
+// unless this side uppercases it too first.
 std::string NormalizeAccountString(std::string const& utf8str)
 {
     std::wstring wstr;

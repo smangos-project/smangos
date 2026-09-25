@@ -6,7 +6,7 @@
 #include "Bnet/BnetServiceHash.h"
 #include "BotBnetConnection.h"
 #include "BotRestClient.h"
-#include "ClassicPackets.h"
+
 #include "ConformanceRun.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Networking/AsyncSocket.h"
@@ -151,10 +151,9 @@ TEST_CASE("login: a forged login ticket is rejected at the RPC step", "[protocol
     });
 }
 
-// Not here, though bot-phase-2.md lists it: "a reused login ticket is rejected". Neither reference
-// server rejects one: TrinityCore's bnetserver and vibemangos's LoginTicketStore both only *expire*
-// tickets (a TTL, refreshable via refreshLoginTicket), never consume them, so a used ticket that has
-// not expired logs in again. Asserting otherwise would encode a rule no server has; an expired
+// Not here, though bot-phase-2.md lists it: "a reused login ticket is rejected". Login tickets are
+// only *expired* (a TTL, refreshable via refreshLoginTicket), never consumed, so a used ticket that
+// has not expired logs in again. Asserting otherwise would encode a rule no server has; an expired
 // ticket is the thing a server must reject, and that is not testable inside a run.
 
 TEST_CASE("login: the realm list contains the configured realm and parses", "[protocol]")

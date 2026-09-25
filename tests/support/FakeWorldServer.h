@@ -14,7 +14,7 @@
 // instead of hanging it.
 #include "BotPacket.h"
 #include "ByteBuffer.h"
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Crypto/Encryption/PacketCrypt.h"

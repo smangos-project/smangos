@@ -154,8 +154,7 @@ bool WriteExact(SSL* ssl, void const* buffer, size_t size)
     return true;
 }
 
-// Server-side framing mirroring vibemangos's BnetSession::ReadFrame/WriteFrame (see
-// src/bnetserver/Server/BnetSession.cpp) -- enough of it to drive BotBnetConnection end to end.
+// Server-side framing -- enough of it to drive BotBnetConnection end to end.
 bool ReadFrame(SSL* ssl, uint32& outServiceId, uint32& outServiceHash, uint32& outMethodId, uint32& outToken, std::string& outPayload)
 {
     uint8 lengthBytes[2];

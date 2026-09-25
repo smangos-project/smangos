@@ -201,8 +201,6 @@ class ByteBuffer
         // write raw bytes with NO null terminator: the modern wire format always conveys string
         // length separately (either implicitly, via a preceding bit-packed length field the
         // caller writes itself with WriteSizedString(), or because the field is fixed-size).
-        // Ported from vibemangos's ByteBuffer.h (itself matching jimsproxy's Framework/IO/
-        // WorldPacket.cs WriteString()/WriteBits(len,n)).
         void WriteString(std::string const& value)
         {
             if (!value.empty())
@@ -351,7 +349,7 @@ class ByteBuffer
         // Byte offset of the write cursor including a pending (not yet flushed) bit-accumulator
         // byte -- i.e. "where the next FlushBits() will land". Needed by callers that must
         // remember a position to patch later (e.g. a mask reserved before its bits are known)
-        // across a WriteBit()/WriteBits() sequence. Mirrors TrinityCore's ByteBuffer::bitwpos().
+        // across a WriteBit()/WriteBits() sequence.
         size_t bitwpos() const { return _wpos + (m_bitPos == 8 ? 0 : 1); }
 
         size_t wpos(size_t wpos_)
@@ -378,8 +376,7 @@ class ByteBuffer
         template <typename T> T read()
         {
             // Auto-discard any partially-read bit-accumulator byte before a normal
-            // byte-aligned read -- matches jimsproxy's byte-level Read*() methods, which all
-            // call ResetBitPos() first (Framework/IO/ByteBuffer.cs). No-op when m_bitPos==8.
+            // byte-aligned read. No-op when m_bitPos==8.
             ResetBitPos();
             T r = read<T>(_rpos);
             _rpos += sizeof(T);
@@ -550,11 +547,9 @@ class ByteBuffer
 
         // Bit-packing, needed by RealBots' modern-protocol packets (e.g. CLASSIC_SMSG_AUTH_RESPONSE,
         // CLASSIC_CMSG_AUTH_SESSION) -- vanilla's wire format never used this, so it didn't exist
-        // before. Ported from vibemangos's ByteBuffer.h, semantics confirmed there against
-        // jimsproxy's Framework/IO/SpanPacketWriter.cs/SpanPacketReader.cs: bits are packed
-        // MSB-first into a single accumulator byte (m_bitPos starts at 8, decrements before each
-        // bit), and FlushBits()/the read-side equivalent is required before resuming normal
-        // byte-aligned reads/writes (append()/read() above call them automatically).
+        // before. Bits are packed MSB-first into a single accumulator byte (m_bitPos starts at 8,
+        // decrements before each bit), and FlushBits()/the read-side equivalent is required before
+        // resuming normal byte-aligned reads/writes (append()/read() above call them automatically).
         void WriteBit(bool value)
         {
             --m_bitPos;

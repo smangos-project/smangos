@@ -1,19 +1,13 @@
 /*
- * RSA-2048 PKCS#1v1.5/SHA-256 signing for the 1.14.2 world-socket handshake
- * (SMSG_ENTER_ENCRYPTED_MODE, SMSG_CONNECT_TO). The private key is the well-known
- * Blizzard-issued key embedded in every real WoW server implementation (TrinityCore's
- * AuthenticationPackets.cpp, and confirmed identical -- same RSA modulus -- in jimsproxy's
- * Framework/Cryptography/RsaCrypt.cs, which is confirmed working against real 1.14.2 clients
- * build 41858/42597). There is no way around embedding it: the client hardcodes the matching
- * public key and refuses to proceed without a valid signature.
+ * RSA-2048 PKCS#1v1.5/SHA-256 signing for the world-socket handshake (SMSG_CONNECT_TO). The
+ * private key is the well-known key every WoW server implementation embeds: the client
+ * hardcodes the matching public key and refuses to proceed without a valid signature.
  *
  * IMPORTANT: this signs an *already-computed* digest (SHA-256 of the message for
- * SMSG_CONNECT_TO, HMAC-SHA256 of the message for SMSG_ENTER_ENCRYPTED_MODE) -- it does not
- * hash the message itself. This matches jimsproxy's `RsaCrypt.RSA.SignHash(digest, SHA256,
- * Pkcs1)` exactly (.NET's SignHash signs a precomputed digest under a declared hash OID, it
- * does not re-hash). The output is then **byte-reversed** before being written to the wire --
- * also confirmed against jimsproxy, and load-bearing: skipping the reversal produces a
- * signature the client will reject.
+ * SMSG_CONNECT_TO) -- it does not hash the message itself (equivalent to .NET's SignHash with a
+ * declared hash OID: a precomputed digest is signed, not re-hashed). The output is then
+ * **byte-reversed** before being written to the wire; load-bearing: skipping the reversal
+ * produces a signature the client will reject.
  */
 
 #ifndef _MANGOS_CRYPTO_RSASIGN_H

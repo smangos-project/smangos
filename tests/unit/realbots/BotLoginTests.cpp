@@ -36,6 +36,9 @@
 #include "authentication_service.pb.h"
 #include "game_utilities_service.pb.h"
 #include "rpc_types.pb.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Guid.h"
+#include "Packets/Classic/Character.h"
 
 #include <openssl/err.h>
 #include <openssl/evp.h>

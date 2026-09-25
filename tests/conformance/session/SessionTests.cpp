@@ -1,7 +1,7 @@
 // "session/" scenarios (port-plan.md steps 3-5: what a server does with a session's whole life:
 // leaving cleanly, vanishing, a second login, sitting idle), against ConformanceRun::Target().
 // Reconnect() logs the same bot in again on the same account and options (README, "Sessions").
-#include "ClassicPackets.h"
+
 #include "ConformanceRun.h"
 #include "RealBotTarget.h"
 #include "TestBot.h"

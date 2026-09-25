@@ -6,10 +6,9 @@
 
 AES_GCM::AES_GCM(bool encrypting) : m_ctx(EVP_CIPHER_CTX_new()), m_encrypting(encrypting)
 {
-    // EVP_CIPHER_CTX_new() already returns a freshly-initialized context -- the explicit
-    // EVP_CIPHER_CTX_init() call TrinityCore's AES.cpp makes here is a pre-1.1 OpenSSL relic
-    // (needed only for stack-allocated, not heap-allocated-via-_new(), contexts) and the
-    // symbol is gone entirely in OpenSSL 3.x.
+    // EVP_CIPHER_CTX_new() already returns a freshly-initialized context, so no explicit
+    // EVP_CIPHER_CTX_init() is needed (that call is a pre-1.1 OpenSSL relic, needed only for
+    // stack-allocated contexts, and the symbol is gone entirely in OpenSSL 3.x).
     int status = EVP_CipherInit_ex(m_ctx, EVP_aes_256_gcm(), nullptr, nullptr, nullptr, m_encrypting ? 1 : 0);
     MANGOS_ASSERT(status);
 }

@@ -1,9 +1,8 @@
 /*
- * Same algorithm as SessionKeyGenerator.h, but keyed on SHA-512 -- the cata classic client's
- * world session key is derived via SessionKeyGenerator<SHA512> (TrinityCore's
- * WorldSocket::HandleAuthSessionCallback), not SHA-256 like the older 1.14.2 protocol. Kept as
- * a separate class rather than templating SessionKeyGenerator itself, matching that file's own
- * stated preference for duplication over genericity.
+ * Same algorithm as SessionKeyGenerator.h, but keyed on SHA-512: the cata classic client's world
+ * session key is derived from SHA-512, not SHA-256. Kept as a separate class rather than
+ * templating SessionKeyGenerator itself, matching that file's own stated preference for
+ * duplication over genericity.
  */
 
 #ifndef _MANGOS_CRYPTO_SESSIONKEYGENERATOR512_H

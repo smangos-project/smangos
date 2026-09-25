@@ -6,6 +6,8 @@
 #include "Crypto/BigNumber.h"
 #include "Crypto/Ed25519.h"
 #include "Log.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Character.h"
 #include <algorithm>
 #include <cstdio>
 
@@ -27,8 +29,7 @@ std::string NoPacket(char const* what)
     return std::string("timed out waiting for ") + what + " (or the connection closed)";
 }
 
-// How many times the Instance connection is tried before the login is abandoned (vibemangos:
-// WorldSession::HandleConnectToFailedOpcode, TrinityCore: WorldSocket::HandleConnectToFailed).
+// How many times the Instance connection is tried before the login is abandoned.
 constexpr uint32 MaxInstanceConnectAttempts = 5;
 
 std::array<uint8, 32> RandomChallenge()

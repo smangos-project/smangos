@@ -1,10 +1,10 @@
 /*
- * Vendored from TrinityCore's dep/openssl_ed25519 (itself OpenSSL's own crypto/ec/curve25519.c,
- * Apache-2.0/OpenSSL-licensed), which in turn vendors it because OpenSSL's public EVP_PKEY API
- * for Ed25519 does not expose the RFC 8032 "context" parameter (Ed25519ctx) needed to sign
- * CLASSIC_SMSG_ENTER_ENCRYPTED_MODE the way a real client verifies it -- only pure Ed25519 (no
- * context) is reachable through EVP_DigestSign. See Crypto/Ed25519.h for the C++ wrapper that
- * actually gets used; nothing outside Ed25519.cpp should include this header directly.
+ * Vendored from OpenSSL's own crypto/ec/curve25519.c (Apache-2.0/OpenSSL-licensed), because
+ * OpenSSL's public EVP_PKEY API for Ed25519 does not expose the RFC 8032 "context" parameter
+ * (Ed25519ctx) needed to sign CLASSIC_SMSG_ENTER_ENCRYPTED_MODE the way a real client verifies
+ * it -- only pure Ed25519 (no context) is reachable through EVP_DigestSign. See Crypto/Ed25519.h
+ * for the C++ wrapper that actually gets used; nothing outside Ed25519.cpp should include this
+ * header directly.
  *
  * Unlike the upstream copy, the dllexport/dllimport macro dance is dropped: this compiles
  * straight into the same static "shared" library as its caller, never a separate DLL/SO, so

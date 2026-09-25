@@ -36,12 +36,11 @@
  * `username` passed to every method must already be normalized to uppercase, matching
  * how `account.username` is stored (see AccountMgr::normalizeString).
  *
- * The host (server) half below is ported from vibemangos's BnetSRP6, which only needs to
- * verify a login (it's a server). bot-phase-1.md's bots need to *perform* one, so the client
- * half is new here -- standard SRP6 client math (RFC 2945-style: S = (B - k*g^x)^(a+u*x) mod
- * N), built from the exact same CalculateX/CalculateU/GetK/ComputeEvidence primitives the host
- * half already uses, so the two are provably the same protocol from either side (see
- * tests-shared's "BnetSRP6 client and server halves agree" for the half-against-half proof).
+ * The host (server) half verifies a login; the client half performs one -- standard SRP6 client
+ * math (RFC 2945-style: S = (B - k*g^x)^(a+u*x) mod N), built from the exact same
+ * CalculateX/CalculateU/GetK/ComputeEvidence primitives the host half uses, so the two are
+ * provably the same protocol from either side (see tests-shared's "BnetSRP6 client and server
+ * halves agree" for the half-against-half proof).
  */
 class BnetSRP6
 {

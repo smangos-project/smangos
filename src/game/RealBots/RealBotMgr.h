@@ -133,7 +133,7 @@ class RealBotMgr
 
         // What a worker sleeps on: it wakes at its regular tick or as soon as any bot pinned to it
         // has work (RealBot::SetWakeCallback), so a login step is answered in microseconds instead
-        // of at the next 100ms tick -- vibemangos sends SMSG_CONNECT_TO in parallel with loading the
+        // of at the next 100ms tick -- the server sends SMSG_CONNECT_TO in parallel with loading the
         // character, and a client slow to open the Instance connection loses that race.
         struct WorkerSignal
         {

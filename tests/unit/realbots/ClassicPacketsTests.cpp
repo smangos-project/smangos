@@ -3,7 +3,10 @@
 // (ClassicEnumCharacters, ClassicCreateCharacter, ClassicPlayerLogin) only have Write() -- the
 // bot uses one direction, per bot-examples.md -- so those are checked against hand-verified wire
 // bytes instead of round-tripped through a Read() that doesn't exist on this side.
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Misc.h"
+#include "Packets/Classic/Guid.h"
+#include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
 
 TEST_CASE("ClassicGuid round-trips, including a partially-empty mask", "[packets]")

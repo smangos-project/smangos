@@ -1,7 +1,7 @@
 #ifndef REALBOTS_BOTIDENTITY_H
 #define REALBOTS_BOTIDENTITY_H
 
-#include "ClassicPackets.h"
+#include "Packets/Classic/Guid.h"
 #include "Common.h"
 #include <cstdint>
 #include <string>

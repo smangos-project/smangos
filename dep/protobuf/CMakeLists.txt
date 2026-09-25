@@ -20,7 +20,7 @@
 # bot-phase-1.md's shared-pieces list ("dep/protobuf (2.6 runtime + protoc) ... built as
 # bnetproto"). Only the pieces the Battle.net RPC connection needs are built: libprotobuf
 # (linked into anything speaking the RPC protocol) and protoc + libprotoc (a build-time-only
-# code generator turning src/game/RealBots/Protocol/proto/*.proto into .pb.cc/.pb.h, see
+# code generator turning src/shared/Bnet/proto/*.proto into .pb.cc/.pb.h, see
 # BotBnetConnection). Source list mirrors upstream src/Makefile.am (libprotobuf_lite_la_SOURCES
 # + libprotobuf_la_SOURCES / libprotoc_la_SOURCES); java/python generators are included because
 # command_line_interface.cc references them unconditionally.

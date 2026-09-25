@@ -3,7 +3,8 @@
 
 #include "BotRoutine.h"
 #include "BotStage.h"
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Guid.h"
 #include <array>
 #include <cstdint>
 #include <string>
@@ -41,7 +42,7 @@ struct BotWorldHandshakeParams
     std::vector<uint8> JoinSessionKey; // BotBnetLogin::Result::SessionKey
     std::string RealmJoinTicket;
     uint32 RealmId = 0;
-    // vibemangos's _HandleAuthSession never checks these two; sent for wire-shape parity.
+    // Not validated by the server; sent for wire-shape parity.
     uint32 RegionId = 1;
     uint32 BattlegroupId = 1;
     bool VerifyServerSignature = true;
@@ -100,11 +101,8 @@ BotRoutine BotCharSelectRoutine(BotContext& ctx, BotCharSelectParams params, Bot
 // The second ("Instance") world connection SMSG_CONNECT_TO redirects to: connect, V2 banner,
 // SMSG_AUTH_CHALLENGE -> CMSG_AUTH_CONTINUED_SESSION (reusing the Realm connection's session key)
 // -> SMSG_ENTER_ENCRYPTED_MODE -> the ack, encryption armed -> SMSG_RESUME_COMMS (which replaces
-// SMSG_AUTH_RESPONSE here; that only ever goes out on the Realm connection). Confirmed mandatory
-// rather than a vibemangos quirk: TrinityCore cata_classic's HandlePlayerLoginOpcode does the same
-// unconditional redirect.
-// TODO(port): the up-to-5-attempt CMSG_CONNECT_TO_FAILED retry vibemangos and TrinityCore's
-// HandleConnectToFailedOpcode implement (bot-phase-2.md, "CMSG_CONNECT_TO_FAILED retry").
+// SMSG_AUTH_RESPONSE here; that only ever goes out on the Realm connection). The redirect is
+// unconditional: every login goes through it.
 struct BotInstanceConnectParams
 {
     std::string WorldAddress;

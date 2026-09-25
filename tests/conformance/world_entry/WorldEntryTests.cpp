@@ -4,7 +4,9 @@
 // actually triggers with the account pools available; BotCharSelectTests.cpp (unit, fake server)
 // is what actually exercises that path today.
 #include "BotTask.h"
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Misc.h"
+#include "Packets/Classic/Character.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <algorithm>

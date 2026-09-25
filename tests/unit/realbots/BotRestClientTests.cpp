@@ -49,9 +49,9 @@ class WaitFlag
         bool m_set = false;
 };
 
-// Mirrors BotRestClient.cpp's own NormalizeAccountString: real account provisioning (vibemangos's
-// AccountMgr::CreateAccount) uppercases both the account name and password before computing the
-// verifier, so the fake server here has to do the same to stay realistic now that the client
+// Mirrors BotRestClient.cpp's own NormalizeAccountString: real account provisioning uppercases
+// both the account name and password before computing the verifier, so the fake server here has
+// to do the same to stay realistic now that the client
 // normalizes what it sends -- otherwise a lowercase test password would never match a verifier
 // this fake "provisioned" from the same lowercase string.
 std::string NormalizeAccountString(std::string const& utf8str)
@@ -222,9 +222,8 @@ void SendHttpResponse(SSL* ssl, int statusCode, std::string const& body)
     SSL_write(ssl, out.data(), int(out.size()));
 }
 
-// Minimal stand-in for vibemangos's LoginRESTService (src/bnetserver/REST/LoginRESTService.cpp):
-// enough of the SRP6 login/srp/ -> login/ exchange to drive BotRestClient end to end, run on a
-// raw blocking socket like the reference implementation itself does.
+// Minimal stand-in for a login REST portal: enough of the SRP6 login/srp/ -> login/ exchange to
+// drive BotRestClient end to end, run on a raw blocking socket.
 void RunFakeLoginRestServer(IO::Networking::SocketDescriptor descriptor, SSL_CTX* serverCtx,
     std::string const& accountName, std::string const& correctPassword, WaitFlag& serverDone)
 {

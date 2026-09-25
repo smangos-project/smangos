@@ -17,8 +17,6 @@ typedef struct evp_md_ctx_st EVP_MD_CTX;
 typedef struct SHA512state_st SHA512_CTX;
 #endif
 
-// TrinityCore cata_classic: src/server/shared/Cryptography/HmacHash.h SHA512Hash (shape)
-// vibemangos:               src/shared/Crypto/Hash/SHA512.h            Crypto::Hash::SHA512 (ported, de-namespaced)
 class SHA512
 {
     public:

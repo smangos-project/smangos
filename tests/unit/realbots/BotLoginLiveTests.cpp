@@ -13,6 +13,7 @@
 #include "Crypto/Authentication/BnetSRP6.h"
 #include "IO/Context/IoContext.h"
 #include "Util.h"
+#include "Packets/Classic/Guid.h"
 #include <catch_amalgamated.hpp>
 #include <chrono>
 #include <condition_variable>
@@ -57,9 +58,9 @@ std::vector<uint8> HexDecode(std::string const& hex)
 // for ruling "wrong password" in or out before spending a real network round trip on it -- this
 // is exactly how BotRestClient's missing password-case-normalization bug (fixed this session,
 // see its own header comment) was found: a lowercase-typed password that works against the real
-// game client only matched this account's stored verifier once uppercased first, matching
-// vibemangos's AccountMgr::CreateAccount normalizing both username and password before computing
-// it. Update the salt/verifier hex below if the account's password is ever changed.
+// game client only matched this account's stored verifier once uppercased first, since account
+// provisioning normalizes both username and password before computing it. Update the
+// salt/verifier hex below if the account's password is ever changed.
 TEST_CASE("BotLogin (live): check a password against the account's stored SRP verifier", "[live]")
 {
     std::string const srpUsername = BnetSRP6::ComputeSrpUsername("LOL");

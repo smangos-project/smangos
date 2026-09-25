@@ -3,7 +3,8 @@ if (NOT ENABLE_REALBOTS)
 endif()
 
 set(REALBOTS_DIR ${CMAKE_SOURCE_DIR}/src/game/RealBots)
-set(SERVER_PROTOCOL_DIR ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol)
+set(SERVER_DIR ${CMAKE_SOURCE_DIR}/src/game/Server)
+set(SERVER_PROTOCOL_DIR ${SERVER_DIR}/Protocol)
 
 # Deliberately not linking `game` (see Main.cpp's header comment): compiled directly from the
 # same RealBots sources tests-realbots already builds, so the runner needs only
@@ -43,9 +44,9 @@ target_include_directories(realbotrunner PRIVATE
   ${REALBOTS_DIR}/Behavior
   ${REALBOTS_DIR}/Behavior/Tasks
   ${REALBOTS_DIR}/Coroutines
-  ${REALBOTS_DIR}/Protocol
   ${REALBOTS_DIR}/Net
   ${SERVER_PROTOCOL_DIR}
+  ${SERVER_DIR}
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/shared
 )

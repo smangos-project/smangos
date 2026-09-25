@@ -3,7 +3,7 @@
 #include "BotContext.h"
 #include "BotTask.h"
 #include "ClassicOpcodes.h"
-#include "ClassicPackets.h"
+
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <algorithm>

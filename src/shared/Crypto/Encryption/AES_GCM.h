@@ -1,12 +1,9 @@
 /*
- * AES-256-GCM wrapper for the cata classic world-socket packet cipher (see PacketCrypt.h). Ported
- * from TrinityCore's Trinity::Crypto::AES (src/common/Cryptography/AES.h) -- ProcessNoIntegrityCheck
- * exists solely for WorldSocket::ReadHeaderHandler's opcode peek, which needs to decrypt just the
- * 2-byte opcode before the rest of the payload has even arrived, without checking/consuming the GCM tag.
+ * AES-256-GCM wrapper for the cata classic world-socket packet cipher (see PacketCrypt.h).
+ * ProcessNoIntegrityCheck exists solely to peek at a packet's opcode before the rest of the
+ * payload has arrived, without checking or consuming the GCM tag.
  *
- * Was AES-128-GCM (16-byte key) for the older 1.14.2 protocol; cata classic's _encryptKey is
- * 32 bytes (see WorldSocket::HandleAuthSessionCallback in the cata classic reference), so this
- * is now hardcoded to 256-bit -- there is no other caller left needing 128-bit.
+ * The world session's encrypt key is 32 bytes, so this is hardcoded to 256-bit.
  */
 
 #ifndef _MANGOS_CRYPTO_ENCRYPTION_AES_GCM_H

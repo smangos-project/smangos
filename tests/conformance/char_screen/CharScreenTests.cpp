@@ -4,7 +4,8 @@
 // by hand. Scenarios that create characters use a random name and delete what they made (also when
 // an assertion fails), so reruns and parallel targets never collide and the account's own character
 // is never touched.
-#include "ClassicPackets.h"
+#include "Packets/Classic/Guid.h"
+#include "Packets/Classic/Character.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <algorithm>

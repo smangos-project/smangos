@@ -9,13 +9,9 @@
 
 namespace
 {
-    // The well-known Blizzard WoW server RSA-2048 private key. Embedded verbatim (PEM form
-    // copied from a real server implementation's source) -- confirmed to be the same key
-    // jimsproxy uses (Framework/Cryptography/RsaCrypt.cs's RSAParameters.Modulus starts
-    // `ee b3 dc d4 d3 c3 b4 54 ...`, matching this PEM's decoded modulus), which is in turn
-    // confirmed working against real 1.14.2 clients. Not a secret in the usual sense -- every
-    // private WoW server implementation embeds this same key, because the client hardcodes
-    // the corresponding public key and there is no way around that.
+    // The well-known WoW server RSA-2048 private key. Not a secret in the usual sense: every
+    // private WoW server implementation embeds this same key, because the client hardcodes the
+    // corresponding public key and there is no way around that.
     char const* const BLIZZARD_RSA_PRIVATE_KEY_PEM =
         "-----BEGIN RSA PRIVATE KEY-----\n"
         "MIIEpAIBAAKCAQEA7rPc1NPDtFRRzmZbyzK48PeSU8YZ8gyFL4omqXpFn2DE683q\n"
@@ -80,8 +76,8 @@ std::vector<uint8> RsaSign::SignDigest(uint8 const* digest, size_t digestLength)
     // "Sign a precomputed digest" mode: EVP_PKEY_sign() treats `digest` as the already-hashed
     // message and wraps it in the PKCS#1 DigestInfo ASN.1 structure for the declared hash
     // algorithm (SHA-256) before the raw RSA private-key operation -- it does NOT hash
-    // `digest` again. This matches .NET's RSACryptoServiceProvider.SignHash exactly, which is
-    // what jimsproxy (and the real client) expect.
+    // `digest` again. This is the mode the real client verifies (equivalent to .NET's
+    // RSACryptoServiceProvider.SignHash).
     bool ok = EVP_PKEY_sign_init(ctx) == 1 &&
         EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) == 1 &&
         EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) == 1;

@@ -1,12 +1,10 @@
 /*
- * Ed25519 signing for CLASSIC_SMSG_ENTER_ENCRYPTED_MODE (the cata classic client build). Real
- * TrinityCore signs this packet with Ed25519ctx (RFC 8032's context variant), not the older
- * 1.14.2 protocol's RSA/HMAC-SHA256 -- see AuthenticationPackets.cpp EnterEncryptedMode::Write()
- * in the cata classic reference tree. Key management (LoadFromByteArray/public key extraction)
- * goes through OpenSSL's normal EVP_PKEY raw-key API, since that part is standard Ed25519 with
- * no context involved; only the actual signature needs the vendored Ed25519Vendor/curve25519.c
- * (OpenSSL's own code, kept out-of-tree because its ED25519_sign_ctx isn't exposed through the
- * public EVP API).
+ * Ed25519 signing for CLASSIC_SMSG_ENTER_ENCRYPTED_MODE (the cata classic client build). The
+ * packet is signed with Ed25519ctx (RFC 8032's context variant). Key management
+ * (LoadFromByteArray/public key extraction) goes through OpenSSL's normal EVP_PKEY raw-key API,
+ * since that part is standard Ed25519 with no context involved; only the actual signature needs
+ * the vendored Ed25519Vendor/curve25519.c (OpenSSL's own code, kept out-of-tree because its
+ * ED25519_sign_ctx isn't exposed through the public EVP API).
  */
 
 #ifndef _MANGOS_CRYPTO_ED25519_H

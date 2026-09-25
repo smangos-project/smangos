@@ -2,8 +2,7 @@
 // BotRestClientTests.cpp's) plus a fake BnetSession-like RPC server (same framing as
 // BotBnetConnectionTests.cpp's) answering just enough of ConnectionService/AuthenticationService/
 // GameUtilitiesService to drive LoginPortal -> LoginRpc -> RealmSelect through to a world server
-// address + session key, the way vibemangos's bnetserver would (see GameUtilitiesService.cpp for
-// the exact attribute/JSON shapes this mirrors).
+// address + session key, the way a real login server would.
 #include "BotBnetLogin.h"
 #include "Bnet/BnetLoginForms.h"
 #include "Bnet/BnetRealmListJson.h"

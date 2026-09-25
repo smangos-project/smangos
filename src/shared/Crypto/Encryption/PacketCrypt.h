@@ -1,10 +1,7 @@
 /*
- * Per-connection AES-256-GCM packet cipher for the world socket. TrinityCore cata_classic:
- * WorldPacketCrypt (src/common/Cryptography/Authentication/WorldPacketCrypt.h); vibemangos:
- * src/shared/Crypto/Encryption/PacketCrypt.h. Both references hardcode the server role
- * (_clientDecrypt/_serverEncrypt); this one takes a PacketCryptRole instead, so the same class
- * serves both the bot (Client) and, later, the server port (Server) -- bot-phase-1.md wants it
- * "tested half against half" with no socket/session dependency on either side.
+ * Per-connection AES-256-GCM packet cipher for the world socket. Takes a PacketCryptRole so the
+ * same class serves both the bot (Client) and the server (Server), tested half against half with
+ * no socket/session dependency on either side.
  *
  * Nonce = [8-byte LE counter][4-byte LE magic], magic distinguishes direction so the same key
  * never reuses a nonce between client->server and server->client traffic. Counters increment

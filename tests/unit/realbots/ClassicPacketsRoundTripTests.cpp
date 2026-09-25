@@ -3,7 +3,10 @@
 // only sent gained a Read (the server port and the fake world server in tests/support need it), and
 // what the bot only received gained a Write. ClassicPacketsTests.cpp keeps the wire-shape checks
 // from Phase 1.
-#include "ClassicPackets.h"
+#include "Packets/Classic/Auth.h"
+#include "Packets/Classic/Misc.h"
+#include "Packets/Classic/Guid.h"
+#include "Packets/Classic/Character.h"
 #include <catch_amalgamated.hpp>
 
 namespace

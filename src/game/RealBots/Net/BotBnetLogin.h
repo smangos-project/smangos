@@ -5,6 +5,7 @@
 #include "BotRestClient.h"
 #include "BotStage.h"
 #include "IO/Context/IoContext.h"
+#include "Packets/Classic/Auth.h"
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -18,14 +19,13 @@
 // this is the plain callback-based network step the eventual LoginRoutine will drive, same
 // relationship BotRestClient/BotBnetConnection already have to their own callers.
 //
-// Steps, each cited against vibemangos's src/bnetserver (Services/*.cpp, Server/BnetSession.cpp):
+// Steps:
 //   LoginPortal : BotRestClient::Login (already exists)
 //   LoginRpc    : ConnectionService.Connect -> AuthenticationService.Logon ->
 //                 AuthenticationService.VerifyWebCredentials -> wait for the
 //                 AuthenticationListener.OnLogonComplete push
 //   RealmSelect : GameUtilitiesService.ProcessClientRequest three times (RealmListTicket,
-//                 RealmList, RealmJoin) -- see GameUtilitiesService.cpp for the exact
-//                 attribute/JSON shapes this mirrors
+//                 RealmList, RealmJoin); the JSON shapes are in BnetRealmListJson
 class BotBnetLogin : public std::enable_shared_from_this<BotBnetLogin>
 {
     public:

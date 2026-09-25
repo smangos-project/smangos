@@ -20,7 +20,6 @@ typedef struct evp_mac_st EVP_MAC;
 typedef struct evp_mac_ctx_st EVP_MAC_CTX;
 #endif
 
-// vibemangos: src/shared/Crypto/Hash/HMACSHA256.h Crypto::Hash::HMACSHA256 (ported, de-namespaced)
 class HMACSHA256
 {
     public:

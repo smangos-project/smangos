@@ -6,6 +6,7 @@
 #include "BotPacket.h"
 #include "BotStage.h"
 #include "LockedQueue.h"
+#include "Packets/Classic/Guid.h"
 #include <array>
 #include <atomic>
 #include <chrono>

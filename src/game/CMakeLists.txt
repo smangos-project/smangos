@@ -452,6 +452,10 @@ set (game_SRCS
     Server/Protocol/Opcodes_active.h
     Server/Protocol/ClassicOpcodes.h
     Server/Packet.h
+    Server/Packets/Classic/Auth.h
+    Server/Packets/Classic/Character.h
+    Server/Packets/Classic/Guid.h
+    Server/Packets/Classic/Misc.h
     Server/Packets/Battleground.h
     Server/Packets/AuctionHouse.h
     Server/Packets/Channel.h
@@ -550,7 +554,6 @@ if (ENABLE_REALBOTS)
       RealBots/Coroutines/BotRoutine.h
       RealBots/Coroutines/BotAwaitables.cpp
       RealBots/Coroutines/BotAwaitables.h
-      RealBots/Protocol/ClassicPackets.h
       RealBots/Net/BotConnector.cpp
       RealBots/Net/BotConnector.h
       RealBots/Net/BotWorldConnection.cpp
@@ -603,7 +606,6 @@ if (ENABLE_REALBOTS)
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Behavior/Tasks
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Coroutines
-    ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/RealBots/Net
   )
 endif()

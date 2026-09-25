@@ -6,17 +6,16 @@
 #include "ClassicPacketFraming.h"
 #include "Crypto/Encryption/PacketCrypt.h"
 #include "IO/Networking/AsyncSocket.h"
+#include "Packets/Classic/Auth.h"
 #include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
 
-// The client (bot) side of the modern world socket: the V2 banner handshake, PacketHeader
-// framing, PacketCrypt, and incoming decompression. Mirrors vibemangos's WorldSocket
-// (src/game/Server/WorldSocket.cpp), from the other end of the same wire -- see that file for
-// the parts of the protocol this is symmetric with (packet header shape, banner strings, the
-// stateful per-connection deflate window).
+// The client (bot) side of the modern world socket: the V2 banner handshake, packet header
+// framing, PacketCrypt, and incoming decompression -- the other end of the wire a server's
+// WorldSocket speaks (see ClassicPacketFraming for the shared wire shape).
 //
 // Owns no bot/session state: every decoded packet is handed to onPacket as an opaque BotPacket;
 // what a caller does with it (feed a coroutine await, dispatch to task hooks) is not this
