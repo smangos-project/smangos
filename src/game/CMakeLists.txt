@@ -182,6 +182,9 @@ set (game_SRCS
     Objects/TradeData.cpp
     Objects/Unit.cpp
     Objects/UpdateData.cpp
+    Objects/Updates/UpdateField.cpp
+    Objects/Updates/UpdateFieldStructs.cpp
+    Objects/Updates/UpdateFieldStructsOwners.cpp
     Objects/UpdateFields.cpp
     OutdoorPvP/OutdoorPvPEP.cpp
     OutdoorPvP/OutdoorPvPSI.cpp
@@ -422,6 +425,10 @@ set (game_SRCS
     Objects/UpdateData.h
     Objects/UpdateFields.h
     Objects/UpdateMask.h
+    Objects/Updates/UpdateField.h
+    Objects/Updates/UpdateFieldMask.h
+    Objects/Updates/UpdateFieldStructs.h
+    Objects/Updates/ViewerDependentValues.h
     OutdoorPvP/OutdoorPvPEP.h
     OutdoorPvP/OutdoorPvPSI.h
     PacketBroadcast/MovementBroadcaster.h
