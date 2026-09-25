@@ -44,5 +44,5 @@ void RecordWrongPasswordAttempt(std::string const& ip);
 // Clears the wrong-password counter for this IP. Call on any successful login.
 void ClearWrongPasswordCount(std::string const& ip);
 
-// Evicts stale entries from the throttle map. Call periodically from the realmd main loop.
+// Evicts stale entries from the throttle map. Call periodically from bnetserver's main loop.
 void CleanupStaleLoginThrottles();

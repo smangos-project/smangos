@@ -108,7 +108,7 @@ if(WIN32)
   set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include)
   # libcrypto only for now (hashes/AES/SRP6/Ed25519); libssl joins for real TLS (TlsStream).
   # Kept single-item: OPENSSL_LIBRARIES/OPENSSL_DEBUG_LIBRARIES are used with the legacy
-  # optimized/debug target_link_libraries keywords elsewhere (mangosd, realmd), which only
+  # optimized/debug target_link_libraries keywords elsewhere (mangosd, bnetserver), which only
   # scope the single list item immediately following the keyword.
   set(OPENSSL_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MD/libcrypto.lib)
   set(OPENSSL_DEBUG_LIBRARIES ${OPENSSL_ROOT_DIR}/lib/VC/x64/MDd/libcrypto.lib)

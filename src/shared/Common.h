@@ -145,7 +145,7 @@ enum AccountTypes
     SEC_CONSOLE        = 7                                  // must be always last in list, accounts must have less security level always also
 };
 
-// Used in mangosd/realmd
+// Used in mangosd/bnetserver
 enum RealmFlags
 {
     REALM_FLAG_NONE         = 0x00,

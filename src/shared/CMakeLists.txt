@@ -46,8 +46,6 @@ set (shared_SRCS
     Crypto/CryptoUtils.cpp
     Crypto/InitializeCrypto.h
     Crypto/InitializeCrypto.cpp
-    Crypto/Authentication/SRP6.h
-    Crypto/Authentication/SRP6.cpp
     Crypto/Authentication/BnetSRP6.h
     Crypto/Authentication/BnetSRP6.cpp
     Crypto/Authentication/WorldHandshakeCrypto.h

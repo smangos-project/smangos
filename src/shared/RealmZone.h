@@ -17,7 +17,7 @@
 #ifndef _REALMZONE_H
 #define _REALMZONE_H
 
-// Used in mangosd/realmd
+// Used in mangosd
 enum RealmZone : uint8
 {
     REALM_ZONE_UNKNOWN       = 0,                           // any language

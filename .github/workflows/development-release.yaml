@@ -77,7 +77,6 @@ jobs:
           mkdir -p /tmp/vmangos-release
           tar -xzf /tmp/release.tar.gz -C /tmp/vmangos-release
 
-          /tmp/vmangos-release/vmangos-linux-amd64/bin/realmd --version
           /tmp/vmangos-release/vmangos-linux-amd64/bin/mangosd --version
 
           while IFS= read -r -d '' file; do
@@ -160,7 +159,6 @@ jobs:
           mkdir -p /tmp/vmangos-release
           tar -xzf "$GITHUB_WORKSPACE/bin/$ARCHIVE_FILENAME" -C /tmp/vmangos-release
 
-          /tmp/vmangos-release/vmangos-macos-arm64/bin/realmd --version
           /tmp/vmangos-release/vmangos-macos-arm64/bin/mangosd --version
 
           missing=0

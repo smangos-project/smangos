@@ -28,10 +28,10 @@
 /*! Battle.net SRP6, protocol version 1 (SHA-256 flavor).
  *
  * This is the SRP6 variant modern Battle.net clients speak for bnetserver's REST login
- * (distinct from the classic realmd-style SRP6 class used for the legacy world-login
- * handshake, which stays in place for other purposes). Only version 1 is implemented:
- * the client offers versions 1 and 2 in its SrpLoginChallenge response and works with
- * whichever one the server advertised, so v1 (no PBKDF2 stretching) is enough here.
+ * (the only SRP6 implementation left in the tree -- the vanilla realmd-style SRP6 class
+ * the legacy world-login handshake used is gone with realmd itself). Only version 1 is
+ * implemented: the client offers versions 1 and 2 in its SrpLoginChallenge response and
+ * works with whichever one the server advertised, so v1 (no PBKDF2 stretching) is enough here.
  *
  * `username` passed to every method must already be normalized to uppercase, matching
  * how `account.username` is stored (see AccountMgr::normalizeString).
