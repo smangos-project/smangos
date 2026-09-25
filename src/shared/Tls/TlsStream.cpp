@@ -11,23 +11,28 @@ std::shared_ptr<TlsStream> TlsStream::CreateClient(IO::Networking::AsyncSocket s
     MANGOS_ASSERT(ctx);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
 
-    auto self = std::shared_ptr<TlsStream>(new TlsStream(std::move(socket), Role::Client, ctx, /*ownsSslCtx*/ true));
-    IO::NetworkError err = self->m_socket.InitializeAndFixateMemoryLocation();
+    auto owned = std::make_unique<IO::Networking::AsyncSocket>(std::move(socket));
+    IO::NetworkError err = owned->InitializeAndFixateMemoryLocation();
     MANGOS_ASSERT(!err);
-    return self;
+    return std::shared_ptr<TlsStream>(new TlsStream(std::move(owned), Role::Client, ctx, /*ownsSslCtx*/ true));
 }
 
 std::shared_ptr<TlsStream> TlsStream::CreateServer(IO::Networking::AsyncSocket socket, SSL_CTX* sslCtx)
 {
-    MANGOS_ASSERT(sslCtx);
-
-    auto self = std::shared_ptr<TlsStream>(new TlsStream(std::move(socket), Role::Server, sslCtx, /*ownsSslCtx*/ false));
-    IO::NetworkError err = self->m_socket.InitializeAndFixateMemoryLocation();
+    auto owned = std::make_unique<IO::Networking::AsyncSocket>(std::move(socket));
+    IO::NetworkError err = owned->InitializeAndFixateMemoryLocation();
     MANGOS_ASSERT(!err);
-    return self;
+    return CreateServer(std::move(owned), sslCtx);
 }
 
-TlsStream::TlsStream(IO::Networking::AsyncSocket socket, Role role, SSL_CTX* sslCtx, bool ownsSslCtx)
+std::shared_ptr<TlsStream> TlsStream::CreateServer(std::unique_ptr<IO::Networking::AsyncSocket> initializedSocket, SSL_CTX* sslCtx)
+{
+    MANGOS_ASSERT(sslCtx);
+    MANGOS_ASSERT(initializedSocket);
+    return std::shared_ptr<TlsStream>(new TlsStream(std::move(initializedSocket), Role::Server, sslCtx, /*ownsSslCtx*/ false));
+}
+
+TlsStream::TlsStream(std::unique_ptr<IO::Networking::AsyncSocket> socket, Role role, SSL_CTX* sslCtx, bool ownsSslCtx)
     : m_socket(std::move(socket)), m_sslCtx(sslCtx), m_ownsSslCtx(ownsSslCtx)
 {
     m_ssl = SSL_new(m_sslCtx);
@@ -126,7 +131,7 @@ void TlsStream::FlushOutgoing(std::function<void()> then)
     buffer->resize(size_t(n));
 
     std::shared_ptr<TlsStream> self = shared_from_this();
-    m_socket.Write({ std::shared_ptr<std::vector<uint8> const>(buffer) }, [self, then = std::move(then)](IO::NetworkError const& error)
+    m_socket->Write({ std::shared_ptr<std::vector<uint8> const>(buffer) }, [self, then = std::move(then)](IO::NetworkError const& error)
     {
         if (error)
         {
@@ -141,7 +146,7 @@ void TlsStream::PullIncoming(std::function<void()> then)
 {
     auto buffer = std::make_shared<std::vector<char>>(16384);
     std::shared_ptr<TlsStream> self = shared_from_this();
-    m_socket.ReadSome(buffer->data(), buffer->size(), [self, buffer, then = std::move(then)](IO::NetworkError const& error, size_t received)
+    m_socket->ReadSome(buffer->data(), buffer->size(), [self, buffer, then = std::move(then)](IO::NetworkError const& error, size_t received)
     {
         if (error)
         {
@@ -290,8 +295,7 @@ void TlsStream::OnError(IO::NetworkError const& error)
 
 void TlsStream::Close()
 {
-    if (m_closed)
+    if (m_closed.exchange(true))
         return;
-    m_closed = true;
-    m_socket.CloseSocket();
+    m_socket->CloseSocket();
 }

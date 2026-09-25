@@ -2,6 +2,7 @@
 #define SHARED_TLSSTREAM_H
 
 #include "IO/Networking/AsyncSocket.h"
+#include <atomic>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -35,6 +36,10 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         // its certificate once, not per connection.
         static std::shared_ptr<TlsStream> CreateServer(IO::Networking::AsyncSocket socket, SSL_CTX* sslCtx);
 
+        // Same, for a socket the caller already initialized (InitializeAndFixateMemoryLocation) and
+        // used, e.g. to read a proxy header off the connection before TLS starts.
+        static std::shared_ptr<TlsStream> CreateServer(std::unique_ptr<IO::Networking::AsyncSocket> initializedSocket, SSL_CTX* sslCtx);
+
         ~TlsStream();
         TlsStream(TlsStream const&) = delete;
         TlsStream& operator=(TlsStream const&) = delete;
@@ -54,12 +59,12 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         void Write(std::vector<uint8> data, WriteCallback callback);
 
         void Close();
-        bool IsClosing() const { return m_closed || m_socket.IsClosing(); }
+        bool IsClosing() const { return m_closed.load() || m_socket->IsClosing(); }
 
     private:
         enum class Role { Client, Server };
 
-        TlsStream(IO::Networking::AsyncSocket socket, Role role, SSL_CTX* sslCtx, bool ownsSslCtx);
+        TlsStream(std::unique_ptr<IO::Networking::AsyncSocket> socket, Role role, SSL_CTX* sslCtx, bool ownsSslCtx);
 
         void PumpHandshake();
         void FlushOutgoing(std::function<void()> then);
@@ -67,7 +72,7 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         void ContinueRead();
         void OnError(IO::NetworkError const& error);
 
-        IO::Networking::AsyncSocket m_socket;
+        std::unique_ptr<IO::Networking::AsyncSocket> m_socket;
         SSL_CTX* m_sslCtx = nullptr;
         bool m_ownsSslCtx = false; // client role builds+frees its own; server role's outlives every stream
         SSL* m_ssl = nullptr;
@@ -86,7 +91,7 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
         std::deque<WriteCallback> m_pendingWriteCallbacks;
         bool m_writeFlushRunning = false;
 
-        bool m_closed = false;
+        std::atomic<bool> m_closed{false};
 };
 
 #endif
