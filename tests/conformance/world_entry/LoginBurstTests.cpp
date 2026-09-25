@@ -80,3 +80,32 @@ TEST_CASE("world_entry: the login burst carries the account's tutorial flags", "
         CHECK(ParsedExactly<TutorialFlags>(bot, BotConnectionKind::Realm));
     });
 }
+
+TEST_CASE("world_entry: the login burst carries weapon and armor proficiencies", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(SetProficiency::Opcode, 10000));
+        co_await TestDelay(500);
+
+        bool weapon = false;
+        bool armor = false;
+        for (BotPacket packet : bot.Received())
+        {
+            if (packet.Opcode != SetProficiency::Opcode)
+                continue;
+            REQUIRE(packet.Connection == BotConnectionKind::Instance);
+
+            packet.Data.rpos(0);
+            SetProficiency proficiency;
+            REQUIRE(proficiency.Read(packet.Data));
+            CHECK(packet.Data.rpos() == packet.Data.size());
+            weapon |= proficiency.ItemClass == 2;
+            armor |= proficiency.ItemClass == 4;
+        }
+        CHECK(weapon);
+        CHECK(armor);
+    });
+}

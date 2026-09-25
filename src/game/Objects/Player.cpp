@@ -17812,10 +17812,10 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 // send Proficiency
 void Player::SendProficiency(ItemClass itemClass, uint32 itemSubclassMask) const
 {
-    auto packet = std::make_unique<WorldPackets::Skill::SetProficiency>();
-    packet->itemClass = itemClass;
-    packet->itemSubclassMask = itemSubclassMask;
-    GetSession()->SendPacket(std::move(packet));
+    SetProficiency packet;
+    packet.ItemClass = itemClass;
+    packet.SubclassMask = itemSubclassMask;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::RemovePetitionsAndSigns(ObjectGuid guid, uint32 exceptPetitionId)

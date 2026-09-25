@@ -47,17 +47,6 @@ namespace WorldPackets { namespace Skill
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-
-    class SetProficiency final : public ServerPacket
-    {
-    public:
-        uint8 itemClass = 0;         // ItemClass enum value
-        uint32 itemSubclassMask = 0; // bitmask of allowed subclasses
-
-        explicit SetProficiency() : ServerPacket(SMSG_SET_PROFICIENCY) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 }} // namespace WorldPackets::Skill
 
 #endif // MANGOS_PACKETS_SKILL_H
