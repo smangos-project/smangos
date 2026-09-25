@@ -1,4 +1,5 @@
 set(REALBOTS_DIR ${CMAKE_SOURCE_DIR}/src/game/RealBots)
+set(SERVER_PROTOCOL_DIR ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol)
 
 add_executable(tests-realbots
   ${REALBOTS_DIR}/RealBotCommands.cpp
@@ -9,7 +10,7 @@ add_executable(tests-realbots
   ${REALBOTS_DIR}/Core/BotAccountLease.cpp
   ${REALBOTS_DIR}/Core/BotStage.cpp
   ${REALBOTS_DIR}/Core/BotPacketLog.cpp
-  ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
+  ${SERVER_PROTOCOL_DIR}/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskArgs.cpp
@@ -31,6 +32,7 @@ add_executable(tests-realbots
   BotStageWatchdogTests.cpp
   BotDispatchOrderTests.cpp
   TestRoutineTests.cpp
+  ClassicOpcodesTests.cpp
   ClassicPacketsTests.cpp
   ClassicPacketsRoundTripTests.cpp
   BotWorldConnectionTests.cpp
@@ -58,6 +60,7 @@ target_include_directories(tests-realbots PRIVATE
   ${REALBOTS_DIR}/Coroutines
   ${REALBOTS_DIR}/Protocol
   ${REALBOTS_DIR}/Net
+  ${SERVER_PROTOCOL_DIR}
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/shared
 )

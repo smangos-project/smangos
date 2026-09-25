@@ -1,4 +1,5 @@
 set(REALBOTS_DIR ${CMAKE_SOURCE_DIR}/src/game/RealBots)
+set(SERVER_PROTOCOL_DIR ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol)
 
 # Deliberately not linking `game` (same reasoning as contrib/realbotrunner/CMakeLists.txt and
 # tests/unit/realbots/CMakeLists.txt): bots touch no server runtime state, so this needs only
@@ -21,7 +22,7 @@ add_executable(tests-conformance
   ${REALBOTS_DIR}/Behavior/Tasks/BuiltinBotTasks.cpp
   ${REALBOTS_DIR}/Coroutines/BotRoutine.cpp
   ${REALBOTS_DIR}/Coroutines/BotAwaitables.cpp
-  ${REALBOTS_DIR}/Protocol/ClassicOpcodes.cpp
+  ${SERVER_PROTOCOL_DIR}/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Net/BotConnector.cpp
   ${REALBOTS_DIR}/Net/BotWorldConnection.cpp
   ${REALBOTS_DIR}/Net/BotRestClient.cpp
@@ -55,6 +56,7 @@ target_include_directories(tests-conformance PRIVATE
   ${REALBOTS_DIR}/Coroutines
   ${REALBOTS_DIR}/Protocol
   ${REALBOTS_DIR}/Net
+  ${SERVER_PROTOCOL_DIR}
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/shared
 )

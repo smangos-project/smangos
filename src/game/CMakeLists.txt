@@ -196,6 +196,7 @@ set (game_SRCS
     PlayerBots/PlayerBotAI.cpp
     PlayerBots/PlayerBotMgr.cpp
     Server/Protocol/Opcodes.cpp
+    Server/Protocol/ClassicOpcodes.cpp
     Server/Packets/Battleground.cpp
     Server/Packets/AuctionHouse.cpp
     Server/Packets/Channel.cpp
@@ -449,6 +450,7 @@ set (game_SRCS
     PlayerBots/PlayerBotMgr.h
     Server/Protocol/Opcodes.h
     Server/Protocol/Opcodes_active.h
+    Server/Protocol/ClassicOpcodes.h
     Server/Packet.h
     Server/Packets/Battleground.h
     Server/Packets/AuctionHouse.h
@@ -548,8 +550,6 @@ if (ENABLE_REALBOTS)
       RealBots/Coroutines/BotRoutine.h
       RealBots/Coroutines/BotAwaitables.cpp
       RealBots/Coroutines/BotAwaitables.h
-      RealBots/Protocol/ClassicOpcodes.cpp
-      RealBots/Protocol/ClassicOpcodes.h
       RealBots/Protocol/ClassicPackets.h
       RealBots/Net/BotConnector.cpp
       RealBots/Net/BotConnector.h
