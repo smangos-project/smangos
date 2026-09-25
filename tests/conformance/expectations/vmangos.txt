@@ -3,17 +3,7 @@
 # by TestMain.cpp unless --strict is passed. Format: "scenario name | reason", one per line;
 # lines starting with '#' are comments.
 
-login: a bot reaches the world                                        | login server not ported (port-plan.md step 2)
-login: the portal issues a login ticket                               | login server not ported (port-plan.md step 2)
-login: wrong password fails at the login portal                       | login server not ported (port-plan.md step 2)
-login: an unknown account fails at the login portal                   | login server not ported (port-plan.md step 2)
-login: the RPC logon completes                                        | login server not ported (port-plan.md step 2)
-login: a forged login ticket is rejected at the RPC step              | login server not ported (port-plan.md step 2)
-login: the realm list contains the configured realm and parses        | login server not ported (port-plan.md step 2)
-login: realm join returns an address, a ticket and a server secret    | login server not ported (port-plan.md step 2)
-login: joining a realm that is not listed fails at realm select       | login server not ported (port-plan.md step 2)
-login: an RPC call to an unknown method does not drop the connection  | login server not ported (port-plan.md step 2)
-login: a malformed REST body gets a 4xx response, not a hang          | login server not ported (port-plan.md step 2)
+login: a bot reaches the world                                      | world socket and world entry not ported (port-plan.md steps 3 and 5)
 world_socket: encrypted mode is entered and SMSG_AUTH_RESPONSE is OK | world socket not ported (port-plan.md step 3)
 world_socket: the glue-screen packets arrive after SMSG_AUTH_RESPONSE | world socket not ported (port-plan.md step 3)
 world_socket: the server's SMSG_ENTER_ENCRYPTED_MODE signature verifies | world socket not ported (port-plan.md step 3)
@@ -43,9 +33,9 @@ session: a second login on an account already in the world takes the session ove
 session: an idle bot with only default keepalives is not kicked      | world entry not ported (port-plan.md step 5)
 framework: stop_at holds a stage                                      | world socket not ported (port-plan.md step 3)
 framework: Drop keeps a CMSG_PING off the wire                        | world socket not ported (port-plan.md step 3)
-load: ten bots log in at once                                         | login server not ported (port-plan.md step 2)
-load: fifty bots at once are all in the world within the bound and all log out cleanly | login server not ported (port-plan.md step 2)
-load: a hundred bots staggered over twenty seconds are all in the world and all log out cleanly | login server not ported (port-plan.md step 2)
+load: ten bots log in at once | world entry not ported (port-plan.md step 5)
+load: fifty bots at once are all in the world within the bound and all log out cleanly | world entry not ported (port-plan.md step 5)
+load: a hundred bots staggered over twenty seconds are all in the world and all log out cleanly | world entry not ported (port-plan.md step 5)
 
 # Not listed: "framework: connecting to a dead address fails cleanly" -- it drives its own
 # deliberately-unreachable "deadhost" target (TestBotOptions().TargetOverride), never vmangos
