@@ -68,6 +68,7 @@ class TlsStream : public std::enable_shared_from_this<TlsStream>
 
         void PumpHandshake();
         void FlushOutgoing(std::function<void()> then);
+        void FlushWrites();
         void PullIncoming(std::function<void()> then);
         void ContinueRead();
         void OnError(IO::NetworkError const& error);

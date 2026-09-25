@@ -225,36 +225,55 @@ void TlsStream::Write(std::vector<uint8> data, WriteCallback callback)
     if (IsClosing())
         return;
 
-    int n = SSL_write(m_ssl, data.data(), int(data.size()));
-    if (n <= 0)
-    {
-        int sslError = SSL_get_error(m_ssl, n);
-        sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "TlsStream: SSL_write failed (SSL error %d)", sslError);
-        callback(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
-        return;
-    }
-
     bool startFlush;
     {
+        // Encrypting and queueing happen together, so a flush that finishes never misses the
+        // ciphertext of a write whose callback it is about to complete.
         std::lock_guard<std::mutex> lock(m_writeQueueLock);
+
+        int n = SSL_write(m_ssl, data.data(), int(data.size()));
+        if (n <= 0)
+        {
+            int sslError = SSL_get_error(m_ssl, n);
+            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "TlsStream: SSL_write failed (SSL error %d)", sslError);
+            callback(IO::NetworkError(IO::NetworkError::ErrorType::InternalError));
+            return;
+        }
+
         m_pendingWriteCallbacks.push_back(std::move(callback));
         startFlush = !m_writeFlushRunning;
         if (startFlush)
             m_writeFlushRunning = true;
     }
 
-    if (!startFlush)
-        return;
+    if (startFlush)
+        FlushWrites();
+}
 
+void TlsStream::FlushWrites()
+{
     std::shared_ptr<TlsStream> self = shared_from_this();
     FlushOutgoing([self]()
     {
         std::deque<WriteCallback> callbacks;
+        bool flushAgain = false;
         {
             std::lock_guard<std::mutex> lock(self->m_writeQueueLock);
-            callbacks = std::move(self->m_pendingWriteCallbacks);
-            self->m_pendingWriteCallbacks.clear();
-            self->m_writeFlushRunning = false;
+
+            // Writes made while this flush was on the wire left their ciphertext behind.
+            if (BIO_ctrl_pending(self->m_writeBio) > 0)
+                flushAgain = true;
+            else
+            {
+                callbacks = std::move(self->m_pendingWriteCallbacks);
+                self->m_pendingWriteCallbacks.clear();
+                self->m_writeFlushRunning = false;
+            }
+        }
+        if (flushAgain)
+        {
+            self->FlushWrites();
+            return;
         }
         for (WriteCallback& callback : callbacks)
             callback(IO::NetworkError(IO::NetworkError::ErrorType::NoError));

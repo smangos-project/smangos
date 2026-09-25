@@ -467,3 +467,93 @@ TEST_CASE("TlsStream: ReadSome completes with whatever plaintext is available, u
 
     SSL_CTX_free(serverCtx);
 }
+
+TEST_CASE("TlsStream: writes made while an earlier write is still flushing are all delivered", "[tlsstream]")
+{
+    SelfSignedCert serverCert = GenerateSelfSignedCert();
+
+    SSL_CTX* serverCtx = SSL_CTX_new(TLS_server_method());
+    REQUIRE(serverCtx != nullptr);
+    REQUIRE(SSL_CTX_use_certificate(serverCtx, serverCert.cert) == 1);
+    REQUIRE(SSL_CTX_use_PrivateKey(serverCtx, serverCert.key) == 1);
+
+    auto ctx = IO::IoContext::CreateIoContext();
+    REQUIRE(ctx != nullptr);
+    std::thread ioThread([&ctx]() { ctx->RunUntilShutdown(); });
+
+    auto acceptor = IO::Networking::AsyncSocketAcceptor::CreateAndBindServer(ctx.get(), "127.0.0.1", TestPort + 4);
+    REQUIRE(acceptor != nullptr);
+
+    constexpr size_t Writes = 20;
+    std::string const chunk = "0123456789";
+
+    std::shared_ptr<TlsStream> serverStream;
+    std::vector<char> serverBuffer(chunk.size() * Writes);
+    WaitFlag serverReadDone;
+
+    acceptor->AutoAcceptSocketsUntilClose([&](IO::Networking::SocketDescriptor descriptor)
+    {
+        IO::Networking::AsyncSocket serverSocket(ctx.get(), std::move(descriptor));
+        serverStream = TlsStream::CreateServer(std::move(serverSocket), serverCtx);
+        serverStream->Handshake([&](bool success)
+        {
+            if (!success)
+                return;
+            serverStream->Read(serverBuffer.data(), serverBuffer.size(), [&](IO::NetworkError const& error, size_t)
+            {
+                CHECK_FALSE(error);
+                serverReadDone.Set();
+            });
+        });
+    });
+
+    auto ip = IO::Networking::IpAddress::TryParseFromString("127.0.0.1");
+    REQUIRE(ip.has_value());
+    IO::Networking::IpEndpoint endpoint(*ip, TestPort + 4);
+
+    auto maybeDescriptor = IO::Networking::SocketConnector::ConnectBlocking(endpoint, std::chrono::seconds(5));
+    REQUIRE(maybeDescriptor.has_value());
+
+    IO::Networking::AsyncSocket clientSocket(ctx.get(), std::move(maybeDescriptor.value()));
+    std::shared_ptr<TlsStream> clientStream = TlsStream::CreateClient(std::move(clientSocket));
+
+    WaitFlag clientHandshakeDone;
+    bool clientHandshakeOk = false;
+    clientStream->Handshake([&](bool success)
+    {
+        clientHandshakeOk = success;
+        clientHandshakeDone.Set();
+    });
+    REQUIRE(clientHandshakeDone.WaitFor(std::chrono::seconds(5)));
+    REQUIRE(clientHandshakeOk);
+
+    // No waiting between the writes: all but the first are made while a flush is in flight.
+    std::atomic<size_t> completed{0};
+    WaitFlag allCompleted;
+    for (size_t i = 0; i < Writes; ++i)
+    {
+        clientStream->Write(std::vector<uint8>(chunk.begin(), chunk.end()), [&](IO::NetworkError const& error)
+        {
+            CHECK_FALSE(error);
+            if (++completed == Writes)
+                allCompleted.Set();
+        });
+    }
+
+    REQUIRE(allCompleted.WaitFor(std::chrono::seconds(5)));
+    REQUIRE(serverReadDone.WaitFor(std::chrono::seconds(5)));
+
+    std::string expected;
+    for (size_t i = 0; i < Writes; ++i)
+        expected += chunk;
+    CHECK(std::string(serverBuffer.begin(), serverBuffer.end()) == expected);
+
+    clientStream->Close();
+    if (serverStream)
+        serverStream->Close();
+    acceptor->ClosePortAndStopAcceptingNewConnections();
+    ctx->Shutdown();
+    ioThread.join();
+
+    SSL_CTX_free(serverCtx);
+}
