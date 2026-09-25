@@ -81,7 +81,6 @@ class Weather
         }
 
     private:
-        uint32 GetSound();
         // Send SMSG_WEATHER to all players in the zone
         bool SendWeatherForPlayersInZone(Map const* _map);
         // Calculate new weather

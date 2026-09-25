@@ -515,25 +515,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    class WeatherUpdate final : public ServerPacket
-    {
-    public:
-        uint32 weatherType = 0;
-        float grade = 0.0f;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        uint32 soundId = 0;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        bool instantChange = false;     // true = instant change, false = smooth change
-#endif
-
-        explicit WeatherUpdate() : ServerPacket(SMSG_WEATHER) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-#endif
-
     class ServerMessage final : public ServerPacket
     {
     public:

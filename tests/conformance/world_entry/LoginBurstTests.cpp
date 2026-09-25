@@ -200,3 +200,18 @@ TEST_CASE("world_entry: the login burst carries the world states for the charact
         CHECK(states->SubareaId != 0);
     });
 }
+
+TEST_CASE("world_entry: the login burst carries the weather of the character's zone", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await bot.WaitReceived(WeatherUpdate::Opcode, 10000));
+
+        std::optional<WeatherUpdate> weather = ParsedExactly<WeatherUpdate>(bot, BotConnectionKind::Instance);
+        REQUIRE(weather);
+        CHECK(weather->Intensity >= 0.0f);
+        CHECK(weather->Intensity <= 1.0f);
+    });
+}

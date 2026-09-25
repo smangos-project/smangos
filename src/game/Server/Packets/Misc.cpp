@@ -396,32 +396,6 @@ void WorldPackets::Misc::InspectHonorStatsResponse::AppendBodyTo(ByteBuffer& buf
 #endif
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-size_t WorldPackets::Misc::WeatherUpdate::EstimateFinalSize() const
-{
-    return sizeof(weatherType) +
-           sizeof(grade) +
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-           sizeof(soundId) +
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-           sizeof(instantChange) +
-#endif
-           0;
-}
-void WorldPackets::Misc::WeatherUpdate::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << weatherType;
-    buffer << grade;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    buffer << soundId;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    buffer << instantChange;
-#endif
-}
-#endif
-
 size_t WorldPackets::Misc::ServerMessage::EstimateFinalSize() const
 {
     return sizeof(messageType) +

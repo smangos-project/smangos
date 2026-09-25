@@ -28,6 +28,7 @@
 #include "Player.h"
 #include "Map.h"
 #include "Opcodes.h"
+#include "Packets/WorldStates.h"
 #include "World.h"
 #include "WorldPacket.h"
 #include "Log.h"
@@ -213,18 +214,10 @@ void Weather::SendWeatherUpdateToPlayer(Player* player)
 {
     NormalizeGrade();
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    auto packet = std::make_unique<WorldPackets::Misc::WeatherUpdate>();
-    packet->weatherType = m_type;
-    packet->grade = m_grade;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    packet->soundId = GetSound();
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    packet->instantChange = false;
-#endif
-    player->GetSession()->SendPacket(std::move(packet));
-#endif
+    WeatherUpdate packet;
+    packet.WeatherId = GetWeatherState();
+    packet.Intensity = m_grade;
+    player->GetSession()->SendClassic(packet);
 }
 
 // Send the new weather to all players in the zone
@@ -232,20 +225,18 @@ bool Weather::SendWeatherForPlayersInZone(Map const* _map)
 {
     NormalizeGrade();
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    WorldPacket data(SMSG_WEATHER, 4 + 4 + 4 + 1);
-    data << uint32(m_type);
-    data << float(m_grade);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << uint32(GetSound()); // 1.12 soundid
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    data << uint8(0);           // 1 = instant change, 0 = smooth change
-#endif
+    WeatherUpdate packet;
+    packet.WeatherId = GetWeatherState();
+    packet.Intensity = m_grade;
+
+    ByteBuffer body;
+    packet.Write(body);
+    WorldPacket data(uint32(WeatherUpdate::Opcode), body.size());
+    data.append(body.contents(), body.size());
+
     // Send the weather packet to all players in this zone
     if (!_map->SendToPlayersInZone(&data, m_zone))
         return false;
-#endif
 
     // Log the event
     LogWeatherState(GetWeatherState());
@@ -396,50 +387,6 @@ void WeatherSystem::UpdateWeathers(uint32 diff)
         else
             ++itr;
     }
-}
-
-// Get the sound number associated with the current weather
-uint32 Weather::GetSound()
-{
-    uint32 sound;
-    switch (m_type)
-    {
-        case WEATHER_TYPE_RAIN:                                             //rain
-            if (m_grade < 0.3f)
-                sound = WEATHER_NOSOUND;
-            else if (m_grade < 0.6f)
-                sound = WEATHER_RAINLIGHT;
-            else if (m_grade < 0.9f)
-                sound = WEATHER_RAINMEDIUM;
-            else
-                sound = WEATHER_RAINHEAVY;
-            break;
-        case WEATHER_TYPE_SNOW:                                             //snow
-            if (m_grade < 0.3f)
-                sound = WEATHER_NOSOUND;
-            else if (m_grade < 0.6f)
-                sound = WEATHER_SNOWLIGHT;
-            else if (m_grade < 0.9f)
-                sound = WEATHER_SNOWMEDIUM;
-            else
-                sound = WEATHER_SNOWHEAVY;
-            break;
-        case WEATHER_TYPE_STORM:                                             //storm
-            if (m_grade < 0.3f)
-                sound = WEATHER_NOSOUND;
-            else if (m_grade < 0.6f)
-                sound = WEATHER_SANDSTORMLIGHT;
-            else if (m_grade < 0.9f)
-                sound = WEATHER_SANDSTORMMEDIUM;
-            else
-                sound = WEATHER_SANDSTORMHEAVY;
-            break;
-        case WEATHER_TYPE_FINE:                                             //fine
-        default:
-            sound = WEATHER_NOSOUND;
-            break;
-    }
-    return sound;
 }
 
 // Load Weather chanced from table game_weather
