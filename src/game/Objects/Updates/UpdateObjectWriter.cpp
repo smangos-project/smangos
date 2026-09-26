@@ -323,6 +323,21 @@ void BuildValuesCreate(Object const& object, ByteBuffer& data, EnumFlag<UpdateFi
     else if (DynamicObject const* dynamicObject = object.ToDynamicObject())
         dynamicObject->m_dynamicObjectData->WriteCreate(data, flags, dynamicObject, target);
 }
+
+uint8 ToWireTypeId(uint8 typeId, bool isSelf)
+{
+    switch (typeId)
+    {
+        case TYPEID_ITEM:          return 1;
+        case TYPEID_CONTAINER:     return 2;
+        case TYPEID_UNIT:          return 5;
+        case TYPEID_PLAYER:        return isSelf ? 7 : 6;
+        case TYPEID_GAMEOBJECT:    return 8;
+        case TYPEID_DYNAMICOBJECT: return 9;
+        case TYPEID_CORPSE:        return 10;
+        default:                   return 0;
+    }
+}
 }
 
 void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
@@ -337,11 +352,8 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     FillUpdateFieldData(const_cast<Object&>(object));
 
     uint8 updateType = object.IsNewObject() ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
-    uint8 objectType = object.GetTypeId();
-
     CreateObjectBits flags = ComputeCreateObjectBits(object, target);
-    if (static_cast<Object const*>(target) == &object)
-        objectType = TYPEID_ACTIVE_PLAYER;
+    uint8 const objectType = ToWireTypeId(object.GetTypeId(), static_cast<Object const*>(target) == &object);
 
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
 

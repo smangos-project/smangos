@@ -8,10 +8,16 @@
 
 struct UpdateObject;
 
-// The wire's own TypeID for the receiving player's own object in its own create block
-// (Objects/Updates/UpdateField.h's TYPEID_ACTIVE_PLAYER on the server side); not a real
-// ObjectGuid high-guid type, just this one create block's objectType byte.
-constexpr uint8_t BOT_TYPEID_ACTIVE_PLAYER = 8;
+// The client's object type ids, as a create block's objectType byte carries them. The receiving
+// player's own object is BOT_TYPEID_ACTIVE_PLAYER, everyone else's is BOT_TYPEID_PLAYER.
+constexpr uint8_t BOT_TYPEID_ITEM = 1;
+constexpr uint8_t BOT_TYPEID_CONTAINER = 2;
+constexpr uint8_t BOT_TYPEID_UNIT = 5;
+constexpr uint8_t BOT_TYPEID_PLAYER = 6;
+constexpr uint8_t BOT_TYPEID_ACTIVE_PLAYER = 7;
+constexpr uint8_t BOT_TYPEID_GAMEOBJECT = 8;
+constexpr uint8_t BOT_TYPEID_DYNAMICOBJECT = 9;
+constexpr uint8_t BOT_TYPEID_CORPSE = 10;
 
 // One object as this bot currently knows it, from parsing SMSG_UPDATE_OBJECT itself -- written
 // from the wire layout, not by sharing the server's serializer (bot-phase-4.md's decision 5 risk
@@ -35,6 +41,7 @@ public:
     void OnUpdateObject(UpdateObject const& packet);
 
     std::optional<BotKnownObject> Get(ClassicGuid const& guid) const;
+    std::vector<BotKnownObject> GetAll() const { return m_objects; }
 
 private:
     std::vector<BotKnownObject> m_objects;
