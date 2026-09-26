@@ -519,6 +519,27 @@ None of these is proven against a real 1.15.6 client yet.
   with a required level (both `u32`, always zero here). **Followed: TrinityCore.**
 - **NPC text.** Both send only probabilities and broadcast text ids, since the client reads the text from its own
   data; the server's broadcast text ids only match if the client's data does (`port-plan.md`, step 7).
+- **Inventory slot numbers.** Both references number slots as the modern client does (bags from 30, the backpack
+  from 35, the bank from 59, keyring from 106) and vibemangos moved its own constants to match. This tree keeps the
+  1.12 numbers inside the server (bags 19, backpack 23, ...) and translates at the wire
+  (`Packets/Classic/InventorySlots.h`), in the active player's `InvSlots` fill and in every message that names a
+  slot, since the saved characters and every `Player` slot constant use the old ones. **Removal point:** when the
+  flat update-field array goes, the constants move to the modern numbers with a `character_inventory` migration
+  and the translation goes. Profession, reagent-bag and child-equipment slots exist in the modern layout only;
+  a request naming one is refused with "item not found". The backpack is 16 slots (35 to 50) in this layout, not
+  the 24 the references reserve.
+- **Item push result.** TrinityCore writes an unused bit between "created" and the display text; vibemangos does not.
+  **Followed: TrinityCore.** Bonus lists and modifiers are never sent (and a body with any is rejected on read).
+- **Inventory change failure.** TrinityCore writes the result, both item guids and the container slot, then the level
+  for a level refusal; vibemangos writes the level before the guids. **Followed: TrinityCore.** The server's
+  `InventoryResult` values are mapped by the client's own error name (`Packets/ClassicInventoryResult.h`); the
+  server's numbered duplicates collapse onto one reason, and "no error, free the pending item" is `EQUIP_ERR_OK`.
+- **Item cooldown and enchantment log.** TrinityCore's item cooldown ends with the cooldown in milliseconds and its
+  enchantment log names owner, caster, item guid, item id, enchantment and slot; vibemangos's are older shapes
+  (no cooldown, a spell id, no slot). **Followed: TrinityCore.**
+- **Using an item.** The modern request names the spell to cast, not the item's spell slot; the server accepts it
+  only if it is one of the item's on-use spells. `SMSG_OPEN_CONTAINER` has no modern message (TrinityCore leaves it
+  unhandled) and is no longer sent.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
