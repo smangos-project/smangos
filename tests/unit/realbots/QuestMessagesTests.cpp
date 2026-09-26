@@ -453,3 +453,151 @@ TEST_CASE("QuestGiverQuestComplete round-trips xp and money", "[packets]")
     });
     RejectsEveryTruncation(complete);
 }
+
+TEST_CASE("Quest failure toasts round-trip", "[packets]")
+{
+    QuestGiverInvalidQuest invalid;
+    invalid.Reason = 23;
+    invalid.ReasonText = "not enough money";
+    RoundTrip(invalid, [](QuestGiverInvalidQuest const& a, QuestGiverInvalidQuest const& b)
+    {
+        CHECK(a.Reason == b.Reason);
+        CHECK(a.ContributionRewardId == b.ContributionRewardId);
+        CHECK(a.SendErrorMessage == b.SendErrorMessage);
+        CHECK(a.ReasonText == b.ReasonText);
+    });
+    RejectsEveryTruncation(invalid);
+
+    QuestGiverQuestFailed failed;
+    failed.QuestId = 783;
+    failed.Reason = 4;
+    RoundTrip(failed, [](QuestGiverQuestFailed const& a, QuestGiverQuestFailed const& b)
+    {
+        CHECK(a.QuestId == b.QuestId);
+        CHECK(a.Reason == b.Reason);
+    });
+    RejectsEveryTruncation(failed);
+
+    QuestUpdateFailed updateFailed;
+    updateFailed.QuestId = 783;
+    RoundTrip(updateFailed, [](QuestUpdateFailed const& a, QuestUpdateFailed const& b) { CHECK(a.QuestId == b.QuestId); });
+    RejectsEveryTruncation(updateFailed);
+
+    QuestUpdateFailedTimer timerFailed;
+    timerFailed.QuestId = 783;
+    RoundTrip(timerFailed, [](QuestUpdateFailedTimer const& a, QuestUpdateFailedTimer const& b) { CHECK(a.QuestId == b.QuestId); });
+    RejectsEveryTruncation(timerFailed);
+}
+
+TEST_CASE("QuestGiverStatusMultiple round-trips several givers", "[packets]")
+{
+    RoundTrip(QuestGiverStatusMultipleQuery(), [](QuestGiverStatusMultipleQuery const&, QuestGiverStatusMultipleQuery const&) {});
+
+    QuestGiverStatusMultiple multiple;
+    multiple.Givers.resize(2);
+    multiple.Givers[0].Guid = TestGuid(5);
+    multiple.Givers[0].Status = 0x400;
+    multiple.Givers[1].Guid = TestGuid(9);
+    multiple.Givers[1].Status = 0x1000;
+    RoundTrip(multiple, [](QuestGiverStatusMultiple const& a, QuestGiverStatusMultiple const& b)
+    {
+        REQUIRE(a.Givers.size() == b.Givers.size());
+        for (size_t i = 0; i < a.Givers.size(); ++i)
+        {
+            CHECK(a.Givers[i].Guid == b.Givers[i].Guid);
+            CHECK(a.Givers[i].Status == b.Givers[i].Status);
+        }
+    });
+    RejectsEveryTruncation(multiple);
+
+    QuestGiverStatusMultiple none;
+    RoundTrip(none, [](QuestGiverStatusMultiple const&, QuestGiverStatusMultiple const& b) { CHECK(b.Givers.empty()); });
+}
+
+TEST_CASE("QueryQuestInfo and its response round-trip", "[packets]")
+{
+    QueryQuestInfo query;
+    query.QuestId = 783;
+    query.QuestGiver = TestGuid(5);
+    RoundTrip(query, [](QueryQuestInfo const& a, QueryQuestInfo const& b)
+    {
+        CHECK(a.QuestId == b.QuestId);
+        CHECK(a.QuestGiver == b.QuestGiver);
+    });
+    RejectsEveryTruncation(query);
+
+    QueryQuestInfoResponse denied;
+    denied.QuestId = 99999;
+    RoundTrip(denied, [](QueryQuestInfoResponse const& a, QueryQuestInfoResponse const& b)
+    {
+        CHECK(a.QuestId == b.QuestId);
+        CHECK_FALSE(b.Allow);
+    });
+    RejectsEveryTruncation(denied);
+
+    QueryQuestInfoResponse info;
+    info.QuestId = 783;
+    info.Allow = true;
+    info.QuestType = 2;
+    info.QuestLevel = 1;
+    info.MinLevel = 1;
+    info.SortId = 9;
+    info.SuggestedGroupNum = 3;
+    info.RewardNextQuest = 7;
+    info.RewardMoney = 500;
+    info.RewardSpell = 1234;
+    info.Flags = 0x8;
+    info.RewardItems[1] = { 2589, 2 };
+    info.ChoiceItems[0] = { 2092, 1, 1234 };
+    info.PoiContinent = 0;
+    info.PoiX = -8913.5f;
+    info.PoiY = -133.25f;
+    info.PoiPriority = 2;
+    info.Factions[2] = { 72, 250 };
+    info.TimeAllowed = 3600;
+    info.Objectives.resize(2);
+    info.Objectives[0] = { 0, 0, 6, 8, "Kobolds slain" };
+    info.Objectives[1] = { 1, 1, 750, 4, "" };
+    info.LogTitle = "Kobold Camp Cleanup";
+    info.LogDescription = "Kill eight kobolds";
+    info.QuestDescription = "They are stealing my candles.";
+    info.QuestCompletionLog = "Return to Deputy Willem";
+    RoundTrip(info, [](QueryQuestInfoResponse const& a, QueryQuestInfoResponse const& b)
+    {
+        CHECK(b.Allow);
+        CHECK(a.QuestId == b.QuestId);
+        CHECK(a.QuestType == b.QuestType);
+        CHECK(a.QuestLevel == b.QuestLevel);
+        CHECK(a.MinLevel == b.MinLevel);
+        CHECK(a.SortId == b.SortId);
+        CHECK(a.SuggestedGroupNum == b.SuggestedGroupNum);
+        CHECK(a.RewardNextQuest == b.RewardNextQuest);
+        CHECK(a.RewardMoney == b.RewardMoney);
+        CHECK(a.RewardSpell == b.RewardSpell);
+        CHECK(a.Flags == b.Flags);
+        CHECK(a.RewardItems[1].ItemId == b.RewardItems[1].ItemId);
+        CHECK(a.RewardItems[1].Quantity == b.RewardItems[1].Quantity);
+        CHECK(a.ChoiceItems[0].ItemId == b.ChoiceItems[0].ItemId);
+        CHECK(a.ChoiceItems[0].DisplayId == b.ChoiceItems[0].DisplayId);
+        CHECK(a.PoiX == b.PoiX);
+        CHECK(a.PoiY == b.PoiY);
+        CHECK(a.PoiPriority == b.PoiPriority);
+        CHECK(a.Factions[2].FactionId == b.Factions[2].FactionId);
+        CHECK(a.Factions[2].Value == b.Factions[2].Value);
+        CHECK(a.TimeAllowed == b.TimeAllowed);
+        REQUIRE(a.Objectives.size() == b.Objectives.size());
+        for (size_t i = 0; i < a.Objectives.size(); ++i)
+        {
+            CHECK(a.Objectives[i].Id == b.Objectives[i].Id);
+            CHECK(a.Objectives[i].Type == b.Objectives[i].Type);
+            CHECK(a.Objectives[i].ObjectId == b.Objectives[i].ObjectId);
+            CHECK(a.Objectives[i].Amount == b.Objectives[i].Amount);
+            CHECK(a.Objectives[i].Description == b.Objectives[i].Description);
+        }
+        CHECK(a.LogTitle == b.LogTitle);
+        CHECK(a.LogDescription == b.LogDescription);
+        CHECK(a.QuestDescription == b.QuestDescription);
+        CHECK(a.QuestCompletionLog == b.QuestCompletionLog);
+    });
+    RejectsEveryTruncation(info);
+}

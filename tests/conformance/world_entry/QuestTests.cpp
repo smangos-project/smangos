@@ -90,3 +90,81 @@ TEST_CASE("quest: a GM bot takes a quest from one NPC and turns it in at another
         SayCommand(gm, ".npc despawn");
     });
 }
+
+TEST_CASE("quest: the quest log lookup answers with the record or a denial", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+
+        QueryQuestInfo known;
+        known.QuestId = 783;
+        bot.Send(known);
+        auto info = co_await bot.Packet<QueryQuestInfoResponse>(10000, [](QueryQuestInfoResponse const& p) { return p.QuestId == 783; });
+        REQUIRE(info);
+        REQUIRE(info->Allow);
+        CHECK(info->LogTitle == "A Threat Within");
+        CHECK_FALSE(info->QuestDescription.empty());
+
+        QueryQuestInfo unknown;
+        unknown.QuestId = 99999999;
+        bot.Send(unknown);
+        auto denied = co_await bot.Packet<QueryQuestInfoResponse>(10000, [](QueryQuestInfoResponse const& p) { return p.QuestId == 99999999; });
+        REQUIRE(denied);
+        CHECK_FALSE(denied->Allow);
+    });
+}
+
+TEST_CASE("quest: the area status query lists a nearby giver and a repeat accept is refused", "[gameplay]")
+{
+    if (ConformanceRun::GmTarget().empty())
+        SKIP("the target has no game master accounts (" << ConformanceRun::Target() << "-gm)");
+
+    RunTest([]() -> TestRoutine
+    {
+        constexpr uint32 QuestId = 783;
+        TestBot gm(TestBotOptions().Gm());
+        REQUIRE(co_await gm.Stage(BotStage::InWorld, 30000));
+
+        SayCommand(gm, ".quest remove 783");
+        co_await TestDelay(500);
+
+        std::vector<ClassicGuid> const before = KnownUnits(gm);
+        SayCommand(gm, ".npc spawn add 823"); // Deputy Willem
+        std::optional<ClassicGuid> giver;
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            giver = FindNewUnit(gm, before);
+            return giver.has_value();
+        }, 10000));
+        co_await TestDelay(500);
+
+        gm.Send(QuestGiverStatusMultipleQuery());
+        auto multiple = co_await gm.Packet<QuestGiverStatusMultiple>(10000, [&](QuestGiverStatusMultiple const& p)
+        {
+            for (QuestGiverStatusEntry const& entry : p.Givers)
+                if (entry.Guid == *giver)
+                    return true;
+            return false;
+        });
+        REQUIRE(multiple);
+        for (QuestGiverStatusEntry const& entry : multiple->Givers)
+            if (entry.Guid == *giver)
+                CHECK(entry.Status != 0);
+
+        QuestgiverAcceptQuest accept;
+        accept.Guid = *giver;
+        accept.QuestId = QuestId;
+        gm.Send(accept);
+        REQUIRE(co_await gm.WaitReceived<GossipComplete>(10000, [](GossipComplete const&) { return true; }));
+
+        gm.Send(accept);
+        auto invalid = co_await gm.Packet<QuestGiverInvalidQuest>(10000);
+        REQUIRE(invalid);
+        CHECK(invalid->Reason == 13);
+
+        SayCommand(gm, ".quest remove 783");
+        SayCommand(gm, ".npc despawn");
+    });
+}
