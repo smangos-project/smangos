@@ -1,20 +1,12 @@
 // Target selection, melee and stand state: what a GM bot sees of its own swings, and what a bystander sees.
-#include "Packets/ChatMessages.h"
 #include "Packets/CombatMessages.h"
 #include "TestBot.h"
+#include "TestCommands.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
 
 namespace
 {
-void SayCommand(TestBot const& bot, std::string const& text)
-{
-    ChatMessageSay say;
-    say.Language = 7; // LANG_COMMON
-    say.Message = text;
-    bot.Send(say);
-}
-
 // The creature the GM spawns beside itself isn't the only unit nearby (Northshire Abbey has its
 // own wildlife and NPCs), so the new one is found by diffing the known-object set from before the
 // spawn to after, rather than assuming it's the only BOT_TYPEID_UNIT around.

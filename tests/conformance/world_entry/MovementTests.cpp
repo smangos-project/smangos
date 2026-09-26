@@ -3,6 +3,7 @@
 #include "Packets/MountSpecialAnim.h"
 #include "Packets/MovementMessages.h"
 #include "TestBot.h"
+#include "TestCommands.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
 #include <cmath>
@@ -57,14 +58,6 @@ TEST_CASE("movement: a bot that walks is seen moving by another bot", "[protocol
             return seen && FlatDistance(*seen, start) < 1.0f;
         }, 15000));
     });
-}
-
-static void SayCommand(TestBot const& bot, std::string const& text)
-{
-    ChatMessageSay say;
-    say.Language = 7; // LANG_COMMON
-    say.Message = text;
-    bot.Send(say);
 }
 
 static bool WaitForKnown(TestBot const& observer, ClassicGuid guid)
