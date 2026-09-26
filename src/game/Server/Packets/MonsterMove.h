@@ -12,6 +12,7 @@
 // The modern spline flag bits the server sets (the rest of the word is left to the client).
 enum ClassicSplineFlag : uint32
 {
+    CLASSIC_SPLINEFLAG_DONE             = 0x00000020,
     CLASSIC_SPLINEFLAG_FALLING          = 0x00000040,
     CLASSIC_SPLINEFLAG_NO_SPLINE        = 0x00000080,
     CLASSIC_SPLINEFLAG_FLYING           = 0x00000200,
