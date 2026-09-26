@@ -367,6 +367,31 @@ class TestBot
             return value;
         }
 
+        // The first packet of type T in the bot's history that parses and satisfies `predicate`.
+        template<typename T>
+        std::optional<T> FindReceived(std::function<bool(T const&)> const& predicate = nullptr) const
+        {
+            for (BotPacket packet : m_recorder->History())
+            {
+                if (packet.Opcode != T::Opcode)
+                    continue;
+                packet.Data.rpos(0);
+                T value;
+                if (value.Read(packet.Data) && (!predicate || predicate(value)))
+                    return value;
+            }
+            return std::nullopt;
+        }
+
+        // Resolves true once FindReceived would find a packet, even one that arrived before this was
+        // called; false on the timeout. For a reply that may land before the scenario starts waiting
+        // (unlike Packet<T>, which only sees what arrives after it).
+        template<typename T>
+        TestWaitUntil WaitReceived(uint32_t timeoutMs, std::function<bool(T const&)> predicate = nullptr) const
+        {
+            return TestWaitUntil([this, predicate = std::move(predicate)]() { return FindReceived<T>(predicate).has_value(); }, timeoutMs);
+        }
+
         // Resolves true once a packet with this opcode is in the bot's history (see Received), even one
         // that arrived before this was called; false on the timeout. What to use for a packet the
         // bot may already have when a scenario gets to it -- e.g. the server's SMSG_AUTH_CHALLENGE
