@@ -379,6 +379,12 @@ std::optional<BotKnownObject> RealBot::GetKnownObject(ClassicGuid const& guid) c
     return m_worldView.Get(guid);
 }
 
+std::vector<BotKnownObject> RealBot::GetKnownObjects() const
+{
+    std::lock_guard<std::mutex> lock(m_worldViewLock);
+    return m_worldView.GetAll();
+}
+
 void RealBot::UpdateLogout(uint32 diff)
 {
     if (!m_awaitingLogoutComplete)

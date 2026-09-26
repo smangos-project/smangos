@@ -236,6 +236,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         // What this bot has learned from SMSG_UPDATE_OBJECT so far (BotWorldView), fed from
         // ApplyDefaultHandling on the bot thread; safe to call from any thread.
         std::optional<BotKnownObject> GetKnownObject(ClassicGuid const& guid) const;
+        std::vector<BotKnownObject> GetKnownObjects() const;
 
     private:
         void ProcessCommands();

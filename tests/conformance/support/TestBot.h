@@ -376,6 +376,7 @@ class TestBot
 
         // What the bot has learned from SMSG_UPDATE_OBJECT create blocks so far (BotWorldView).
         std::optional<BotKnownObject> GetKnownObject(ClassicGuid const& guid) const { return m_bot->GetKnownObject(guid); }
+        std::vector<BotKnownObject> GetKnownObjects() const { return m_bot->GetKnownObjects(); }
 
         std::string GetLastError() const;
         BotStage GetFailedStage() const;
