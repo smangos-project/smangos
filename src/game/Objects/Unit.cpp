@@ -58,6 +58,7 @@
 #include "InstanceStatistics.h"
 #include "MovementPacketSender.h"
 #include "MovementInfoWire.h"
+#include "Server/Packets/CombatLog.h"
 #include "Server/Packets/CombatMessages.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Errors.h"
@@ -1009,13 +1010,10 @@ void Unit::Kill(Unit* pVictim, SpellEntry const* spellProto, bool durabilityLoss
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if (allowLoot && pPlayerTap && pPlayerTap != pVictim)
     {
-        WorldPackets::Combat::PartyKillLog partyKillLogPacket;
-        partyKillLogPacket.killerGuid = pPlayerTap->GetObjectGuid(); // player with killing blow
-        partyKillLogPacket.victimGuid = pVictim->GetObjectGuid();
-
-        // TODO Use broadcaster which does the binary conversion automatically, also dont forget to add pPlayerTap
-        WorldPacket data;
-        partyKillLogPacket.WritePacket(data);
+        PartyKillLog partyKillLogPacket;
+        partyKillLogPacket.Killer = ClassicGuidMapping::ToClassic(pPlayerTap->GetObjectGuid(), realmID); // player with killing blow
+        partyKillLogPacket.Victim = ClassicGuidMapping::ToClassic(pVictim->GetObjectGuid(), realmID);
+        WorldPacket data = MakeClassicPacket(partyKillLogPacket);
 
         Player* looter = pPlayerTap;
         if (pGroupTap)
@@ -1810,12 +1808,15 @@ void Unit::TriggerDamageShields(Unit* pVictim)
             uint32 damage = rand_ditheru(fdamage);
             pVictim->DealDamageMods(this, damage, nullptr);
 
-            auto spellDamageShieldPacket = std::make_unique<WorldPackets::Combat::SpellDamageShield>();
-            spellDamageShieldPacket->victimGuid = pVictim->GetObjectGuid();
-            spellDamageShieldPacket->attackerGuid = GetObjectGuid();
-            spellDamageShieldPacket->damage = damage;
-            spellDamageShieldPacket->school = pSpellProto->School;
-            pVictim->SendObjectMessageToSet(std::move(spellDamageShieldPacket), true);
+            SpellDamageShield spellDamageShieldPacket;
+            spellDamageShieldPacket.Attacker = ClassicGuidMapping::ToClassic(pVictim->GetObjectGuid(), realmID);
+            spellDamageShieldPacket.Defender = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+            spellDamageShieldPacket.SpellId = int32(pSpellProto->Id);
+            spellDamageShieldPacket.TotalDamage = int32(damage);
+            spellDamageShieldPacket.OriginalDamage = int32(damage);
+            spellDamageShieldPacket.SchoolMask = int32(1u << pSpellProto->School);
+            WorldPacket shieldData = MakeClassicPacket(spellDamageShieldPacket);
+            pVictim->SendObjectMessageToSet(&shieldData, true);
 
             pVictim->DealDamage(this, damage, nullptr, SPELL_DIRECT_DAMAGE, pSpellProto->GetSpellSchoolMask(), pSpellProto, true);
 
@@ -4161,47 +4162,38 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo const* pInfo, AuraType a
     Modifier* mod = aura->GetModifier();
     AuraType auraType = auraTypeOverride ? auraTypeOverride : mod->m_auraname;
 
-    WorldPacket data(SMSG_PERIODICAURALOG, 30);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << aura->GetTarget()->GetPackGUID();
-    data << aura->GetRealCasterGuid().WriteAsPacked();
-#else
-    data << aura->GetTarget()->GetGUID();
-    data << aura->GetCasterGuid().GetRawValue();
-#endif
-    data << uint32(aura->GetId());                          // spellId
-    data << uint32(1);                                      // count
-    data << uint32(auraType);                               // auraId
+    SpellPeriodicAuraLog log;
+    log.Target = ClassicGuidMapping::ToClassic(aura->GetTarget()->GetObjectGuid(), realmID);
+    log.Caster = ClassicGuidMapping::ToClassic(aura->GetRealCasterGuid(), realmID);
+    log.SpellId = int32(aura->GetId());
+
+    SpellPeriodicAuraLogEffect effect;
+    effect.Effect = int32(auraType);
+    effect.Amount = int32(pInfo->damage);
+    effect.OriginalDamage = int32(pInfo->damage);
     switch (auraType)
     {
         case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
-            data << uint32(pInfo->damage);                  // damage
-            data << uint32(aura->GetSpellProto()->School);
-            data << uint32(pInfo->absorb);                  // absorb
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-            data << int32(pInfo->resist);                   // resist
-#endif
+            effect.SchoolMaskOrPower = int32(1u << aura->GetSpellProto()->School);
+            effect.AbsorbedOrAmplitude = int32(pInfo->absorb);
+            effect.Resisted = pInfo->resist;
             break;
         case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
-            data << uint32(pInfo->damage);                  // damage
             break;
         case SPELL_AURA_OBS_MOD_MANA:
         case SPELL_AURA_PERIODIC_ENERGIZE:
-            data << uint32(mod->m_miscvalue);               // power type
-            data << uint32(pInfo->damage);                  // damage
-            break;
         case SPELL_AURA_PERIODIC_MANA_LEECH:
-            data << uint32(mod->m_miscvalue);               // power type
-            data << uint32(pInfo->damage);                  // amount
-            data << float(pInfo->multiplier);               // gain multiplier
+            effect.SchoolMaskOrPower = int32(mod->m_miscvalue);
             break;
         default:
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Unit::SendPeriodicAuraLog: unknown aura %u", uint32(auraType));
             return;
     }
+    log.Effects.push_back(effect);
 
+    WorldPacket data = MakeClassicPacket(log);
     aura->GetTarget()->SendObjectMessageToSet(&data, true);
 }
 
@@ -5170,18 +5162,14 @@ bool Unit::UnsummonOldPetBeforeNewSummon(uint32 newPetEntry, bool canUnsummon)
 
 void Unit::SendEnvironmentalDamageLog(uint8 type, uint32 damage, uint32 absorb, int32 resist) const
 {
-    auto packet = std::make_unique<WorldPackets::Combat::EnvironmentalDamageLog>();
-    packet->victimGuid = GetObjectGuid();
-    packet->damageType = (type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
-    packet->damage = damage;
-
-    // World of Warcraft Client Patch 1.7.0 (2005-09-13)
-    // - Absorbed and resisted environmental damage is now shown in the combat log.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    packet->absorb = absorb;
-    packet->resist = resist;
-#endif
-    SendMessageToSet(std::move(packet), true);
+    EnvironmentalDamageLog packet;
+    packet.Victim = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Type = (type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
+    packet.Amount = int32(damage);
+    packet.Absorbed = int32(absorb);
+    packet.Resisted = resist;
+    WorldPacket data = MakeClassicPacket(packet);
+    SendMessageToSet(&data, true);
 }
 
 uint32 Unit::GetSpellRank(SpellEntry const* spellInfo) const

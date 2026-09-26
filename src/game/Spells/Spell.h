@@ -275,6 +275,7 @@ class Spell
         void SendSpellGo();
         void SendSpellCooldown();
         void SendLogExecute();
+        void SendSpellInterruptLog(Unit* victim, uint32 spellId);
         void SendInterrupted(SpellCastResult result);
         void SendAllTargetsMiss();
         void SendChannelUpdate(uint32 time, bool interrupted = false);
@@ -556,9 +557,48 @@ class Spell
         SpellEntry const* m_triggeredByAuraSpell = nullptr;
     protected:
 
-        std::vector<WorldPackets::Spell::SpellLogExecute::ExecuteLogInfo> m_executeLogInfo[MAX_EFFECT_INDEX];
+        struct ExecuteLogInfo
+        {
+            ExecuteLogInfo() {}
+            ExecuteLogInfo(ObjectGuid _targetGuid) : targetGuid(_targetGuid) {}
 
-        void AddExecuteLogInfo(SpellEffectIndex i, WorldPackets::Spell::SpellLogExecute::ExecuteLogInfo info)
+            ObjectGuid targetGuid;
+
+            union
+            {
+                struct
+                {
+                    uint32 power;
+                    uint32 amount;
+                    float multiplier;
+                } powerDrain;
+
+                struct
+                {
+                    uint32 count;
+                } extraAttacks;
+
+                struct
+                {
+                    uint32 itemEntry;
+                } createItem;
+
+                struct
+                {
+                    uint32 itemEntry;
+                } feedPet;
+
+                struct
+                {
+                    int32 itemEntry;
+                    int32 unk;
+                } durabilityDamage;
+            };
+        };
+
+        std::vector<ExecuteLogInfo> m_executeLogInfo[MAX_EFFECT_INDEX];
+
+        void AddExecuteLogInfo(SpellEffectIndex i, ExecuteLogInfo info)
         {
             m_executeLogInfo[i].push_back(info);
         }

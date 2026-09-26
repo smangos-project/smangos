@@ -50,10 +50,11 @@
 #include "InstanceData.h"
 #include "Utilities/Random.h"
 #include "ScriptMgr.h"
+#include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/CombatLog.h"
 #include "SocialMgr.h"
 
 using namespace Spells;
-using ExecuteLogInfo = WorldPackets::Spell::SpellLogExecute::ExecuteLogInfo;
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS] =
 {
@@ -273,12 +274,12 @@ void Spell::EffectInstaKill(SpellEffectIndex /*effIdx*/)
     if (m_caster == unitTarget)                             // prevent interrupt message
         finish();
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-    WorldPacket data(SMSG_SPELLINSTAKILLLOG, (8 + 4));
-    data << unitTarget->GetObjectGuid();                    // Victim GUID
-    data << uint32(m_spellInfo->Id);
+    SpellInstakillLog log;
+    log.Target = ClassicGuidMapping::ToClassic(unitTarget->GetObjectGuid(), realmID);
+    log.Caster = ClassicGuidMapping::ToClassic(m_caster->GetObjectGuid(), realmID);
+    log.SpellId = int32(m_spellInfo->Id);
+    WorldPacket data = MakeClassicPacket(log);
     m_caster->SendMessageToSet(&data, true);
-#endif
 
     m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, m_spellInfo, false, this);
 }
@@ -1790,13 +1791,6 @@ void Spell::EffectHeal(SpellEffectIndex effIdx)
         addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, effIdx, addhealth, HEAL, 1, this);
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, effIdx, addhealth, HEAL, 1, this);
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        ExecuteLogInfo info(unitTarget->GetObjectGuid());
-        info.heal.amount = addhealth;
-        info.heal.critical = 0;
-        AddExecuteLogInfo(effIdx, info);
-#endif
-
         m_healing += addhealth;
     }
 }
@@ -2003,13 +1997,6 @@ void Spell::EffectEnergize(SpellEffectIndex effIdx)
 
     if (unitTarget->GetMaxPower(power) == 0)
         return;
-
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    ExecuteLogInfo info(unitTarget->GetObjectGuid());
-    info.energize.amount = damage;
-    info.energize.powerType = power;
-    AddExecuteLogInfo(effIdx, info);
-#endif
 
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, damage, power);
 }
@@ -2539,21 +2526,17 @@ void Spell::EffectDispel(SpellEffectIndex effIdx)
         // Send success log and really remove auras
         if (!successList.empty())
         {
-            int32 count = successList.size();
-            WorldPacket data(SMSG_SPELLDISPELLOG, 8 + 8 + 4 + count * 4);
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_12_1
-            data << unitTarget->GetPackGUID();              // Victim GUID
-            data << m_caster->GetPackGUID();                // Caster GUID
-#else
-            data << unitTarget->GetGUID();                  // Victim GUID
-#endif
-            data << uint32(count);
+            SpellDispellLog log;
+            log.Target = ClassicGuidMapping::ToClassic(unitTarget->GetObjectGuid(), realmID);
+            log.Caster = ClassicGuidMapping::ToClassic(m_caster->GetObjectGuid(), realmID);
+            log.DispelledBySpellId = int32(m_spellInfo->Id);
             for (const auto& j : successList)
             {
                 SpellAuraHolder* dispelledHolder = j.first;
-                data << uint32(dispelledHolder->GetId());   // Spell Id
+                log.Dispelled.push_back({ int32(dispelledHolder->GetId()), !dispelledHolder->IsPositive() });
                 unitTarget->RemoveAuraHolderDueToSpellByDispel(dispelledHolder->GetId(), j.second, dispelledHolder->GetCasterGuid());
             }
+            WorldPacket data = MakeClassicPacket(log);
             m_caster->SendMessageToSet(&data, true);
 
             // On success dispel
@@ -2565,11 +2548,12 @@ void Spell::EffectDispel(SpellEffectIndex effIdx)
         if (!failList.empty())
         {
             // Failed to dispel
-            WorldPacket data(SMSG_DISPEL_FAILED, 8 + 8 + 4 * failList.size());
-            data << m_caster->GetObjectGuid();              // Caster GUID
-            data << unitTarget->GetObjectGuid();            // Victim GUID
-            for (const auto& j : failList)
-                data << uint32(j);                         // Spell Id
+            DispelFailed log;
+            log.Caster = ClassicGuidMapping::ToClassic(m_caster->GetObjectGuid(), realmID);
+            log.Victim = ClassicGuidMapping::ToClassic(unitTarget->GetObjectGuid(), realmID);
+            log.SpellId = m_spellInfo->Id;
+            log.FailedSpells = failList;
+            WorldPacket data = MakeClassicPacket(log);
             m_caster->SendMessageToSet(&data, true);
         }
     }
@@ -3516,17 +3500,10 @@ void Spell::EffectHealMaxHealth(SpellEffectIndex effIdx)
 
     heal *= TakenTotalMod;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    ExecuteLogInfo info(unitTarget->GetObjectGuid());
-    info.heal.amount = heal;
-    info.heal.critical = 0;
-    AddExecuteLogInfo(effIdx, info);
-#endif
-
     m_healing += heal;
 }
 
-void Spell::EffectInterruptCast(SpellEffectIndex effIdx)
+void Spell::EffectInterruptCast(SpellEffectIndex /*effIdx*/)
 {
     if (!unitTarget)
         return;
@@ -3553,10 +3530,7 @@ void Spell::EffectInterruptCast(SpellEffectIndex effIdx)
             {
                 unitTarget->LockOutSpells(curSpellInfo->GetSpellSchoolMask(), m_spellInfo->GetDuration());
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
-
-                ExecuteLogInfo info(unitTarget->GetObjectGuid());
-                info.interruptCast.spellId = curSpellInfo->Id;
-                AddExecuteLogInfo(effIdx, info);
+                SendSpellInterruptLog(unitTarget, curSpellInfo->Id);
             }
         }
     }

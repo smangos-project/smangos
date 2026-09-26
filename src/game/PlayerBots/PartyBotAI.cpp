@@ -27,6 +27,8 @@
 #include "SpellAuras.h"
 #include "Chat.h"
 #include "Utilities/Random.h"
+#include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/CombatLog.h"
 
 #include <random>
 
@@ -561,7 +563,7 @@ void PartyBotAI::OnPacketReceived(WorldPacket const* packet)
             me->GetSession()->QueuePacket(std::move(data));
             return;
         }
-        case SMSG_PARTYKILLLOG:
+        case CLASSIC_SMSG_PARTY_KILL_LOG:
         {
             if (!me)
                 return;
@@ -572,8 +574,15 @@ void PartyBotAI::OnPacketReceived(WorldPacket const* packet)
                     pGroup->GetLootMethod() == GROUP_LOOT ||
                     pGroup->GetLootMethod() == NEED_BEFORE_GREED)
                 {
-                    ObjectGuid victimGuid = *(((uint64*)(*packet).contents()) + 1);
-                    if (Creature* pCreature = me->GetMap()->GetCreature(victimGuid))
+                    ByteBuffer body;
+                    body.append(packet->contents(), packet->size());
+                    PartyKillLog log;
+                    if (!log.Read(body))
+                        return;
+                    nonstd::optional<ObjectGuid> victimGuid = ClassicGuidMapping::FromClassic(log.Victim);
+                    if (!victimGuid)
+                        return;
+                    if (Creature* pCreature = me->GetMap()->GetCreature(*victimGuid))
                     {
                         pCreature->m_Events.AddLambdaEventAtOffset([pCreature, guid = me->GetGUID()]()
                         {

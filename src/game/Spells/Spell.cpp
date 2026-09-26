@@ -45,6 +45,7 @@
 #include "CharacterDatabaseCache.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Server/Packets/ClassicCastResult.h"
+#include "Server/Packets/CombatLog.h"
 #include "ZoneScript.h"
 #include "TradeData.h"
 #include "Geometry.h"
@@ -4685,28 +4686,99 @@ void Spell::WriteSpellGoTargets(SpellCastData& data)
 
 void Spell::SendLogExecute()
 {
-    // Nothing to log means no packet at all. AppendBodyTo can no longer
-    // abort the send once the packet has been handed to the session.
-    bool hasLogInfo = false;
-    for (const auto& i : m_executeLogInfo)
+    SpellExecuteLog packet;
+    for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
     {
-        if (!i.empty())
+        if (m_executeLogInfo[i].empty())
+            continue;
+
+        SpellLogEffect effect;
+        effect.Effect = int32(m_spellInfo->Effect[i]);
+        for (ExecuteLogInfo const& info : m_executeLogInfo[i])
         {
-            hasLogInfo = true;
-            break;
+            ClassicGuid const victim = ToClassicGuid(info.targetGuid);
+            switch (m_spellInfo->Effect[i])
+            {
+                case SPELL_EFFECT_POWER_DRAIN:
+                    effect.PowerDrainTargets.push_back({ victim, info.powerDrain.amount, int8(info.powerDrain.power), info.powerDrain.multiplier });
+                    break;
+                case SPELL_EFFECT_ADD_EXTRA_ATTACKS:
+                    effect.ExtraAttacksTargets.push_back({ victim, info.extraAttacks.count });
+                    break;
+                case SPELL_EFFECT_DURABILITY_DAMAGE:
+                    effect.DurabilityDamageTargets.push_back({ victim, info.durabilityDamage.itemEntry, info.durabilityDamage.unk });
+                    break;
+                case SPELL_EFFECT_CREATE_ITEM:
+                    effect.TradeSkillTargets.push_back(int32(info.createItem.itemEntry));
+                    break;
+                case SPELL_EFFECT_FEED_PET:
+                    effect.FeedPetTargets.push_back(int32(info.feedPet.itemEntry));
+                    break;
+                case SPELL_EFFECT_INSTAKILL:
+                case SPELL_EFFECT_RESURRECT:
+                case SPELL_EFFECT_DISPEL:
+                case SPELL_EFFECT_THREAT:
+                case SPELL_EFFECT_DISTRACT:
+                case SPELL_EFFECT_SANCTUARY:
+                case SPELL_EFFECT_THREAT_ALL:
+                case SPELL_EFFECT_DISPEL_MECHANIC:
+                case SPELL_EFFECT_RESURRECT_NEW:
+                case SPELL_EFFECT_ATTACK_ME:
+                case SPELL_EFFECT_SKIN_PLAYER_CORPSE:
+                case SPELL_EFFECT_MODIFY_THREAT_PERCENT:
+                case SPELL_EFFECT_126:
+                case SPELL_EFFECT_OPEN_LOCK:
+                case SPELL_EFFECT_OPEN_LOCK_ITEM:
+                case SPELL_EFFECT_DISMISS_PET:
+                case SPELL_EFFECT_TRANS_DOOR:
+                case SPELL_EFFECT_SUMMON:
+                case SPELL_EFFECT_SUMMON_PET:
+                case SPELL_EFFECT_SUMMON_WILD:
+                case SPELL_EFFECT_SUMMON_GUARDIAN:
+                case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
+                case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
+                case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
+                case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
+                case SPELL_EFFECT_SUMMON_POSSESSED:
+                case SPELL_EFFECT_SUMMON_TOTEM:
+                case SPELL_EFFECT_SUMMON_CRITTER:
+                case SPELL_EFFECT_SUMMON_OBJECT_WILD:
+                case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
+                case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
+                case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
+                case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
+                case SPELL_EFFECT_SUMMON_DEMON:
+                    effect.GenericVictimTargets.push_back(victim);
+                    break;
+                default:
+                    break;
+            }
         }
+
+        if (!effect.PowerDrainTargets.empty() || !effect.ExtraAttacksTargets.empty() ||
+            !effect.DurabilityDamageTargets.empty() || !effect.GenericVictimTargets.empty() ||
+            !effect.TradeSkillTargets.empty() || !effect.FeedPetTargets.empty())
+            packet.Effects.push_back(std::move(effect));
     }
 
-    if (!hasLogInfo)
+    if (packet.Effects.empty())
         return;
 
-    auto packet = std::make_unique<WorldPackets::Spell::SpellLogExecute>();
-    packet->casterGuid = m_caster->GetObjectGuid();
-    packet->pSpellEntry = m_spellInfo;
-    for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
-        packet->executeLogInfos[i] = std::move(m_executeLogInfo[i]);
+    packet.Caster = ToClassicGuid(m_caster->GetObjectGuid());
+    packet.SpellId = int32(m_spellInfo->Id);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendMessageToSet(&data, true);
+}
 
-    m_caster->SendMessageToSet(std::move(packet), true);
+void Spell::SendSpellInterruptLog(Unit* victim, uint32 spellId)
+{
+    SpellInterruptLog packet;
+    packet.Caster = ToClassicGuid(m_caster->GetObjectGuid());
+    packet.Victim = ToClassicGuid(victim->GetObjectGuid());
+    packet.InterruptedSpellId = int32(m_spellInfo->Id);
+    packet.SpellId = int32(spellId);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendMessageToSet(&data, true);
 }
 
 void Spell::SendInterrupted(SpellCastResult result)
@@ -4746,17 +4818,13 @@ void Spell::SendAllTargetsMiss()
             return;
     }
 
-    auto packet = std::make_unique<WorldPackets::Spell::SpellLogMiss>();
-    packet->spellId = m_spellInfo->Id;
-    packet->casterGuid = m_caster->GetObjectGuid();
+    SpellMissLog packet;
+    packet.SpellId = int32(m_spellInfo->Id);
+    packet.Caster = ToClassicGuid(m_caster->GetObjectGuid());
     for (auto const& target : m_UniqueTargetInfo)
-    {
-        WorldPackets::Spell::SpellLogMissEntry entry;
-        entry.targetGuid = target.targetGUID;
-        entry.missInfo = target.missCondition;
-        packet->missEntries.push_back(entry);
-    }
-    m_caster->SendObjectMessageToSet(std::move(packet), true);
+        packet.Entries.push_back({ ToClassicGuid(target.targetGUID), uint8(target.missCondition) });
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendObjectMessageToSet(&data, true);
 }
 
 void Spell::SendChannelUpdate(uint32 time, bool interrupted)

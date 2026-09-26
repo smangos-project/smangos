@@ -657,20 +657,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class LogXpGain final : public ServerPacket
-    {
-    public:
-        ObjectGuid victimGuid;   // empty if non-kill xp
-        uint32 totalXp = 0;      // total xp given (including rested bonus)
-        uint8 xpType = 0;        // 0=kill xp, 1=non-kill xp
-        uint32 baseXp = 0;       // xp without rested bonus (only if kill xp)
-        float groupBonus = 1.0f; // group bonus factor (1=none, 0=100% group bonus; only if kill xp)
-
-        explicit LogXpGain() : ServerPacket(SMSG_LOG_XPGAIN) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class LevelUpInfo final : public ServerPacket
     {
     public:
@@ -718,17 +704,6 @@ namespace WorldPackets { namespace Misc
     {
     public:
         explicit CancelAutoRepeat() : ServerPacket(SMSG_CANCEL_AUTO_REPEAT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class ExplorationExperience final : public ServerPacket
-    {
-    public:
-        uint32 areaId = 0;
-        uint32 experience = 0;
-
-        explicit ExplorationExperience() : ServerPacket(SMSG_EXPLORATION_EXPERIENCE) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

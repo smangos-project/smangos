@@ -608,31 +608,6 @@ void WorldPackets::Misc::PauseMirrorTimer::AppendBodyTo(ByteBuffer& buffer) cons
     buffer << paused;
 }
 
-size_t WorldPackets::Misc::LogXpGain::EstimateFinalSize() const
-{
-    size_t result = sizeof(victimGuid) +
-                    sizeof(totalXp) +
-                    sizeof(xpType);
-    if (xpType == 0)
-    {
-        result += sizeof(baseXp) +
-                  sizeof(groupBonus);
-    }
-    return result;
-}
-
-void WorldPackets::Misc::LogXpGain::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << victimGuid;
-    buffer << totalXp;
-    buffer << xpType;
-    if (xpType == 0) // kill xp
-    {
-        buffer << baseXp;
-        buffer << groupBonus;
-    }
-}
-
 size_t WorldPackets::Misc::LevelUpInfo::EstimateFinalSize() const
 {
     return sizeof(level) +
@@ -687,18 +662,6 @@ size_t WorldPackets::Misc::CancelAutoRepeat::EstimateFinalSize() const
 
 void WorldPackets::Misc::CancelAutoRepeat::AppendBodyTo(ByteBuffer& /*buffer*/) const
 {
-}
-
-size_t WorldPackets::Misc::ExplorationExperience::EstimateFinalSize() const
-{
-    return sizeof(areaId) +
-           sizeof(experience);
-}
-
-void WorldPackets::Misc::ExplorationExperience::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << areaId;
-    buffer << experience;
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4

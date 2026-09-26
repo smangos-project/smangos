@@ -32,6 +32,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "Packets/CombatLog.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "QuestDef.h"
@@ -3005,16 +3006,13 @@ uint32 Player::GetWhoListPartyStatus() const
 
 void Player::SendLogXPGain(uint32 givenXP, Unit const* victim, uint32 restXP) const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::LogXpGain>();
-    packet->victimGuid = victim ? victim->GetObjectGuid() : ObjectGuid();
-    packet->totalXp = givenXP + restXP;
-    packet->xpType = victim ? 0 : 1; // 00-kill_xp type, 01-non_kill_xp type
+    LogXPGain packet;
     if (victim)
-    {
-        packet->baseXp = givenXP;    // experience without rested bonus
-        packet->groupBonus = 1.0f;   // 1=none 0=100% group bonus output
-    }
-    GetSession()->SendPacket(std::move(packet));
+        packet.Victim = ClassicGuidMapping::ToClassic(victim->GetObjectGuid(), realmID);
+    packet.Original = int32(givenXP + restXP);
+    packet.Reason = victim ? CLASSIC_XP_REASON_KILL : CLASSIC_XP_REASON_NO_KILL;
+    packet.Amount = int32(givenXP); // experience without rested bonus
+    GetSession()->SendClassic(packet);
 }
 
 void Player::GiveXP(uint32 xp, Unit const* victim)
@@ -17102,10 +17100,10 @@ void Player::SendFeignDeathResisted() const
 
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience) const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::ExplorationExperience>();
-    packet->areaId = Area;
-    packet->experience = Experience;
-    GetSession()->SendPacket(std::move(packet));
+    ExplorationExperience packet;
+    packet.AreaId = int32(Area);
+    packet.Experience = int32(Experience);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendFactionAtWar(uint32 reputationId, bool apply) const
