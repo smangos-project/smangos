@@ -47,6 +47,7 @@ add_executable(tests-conformance
   world_entry/SpellCastTests.cpp
   world_entry/AuraTests.cpp
   world_entry/CombatLogTests.cpp
+  world_entry/DeathTests.cpp
   chat/ChatTests.cpp
   world_socket/WorldSocketTests.cpp
   session/SessionTests.cpp
