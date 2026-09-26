@@ -126,3 +126,12 @@ TEST_CASE("A cast guid carries the map, spell and counter, and maps to no server
     CHECK_FALSE(cast.IsEmpty());
     CHECK_FALSE(ClassicGuidMapping::FromClassic(cast).has_value());
 }
+
+TEST_CASE("An account guid carries the account id and maps to no server guid", "[classicguid]")
+{
+    ClassicGuid const account = ClassicGuidMapping::MakeAccount(77);
+    CHECK(account.Low == 77);
+    CHECK(account.High == (uint64(29) << 58));
+    CHECK(ClassicGuidMapping::MakeBnetAccount(77).High == (uint64(30) << 58));
+    CHECK_FALSE(ClassicGuidMapping::FromClassic(account).has_value());
+}
