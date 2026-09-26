@@ -1,5 +1,6 @@
 // Items in the inventory: getting them, moving them, refusing bad moves, using them.
 #include "Packets/ItemMessages.h"
+#include "Packets/NpcMessages.h"
 #include "Packets/SpellCast.h"
 #include "TestBot.h"
 #include "TestCommands.h"
@@ -170,6 +171,72 @@ TEST_CASE("items: using a potion starts its cast under the request's cast id", "
 
         co_await TestDelay(1000);
         ClearLeftovers(gm, MINOR_HEALING_POTION);
+        co_await TestDelay(1000);
+    });
+}
+
+TEST_CASE("items: a GM bot banks an item and stores it back", "[gameplay]")
+{
+    RequireGmTarget();
+
+    RunTest([]() -> TestRoutine
+    {
+        TestBot gm(TestBotOptions().Gm());
+        REQUIRE(co_await gm.Stage(BotStage::InWorld, 30000));
+
+        ClearLeftovers(gm, LINEN_CLOTH);
+        co_await TestDelay(1500);
+
+        SayCommand(gm, ".additem " + std::to_string(LINEN_CLOTH) + " 5");
+        auto push = co_await gm.Packet<ItemPushResult>(10000, [](ItemPushResult const& p) { return p.Item.ItemId == LINEN_CLOTH; });
+        REQUIRE(push);
+        REQUIRE(co_await TestWaitUntil([&]() { return gm.GetKnownObject(push->ItemGuid).has_value(); }, 10000));
+
+        // Northshire Abbey (the GM's default spawn point) has its own wildlife, so a freshly spawned
+        // banker is not necessarily the only new unit nearby: try every candidate.
+        std::vector<ClassicGuid> const beforeUnits = KnownUnits(gm);
+        SayCommand(gm, ".npc spawn add 2455"); // Olivia Burnside, a banker
+        REQUIRE(co_await TestWaitUntil([&]() { return FindNewUnit(gm, beforeUnits).has_value(); }, 10000));
+        co_await TestDelay(1000);
+
+        std::optional<ClassicGuid> banker;
+        for (ClassicGuid const& guid : KnownUnits(gm))
+        {
+            if (std::find(beforeUnits.begin(), beforeUnits.end(), guid) != beforeUnits.end())
+                continue;
+            BankerActivate activate;
+            activate.Guid = guid;
+            activate.InteractionType = int32_t(PlayerInteractionType::Banker);
+            gm.Send(activate);
+            auto matches = [&](NpcInteractionOpenResult const& p) { return p.NpcGuid == guid; };
+            if (co_await gm.WaitReceived<NpcInteractionOpenResult>(3000, matches))
+            {
+                banker = guid;
+                break;
+            }
+        }
+        REQUIRE(banker);
+
+        AutoBankItem toBank;
+        toBank.Bag = BAG_0;
+        toBank.Slot = uint8_t(push->SlotInBag);
+        toBank.BankType = AutoBankItem::BankTypeCharacter;
+        gm.Send(toBank);
+        REQUIRE(co_await gm.NoPacket(InventoryChangeFailure::Opcode, 2000));
+        CHECK(gm.GetKnownObject(push->ItemGuid).has_value());
+
+        // The item moved into the first bank slot (CLASSIC_INVSLOT_BANK_START), free on a cleared
+        // pooled character.
+        AutoStoreBankItem fromBank;
+        fromBank.Bag = BAG_0;
+        fromBank.Slot = 59;
+        gm.Send(fromBank);
+        REQUIRE(co_await gm.NoPacket(InventoryChangeFailure::Opcode, 2000));
+        CHECK(gm.GetKnownObject(push->ItemGuid).has_value());
+
+        SayCommand(gm, ".npc despawn");
+        co_await TestDelay(1000);
+        ClearLeftovers(gm, LINEN_CLOTH);
         co_await TestDelay(1000);
     });
 }

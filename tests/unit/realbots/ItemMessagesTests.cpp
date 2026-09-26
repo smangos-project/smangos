@@ -306,3 +306,37 @@ TEST_CASE("Read results, times, cooldowns and enchantments round-trip", "[packet
     });
     RejectsEveryTruncation(update);
 }
+
+TEST_CASE("AutoBankItem, AutoStoreBankItem and BuyBankSlot round-trip", "[packets]")
+{
+    AutoBankItem bank;
+    bank.Inv = PredictedMoves();
+    bank.BankType = AutoBankItem::BankTypeCharacter;
+    bank.Bag = 255;
+    bank.Slot = 23;
+    RoundTrip(bank, [](AutoBankItem const& a, AutoBankItem const& b)
+    {
+        CheckInv(a.Inv, b.Inv);
+        CHECK(a.BankType == b.BankType);
+        CHECK(a.Bag == b.Bag);
+        CHECK(a.Slot == b.Slot);
+    });
+    RejectsEveryTruncation(bank);
+
+    AutoStoreBankItem store;
+    store.Inv = PredictedMoves();
+    store.Bag = 255;
+    store.Slot = 12;
+    RoundTrip(store, [](AutoStoreBankItem const& a, AutoStoreBankItem const& b)
+    {
+        CheckInv(a.Inv, b.Inv);
+        CHECK(a.Bag == b.Bag);
+        CHECK(a.Slot == b.Slot);
+    });
+    RejectsEveryTruncation(store);
+
+    BuyBankSlot buy;
+    buy.Guid = { 1, 0x0800000000000000ULL };
+    RoundTrip(buy, [](BuyBankSlot const& a, BuyBankSlot const& b) { CHECK(a.Guid == b.Guid); });
+    RejectsEveryTruncation(buy);
+}

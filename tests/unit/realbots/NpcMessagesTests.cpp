@@ -120,3 +120,121 @@ TEST_CASE("GossipComplete and GossipPoi round-trip", "[packets]")
     });
     RejectsEveryTruncation(poi);
 }
+
+TEST_CASE("TrainerSpellList and trainer purchase messages round-trip", "[packets]")
+{
+    TrainerList hello;
+    hello.Guid = { 5, 0x2000000000000000ULL };
+    RoundTrip(hello, [](TrainerList const& a, TrainerList const& b) { CHECK(a.Guid == b.Guid); });
+    RejectsEveryTruncation(hello);
+
+    TrainerSpellList list;
+    list.TrainerGuid = { 5, 0x2000000000000000ULL };
+    list.TrainerType = 1;
+    list.Greeting = "Welcome to the fold.";
+
+    TrainerListSpell& row = list.Spells.emplace_back();
+    row.SpellId = 6673;
+    row.MoneyCost = 100;
+    row.ReqSkillLine = 0;
+    row.ReqSkillRank = 0;
+    row.ReqAbility[0] = 6672;
+    row.Usable = 1;
+    row.ReqLevel = 4;
+
+    RoundTrip(list, [](TrainerSpellList const& a, TrainerSpellList const& b)
+    {
+        CHECK(a.TrainerGuid == b.TrainerGuid);
+        CHECK(a.TrainerType == b.TrainerType);
+        CHECK(a.Greeting == b.Greeting);
+        REQUIRE(a.Spells.size() == b.Spells.size());
+        CHECK(a.Spells[0].SpellId == b.Spells[0].SpellId);
+        CHECK(a.Spells[0].MoneyCost == b.Spells[0].MoneyCost);
+        CHECK(a.Spells[0].ReqAbility[0] == b.Spells[0].ReqAbility[0]);
+        CHECK(a.Spells[0].Usable == b.Spells[0].Usable);
+        CHECK(a.Spells[0].ReqLevel == b.Spells[0].ReqLevel);
+    });
+    RejectsEveryTruncation(list);
+
+    TrainerSpellList bare;
+    bare.TrainerGuid = { 5, 0x2000000000000000ULL };
+    RoundTrip(bare, [](TrainerSpellList const&, TrainerSpellList const& b) { CHECK(b.Spells.empty()); });
+    RejectsEveryTruncation(bare);
+
+    TrainerBuySpell buy;
+    buy.Guid = { 5, 0x2000000000000000ULL };
+    buy.TrainerId = 0;
+    buy.SpellId = 6673;
+    RoundTrip(buy, [](TrainerBuySpell const& a, TrainerBuySpell const& b)
+    {
+        CHECK(a.Guid == b.Guid);
+        CHECK(a.TrainerId == b.TrainerId);
+        CHECK(a.SpellId == b.SpellId);
+    });
+    RejectsEveryTruncation(buy);
+
+    TrainerBuyFailed failed;
+    failed.TrainerGuid = { 5, 0x2000000000000000ULL };
+    failed.ServiceId = 6673;
+    failed.ErrorCode = 2;
+    RoundTrip(failed, [](TrainerBuyFailed const& a, TrainerBuyFailed const& b)
+    {
+        CHECK(a.TrainerGuid == b.TrainerGuid);
+        CHECK(a.ServiceId == b.ServiceId);
+        CHECK(a.ErrorCode == b.ErrorCode);
+    });
+    RejectsEveryTruncation(failed);
+}
+
+TEST_CASE("Banker, tabard vendor, spirit healer and binder messages round-trip", "[packets]")
+{
+    BankerActivate banker;
+    banker.Guid = { 5, 0x2000000000000000ULL };
+    banker.InteractionType = int32_t(PlayerInteractionType::Banker);
+    RoundTrip(banker, [](BankerActivate const& a, BankerActivate const& b)
+    {
+        CHECK(a.Guid == b.Guid);
+        CHECK(a.InteractionType == b.InteractionType);
+    });
+    RejectsEveryTruncation(banker);
+
+    TabardVendorActivate tabard;
+    tabard.Guid = { 5, 0x2000000000000000ULL };
+    tabard.Type = 0;
+    RoundTrip(tabard, [](TabardVendorActivate const& a, TabardVendorActivate const& b)
+    {
+        CHECK(a.Guid == b.Guid);
+        CHECK(a.Type == b.Type);
+    });
+    RejectsEveryTruncation(tabard);
+
+    SpiritHealerActivate spirit;
+    spirit.Guid = { 5, 0x2000000000000000ULL };
+    RoundTrip(spirit, [](SpiritHealerActivate const& a, SpiritHealerActivate const& b) { CHECK(a.Guid == b.Guid); });
+    RejectsEveryTruncation(spirit);
+
+    BinderActivate binder;
+    binder.NpcGuid = { 5, 0x2000000000000000ULL };
+    RoundTrip(binder, [](BinderActivate const& a, BinderActivate const& b) { CHECK(a.NpcGuid == b.NpcGuid); });
+    RejectsEveryTruncation(binder);
+
+    CloseInteraction close;
+    close.Guid = { 5, 0x2000000000000000ULL };
+    RoundTrip(close, [](CloseInteraction const& a, CloseInteraction const& b) { CHECK(a.Guid == b.Guid); });
+    RejectsEveryTruncation(close);
+}
+
+TEST_CASE("NpcInteractionOpenResult round-trips", "[packets]")
+{
+    NpcInteractionOpenResult result;
+    result.NpcGuid = { 5, 0x2000000000000000ULL };
+    result.InteractionType = PlayerInteractionType::GuildTabardVendor;
+    result.Success = true;
+    RoundTrip(result, [](NpcInteractionOpenResult const& a, NpcInteractionOpenResult const& b)
+    {
+        CHECK(a.NpcGuid == b.NpcGuid);
+        CHECK(a.InteractionType == b.InteractionType);
+        CHECK(a.Success == b.Success);
+    });
+    RejectsEveryTruncation(result);
+}
