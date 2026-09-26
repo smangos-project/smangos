@@ -430,9 +430,9 @@ Handlers BuildOpcodeList()
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     INVALID_PACKET(SMSG_CLIENT_CONTROL_UPDATE,        UnhandleReason::SendByServer);
 #endif
-    DEFINE_HANDLER(CMSG_REPOP_REQUEST,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleRepopRequestOpcode);
+    INVALID_PACKET(CMSG_REPOP_REQUEST,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_RESURRECT_REQUEST,            UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_RESURRECT_RESPONSE,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleResurrectResponseOpcode);
+    INVALID_PACKET(CMSG_RESURRECT_RESPONSE,           UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_LOOT,                         STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootOpcode);
     DEFINE_HANDLER(CMSG_LOOT_MONEY,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootMoneyOpcode);
     DEFINE_HANDLER(CMSG_LOOT_RELEASE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootReleaseOpcode);
@@ -554,7 +554,7 @@ Handlers BuildOpcodeList()
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(SMSG_AURACASTLOG,                  UnhandleReason::SendByServer);
 #endif
-    DEFINE_HANDLER(CMSG_RECLAIM_CORPSE,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleReclaimCorpseOpcode);
+    INVALID_PACKET(CMSG_RECLAIM_CORPSE,               UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_WRAP_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleWrapItemOpcode);
     INVALID_PACKET(SMSG_LEVELUP_INFO,                 UnhandleReason::SendByServer);
     DEFINE_HANDLER(MSG_MINIMAP_PING,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMinimapPingOpcode);
@@ -1067,6 +1067,9 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelAuraOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CHANNELLING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelChanneling);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AUTO_REPEAT_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelAutoRepeatSpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPOP_REQUEST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepopRequestOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RESURRECT_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleResurrectResponseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);
 
     return list;
 }

@@ -169,19 +169,6 @@ namespace WorldPackets { namespace Spell
     };
 #endif
 
-    class ResurrectRequest final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        std::string casterName;
-        bool sickness = false; // warns it will cause ressurrection sickness
-        bool delayed = false; // if false ignore delay sent with SMSG_CORPSE_RECLAIM_DELAY
-
-        explicit ResurrectRequest() : ServerPacket(SMSG_RESURRECT_REQUEST) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 }} // namespace WorldPackets::Spell
 
 #endif // MANGOS_PACKETS_SPELL_H

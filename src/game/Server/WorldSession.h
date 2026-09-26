@@ -49,6 +49,7 @@
 #include "Packets/ChatMessages.h"
 #include "Packets/Combat.h"
 #include "Packets/CombatMessages.h"
+#include "Packets/DeathMessages.h"
 #include "Packets/Auras.h"
 #include "Packets/SpellCast.h"
 #include "Packets/Duel.h"
@@ -613,7 +614,7 @@ class WorldSession
 
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
-        void HandleRepopRequestOpcode(NullClientPacket const& packet);
+        void HandleRepopRequestOpcode(RepopRequest const& packet);
         void HandleAutostoreLootItemOpcode(WorldPackets::Loot::AutoStoreLootItem const& packet);
         void HandleLootMoneyOpcode(NullClientPacket const& packet);
         void HandleLootOpcode(WorldPackets::Loot::LootUnit const& packet);
@@ -862,9 +863,9 @@ class WorldSession
         void HandleChatIgnoredOpcode(WorldPackets::Misc::ChatIgnored const& packet);
         uint32 ChatCooldown();
 
-        void HandleReclaimCorpseOpcode(WorldPackets::Misc::ReclaimCorpse const& packet);
+        void HandleReclaimCorpseOpcode(ReclaimCorpse const& packet);
         void HandleCorpseQueryOpcode(NullClientPacket const& packet);
-        void HandleResurrectResponseOpcode(WorldPackets::Misc::ResurrectResponse const& packet);
+        void HandleResurrectResponseOpcode(ResurrectResponse const& packet);
         void HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse const& packet);
 
         void HandleJoinChannelOpcode(WorldPackets::Channel::JoinChannel const& packet);

@@ -5047,13 +5047,14 @@ void Spell::SendResurrectRequest(Player* target, bool sickness)
 {
     // Both players and NPCs can resurrect using spells - have a look at creature 28487 for example
     // However, the packet structure differs slightly
-    auto packet = std::make_unique<WorldPackets::Spell::ResurrectRequest>();
-    packet->casterGuid = m_caster->GetObjectGuid();
+    ResurrectRequest packet;
+    packet.Offerer = ClassicGuidMapping::ToClassic(m_caster->GetObjectGuid(), realmID);
+    packet.SpellId = int32(m_spellInfo->Id);
     if (!m_caster->IsPlayer())
-        packet->casterName = m_caster->GetNameForLocaleIdx(target->GetSession()->GetSessionDbLocaleIndex());
-    packet->sickness = sickness;
-    packet->delayed = !m_spellInfo->HasAttribute(SPELL_ATTR_EX3_NO_RES_TIMER); // set instant resurrection for spells with this attribute
-    target->GetSession()->SendPacket(std::move(packet));
+        packet.Name = m_caster->GetNameForLocaleIdx(target->GetSession()->GetSessionDbLocaleIndex());
+    packet.Sickness = sickness;
+    packet.UseTimer = !m_spellInfo->HasAttribute(SPELL_ATTR_EX3_NO_RES_TIMER); // set instant resurrection for spells with this attribute
+    target->GetSession()->SendClassic(packet);
 }
 
 void Spell::SendMeleeAttackingStateUpdate(TargetInfo const* target, SpellNonMeleeDamage const* damageInfo)

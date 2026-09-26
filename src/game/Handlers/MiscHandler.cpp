@@ -47,7 +47,7 @@
 #include "Anticheat.h"
 #include "MasterPlayer.h"
 
-void WorldSession::HandleRepopRequestOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleRepopRequestOpcode(RepopRequest const& /*packet*/)
 {
     // recv_data.read_skip<uint8>(); client crash
 
@@ -596,7 +596,7 @@ void WorldSession::HandleBugOpcode(WorldPackets::Misc::Bug const& packet)
         packet.suggestion ? "suggestion" : "bug", packet.type.c_str(), packet.content.c_str());
 }
 
-void WorldSession::HandleReclaimCorpseOpcode(WorldPackets::Misc::ReclaimCorpse const& /*packet*/)
+void WorldSession::HandleReclaimCorpseOpcode(ReclaimCorpse const& /*packet*/)
 {
     if (GetPlayer()->IsAlive())
         return;
@@ -628,18 +628,19 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPackets::Misc::ReclaimCorpse c
     GetPlayer()->SpawnCorpseBones();
 }
 
-void WorldSession::HandleResurrectResponseOpcode(WorldPackets::Misc::ResurrectResponse const& packet)
+void WorldSession::HandleResurrectResponseOpcode(ResurrectResponse const& packet)
 {
     if (GetPlayer()->IsAlive())
         return;
 
-    if (!packet.accept)
+    if (packet.Response != 0)
     {
         GetPlayer()->ClearResurrectRequestData(); // player denied rezz attempt
         return;
     }
 
-    if (!GetPlayer()->IsRessurectRequestedBy(packet.resurrectorGuid))
+    nonstd::optional<ObjectGuid> const resurrecter = ClassicGuidMapping::FromClassic(packet.Resurrecter);
+    if (!resurrecter || !GetPlayer()->IsRessurectRequestedBy(*resurrecter))
         return;
 
     GetPlayer()->ResurrectUsingRequestData();     // will call SpawnCorpseBones

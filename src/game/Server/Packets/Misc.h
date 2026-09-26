@@ -146,31 +146,12 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class ReclaimCorpse final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit ReclaimCorpse() : ClientPacket(CMSG_RECLAIM_CORPSE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class ChatIgnored final : public ClientPacket
     {
     public:
         ObjectGuid guid;
 
         explicit ChatIgnored() : ClientPacket(CMSG_CHAT_IGNORED) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class ResurrectResponse final : public ClientPacket
-    {
-    public:
-        ObjectGuid resurrectorGuid; // the guid of the player who rezzed me
-        bool accept = false;
-
-        explicit ResurrectResponse() : ClientPacket(CMSG_RESURRECT_RESPONSE) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
@@ -669,25 +650,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class PlayerSkinned final : public ServerPacket
-    {
-    public:
-        uint8 freeRepop = 0; // always 0 (whether player can repop for free)
-
-        explicit PlayerSkinned() : ServerPacket(SMSG_PLAYER_SKINNED) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    // SMSG_DURABILITY_DAMAGE_DEATH: empty body; sent when player loses durability on death
-    class DurabilityDamageDeath final : public ServerPacket
-    {
-    public:
-        explicit DurabilityDamageDeath() : ServerPacket(SMSG_DURABILITY_DAMAGE_DEATH) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     class FactionAtWarChange final : public ServerPacket
     {
@@ -788,16 +750,6 @@ namespace WorldPackets { namespace Misc
         uint32 autoDeclineDelay = 0; // time in ms before auto decline
 
         explicit SummonRequest() : ServerPacket(SMSG_SUMMON_REQUEST) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class CorpseReclaimDelay final : public ServerPacket
-    {
-    public:
-        uint32 delayMs = 0; // delay in milliseconds before corpse can be reclaimed
-
-        explicit CorpseReclaimDelay() : ServerPacket(SMSG_CORPSE_RECLAIM_DELAY) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

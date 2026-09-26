@@ -771,7 +771,7 @@ uint32 Player::EnvironmentalDamage(EnvironmentalDamageType type, uint32 damage)
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "We are fall to death, loosing 10 percents durability");
         DurabilityLossAll(0.10f, false);
         // durability lost message
-        GetSession()->SendPacket(std::make_unique<WorldPackets::Misc::DurabilityDamageDeath>());
+        SendDurabilityDamageDeath();
     }
 
     return damage;
@@ -4654,6 +4654,8 @@ void Player::BuildPlayerRepop()
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 {
+    SendDeathReleaseLoc(-1, 0.0f, 0.0f, 0.0f);
+
     // Interrupt resurrect spells
     InterruptSpellsCastedOnMe(false, true);
 
@@ -5040,7 +5042,10 @@ void Player::RepopAtGraveyard()
         float orientation = GetOrientation();
 #endif
 
-        TeleportTo(pClosestGrave->map_id, pClosestGrave->x, pClosestGrave->y, pClosestGrave->z, orientation, TELE_TO_NOT_UNSUMMON_PET, std::move(recover)); 
+        TeleportTo(pClosestGrave->map_id, pClosestGrave->x, pClosestGrave->y, pClosestGrave->z, orientation, TELE_TO_NOT_UNSUMMON_PET, std::move(recover));
+
+        if (!IsAlive())
+            SendDeathReleaseLoc(pClosestGrave->map_id, pClosestGrave->x, pClosestGrave->y, pClosestGrave->z);
     }
 
     // Fix invisible spirit healer if you die close to graveyard.
@@ -7603,10 +7608,6 @@ void Player::RemovedInsignia(Player* looterPlr, Corpse* corpse)
         corpse = GetCorpse();
     if (!corpse)
         return;
-
-    auto packet = std::make_unique<WorldPackets::Misc::PlayerSkinned>();
-    packet->freeRepop = 0;
-    GetSession()->SendPacket(std::move(packet));
 
     sObjectAccessor.ConvertCorpseForPlayer(GetObjectGuid(), looterPlr);
 }
@@ -20270,9 +20271,26 @@ void Player::SendCorpseReclaimDelay(bool load) const
         delay = GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP);
 
     //! corpse reclaim delay 30 * 1000ms or longer at often deaths
-    auto packet = std::make_unique<WorldPackets::Misc::CorpseReclaimDelay>();
-    packet->delayMs = delay * IN_MILLISECONDS;
-    GetSession()->SendPacket(std::move(packet));
+    CorpseReclaimDelay packet;
+    packet.Remaining = delay * IN_MILLISECONDS;
+    GetSession()->SendClassic(packet);
+}
+
+void Player::SendDurabilityDamageDeath() const
+{
+    DurabilityDamageDeath packet;
+    packet.Percent = 10;
+    GetSession()->SendClassic(packet);
+}
+
+void Player::SendDeathReleaseLoc(int32 mapId, float x, float y, float z) const
+{
+    DeathReleaseLoc packet;
+    packet.MapId = mapId;
+    packet.X = x;
+    packet.Y = y;
+    packet.Z = z;
+    GetSession()->SendClassic(packet);
 }
 
 Player* Player::GetNextRandomRaidMember(float radius)

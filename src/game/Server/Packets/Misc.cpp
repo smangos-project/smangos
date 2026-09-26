@@ -84,20 +84,9 @@ void WorldPackets::Misc::ZoneUpdate::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> newZone;
 }
 
-void WorldPackets::Misc::ReclaimCorpse::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-}
-
 void WorldPackets::Misc::ChatIgnored::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;
-}
-
-void WorldPackets::Misc::ResurrectResponse::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> resurrectorGuid;
-    recv_data >> accept;
 }
 
 void WorldPackets::Misc::ItemTextQuery::ReadFromWorldPacket(WorldPacket& recv_data)
@@ -624,25 +613,6 @@ void WorldPackets::Misc::TriggerCinematic::AppendBodyTo(ByteBuffer& buffer) cons
     buffer << cinematicSequenceId;
 }
 
-size_t WorldPackets::Misc::PlayerSkinned::EstimateFinalSize() const
-{
-    return sizeof(freeRepop);
-}
-
-void WorldPackets::Misc::PlayerSkinned::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << freeRepop;
-}
-
-size_t WorldPackets::Misc::DurabilityDamageDeath::EstimateFinalSize() const
-{
-    return 0;
-}
-
-void WorldPackets::Misc::DurabilityDamageDeath::AppendBodyTo(ByteBuffer& /*buffer*/) const
-{
-}
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
 size_t WorldPackets::Misc::FactionAtWarChange::EstimateFinalSize() const
 {
@@ -750,16 +720,6 @@ void WorldPackets::Misc::SummonRequest::AppendBodyTo(ByteBuffer& buffer) const
     buffer << summonerGuid;
     buffer << zoneId;
     buffer << autoDeclineDelay;
-}
-
-size_t WorldPackets::Misc::CorpseReclaimDelay::EstimateFinalSize() const
-{
-    return sizeof(delayMs);
-}
-
-void WorldPackets::Misc::CorpseReclaimDelay::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << delayMs;
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2

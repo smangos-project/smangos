@@ -309,9 +309,6 @@ bool MovementAnticheat::IsLoggedOpcode(uint32 opcode)
     {
         case CMSG_WORLD_TELEPORT:
         case CMSG_TELEPORT_TO_UNIT:
-        case CMSG_REPOP_REQUEST:
-        case CMSG_RESURRECT_RESPONSE:
-        case CMSG_RECLAIM_CORPSE:
         case MSG_MOVE_START_FORWARD:
         case MSG_MOVE_START_BACKWARD:
         case MSG_MOVE_STOP:

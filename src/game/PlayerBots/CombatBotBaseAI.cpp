@@ -3377,14 +3377,14 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             }
             break;
         }
-        case SMSG_RESURRECT_REQUEST:
+        case CLASSIC_SMSG_RESURRECT_REQUEST:
         {
             if (!me)
                 return;
 
-            auto data = std::make_unique<WorldPackets::Misc::ResurrectResponse>();
-            data->resurrectorGuid = me->GetResurrector();
-            data->accept = true;
+            auto data = std::make_unique<ClassicClient<ResurrectResponse>>();
+            data->Body.Resurrecter = ClassicGuidMapping::ToClassic(me->GetResurrector(), realmID);
+            data->Body.Response = 0; // accept
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }

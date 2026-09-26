@@ -1951,6 +1951,8 @@ class Player final: public Unit
         void SendAttackSwingNotInRange() const;
         void SendAttackSwingBadFacingAttack() const;
         void SendAutoRepeatCancel(ObjectGuid target) const;
+        void SendDurabilityDamageDeath() const;
+        void SendDeathReleaseLoc(int32 mapId, float x, float y, float z) const;
         void SendFeignDeathResisted() const;
         void SendExplorationExperience(uint32 Area, uint32 Experience) const;
         void SendFactionAtWar(uint32 reputationId, bool apply) const;

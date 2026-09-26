@@ -160,21 +160,3 @@ void WorldPackets::Spell::SpellUpdateChainTargets::AppendBodyTo(ByteBuffer& buff
 }
 #endif
 
-size_t WorldPackets::Spell::ResurrectRequest::EstimateFinalSize() const
-{
-    return sizeof(casterGuid) +
-           sizeof(uint32) + /*caster name length*/
-           casterName.size() + sizeof(char) + /*null terminator*/
-           sizeof(uint8) + /*sickness*/
-           sizeof(uint8) /*delayed*/;
-}
-
-void WorldPackets::Spell::ResurrectRequest::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << casterGuid;
-    buffer << uint32(casterName.length() + 1);
-    buffer << casterName;
-    buffer << uint8(sickness);
-    buffer << uint8(delayed);
-}
-
