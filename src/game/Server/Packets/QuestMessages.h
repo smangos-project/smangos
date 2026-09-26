@@ -16,6 +16,7 @@
 #include "Packets/Classic/Guid.h"
 #include "Packets/ItemMessages.h"
 #include <array>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -1169,6 +1170,445 @@ struct QuestGiverQuestComplete
         if (!item.Read(data))
             return false;
         return item.ItemId == 0;
+    }
+};
+
+// ==== Failure toasts ====
+
+// The reason is the modern QuestFailedReason numbering, not the engine's INVALIDREASON_*.
+struct QuestGiverInvalidQuest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_GIVER_INVALID_QUEST;
+
+    uint32 Reason = 0;
+    int32 ContributionRewardId = 0;
+    bool SendErrorMessage = true;
+    std::string ReasonText;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Reason << ContributionRewardId;
+        data.WriteBit(SendErrorMessage);
+        data.WriteBits(uint32(ReasonText.length()), 9);
+        data.FlushBits();
+        data.WriteString(ReasonText);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 10)
+            return false;
+        data >> Reason >> ContributionRewardId;
+        SendErrorMessage = data.ReadBit();
+        uint32 const length = data.ReadBits(9);
+        data.ResetBitPos();
+        if (data.size() - data.rpos() < length)
+            return false;
+        ReasonText = data.ReadString(length);
+        return true;
+    }
+};
+
+// Reason is an inventory result for the reasons the client has text for (inventory full, duplicate item).
+struct QuestGiverQuestFailed
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_GIVER_QUEST_FAILED;
+
+    uint32 QuestId = 0;
+    uint32 Reason = 0;
+
+    void Write(ByteBuffer& data) const { data << QuestId << Reason; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 8)
+            return false;
+        data >> QuestId >> Reason;
+        return true;
+    }
+};
+
+struct QuestUpdateFailed
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_UPDATE_FAILED;
+
+    uint32 QuestId = 0;
+
+    void Write(ByteBuffer& data) const { data << QuestId; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 4)
+            return false;
+        data >> QuestId;
+        return true;
+    }
+};
+
+struct QuestUpdateFailedTimer
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_UPDATE_FAILED_TIMER;
+
+    uint32 QuestId = 0;
+
+    void Write(ByteBuffer& data) const { data << QuestId; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 4)
+            return false;
+        data >> QuestId;
+        return true;
+    }
+};
+
+// ==== Area-wide giver status ====
+
+struct QuestGiverStatusMultipleQuery
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_QUEST_GIVER_STATUS_MULTIPLE_QUERY;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
+struct QuestGiverStatusEntry
+{
+    ClassicGuid Guid;
+    uint64 Status = 0;
+};
+
+struct QuestGiverStatusMultiple
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_GIVER_STATUS_MULTIPLE;
+
+    std::vector<QuestGiverStatusEntry> Givers;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << int32(Givers.size());
+        for (QuestGiverStatusEntry const& giver : Givers)
+        {
+            giver.Guid.Write(data);
+            data << giver.Status;
+        }
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 4)
+            return false;
+        int32 count;
+        data >> count;
+        if (count < 0 || uint32(count) > data.size())
+            return false;
+        Givers.assign(uint32(count), QuestGiverStatusEntry());
+        for (QuestGiverStatusEntry& giver : Givers)
+        {
+            if (!giver.Guid.Read(data))
+                return false;
+            if (data.size() - data.rpos() < 8)
+                return false;
+            data >> giver.Status;
+        }
+        return true;
+    }
+};
+
+// ==== Quest log lookup by id ====
+
+struct QueryQuestInfo
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_QUERY_QUEST_INFO;
+
+    int32 QuestId = 0;
+    ClassicGuid QuestGiver;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << QuestId;
+        QuestGiver.Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 4)
+            return false;
+        data >> QuestId;
+        return QuestGiver.Read(data);
+    }
+};
+
+struct QuestInfoObjective
+{
+    uint32 Id = 0;
+    uint8 Type = 0;  // 0 creature, 1 item, 2 game object
+    int32 ObjectId = 0;
+    int32 Amount = 0;
+    std::string Description;
+};
+
+struct QuestInfoRewardItem
+{
+    int32 ItemId = 0;
+    int32 Quantity = 0;
+};
+
+struct QuestInfoChoiceItem
+{
+    int32 ItemId = 0;
+    int32 Quantity = 0;
+    int32 DisplayId = 0;
+};
+
+struct QuestInfoFaction
+{
+    int32 FactionId = 0;
+    int32 Value = 0;
+};
+
+// The quest log's own lookup of a quest's full record. Scaling, artifact, currency, portrait, sound
+// kit, area group, treasure picker, conditional text and visual effect fields have no equivalent
+// here and are always zero/empty; a body that sets one is rejected on read.
+struct QueryQuestInfoResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUERY_QUEST_INFO_RESPONSE;
+
+    uint32 QuestId = 0;
+    bool Allow = false;
+
+    int32 QuestType = 0;
+    int32 QuestLevel = 0;
+    int32 MinLevel = 0;
+    int32 SortId = 0;
+    int32 SuggestedGroupNum = 0;
+    int32 RewardNextQuest = 0;
+    int32 RewardMoney = 0;
+    int32 RewardSpell = 0;
+    uint32 Flags = 0;
+    std::array<QuestInfoRewardItem, CLASSIC_QUEST_REWARD_ITEM_COUNT> RewardItems{};
+    std::array<QuestInfoChoiceItem, CLASSIC_QUEST_REWARD_CHOICE_COUNT> ChoiceItems{};
+    int32 PoiContinent = 0;
+    float PoiX = 0.0f;
+    float PoiY = 0.0f;
+    int32 PoiPriority = 0;
+    std::array<QuestInfoFaction, CLASSIC_QUEST_REWARD_FACTION_COUNT> Factions{};
+    int64 TimeAllowed = 0;
+    std::vector<QuestInfoObjective> Objectives;
+    std::string LogTitle;
+    std::string LogDescription;
+    std::string QuestDescription;
+    std::string QuestCompletionLog;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << QuestId;
+        data.WriteBit(Allow);
+        data.FlushBits();
+        if (!Allow)
+            return;
+
+        data << int32(QuestId) << QuestType << QuestLevel;
+        data << int32(0) << int32(255) << int32(0);  // scaling faction group, max scaling level, package id
+        data << MinLevel << SortId;
+        data << int32(0);  // QuestInfoID
+        data << SuggestedGroupNum << RewardNextQuest;
+        data << int32(0) << 1.0f;  // RewardXPDifficulty, RewardXPMultiplier
+        data << RewardMoney;
+        data << int32(0) << 1.0f;  // RewardMoneyDifficulty, RewardMoneyMultiplier
+        data << int32(0);          // RewardBonusMoney
+        for (uint32 i = 0; i < 3; ++i)
+            data << int32(0);      // RewardDisplaySpell
+        data << RewardSpell;
+        data << int32(0) << 0.0f;  // RewardHonor, RewardKillHonor
+        data << int32(0) << 0.0f << int32(0);  // artifact xp difficulty, multiplier, category
+        data << int32(0);          // StartItem
+        data << Flags << uint32(0) << uint32(0);
+
+        for (QuestInfoRewardItem const& item : RewardItems)
+            data << item.ItemId << item.Quantity << int32(0) << int32(0);  // ItemDrop, ItemDropQuantity
+        for (QuestInfoChoiceItem const& item : ChoiceItems)
+            data << item.ItemId << item.Quantity << item.DisplayId;
+
+        data << PoiContinent << PoiX << PoiY << PoiPriority;
+        data << int32(0) << int32(0) << int32(0) << int32(0);  // title, arena points, skill line, skill ups
+        data << int32(0) << int32(0) << int32(0) << int32(0);  // portraits
+
+        for (QuestInfoFaction const& faction : Factions)
+            data << faction.FactionId << faction.Value << int32(0) << int32(0);  // Override, CapIn
+        data << int32(0);  // RewardFactionFlags
+        for (uint32 i = 0; i < CLASSIC_QUEST_REWARD_CURRENCY_COUNT; ++i)
+            data << int32(0) << int32(0);  // currency id, quantity
+        data << int32(0) << int32(0);      // accepted and complete sound kits
+        data << int32(0);                  // AreaGroupID
+        data << TimeAllowed;
+
+        data << uint32(Objectives.size());
+        data << uint64(~0ull);  // AllowableRaces
+        data << uint32(0) << uint32(0);  // treasure picker lists
+        data << int32(0);       // Expansion
+        data << int32(0);       // QuestGiverCreatureID
+        data << uint32(0) << uint32(0);  // conditional description and completion log
+
+        data.WriteBits(uint32(LogTitle.length()), 9);
+        data.WriteBits(uint32(LogDescription.length()), 12);
+        data.WriteBits(uint32(QuestDescription.length()), 12);
+        data.WriteBits(0, 9);   // AreaDescription
+        data.WriteBits(0, 10);  // PortraitGiverText
+        data.WriteBits(0, 8);   // PortraitGiverName
+        data.WriteBits(0, 10);  // PortraitTurnInText
+        data.WriteBits(0, 8);   // PortraitTurnInName
+        data.WriteBits(uint32(QuestCompletionLog.length()), 11);
+        data.WriteBit(false);   // ReadyForTranslation
+        data.FlushBits();
+
+        for (QuestInfoObjective const& objective : Objectives)
+        {
+            data << objective.Id << int32(objective.Type) << int8(0);  // StorageIndex
+            data << objective.ObjectId << objective.Amount;
+            data << uint32(0) << uint32(0) << 0.0f;  // Flags, Flags2, ProgressBarWeight
+            data << int32(0);                        // VisualEffects.size()
+            data.WriteBits(uint32(objective.Description.length()), 8);
+            data.FlushBits();
+            data.WriteString(objective.Description);
+        }
+
+        data.WriteString(LogTitle);
+        data.WriteString(LogDescription);
+        data.WriteString(QuestDescription);
+        data.WriteString(QuestCompletionLog);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 5)
+            return false;
+        data >> QuestId;
+        Allow = data.ReadBit();
+        data.ResetBitPos();
+        if (!Allow)
+            return true;
+
+        // 119 fixed words precede the bit fields; a short body fails here instead of inside the reads.
+        if (data.size() - data.rpos() < 119 * 4)
+            return false;
+
+        bool ok = true;
+        auto word = [&data]() { int32 value; data >> value; return value; };
+        auto zero = [&](uint32 count)
+        {
+            for (uint32 i = 0; i < count; ++i)
+                ok = ok && word() == 0;
+        };
+
+        int32 const questId = word();
+        QuestType = word();
+        QuestLevel = word();
+        ok = ok && uint32(questId) == QuestId;
+        ok = ok && word() == 0;    // scaling faction group
+        ok = ok && word() == 255;  // max scaling level
+        zero(1);                   // package id
+        MinLevel = word();
+        SortId = word();
+        zero(1);                   // QuestInfoID
+        SuggestedGroupNum = word();
+        RewardNextQuest = word();
+        zero(1);
+        word();                    // RewardXPMultiplier
+        RewardMoney = word();
+        zero(1);
+        word();                    // RewardMoneyMultiplier
+        zero(4);                   // RewardBonusMoney, RewardDisplaySpell[3]
+        RewardSpell = word();
+        zero(1);
+        word();                    // RewardKillHonor
+        zero(1);
+        word();                    // artifact xp multiplier
+        zero(2);                   // artifact category, StartItem
+        Flags = uint32(word());
+        zero(2);                   // FlagsEx, FlagsEx2
+
+        for (QuestInfoRewardItem& item : RewardItems)
+        {
+            item.ItemId = word();
+            item.Quantity = word();
+            zero(2);               // ItemDrop, ItemDropQuantity
+        }
+        for (QuestInfoChoiceItem& item : ChoiceItems)
+        {
+            item.ItemId = word();
+            item.Quantity = word();
+            item.DisplayId = word();
+        }
+
+        PoiContinent = word();
+        int32 const poiX = word();
+        int32 const poiY = word();
+        std::memcpy(&PoiX, &poiX, sizeof(float));
+        std::memcpy(&PoiY, &poiY, sizeof(float));
+        PoiPriority = word();
+        zero(8);                   // title, arena points, skill line, skill ups, portraits
+
+        for (QuestInfoFaction& faction : Factions)
+        {
+            faction.FactionId = word();
+            faction.Value = word();
+            zero(2);               // Override, CapIn
+        }
+        zero(1 + CLASSIC_QUEST_REWARD_CURRENCY_COUNT * 2 + 3);  // faction flags, currencies, sound kits, area group
+        int32 const timeLow = word();
+        int32 const timeHigh = word();
+        TimeAllowed = int64(uint64(uint32(timeHigh)) << 32 | uint32(timeLow));
+
+        uint32 const objectiveCount = uint32(word());
+        word();
+        word();                    // AllowableRaces
+        zero(2 + 1 + 1 + 2);       // treasure pickers, Expansion, QuestGiverCreatureID, conditional text
+        if (!ok || objectiveCount > CLASSIC_MAX_QUEST_OBJECTIVES)
+            return false;
+
+        if (data.size() - data.rpos() < 12)
+            return false;
+        uint32 const logTitleLength = data.ReadBits(9);
+        uint32 const logDescriptionLength = data.ReadBits(12);
+        uint32 const descriptionLength = data.ReadBits(12);
+        uint32 const areaDescriptionLength = data.ReadBits(9);
+        uint32 const portraitLengths = data.ReadBits(10) + data.ReadBits(8) + data.ReadBits(10) + data.ReadBits(8);
+        uint32 const completionLogLength = data.ReadBits(11);
+        bool const readyForTranslation = data.ReadBit();
+        data.ResetBitPos();
+        if (areaDescriptionLength || portraitLengths || readyForTranslation)
+            return false;
+
+        Objectives.assign(objectiveCount, QuestInfoObjective());
+        for (QuestInfoObjective& objective : Objectives)
+        {
+            if (data.size() - data.rpos() < 34)
+                return false;
+            int32 type;
+            int8 storageIndex;
+            uint32 flags, flags2;
+            float progressBarWeight;
+            int32 visualEffects;
+            data >> objective.Id >> type >> storageIndex >> objective.ObjectId >> objective.Amount;
+            data >> flags >> flags2 >> progressBarWeight >> visualEffects;
+            if (type < 0 || type > 255 || visualEffects != 0)
+                return false;
+            objective.Type = uint8(type);
+            uint32 const length = data.ReadBits(8);
+            data.ResetBitPos();
+            if (data.size() - data.rpos() < length)
+                return false;
+            objective.Description = data.ReadString(length);
+        }
+
+        if (data.size() - data.rpos() < uint64(logTitleLength) + logDescriptionLength + descriptionLength + completionLogLength)
+            return false;
+        LogTitle = data.ReadString(logTitleLength);
+        LogDescription = data.ReadString(logDescriptionLength);
+        QuestDescription = data.ReadString(descriptionLength);
+        QuestCompletionLog = data.ReadString(completionLogLength);
+        return true;
     }
 };
 

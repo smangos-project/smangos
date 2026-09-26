@@ -424,6 +424,99 @@ void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, ObjectGuid npcGUID) con
     GetMenuSession()->SendClassic(packet);
 }
 
+void PlayerMenu::SendQuestGiverStatusMultiple(std::vector<std::pair<ObjectGuid, uint8>> const& statuses) const
+{
+    QuestGiverStatusMultiple packet;
+    packet.Givers.reserve(statuses.size());
+    for (auto const& [guid, status] : statuses)
+    {
+        QuestGiverStatusEntry& entry = packet.Givers.emplace_back();
+        entry.Guid = ClassicGuidMapping::ToClassic(guid, realmID);
+        entry.Status = ToModernQuestGiverStatus(status);
+    }
+    GetMenuSession()->SendClassic(packet);
+}
+
+void PlayerMenu::SendQuestInfo(uint32 questId) const
+{
+    QueryQuestInfoResponse packet;
+    packet.QuestId = questId;
+
+    if (Quest const* pQuest = sObjectMgr.GetQuestTemplate(questId))
+    {
+        int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();
+        QuestLocale const* ql = locIdx >= 0 ? sObjectMgr.GetQuestLocale(questId) : nullptr;
+        auto localized = [locIdx](std::vector<std::string> const& texts, std::string const& fallback)
+        {
+            return texts.size() > size_t(locIdx) && !texts[locIdx].empty() ? texts[locIdx] : fallback;
+        };
+
+        packet.Allow = true;
+        packet.QuestType = int32(pQuest->GetQuestMethod());
+        packet.QuestLevel = int32(pQuest->GetQuestLevel());
+        packet.MinLevel = int32(pQuest->GetMinLevel());
+        packet.SortId = pQuest->GetZoneOrSort();
+        packet.SuggestedGroupNum = int32(pQuest->GetSuggestedPlayers());
+        packet.RewardNextQuest = int32(pQuest->GetNextQuestInChain());
+        packet.RewardMoney = pQuest->GetRewOrReqMoney();
+        packet.RewardSpell = int32(pQuest->GetRewSpell());
+        packet.Flags = pQuest->GetQuestFlags();
+        for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        {
+            packet.RewardItems[i].ItemId = int32(pQuest->RewItemId[i]);
+            packet.RewardItems[i].Quantity = int32(pQuest->RewItemCount[i]);
+        }
+        for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+        {
+            QuestInfoChoiceItem& choice = packet.ChoiceItems[i];
+            choice.ItemId = int32(pQuest->RewChoiceItemId[i]);
+            choice.Quantity = int32(pQuest->RewChoiceItemCount[i]);
+            if (ItemPrototype const* proto = sObjectMgr.GetItemPrototype(pQuest->RewChoiceItemId[i]))
+                choice.DisplayId = int32(proto->DisplayInfoID);
+        }
+        packet.PoiContinent = int32(pQuest->GetPointMapId());
+        packet.PoiX = pQuest->GetPointX();
+        packet.PoiY = pQuest->GetPointY();
+        packet.PoiPriority = int32(pQuest->GetPointOpt());
+        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+        {
+            packet.Factions[i].FactionId = int32(pQuest->RewRepFaction[i]);
+            packet.Factions[i].Value = pQuest->RewRepValue[i];
+        }
+        packet.TimeAllowed = pQuest->GetLimitTime();
+
+        for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        {
+            int32 const raw = pQuest->ReqCreatureOrGOId[i];
+            if (!raw)
+                continue;
+            QuestInfoObjective& objective = packet.Objectives.emplace_back();
+            objective.Id = uint32(packet.Objectives.size() - 1);
+            objective.Type = raw > 0 ? 0 : 2;
+            objective.ObjectId = raw > 0 ? raw : -raw;
+            objective.Amount = int32(pQuest->ReqCreatureOrGOCount[i]);
+            objective.Description = ql ? localized(ql->ObjectiveText[i], pQuest->ObjectiveText[i]) : pQuest->ObjectiveText[i];
+        }
+        for (uint32 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+        {
+            if (!pQuest->ReqItemId[i])
+                continue;
+            QuestInfoObjective& objective = packet.Objectives.emplace_back();
+            objective.Id = uint32(packet.Objectives.size() - 1);
+            objective.Type = 1;
+            objective.ObjectId = int32(pQuest->ReqItemId[i]);
+            objective.Amount = int32(pQuest->ReqItemCount[i]);
+        }
+
+        packet.LogTitle = ql ? localized(ql->Title, pQuest->GetTitle()) : pQuest->GetTitle();
+        packet.LogDescription = ql ? localized(ql->Objectives, pQuest->GetObjectives()) : pQuest->GetObjectives();
+        packet.QuestDescription = ql ? localized(ql->Details, pQuest->GetDetails()) : pQuest->GetDetails();
+        packet.QuestCompletionLog = ql ? localized(ql->EndText, pQuest->GetEndText()) : pQuest->GetEndText();
+    }
+
+    GetMenuSession()->SendClassic(packet);
+}
+
 void PlayerMenu::SendQuestGiverQuestDetails(Quest const* pQuest, ObjectGuid npcGUID, bool ActivateAccept) const
 {
     int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();

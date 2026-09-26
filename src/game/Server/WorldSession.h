@@ -69,7 +69,6 @@
 #include "Packets/Petition.h"
 #include "Packets/Query.h"
 #include "Packets/QueryMessages.h"
-#include "Packets/Quest.h"
 #include "Packets/QuestMessages.h"
 #include "Packets/Skill.h"
 #include "Packets/Social.h"
@@ -831,7 +830,9 @@ class WorldSession
         void HandleQuestgiverQueryQuestOpcode(QuestgiverQueryQuest const& packet);
         void HandleQuestgiverChooseRewardOpcode(QuestgiverChooseReward const& packet);
         void HandleQuestgiverRequestRewardOpcode(QuestgiverRequestReward const& packet);
-        void HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuest const& packet);
+        void HandleQuestgiverStatusMultipleQuery(QuestGiverStatusMultipleQuery const& packet);
+        void HandleQueryQuestInfoOpcode(QueryQuestInfo const& packet);
+        uint8 GetQuestGiverStatus(Object* questgiver);
         void HandleQuestgiverCancel(QuestGiverCloseQuest const& packet);
         void HandleQuestLogRemoveQuest(QuestLogRemoveQuest const& packet);
         void HandleQuestConfirmAccept(QuestConfirmAccept const& packet);

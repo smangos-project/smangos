@@ -224,7 +224,6 @@ set (game_SRCS
     Server/Packets/Pet.cpp
     Server/Packets/Petition.cpp
     Server/Packets/Query.cpp
-    Server/Packets/Quest.cpp
     Server/Packets/Skill.cpp
     Server/Packets/Spell.cpp
     Server/Packets/Trade.cpp
@@ -487,7 +486,6 @@ set (game_SRCS
     Server/Packets/Petition.h
     Server/Packets/Query.h
     Server/Packets/QueryMessages.h
-    Server/Packets/Quest.h
     Server/Packets/Skill.h
     Server/Packets/Social.h
     Server/Packets/Spell.h

@@ -174,7 +174,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_ITEM_QUERY_MULTIPLE_RESPONSE, UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_PAGE_TEXT_QUERY,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PAGE_TEXT_QUERY_RESPONSE,     UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_QUEST_QUERY,                  STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleQuestQueryOpcode);
+    INVALID_PACKET(CMSG_QUEST_QUERY,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_QUEST_QUERY_RESPONSE,         UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GAMEOBJECT_QUERY,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GAMEOBJECT_QUERY_RESPONSE,    UnhandleReason::SendByServer);
@@ -1120,6 +1120,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUEST_CONFIRM_ACCEPT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQuestConfirmAccept);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PUSH_QUEST_TO_PARTY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePushQuestToParty);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUEST_PUSH_RESULT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQuestPushResult);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUEST_GIVER_STATUS_MULTIPLE_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQuestgiverStatusMultipleQuery);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_QUEST_INFO, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleQueryQuestInfoOpcode);
 
     return list;
 }

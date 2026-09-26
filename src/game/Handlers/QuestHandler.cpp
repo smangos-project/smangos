@@ -34,20 +34,9 @@
 #include "Group.h"
 #include "Packets/Classic/GuidMapping.h"
 
-void WorldSession::HandleQuestgiverStatusQueryOpcode(QuestgiverStatusQuery const& packet)
+uint8 WorldSession::GetQuestGiverStatus(Object* questgiver)
 {
-    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
-    if (!guid)
-        return;
-
     uint8 dialogStatus = DIALOG_STATUS_NONE;
-
-    Object* questgiver = _player->GetObjectByTypeMask(*guid, TYPEMASK_CREATURE_OR_GAMEOBJECT);
-    if (!questgiver)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "Error in CLASSIC_CMSG_QUEST_GIVER_STATUS_QUERY, called for not found questgiver %s", guid->GetString().c_str());
-        return;
-    }
 
     switch (questgiver->GetTypeId())
     {
@@ -77,8 +66,49 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(QuestgiverStatusQuery const
             break;
     }
 
+    return dialogStatus;
+}
+
+void WorldSession::HandleQuestgiverStatusQueryOpcode(QuestgiverStatusQuery const& packet)
+{
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guid)
+        return;
+
+    Object* questgiver = _player->GetObjectByTypeMask(*guid, TYPEMASK_CREATURE_OR_GAMEOBJECT);
+    if (!questgiver)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "Error in CLASSIC_CMSG_QUEST_GIVER_STATUS_QUERY, called for not found questgiver %s", guid->GetString().c_str());
+        return;
+    }
+
     //inform client about status of quest
-    _player->PlayerTalkClass->SendQuestGiverStatus(dialogStatus, *guid);
+    _player->PlayerTalkClass->SendQuestGiverStatus(GetQuestGiverStatus(questgiver), *guid);
+}
+
+void WorldSession::HandleQuestgiverStatusMultipleQuery(QuestGiverStatusMultipleQuery const& /*packet*/)
+{
+    std::vector<ObjectGuid> visible;
+    {
+        std::shared_lock<std::shared_timed_mutex> lock(_player->m_visibleGUIDs_lock);
+        for (ObjectGuid const& guid : _player->m_visibleGUIDs)
+            if (guid.IsCreature() || guid.IsGameObject())
+                visible.push_back(guid);
+    }
+
+    std::vector<std::pair<ObjectGuid, uint8>> statuses;
+    for (ObjectGuid const& guid : visible)
+    {
+        Object* questgiver = _player->GetObjectByTypeMask(guid, TYPEMASK_CREATURE_OR_GAMEOBJECT);
+        if (!questgiver)
+            continue;
+
+        uint8 const status = GetQuestGiverStatus(questgiver);
+        if (status != DIALOG_STATUS_NONE)
+            statuses.emplace_back(guid, status);
+    }
+
+    _player->PlayerTalkClass->SendQuestGiverStatusMultiple(statuses);
 }
 
 void WorldSession::HandleQuestgiverHelloOpcode(QuestgiverHello const& packet)
@@ -234,16 +264,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(QuestgiverAcceptQuest const
     _player->ClearQuestShareInfo();
 }
 
-void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuest const& packet)
+void WorldSession::HandleQueryQuestInfoOpcode(QueryQuestInfo const& packet)
 {
-    Quest const* pQuest = sObjectMgr.GetQuestTemplate(packet.questEntry);
-    if (!pQuest)
-        return;
-
-    auto response = std::make_unique<WorldPackets::Quest::QuestQueryResponse>();
-    response->sessionDbLocaleIndex = GetSessionDbLocaleIndex();
-    response->quest = pQuest;
-    SendPacket(std::move(response));
+    _player->PlayerTalkClass->SendQuestInfo(uint32(packet.QuestId));
 }
 
 void WorldSession::HandleQuestgiverQueryQuestOpcode(QuestgiverQueryQuest const& packet)

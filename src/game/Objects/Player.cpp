@@ -14412,10 +14412,10 @@ void Player::SendQuestFailedAtTaker(uint32 questId, uint32 reason) const
 {
     if (questId)
     {
-        auto packet = std::make_unique<WorldPackets::Quest::QuestGiverQuestFailed>();
-        packet->questId = questId;
-        packet->reason = reason;
-        GetSession()->SendPacket(std::move(packet));
+        QuestGiverQuestFailed packet;
+        packet.QuestId = questId;
+        packet.Reason = reason;
+        GetSession()->SendClassic(packet);
     }
 }
 
@@ -14423,9 +14423,9 @@ void Player::SendQuestFailed(uint32 questId) const
 {
     if (questId)
     {
-        auto packet = std::make_unique<WorldPackets::Quest::QuestUpdateFailed>();
-        packet->questId = questId;
-        GetSession()->SendPacket(std::move(packet));
+        QuestUpdateFailed packet;
+        packet.QuestId = questId;
+        GetSession()->SendClassic(packet);
     }
 }
 
@@ -14433,17 +14433,35 @@ void Player::SendQuestTimerFailed(uint32 questId) const
 {
     if (questId)
     {
-        auto packet = std::make_unique<WorldPackets::Quest::QuestUpdateFailedTimer>();
-        packet->questId = questId;
-        GetSession()->SendPacket(std::move(packet));
+        QuestUpdateFailedTimer packet;
+        packet.QuestId = questId;
+        GetSession()->SendClassic(packet);
     }
+}
+
+namespace
+{
+// The modern client's QuestFailedReason numbering; requirements it has no text for read as "none".
+uint32 ToModernQuestFailedReason(uint32 reason)
+{
+    switch (reason)
+    {
+        case INVALIDREASON_QUEST_FAILED_LOW_LEVEL:        return 1;
+        case INVALIDREASON_QUEST_FAILED_WRONG_RACE:       return 6;
+        case INVALIDREASON_QUEST_ONLY_ONE_TIMED:          return 12;
+        case INVALIDREASON_QUEST_ALREADY_ON:              return 13;
+        case INVALIDREASON_QUEST_FAILED_MISSING_ITEMS:    return 21;
+        case INVALIDREASON_QUEST_FAILED_NOT_ENOUGH_MONEY: return 23;
+        default:                                          return 0;
+    }
+}
 }
 
 void Player::SendCanTakeQuestResponse(uint32 msg) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverQuestInvalid>();
-    packet->msg = msg;
-    GetSession()->SendPacket(std::move(packet));
+    QuestGiverInvalidQuest packet;
+    packet.Reason = ToModernQuestFailedReason(msg);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendQuestConfirmAccept(Quest const* pQuest, Player const* pReceiver) const

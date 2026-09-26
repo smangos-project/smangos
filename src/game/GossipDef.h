@@ -306,6 +306,8 @@ class PlayerMenu
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
         void SendQuestGiverStatus(uint8 questStatus, ObjectGuid npcGUID) const;
+        void SendQuestGiverStatusMultiple(std::vector<std::pair<ObjectGuid, uint8>> const& statuses) const;
+        void SendQuestInfo(uint32 questId) const;
         void SendQuestGiverQuestList(QuestNpcEmoteInfo fallbackEmote, std::string const& Title, ObjectGuid guid) const;
         void SendQuestGiverQuestDetails(Quest const* pQuest, ObjectGuid npcGUID, bool ActivateAccept) const;
         void SendQuestGiverOfferReward(Quest const* pQuest, ObjectGuid npcGuid, bool EnbleNext) const;
