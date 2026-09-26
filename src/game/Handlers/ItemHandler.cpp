@@ -950,15 +950,11 @@ bool WorldSession::CheckBanker(ObjectGuid guid)
     return true;
 }
 
-void WorldSession::HandleBuyBankSlotOpcode(WorldPackets::Item::BuyBankSlot const& packet)
+void WorldSession::HandleBuyBankSlotOpcode(BuyBankSlot const& packet)
 {
-    if (!CheckBanker(packet.guid))
-    {
-        auto bankPacket = std::make_unique<WorldPackets::Item::BuyBankSlotResult>();
-        bankPacket->result = ERR_BANKSLOT_NOTBANKER;
-        SendPacket(std::move(bankPacket));
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guid || !CheckBanker(*guid))
         return;
-    }
 
     uint32 slot = _player->GetBankBagSlotCount();
 
@@ -966,32 +962,28 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPackets::Item::BuyBankSlot const
     ++slot;
 
     BankBagSlotPricesEntry const* slotEntry = sBankBagSlotPricesStore.LookupEntry(slot);
-
     if (!slotEntry)
-    {
-        auto bankPacket = std::make_unique<WorldPackets::Item::BuyBankSlotResult>();
-        bankPacket->result = ERR_BANKSLOT_FAILED_TOO_MANY;
-        SendPacket(std::move(bankPacket));
         return;
-    }
 
     uint32 price = slotEntry->price;
-
     if (_player->GetMoney() < price)
-    {
-        auto bankPacket = std::make_unique<WorldPackets::Item::BuyBankSlotResult>();
-        bankPacket->result = ERR_BANKSLOT_INSUFFICIENT_FUNDS;
-        SendPacket(std::move(bankPacket));
         return;
-    }
 
+    // No success ack: the client infers it from the gold change.
     _player->SetBankBagSlotCount(slot);
     _player->ModifyMoney(-int32(price));
 }
 
-void WorldSession::HandleAutoBankItemOpcode(WorldPackets::Item::AutoBankItem const& packet)
+void WorldSession::HandleAutoBankItemOpcode(AutoBankItem const& packet)
 {
-    Item *pItem = _player->GetItemByPos(packet.srcbag, packet.srcslot);
+    if (packet.BankType != AutoBankItem::BankTypeCharacter)
+        return;
+
+    auto const pos = ClassicPosToServer(packet.Bag, packet.Slot);
+    if (!pos)
+        return;
+
+    Item* pItem = _player->GetItemByPos(pos->Bag, pos->Slot);
     if (!pItem)
         return;
 
@@ -1018,13 +1010,17 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPackets::Item::AutoBankItem con
         return;
     }
 
-    _player->RemoveItem(packet.srcbag, packet.srcslot, true);
+    _player->RemoveItem(pos->Bag, pos->Slot, true);
     _player->BankItem(dest, pItem, true);
 }
 
-void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBankItem const& packet)
+void WorldSession::HandleAutoStoreBankItemOpcode(AutoStoreBankItem const& packet)
 {
-    Item *pItem = _player->GetItemByPos(packet.srcbag, packet.srcslot);
+    auto const pos = ClassicPosToServer(packet.Bag, packet.Slot);
+    if (!pos)
+        return;
+
+    Item* pItem = _player->GetItemByPos(pos->Bag, pos->Slot);
     if (!pItem)
         return;
 
@@ -1034,7 +1030,7 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBa
         return;
     }
 
-    if (_player->IsBankPos(packet.srcbag, packet.srcslot))  // moving from bank to inventory
+    if (_player->IsBankPos(pos->Bag, pos->Slot))             // moving from bank to inventory
     {
         ItemPosCountVec dest;
         uint8 bagSlot = 0;
@@ -1045,12 +1041,12 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBa
             return;
         }
 
-        _player->RemoveItem(packet.srcbag, packet.srcslot, true);
+        _player->RemoveItem(pos->Bag, pos->Slot, true);
         Item const* storedItem = _player->StoreItem(dest, pItem, true);
         if (storedItem)
             _player->ItemAddedQuestCheck(storedItem->GetEntry(), 0);
     }
-    else                                                    // moving from inventory to bank
+    else                                                     // moving from inventory to bank
     {
         ItemPosCountVec dest;
         uint8 bagSlot = 0;
@@ -1061,7 +1057,7 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBa
             return;
         }
 
-        _player->RemoveItem(packet.srcbag, packet.srcslot, true);
+        _player->RemoveItem(pos->Bag, pos->Slot, true);
         _player->BankItem(dest, pItem, true);
     }
 }

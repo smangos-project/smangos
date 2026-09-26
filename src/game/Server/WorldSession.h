@@ -441,7 +441,6 @@ class WorldSession
         // Trainer
         void SendTrainerList(ObjectGuid guid);
         void SendTrainerList(ObjectGuid guid, std::string const& strTitle);
-        void SendTrainingSuccess(ObjectGuid guid, uint32 spellId);
         void SendTrainingFailure(ObjectGuid guid, uint32 serviceId, uint32 errorCode);
 
         // NPC
@@ -736,17 +735,18 @@ class WorldSession
         void HandleEnableTaxiNodeOpcode(EnableTaxiNode const& packet);
         void HandleActivateTaxiOpcode(ActivateTaxi const& packet);
 
-        void HandleTabardVendorActivateOpcode(WorldPackets::Npc::TabardVendorActivate const& packet);
-        void HandleBankerActivateOpcode(WorldPackets::Npc::BankerActivate const& packet);
-        void HandleBuyBankSlotOpcode(WorldPackets::Item::BuyBankSlot const& packet);
-        void HandleTrainerListOpcode(WorldPackets::Npc::TrainerList const& packet);
-        void HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpell const& packet);
+        void HandleTabardVendorActivateOpcode(TabardVendorActivate const& packet);
+        void HandleBankerActivateOpcode(BankerActivate const& packet);
+        void HandleBuyBankSlotOpcode(BuyBankSlot const& packet);
+        void HandleTrainerListOpcode(TrainerList const& packet);
+        void HandleTrainerBuySpellOpcode(TrainerBuySpell const& packet);
         void HandlePetitionShowListOpcode(WorldPackets::Petition::PetitionShow const& packet);
         void HandleGossipHelloOpcode(GossipHello const& packet);
         void HandleGossipSelectOptionOpcode(GossipSelectOption const& packet);
-        void HandleSpiritHealerActivateOpcode(WorldPackets::Npc::SpiritHealerActivate const& packet);
+        void HandleCloseInteractionOpcode(CloseInteraction const& packet);
+        void HandleSpiritHealerActivateOpcode(SpiritHealerActivate const& packet);
         void HandleNpcTextQueryOpcode(QueryNpcText const& packet);
-        void HandleBinderActivateOpcode(WorldPackets::Npc::BinderActivate const& packet);
+        void HandleBinderActivateOpcode(BinderActivate const& packet);
         void HandleListStabledPetsOpcode(WorldPackets::Npc::ListStabledPets const& packet);
         void HandleStablePet(WorldPackets::Npc::StablePet const& packet);
         void HandleUnstablePet(WorldPackets::Npc::UnstablePet const& packet);
@@ -804,8 +804,8 @@ class WorldSession
         void HandleAutoEquipItemSlotOpcode(AutoEquipItemSlot const& packet);
         void HandleSwapItem(SwapItem const& packet);
         void HandleBuybackItem(BuyBackItem const& packet);
-        void HandleAutoBankItemOpcode(WorldPackets::Item::AutoBankItem const& packet);
-        void HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBankItem const& packet);
+        void HandleAutoBankItemOpcode(AutoBankItem const& packet);
+        void HandleAutoStoreBankItemOpcode(AutoStoreBankItem const& packet);
         void HandleWrapItemOpcode(WorldPackets::Item::WrapItem const& packet);
 
         void HandleAttackSwingOpcode(AttackSwing const& packet);

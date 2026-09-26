@@ -47,55 +47,72 @@ enum StableResultCode
     STABLE_SUCCESS_BUY_SLOT = 0x0A,                         // buy slot success
 };
 
-void WorldSession::HandleTabardVendorActivateOpcode(WorldPackets::Npc::TabardVendorActivate const& packet)
+void WorldSession::HandleTabardVendorActivateOpcode(TabardVendorActivate const& packet)
 {
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.guid, UNIT_NPC_FLAG_TABARDDESIGNER);
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guid)
+        return;
+
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_TABARDDESIGNER);
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTabardVendorActivateOpcode - %s not found or you can't interact with him.", packet.guid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTabardVendorActivateOpcode - %s not found or you can't interact with him.", guid->GetString().c_str());
         return;
     }
 
     GetPlayer()->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
 
-    SendTabardVendorActivate(packet.guid);
+    SendTabardVendorActivate(*guid);
 }
 
 void WorldSession::SendTabardVendorActivate(ObjectGuid guid)
 {
-    auto tabardVendor = std::make_unique<WorldPackets::Npc::TabardVendorActivateResponse>();
-    tabardVendor->tabardVendorNpcGuid = guid;
-    SendPacket(std::move(tabardVendor));
+    // This engine only ever has guild tabard vendors (no personal-tabard feature).
+    NpcInteractionOpenResult result;
+    result.NpcGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    result.InteractionType = PlayerInteractionType::GuildTabardVendor;
+    SendClassic(result);
 }
 
-void WorldSession::HandleBankerActivateOpcode(WorldPackets::Npc::BankerActivate const& packet)
+void WorldSession::HandleBankerActivateOpcode(BankerActivate const& packet)
 {
-    if (!CheckBanker(packet.guid))
+    // A Classic-era client only ever sends Banker (CharacterBanker/AccountBanker are a modern
+    // account-wide-bank split this engine has no equivalent of).
+    if (packet.InteractionType != int32(PlayerInteractionType::Banker))
+        return;
+
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guid || !CheckBanker(*guid))
         return;
 
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_FEIGN_DEATH))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    SendShowBank(packet.guid);
+    SendShowBank(*guid);
 }
 
 void WorldSession::SendShowBank(ObjectGuid guid)
 {
     GetPlayer()->m_currentBankerGuid = guid;
 
-    auto packet = std::make_unique<WorldPackets::Npc::ShowBank>();
-    packet->bankerGuid = guid;
-    SendPacket(std::move(packet));
+    NpcInteractionOpenResult result;
+    result.NpcGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    result.InteractionType = PlayerInteractionType::Banker;
+    SendClassic(result);
 }
 
-void WorldSession::HandleTrainerListOpcode(WorldPackets::Npc::TrainerList const& packet)
+void WorldSession::HandleTrainerListOpcode(TrainerList const& packet)
 {
-    SendTrainerList(packet.guid);
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (guid)
+        SendTrainerList(*guid);
 }
 
-static void SendTrainerSpellHelper(WorldPacket& data, TrainerSpell const* tSpell, uint32 triggerSpell, TrainerSpellState state, float fDiscountMod, bool can_learn_primary_prof)
+// Returns whether a row was actually written: a spell with neither reqLevel nor a resolvable
+// triggerInfo writes nothing, and the caller must not count it.
+static bool SendTrainerSpellHelper(TrainerListSpell& row, TrainerSpell const* tSpell, uint32 triggerSpell, TrainerSpellState state, float fDiscountMod)
 {
     SpellEntry const* triggerInfo = sSpellMgr.GetSpellEntry(triggerSpell);
     uint32 spellLevel = 0;
@@ -104,39 +121,28 @@ static void SendTrainerSpellHelper(WorldPacket& data, TrainerSpell const* tSpell
     else if (triggerInfo)
         spellLevel = triggerInfo->spellLevel;
     else
-        return;
-
-    bool primary_prof_first_rank = sSpellMgr.IsPrimaryProfessionFirstRankSpell(triggerSpell);
+        return false;
 
     SpellChainNode const* chain_node = sSpellMgr.GetSpellChainNode(triggerSpell);
 
-    data << uint32(tSpell->spell);
-    data << uint8(state == TRAINER_SPELL_GREEN_DISABLED ? TRAINER_SPELL_GREEN : state);
-    data << uint32(tSpell->spellCost * fDiscountMod + 0.5f);
+    switch (state == TRAINER_SPELL_GREEN_DISABLED ? TRAINER_SPELL_GREEN : state)
+    {
+        case TRAINER_SPELL_GRAY:  row.Usable = 0; break; // known
+        case TRAINER_SPELL_GREEN: row.Usable = 1; break; // available
+        default:                  row.Usable = 2; break; // unavailable
+    }
 
-    data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
-    // primary prof. learn confirmation dialog
-    data << uint32(primary_prof_first_rank ? 1 : 0);    // must be equal prev. field to have learn button in enabled state
-    data << uint8(spellLevel);
-    data << uint32(tSpell->reqSkill);
-    data << uint32(tSpell->reqSkillValue);
-    // Nostalrius: le client veut spellreq1, spellreq2 avec spellreq2 != 0 seulement si spellreq1 != 0.
+    row.SpellId = tSpell->spell;
+    row.MoneyCost = uint32(tSpell->spellCost * fDiscountMod + 0.5f);
+    row.ReqSkillLine = tSpell->reqSkill;
+    row.ReqSkillRank = tSpell->reqSkillValue;
     if (chain_node)
     {
-        if (chain_node->req)
-        {
-            data << uint32(chain_node->req);
-            data << uint32(chain_node->prev);
-        }
-        else
-        {
-            data << uint32(chain_node->prev);
-            data << uint32(0);
-        }
+        row.ReqAbility[0] = chain_node->req ? chain_node->req : chain_node->prev;
+        row.ReqAbility[1] = chain_node->req ? chain_node->prev : 0;
     }
-    else
-        data << uint32(0) << uint32(0);
-    data << uint32(0);
+    row.ReqLevel = uint8(spellLevel);
+    return true;
 }
 
 void WorldSession::SendTrainerList(ObjectGuid guid)
@@ -168,40 +174,32 @@ void WorldSession::SendTrainerList(ObjectGuid guid)
     GetPlayer()->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
 
-    uint32 maxcount = (cSpells ? cSpells->spellList.size() : 0) + (tSpells ? tSpells->spellList.size() : 0);
-    uint32 trainer_type = cSpells && cSpells->trainerType ? cSpells->trainerType : (tSpells ? tSpells->trainerType : 0);
+    TrainerSpellList list;
+    list.TrainerGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    list.TrainerType = int32(cSpells && cSpells->trainerType ? cSpells->trainerType : (tSpells ? tSpells->trainerType : 0));
 
-    std::string strTitle;
     if (TrainerGreetingLocale const* trainerGreeting = sObjectMgr.GetTrainerGreetingLocale(guid.GetEntry()))
     {
         int locale_idx = GetSessionDbLocaleIndex();
 
         if ((int32)trainerGreeting->Content.size() > locale_idx + 1 && !trainerGreeting->Content[locale_idx + 1].empty())
-            strTitle = trainerGreeting->Content[locale_idx + 1];
+            list.Greeting = trainerGreeting->Content[locale_idx + 1];
         else
-            strTitle = trainerGreeting->Content[0];
+            list.Greeting = trainerGreeting->Content[0];
     }
     else
     {
-        strTitle = GetMangosString(LANG_NPC_TAINER_HELLO);
+        list.Greeting = GetMangosString(LANG_NPC_TAINER_HELLO);
     }
-
-    WorldPacket data(SMSG_TRAINER_LIST, 8 + 4 + 4 + maxcount * 38 + strTitle.size() + 1);
-    data << ObjectGuid(guid);
-    data << uint32(trainer_type);
-
-    size_t count_pos = data.wpos();
-    data << uint32(maxcount);
 
     // reputation discount
     float fDiscountMod = _player->GetReputationPriceDiscount(unit);
-    bool can_learn_primary_prof = GetPlayer()->GetFreePrimaryProfessionPoints() > 0;
 
-    uint32 count = 0;
-
-    if (cSpells)
+    auto addSpells = [&](TrainerSpellData const* spells)
     {
-        for (const auto& itr : cSpells->spellList)
+        if (!spells)
+            return;
+        for (auto const& itr : spells->spellList)
         {
             TrainerSpell const* tSpell = &itr.second;
 
@@ -212,64 +210,41 @@ void WorldSession::SendTrainerList(ObjectGuid guid)
 
             TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
 
-            SendTrainerSpellHelper(data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof);
-
-            ++count;
+            TrainerListSpell row;
+            if (SendTrainerSpellHelper(row, tSpell, triggerSpell, state, fDiscountMod))
+                list.Spells.push_back(row);
         }
-    }
+    };
+    addSpells(cSpells);
+    addSpells(tSpells);
 
-    if (tSpells)
-    {
-        for (const auto& itr : tSpells->spellList)
-        {
-            TrainerSpell const* tSpell = &itr.second;
-
-            uint32 triggerSpell = sSpellMgr.GetSpellEntry(tSpell->spell)->EffectTriggerSpell[0];
-
-            if (!_player->IsSpellFitByClassAndRace(triggerSpell))
-                continue;
-
-            TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
-
-            SendTrainerSpellHelper(data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof);
-
-            ++count;
-        }
-    }
-
-    data << strTitle;
-
-    data.put<uint32>(count_pos, count);
-    SendPacket(&data);
-}
-
-void WorldSession::SendTrainingSuccess(ObjectGuid guid, uint32 spellId)
-{
-    auto packet = std::make_unique<WorldPackets::Npc::TrainerBuySucceeded>();
-    packet->trainerGuid = guid;
-    packet->spellId = spellId; // should be same as in packet from client
-    SendPacket(std::move(packet));
+    SendClassic(list);
 }
 
 void WorldSession::SendTrainingFailure(ObjectGuid guid, uint32 serviceId, uint32 errorCode)
 {
-    auto packet = std::make_unique<WorldPackets::Npc::TrainerBuyFailed>();
-    packet->trainerGuid = guid;
-    packet->serviceId = serviceId;
-    packet->errorCode = errorCode;
-    SendPacket(std::move(packet));
+    TrainerBuyFailed packet;
+    packet.TrainerGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    packet.ServiceId = serviceId;
+    packet.ErrorCode = errorCode;
+    SendClassic(packet);
 }
 
-void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpell const& packet)
+void WorldSession::HandleTrainerBuySpellOpcode(TrainerBuySpell const& packet)
 {
-    sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Received CMSG_TRAINER_BUY_SPELL Trainer: %s, learn spell id is: %u", packet.guid.GetString().c_str(), packet.spellId);
+    auto const guidOpt = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guidOpt)
+        return;
+    ObjectGuid const guid = *guidOpt;
 
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.guid, UNIT_NPC_FLAG_TRAINER);
+    sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Received CLASSIC_CMSG_TRAINER_BUY_SPELL Trainer: %s, learn spell id is: %u", guid.GetString().c_str(), packet.SpellId);
+
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
 
     if (!unit || !unit->IsTrainerOf(_player, true) || !unit->IsWithinLOSInMap(_player))
     {
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_UNAVAILABLE);
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTrainerBuySpellOpcode - %s not found or you can't interact with him.", packet.guid.GetString().c_str());
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_UNAVAILABLE);
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTrainerBuySpellOpcode - %s not found or you can't interact with him.", guid.GetString().c_str());
         return;
     }
 
@@ -279,28 +254,28 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpel
 
     if (!cSpells && !tSpells)
     {
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_UNAVAILABLE);
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_UNAVAILABLE);
         return;
     }
 
     // Try to find the spell in npc_trainer.
-    TrainerSpell const* trainer_spell = cSpells ? cSpells->Find(packet.spellId) : nullptr;
+    TrainerSpell const* trainer_spell = cSpells ? cSpells->Find(packet.SpellId) : nullptr;
 
     // Not found, try find it in npc_trainer_template.
     if (!trainer_spell && tSpells)
-        trainer_spell = tSpells->Find(packet.spellId);
+        trainer_spell = tSpells->Find(packet.SpellId);
 
     // Not found anywhere, cheating?
     if (!trainer_spell)
     {
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_UNAVAILABLE);
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_UNAVAILABLE);
         return;
     }
 
     // Can't be learned, cheat? Or double learn with lags...
     if (_player->GetTrainerSpellState(trainer_spell) != TRAINER_SPELL_GREEN)
     {
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_NOT_ENOUGH_SKILL);
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_NOT_ENOUGH_SKILL);
         return;
     }
 
@@ -312,7 +287,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpel
     // Check money requirement.
     if (_player->GetMoney() < nSpellCost)
     {
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_NOT_ENOUGH_MONEY);
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_NOT_ENOUGH_MONEY);
         return;
     }
 
@@ -321,11 +296,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpel
     _player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
     _player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
-    Spell* spell;
-    if (proto->SpellVisual == 222)
-        spell = new Spell(_player, proto, false);
-    else
-        spell = new Spell(unit, proto, false);
+    Spell* spell = new Spell(_player, proto, false);
 
     SpellCastTargets targets;
     targets.setUnitTarget(_player);
@@ -333,14 +304,12 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpel
     SpellCastResult cast_result = spell->prepare(std::move(targets));
     spell->update(1); // Update the spell right now. Prevents desynch => take twice the money if you click really fast.
 
-    // Only charge player if cast of learning spell was successful.
+    // Only charge player if cast of learning spell was successful. There is no success ack: the
+    // client infers it from the resulting spellbook and gold updates.
     if (cast_result == SPELL_CAST_OK)
-    {
         _player->ModifyMoney(-int32(nSpellCost));
-        SendTrainingSuccess(packet.guid, packet.spellId);
-    }
     else
-        SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_UNAVAILABLE);
+        SendTrainingFailure(guid, packet.SpellId, TRAIN_FAIL_UNAVAILABLE);
 }
 
 void WorldSession::HandleGossipHelloOpcode(GossipHello const& request)
@@ -424,12 +393,26 @@ void WorldSession::HandleGossipSelectOptionOpcode(GossipSelectOption const& requ
     }
 }
 
-void WorldSession::HandleSpiritHealerActivateOpcode(WorldPackets::Npc::SpiritHealerActivate const& packet)
+// The client already tore down its own interaction window before sending this. Unlike
+// PlayerTalkClass::CloseGossip() (used when the server decides an interaction is over and needs to
+// tell the client), nothing is sent back here: just clear this session's stale gossip/quest menu
+// bookkeeping so a late CLASSIC_CMSG_GOSSIP_SELECT_OPTION can't apply against a menu the player no
+// longer has open.
+void WorldSession::HandleCloseInteractionOpcode(CloseInteraction const& /*packet*/)
 {
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.guid, UNIT_NPC_FLAG_SPIRITHEALER);
+    _player->PlayerTalkClass->ClearMenus();
+}
+
+void WorldSession::HandleSpiritHealerActivateOpcode(SpiritHealerActivate const& packet)
+{
+    auto const guid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!guid)
+        return;
+
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_SPIRITHEALER);
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleSpiritHealerActivateOpcode - %s not found or you can't interact with him.", packet.guid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleSpiritHealerActivateOpcode - %s not found or you can't interact with him.", guid->GetString().c_str());
         return;
     }
 
@@ -487,15 +470,19 @@ void WorldSession::SendSpiritResurrect()
     }
 }
 
-void WorldSession::HandleBinderActivateOpcode(WorldPackets::Npc::BinderActivate const& packet)
+void WorldSession::HandleBinderActivateOpcode(BinderActivate const& packet)
 {
     if (!GetPlayer()->IsInWorld() || !GetPlayer()->IsAlive())
         return;
 
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.npcGuid, UNIT_NPC_FLAG_INNKEEPER);
+    auto const guid = ClassicGuidMapping::FromClassic(packet.NpcGuid);
+    if (!guid)
+        return;
+
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_INNKEEPER);
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleBinderActivateOpcode - %s not found or you can't interact with him.", packet.npcGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleBinderActivateOpcode - %s not found or you can't interact with him.", guid->GetString().c_str());
         return;
     }
 

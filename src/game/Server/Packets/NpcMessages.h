@@ -294,4 +294,277 @@ struct GossipPoi
     }
 };
 
+// One spell a trainer offers.
+struct TrainerListSpell
+{
+    uint32 SpellId = 0;
+    uint32 MoneyCost = 0;
+    uint32 ReqSkillLine = 0;
+    uint32 ReqSkillRank = 0;
+    uint32 ReqAbility[3] = {};
+    uint8 Usable = 0;   // 0 known, 1 available, 2 unavailable
+    uint8 ReqLevel = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SpellId << MoneyCost << ReqSkillLine << ReqSkillRank;
+        data << ReqAbility[0] << ReqAbility[1] << ReqAbility[2];
+        data << Usable << ReqLevel;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 7 * sizeof(uint32) + 2)
+            return false;
+        data >> SpellId >> MoneyCost >> ReqSkillLine >> ReqSkillRank;
+        data >> ReqAbility[0] >> ReqAbility[1] >> ReqAbility[2];
+        data >> Usable >> ReqLevel;
+        return true;
+    }
+};
+
+// Opens the trainer window.
+struct TrainerList
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TRAINER_LIST;
+
+    ClassicGuid Guid;
+
+    void Write(ByteBuffer& data) const { Guid.Write(data); }
+    bool Read(ByteBuffer& data) { return Guid.Read(data); }
+};
+
+// A trainer's spell list and greeting.
+struct TrainerSpellList
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_TRAINER_LIST;
+
+    ClassicGuid TrainerGuid;
+    int32 TrainerType = 0;
+    uint32 TrainerId = 0;   // HARDCODE: no id distinct from the trainer's own guid/entry
+    std::vector<TrainerListSpell> Spells;
+    std::string Greeting;
+
+    void Write(ByteBuffer& data) const
+    {
+        TrainerGuid.Write(data);
+        data << TrainerType << TrainerId << int32(Spells.size());
+        for (TrainerListSpell const& spell : Spells)
+            spell.Write(data);
+        data.WriteBits(uint32(Greeting.length()), 11);
+        data.FlushBits();
+        data.WriteString(Greeting);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!TrainerGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2 * sizeof(int32) + sizeof(uint32))
+            return false;
+        int32 count;
+        data >> TrainerType >> TrainerId >> count;
+        if (count < 0 || uint32(count) > (data.size() - data.rpos()) / 30)
+            return false;
+        Spells.assign(uint32(count), TrainerListSpell());
+        for (TrainerListSpell& spell : Spells)
+            if (!spell.Read(data))
+                return false;
+        if (data.size() - data.rpos() < 2)
+            return false;
+        uint32 const length = data.ReadBits(11);
+        data.ResetBitPos();
+        if (data.size() - data.rpos() < length)
+            return false;
+        Greeting = data.ReadString(length);
+        return true;
+    }
+};
+
+// Buys a spell from a trainer.
+struct TrainerBuySpell
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TRAINER_BUY_SPELL;
+
+    ClassicGuid Guid;
+    uint32 TrainerId = 0;
+    uint32 SpellId = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Guid.Write(data);
+        data << TrainerId << SpellId;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Guid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2 * sizeof(uint32))
+            return false;
+        data >> TrainerId >> SpellId;
+        return true;
+    }
+};
+
+// A trainer purchase was refused. Purchases have no success ack: the client infers it from the
+// resulting spellbook and gold updates.
+struct TrainerBuyFailed
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_TRAINER_BUY_FAILED;
+
+    ClassicGuid TrainerGuid;
+    uint32 ServiceId = 0;
+    uint32 ErrorCode = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        TrainerGuid.Write(data);
+        data << ServiceId << ErrorCode;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!TrainerGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2 * sizeof(uint32))
+            return false;
+        data >> ServiceId >> ErrorCode;
+        return true;
+    }
+};
+
+// Casts the player's hearthstone bind at an innkeeper.
+struct BinderActivate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_BINDER_ACTIVATE;
+
+    ClassicGuid NpcGuid;
+
+    void Write(ByteBuffer& data) const { NpcGuid.Write(data); }
+    bool Read(ByteBuffer& data) { return NpcGuid.Read(data); }
+};
+
+// Opens the personal bank at a banker.
+struct BankerActivate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_BANKER_ACTIVATE;
+
+    ClassicGuid Guid;
+    int32 InteractionType = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Guid.Write(data);
+        data << InteractionType;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Guid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> InteractionType;
+        return true;
+    }
+};
+
+// Opens the guild tabard designer.
+struct TabardVendorActivate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TABARD_VENDOR_ACTIVATE;
+
+    ClassicGuid Guid;
+    int32 Type = 0;   // 0 guild, 1 personal -- this engine only has guild tabards
+
+    void Write(ByteBuffer& data) const
+    {
+        Guid.Write(data);
+        data << Type;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Guid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> Type;
+        return true;
+    }
+};
+
+// Asks a spirit healer to resurrect the player where they died.
+struct SpiritHealerActivate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SPIRIT_HEALER_ACTIVATE;
+
+    ClassicGuid Guid;
+
+    void Write(ByteBuffer& data) const { Guid.Write(data); }
+    bool Read(ByteBuffer& data) { return Guid.Read(data); }
+};
+
+// The client tore down an NPC interaction window on its own (Escape, walking away), without the
+// server having closed it first.
+struct CloseInteraction
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CLOSE_INTERACTION;
+
+    ClassicGuid Guid;
+
+    void Write(ByteBuffer& data) const { Guid.Write(data); }
+    bool Read(ByteBuffer& data) { return Guid.Read(data); }
+};
+
+// A subset of the client's PlayerInteractionType enum -- which NPC-interaction UI
+// NpcInteractionOpenResult opens. Numeric values match the real client enum.
+enum class PlayerInteractionType : int32
+{
+    None              = 0,
+    Gossip            = 3,
+    Trainer           = 7,
+    Banker            = 8,
+    GuildTabardVendor = 14,
+    SpiritHealer      = 18,
+    AreaSpiritHealer  = 19,
+    Binder            = 20,
+    StableMaster      = 22,
+};
+
+// Replaces the old separate SMSG_SHOW_BANK / SMSG_BINDER_CONFIRM /
+// SMSG_PLAYER_TABARD_VENDOR_ACTIVATE opcodes: every NPC-interaction window now opens through this
+// one packet, tagged by type.
+struct NpcInteractionOpenResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_NPC_INTERACTION_OPEN_RESULT;
+
+    ClassicGuid NpcGuid;
+    PlayerInteractionType InteractionType = PlayerInteractionType::None;
+    bool Success = true;
+
+    void Write(ByteBuffer& data) const
+    {
+        NpcGuid.Write(data);
+        data << int32(InteractionType);
+        data.WriteBit(Success);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!NpcGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        int32 type;
+        data >> type;
+        InteractionType = PlayerInteractionType(type);
+        Success = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 #endif

@@ -537,6 +537,73 @@ struct EnchantmentLog
     }
 };
 
+// Moves an item from a bag slot into the bank, wherever it fits. This engine has only the
+// character-personal bank; a request naming any other bank type is refused.
+struct AutoBankItem
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUTOBANK_ITEM;
+
+    static constexpr int8 BankTypeCharacter = 0;
+
+    ClassicInvUpdate Inv;
+    int8 BankType = BankTypeCharacter;
+    uint8 Bag = 0;
+    uint8 Slot = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Inv.Write(data);
+        data << BankType << Bag << Slot;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Inv.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 3)
+            return false;
+        data >> BankType >> Bag >> Slot;
+        return true;
+    }
+};
+
+// Moves an item between the bank and the inventory, whichever side the source slot is on.
+struct AutoStoreBankItem
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUTOSTORE_BANK_ITEM;
+
+    ClassicInvUpdate Inv;
+    uint8 Bag = 0;
+    uint8 Slot = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Inv.Write(data);
+        data << Bag << Slot;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Inv.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2)
+            return false;
+        data >> Bag >> Slot;
+        return true;
+    }
+};
+
+// Buys the next bank bag slot. No success ack: the client infers it from the gold change.
+struct BuyBankSlot
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_BUY_BANK_SLOT;
+
+    ClassicGuid Guid;
+
+    void Write(ByteBuffer& data) const { Guid.Write(data); }
+    bool Read(ByteBuffer& data) { return Guid.Read(data); }
+};
+
 // Time left on a temporary enchantment.
 struct ItemEnchantTimeUpdate
 {

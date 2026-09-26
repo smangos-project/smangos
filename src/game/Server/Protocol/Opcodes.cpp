@@ -518,16 +518,16 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_ACTIVATETAXI,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ACTIVATETAXIREPLY,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_NEW_TAXI_PATH,                UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TRAINER_LIST,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTrainerListOpcode);
+    INVALID_PACKET(CMSG_TRAINER_LIST,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_TRAINER_LIST,                 UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TRAINER_BUY_SPELL,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTrainerBuySpellOpcode);
+    INVALID_PACKET(CMSG_TRAINER_BUY_SPELL,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_TRAINER_BUY_SUCCEEDED,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_TRAINER_BUY_FAILED,           UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BINDER_ACTIVATE,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBinderActivateOpcode);
+    INVALID_PACKET(CMSG_BINDER_ACTIVATE,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAYERBINDERROR,              UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BANKER_ACTIVATE,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBankerActivateOpcode);
+    INVALID_PACKET(CMSG_BANKER_ACTIVATE,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SHOW_BANK,                    UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BUY_BANK_SLOT,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBuyBankSlotOpcode);
+    INVALID_PACKET(CMSG_BUY_BANK_SLOT,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BUY_BANK_SLOT_RESULT,         UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_PETITION_SHOWLIST,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetitionShowListOpcode);
     INVALID_PACKET(SMSG_PETITION_SHOWLIST,            UnhandleReason::SendByServer);
@@ -588,7 +588,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_PET_CAST_SPELL,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetCastSpellOpcode);
 #endif
     DEFINE_HANDLER(MSG_SAVE_GUILD_EMBLEM,             STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleSaveGuildEmblemOpcode);
-    DEFINE_HANDLER(MSG_TABARDVENDOR_ACTIVATE,         STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleTabardVendorActivateOpcode);
+    INVALID_PACKET(MSG_TABARDVENDOR_ACTIVATE,         UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAY_SPELL_VISUAL,            UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_ZONEUPDATE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleZoneUpdateOpcode);
     INVALID_PACKET(SMSG_PARTYKILLLOG,                 UnhandleReason::SendByServer);
@@ -633,7 +633,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_GMTICKET_SYSTEMSTATUS,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGMTicketSystemStatusOpcode);
     INVALID_PACKET(SMSG_GMTICKET_SYSTEMSTATUS,        UnhandleReason::SendByServer);
                // Can call convert corpse on different map.
-    DEFINE_HANDLER(CMSG_SPIRIT_HEALER_ACTIVATE,       STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleSpiritHealerActivateOpcode);
+    INVALID_PACKET(CMSG_SPIRIT_HEALER_ACTIVATE,       UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_SET_STAT_CHEAT,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SET_REST_START,               UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SKILL_BUY_STEP,               UnhandleReason::Unhandled);
@@ -739,8 +739,8 @@ Handlers BuildOpcodeList()
 #endif
     DEFINE_HANDLER(CMSG_GROUP_SWAP_SUB_GROUP,         STATUS_LOGGEDIN,  PACKET_PROCESS_GROUP,         &WorldSession::HandleGroupSwapSubGroupOpcode);
     INVALID_PACKET(CMSG_RESET_FACTION_CHEAT,          UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_AUTOSTORE_BANK_ITEM,          STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutoStoreBankItemOpcode);
-    DEFINE_HANDLER(CMSG_AUTOBANK_ITEM,                STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutoBankItemOpcode);
+    INVALID_PACKET(CMSG_AUTOSTORE_BANK_ITEM,          UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_AUTOBANK_ITEM,                UnhandleReason::Unhandled);
     DEFINE_HANDLER(MSG_QUERY_NEXT_MAIL_TIME,          STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleQueryNextMailTime);
     INVALID_PACKET(SMSG_RECEIVED_MAIL,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_RAID_GROUP_ONLY,              UnhandleReason::SendByServer);
@@ -1098,6 +1098,16 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUY_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleBuyItemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUY_BACK_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleBuybackItem);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPAIR_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepairItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CLOSE_INTERACTION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCloseInteractionOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TRAINER_LIST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTrainerListOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TRAINER_BUY_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTrainerBuySpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BINDER_ACTIVATE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleBinderActivateOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BANKER_ACTIVATE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleBankerActivateOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TABARD_VENDOR_ACTIVATE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTabardVendorActivateOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SPIRIT_HEALER_ACTIVATE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSpiritHealerActivateOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUTOBANK_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutoBankItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUTOSTORE_BANK_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutoStoreBankItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUY_BANK_SLOT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleBuyBankSlotOpcode);
 
     return list;
 }

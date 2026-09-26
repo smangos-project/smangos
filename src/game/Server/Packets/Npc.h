@@ -8,61 +8,6 @@
 
 namespace WorldPackets { namespace Npc
 {
-    class TrainerList final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit TrainerList() : ClientPacket(CMSG_TRAINER_LIST) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class TrainerBuySpell final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-        uint32 spellId = 0;
-
-        explicit TrainerBuySpell() : ClientPacket(CMSG_TRAINER_BUY_SPELL) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class BinderActivate final : public ClientPacket
-    {
-    public:
-        ObjectGuid npcGuid;
-
-        explicit BinderActivate() : ClientPacket(CMSG_BINDER_ACTIVATE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class BankerActivate final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit BankerActivate() : ClientPacket(CMSG_BANKER_ACTIVATE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class TabardVendorActivate final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit TabardVendorActivate() : ClientPacket(MSG_TABARDVENDOR_ACTIVATE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class SpiritHealerActivate final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit SpiritHealerActivate() : ClientPacket(CMSG_SPIRIT_HEALER_ACTIVATE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class ListStabledPets final : public ClientPacket
     {
     public:
@@ -112,55 +57,12 @@ namespace WorldPackets { namespace Npc
 
     // --- Server Packets ---
 
-    class ShowBank final : public ServerPacket
-    {
-    public:
-        ObjectGuid bankerGuid;
-
-        explicit ShowBank() : ServerPacket(SMSG_SHOW_BANK) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class StableResult final : public ServerPacket
     {
     public:
         uint8 result = 0;
 
         explicit StableResult() : ServerPacket(SMSG_STABLE_RESULT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class TrainerBuySucceeded final : public ServerPacket
-    {
-    public:
-        ObjectGuid trainerGuid;
-        uint32 spellId = 0;
-
-        explicit TrainerBuySucceeded() : ServerPacket(SMSG_TRAINER_BUY_SUCCEEDED) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class TrainerBuyFailed final : public ServerPacket
-    {
-    public:
-        ObjectGuid trainerGuid;
-        uint32 serviceId = 0;
-        uint32 errorCode = 0;
-
-        explicit TrainerBuyFailed() : ServerPacket(SMSG_TRAINER_BUY_FAILED) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class TabardVendorActivateResponse final : public ServerPacket
-    {
-    public:
-        ObjectGuid tabardVendorNpcGuid;
-
-        explicit TabardVendorActivateResponse() : ServerPacket(MSG_TABARDVENDOR_ACTIVATE) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
