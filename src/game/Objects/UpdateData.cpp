@@ -29,11 +29,15 @@
 #include "World.h"
 #include "ObjectGuid.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "PacketFraming.h"
 #include "Errors.h"
 #include <cstring>
 #include <zlib.h>
 
-#define MAX_UNCOMPRESSED_PACKET_SIZE 0x8000 // 32ko
+// Splits a session's blocks across several packets once one gets this big, well under
+// MAX_CLASSIC_PACKET_SIZE (PacketFraming.h) to leave room for the block that pushed it over plus
+// this packet's own header (map id, block count, destroy/out-of-range lists).
+#define MAX_UNCOMPRESSED_PACKET_SIZE (MAX_CLASSIC_PACKET_SIZE / 2)
 
 UpdateData::UpdateData()
 {

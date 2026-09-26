@@ -6,6 +6,10 @@
 
 struct z_stream_s;
 
+// The largest packet body either direction's framing accepts (PacketHeader::Size is checked
+// against this on read; the same bound applies to what we send, since the shape is symmetric).
+constexpr uint32 MAX_CLASSIC_PACKET_SIZE = 0x40000;
+
 // Identical shape both directions: [size:u32 LE][tag:12 bytes], prefixing PacketCrypt's
 // (Crypto/Encryption/PacketCrypt.h) ciphertext on every world-socket frame.
 #pragma pack(push, 1)
@@ -14,7 +18,7 @@ struct PacketHeader
     uint32 Size;
     uint8 Tag[12];
 
-    bool IsValidSize() const { return Size < 0x40000; }
+    bool IsValidSize() const { return Size < MAX_CLASSIC_PACKET_SIZE; }
 };
 
 // Prefixes CLASSIC_SMSG_COMPRESSED_PACKET's deflate payload: adler32 checksums of the plaintext

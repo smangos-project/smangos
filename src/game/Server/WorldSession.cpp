@@ -136,8 +136,10 @@ void WorldSession::SendPacket(std::unique_ptr<ServerPacket const> packet)
         buffer.FillPacketTime(WorldTimer::getMSTime());
     }
 
-    // There is a maximum size packet.
-    if (buffer.size() > 0x8000)
+    // The modern framing (PacketFraming.h) accepts up to MAX_CLASSIC_PACKET_SIZE either direction;
+    // WorldSocket::SendPacket compresses anything past ClassicCompressionThreshold, so this only
+    // guards against a packet the client's own framing would refuse outright.
+    if (buffer.size() > MAX_CLASSIC_PACKET_SIZE)
     {
         // Packet will be rejected by client
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "[NETWORK] Packet %s size %u is too large. Not sent [Account %u Player %s]", LookupOpcodeName(buffer.GetOpcode()), buffer.size(), GetAccountId(), GetPlayerName());
@@ -157,8 +159,8 @@ void WorldSession::SendPacket(std::unique_ptr<ServerPacket const> packet)
 // Send a packet to the client
 void WorldSession::SendPacket(WorldPacket const* packet)
 {
-    // There is a maximum size packet.
-    if (packet->size() > 0x8000)
+    // See the other overload's comment: the modern framing's own accepted size, not the vanilla one.
+    if (packet->size() > MAX_CLASSIC_PACKET_SIZE)
     {
         // Packet will be rejected by client
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "[NETWORK] Packet %s size %u is too large. Not sent [Account %u Player %s]", LookupOpcodeName(packet->GetOpcode()), packet->size(), GetAccountId(), GetPlayerName());
