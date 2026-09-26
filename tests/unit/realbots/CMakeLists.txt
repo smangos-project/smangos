@@ -50,6 +50,7 @@ add_executable(tests-realbots
   AuraPacketsTests.cpp
   CombatLogTests.cpp
   DeathMessagesTests.cpp
+  DuelMessagesTests.cpp
   QueryMessagesTests.cpp
   ItemMessagesTests.cpp
   LootMessagesTests.cpp
