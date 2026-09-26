@@ -426,7 +426,6 @@ set (game_SRCS
     Objects/UnitDefines.h
     Objects/UpdateData.h
     Objects/UpdateFields.h
-    Objects/UpdateMask.h
     Objects/Updates/UpdateField.h
     Objects/Updates/UpdateFieldMask.h
     Objects/Updates/UpdateFieldStructs.h

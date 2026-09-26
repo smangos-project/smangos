@@ -24,29 +24,7 @@
 
 #include "Common.h"
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_12_1
 #include "UpdateFields_1_12_1.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
-#include "UpdateFields_1_11_2.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_10_2
-#include "UpdateFields_1_10_2.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_9_4
-#include "UpdateFields_1_9_4.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_8_4
-#include "UpdateFields_1_8_4.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_7_1
-#include "UpdateFields_1_7_1.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-#include "UpdateFields_1_6_1.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_5_1
-#include "UpdateFields_1_5_1.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_4_2
-#include "UpdateFields_1_4_2.h"
-#elif SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_3_1
-#include "UpdateFields_1_3_1.h"
-#else
-#include "UpdateFields_1_2_4.h"
-#endif
 
 enum UpdateFields5875
 {
@@ -119,38 +97,20 @@ enum UpdateFieldValueTypes
     UF_TYPE_BYTES2    = 6
 };
 
-enum UpdateFieldFlags : uint16
-{
-    UF_FLAG_NONE         = 0x000,
-    UF_FLAG_PUBLIC       = 0x001,
-    UF_FLAG_PRIVATE      = 0x002,
-    UF_FLAG_OWNER_ONLY   = 0x004,
-    UF_FLAG_UNK1         = 0x008,
-    UF_FLAG_UNK2         = 0x010,
-    UF_FLAG_SPECIAL_INFO = 0x020,
-    UF_FLAG_GROUP_ONLY   = 0x040,
-    UF_FLAG_UNK5         = 0x080,
-    UF_FLAG_DYNAMIC      = 0x100,
-};
-
 struct UpdateFieldData
 {
     UpdateFieldData() = default;
-    UpdateFieldData(uint8 objectTypeMask_, char const* name_, uint16 offset_, uint16 size_, UpdateFieldValueTypes valueType_, uint16 flags_) :
-        objectTypeMask(objectTypeMask_), name(name_), offset(offset_), size(size_), valueType(valueType_), flags(flags_) {}
+    UpdateFieldData(uint8 objectTypeMask_, char const* name_, uint16 offset_, uint16 size_, UpdateFieldValueTypes valueType_) :
+        objectTypeMask(objectTypeMask_), name(name_), offset(offset_), size(size_), valueType(valueType_) {}
     uint8 objectTypeMask = 0;
     char const* name = "";
     uint16 offset = 0;
     uint16 size = 0;
     UpdateFieldValueTypes valueType = UF_TYPE_NONE;
-    uint16 flags = UF_FLAG_NONE;
 };
 
 namespace UpdateFields
 {
-    uint16 const* GetUpdateFieldFlagsArray(uint8 objectTypeId);
-    // True at every index that is the low half of a guid (pair of uint32); guid arrays are marked pairwise.
-    bool const* GetGuidFieldStartArray(uint8 objectTypeId);
     UpdateFieldData const* GetUpdateFieldDataByName(char const* name);
     UpdateFieldData const* GetUpdateFieldDataByTypeMaskAndOffset(uint8 objectTypeMask, uint16 offset);
 };

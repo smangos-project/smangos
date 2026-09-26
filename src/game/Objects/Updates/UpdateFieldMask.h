@@ -12,8 +12,7 @@ inline constexpr uint32 GetUpdateFieldBlockFlag(std::size_t bit) { return 1u << 
 
 // A fixed-size bitmask over Bits update-field slots, grouped into 32-bit blocks with a second
 // level "which blocks are non-zero" mask, so a mostly-unchanged struct can skip most of its
-// blocks on the wire. Named UpdateFieldMask, not UpdateMask, to avoid the unrelated vanilla
-// ::UpdateMask (Objects/UpdateMask.h).
+// blocks on the wire.
 template<uint32 Bits>
 class UpdateFieldMask
 {

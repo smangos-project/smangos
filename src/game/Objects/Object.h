@@ -56,7 +56,6 @@ class Unit;
 class GameObject;
 class SpellCaster;
 class Map;
-class UpdateMask;
 class InstanceData;
 class TerrainInfo;
 class ZoneScript;

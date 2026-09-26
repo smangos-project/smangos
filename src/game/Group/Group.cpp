@@ -36,7 +36,6 @@
 #include "LootMgr.h"
 #include "LFGMgr.h"
 #include "LFGQueue.h"
-#include "UpdateMask.h"
 #include "Utilities/Random.h"
 
 #include <array>

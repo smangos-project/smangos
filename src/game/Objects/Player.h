@@ -54,7 +54,6 @@ class Group;
 class Channel;
 class Creature;
 class PlayerMenu;
-class UpdateMask;
 class SpellCastTargets;
 class PlayerSocial;
 class TradeData;

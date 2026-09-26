@@ -31,7 +31,6 @@
 #include "ObjectMgr.h"
 #include "ObjectGuid.h"
 #include "UpdateData.h"
-#include "UpdateMask.h"
 #include "Updates/UpdateFieldFill.h"
 #include "Updates/UpdateObjectWriter.h"
 #include "Util.h"

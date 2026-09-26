@@ -29,7 +29,6 @@
 #include "SpellMgr.h"
 #include "Player.h"
 #include "PlayerAI.h"
-#include "UpdateMask.h"
 #include "Spell.h"
 #include "SpellModifier.h"
 #include "DynamicObject.h"
