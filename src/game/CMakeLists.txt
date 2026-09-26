@@ -160,6 +160,7 @@ set (game_SRCS
     Movement/TargetedMovementGenerator.cpp
     Movement/WaypointManager.cpp
     Movement/WaypointMovementGenerator.cpp
+    Movement/spline/MonsterMovePacking.cpp
     Movement/spline/MoveSpline.cpp
     Movement/spline/MoveSplineInit.cpp
     Movement/spline/packet_builder.cpp
@@ -393,6 +394,7 @@ set (game_SRCS
     Movement/TargetedMovementGenerator.h
     Movement/WaypointManager.h
     Movement/WaypointMovementGenerator.h
+    Movement/spline/MonsterMovePacking.h
     Movement/spline/MoveSpline.h
     Movement/spline/MoveSplineFlag.h
     Movement/spline/MoveSplineInit.h

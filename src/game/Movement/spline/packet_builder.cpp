@@ -18,6 +18,7 @@
 
 #include "packet_builder.h"
 #include "MoveSpline.h"
+#include "MonsterMovePacking.h"
 #include "Unit.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/MonsterMove.h"
@@ -45,15 +46,6 @@ uint32 ToModernSplineFlags(MoveSplineFlag const& flags, bool allowUncompressedPa
     if (flags.frozen)
         modern |= CLASSIC_SPLINEFLAG_FROZEN;
     return modern;
-}
-
-// A point packed into a word: x and y in 11 bits, z in 10, all at quarter yard precision.
-uint32 PackXYZ(Vector3 const& point)
-{
-    uint32 packed = uint32(int32(point.x * 4.0f)) & 0x7FF;
-    packed |= (uint32(int32(point.y * 4.0f)) & 0x7FF) << 11;
-    packed |= (uint32(int32(point.z * 4.0f)) & 0x3FF) << 22;
-    return packed;
 }
 }
 
@@ -96,24 +88,12 @@ void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_sp
     if (span <= 0)
         return;
 
-    if (packet.Flags & CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH)
-    {
-        for (int32 i = first + 1; i <= last; ++i)
-        {
-            Vector3 const& node = spline.getPoint(i);
-            packet.Points.push_back({ node.x, node.y, node.z });
-        }
-        return;
-    }
+    std::vector<Vector3> pathAfterStart;
+    pathAfterStart.reserve(span);
+    for (int32 i = first + 1; i <= last; ++i)
+        pathAfterStart.push_back(spline.getPoint(i));
 
-    // Everyday ground movement: the destination, and the nodes between as offsets from the
-    // midpoint of the path.
-    Vector3 const& destination = spline.getPoint(last);
-    packet.Points.push_back({ destination.x, destination.y, destination.z });
-
-    Vector3 const midpoint = (start + destination) * 0.5f;
-    for (int32 i = first + 1; i < last; ++i)
-        packet.PackedDeltas.push_back(PackXYZ(midpoint - spline.getPoint(i)));
+    PackMonsterMovePath(start, pathAfterStart, (packet.Flags & CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH) != 0, packet);
 }
 
 void PacketBuilder::WriteCreateSpline(MoveSpline const& move_spline, ByteBuffer& data)

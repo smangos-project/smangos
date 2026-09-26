@@ -3,11 +3,13 @@ add_executable(tests-game
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateField.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateFieldStructs.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/MovementFlags.cpp
+  ${CMAKE_SOURCE_DIR}/src/game/Movement/spline/MonsterMovePacking.cpp
   ViewerDependentStubs.cpp
   ClassicGuidMappingTests.cpp
   ClassicClientTests.cpp
   UpdateFieldTests.cpp
   MovementFlagsTests.cpp
+  MonsterMovePackingTests.cpp
   TestMain.cpp
 )
 
@@ -21,7 +23,7 @@ target_include_directories(tests-game PRIVATE
   ${CMAKE_SOURCE_DIR}/src/framework
 )
 
-target_link_libraries(tests-game PRIVATE shared framework Catch2)
+target_link_libraries(tests-game PRIVATE shared framework Catch2 g3dlite)
 
 if (WIN32)
   target_link_libraries(tests-game PRIVATE

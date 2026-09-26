@@ -5,9 +5,11 @@
 // is what actually exercises that path today.
 #include "BotTask.h"
 #include "Packets/Auth.h"
+#include "Packets/ChatMessages.h"
 #include "Packets/Session.h"
 #include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
+#include "Packets/WorldTransfer.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <algorithm>
@@ -190,6 +192,55 @@ TEST_CASE("world_entry: the bot sees itself in its own create block, at the SMSG
         CHECK(std::abs(known->X - verify->X) < 1.0f);
         CHECK(std::abs(known->Y - verify->Y) < 1.0f);
         CHECK(std::abs(known->Z - verify->Z) < 1.0f);
+    });
+}
+
+TEST_CASE("world_entry: a bot sees a nearby game object, its stationary position parsed", "[gameplay]")
+{
+    if (ConformanceRun::GmTarget().empty())
+        SKIP("the target has no game master accounts (" << ConformanceRun::Target() << "-gm)");
+
+    RunTest([]() -> TestRoutine
+    {
+        TestBot gm(TestBotOptions().Gm());
+        REQUIRE(co_await gm.Stage(BotStage::InWorld, 30000));
+        ClassicGuid const guid = gm.GetCharacterGuid();
+        REQUIRE(co_await TestWaitUntil([&]() { return gm.GetKnownObject(guid).has_value(); }, 10000));
+        BotKnownObject const start = *gm.GetKnownObject(guid);
+
+        // Orgrimmar's main plaza: mailboxes, banners and the auction house door are all static
+        // game objects, on any standard database.
+        ChatMessageSay go;
+        go.Language = 7; // LANG_COMMON
+        go.Message = ".go xyz 1633.75 -4373.39 31.0 1";
+        gm.Send(go);
+        REQUIRE(co_await gm.Packet<NewWorld>(20000));
+
+        bool sawStationaryPosition = false;
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            for (BotKnownObject const& object : gm.GetKnownObjects())
+            {
+                if (object.ObjectType != BOT_TYPEID_GAMEOBJECT)
+                    continue;
+                if (object.X != 0.0f || object.Y != 0.0f)
+                {
+                    sawStationaryPosition = true;
+                    return true;
+                }
+            }
+            return false;
+        }, 20000));
+        CHECK(sawStationaryPosition);
+
+        // Back to the starting map and position, so the account is where the next scenario to use
+        // it expects to find it.
+        ChatMessageSay back;
+        back.Language = 7;
+        back.Message = ".go xyz " + std::to_string(start.X) + " " + std::to_string(start.Y) + " " +
+                       std::to_string(start.Z) + " 0";
+        gm.Send(back);
+        REQUIRE(co_await gm.Packet<NewWorld>(20000));
     });
 }
 
