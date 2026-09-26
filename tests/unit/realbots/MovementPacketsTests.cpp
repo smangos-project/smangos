@@ -1,4 +1,5 @@
 // Round trips for the movement info block and the modern movement messages.
+#include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
 #include "TestPacketRoundTrip.h"
 #include <catch_amalgamated.hpp>
@@ -400,4 +401,94 @@ TEST_CASE("Spline done and time messages round-trip", "[packets]")
     });
     RejectsEveryTruncation(skipped);
     static_assert(MoveSkipTime::Opcode == CLASSIC_SMSG_MOVE_SKIP_TIME);
+}
+
+TEST_CASE("MonsterMove round-trips a path with each kind of facing", "[packets]")
+{
+    MonsterMove out;
+    out.Mover = TestGuid(21);
+    out.Start = { 1.0f, 2.0f, 3.0f };
+    out.SplineId = 8;
+    out.Flags = CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH | CLASSIC_SPLINEFLAG_FLYING;
+    out.Elapsed = 120;
+    out.MoveTime = 4500;
+    out.Points = { { 4.0f, 5.0f, 6.0f }, { 7.0f, 8.0f, 9.0f } };
+
+    auto check = [](MonsterMove const& a, MonsterMove const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.Start.X == b.Start.X);
+        CHECK(a.Start.Y == b.Start.Y);
+        CHECK(a.Start.Z == b.Start.Z);
+        CHECK(a.SplineId == b.SplineId);
+        CHECK(a.Flags == b.Flags);
+        CHECK(a.Elapsed == b.Elapsed);
+        CHECK(a.MoveTime == b.MoveTime);
+        CHECK(a.Transport == b.Transport);
+        CHECK(a.Face == b.Face);
+        CHECK(a.FaceDirection == b.FaceDirection);
+        CHECK(a.FaceTarget == b.FaceTarget);
+        CHECK(a.PackedDeltas == b.PackedDeltas);
+        REQUIRE(a.Points.size() == b.Points.size());
+        for (size_t i = 0; i < a.Points.size(); ++i)
+        {
+            CHECK(a.Points[i].X == b.Points[i].X);
+            CHECK(a.Points[i].Y == b.Points[i].Y);
+            CHECK(a.Points[i].Z == b.Points[i].Z);
+        }
+    };
+
+    RoundTrip(out, check);
+    RejectsEveryTruncation(out);
+
+    out.Face = CLASSIC_MONSTERMOVE_FACING_ANGLE;
+    out.FaceDirection = 1.25f;
+    RoundTrip(out, check);
+    RejectsEveryTruncation(out);
+
+    out.Face = CLASSIC_MONSTERMOVE_FACING_TARGET;
+    out.FaceTarget = TestGuid(99);
+    RoundTrip(out, check);
+    RejectsEveryTruncation(out);
+
+    out.Face = CLASSIC_MONSTERMOVE_FACING_SPOT;
+    out.FaceDirection = 0.0f;
+    out.FaceTarget = ClassicGuid();
+    out.FaceSpot = { 10.0f, 11.0f, 12.0f };
+    RoundTrip(out, [&](MonsterMove const& a, MonsterMove const& b)
+    {
+        check(a, b);
+        CHECK(a.FaceSpot.X == b.FaceSpot.X);
+        CHECK(a.FaceSpot.Y == b.FaceSpot.Y);
+        CHECK(a.FaceSpot.Z == b.FaceSpot.Z);
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("MonsterMove round-trips a stop, a transport mover and packed deltas", "[packets]")
+{
+    MonsterMove stop;
+    stop.Mover = TestGuid(21);
+    stop.Start = { 1.0f, 2.0f, 3.0f };
+    stop.SplineId = 9;
+    RoundTrip(stop, [](MonsterMove const& a, MonsterMove const& b)
+    {
+        CHECK(a.SplineId == b.SplineId);
+        CHECK(b.Points.empty());
+    });
+    RejectsEveryTruncation(stop);
+
+    MonsterMove packed = stop;
+    packed.Transport = TestGuid(500);
+    packed.VehicleSeat = 3;
+    packed.Points = { { 4.0f, 5.0f, 6.0f } };
+    packed.PackedDeltas = { 0x11223344u, 0x55667788u };
+    RoundTrip(packed, [](MonsterMove const& a, MonsterMove const& b)
+    {
+        CHECK(a.Transport == b.Transport);
+        CHECK(a.VehicleSeat == b.VehicleSeat);
+        CHECK(a.PackedDeltas == b.PackedDeltas);
+    });
+    RejectsEveryTruncation(packed);
+    static_assert(MonsterMove::Opcode == CLASSIC_SMSG_ON_MONSTER_MOVE);
 }
