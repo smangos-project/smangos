@@ -374,6 +374,9 @@ class TestBot
         // The bot's published state (stage, session info from the Battle.net half, character guid, ...).
         RealBotInfo Info() const { return m_bot->GetPublishedInfo(); }
 
+        // What the bot has learned from SMSG_UPDATE_OBJECT create blocks so far (BotWorldView).
+        std::optional<BotKnownObject> GetKnownObject(ClassicGuid const& guid) const { return m_bot->GetKnownObject(guid); }
+
         std::string GetLastError() const;
         BotStage GetFailedStage() const;
         BotDisconnectReason GetDisconnectReason() const;

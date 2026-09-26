@@ -14,6 +14,7 @@ add_executable(tests-realbots
   ${SERVER_PROTOCOL_DIR}/ClassicOpcodes.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
+  ${REALBOTS_DIR}/Behavior/BotWorldView.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskArgs.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskRegistry.cpp
   ${REALBOTS_DIR}/Behavior/Tasks/BuiltinBotTasks.cpp

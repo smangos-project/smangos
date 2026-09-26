@@ -166,6 +166,33 @@ TEST_CASE("world_entry: SMSG_LOGIN_VERIFY_WORLD carries the character's map and 
     });
 }
 
+TEST_CASE("world_entry: the bot sees itself in its own create block, at the SMSG_LOGIN_VERIFY_WORLD position", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+
+        auto verify = bot.LastReceived<LoginVerifyWorld>();
+        REQUIRE(verify);
+
+        ClassicGuid self = bot.GetCharacterGuid();
+        std::optional<BotKnownObject> known;
+        for (int attempt = 0; attempt < 50 && !known; ++attempt)
+        {
+            known = bot.GetKnownObject(self);
+            if (!known)
+                co_await TestDelay(100);
+        }
+        REQUIRE(known);
+
+        CHECK(known->ObjectType == BOT_TYPEID_ACTIVE_PLAYER);
+        CHECK(std::abs(known->X - verify->X) < 1.0f);
+        CHECK(std::abs(known->Y - verify->Y) < 1.0f);
+        CHECK(std::abs(known->Z - verify->Z) < 1.0f);
+    });
+}
+
 TEST_CASE("world_entry: a clean logout ends Disconnected, with SMSG_LOGOUT_COMPLETE on the Realm connection", "[protocol][slow]")
 {
     RunTest([]() -> TestRoutine

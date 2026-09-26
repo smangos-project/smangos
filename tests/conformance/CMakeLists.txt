@@ -18,6 +18,7 @@ add_executable(tests-conformance
   ${REALBOTS_DIR}/Core/BotPacketLog.cpp
   ${REALBOTS_DIR}/Behavior/BotBrain.cpp
   ${REALBOTS_DIR}/Behavior/BotContext.cpp
+  ${REALBOTS_DIR}/Behavior/BotWorldView.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskArgs.cpp
   ${REALBOTS_DIR}/Behavior/BotTaskRegistry.cpp
   ${REALBOTS_DIR}/Behavior/Tasks/BuiltinBotTasks.cpp

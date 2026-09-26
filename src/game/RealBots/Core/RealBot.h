@@ -5,6 +5,7 @@
 #include "BotIdentity.h"
 #include "BotPacket.h"
 #include "BotStage.h"
+#include "BotWorldView.h"
 #include "LockedQueue.h"
 #include "Packets/Classic/Guid.h"
 #include <array>
@@ -232,6 +233,10 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         RealBotInfo GetPublishedInfo() const;
 
+        // What this bot has learned from SMSG_UPDATE_OBJECT so far (BotWorldView), fed from
+        // ApplyDefaultHandling on the bot thread; safe to call from any thread.
+        std::optional<BotKnownObject> GetKnownObject(ClassicGuid const& guid) const;
+
     private:
         void ProcessCommands();
         void ProcessIncoming(uint32 diff);
@@ -291,6 +296,9 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         mutable std::mutex m_infoLock;
         RealBotInfo m_publishedInfo;
+
+        mutable std::mutex m_worldViewLock;
+        BotWorldView m_worldView;
 };
 
 #endif

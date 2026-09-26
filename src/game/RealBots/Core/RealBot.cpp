@@ -4,6 +4,7 @@
 #include "BotWorldConnection.h"
 #include "ClassicOpcodes.h"
 #include "Packets/Session.h"
+#include "Packets/ObjectUpdate.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>
@@ -357,9 +358,25 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             }
             break;
         }
+        case CLASSIC_SMSG_UPDATE_OBJECT:
+        {
+            UpdateObject update;
+            if (update.Read(body))
+            {
+                std::lock_guard<std::mutex> lock(m_worldViewLock);
+                m_worldView.OnUpdateObject(update);
+            }
+            break;
+        }
         default:
             break;
     }
+}
+
+std::optional<BotKnownObject> RealBot::GetKnownObject(ClassicGuid const& guid) const
+{
+    std::lock_guard<std::mutex> lock(m_worldViewLock);
+    return m_worldView.Get(guid);
 }
 
 void RealBot::UpdateLogout(uint32 diff)
