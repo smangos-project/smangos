@@ -22,12 +22,11 @@
 #ifndef __UPDATEDATA_H
 #define __UPDATEDATA_H
 
+#include <list>
 #include <memory>
 #include "ByteBuffer.h"
 #include "ObjectGuid.h"
 #include "Packets/ObjectUpdate.h"
-
-using UpdatePacket = WorldPackets::ObjectUpdate::UpdateObject::UpdatePacket;
 
 class WorldPacket;
 class WorldSession;
@@ -66,6 +65,13 @@ class PacketCompressor
         static void Compress(void* dst, uint32* dst_size, void* src, int src_size);
 };
 
+// One physical SMSG_UPDATE_OBJECT's worth of already-serialized create/values/movement blocks.
+struct UpdateDataBlock
+{
+    ByteBuffer data;
+    uint32 blockCount = 0;
+};
+
 class UpdateData
 {
     public:
@@ -74,18 +80,25 @@ class UpdateData
 
         void AddOutOfRangeGUID(ObjectGuidSet& guids);
         void AddOutOfRangeGUID(ObjectGuid const& guid);
+        void AddDestroyObject(ObjectGuid const& guid);
         ByteBuffer& AddUpdateBlockAndGetBuffer();
-        void Send(WorldSession* session, bool hasTransport = false);
-        void BuildPacket(std::unique_ptr<WorldPackets::ObjectUpdate::UpdateObject>& packet, bool hasTransport = false);
-        void BuildPacket(std::unique_ptr<WorldPackets::ObjectUpdate::UpdateObject>& packet, UpdatePacket* updPacket, bool hasTransport = false);
-        bool HasData() { return !m_datas.empty() || !m_outOfRangeGUIDs.empty(); }
+        // Fills `packet` with this update's first (or only) block, if any, and the destroy/out-of-
+        // range guid lists, which are then cleared. For a caller that wants to build the wire
+        // packet once and reuse the same bytes across several sessions (Send() below rebuilds one
+        // per session/split instead).
+        void BuildPacket(UpdateObject& packet, uint32 mapId, UpdateDataBlock const* block = nullptr);
+        // Sends to `session`'s player's current map; splits into more than one physical packet if
+        // the blocks built up don't fit in one (see AddUpdateBlockAndGetBuffer).
+        void Send(WorldSession* session);
+        bool HasData() const { return !m_datas.empty() || !m_outOfRangeGUIDs.empty() || !m_destroyGUIDs.empty(); }
         void Clear();
 
         ObjectGuidSet const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
         ObjectGuidSet m_outOfRangeGUIDs;
-        std::list<UpdatePacket> m_datas;
+        ObjectGuidSet m_destroyGUIDs;
+        std::list<UpdateDataBlock> m_datas;
 };
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1

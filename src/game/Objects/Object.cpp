@@ -304,76 +304,14 @@ void Object::SendForcedObjectUpdate()
         itr.second.Send(itr.first->GetSession());
 }
 
-void Object::BuildMovementUpdateBlock(UpdateData& data, uint8 flags) const
+void Object::BuildMovementUpdateBlock(UpdateData& /*data*/, uint8 /*flags*/) const
 {
-    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
-
-    buf << uint8(UPDATETYPE_MOVEMENT);
-    buf << GetObjectGuid();
-
-    BuildMovementUpdate(&buf, flags);
+    // The modern movement block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
-void Object::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) const
+void Object::BuildCreateUpdateBlockForPlayer(UpdateData& /*data*/, Player* /*target*/) const
 {
-    if (!target)
-        return;
-
-    uint8 updatetype   = UPDATETYPE_CREATE_OBJECT;
-    uint8 updateFlags  = m_updateFlag;
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    if (target == this)                                     // building packet for yourself
-        updateFlags |= UPDATEFLAG_SELF;
-
-    if (IsUnit() && static_cast<Unit const*>(this)->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && static_cast<Unit const*>(this)->GetVictim())
-        updateFlags |= UPDATEFLAG_MELEE_ATTACKING;
-
-    if (m_isNewObject)
-        updatetype = UPDATETYPE_CREATE_OBJECT2;
-#else
-    if (target->GetMover() == this)
-        updateFlags |= UPDATEFLAG_SELF;
-#endif
-
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "BuildCreateUpdate: update-type: %u, object-type: %u got updateFlags: %X", updatetype, m_objectTypeId, updateFlags);
-
-    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
-    buf << (uint8)updatetype;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    buf << GetPackGUID();
-#else
-    buf << GetGUID();
-#endif
-    buf << uint8(m_objectTypeId);
-
-    BuildMovementUpdate(&buf, updateFlags);
-
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    buf << uint32(updateFlags); // Flags
-    buf << uint32(1); // AttackCycle (always 1 in sniffs)
-    buf << uint32(0); // TimerId
-
-    // VictimGuid
-    if (IsUnit() && static_cast<Unit const*>(this)->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && static_cast<Unit const*>(this)->GetVictim())
-        buf << uint64(static_cast<Unit const*>(this)->GetVictim()->GetGUID());
-    else
-        buf << uint64(0);
-
-    if (updateFlags & UPDATEFLAG_TRANSPORT)
-    {
-        GameObject const* go = ToGameObject();
-        if (go && go->IsTransport())
-            buf << uint32(static_cast<GenericTransport const*>(go)->GetPathProgress());
-        else
-            buf << uint32(sWorld.GetCurrentMSTime());
-    }
-#endif
-
-    UpdateMask updateMask;
-    updateMask.SetCount(m_valuesCount);
-    _SetCreateBits(updateMask, target);
-    BuildValuesUpdate(updatetype, &buf, &updateMask, target);
+    // The modern create block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
 void Object::SendCreateUpdateToPlayer(Player* player)
@@ -419,33 +357,9 @@ void WorldObject::DirectSendPublicValueUpdate(std::initializer_list<uint32> inde
     DirectSendPublicValueUpdate(updateMask);
 }
 
-void WorldObject::DirectSendPublicValueUpdate(UpdateMask& updateMask)
+void WorldObject::DirectSendPublicValueUpdate(UpdateMask& /*updateMask*/)
 {
-    UpdateData data;
-
-    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
-    buf << uint8(UPDATETYPE_VALUES);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    buf << GetPackGUID();
-#else
-    buf << GetGUID();
-#endif
-
-    buf << (uint8)updateMask.GetBlockCount();
-    buf.append(updateMask.GetMask(), updateMask.GetLength());
-
-    for (uint16 index = 0; index < m_valuesCount; ++index)
-    {
-        if (updateMask.GetBit(index))
-        {
-            buf << uint32(m_uint32Values[index]);
-            m_uint32Values_mirror[index] = m_uint32Values[index];
-        }
-    }
-
-    auto packet = std::make_unique<WorldPackets::ObjectUpdate::UpdateObject>();
-    data.BuildPacket(packet);
-    SendObjectMessageToSet(std::move(packet), true);
+    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData& data, Player* target) const
@@ -467,18 +381,9 @@ void Object::BuildValuesUpdateBlockForPlayerWithFlags(UpdateData& data, Player* 
         BuildValuesUpdateBlockForPlayer(data, updateMask, target);
 }
 
-void Object::BuildValuesUpdateBlockForPlayer(UpdateData& data, UpdateMask& updateMask, Player* target) const
+void Object::BuildValuesUpdateBlockForPlayer(UpdateData& /*data*/, UpdateMask& /*updateMask*/, Player* /*target*/) const
 {
-    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
-
-    buf << uint8(UPDATETYPE_VALUES);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    buf << GetPackGUID();
-#else
-    buf << GetGUID();
-#endif
-
-    BuildValuesUpdate(UPDATETYPE_VALUES, &buf, &updateMask, target);
+    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
 void Object::BuildOutOfRangeUpdateBlock(UpdateData& data) const
@@ -490,18 +395,16 @@ void Object::SendOutOfRangeUpdateToPlayer(Player const* player)
 {
     UpdateData data;
     BuildOutOfRangeUpdateBlock(data);
-    auto packet = std::make_unique<WorldPackets::ObjectUpdate::UpdateObject>();
-    data.BuildPacket(packet);
-    player->GetSession()->SendPacket(std::move(packet));
+    data.Send(player->GetSession());
 }
 
 void Object::DestroyForPlayer(Player const* target) const
 {
     MANGOS_ASSERT(target);
 
-    auto packet = std::make_unique<WorldPackets::ObjectUpdate::DestroyObject>();
-    packet->objectGuid = GetObjectGuid();
-    target->GetSession()->SendPacket(std::move(packet));
+    UpdateData data;
+    data.AddDestroyObject(GetObjectGuid());
+    data.Send(target->GetSession());
 }
 
 void Object::BuildMovementUpdate(ByteBuffer* data, uint8 updateFlags) const

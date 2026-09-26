@@ -541,10 +541,14 @@ void GenericTransport::SendOutOfRangeUpdateToMap()
     {
         UpdateData data;
         BuildOutOfRangeUpdateBlock(data);
-        auto packet = std::make_unique<WorldPackets::ObjectUpdate::UpdateObject>();
-        data.BuildPacket(packet);
-        WorldPacket binaryPacket;
-        packet->WritePacket(binaryPacket);
+        UpdateObject packet;
+        data.BuildPacket(packet, GetMapId());
+
+        ByteBuffer body;
+        packet.Write(body);
+        WorldPacket binaryPacket(uint32(UpdateObject::Opcode), body.size());
+        if (!body.empty())
+            binaryPacket.append(body.contents(), body.size());
 
         for (const auto& player : players)
             if (player.getSource()->GetTransport() != this)

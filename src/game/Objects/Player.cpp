@@ -1836,11 +1836,12 @@ bool Player::SwitchInstance(uint32 newInstanceId)
     ASSERT(pNewMap);
     SetMap(pNewMap);
 
-    for (const auto& guid : m_visibleGUIDs)
+    if (!m_visibleGUIDs.empty())
     {
-        auto packet = std::make_unique<WorldPackets::ObjectUpdate::DestroyObject>();
-        packet->objectGuid = guid;
-        GetSession()->SendPacket(std::move(packet));
+        UpdateData data;
+        for (const auto& guid : m_visibleGUIDs)
+            data.AddDestroyObject(guid);
+        data.Send(GetSession());
     }
 
     ASSERT(pNewMap->Add(this));
@@ -21747,40 +21748,26 @@ Item* Player::AddItem(uint32 itemId, uint32 count)
 void Player::SendDestroyGroupMembers(bool includingSelf)
 {
     if (Group* group = GetGroup())
+    {
+        UpdateData data;
         for (const auto& itr : group->GetMemberSlots())
         {
             if (!includingSelf && itr.guid == GetObjectGuid())
                 continue;
-            auto packet = std::make_unique<WorldPackets::ObjectUpdate::DestroyObject>();
-            packet->objectGuid = itr.guid;
-            GetSession()->SendPacket(std::move(packet));
+            data.AddDestroyObject(itr.guid);
             m_visibleGUIDs.erase(itr.guid);
 
             if (Player* player = GetMap()->GetPlayer(itr.guid))
                 if (player->m_broadcaster)
                     player->m_broadcaster->RemoveListener(this);
         }
+        data.Send(GetSession());
+    }
 }
 
-void Player::RefreshBitsForVisibleUnits(UpdateMask* mask, uint32 objectTypeMask)
+void Player::RefreshBitsForVisibleUnits(UpdateMask* /*mask*/, uint32 /*objectTypeMask*/)
 {
-    UpdateData data;
-    for (const auto& guid : m_visibleGUIDs)
-    {
-        if (Object* obj = GetObjectByTypeMask(guid, TypeMask(objectTypeMask)))
-        {
-            ByteBuffer& buff = data.AddUpdateBlockAndGetBuffer();
-
-            buff << uint8(UPDATETYPE_VALUES);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-            buff << obj->GetPackGUID();
-#else
-            buff << obj->GetGUID();
-#endif
-            obj->BuildValuesUpdate(UPDATETYPE_VALUES, &buff, mask, this);
-        }
-    }
-    data.Send(GetSession());
+    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
 void Player::SetSession(WorldSession* s)

@@ -1,43 +1,102 @@
 #ifndef MANGOS_PACKETS_UPDATE_OBJECT_H
 #define MANGOS_PACKETS_UPDATE_OBJECT_H
 
-#include "Packet.h"
-#include "ObjectGuid.h"
-#include "nonstd/optional.hpp"
+// SMSG_UPDATE_OBJECT: a map id, the create/values/movement blocks (their shape belongs to
+// Objects/Updates, this struct only carries the already-serialized bytes), and the destroyed and
+// out-of-range guid lists. There is no separate destroy opcode: a destroyed object rides in this
+// packet's destroy list instead.
 
-namespace WorldPackets { namespace ObjectUpdate
+#include "ByteBuffer.h"
+#include "ClassicOpcodes.h"
+#include "Packets/Classic/Guid.h"
+#include <vector>
+
+struct UpdateObject
 {
-    class DestroyObject final : public ServerPacket
-    {
-    public:
-        ObjectGuid objectGuid; // guid of the object to destroy
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_UPDATE_OBJECT;
 
-        explicit DestroyObject() : ServerPacket(SMSG_DESTROY_OBJECT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
+    uint16 MapId = 0;
+    uint32 BlockCount = 0;
+    std::vector<ClassicGuid> DestroyGUIDs;
+    std::vector<ClassicGuid> OutOfRangeGUIDs;
+    std::vector<uint8> BlockData;
 
-    class UpdateObject final : public ServerPacket
+    void Write(ByteBuffer& data) const
     {
-    public:
-        class UpdatePacket
+        data << MapId;
+        data << BlockCount;
+        data.WriteBit(true); // unk, always set
+        bool const hasGuidLists = !DestroyGUIDs.empty() || !OutOfRangeGUIDs.empty();
+        data.WriteBit(hasGuidLists);
+        data.FlushBits();
+
+        if (hasGuidLists)
         {
-            public:
-                UpdatePacket() : blockCount(0) {}
-                ByteBuffer data;
-                uint32 blockCount;
-        };
+            data << uint16(DestroyGUIDs.size());
+            data << uint32(DestroyGUIDs.size() + OutOfRangeGUIDs.size());
+            for (ClassicGuid const& guid : DestroyGUIDs)
+                guid.Write(data);
+            for (ClassicGuid const& guid : OutOfRangeGUIDs)
+                guid.Write(data);
+        }
 
-        ObjectGuidSet outOfRangeGUIDs;
-        nonstd::optional<UpdatePacket> updatePacket;
-        bool hasTransport = false;
+        data << uint32(BlockData.size());
+        if (!BlockData.empty())
+            data.append(BlockData.data(), BlockData.size());
+    }
 
-        // Builder will change opcode if it needs to be compressed.
-        explicit UpdateObject() : ServerPacket(SMSG_UPDATE_OBJECT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint16) + sizeof(uint32))
+            return false;
+        data >> MapId >> BlockCount;
 
-}} // namespace WorldPackets::ObjectUpdate
+        if (data.size() - data.rpos() < 1)
+            return false;
+        data.ReadBit(); // unk
+        bool const hasGuidLists = data.ReadBit();
+        data.ResetBitPos();
 
-#endif // MANGOS_PACKETS_UPDATE_OBJECT_H
+        DestroyGUIDs.clear();
+        OutOfRangeGUIDs.clear();
+        if (hasGuidLists)
+        {
+            if (data.size() - data.rpos() < sizeof(uint16) + sizeof(uint32))
+                return false;
+            uint16 destroyCount;
+            uint32 totalCount;
+            data >> destroyCount >> totalCount;
+            if (totalCount < destroyCount)
+                return false;
+
+            for (uint16 i = 0; i < destroyCount; ++i)
+            {
+                ClassicGuid guid;
+                if (!guid.Read(data))
+                    return false;
+                DestroyGUIDs.push_back(guid);
+            }
+            for (uint32 i = destroyCount; i < totalCount; ++i)
+            {
+                ClassicGuid guid;
+                if (!guid.Read(data))
+                    return false;
+                OutOfRangeGUIDs.push_back(guid);
+            }
+        }
+
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        uint32 blockDataSize;
+        data >> blockDataSize;
+        if (data.size() - data.rpos() < blockDataSize)
+            return false;
+
+        BlockData.resize(blockDataSize);
+        if (blockDataSize)
+            data.read(BlockData.data(), blockDataSize);
+        return true;
+    }
+};
+
+#endif

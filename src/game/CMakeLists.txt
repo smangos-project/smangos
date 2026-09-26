@@ -218,7 +218,6 @@ set (game_SRCS
     Server/Packets/Misc.cpp
     Server/Packets/Movement.cpp
     Server/Packets/Npc.cpp
-    Server/Packets/ObjectUpdate.cpp
     Server/Packets/Pet.cpp
     Server/Packets/Petition.cpp
     Server/Packets/Query.cpp

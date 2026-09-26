@@ -25,9 +25,12 @@
 #include "WorldPacket.h"
 #include "Log.h"
 #include "Opcodes.h"
+#include "Player.h"
 #include "World.h"
 #include "ObjectGuid.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Errors.h"
+#include <cstring>
 #include <zlib.h>
 
 #define MAX_UNCOMPRESSED_PACKET_SIZE 0x8000 // 32ko
@@ -51,15 +54,20 @@ void UpdateData::AddOutOfRangeGUID(ObjectGuid const& guid)
     m_outOfRangeGUIDs.insert(guid);
 }
 
+void UpdateData::AddDestroyObject(ObjectGuid const& guid)
+{
+    m_destroyGUIDs.insert(guid);
+}
+
 ByteBuffer& UpdateData::AddUpdateBlockAndGetBuffer()
 {
     if (m_datas.empty())
-        m_datas.emplace_back(); // m_datas.push_back(UpdatePacket());
-    std::list<UpdatePacket>::iterator it = m_datas.end();
+        m_datas.emplace_back();
+    std::list<UpdateDataBlock>::iterator it = m_datas.end();
     --it;
     if (it->data.wpos() > MAX_UNCOMPRESSED_PACKET_SIZE)
     {
-        m_datas.emplace_back(); // m_datas.push_back(UpdatePacket());
+        m_datas.emplace_back();
         it = m_datas.end();
         --it;
     }
@@ -123,53 +131,56 @@ void PacketCompressor::Compress(void* dst, uint32* dst_size, void* src, int src_
     *dst_size = c_stream.total_out;
 }
 
-void UpdateData::BuildPacket(std::unique_ptr<WorldPackets::ObjectUpdate::UpdateObject>& packet, bool hasTransport)
+void UpdateData::BuildPacket(UpdateObject& packet, uint32 mapId, UpdateDataBlock const* block)
 {
-    if (m_datas.empty())
-        return BuildPacket(packet, nullptr, hasTransport);
-
-    // Only the first update block ends up in the packet. Callers that fill more
-    // than one block must use `Send` instead, or the rest is silently dropped.
-    MANGOS_ASSERT(m_datas.size() == 1);
-
-    return BuildPacket(packet, &(m_datas.front()), hasTransport);
-}
-
-void UpdateData::BuildPacket(std::unique_ptr<WorldPackets::ObjectUpdate::UpdateObject>& packet, UpdatePacket* updPacket, bool hasTransport)
-{
-    // shouldn't happen
-    MANGOS_ASSERT(packet->outOfRangeGUIDs.empty() && !packet->updatePacket.has_value());
-
-    packet->hasTransport = hasTransport;
-    if (!m_outOfRangeGUIDs.empty())
-        packet->outOfRangeGUIDs = std::move(m_outOfRangeGUIDs);
-    if (updPacket)
-        packet->updatePacket = std::move(*updPacket);
-}
-
-void UpdateData::Send(WorldSession* session, bool hasTransport)
-{
-    if (m_datas.empty() && !m_outOfRangeGUIDs.empty())
+    packet.MapId = uint16(mapId);
+    packet.BlockCount = block ? block->blockCount : 0;
+    if (block && block->data.wpos())
     {
-        auto data = std::make_unique<WorldPackets::ObjectUpdate::UpdateObject>();
-        BuildPacket(data, nullptr, hasTransport);
-        session->SendPacket(std::move(data));
-        m_outOfRangeGUIDs.clear();
+        packet.BlockData.resize(block->data.wpos());
+        std::memcpy(packet.BlockData.data(), block->data.contents(), block->data.wpos());
+    }
+
+    // Only the first physical packet of a split send carries the destroy/out-of-range lists.
+    for (ObjectGuid const& guid : m_destroyGUIDs)
+        packet.DestroyGUIDs.push_back(ClassicGuidMapping::ToClassic(guid, realmID));
+    for (ObjectGuid const& guid : m_outOfRangeGUIDs)
+        packet.OutOfRangeGUIDs.push_back(ClassicGuidMapping::ToClassic(guid, realmID));
+    m_destroyGUIDs.clear();
+    m_outOfRangeGUIDs.clear();
+}
+
+void UpdateData::Send(WorldSession* session)
+{
+    if (!HasData())
+        return;
+
+    uint32 mapId = 0;
+    if (Player const* player = session->GetPlayer())
+        mapId = player->GetMapId();
+
+    if (m_datas.empty())
+    {
+        UpdateObject packet;
+        BuildPacket(packet, mapId);
+        session->SendClassic(packet);
         return;
     }
-    for (auto& itr : m_datas)
+
+    for (UpdateDataBlock& block : m_datas)
     {
-        auto data = std::make_unique<WorldPackets::ObjectUpdate::UpdateObject>();
-        BuildPacket(data, &itr, hasTransport);
-        session->SendPacket(std::move(data));
-        m_outOfRangeGUIDs.clear();
+        UpdateObject packet;
+        BuildPacket(packet, mapId, &block);
+        session->SendClassic(packet);
     }
+    m_datas.clear();
 }
 
 void UpdateData::Clear()
 {
     m_datas.clear();
     m_outOfRangeGUIDs.clear();
+    m_destroyGUIDs.clear();
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
