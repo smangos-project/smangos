@@ -19187,9 +19187,7 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
 
     if (login)
     {
-        MoveSetActiveMover activeMover;
-        activeMover.Mover = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
-        GetSession()->SendClassic(activeMover);
+        GetSession()->SendActiveMover(this);
 
         m_Events.AddLambdaEventAtOffset([this]
         {

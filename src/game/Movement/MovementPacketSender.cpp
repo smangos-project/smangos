@@ -22,33 +22,105 @@
 #include "WorldSession.h"
 #include "Anticheat.h"
 #include "MoveSpline.h"
+#include "MovementInfoWire.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "World.h"
 
-// Spline packets are for units controlled by the server. "Force speed change" (wrongly named opcodes) and "move set speed" packets are for units controlled by a player.
-OpcodesList const moveTypeToOpcode[MAX_MOVE_TYPE][3] =
+namespace
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    { SMSG_SPLINE_SET_WALK_SPEED,        SMSG_FORCE_WALK_SPEED_CHANGE,           MSG_MOVE_SET_WALK_SPEED },
-    { SMSG_SPLINE_SET_RUN_SPEED,         SMSG_FORCE_RUN_SPEED_CHANGE,            MSG_MOVE_SET_RUN_SPEED },
-    { SMSG_SPLINE_SET_RUN_BACK_SPEED,    SMSG_FORCE_RUN_BACK_SPEED_CHANGE,       MSG_MOVE_SET_RUN_BACK_SPEED },
-    { SMSG_SPLINE_SET_SWIM_SPEED,        SMSG_FORCE_SWIM_SPEED_CHANGE,           MSG_MOVE_SET_SWIM_SPEED },
-    { SMSG_SPLINE_SET_SWIM_BACK_SPEED,   SMSG_FORCE_SWIM_BACK_SPEED_CHANGE,      MSG_MOVE_SET_SWIM_BACK_SPEED },
-    { SMSG_SPLINE_SET_TURN_RATE,         SMSG_FORCE_TURN_RATE_CHANGE,            MSG_MOVE_SET_TURN_RATE },
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    { MSG_MOVE_SET_WALK_SPEED,           SMSG_FORCE_WALK_SPEED_CHANGE,           MSG_MOVE_SET_WALK_SPEED },
-    { MSG_MOVE_SET_RUN_SPEED,            SMSG_FORCE_RUN_SPEED_CHANGE,            MSG_MOVE_SET_RUN_SPEED },
-    { MSG_MOVE_SET_RUN_BACK_SPEED,       SMSG_FORCE_RUN_BACK_SPEED_CHANGE,       MSG_MOVE_SET_RUN_BACK_SPEED },
-    { MSG_MOVE_SET_SWIM_SPEED,           SMSG_FORCE_SWIM_SPEED_CHANGE,           MSG_MOVE_SET_SWIM_SPEED },
-    { MSG_MOVE_SET_SWIM_BACK_SPEED,      SMSG_FORCE_SWIM_BACK_SPEED_CHANGE,      MSG_MOVE_SET_SWIM_BACK_SPEED },
-    { MSG_MOVE_SET_TURN_RATE,            SMSG_FORCE_TURN_RATE_CHANGE,            MSG_MOVE_SET_TURN_RATE },
-#else
-    { MSG_MOVE_SET_WALK_SPEED,           MSG_NULL_ACTION,                        MSG_MOVE_SET_WALK_SPEED },
-    { MSG_MOVE_SET_RUN_SPEED,            SMSG_FORCE_RUN_SPEED_CHANGE,            MSG_MOVE_SET_RUN_SPEED },
-    { MSG_MOVE_SET_RUN_BACK_SPEED,       SMSG_FORCE_RUN_BACK_SPEED_CHANGE,       MSG_MOVE_SET_RUN_BACK_SPEED },
-    { MSG_MOVE_SET_SWIM_SPEED,           SMSG_FORCE_SWIM_SPEED_CHANGE,           MSG_MOVE_SET_SWIM_SPEED },
-    { MSG_MOVE_SET_SWIM_BACK_SPEED,      MSG_NULL_ACTION,                        MSG_MOVE_SET_SWIM_BACK_SPEED },
-    { MSG_MOVE_SET_TURN_RATE,            MSG_NULL_ACTION,                        MSG_MOVE_SET_TURN_RATE },
-#endif
+ClassicGuid ToClassic(Unit const* unit)
+{
+    return ClassicGuidMapping::ToClassic(unit->GetObjectGuid(), realmID);
+}
+
+// The three messages a speed change uses: the one that asks the moving client to apply it, the one
+// that tells the players around a player-moved unit, and the one for a unit no client is moving.
+template<typename Set, typename Update, typename Spline>
+struct SpeedMessages
+{
+    using SetT = Set;
+    using UpdateT = Update;
+    using SplineT = Spline;
 };
+
+template<typename Func>
+void WithSpeedMessages(UnitMoveType type, Func&& func)
+{
+    switch (type)
+    {
+        case MOVE_WALK:
+            func(SpeedMessages<MoveSetWalkSpeed, MoveUpdateWalkSpeed, MoveSplineSetWalkSpeed>());
+            break;
+        case MOVE_RUN:
+            func(SpeedMessages<MoveSetRunSpeed, MoveUpdateRunSpeed, MoveSplineSetRunSpeed>());
+            break;
+        case MOVE_RUN_BACK:
+            func(SpeedMessages<MoveSetRunBackSpeed, MoveUpdateRunBackSpeed, MoveSplineSetRunBackSpeed>());
+            break;
+        case MOVE_SWIM:
+            func(SpeedMessages<MoveSetSwimSpeed, MoveUpdateSwimSpeed, MoveSplineSetSwimSpeed>());
+            break;
+        case MOVE_SWIM_BACK:
+            func(SpeedMessages<MoveSetSwimBackSpeed, MoveUpdateSwimBackSpeed, MoveSplineSetSwimBackSpeed>());
+            break;
+        case MOVE_TURN_RATE:
+            func(SpeedMessages<MoveSetTurnRate, MoveUpdateTurnRate, MoveSplineSetTurnRate>());
+            break;
+        default:
+            break;
+    }
+}
+
+// The two messages a flag change uses: the one for the moving client and the one for a unit no
+// client is moving.
+template<typename Set, typename Spline>
+struct FlagMessages
+{
+    using SetT = Set;
+    using SplineT = Spline;
+};
+
+template<typename Func>
+void WithFlagMessages(MovementFlags flag, bool apply, Func&& func)
+{
+    switch (flag)
+    {
+        case MOVEFLAG_ROOT:
+            if (apply)
+                func(FlagMessages<MoveRoot, MoveSplineRoot>());
+            else
+                func(FlagMessages<MoveUnroot, MoveSplineUnroot>());
+            break;
+        case MOVEFLAG_WATERWALKING:
+            if (apply)
+                func(FlagMessages<MoveSetWaterWalk, MoveSplineSetWaterWalk>());
+            else
+                func(FlagMessages<MoveSetLandWalk, MoveSplineSetLandWalk>());
+            break;
+        case MOVEFLAG_HOVER:
+            if (apply)
+                func(FlagMessages<MoveSetHovering, MoveSplineSetHover>());
+            else
+                func(FlagMessages<MoveUnsetHovering, MoveSplineUnsetHover>());
+            break;
+        case MOVEFLAG_SAFE_FALL:
+            if (apply)
+                func(FlagMessages<MoveSetFeatherFall, MoveSplineSetFeatherFall>());
+            else
+                func(FlagMessages<MoveSetNormalFall, MoveSplineSetNormalFall>());
+            break;
+        default:
+            break;
+    }
+}
+
+void SendMoveUpdate(Unit* unit, WorldObject const* except)
+{
+    MoveUpdate update;
+    update.Status = MovementInfoToWire(unit->m_movementInfo, unit->GetObjectGuid());
+    unit->SendMovementMessageToSet(MakeClassicPacket(update), true, except);
+}
+}
 
 void MovementPacketSender::AddSpeedChangeToController(Unit* unit, UnitMoveType mtype, float newRate)
 {
@@ -58,16 +130,6 @@ void MovementPacketSender::AddSpeedChangeToController(Unit* unit, UnitMoveType m
         sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "MovementPacketSender::AddSpeedChangeToController: Incorrect use of the function. It was called on a unit controlled by the server! %s", unit->GetGuidStr().c_str());
         return;
     }
-
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-    // some opcodes dont exist in old versions
-    if (moveTypeToOpcode[mtype][1] == MSG_NULL_ACTION)
-    {
-        unit->SetSpeedRateReal(mtype, newRate);
-        SendSpeedChangeToAll(unit, mtype, newRate);
-        return;
-    }
-#endif
 
     float newSpeedFlat = newRate * baseMoveSpeed[mtype];
     uint32 mCounter = unit->GetMovementCounterAndInc();
@@ -84,22 +146,16 @@ void MovementPacketSender::AddSpeedChangeToController(Unit* unit, UnitMoveType m
 void MovementPacketSender::SendSpeedChangeToController(Unit* unit, Player* mover, PlayerMovementPendingChange& pendingChange)
 {
     UnitMoveType mtype = GetMoveTypeByChangeType(pendingChange.movementChangeType);
-    WorldPacket data;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    data.Initialize(moveTypeToOpcode[mtype][1], 8 + 4 + 4);
-    data << unit->GetPackGUID();
-    data << pendingChange.movementCounter;
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data.Initialize(moveTypeToOpcode[mtype][1], 8 + 4);
-    data << unit->GetPackGUID();
-#else
-    data.Initialize(moveTypeToOpcode[mtype][1], 8 + 4);
-    data << unit->GetGUID();
-#endif
-    data << float(pendingChange.newValue);
+    WithSpeedMessages(mtype, [&](auto messages)
+    {
+        typename decltype(messages)::SetT packet;
+        packet.Mover = ToClassic(unit);
+        packet.SequenceIndex = pendingChange.movementCounter;
+        packet.Speed = pendingChange.newValue;
 
-    mover->GetCheatData()->LogMovementPacket(false, data);
-    mover->GetSession()->SendPacket(&data);
+        mover->GetCheatData()->LogMovementPacket(false, MakeClassicPacket(packet));
+        mover->GetSession()->SendClassic(packet);
+    });
 }
 
 MovementChangeType MovementPacketSender::GetChangeTypeByMoveType(UnitMoveType moveType)
@@ -141,46 +197,34 @@ void MovementPacketSender::SendSpeedChangeToObservers(Unit* unit, UnitMoveType m
         return;
     }
 
-    if (unit->movespline->Finalized())
+    WithSpeedMessages(mtype, [&](auto messages)
     {
-        WorldPacket data;
-        data.Initialize(moveTypeToOpcode[mtype][2], 8 + 30 + 4);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        data << unit->GetPackGUID();
-#else
-        data << unit->GetGUID();
-#endif
-        data << unit->m_movementInfo;
-        data << float(newSpeed);
-        unit->SendMovementMessageToSet(std::move(data), true, mover);
-    }
-    else
-    {
-        WorldPacket data;
-        data.Initialize(moveTypeToOpcode[mtype][0], 8 + 4);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        data << unit->GetPackGUID();
-#else
-        data << unit->GetGUID();
-        data << unit->m_movementInfo;
-#endif
-        data << float(newSpeed);
-        unit->SendMovementMessageToSet(std::move(data), true, mover);
-    }
+        if (unit->movespline->Finalized())
+        {
+            typename decltype(messages)::UpdateT packet;
+            packet.Status = MovementInfoToWire(unit->m_movementInfo, unit->GetObjectGuid());
+            packet.Speed = newSpeed;
+            unit->SendMovementMessageToSet(MakeClassicPacket(packet), true, mover);
+        }
+        else
+        {
+            typename decltype(messages)::SplineT packet;
+            packet.Mover = ToClassic(unit);
+            packet.Speed = newSpeed;
+            unit->SendMovementMessageToSet(MakeClassicPacket(packet), true, mover);
+        }
+    });
 }
 
 void MovementPacketSender::SendSpeedChangeToAll(Unit* unit, UnitMoveType mtype, float newRate)
 {
-    WorldPacket data;
-    data.Initialize(moveTypeToOpcode[mtype][0], 8 + 4);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-    data << unit->m_movementInfo;
-#endif
-    data << float(newRate * baseMoveSpeed[mtype]);
-    unit->SendMovementMessageToSet(std::move(data), true);
+    WithSpeedMessages(mtype, [&](auto messages)
+    {
+        typename decltype(messages)::SplineT packet;
+        packet.Mover = ToClassic(unit);
+        packet.Speed = newRate * baseMoveSpeed[mtype];
+        unit->SendMovementMessageToSet(MakeClassicPacket(packet), true);
+    });
 }
 
 void MovementPacketSender::SendTeleportToController(Unit* unit, float x, float y, float z, float ang)
@@ -199,40 +243,29 @@ void MovementPacketSender::SendTeleportToController(Unit* unit, float x, float y
     pendingChange.controller = mover->GetObjectGuid();
     unit->PushPendingMovementChange(pendingChange);
 
-    MovementInfo mi = unit->m_movementInfo;
-    mi.SetAsServerSide();
-    mi.ChangePosition(x, y, z, ang);
+    MoveTeleport packet;
+    packet.Mover = ToClassic(unit);
+    packet.SequenceIndex = mCounter;
+    packet.X = x;
+    packet.Y = y;
+    packet.Z = z;
+    packet.Facing = ang;
 
-    WorldPacket data(MSG_MOVE_TELEPORT_ACK, 41);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    data << mCounter;                                      // this value increments every time
-#endif
-    data << mi;
-
-    mover->GetCheatData()->LogMovementPacket(false, data);
-    mover->GetSession()->SendPacket(&data);
+    mover->GetCheatData()->LogMovementPacket(false, MakeClassicPacket(packet));
+    mover->GetSession()->SendClassic(packet);
 }
 
 void MovementPacketSender::SendTeleportToObservers(Unit* unit, float x, float y, float z, float ang)
 {
     Player* mover = unit->GetPlayerMovingMe();
 
-    WorldPacket data(MSG_MOVE_TELEPORT, 64);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-#endif
-
     // copy moveinfo to change position to where player is teleporting
     MovementInfo moveInfo = unit->m_movementInfo;
     moveInfo.ChangePosition(x, y, z, ang);
-    data << moveInfo;
+
+    MoveUpdateTeleport packet;
+    packet.Status = MovementInfoToWire(moveInfo, unit->GetObjectGuid());
+    WorldPacket data = MakeClassicPacket(packet);
 
     // not using SendMovementMessageToSet because we want the packet sent now
     unit->SendObjectMessageToSet(&data, true, mover);
@@ -258,24 +291,16 @@ void MovementPacketSender::SendKnockBackToController(Unit* unit, float vcos, flo
     pendingChange.controller = mover->GetObjectGuid();
     unit->PushPendingMovementChange(pendingChange);
 
-    WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8 + 4 + 4 + 4 + 4 + 4));
+    MoveKnockBack packet;
+    packet.Mover = ToClassic(unit);
+    packet.SequenceIndex = mCounter;
+    packet.DirectionX = vcos;
+    packet.DirectionY = vsin;
+    packet.HorizontalSpeed = speedXY;
+    packet.VerticalSpeed = speedZ;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-#endif
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    data << mCounter;
-#endif
-
-    data << float(vcos);                                    // x direction
-    data << float(vsin);                                    // y direction
-    data << float(speedXY);                                 // Horizontal speed
-    data << float(speedZ);                                  // Z Movement speed (vertical)
-    mover->GetCheatData()->LogMovementPacket(false, data);
-    mover->GetSession()->SendPacket(&data);
+    mover->GetCheatData()->LogMovementPacket(false, MakeClassicPacket(packet));
+    mover->GetSession()->SendClassic(packet);
 }
 
 void MovementPacketSender::SendKnockBackToObservers(Unit* unit, float vcos, float vsin, float speedXY, float speedZ)
@@ -287,20 +312,17 @@ void MovementPacketSender::SendKnockBackToObservers(Unit* unit, float vcos, floa
         return;
     }
 
-    WorldPacket data(MSG_MOVE_KNOCK_BACK);
+    // The knock back rides the jump data of the movement info.
+    MovementInfo moveInfo = unit->m_movementInfo;
+    moveInfo.AddMovementFlag(MOVEFLAG_JUMPING);
+    moveInfo.jump.cosAngle = vcos;
+    moveInfo.jump.sinAngle = vsin;
+    moveInfo.jump.xyspeed = speedXY;
+    moveInfo.jump.zspeed = speedZ;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-#endif
-
-    data << unit->m_movementInfo;
-    data << vcos;
-    data << vsin;
-    data << speedXY;
-    data << speedZ;
-    unit->SendMovementMessageToSet(std::move(data), true, mover);
+    MoveUpdateKnockBack packet;
+    packet.Status = MovementInfoToWire(moveInfo, unit->GetObjectGuid());
+    unit->SendMovementMessageToSet(MakeClassicPacket(packet), true, mover);
 }
 
 void MovementPacketSender::AddMovementFlagChangeToController(Unit* unit, MovementFlags mFlag, bool apply)
@@ -337,32 +359,27 @@ void MovementPacketSender::AddMovementFlagChangeToController(Unit* unit, Movemen
 
 void MovementPacketSender::SendMovementFlagChangeToController(Unit* unit, Player* mover, PlayerMovementPendingChange& pendingChange)
 {
-    uint32 opcode;
+    MovementFlags flag;
     switch (pendingChange.movementChangeType)
     {
-        case ROOT: opcode = pendingChange.apply ? SMSG_FORCE_MOVE_ROOT : SMSG_FORCE_MOVE_UNROOT; break;
-        case WATER_WALK: opcode = pendingChange.apply ? SMSG_MOVE_WATER_WALK : SMSG_MOVE_LAND_WALK; break;
-        case SET_HOVER: opcode = pendingChange.apply ? SMSG_MOVE_SET_HOVER : SMSG_MOVE_UNSET_HOVER; break;
-        case FEATHER_FALL: opcode = pendingChange.apply ? SMSG_MOVE_FEATHER_FALL : SMSG_MOVE_NORMAL_FALL; break;
+        case ROOT:          flag = MOVEFLAG_ROOT; break;
+        case WATER_WALK:    flag = MOVEFLAG_WATERWALKING; break;
+        case SET_HOVER:     flag = MOVEFLAG_HOVER; break;
+        case FEATHER_FALL:  flag = MOVEFLAG_SAFE_FALL; break;
         default:
             sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "MovementPacketSender::SendMovementFlagChangeToController: Unsupported movement change (%u), data not sent to client. %s", pendingChange.movementChangeType, unit->GetGuidStr().c_str());
             return;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    WorldPacket data(opcode, unit->GetPackGUID().size() + 4);
-    data << unit->GetPackGUID();
-#else
-    WorldPacket data(opcode, 8 + 4);
-    data << unit->GetGUID();
-#endif
+    WithFlagMessages(flag, pendingChange.apply, [&](auto messages)
+    {
+        typename decltype(messages)::SetT packet;
+        packet.Mover = ToClassic(unit);
+        packet.SequenceIndex = pendingChange.movementCounter;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    data << pendingChange.movementCounter;
-#endif
-    
-    mover->GetCheatData()->LogMovementPacket(false, data);
-    mover->GetSession()->SendPacket(&data);
+        mover->GetCheatData()->LogMovementPacket(false, MakeClassicPacket(packet));
+        mover->GetSession()->SendClassic(packet);
+    });
 }
 
 void MovementPacketSender::SendMovementFlagChangeToObservers(Unit* unit, MovementFlags mFlag, bool apply)
@@ -374,89 +391,48 @@ void MovementPacketSender::SendMovementFlagChangeToObservers(Unit* unit, Movemen
         return;
     }
 
-    uint32 opcode;
     switch (mFlag)
     {
-        case MOVEFLAG_ROOT:                 opcode = apply ? MSG_MOVE_ROOT : MSG_MOVE_UNROOT; break;
-        case MOVEFLAG_WATERWALKING:         opcode = MSG_MOVE_WATER_WALK; break;
-        case MOVEFLAG_HOVER:                opcode = MSG_MOVE_HOVER; break;
-        case MOVEFLAG_SAFE_FALL:            opcode = MSG_MOVE_FEATHER_FALL; break;
+        case MOVEFLAG_ROOT:
+        case MOVEFLAG_WATERWALKING:
+        case MOVEFLAG_HOVER:
+        case MOVEFLAG_SAFE_FALL:
+            break;
         default:
             sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "MovementPacketSender::SendMovementFlagChangeToObservers: Unsupported MovementFlag (%d), data not sent to client. %s", mFlag, unit->GetGuidStr().c_str());
             return;
     }
 
-    WorldPacket data(opcode, 64);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit->GetPackGUID();
-#else
-    data << unit->GetGUID();
-#endif
-    data << unit->m_movementInfo;
-    unit->SendMovementMessageToSet(std::move(data), true, mover);
+    SendMoveUpdate(unit, mover);
 }
 
 void MovementPacketSender::SendMovementFlagChangeToAll(Unit* unit, MovementFlags mFlag, bool apply)
 {
-    uint32 opcode;
-    switch (mFlag)
+    bool sent = false;
+    WithFlagMessages(mFlag, apply, [&](auto messages)
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
+        typename decltype(messages)::SplineT packet;
+        packet.Mover = ToClassic(unit);
+        unit->SendMovementMessageToSet(MakeClassicPacket(packet), true);
+        sent = true;
+    });
 
-    #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        case MOVEFLAG_ROOT:             opcode = apply ? SMSG_SPLINE_MOVE_ROOT              : SMSG_SPLINE_MOVE_UNROOT; break;
-    #else
-        case MOVEFLAG_ROOT:
-        {
-            if (apply)
-            {
-                WorldPacket data(MSG_MOVE_ROOT, 64);
-                data << unit->GetPackGUID();
-                data << unit->m_movementInfo;
-                unit->SendMovementMessageToSet(std::move(data), true);
-                return;
-            }
-            else
-                opcode = SMSG_SPLINE_MOVE_UNROOT;
-            break;
-        }
-    #endif
-        case MOVEFLAG_WATERWALKING:     opcode = apply ? SMSG_SPLINE_MOVE_WATER_WALK        : SMSG_SPLINE_MOVE_LAND_WALK; break;
-        case MOVEFLAG_SAFE_FALL:        opcode = apply ? SMSG_SPLINE_MOVE_FEATHER_FALL      : SMSG_SPLINE_MOVE_NORMAL_FALL; break;
-        case MOVEFLAG_HOVER:            opcode = apply ? SMSG_SPLINE_MOVE_SET_HOVER         : SMSG_SPLINE_MOVE_UNSET_HOVER; break;
-#else
-        case MOVEFLAG_ROOT:             opcode = apply ? MSG_MOVE_ROOT                      : MSG_MOVE_UNROOT; break;
-        case MOVEFLAG_WATERWALKING:     opcode = apply ? MSG_MOVE_WATER_WALK                : MSG_MOVE_WATER_WALK; break;
-        case MOVEFLAG_SAFE_FALL:        opcode = apply ? MSG_MOVE_FEATHER_FALL              : MSG_MOVE_FEATHER_FALL; break;
-        case MOVEFLAG_HOVER:            opcode = apply ? MSG_MOVE_HOVER                     : MSG_MOVE_HOVER; break;
-#endif
-        default:
-            sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "MovementPacketSender::SendMovementFlagChangeToAll: Unsupported MovementFlag (%d), data not sent to client. %s", mFlag, unit->GetGuidStr().c_str());
-            return;
-    }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    WorldPacket data(opcode, unit->GetPackGUID().size() + 4);
-    data << unit->GetPackGUID();
-#else
-    WorldPacket data(opcode, 64);
-    data << unit->GetGUID();
-    data << unit->m_movementInfo;
-#endif
-
-    unit->SendMovementMessageToSet(std::move(data), true);
+    if (!sent)
+        sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "MovementPacketSender::SendMovementFlagChangeToAll: Unsupported MovementFlag (%d), data not sent to client. %s", mFlag, unit->GetGuidStr().c_str());
 }
 
 void MovementPacketSender::SendToggleRunWalkToAll(Unit* unit, bool run)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    WorldPacket data(run ? SMSG_SPLINE_MOVE_SET_RUN_MODE : SMSG_SPLINE_MOVE_SET_WALK_MODE, 9);
-    data << unit->GetPackGUID();
-#else
-    WorldPacket data(run ? MSG_MOVE_SET_RUN_MODE : MSG_MOVE_SET_WALK_MODE, 64);
-    data << unit->GetGUID();
-    data << unit->m_movementInfo;
-#endif
-
-    unit->SendMovementMessageToSet(std::move(data), true);
+    if (run)
+    {
+        MoveSplineSetRunMode packet;
+        packet.Mover = ToClassic(unit);
+        unit->SendMovementMessageToSet(MakeClassicPacket(packet), true);
+    }
+    else
+    {
+        MoveSplineSetWalkMode packet;
+        packet.Mover = ToClassic(unit);
+        unit->SendMovementMessageToSet(MakeClassicPacket(packet), true);
+    }
 }

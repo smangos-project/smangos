@@ -24,6 +24,8 @@
 #include "MapManager.h"
 #include "MoveSpline.h"
 #include "Utilities/Random.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "World.h"
 
 bool PlayerBotAI::OnSessionLoaded(PlayerBotEntry* entry, WorldSession* sess)
 {
@@ -35,12 +37,8 @@ void PlayerBotAI::UpdateAI(uint32 const diff)
 {
     if (me->IsBeingTeleportedNear())
     {
-        WorldPackets::Movement::MoveTeleportAck packet;
-        packet.guid = me->GetObjectGuid();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        packet.movementCounter = 0;
-#endif
-        packet.time = 0;
+        MoveTeleportAck packet;
+        packet.Mover = ClassicGuidMapping::ToClassic(me->GetObjectGuid(), realmID);
         me->GetSession()->HandleMoveTeleportAckOpcode(packet);
     }
     if (me->IsBeingTeleportedFar())

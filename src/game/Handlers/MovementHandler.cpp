@@ -219,13 +219,9 @@ void WorldSession::HandleMoveWorldportAck()
     }
 }
 
-void WorldSession::HandleMoveTeleportAckOpcode(WorldPackets::Movement::MoveTeleportAck const& packet)
+void WorldSession::HandleMoveTeleportAckOpcode(MoveTeleportAck const& packet)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    uint32 movementCounter = packet.movementCounter;
-#else
-    uint32 movementCounter = 0;
-#endif
+    uint32 movementCounter = uint32(packet.AckIndex);
 
     Unit* pMover = _player->GetMover();
     Player* pPlayerMover = pMover->ToPlayer();
@@ -233,7 +229,8 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPackets::Movement::MoveTelep
     if (!pPlayerMover || !pPlayerMover->IsBeingTeleportedNear())
         return;
 
-    if (packet.guid != pPlayerMover->GetObjectGuid())
+    auto const moverGuid = ClassicGuidMapping::FromClassic(packet.Mover);
+    if (!moverGuid || *moverGuid != pPlayerMover->GetObjectGuid())
         return;
 
     if (!pMover->FindPendingMovementTeleportChange(movementCounter))
@@ -315,6 +312,20 @@ static uint32 ToInternalMovementOpcode(ClassicOpcodes opcode)
         case CLASSIC_CMSG_MOVE_STOP_SWIM:           return MSG_MOVE_STOP_SWIM;
         case CLASSIC_CMSG_MOVE_SET_FACING:          return MSG_MOVE_SET_FACING;
         case CLASSIC_CMSG_MOVE_SET_PITCH:           return MSG_MOVE_SET_PITCH;
+        case CLASSIC_CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK:     return CMSG_FORCE_WALK_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK:      return CMSG_FORCE_RUN_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK: return CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK:     return CMSG_FORCE_SWIM_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK: return CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK:      return CMSG_FORCE_TURN_RATE_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_ROOT_ACK:      return CMSG_FORCE_MOVE_ROOT_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_UNROOT_ACK:    return CMSG_FORCE_MOVE_UNROOT_ACK;
+        case CLASSIC_CMSG_MOVE_WATER_WALK_ACK:      return CMSG_MOVE_WATER_WALK_ACK;
+        case CLASSIC_CMSG_MOVE_HOVER_ACK:           return CMSG_MOVE_HOVER_ACK;
+        case CLASSIC_CMSG_MOVE_FEATHER_FALL_ACK:    return CMSG_MOVE_FEATHER_FALL_ACK;
+        case CLASSIC_CMSG_MOVE_KNOCK_BACK_ACK:      return CMSG_MOVE_KNOCK_BACK_ACK;
+        case CLASSIC_CMSG_MOVE_SPLINE_DONE:         return CMSG_MOVE_SPLINE_DONE;
+        case CLASSIC_CMSG_MOVE_TELEPORT_ACK:        return MSG_MOVE_TELEPORT_ACK;
         default:                                    return MSG_MOVE_HEARTBEAT;
     }
 }
@@ -427,51 +438,43 @@ CMSG_FORCE_WALK_SPEED_CHANGE_ACK
 CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK
 CMSG_FORCE_TURN_RATE_CHANGE_ACK
 */
-void WorldSession::HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::MoveSpeedAck const& packet)
+void WorldSession::HandleForceSpeedChangeAck(ClassicOpcodes classicOpcode, ClassicMovementAck const& ack, float newSpeed)
 {
-    uint32 opcode = packet.GetOpcode();
+    uint32 const opcode = ToInternalMovementOpcode(classicOpcode);
+    uint32 const movementCounter = uint32(ack.AckIndex);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    float newSpeed = packet.speed;
-#else
-    float newSpeed = 0;
-#endif
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    uint32 movementCounter = packet.movementCounter;
-#else
-    uint32 movementCounter = 0;
-#endif
+    MovementInfo movementInfo;
+    auto const moverGuid = ClassicGuidMapping::FromClassic(ack.Status.Guid);
+    if (!moverGuid || !MovementInfoFromWire(ack.Status, movementInfo))
+        return;
 
     UnitMoveType move_type;
-    switch (opcode)
+    switch (classicOpcode)
     {
-        case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK:
             move_type = MOVE_RUN;
             break;
-        case CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK:
             move_type = MOVE_RUN_BACK;
             break;
-        case CMSG_FORCE_SWIM_SPEED_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK:
             move_type = MOVE_SWIM;
             break;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK:
             move_type = MOVE_WALK;
             break;
-        case CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK:
             move_type = MOVE_SWIM_BACK;
             break;
-        case CMSG_FORCE_TURN_RATE_CHANGE_ACK:
+        case CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK:
             move_type = MOVE_TURN_RATE;
             break;
-#endif
         default:
-            sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleForceSpeedChangeAck: Unknown move type opcode: %u", opcode);
+            sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleForceSpeedChangeAck: Unknown move type opcode: %u", uint32(classicOpcode));
             return;
     }
 
-    Unit* pMover = GetMoverFromGuid(packet.guid);
+    Unit* pMover = GetMoverFromGuid(*moverGuid);
     if (!pMover)
         return;
 
@@ -485,11 +488,7 @@ void WorldSession::HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::Move
         return;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    if (!pMover->FindPendingMovementSpeedChange(packet.speed, movementCounter, move_type))
-#else
-    if (!pMover->FindPendingMovementSpeedChange(newSpeed, move_type))
-#endif
+    if (!pMover->FindPendingMovementSpeedChange(newSpeed, movementCounter, move_type))
     {
         sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleForceSpeedChangeAck: Client sent opcode %u with counter %u, but received data does not match pending change (current counter is %u).",
             opcode, movementCounter, pMover->GetMovementCounter());
@@ -501,11 +500,11 @@ void WorldSession::HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::Move
     Player* const pPlayerMover = pMover->ToPlayer();
 
     // Check if position and movement flags are fine before speed update.
-    bool canRelocate = packet.movementInfo.stime > m_moveRejectTime && !pMover->HasPendingSplineDone() && VerifyMovementInfo(packet.movementInfo);
+    bool canRelocate = movementInfo.stime > m_moveRejectTime && !pMover->HasPendingSplineDone() && VerifyMovementInfo(movementInfo);
     if (canRelocate && pPlayerMover)
     {
-        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)) ||
-            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)))
+        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, opcode)) ||
+            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, movementInfo, opcode)))
         {
             canRelocate = false;
         }
@@ -525,15 +524,15 @@ void WorldSession::HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::Move
             (!pPlayerMover || !pPlayerMover->IsBeingTeleported()))
         {
             if (pPlayerMover)
-                pPlayerMover->UpdateFallInformationIfNeed(packet.movementInfo, opcode);
+                pPlayerMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
             // Update position if it has changed.
-            HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+            HandleMoverRelocation(pMover, movementInfo);
         }
         else
         {
             // Can only change flags and speed for not current active mover.
-            pMover->m_movementInfo.moveFlags = packet.movementInfo.moveFlags;
+            pMover->m_movementInfo.moveFlags = movementInfo.moveFlags;
             pMover->m_movementInfo.CorrectData();
         }
     }
@@ -548,18 +547,30 @@ CMSG_MOVE_WATER_WALK_ACK
 CMSG_MOVE_HOVER_ACK
 CMSG_MOVE_FEATHER_FALL_ACK
 */
-void WorldSession::HandleMovementFlagChangeToggleAck(WorldPackets::Movement::MoveFlagChangeAck const& packet)
+void WorldSession::HandleMovementFlagChangeToggleAck(ClassicOpcodes classicOpcode, ClassicMovementAck const& ack)
 {
-    uint32 opcode = packet.GetOpcode();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    uint32 movementCounter = packet.movementCounter;
-#else
-    uint32 movementCounter = 0;
-#endif
+    uint32 const opcode = ToInternalMovementOpcode(classicOpcode);
+    uint32 const movementCounter = uint32(ack.AckIndex);
 
-    bool const applyReceived = packet.apply;
+    MovementInfo movementInfo;
+    auto const moverGuid = ClassicGuidMapping::FromClassic(ack.Status.Guid);
+    if (!moverGuid || !MovementInfoFromWire(ack.Status, movementInfo))
+        return;
 
-    Unit* pMover = GetMoverFromGuid(packet.guid);
+    // The client reports the change in the flags it now moves with.
+    MovementFlags mFlag = MOVEFLAG_NONE;
+    switch (classicOpcode)
+    {
+        case CLASSIC_CMSG_MOVE_WATER_WALK_ACK:      mFlag = MOVEFLAG_WATERWALKING; break;
+        case CLASSIC_CMSG_MOVE_HOVER_ACK:           mFlag = MOVEFLAG_HOVER; break;
+        case CLASSIC_CMSG_MOVE_FEATHER_FALL_ACK:    mFlag = MOVEFLAG_SAFE_FALL; break;
+        default:
+            sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMovementFlagChangeToggleAck: Unknown move type opcode: %u", uint32(classicOpcode));
+            return;
+    }
+    bool const applyReceived = movementInfo.HasMovementFlag(mFlag);
+
+    Unit* pMover = GetMoverFromGuid(*moverGuid);
     if (!pMover)
         return;
 
@@ -573,17 +584,12 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPackets::Movement::Mov
         return;
     }
 
-    MovementFlags mFlag = MOVEFLAG_NONE;
     MovementChangeType changeTypeReceived;
-
-    switch (opcode)
+    switch (mFlag)
     {
-        case CMSG_MOVE_WATER_WALK_ACK:      changeTypeReceived = WATER_WALK; mFlag = MOVEFLAG_WATERWALKING; break;
-        case CMSG_MOVE_HOVER_ACK:           changeTypeReceived = SET_HOVER; mFlag = MOVEFLAG_HOVER; break;
-        case CMSG_MOVE_FEATHER_FALL_ACK:    changeTypeReceived = FEATHER_FALL; mFlag = MOVEFLAG_SAFE_FALL; break;
-        default:
-            sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMovementFlagChangeToggleAck: Unknown move type opcode: %u", opcode);
-            return;
+        case MOVEFLAG_WATERWALKING: changeTypeReceived = WATER_WALK; break;
+        case MOVEFLAG_HOVER:        changeTypeReceived = SET_HOVER; break;
+        default:                    changeTypeReceived = FEATHER_FALL; break;
     }
 
     if (!pMover->FindPendingMovementFlagChange(movementCounter, applyReceived, changeTypeReceived))
@@ -595,7 +601,7 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPackets::Movement::Mov
         return;
     }
 
-    if (opcode == CMSG_MOVE_FEATHER_FALL_ACK)
+    if (mFlag == MOVEFLAG_SAFE_FALL)
         pMover->SetJumpInitialSpeed(std::max(pMover->GetJumpInitialSpeed(), 7.0f));
 
     // Use fake loop here to handle movement position checks separately from change ACK.
@@ -605,18 +611,18 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPackets::Movement::Mov
             break;
 
         // Do not accept packets sent before this time.
-        if (packet.movementInfo.stime <= m_moveRejectTime)
+        if (movementInfo.stime <= m_moveRejectTime)
             break;
 
-        if (!VerifyMovementInfo(packet.movementInfo))
+        if (!VerifyMovementInfo(movementInfo))
             break;
 
         Player* pPlayerMover = pMover->ToPlayer();
 
         if (pPlayerMover)
         {
-            if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)) ||
-                (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)))
+            if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, opcode)) ||
+                (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, movementInfo, opcode)))
             {
                 break;
             }
@@ -626,15 +632,15 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPackets::Movement::Mov
             (!pPlayerMover || !pPlayerMover->IsBeingTeleported()))
         {
             if (pPlayerMover)
-                pPlayerMover->UpdateFallInformationIfNeed(packet.movementInfo, opcode);
+                pPlayerMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
             // Update position if it has changed.
-            HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+            HandleMoverRelocation(pMover, movementInfo);
         }
         else
         {
             // Can only change flags and speed for not current active mover.
-            pMover->m_movementInfo.moveFlags = packet.movementInfo.moveFlags;
+            pMover->m_movementInfo.moveFlags = movementInfo.moveFlags;
             pMover->m_movementInfo.CorrectData();
         }
     } while (false);
@@ -658,16 +664,17 @@ handles those packets:
 CMSG_FORCE_MOVE_ROOT_ACK
 CMSG_FORCE_MOVE_UNROOT_ACK
 */
-void WorldSession::HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& packet)
+void WorldSession::HandleMoveRootAck(ClassicOpcodes classicOpcode, ClassicMovementAck const& ack)
 {
-    uint32 opcode = packet.GetOpcode();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    uint32 movementCounter = packet.movementCounter;
-#else
-    uint32 movementCounter = 0;
-#endif
+    uint32 const opcode = ToInternalMovementOpcode(classicOpcode);
+    uint32 const movementCounter = uint32(ack.AckIndex);
 
-    Unit* pMover = GetMoverFromGuid(packet.guid);
+    MovementInfo movementInfo;
+    auto const moverGuid = ClassicGuidMapping::FromClassic(ack.Status.Guid);
+    if (!moverGuid || !MovementInfoFromWire(ack.Status, movementInfo))
+        return;
+
+    Unit* pMover = GetMoverFromGuid(*moverGuid);
     if (!pMover)
         return;
 
@@ -681,7 +688,7 @@ void WorldSession::HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& 
         return;
     }
 
-    bool applyReceived = (opcode == CMSG_FORCE_MOVE_ROOT_ACK);
+    bool applyReceived = (classicOpcode == CLASSIC_CMSG_MOVE_FORCE_ROOT_ACK);
 
     if (!pMover->FindPendingMovementRootChange(movementCounter, applyReceived))
     {
@@ -699,18 +706,18 @@ void WorldSession::HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& 
             break;
 
         // Do not accept packets sent before this time.
-        if (packet.movementInfo.stime <= m_moveRejectTime)
+        if (movementInfo.stime <= m_moveRejectTime)
             break;
 
-        if (!VerifyMovementInfo(packet.movementInfo))
+        if (!VerifyMovementInfo(movementInfo))
             break;
 
         Player* pPlayerMover = pMover->ToPlayer();
 
         if (pPlayerMover)
         {
-            if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)) ||
-                (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)))
+            if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, opcode)) ||
+                (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, movementInfo, opcode)))
             {
                 break;
             }
@@ -720,25 +727,25 @@ void WorldSession::HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& 
             (!pPlayerMover || !pPlayerMover->IsBeingTeleported()))
         {
             if (pPlayerMover)
-                pPlayerMover->UpdateFallInformationIfNeed(packet.movementInfo, opcode);
+                pPlayerMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
             // Update position if it has changed.
-            HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+            HandleMoverRelocation(pMover, movementInfo);
         }
         else
         {
             // Can only change flags and speed for not current active mover.
-            pMover->m_movementInfo.moveFlags = packet.movementInfo.moveFlags;
+            pMover->m_movementInfo.moveFlags = movementInfo.moveFlags;
             pMover->m_movementInfo.CorrectData();
         }
     } while (false);
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    if (applyReceived && !packet.movementInfo.HasMovementFlag(MOVEFLAG_ROOT))
+    if (applyReceived && !movementInfo.HasMovementFlag(MOVEFLAG_ROOT))
     {
         // workaround to fix anticheat false positives when using 1.14 client
         // modern client finishes falling to ground before applying the root
-        if (!packet.movementInfo.HasMovementFlag(MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR))
+        if (!movementInfo.HasMovementFlag(MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR))
         {
             sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMoveRootAck: Client sent root apply ack, but movement info does not have rooted movement flag!");
             KickPlayer();
@@ -759,15 +766,18 @@ void WorldSession::HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& 
     MovementPacketSender::SendMovementFlagChangeToObservers(pMover, MOVEFLAG_ROOT, applyReceived);
 }
 
-void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackAck const& packet)
+void WorldSession::HandleMoveKnockBackAck(MoveKnockBackAck const& packet)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    uint32 movementCounter = packet.movementCounter;
-#else
-    uint32 movementCounter = 0;
-#endif
+    uint32 const movementCounter = uint32(packet.Ack.AckIndex);
 
-    Unit* pMover = GetMoverFromGuid(packet.guid);
+    MovementInfo movementInfo;
+    auto const moverGuid = ClassicGuidMapping::FromClassic(packet.Ack.Status.Guid);
+    if (!moverGuid || !MovementInfoFromWire(packet.Ack.Status, movementInfo))
+        return;
+
+    uint32 const opcode = ToInternalMovementOpcode(packet.Opcode);
+
+    Unit* pMover = GetMoverFromGuid(*moverGuid);
     if (!pMover)
         return;
 
@@ -775,16 +785,16 @@ void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackA
     if (!pMover->HasPendingMovementChange())
     {
         sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMoveKnockBackAck: Client sent opcode %u with counter %u, but no movement change ack was expected from this player (current counter is %u).",
-            packet.GetOpcode(), movementCounter, pMover->GetMovementCounter());
+            opcode, movementCounter, pMover->GetMovementCounter());
         if (movementCounter == 0 || movementCounter > pMover->GetMovementCounter())
             _player->GetCheatData()->OnWrongAckData();
         return;
     }
 
-    if (!pMover->FindPendingMovementKnockbackChange(const_cast<MovementInfo&>(packet.movementInfo), movementCounter))
+    if (!pMover->FindPendingMovementKnockbackChange(movementInfo, movementCounter))
     {
         sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMoveKnockBackAck: Client sent opcode %u with counter %u, but received data does not match pending change (current counter is %u).",
-            packet.GetOpcode(), movementCounter, pMover->GetMovementCounter());
+            opcode, movementCounter, pMover->GetMovementCounter());
         if (movementCounter == 0 || movementCounter > pMover->GetMovementCounter())
             _player->GetCheatData()->OnWrongAckData();
         return;
@@ -793,7 +803,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackA
     if (pMover->HasPendingSplineDone())
         return;
 
-    if (!VerifyMovementInfo(packet.movementInfo))
+    if (!VerifyMovementInfo(movementInfo))
         return;
 
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
@@ -802,8 +812,8 @@ void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackA
 
     if (Player* pPlayerMover = pMover->ToPlayer())
     {
-        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), packet.GetOpcode())) ||
-            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), packet.GetOpcode())))
+        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, opcode)) ||
+            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, movementInfo, opcode)))
         {
             return;
         }
@@ -811,14 +821,18 @@ void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackA
         pPlayerMover->SetFallInformation(0);
     }
 
-    HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+    HandleMoverRelocation(pMover, movementInfo);
 
-    MovementPacketSender::SendKnockBackToObservers(pMover, packet.movementInfo.jump.cosAngle, packet.movementInfo.jump.sinAngle, packet.movementInfo.jump.xyspeed, packet.movementInfo.jump.zspeed);
+    MovementPacketSender::SendKnockBackToObservers(pMover, movementInfo.jump.cosAngle, movementInfo.jump.sinAngle, movementInfo.jump.xyspeed, movementInfo.jump.zspeed);
 }
 
-void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSplineDone const& packet)
+void WorldSession::HandleMoveSplineDoneOpcode(MoveSplineDone const& packet)
 {
-    if (!VerifyMovementInfo(packet.movementInfo))
+    MovementInfo movementInfo;
+    if (!MovementInfoFromWire(packet.Status, movementInfo))
+        return;
+
+    if (!VerifyMovementInfo(movementInfo))
         return;
 
     Unit* pMover = _player->GetMover();
@@ -826,7 +840,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSpline
     if (pMover->GetObjectGuid() != m_clientMoverGuid)
         return;
 
-    if (pMover->movespline->GetId() != packet.splineId)
+    if (pMover->movespline->GetId() != uint32(packet.SplineId))
         return;
 
     // must be after checking this is the newest spline id
@@ -842,25 +856,19 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSpline
             return;
 
         // no need to reject future packets in this case
-        if (!_player->GetCheatData()->HandleSplineDone(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), packet.splineId))
+        if (!_player->GetCheatData()->HandleSplineDone(pPlayerMover, movementInfo, uint32(packet.SplineId)))
             return;
 
-        if (m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), CMSG_MOVE_SPLINE_DONE))
+        if (m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, CMSG_MOVE_SPLINE_DONE))
             return;
     }
 
-    HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+    HandleMoverRelocation(pMover, movementInfo);
 
-    WorldPacket data(packet.movementInfo.HasMovementFlag(MOVEFLAG_MASK_MOVING) ? MSG_MOVE_HEARTBEAT : MSG_MOVE_STOP);
+    MoveUpdate update;
+    update.Status = MovementInfoToWire(movementInfo, pMover->GetObjectGuid());
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << m_clientMoverGuid.WriteAsPacked();
-#else
-    data << m_clientMoverGuid.GetRawValue();
-#endif
-    packet.movementInfo.Write(data);
-
-    pMover->SendMovementMessageToSet(std::move(data), true, _player);
+    pMover->SendMovementMessageToSet(MakeClassicPacket(update), true, _player);
 }
 
 void WorldSession::HandleSetActiveMoverOpcode(SetActiveMover const& packet)
@@ -911,89 +919,16 @@ void WorldSession::HandleSetActiveMoverOpcode(SetActiveMover const& packet)
 
 void WorldSession::HandleMoveInitActiveMoverCompleteOpcode(MoveInitActiveMoverComplete const& /*packet*/)
 {
-    if (m_clientMoverGuid.IsEmpty())
-        m_clientMoverGuid = _player->GetMover()->GetObjectGuid();
 }
 
-void WorldSession::HandleMoveNotActiveMoverOpcode(WorldPackets::Movement::MoveNotActiveMover const& packet)
+void WorldSession::SendActiveMover(Unit const* mover)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    ObjectGuid oldMoverGuid = packet.oldMoverGuid;
+    // The server decides what the client moves; the client's own confirmation only re-checks it.
+    m_clientMoverGuid = mover->GetObjectGuid();
 
-    if (oldMoverGuid != m_clientMoverGuid)
-    {
-        sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "HandleMoveNotActiveMover: Client sent guid %s but previous mover was %s.",
-            oldMoverGuid.GetString().c_str(),
-            m_clientMoverGuid.GetString().c_str());
-        return;
-    }
-
-    // Client sent not active mover, but maybe the mover is actually set?
-    if (_player->GetObjectGuid() != oldMoverGuid &&
-        _player->GetMover()->GetObjectGuid() == oldMoverGuid)
-    {
-        sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "HandleMoveNotActiveMover: Incorrect mover guid. Mover is %s and should be %s instead of %s.",
-                       _player->GetMover()->GetGuidStr().c_str(),
-                       _player->GetGuidStr().c_str(),
-                       oldMoverGuid.GetString().c_str());
-        return;
-    }
-#else
-    ObjectGuid oldMoverGuid = m_clientMoverGuid;
-#endif
-
-    m_clientMoverGuid = ObjectGuid();
-
-    // Do not accept packets sent before this time.
-    if (packet.movementInfo.stime <= m_moveRejectTime)
-        return;
-
-    if (!VerifyMovementInfo(packet.movementInfo))
-        return;
-
-    Unit* pMover = _player->GetMap()->GetUnit(oldMoverGuid);
-
-    if (!pMover)
-        return;
-
-    if (pMover->HasPendingSplineDone())
-        return;
-
-    if (!pMover->movespline->Finalized())
-        return;
-
-    Player* pPlayerMover = pMover->ToPlayer();
-
-    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
-    if (pPlayerMover && pPlayerMover->IsBeingTeleported())
-        return;
-
-    if (pPlayerMover)
-    {
-        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), packet.GetOpcode())) ||
-            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), packet.GetOpcode())))
-        {
-            return;
-        }
-    }
-
-    HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
-
-    // This fixes channeled spells which are interrupted on turning that involve controlling another unit.
-    // Example: Eye of Kill'rog will get instantly interrupted because orientation is slightly changed in this packet.
-    if (pPlayerMover)
-        pPlayerMover->UpdateChannelStartPosition();
-
-    WorldPacket data(packet.movementInfo.HasMovementFlag(MOVEFLAG_MASK_MOVING) ? MSG_MOVE_HEARTBEAT : MSG_MOVE_STOP);
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << oldMoverGuid.WriteAsPacked();
-#else
-    data << oldMoverGuid.GetRawValue();
-#endif
-    packet.movementInfo.Write(data);
-
-    pMover->SendMovementMessageToSet(std::move(data), true, _player);
+    MoveSetActiveMover packet;
+    packet.Mover = ClassicGuidMapping::ToClassic(mover->GetObjectGuid(), realmID);
+    SendClassic(packet);
 }
 
 void WorldSession::HandleMountSpecialAnimOpcode(NullClientPacket const& /*packet*/)
@@ -1011,16 +946,20 @@ void WorldSession::HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse
     _player->SummonIfPossible(true);
 }
 
-void WorldSession::HandleMoveTimeSkippedOpcode(WorldPackets::Movement::MoveTimeSkipped const& packet)
+void WorldSession::HandleMoveTimeSkippedOpcode(MoveTimeSkipped const& packet)
 {
-    Unit* pMover = GetMoverFromGuid(packet.guid);
+    auto const moverGuid = ClassicGuidMapping::FromClassic(packet.Mover);
+    if (!moverGuid)
+        return;
+
+    Unit* pMover = GetMoverFromGuid(*moverGuid);
     if (!pMover)
         return;
 
     if (pMover->m_movementInfo.ctime)
     {
-        pMover->m_movementInfo.stime += packet.lag;
-        pMover->m_movementInfo.ctime += packet.lag;
+        pMover->m_movementInfo.stime += packet.TimeSkipped;
+        pMover->m_movementInfo.ctime += packet.TimeSkipped;
     }
 
     // fix an 1.12 client problem with transports
@@ -1033,15 +972,13 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPackets::Movement::MoveTimeS
             pTransport->SendCreateUpdateToPlayer(_player);
         }
     }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     else
     {
-        WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
-        data << pMover->GetPackGUID();
-        data << packet.lag;
-        pMover->SendMovementMessageToSet(std::move(data), true, _player);
+        MoveSkipTime skip;
+        skip.Mover = ClassicGuidMapping::ToClassic(pMover->GetObjectGuid(), realmID);
+        skip.TimeSkipped = packet.TimeSkipped;
+        pMover->SendMovementMessageToSet(MakeClassicPacket(skip), true, _player);
     }
-#endif
 }
 
 // make sure this client is allowed to control the unit which guid is provided

@@ -11,6 +11,7 @@
 #include "Chat.h"
 #include "CharacterDatabaseCache.h"
 #include "Utilities/Random.h"
+#include "Packets/Classic/GuidMapping.h"
 
 #include <random>
 
@@ -3333,17 +3334,15 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }
-        case MSG_MOVE_TELEPORT_ACK:
+        case CLASSIC_SMSG_MOVE_TELEPORT:
         {
             if (!me)
                 return;
 
-            auto data = std::make_unique<WorldPackets::Movement::MoveTeleportAck>();
-            data->guid = me->GetObjectGuid();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-            data->movementCounter = me->GetLastCounterForMovementChangeType(TELEPORT);
-#endif
-            data->time = uint32(time(nullptr));
+            auto data = std::make_unique<ClassicClient<MoveTeleportAck>>();
+            data->Body.Mover = ClassicGuidMapping::ToClassic(me->GetObjectGuid(), realmID);
+            data->Body.AckIndex = int32(me->GetLastCounterForMovementChangeType(TELEPORT));
+            data->Body.MoveTime = int32(time(nullptr));
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }

@@ -9815,14 +9815,9 @@ void Unit::NearLandTo(float x, float y, float z, float orientation)
     m_movementInfo.ChangePosition(x, y, z, orientation);
     m_movementInfo.SetAsServerSide();
 
-    WorldPacket data(MSG_MOVE_FALL_LAND, 41);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << GetPackGUID();
-#else
-    data << GetGUID();
-#endif
-    data << m_movementInfo;
-    SendMovementMessageToSet(std::move(data), true);
+    MoveUpdate update;
+    update.Status = MovementInfoToWire(m_movementInfo, GetObjectGuid());
+    SendMovementMessageToSet(MakeClassicPacket(update), true);
     TeleportPositionRelocation(x, y, z, orientation);
     DisableSpline();
 }

@@ -415,6 +415,8 @@ class WorldSession
             SendPacket(&data);
         }
         void SendMovementPacket(WorldPacket const* packet);
+        // Makes `mover` the unit this session's client moves, and tells the client.
+        void SendActiveMover(Unit const* mover);
         void SendNotification(char const* format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(int32 string_id, ...);
         void SendPetNameInvalid(uint32 error, std::string const& name);
@@ -573,10 +575,14 @@ class WorldSession
         void HandlePlayedTime(NullClientPacket const& packet);
 
         // Movement
-        void HandleMoveRootAck(WorldPackets::Movement::MoveRootAck const& packet);
-        void HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackAck const& packet);
-        void HandleMoveTeleportAckOpcode(WorldPackets::Movement::MoveTeleportAck const& packet);
-        void HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::MoveSpeedAck const& packet);
+        void HandleMoveRootAck(ClassicOpcodes opcode, ClassicMovementAck const& ack);
+        template<ClassicOpcodes Op>
+        void HandleClassicRootAck(ClientMovementAck<Op> const& packet) { HandleMoveRootAck(Op, packet.Ack); }
+        void HandleMoveKnockBackAck(MoveKnockBackAck const& packet);
+        void HandleMoveTeleportAckOpcode(MoveTeleportAck const& packet);
+        void HandleForceSpeedChangeAck(ClassicOpcodes opcode, ClassicMovementAck const& ack, float speed);
+        template<ClassicOpcodes Op>
+        void HandleClassicSpeedAck(ClientMovementSpeedAck<Op> const& packet) { HandleForceSpeedChangeAck(Op, packet.Ack, packet.Speed); }
         void HandleMoveWorldportAckOpcode(NullClientPacket const& packet);
         void HandleMoveWorldportAck();                // for server-side calls
         void HandleMovementOpcodes(uint32 opcode, MovementInfo& movementInfo);
@@ -585,10 +591,11 @@ class WorldSession
         void HandleClassicMovementOpcode(ClientPlayerMovement<Op> const& packet) { HandleClassicMovement(Op, packet.Status); }
         void HandleSetActiveMoverOpcode(SetActiveMover const& packet);
         void HandleMoveInitActiveMoverCompleteOpcode(MoveInitActiveMoverComplete const& packet);
-        void HandleMoveNotActiveMoverOpcode(WorldPackets::Movement::MoveNotActiveMover const& packet);
-        void HandleMoveTimeSkippedOpcode(WorldPackets::Movement::MoveTimeSkipped const& packet);
-        void HandleMovementFlagChangeToggleAck(WorldPackets::Movement::MoveFlagChangeAck const& packet);
-        void HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSplineDone const& packet);
+        void HandleMoveTimeSkippedOpcode(MoveTimeSkipped const& packet);
+        void HandleMovementFlagChangeToggleAck(ClassicOpcodes opcode, ClassicMovementAck const& ack);
+        template<ClassicOpcodes Op>
+        void HandleClassicFlagAck(ClientMovementAck<Op> const& packet) { HandleMovementFlagChangeToggleAck(Op, packet.Ack); }
+        void HandleMoveSplineDoneOpcode(MoveSplineDone const& packet);
         void HandleMoveSetRawPosition(WorldPackets::Misc::MoveSetRawPosition const& packet);
         void HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport const& packet);
         void HandleMountSpecialAnimOpcode(NullClientPacket const& packet);
