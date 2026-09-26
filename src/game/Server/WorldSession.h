@@ -66,7 +66,7 @@
 #include "Packets/Skill.h"
 #include "Packets/Social.h"
 #include "Packets/Spell.h"
-#include "Packets/Taxi.h"
+#include "Packets/TaxiMessages.h"
 #include "Packets/Trade.h"
 #include "Packets/WorldTransfer.h"
 
@@ -502,6 +502,7 @@ class WorldSession
         void SendTaxiMenu(Creature* unit);
         void SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode = 0);
         bool SendLearnNewTaxiNode(Creature* unit);
+        void SendActivateTaxiReply(uint32 replyCode);
 
         // Guild Team
         void SendGuildCommandResult(uint32 typecmd, std::string const& str, uint32 cmdresult);
@@ -722,12 +723,10 @@ class WorldSession
 #endif
         void HandleSaveGuildEmblemOpcode(WorldPackets::Guild::SaveGuildEmblem const& packet);
 
-        void HandleTaxiNodeStatusQueryOpcode(WorldPackets::Taxi::TaxiNodeStatusQuery const& packet);
-        void HandleTaxiQueryAvailableNodes(WorldPackets::Taxi::TaxiQueryAvailableNodes const& packet);
-        void HandleActivateTaxiOpcode(WorldPackets::Taxi::ActivateTaxi const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        void HandleActivateTaxiExpressOpcode(WorldPackets::Taxi::ActivateTaxiExpress const& packet);
-#endif
+        void HandleTaxiNodeStatusQueryOpcode(TaxiNodeStatusQuery const& packet);
+        void HandleTaxiQueryAvailableNodes(TaxiQueryAvailableNodes const& packet);
+        void HandleEnableTaxiNodeOpcode(EnableTaxiNode const& packet);
+        void HandleActivateTaxiOpcode(ActivateTaxi const& packet);
 
         void HandleTabardVendorActivateOpcode(WorldPackets::Npc::TabardVendorActivate const& packet);
         void HandleBankerActivateOpcode(WorldPackets::Npc::BankerActivate const& packet);

@@ -30,10 +30,24 @@
 #include "Path.h"
 #include "WaypointMovementGenerator.h"
 #include "Database/DBCStores.h"
+#include "Server/Packets/Classic/GuidMapping.h"
 
-void WorldSession::HandleTaxiNodeStatusQueryOpcode(WorldPackets::Taxi::TaxiNodeStatusQuery const& packet)
+namespace
 {
-    SendTaxiStatus(packet.creatureGuidNearTaxi);
+ClassicTaxiMask ToClassicTaxiMask(ByteBuffer const& mask)
+{
+    ClassicTaxiMask classic{};
+    memcpy(classic.data(), mask.contents(), classic.size());
+    return classic;
+}
+}
+
+void WorldSession::HandleTaxiNodeStatusQueryOpcode(TaxiNodeStatusQuery const& packet)
+{
+    auto const guid = ClassicGuidMapping::FromClassic(packet.UnitGuid);
+    if (!guid)
+        return;
+    SendTaxiStatus(*guid);
 }
 
 void WorldSession::SendTaxiStatus(ObjectGuid guid)
@@ -52,19 +66,23 @@ void WorldSession::SendTaxiStatus(ObjectGuid guid)
     if (curloc == 0)
         return;
 
-    auto taxiPacket = std::make_unique<WorldPackets::Taxi::TaxiNodeStatus>();
-    taxiPacket->guid = guid;
-    taxiPacket->known = GetPlayer()->m_taxi.IsTaximaskNodeKnown(curloc) ? 1 : 0;
-    SendPacket(std::move(taxiPacket));
+    TaxiNodeStatus status;
+    status.UnitGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    status.Status = GetPlayer()->m_taxi.IsTaximaskNodeKnown(curloc) ? CLASSIC_TAXISTATUS_LEARNED : CLASSIC_TAXISTATUS_UNLEARNED;
+    SendClassic(status);
 }
 
-void WorldSession::HandleTaxiQueryAvailableNodes(WorldPackets::Taxi::TaxiQueryAvailableNodes const& packet)
+void WorldSession::HandleTaxiQueryAvailableNodes(TaxiQueryAvailableNodes const& packet)
 {
+    auto const guid = ClassicGuidMapping::FromClassic(packet.UnitGuid);
+    if (!guid)
+        return;
+
     // cheating checks
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.guid, UNIT_NPC_FLAG_FLIGHTMASTER);
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTaxiQueryAvailableNodes - %s not found or you can't interact with him.", packet.guid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleTaxiQueryAvailableNodes - %s not found or you can't interact with him.", guid->GetString().c_str());
         return;
     }
 
@@ -80,6 +98,16 @@ void WorldSession::HandleTaxiQueryAvailableNodes(WorldPackets::Taxi::TaxiQueryAv
     SendTaxiMenu(unit);
 }
 
+void WorldSession::HandleEnableTaxiNodeOpcode(EnableTaxiNode const& packet)
+{
+    auto const guid = ClassicGuidMapping::FromClassic(packet.UnitGuid);
+    if (!guid)
+        return;
+
+    if (Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_FLIGHTMASTER))
+        SendLearnNewTaxiNode(unit);
+}
+
 void WorldSession::SendTaxiMenu(Creature* unit)
 {
     // find current node
@@ -88,23 +116,16 @@ void WorldSession::SendTaxiMenu(Creature* unit)
     if (curloc == 0)
         return;
 
-    auto packet = std::make_unique<WorldPackets::Taxi::ShowTaxiNodes>();
-    packet->flightmasterGuid = unit->GetObjectGuid();
-    packet->currentNode = curloc;
+    ShowTaxiNodes packet;
+    packet.UnitGuid = ClassicGuidMapping::ToClassic(unit->GetObjectGuid(), realmID);
+    packet.CurrentNode = int32(curloc);
 
-    if (GetPlayer()->IsTaxiCheater())
-    { // player is able to use all taxi nodes
-        for (uint32 i = 0; i < 8; ++i)
-            packet->knownNodesMask[i] = sTaxiNodesMask[i];
-    }
-    else
-    {
-        TaxiMask const& taxiMask = GetPlayer()->m_taxi.GetTaxiMask();
-        for (uint32 i = 0; i < 8; ++i)
-            packet->knownNodesMask[i] = taxiMask[i];
-    }
+    ByteBuffer mask;
+    GetPlayer()->m_taxi.AppendTaximaskTo(mask, GetPlayer()->IsTaxiCheater());
+    packet.CanLandNodes = ToClassicTaxiMask(mask);
+    packet.CanUseNodes = packet.CanLandNodes;
 
-    SendPacket(std::move(packet));
+    SendClassic(packet);
 }
 
 void WorldSession::SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode)
@@ -136,12 +157,14 @@ bool WorldSession::SendLearnNewTaxiNode(Creature* unit)
 
     if (GetPlayer()->m_taxi.SetTaximaskNode(curloc))
     {
-        SendPacket(std::make_unique<WorldPackets::Taxi::NewTaxiPath>());
+        NewTaxiPath newPath;
+        newPath.TaxiNodesId = int32(curloc);
+        SendClassic(newPath);
 
-        auto taxiStatus = std::make_unique<WorldPackets::Taxi::TaxiNodeStatus>();
-        taxiStatus->guid = unit->GetObjectGuid();
-        taxiStatus->known = true;
-        SendPacket(std::move(taxiStatus));
+        TaxiNodeStatus status;
+        status.UnitGuid = ClassicGuidMapping::ToClassic(unit->GetObjectGuid(), realmID);
+        status.Status = CLASSIC_TAXISTATUS_LEARNED;
+        SendClassic(status);
 
         return true;
     }
@@ -149,33 +172,31 @@ bool WorldSession::SendLearnNewTaxiNode(Creature* unit)
         return false;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-void WorldSession::HandleActivateTaxiExpressOpcode(WorldPackets::Taxi::ActivateTaxiExpress const& packet)
+void WorldSession::SendActivateTaxiReply(uint32 replyCode)
 {
-    Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(packet.flightmasterGuid, UNIT_NPC_FLAG_FLIGHTMASTER);
-    if (!npc)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleActivateTaxiExpressOpcode - %s not found or you can't interact with it.", packet.flightmasterGuid.GetString().c_str());
-        return;
-    }
-
-    if (packet.nodes.empty())
-        return;
-
-    GetPlayer()->ActivateTaxiPathTo(packet.nodes, npc);
+    ActivateTaxiReply reply;
+    reply.Reply = uint8(replyCode);
+    SendClassic(reply);
 }
-#endif
 
-void WorldSession::HandleActivateTaxiOpcode(WorldPackets::Taxi::ActivateTaxi const& packet)
+void WorldSession::HandleActivateTaxiOpcode(ActivateTaxi const& packet)
 {
-    std::vector<uint32> nodes { packet.node1, packet.node2 };
+    auto const vendorGuid = ClassicGuidMapping::FromClassic(packet.Vendor);
+    if (!vendorGuid)
+        return;
 
-    Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(packet.flightmasterGuid, UNIT_NPC_FLAG_FLIGHTMASTER);
+    Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(*vendorGuid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleActivateTaxiOpcode - %s not found or you can't interact with it.", packet.flightmasterGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleActivateTaxiOpcode - %s not found or you can't interact with it.", vendorGuid->GetString().c_str());
+        SendActivateTaxiReply(ERR_TAXITOOFARAWAY);
         return;
     }
 
+    uint32 curloc = sObjectMgr.GetNearestTaxiNode(npc->GetPositionX(), npc->GetPositionY(), npc->GetPositionZ(), npc->GetMapId(), GetPlayer()->GetTeam());
+    if (curloc == 0)
+        return;
+
+    std::vector<uint32> nodes { curloc, packet.Node };
     GetPlayer()->ActivateTaxiPathTo(nodes, npc);
 }

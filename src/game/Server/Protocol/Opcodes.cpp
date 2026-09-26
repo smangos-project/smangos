@@ -512,10 +512,10 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_TAXIENABLEALLNODES,           UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_TAXISHOWNODES,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SHOWTAXINODES,                UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TAXINODE_STATUS_QUERY,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTaxiNodeStatusQueryOpcode);
+    INVALID_PACKET(CMSG_TAXINODE_STATUS_QUERY,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_TAXINODE_STATUS,              UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TAXIQUERYAVAILABLENODES,      STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTaxiQueryAvailableNodes);
-    DEFINE_HANDLER(CMSG_ACTIVATETAXI,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleActivateTaxiOpcode);
+    INVALID_PACKET(CMSG_TAXIQUERYAVAILABLENODES,      UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_ACTIVATETAXI,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ACTIVATETAXIREPLY,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_NEW_TAXI_PATH,                UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_TRAINER_LIST,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTrainerListOpcode);
@@ -898,7 +898,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GM_NUKE_ACCOUNT,              UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_GM_DESTROY_CORPSE,             UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GM_DESTROY_ONLINE_CORPSE,     UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_ACTIVATETAXIEXPRESS,          STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleActivateTaxiExpressOpcode);
+    INVALID_PACKET(CMSG_ACTIVATETAXIEXPRESS,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SET_FACTION_ATWAR,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GAMETIMEBIAS_SET,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_DEBUG_ACTIONS_START,          UnhandleReason::Unhandled);
@@ -1054,6 +1054,10 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_INIT_ACTIVE_MOVER_COMPLETE, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveInitActiveMoverCompleteOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_WORLD_PORT_RESPONSE, STATUS_TRANSFER, PACKET_PROCESS_WORLD, &WorldSession::HandleMoveWorldportAckOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOUNT_SPECIAL_ANIM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMountSpecialAnimOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TAXI_NODE_STATUS_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTaxiNodeStatusQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TAXI_QUERY_AVAILABLE_NODES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTaxiQueryAvailableNodes);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ENABLE_TAXI_NODE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleEnableTaxiNodeOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ACTIVATE_TAXI, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleActivateTaxiOpcode);
 
     return list;
 }

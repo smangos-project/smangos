@@ -17880,9 +17880,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
     // not let cheating with start flight in time of logout process || if casting not finished || while in combat || if not use Spell's with EffectSendTaxi
     if (GetSession()->IsLogingOut() || IsInCombat())
     {
-        auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-        packet->replyCode = ERR_TAXIPLAYERBUSY;
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendActivateTaxiReply(ERR_TAXIPLAYERBUSY);
         return false;
     }
 
@@ -17904,26 +17902,20 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
         // not let cheating with start flight mounted
         if (IsMounted())
         {
-            auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-            packet->replyCode = ERR_TAXIPLAYERALREADYMOUNTED;
-            GetSession()->SendPacket(std::move(packet));
+            GetSession()->SendActivateTaxiReply(ERR_TAXIPLAYERALREADYMOUNTED);
             return false;
         }
 
         if (IsInDisallowedMountForm())
         {
-            auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-            packet->replyCode = ERR_TAXIPLAYERSHAPESHIFTED;
-            GetSession()->SendPacket(std::move(packet));
+            GetSession()->SendActivateTaxiReply(ERR_TAXIPLAYERSHAPESHIFTED);
             return false;
         }
 
         // not let cheating with start flight in time of logout process || if casting not finished || while in combat || if not use Spell's with EffectSendTaxi
         if (IsNonMeleeSpellCasted(false))
         {
-            auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-            packet->replyCode = ERR_TAXIPLAYERBUSY;
-            GetSession()->SendPacket(std::move(packet));
+            GetSession()->SendActivateTaxiReply(ERR_TAXIPLAYERBUSY);
             return false;
         }
     }
@@ -17954,9 +17946,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
     TaxiNodesEntry const* node = sObjectMgr.GetTaxiNodeEntry(sourceNode);
     if (!node)
     {
-        auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-        packet->replyCode = ERR_TAXINOSUCHPATH;
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendActivateTaxiReply(ERR_TAXINOSUCHPATH);
         return false;
     }
 
@@ -17969,18 +17959,14 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
                 (node->z - GetPositionZ()) * (node->z - GetPositionZ()) >
                 (2 * INTERACTION_DISTANCE) * (2 * INTERACTION_DISTANCE) * (2 * INTERACTION_DISTANCE))
         {
-            auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-            packet->replyCode = ERR_TAXITOOFARAWAY;
-            GetSession()->SendPacket(std::move(packet));
+            GetSession()->SendActivateTaxiReply(ERR_TAXITOOFARAWAY);
             return false;
         }
     }
     // node must have pos if taxi master case (npc != nullptr)
     else if (npc)
     {
-        auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-        packet->replyCode = ERR_TAXIUNSPECIFIEDSERVERERROR;
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendActivateTaxiReply(ERR_TAXIUNSPECIFIEDSERVERERROR);
         return false;
     }
 
@@ -18083,9 +18069,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
     // in spell case allow display id to be 0
     if ((mount_display_id == 0 && spellid == 0) || sourcePath == 0)
     {
-        auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-        packet->replyCode = ERR_TAXIUNSPECIFIEDSERVERERROR;
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendActivateTaxiReply(ERR_TAXIUNSPECIFIEDSERVERERROR);
         m_taxi.ClearTaxiDestinations();
         return false;
     }
@@ -18094,9 +18078,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
 
     if (money < totalCost)
     {
-        auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-        packet->replyCode = ERR_TAXINOTENOUGHMONEY;
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendActivateTaxiReply(ERR_TAXINOTENOUGHMONEY);
         m_taxi.ClearTaxiDestinations();
         return false;
     }
@@ -18124,9 +18106,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
     if (GetPet())
         RemovePet(PET_SAVE_REAGENTS);
 
-    auto packet = std::make_unique<WorldPackets::Taxi::ActivateTaxiReply>();
-    packet->replyCode = ERR_TAXIOK;
-    GetSession()->SendPacket(std::move(packet));
+    GetSession()->SendActivateTaxiReply(ERR_TAXIOK);
 
     GetSession()->SendDoFlight(mount_display_id, sourcePath);
 
@@ -22004,9 +21984,7 @@ void Player::TaxiStepFinished(bool lastPointReached)
         if (IsTaxiCheater())
         {
             if (m_taxi.SetTaximaskNode(sourcenode))
-            {
-                GetSession()->SendPacket(std::make_unique<WorldPackets::Taxi::NewTaxiPath>());
-            }
+                GetSession()->SendClassic(NewTaxiPath());
         }
 
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Taxi has to go from %u to %u", sourcenode, destinationnode);
