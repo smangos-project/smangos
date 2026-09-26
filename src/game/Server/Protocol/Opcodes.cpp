@@ -164,7 +164,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_LOGOUT_CANCEL_ACK,            UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_NAME_QUERY,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_NAME_QUERY_RESPONSE,          UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PET_NAME_QUERY,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetNameQueryOpcode);
+    INVALID_PACKET(CMSG_PET_NAME_QUERY,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_NAME_QUERY_RESPONSE,      UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_GUILD_QUERY,                  STATUS_AUTHED,    PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildQueryOpcode);
     INVALID_PACKET(SMSG_GUILD_QUERY_RESPONSE,         UnhandleReason::SendByServer);
@@ -456,10 +456,10 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_MOUNTSPECIAL_ANIM,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MOUNTSPECIAL_ANIM,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_TAME_FAILURE,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PET_SET_ACTION,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetSetAction);
-    DEFINE_HANDLER(CMSG_PET_ACTION,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandlePetAction);
-    DEFINE_HANDLER(CMSG_PET_ABANDON,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetAbandon);
-    DEFINE_HANDLER(CMSG_PET_RENAME,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetRename);
+    INVALID_PACKET(CMSG_PET_SET_ACTION,                UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_PET_ACTION,                    UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_PET_ABANDON,                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_PET_RENAME,                    UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_NAME_INVALID,             UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_SPELLS,                   UnhandleReason::SendByServer);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
@@ -585,7 +585,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_AUTH_RESPONSE,                UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_GM_SHOWLABEL,                  UnhandleReason::Unhandled);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    DEFINE_HANDLER(CMSG_PET_CAST_SPELL,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetCastSpellOpcode);
+    INVALID_PACKET(CMSG_PET_CAST_SPELL,                UnhandleReason::Unhandled);
 #endif
     DEFINE_HANDLER(MSG_SAVE_GUILD_EMBLEM,             STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleSaveGuildEmblemOpcode);
     INVALID_PACKET(MSG_TABARDVENDOR_ACTIVATE,         UnhandleReason::Unhandled);
@@ -712,7 +712,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_SET_AMMO,                     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetAmmoOpcode);
     INVALID_PACKET(SMSG_CORPSE_RECLAIM_DELAY,         UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_ACTIVE_MOVER,             UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_PET_CANCEL_AURA,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetCancelAuraOpcode);
+    INVALID_PACKET(CMSG_PET_CANCEL_AURA,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_PLAYER_AI_CHEAT,              UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_CANCEL_AUTO_REPEAT_SPELL,     UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_GM_ACCOUNT_ONLINE,             UnhandleReason::Unhandled);
@@ -726,7 +726,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(MSG_QUEST_PUSH_RESULT,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAY_MUSIC,                   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PLAY_OBJECT_SOUND,            UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_REQUEST_PET_INFO,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleRequestPetInfoOpcode);
+    INVALID_PACKET(CMSG_REQUEST_PET_INFO,              UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_FAR_SIGHT,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleFarSightOpcode);
     INVALID_PACKET(SMSG_SPELLDISPELLOG,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DAMAGE_CALC_LOG,              UnhandleReason::SendByServer);
@@ -853,15 +853,15 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PARTY_MEMBER_STATS_FULL,      UnhandleReason::SendByServer);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    DEFINE_HANDLER(CMSG_PET_STOP_ATTACK,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetStopAttack);
+    INVALID_PACKET(CMSG_PET_STOP_ATTACK,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BINDER_CONFIRM,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEGROUND_PLAYER_JOINED,   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEGROUND_PLAYER_LEFT,     UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_BATTLEMASTER_JOIN,            STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleBattlemasterJoinOpcode);
     INVALID_PACKET(SMSG_ADDON_INFO,                   UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PET_UNLEARN,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetUnlearnOpcode);
+    INVALID_PACKET(CMSG_PET_UNLEARN,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_UNLEARN_CONFIRM,          UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PET_SPELL_AUTOCAST,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetSpellAutocastOpcode);
+    INVALID_PACKET(CMSG_PET_SPELL_AUTOCAST,            UnhandleReason::Unhandled);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     INVALID_PACKET(SMSG_WEATHER,                      UnhandleReason::SendByServer);
@@ -1122,6 +1122,16 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUEST_PUSH_RESULT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQuestPushResult);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUEST_GIVER_STATUS_MULTIPLE_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQuestgiverStatusMultipleQuery);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_QUEST_INFO, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleQueryQuestInfoOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PET_NAME, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetNameQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_SET_ACTION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetSetAction);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_ACTION, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandlePetAction);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_ABANDON, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetAbandon);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_RENAME, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetRename);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_CAST_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetCastSpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_CANCEL_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetCancelAuraOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_PET_INFO, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRequestPetInfoOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_STOP_ATTACK, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetStopAttack);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PET_SPELL_AUTOCAST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetSpellAutocastOpcode);
 
     return list;
 }

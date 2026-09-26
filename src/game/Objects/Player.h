@@ -1273,7 +1273,6 @@ class Player final: public Unit
     private:
         ObjectGuid m_miniPetGuid;
         uint32 m_temporaryUnsummonedPetNumber;
-        void SendPetSkillWipeConfirm() const;
     public:
         void SendPetTameFailure(PetTameFailureReason reason) const;
         void PetSpellInitialize();

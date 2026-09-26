@@ -65,7 +65,7 @@
 #include "Packets/MovementMessages.h"
 #include "Packets/Npc.h"
 #include "Packets/NpcMessages.h"
-#include "Packets/Pet.h"
+#include "Packets/PetMessages.h"
 #include "Packets/Petition.h"
 #include "Packets/Query.h"
 #include "Packets/QueryMessages.h"
@@ -428,7 +428,7 @@ class WorldSession
         void SendActiveMover(Unit const* mover);
         void SendNotification(char const* format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(int32 string_id, ...);
-        void SendPetNameInvalid(uint32 error, std::string const& name);
+        void SendPetNameInvalid(uint32 error, ClassicGuid const& pet, int32 petNumber, std::string const& name);
         void SendPartyResult(PartyOperation operation, std::string const& memberName, PartyResult res);
         void SendAreaTriggerMessage(char const* Text, ...) ATTR_PRINTF(2, 3);
         void SendQueryTimeResponse();
@@ -463,7 +463,7 @@ class WorldSession
         void SendCancelTrade(TradeStatus status);
 
         // Pet
-        void SendPetNameQuery(ObjectGuid guid, uint32 petNumber);
+        void SendPetNameQuery(ObjectGuid guid);
         void SendStablePet(ObjectGuid guid);
         void SendStableResult(uint8 res);
         bool CheckStableMaster(ObjectGuid guid);
@@ -898,20 +898,19 @@ class WorldSession
         void HandleTutorialResetOpcode(NullClientPacket const& packet);
 
         //Pet
-        void HandlePetAction(WorldPackets::Pet::PetAction const& packet);
-        void HandlePetNameQueryOpcode(WorldPackets::Pet::QueryPetName const& packet);
-        void HandlePetSetAction(WorldPackets::Pet::PetSetAction const& packet);
-        void HandlePetAbandon(WorldPackets::Pet::PetAbandon const& packet);
-        void HandlePetRename(WorldPackets::Pet::PetRename const& packet);
-        void HandlePetCancelAuraOpcode(WorldPackets::Pet::PetCancelAura const& packet);
-        void HandleRequestPetInfoOpcode(NullClientPacket const& packet);
+        void HandlePetAction(PetAction const& packet);
+        void HandlePetNameQueryOpcode(QueryPetName const& packet);
+        void HandlePetSetAction(PetSetAction const& packet);
+        void HandlePetAbandon(PetAbandon const& packet);
+        void HandlePetRename(PetRename const& packet);
+        void HandlePetCancelAuraOpcode(PetCancelAura const& packet);
+        void HandleRequestPetInfoOpcode(RequestPetInfo const& packet);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-        void HandlePetStopAttack(WorldPackets::Pet::PetStopAttack const& packet);
-        void HandlePetUnlearnOpcode(WorldPackets::Pet::PetUnlearn const& packet);
-        void HandlePetSpellAutocastOpcode(WorldPackets::Pet::PetSpellAutocast const& packet);
+        void HandlePetStopAttack(PetStopAttack const& packet);
+        void HandlePetSpellAutocastOpcode(PetSpellAutocast const& packet);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        void HandlePetCastSpellOpcode(WorldPackets::Pet::PetCastSpell const& packet);
+        void HandlePetCastSpellOpcode(PetCastSpell const& packet);
 #endif
 
         void HandleCharRenameOpcode(WorldPackets::Character::CharRename const& packet);

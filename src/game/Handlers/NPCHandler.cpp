@@ -776,7 +776,7 @@ void WorldSession::HandleUnstablePet(WorldPackets::Npc::UnstablePet const& packe
             return;
         }
 
-        SendPetNameQuery(newpet->GetObjectGuid(), newpet->GetCharmInfo()->GetPetNumber());
+        SendPetNameQuery(newpet->GetObjectGuid());
         SendStableResult(STABLE_SUCCESS_UNSTABLE);
         return;
     }
@@ -804,7 +804,7 @@ void WorldSession::HandleUnstablePet(WorldPackets::Npc::UnstablePet const& packe
         return;
     }
 
-    SendPetNameQuery(newpet->GetObjectGuid(), newpet->GetCharmInfo()->GetPetNumber());
+    SendPetNameQuery(newpet->GetObjectGuid());
     SendStableResult(STABLE_SUCCESS_UNSTABLE);
 }
 
@@ -931,7 +931,7 @@ void WorldSession::HandleStableSwapPet(WorldPackets::Npc::StableSwapPet const& p
         }
         else
         {
-            SendPetNameQuery(newpet->GetObjectGuid(), newpet->GetCharmInfo()->GetPetNumber());
+            SendPetNameQuery(newpet->GetObjectGuid());
             SendStableResult(STABLE_SUCCESS_UNSTABLE);
         }
 
@@ -993,7 +993,7 @@ void WorldSession::HandleStableSwapPet(WorldPackets::Npc::StableSwapPet const& p
     }
     else
     {
-        SendPetNameQuery(newpet->GetObjectGuid(), newpet->GetCharmInfo()->GetPetNumber());
+        SendPetNameQuery(newpet->GetObjectGuid());
         SendStableResult(STABLE_SUCCESS_UNSTABLE);
     }
 }

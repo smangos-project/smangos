@@ -221,7 +221,6 @@ set (game_SRCS
     Server/Packets/Mail.cpp
     Server/Packets/Misc.cpp
     Server/Packets/Npc.cpp
-    Server/Packets/Pet.cpp
     Server/Packets/Petition.cpp
     Server/Packets/Query.cpp
     Server/Packets/Skill.cpp
@@ -482,7 +481,6 @@ set (game_SRCS
     Server/Packets/Npc.h
     Server/Packets/NpcMessages.h
     Server/Packets/ObjectUpdate.h
-    Server/Packets/Pet.h
     Server/Packets/Petition.h
     Server/Packets/Query.h
     Server/Packets/QueryMessages.h

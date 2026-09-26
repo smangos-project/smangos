@@ -1172,7 +1172,7 @@ void WorldSession::HandleResetInstancesOpcode(NullClientPacket const& /*packet*/
         _player->ResetInstances(INSTANCE_RESET_ALL);
 }
 
-void WorldSession::HandleRequestPetInfoOpcode(NullClientPacket const& /*packet */)
+void WorldSession::HandleRequestPetInfoOpcode(RequestPetInfo const& /*packet */)
 {
     if (_player->GetPet())
         _player->PetSpellInitialize();

@@ -60,6 +60,8 @@
 #include "MovementInfoWire.h"
 #include "Server/Packets/CombatLog.h"
 #include "Server/Packets/CombatMessages.h"
+#include "Server/Packets/PetMessages.h"
+#include "Server/Packets/ClassicCastResult.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Errors.h"
 #include "Utilities/Random.h"
@@ -8569,12 +8571,6 @@ void CharmInfo::LoadPetActionBar(std::string const& data)
     }
 }
 
-void CharmInfo::BuildActionBar(WorldPacket* data)
-{
-    for (const auto& i : m_petActionBar)
-        *data << uint32(i.packedData);
-}
-
 void CharmInfo::SetSpellAutocast(uint32 spellId, bool state)
 {
     for (auto& i : m_petActionBar)
@@ -9041,18 +9037,18 @@ Player* Unit::GetSpellModOwner() const
 }
 
 // ----------Pet responses methods-----------------
-void Unit::SendPetCastFail(uint32 spellId, SpellCastResult msg)
+void Unit::SendPetCastFail(uint32 spellId, SpellCastResult msg, ClassicGuid const* castId)
 {
     if (msg == SPELL_CAST_OK)
         return;
 
     if (Player* pOwner = ::ToPlayer(GetCharmerOrOwner()))
     {
-        auto packet = std::make_unique<WorldPackets::Pet::PetCastFailed>();
-        packet->spellId = spellId;
-        packet->status = static_cast<uint8>(SPELL_RESULT_STATUS_FAIL);
-        packet->reason = static_cast<uint8>(msg);
-        pOwner->GetSession()->SendPacket(std::move(packet));
+        PetCastFailed packet;
+        packet.CastId = castId ? *castId : Spell::MakeCastId(GetMapId(), spellId);
+        packet.SpellId = int32(spellId);
+        packet.Reason = int32(ToClassicCastResult(msg));
+        pOwner->GetSession()->SendClassic(packet);
     }
 }
 
@@ -9060,23 +9056,21 @@ void Unit::SendPetActionFeedback(uint8 msg)
 {
     if (Player* pOwner = GetOwnerPlayer())
     {
-        auto packet = std::make_unique<WorldPackets::Pet::PetActionFeedback>();
-        packet->message = msg;
-        pOwner->GetSession()->SendPacket(std::move(packet));
+        PetActionFeedback packet;
+        packet.Response = msg;
+        pOwner->GetSession()->SendClassic(packet);
     }
 }
 
 void Unit::SendPetTalk(uint32 pettalk)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     if (Player* pOwner = GetOwnerPlayer())
     {
-        auto packet = std::make_unique<WorldPackets::Pet::PetActionSound>();
-        packet->petGuid = GetObjectGuid();
-        packet->soundId = pettalk;
-        pOwner->GetSession()->SendPacket(std::move(packet));
+        PetActionSound packet;
+        packet.Unit = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+        packet.Action = int32(pettalk);
+        pOwner->GetSession()->SendClassic(packet);
     }
-#endif
 }
 
 void Unit::SendPetAIReaction()
@@ -10989,12 +10983,8 @@ void Unit::SetNativeScale(float scale)
     m_nativeScale = scale;
 }
 
-void Unit::WritePetSpellsCooldown(WorldPacket& data) const
+void Unit::BuildPetSpellCooldowns(std::vector<PetCooldownEntry>& cooldowns) const
 {
-    // write cooldown data
-    uint32 cdCount = 0;
-    const size_t cdCountPos = data.wpos();
-    data << uint16(0);
     auto currTime = sWorld.GetCurrentClockTime();
 
     for (auto& cdItr : m_cooldownMap)
@@ -11014,14 +11004,10 @@ void Unit::WritePetSpellsCooldown(WorldPacket& data) const
         if (!spellCDDuration && !catCDDuration && !cdData->IsPermanent())
             continue;
 
-        if (cdData->IsPermanent())
-            catCDDuration |= 0x8000000;
-
-        data << uint32(cdData->GetSpellEntry()->Id);
-        data << uint16(cdData->GetCategory());              // spell category
-        data << uint32(spellCDDuration);                    // cooldown
-        data << uint32(catCDDuration);                      // category cooldown
-        ++cdCount;
+        PetCooldownEntry& cooldown = cooldowns.emplace_back();
+        cooldown.SpellId = int32(cdData->GetSpellEntry()->Id);
+        cooldown.Category = uint16(cdData->GetCategory());
+        cooldown.Duration = int32(spellCDDuration);
+        cooldown.CategoryDuration = int32(catCDDuration);
     }
-    data.put<uint16>(cdCountPos, cdCount);
 }

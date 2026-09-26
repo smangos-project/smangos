@@ -32,6 +32,8 @@
 #include "SpellAuras.h"
 #include "CreatureAI.h"
 #include "Util.h"
+#include "Packets/PetMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "CharacterDatabaseCache.h"
 #include "Utilities/Random.h"
 
@@ -819,8 +821,6 @@ void Pet::ModifyLoyalty(int32 addvalue)
             m_loyaltyPoints = 0;
             if (Player* owner = GetOwnerPlayer())
             {
-                owner->GetSession()->SendPacket(std::make_unique<WorldPackets::Pet::PetBroken>());
-
                 //run away
                 Unsummon(PET_SAVE_AS_DELETED, owner);
             }
@@ -2361,17 +2361,15 @@ void Pet::SynchronizeLevelWithOwner()
 
 void Pet::SetEnabled(bool on)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     m_enabled = on;
     Player* owner = GetOwnerPlayer();
     if (!owner || !GetCharmInfo())
         return;
 
-    auto packet = std::make_unique<WorldPackets::Pet::PetMode>();
-    packet->petGuid = GetObjectGuid();
-    packet->reactState = GetCharmInfo()->GetReactState();
-    packet->commandState = GetCharmInfo()->GetCommandState();
-    packet->enabledFlags = m_enabled ? 0x0 : 0x8;
-    owner->GetSession()->SendPacket(std::move(packet));
-#endif
+    PetMode packet;
+    packet.Pet = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.ReactState = uint8(GetCharmInfo()->GetReactState());
+    packet.CommandState = uint8(GetCharmInfo()->GetCommandState());
+    packet.Flag = m_enabled ? 0x0 : 0x8;
+    owner->GetSession()->SendClassic(packet);
 }

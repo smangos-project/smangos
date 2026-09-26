@@ -30,6 +30,7 @@
 #include "SpellAuras.h"
 #include "GameObject.h"
 #include "Map.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Packets/Classic/InventorySlots.h"
 
 using namespace Spells;
@@ -418,22 +419,26 @@ void WorldSession::HandleCancelAuraOpcode(CancelAura const& packet)
     _player->RemoveAurasDueToSpellByCancel(spellId);
 }
 
-void WorldSession::HandlePetCancelAuraOpcode(WorldPackets::Pet::PetCancelAura const& packet)
+void WorldSession::HandlePetCancelAuraOpcode(PetCancelAura const& packet)
 {
+    auto const petGuid = ClassicGuidMapping::FromClassic(packet.Pet);
+    if (!petGuid)
+        return;
+
     // ignore for remote control state
     if (!_player->IsSelfMover())
         return;
 
-    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(packet.spellId);
+    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(packet.SpellId);
     if (!spellInfo)
         return;
 
-    Creature* pet = GetPlayer()->GetMap()->GetAnyTypeCreature(packet.guid);
+    Creature* pet = GetPlayer()->GetMap()->GetAnyTypeCreature(*petGuid);
 
     if (!pet)
         return;
 
-    if (packet.guid != GetPlayer()->GetPetGuid() && packet.guid != GetPlayer()->GetCharmGuid())
+    if (*petGuid != GetPlayer()->GetPetGuid() && *petGuid != GetPlayer()->GetCharmGuid())
         return;
 
     if (!pet->IsAlive())
@@ -442,7 +447,7 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPackets::Pet::PetCancelAura co
         return;
     }
 
-    pet->RemoveAurasDueToSpell(packet.spellId);
+    pet->RemoveAurasDueToSpell(packet.SpellId);
 }
 
 void WorldSession::HandleCancelGrowthAuraOpcode(NullClientPacket const& /*packet*/)

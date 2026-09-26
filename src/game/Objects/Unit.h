@@ -37,6 +37,8 @@
 #include <list>
 
 struct FactionTemplateEntry;
+struct ClassicGuid;
+struct PetCooldownEntry;
 struct Modifier;
 struct SpellModifier;
 
@@ -233,7 +235,6 @@ struct CharmInfo
     bool AddSpellToActionBar(uint32 spellId, ActiveStates newstate = ACT_DECIDE);
     bool RemoveSpellFromActionBar(uint32 spellId);
     void LoadPetActionBar(std::string const& data);
-    void BuildActionBar(WorldPacket* data);
     void SetSpellAutocast(uint32 spellId, bool state);
     void SetActionBar(uint8 index, uint32 spellOrAction,ActiveStates type)
     {
@@ -675,7 +676,7 @@ class Unit : public SpellCaster
         void SendPlaySpellVisualKit(uint32 id) const;
         void SendPeriodicAuraLog(SpellPeriodicAuraLogInfo const* pInfo, AuraType auraTypeOverride = SPELL_AURA_NONE) const;
         void SendEnvironmentalDamageLog(uint8 type, uint32 damage, uint32 absorb, int32 resist) const;
-        void WritePetSpellsCooldown(WorldPacket& data) const;
+        void BuildPetSpellCooldowns(std::vector<PetCooldownEntry>& cooldowns) const;
         void CancelSpellChannelingAnimationInstantly();
 
         SpellAuraHolder* AddAura(uint32 spellId, uint32 addAuraFlags = 0, Unit* pCaster = nullptr);
@@ -1208,7 +1209,7 @@ class Unit : public SpellCaster
         bool UnsummonOldPetBeforeNewSummon(uint32 newPetEntry, bool canUnsummon);
 
         // Pet responses methods
-        void SendPetCastFail(uint32 spellId, SpellCastResult msg);
+        void SendPetCastFail(uint32 spellId, SpellCastResult msg, ClassicGuid const* castId = nullptr);
         void SendPetActionFeedback(uint8 msg);
         void SendPetTalk(uint32 pettalk);
         void SendPetAIReaction();

@@ -37,6 +37,7 @@
 #include "Packets/QuestMessages.h"
 #include "Packets/ClassicInventoryResult.h"
 #include "Packets/CombatLog.h"
+#include "Packets/PetMessages.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "QuestDef.h"
@@ -8326,20 +8327,6 @@ void Player::SendTalentWipeConfirm(ObjectGuid trainerGuid) const
     GetSession()->SendPacket(std::move(packet));
 }
 
-void Player::SendPetSkillWipeConfirm() const
-{
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    Pet* pet = GetPet();
-    if (!pet)
-        return;
-
-    auto packet = std::make_unique<WorldPackets::Pet::PetUnlearnConfirm>();
-    packet->petGuid = pet->GetObjectGuid();
-    packet->cost = pet->GetResetTalentsCost();
-    GetSession()->SendPacket(std::move(packet));
-#endif
-}
-
 /*********************************************************/
 /***                    STORAGE SYSTEM                 ***/
 /*********************************************************/
@@ -12298,7 +12285,6 @@ void Player::OnGossipSelect(WorldObject* pSource, uint32 gossipListId)
             break;
         case GOSSIP_OPTION_UNLEARNPETSKILLS:
             PlayerTalkClass->CloseGossip();
-            SendPetSkillWipeConfirm();
             break;
         case GOSSIP_OPTION_TAXIVENDOR:
             GetSession()->SendTaxiMenu(((Creature*)pSource));
@@ -12865,9 +12851,9 @@ uint32 Player::CountFreeInventorySlots() const
 
 void Player::SendPetTameFailure(PetTameFailureReason reason) const
 {
-    auto packet = std::make_unique<WorldPackets::Pet::PetTameFailure>();
-    packet->reason = reason;
-    GetSession()->SendPacket(std::move(packet));
+    PetTameFailure packet;
+    packet.Result = uint8(reason);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::AddQuest(Quest const* pQuest, Object* questGiver)
@@ -17442,22 +17428,15 @@ void Player::PetSpellInitialize()
 
     CharmInfo* charmInfo = pet->GetCharmInfo();
 
-    WorldPacket data(SMSG_PET_SPELLS, 8 + 4 + 1 + 1 + 2 + 4 * MAX_UNIT_ACTION_BAR_INDEX + 1 + 1);
-    data << pet->GetObjectGuid();
-    data << uint32(0);
-    data << uint8(charmInfo->GetReactState());
-    data << uint8(charmInfo->GetCommandState());
-    data << uint8(0);
-    data << uint8(pet->IsEnabled() ? 0x0 : 0x8);
+    PetSpellsMessage packet;
+    packet.Pet = ClassicGuidMapping::ToClassic(pet->GetObjectGuid(), realmID);
+    packet.CreatureFamily = uint16(pet->GetCreatureInfo()->pet_family);
+    packet.ReactState = uint8(charmInfo->GetReactState());
+    packet.CommandState = uint8(charmInfo->GetCommandState());
+    packet.Flag = pet->IsEnabled() ? 0x0 : 0x8;
 
-    // action bar loop
-    charmInfo->BuildActionBar(&data);
-
-    size_t spellsCountPos = data.wpos();
-
-    // spells count
-    uint8 addlist = 0;
-    data << uint8(addlist);                                 // placeholder
+    for (uint32 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+        packet.ActionButtons[i] = charmInfo->GetActionBarEntry(i)->packedData;
 
     if (pet->IsPermanentPetFor(this))
     {
@@ -17467,14 +17446,12 @@ void Player::PetSpellInitialize()
             if (itr->second.state == PETSPELL_REMOVED)
                 continue;
 
-            data << uint32(MAKE_UNIT_ACTION_BUTTON(itr->first, itr->second.active));
-            ++addlist;
+            packet.Actions.push_back(MAKE_UNIT_ACTION_BUTTON(itr->first, itr->second.active));
         }
     }
 
-    data.put<uint8>(spellsCountPos, addlist);
-    pet->WritePetSpellsCooldown(data);
-    GetSession()->SendPacket(&data);
+    pet->BuildPetSpellCooldowns(packet.Cooldowns);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::PossessSpellInitialize()
@@ -17503,17 +17480,15 @@ void Player::PossessSpellInitialize()
         }
     }
 
-    WorldPacket data(SMSG_PET_SPELLS, 8 + 4 + 4 + 4 * MAX_UNIT_ACTION_BAR_INDEX + 1 + 1);
-    data << charm->GetObjectGuid();
-    data << int32(duration);
-    data << uint32(0);
+    PetSpellsMessage packet;
+    packet.Pet = ClassicGuidMapping::ToClassic(charm->GetObjectGuid(), realmID);
+    packet.TimeLimit = uint32(duration);
 
-    charmInfo->BuildActionBar(&data);
+    for (uint32 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+        packet.ActionButtons[i] = charmInfo->GetActionBarEntry(i)->packedData;
 
-    data << uint8(0);                                       // spells count
-    charm->WritePetSpellsCooldown(data);
-
-    GetSession()->SendPacket(&data);
+    charm->BuildPetSpellCooldowns(packet.Cooldowns);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::CharmSpellInitialize() const
@@ -17557,17 +17532,14 @@ void Player::CharmSpellInitialize() const
         }
     }
 
-    WorldPacket data(SMSG_PET_SPELLS, 8 + 4 + 1 + 1 + 2 + 4 * MAX_UNIT_ACTION_BAR_INDEX + 1 + 4 * addlist + 1);
-    data << charm->GetObjectGuid();
-    data << int32(duration);
-    data << uint8(charmInfo->GetReactState());
-    data << uint8(charmInfo->GetCommandState());
-    data << uint8(0);
-    data << uint8(0);
+    PetSpellsMessage packet;
+    packet.Pet = ClassicGuidMapping::ToClassic(charm->GetObjectGuid(), realmID);
+    packet.TimeLimit = uint32(duration);
+    packet.ReactState = uint8(charmInfo->GetReactState());
+    packet.CommandState = uint8(charmInfo->GetCommandState());
 
-    charmInfo->BuildActionBar(&data);
-
-    data << uint8(addlist);
+    for (uint32 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+        packet.ActionButtons[i] = charmInfo->GetActionBarEntry(i)->packedData;
 
     if (addlist)
     {
@@ -17575,20 +17547,17 @@ void Player::CharmSpellInitialize() const
         {
             CharmSpellEntry* cspell = charmInfo->GetCharmSpell(i);
             if (cspell->GetAction())
-                data << uint32(cspell->packedData);
+                packet.Actions.push_back(cspell->packedData);
         }
     }
 
-    charm->WritePetSpellsCooldown(data);
-
-    GetSession()->SendPacket(&data);
+    charm->BuildPetSpellCooldowns(packet.Cooldowns);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::RemovePetActionBar() const
 {
-    WorldPacket data(SMSG_PET_SPELLS, 8);
-    data << ObjectGuid();
-    SendDirectMessage(&data);
+    GetSession()->SendClassic(PetClearSpells());
 }
 
 // This will create a new creature and set the current unit as the controller of that new creature
