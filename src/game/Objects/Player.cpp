@@ -33,6 +33,7 @@
 #include "World.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/Classic/InventorySlots.h"
+#include "Packets/LootMessages.h"
 #include "Packets/ClassicInventoryResult.h"
 #include "Packets/CombatLog.h"
 #include "WorldPacket.h"
@@ -7628,19 +7629,19 @@ void Player::RemovedInsignia(Player* looterPlr, Corpse* corpse)
 
 void Player::SendLootRelease(ObjectGuid guid) const
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootReleaseResponse>();
-    packet->lootedGuid = guid;
-    packet->result = 1;
-    GetSession()->SendPacket(std::move(packet));
+    LootReleaseResponse packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(guid, realmID);
+    packet.Owner = packet.LootObj;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendLootError(ObjectGuid guid, LootError error) const
 {
-    WorldPacket data(SMSG_LOOT_RESPONSE, 10);
-    data << uint64(guid);
-    data << uint8(0);
-    data << uint8(error);
-    SendDirectMessage(&data);
+    LootResponse response;
+    response.Owner = ClassicGuidMapping::ToClassic(guid, realmID);
+    response.LootObj = response.Owner;
+    response.FailureReason = uint8(error);
+    GetSession()->SendClassic(response);
 }
 
 void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
@@ -8028,11 +8029,20 @@ void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
             break;
     }
 
-    WorldPacket data(SMSG_LOOT_RESPONSE, (9 + 50));         // we guess size
-    data << ObjectGuid(guid);
-    data << uint8(lootType);
-    data << LootView(*loot, this, permission);
-    SendDirectMessage(&data);
+    LootResponse response;
+    response.Owner = ClassicGuidMapping::ToClassic(guid, realmID);
+    response.LootObj = response.Owner;
+    response.AcquireReason = uint8(lootType);
+    response.Acquired = permission != NONE_PERMISSION;
+    if (permission == NONE_PERMISSION)
+        response.FailureReason = LOOT_ERROR_DIDNT_KILL;
+    if (Group* group = GetGroup())
+    {
+        response.LootMethod = uint8(group->GetLootMethod());
+        response.Threshold = uint8(group->GetLootThreshold());
+    }
+    BuildLootItems(LootView(*loot, this, permission), response.Coins, response.Items);
+    GetSession()->SendClassic(response);
 
     // add 'this' player as one of the players that are looting 'loot'
     if (permission != NONE_PERMISSION)
@@ -8044,21 +8054,26 @@ void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
 
 void Player::SendNotifyLootMoneyRemoved() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Loot::LootClearMoney>());
+    CoinRemoved packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(GetLootGuid(), realmID);
+    GetSession()->SendClassic(packet);
 }
 
-void Player::SendLootMoneyNotify(uint32 amount) const
+void Player::SendLootMoneyNotify(uint32 amount, bool soleLooter) const
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootMoneyNotify>();
-    packet->amount = amount;
-    GetSession()->SendPacket(std::move(packet));
+    LootMoneyNotify packet;
+    packet.Money = amount;
+    packet.SoleLooter = soleLooter;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot) const
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootRemoved>();
-    packet->lootSlot = lootSlot;
-    GetSession()->SendPacket(std::move(packet));
+    LootRemoved packet;
+    packet.Owner = ClassicGuidMapping::ToClassic(GetLootGuid(), realmID);
+    packet.LootObj = packet.Owner;
+    packet.LootListId = uint8(lootSlot + 1);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendUpdateWorldState(uint32 state, uint32 value) const

@@ -58,7 +58,7 @@
 #include "Packets/Guild.h"
 #include "Packets/Item.h"
 #include "Packets/ItemMessages.h"
-#include "Packets/Loot.h"
+#include "Packets/LootMessages.h"
 #include "Packets/Mail.h"
 #include "Packets/Misc.h"
 #include "Packets/MountSpecialAnim.h"
@@ -615,11 +615,13 @@ class WorldSession
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
         void HandleRepopRequestOpcode(RepopRequest const& packet);
-        void HandleAutostoreLootItemOpcode(WorldPackets::Loot::AutoStoreLootItem const& packet);
-        void HandleLootMoneyOpcode(NullClientPacket const& packet);
-        void HandleLootOpcode(WorldPackets::Loot::LootUnit const& packet);
-        void HandleLootReleaseOpcode(WorldPackets::Loot::LootRelease const& packet);
-        void HandleLootMasterGiveOpcode(WorldPackets::Loot::LootMasterGive const& packet);
+        void HandleAutostoreLootItemOpcode(LootItemRequest const& packet);
+        void AutostoreLootSlot(uint32 lootSlot);
+        void HandleLootMoneyOpcode(LootMoney const& packet);
+        void HandleLootOpcode(LootUnit const& packet);
+        void HandleLootReleaseOpcode(LootRelease const& packet);
+        void HandleLootMasterGiveOpcode(MasterLootItem const& packet);
+        void MasterLootSlot(ObjectGuid lootGuid, uint8 slotId, ObjectGuid playerGuid);
         void HandleWhoOpcode(WorldPackets::Misc::Who const& packet);
         void HandleLFGOpcode(NullClientPacket const& packet);
         void HandleLogoutRequestOpcode(NullClientPacket const& packet);
@@ -681,7 +683,7 @@ class WorldSession
         void HandleGroupSetLeaderOpcode(WorldPackets::Group::GroupSetLeader const& packet);
         void HandleGroupDisbandOpcode(NullClientPacket const& packet);
         void HandleLootMethodOpcode(WorldPackets::Group::LootMethod const& packet);
-        void HandleLootRoll(WorldPackets::Loot::LootRoll const& packet);
+        void HandleLootRoll(LootRoll const& packet);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
         void HandleRequestPartyMemberStatsOpcode(WorldPackets::Group::RequestPartyMemberStats const& packet);
 #endif

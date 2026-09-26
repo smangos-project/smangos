@@ -157,7 +157,7 @@ class Roll : public LootValidatorRef
     public:
         Roll(ObjectGuid _lootedTragetGuid, LootItem const& li)
             : lootedTargetGUID(_lootedTragetGuid), itemid(li.itemid), itemRandomPropId(li.randomPropertyId),
-            totalPlayersRolling(0), totalNeed(0), totalGreed(0), totalPass(0), itemSlot(0) {}
+            itemCount(li.count), totalPlayersRolling(0), totalNeed(0), totalGreed(0), totalPass(0), itemSlot(0) {}
         ~Roll() override { }
         void setLoot(Loot* pLoot) { link(pLoot, this); }
         Loot* getLoot() { return getTarget(); }
@@ -166,6 +166,7 @@ class Roll : public LootValidatorRef
         ObjectGuid lootedTargetGUID;
         uint32 itemid;
         int32  itemRandomPropId;
+        uint32 itemCount;
         typedef std::unordered_map<ObjectGuid, RollVote> PlayerVote;
         PlayerVote playerVote;                              //vote position correspond with player position (in group)
         uint8 totalPlayersRolling;
@@ -357,11 +358,12 @@ class Group
         /*********************************************************/
 
         static void SendLooter(Creature* creature, Player* pLooter);
-        static void SendLootStartRoll(uint32 CountDown, Roll const& r);
+        void SendLootStartRoll(uint32 CountDown, Roll const& r);
         void SendLootStartRollsForPlayer(Player* player); // send every active rolls
-        static void SendLootRoll(ObjectGuid const& targetGuid, uint8 rollNumber, uint8 rollType, Roll const& r);
+        static void SendLootRoll(ObjectGuid const& targetGuid, int32 rollNumber, RollVote rollType, Roll const& r);
         static void SendLootRollWon(ObjectGuid const& targetGuid, uint8 rollNumber, RollVote rollType, Roll const& r);
         static void SendLootAllPassed(Roll const& r);
+        static void SendLootRollsComplete(Roll const& r);
         void GroupLoot(Creature* creature, Loot* loot);
         void NeedBeforeGreed(Creature* creature, Loot* loot);
         void MasterLoot(Creature* creature, Loot* loot, Player* player);

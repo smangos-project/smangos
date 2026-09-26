@@ -262,12 +262,14 @@ class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
 //=====================================================
 struct LootView;
 
-ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li);
-ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
+struct LootItemData;
+
+// The items of a loot window as one viewer sees them, and its money.
+void BuildLootItems(LootView const& lv, uint32& gold, std::vector<LootItemData>& shown);
 
 struct Loot
 {
-    friend ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
+    friend void BuildLootItems(LootView const& lv, uint32& gold, std::vector<LootItemData>& shown);
 
     QuestItemMap const& GetPlayerQuestItems() const { return m_playerQuestItems; }
     QuestItemMap const& GetPlayerFFAItems() const { return m_playerFFAItems; }

@@ -28,6 +28,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Group.h"
 #include "Utilities/Random.h"
 #include "SocialMgr.h"
@@ -367,25 +368,31 @@ void WorldSession::HandleLootMethodOpcode(WorldPackets::Group::LootMethod const&
     group->SendUpdate();
 }
 
-void WorldSession::HandleLootRoll(WorldPackets::Loot::LootRoll const& packet)
+void WorldSession::HandleLootRoll(LootRoll const& request)
 {
+    auto const lootedTarget = ClassicGuidMapping::FromClassic(request.LootObj);
+    if (!lootedTarget || request.LootListId == 0)
+        return;
+    uint32 const itemSlot = request.LootListId - 1;
+    uint8 rollType = request.RollType;
+
     Group* group = GetPlayer()->GetGroup();
     if (!group)
         return;
 
-    if (packet.rollType >= MAX_ROLL_FROM_CLIENT)
+    if (rollType >= MAX_ROLL_FROM_CLIENT)
         return;
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
     {
         SendPlayTimeWarning(PTF_UNHEALTHY_TIME, 0);
-        const_cast<uint8&>(packet.rollType) = ROLL_PASS;
+        rollType = ROLL_PASS;
     }
 #endif
 
     // everything is fine, do it, if false then some cheating problem found (result not used in pre-3.0)
-    group->CountRollVote(GetPlayer(), packet.lootedTarget, packet.itemSlot, RollVote(packet.rollType));
+    group->CountRollVote(GetPlayer(), *lootedTarget, itemSlot, RollVote(rollType));
 }
 
 void WorldSession::HandleMinimapPingOpcode(WorldPackets::Group::MinimapPing const& packet)

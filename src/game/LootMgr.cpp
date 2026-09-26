@@ -20,6 +20,7 @@
  */
 
 #include "LootMgr.h"
+#include "Packets/LootMessages.h"
 #include "Log.h"
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
@@ -826,35 +827,26 @@ WorldObject const* Loot::GetLootTarget() const
     return m_lootTarget;
 }
 
-ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
+void BuildLootItems(LootView const& lv, uint32& gold, std::vector<LootItemData>& shown)
 {
-    b << uint32(li.itemid);
-    b << uint32(li.count);                                  // nr of items of this type
-    b << uint32(sObjectMgr.GetItemPrototype(li.itemid)->DisplayInfoID);
-    b << uint32(0);
-    b << uint32(li.randomPropertyId);
-    //b << uint8(0);                                        // slot type - will send after this function call
-    return b;
-}
-
-ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
-{
+    gold = 0;
     if (lv.permission == NONE_PERMISSION)
-    {
-        b << uint32(0);                                     //gold
-        b << uint8(0);                                      // item count
-        return b;                                           // nothing output more
-    }
+        return;                                             // nothing to show
 
     Loot &l = lv.loot;
 
-    uint8 itemsShown = 0;
+    // the wire counts loot slots from 1
+    auto add = [&shown](uint32 slot, LootItem const& item, uint8 slotType)
+    {
+        LootItemData& data = shown.emplace_back();
+        data.UIType = slotType;
+        data.Item.ItemId = int32(item.itemid);
+        data.Item.RandomPropertiesId = int32(item.randomPropertyId);
+        data.Quantity = item.count;
+        data.LootListId = uint8(slot + 1);
+    };
 
-    //gold
-    b << uint32(l.gold);
-
-    size_t count_pos = b.wpos();                            // pos of item count byte
-    b << uint8(0);                                          // item count placeholder
+    gold = l.gold;
 
     switch (lv.permission)
     {
@@ -881,9 +873,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                         // item shall not be displayed.
                         continue;
 
-                    b << uint8(i) << l.items[i];
-                    b << uint8(slot_type);
-                    ++itemsShown;
+                    add(i, l.items[i], slot_type);
                 }
             }
             break;
@@ -898,9 +888,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                         // item shall not be displayed.
                         continue;
 
-                    b << uint8(i) << l.items[i];
-                    b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
-                    ++itemsShown;
+                    add(i, l.items[i], LOOT_SLOT_TYPE_ALLOW_LOOT);
                 }
             }
             break;
@@ -928,15 +916,13 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                             break;
                     }
 
-                    b << uint8(i) << l.items[i];
-                    b << uint8(slot_type);
-                    ++itemsShown;
+                    add(i, l.items[i], slot_type);
                 }
             }
             break;
         }
         default:
-            return b;                                       // nothing output more
+            return;
     }
 
     // in next cases used same slot type for all items
@@ -960,10 +946,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 continue;
 
             // allow loot
-            b << uint8(l.items.size() + (qi - q_list->begin()));
-            b << item;
-            b << uint8(slot_type);
-            ++itemsShown;
+            add(uint32(l.items.size() + (qi - q_list->begin())), item, slot_type);
         }
     }
 
@@ -977,9 +960,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.items[fi.index];
             if (!fi.is_looted && !item.is_looted)
             {
-                b << uint8(fi.index) << item;
-                b << uint8(slot_type);                      // allow loot
-                ++itemsShown;
+                add(fi.index, item, slot_type);
             }
         }
     }
@@ -1002,16 +983,10 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 && lootPlayerNonQuestNonFFAConditionalItems.find(l.roundRobinPlayer) != lootPlayerNonQuestNonFFAConditionalItems.end())
                 continue;
 
-            b << uint8(ci.index) << item;
-            b << uint8(slot_type);                          // allow loot
-            ++itemsShown;
+            add(ci.index, item, slot_type);
         }
     }
 
-    //update number of items shown
-    b.put<uint8>(count_pos, itemsShown);
-
-    return b;
 }
 
 // TrinityCore

@@ -218,7 +218,6 @@ set (game_SRCS
     Server/Packets/Group.cpp
     Server/Packets/Guild.cpp
     Server/Packets/Item.cpp
-    Server/Packets/Loot.cpp
     Server/Packets/Mail.cpp
     Server/Packets/Misc.cpp
     Server/Packets/Npc.cpp
@@ -477,7 +476,7 @@ set (game_SRCS
     Server/Packets/Item.h
     Server/Packets/ItemMessages.h
     Server/Packets/ClassicInventoryResult.h
-    Server/Packets/Loot.h
+    Server/Packets/LootMessages.h
     Server/Packets/Mail.h
     Server/Packets/Misc.h
     Server/Packets/MountSpecialAnim.h

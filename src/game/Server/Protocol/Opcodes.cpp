@@ -346,7 +346,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_TEXT_EMOTE,                   UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_AUTOEQUIP_GROUND_ITEM,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOSTORE_GROUND_ITEM,        UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_AUTOSTORE_LOOT_ITEM,          STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutostoreLootItemOpcode);
+    INVALID_PACKET(CMSG_AUTOSTORE_LOOT_ITEM,                    UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_STORE_LOOT_IN_SLOT,           UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOEQUIP_ITEM,                         UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOSTORE_BAG_ITEM,                     UnhandleReason::Unhandled);
@@ -433,9 +433,9 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_REPOP_REQUEST,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_RESURRECT_REQUEST,            UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_RESURRECT_RESPONSE,           UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_LOOT,                         STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootOpcode);
-    DEFINE_HANDLER(CMSG_LOOT_MONEY,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootMoneyOpcode);
-    DEFINE_HANDLER(CMSG_LOOT_RELEASE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleLootReleaseOpcode);
+    INVALID_PACKET(CMSG_LOOT,                                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_LOOT_MONEY,                             UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_LOOT_RELEASE,                           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LOOT_RESPONSE,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_RELEASE_RESPONSE,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_REMOVED,                 UnhandleReason::SendByServer);
@@ -769,10 +769,10 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_STANDSTATE_UPDATE,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_ALL_PASSED,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_ROLL_WON,                UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_LOOT_ROLL,                    STATUS_LOGGEDIN,  PACKET_PROCESS_GROUP,         &WorldSession::HandleLootRoll);
+    INVALID_PACKET(CMSG_LOOT_ROLL,                              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LOOT_START_ROLL,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_ROLL,                    UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_LOOT_MASTER_GIVE,             STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleLootMasterGiveOpcode);
+    INVALID_PACKET(CMSG_LOOT_MASTER_GIVE,                       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LOOT_MASTER_LIST,             UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SET_FORCED_REACTIONS,         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_FAILED_OTHER,           UnhandleReason::SendByServer);
@@ -1085,6 +1085,12 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DESTROY_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleDestroyItemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_READ_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReadItemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_USE_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleUseItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_UNIT, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleLootOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutostoreLootItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_MONEY, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleLootMoneyOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_RELEASE, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleLootReleaseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_ROLL, STATUS_LOGGEDIN, PACKET_PROCESS_GROUP, &WorldSession::HandleLootRoll);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MASTER_LOOT_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleLootMasterGiveOpcode);
 
     return list;
 }

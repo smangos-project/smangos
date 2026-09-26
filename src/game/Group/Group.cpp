@@ -37,6 +37,8 @@
 #include "LFGMgr.h"
 #include "LFGQueue.h"
 #include "Utilities/Random.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/LootMessages.h"
 
 #include <array>
 
@@ -731,19 +733,41 @@ bool Group::FillPremadeLFG(ObjectGuid const& plrGuid, Classes playerClass, LfgRo
 /***                   LOOT SYSTEM                     ***/
 /*********************************************************/
 
+namespace
+{
+// The item a roll message is about.
+LootItemData RollItem(Roll const& r, uint8 slotType)
+{
+    LootItemData item;
+    item.UIType = slotType;
+    item.Item.ItemId = int32(r.itemid);
+    item.Item.RandomPropertiesId = r.itemRandomPropId;
+    item.Quantity = r.itemCount;
+    item.LootListId = uint8(r.itemSlot + 1);
+    return item;
+}
+
+// Sends to every player who still takes part in the roll.
+template<typename Message>
+void SendToVoters(Roll const& r, Message const& message)
+{
+    WorldPacket data = MakeClassicPacket(message);
+    for (const auto& itr : r.playerVote)
+    {
+        Player* p = sObjectMgr.GetPlayer(itr.first);
+        if (p && itr.second != ROLL_NOT_VALID)
+            p->GetSession()->SendPacket(&data);
+    }
+}
+}
+
 void Group::SendLootStartRoll(uint32 CountDown, Roll const& r)
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootStartRoll>();
-    packet->lootedTargetGuid = r.lootedTargetGUID;
-    packet->itemSlot = r.itemSlot;
-    packet->itemEntryId = r.itemid;
-    packet->randomSuffix = 0;
-    packet->itemRandomPropId = r.itemRandomPropId;
-    packet->countdownTime = CountDown;
-
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket data;
-    packet->WritePacket(data);
+    LootRollStart packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(r.lootedTargetGUID, realmID);
+    packet.RollTime = CountDown;
+    packet.Method = uint8(GetLootMethod());
+    packet.Item = RollItem(r, LOOT_SLOT_TYPE_ROLL_ONGOING);
 
     for (const auto& itr : r.playerVote)
     {
@@ -754,86 +778,65 @@ void Group::SendLootStartRoll(uint32 CountDown, Roll const& r)
         if (itr.second == ROLL_NOT_VALID)
             continue;
 
-        p->GetSession()->SendPacket(&data);
+        packet.MapId = int32(p->GetMapId());
+        p->GetSession()->SendClassic(packet);
     }
 }
 
-void Group::SendLootRoll(ObjectGuid const& targetGuid, uint8 rollNumber, uint8 rollType, Roll const& r)
+// A vote comes with no number yet (-1); the number follows when the roll is counted.
+void Group::SendLootRoll(ObjectGuid const& targetGuid, int32 rollNumber, RollVote rollType, Roll const& r)
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootRollResponse>();
-    packet->lootedTargetGuid = r.lootedTargetGUID;
-    packet->itemSlot = r.itemSlot;
-    packet->rollerGuid = targetGuid;
-    packet->itemEntryId = r.itemid;
-    packet->randomSuffix = 0;
-    packet->itemRandomPropId = r.itemRandomPropId;
-    packet->rollNumber = rollNumber;
-    packet->rollType = rollType;
-
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket data;
-    packet->WritePacket(data);
-
-    for (const auto& itr : r.playerVote)
-    {
-        Player* p = sObjectMgr.GetPlayer(itr.first);
-        if (!p)
-            continue;
-
-        if (itr.second != ROLL_NOT_VALID)
-            p->GetSession()->SendPacket(&data);
-    }
+    LootRollBroadcast packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(r.lootedTargetGUID, realmID);
+    packet.Player = ClassicGuidMapping::ToClassic(targetGuid, realmID);
+    packet.Roll = rollNumber;
+    packet.RollType = uint8(rollType);
+    packet.Item = RollItem(r, LOOT_SLOT_TYPE_ROLL_ONGOING);
+    SendToVoters(r, packet);
 }
 
 void Group::SendLootRollWon(ObjectGuid const& targetGuid, uint8 rollNumber, RollVote rollType, Roll const& r)
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootRollWon>();
-    packet->lootedTargetGuid = r.lootedTargetGUID;
-    packet->itemSlot = r.itemSlot;
-    packet->itemEntryId = r.itemid;
-    packet->randomSuffix = 0;
-    packet->itemRandomPropId = r.itemRandomPropId;
-    packet->winnerGuid = targetGuid;
-    packet->rollNumber = rollNumber;
-    packet->rollType = uint8(rollType);
+    LootRollWon packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(r.lootedTargetGUID, realmID);
+    packet.Winner = ClassicGuidMapping::ToClassic(targetGuid, realmID);
+    packet.Roll = rollNumber;
+    packet.RollType = uint8(rollType);
+    packet.Item = RollItem(r, LOOT_SLOT_TYPE_LOCKED);
 
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket data;
-    packet->WritePacket(data);
+    // the winner sees the item as theirs to take
+    LootRollWon winnerPacket = packet;
+    winnerPacket.Item.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
 
     for (const auto& itr : r.playerVote)
     {
         Player* p = sObjectMgr.GetPlayer(itr.first);
-        if (!p)
+        if (!p || itr.second == ROLL_NOT_VALID)
             continue;
 
-        if (itr.second != ROLL_NOT_VALID)
-            p->GetSession()->SendPacket(&data);
+        p->GetSession()->SendClassic(itr.first == targetGuid ? winnerPacket : packet);
     }
+
+    SendLootRollsComplete(r);
 }
 
 void Group::SendLootAllPassed(Roll const& r)
 {
-    auto packet = std::make_unique<WorldPackets::Loot::LootAllPassed>();
-    packet->lootedTargetGuid = r.lootedTargetGUID;
-    packet->itemSlot = r.itemSlot;
-    packet->itemEntryId = r.itemid;
-    packet->itemRandomPropId = r.itemRandomPropId;
-    packet->randomSuffixId = 0;
+    LootAllPassed packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(r.lootedTargetGUID, realmID);
+    packet.Item = RollItem(r, LOOT_SLOT_TYPE_ALLOW_LOOT);
+    SendToVoters(r, packet);
 
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket data;
-    packet->WritePacket(data);
+    SendLootRollsComplete(r);
+}
 
-    for (const auto& itr : r.playerVote)
-    {
-        Player* p = sObjectMgr.GetPlayer(itr.first);
-        if (!p)
-            continue;
-
-        if (itr.second != ROLL_NOT_VALID)
-            p->GetSession()->SendPacket(&data);
-    }
+// The client keeps its roll frame up until told the roll is over.
+void Group::SendLootRollsComplete(Roll const& r)
+{
+    LootRollsComplete packet;
+    packet.LootObj = ClassicGuidMapping::ToClassic(r.lootedTargetGUID, realmID);
+    packet.LootListId = uint8(r.itemSlot + 1);
+    SendToVoters(r, packet);
 }
 
 void Group::GroupLoot(Creature* creature, Loot* loot)
@@ -942,21 +945,21 @@ bool Group::CountRollVote(ObjectGuid const& playerGUID, Rolls::iterator& rollI, 
     {
         case ROLL_PASS:                                     // Player choose pass
         {
-            SendLootRoll(playerGUID, 128, 128, *roll);
+            SendLootRoll(playerGUID, -1, ROLL_PASS, *roll);
             ++roll->totalPass;
             itr->second = ROLL_PASS;
             break;
         }
         case ROLL_NEED:                                     // player choose Need
         {
-            SendLootRoll(playerGUID, 0, 0, *roll);
+            SendLootRoll(playerGUID, -1, ROLL_NEED, *roll);
             ++roll->totalNeed;
             itr->second = ROLL_NEED;
             break;
         }
         case ROLL_GREED:                                    // player choose Greed
         {
-            SendLootRoll(playerGUID, 128, 2, *roll);
+            SendLootRoll(playerGUID, -1, ROLL_GREED, *roll);
             ++roll->totalGreed;
             itr->second = ROLL_GREED;
             break;
@@ -1046,15 +1049,14 @@ void Group::SendLootStartRollsForPlayer(Player* pPlayer)
             if (!countDown)
                 continue;
 
-            auto packet = std::make_unique<WorldPackets::Loot::LootStartRoll>();
-            packet->lootedTargetGuid = roll->lootedTargetGUID;
-            packet->itemSlot = roll->itemSlot;
-            packet->itemEntryId = roll->itemid;
-            packet->randomSuffix = 0;
-            packet->itemRandomPropId = roll->itemRandomPropId;
-            packet->countdownTime = countDown;
+            LootRollStart packet;
+            packet.LootObj = ClassicGuidMapping::ToClassic(roll->lootedTargetGUID, realmID);
+            packet.MapId = int32(pPlayer->GetMapId());
+            packet.RollTime = countDown;
+            packet.Method = uint8(GetLootMethod());
+            packet.Item = RollItem(*roll, LOOT_SLOT_TYPE_ROLL_ONGOING);
 
-            pPlayer->GetSession()->SendPacket(std::move(packet));
+            pPlayer->GetSession()->SendClassic(packet);
         }
     }
 }

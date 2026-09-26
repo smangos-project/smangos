@@ -1048,7 +1048,7 @@ class Player final: public Unit
         void SendLootError(ObjectGuid guid, LootError error) const;
         void SendNotifyLootItemRemoved(uint8 lootSlot) const;
         void SendNotifyLootMoneyRemoved() const;
-        void SendLootMoneyNotify(uint32 amount) const;
+        void SendLootMoneyNotify(uint32 amount, bool soleLooter = false) const;
         bool IsAllowedToLoot(Creature const* creature);
         float GetMaxLootDistance(Unit const* pUnit) const;
 

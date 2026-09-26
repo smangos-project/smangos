@@ -3408,18 +3408,21 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             }
             return;
         }
-        case SMSG_LOOT_START_ROLL:
+        case CLASSIC_SMSG_START_LOOT_ROLL:
         {
             if (!me)
                 return;
 
-            uint64 guid = *((uint64*)(*packet).contents());
-            uint32 slot = *(((uint32*)(*packet).contents()) + 2);
+            ByteBuffer body;
+            body.append(packet->contents(), packet->size());
+            LootRollStart start;
+            if (!start.Read(body))
+                return;
 
-            auto data = std::make_unique<WorldPackets::Loot::LootRoll>();
-            data->lootedTarget = ObjectGuid(guid);
-            data->itemSlot = slot;
-            data->rollType = ROLL_PASS;
+            auto data = std::make_unique<ClassicClient<LootRoll>>();
+            data->Body.LootObj = start.LootObj;
+            data->Body.LootListId = start.Item.LootListId;
+            data->Body.RollType = ROLL_PASS;
             me->GetSession()->QueuePacket(std::move(data));
             return;
         }
