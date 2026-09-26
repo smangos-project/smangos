@@ -667,10 +667,7 @@ bool ChatHandler::HandleExploreCheatCommand(char* args)
 
     for (uint8 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
     {
-        if (flag != 0)
-            m_session->GetPlayer()->SetFlag(PLAYER_EXPLORED_ZONES_1 + i, 0xFFFFFFFF);
-        else
-            m_session->GetPlayer()->SetFlag(PLAYER_EXPLORED_ZONES_1 + i, 0);
+        chr->SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i, flag != 0 ? 0xFFFFFFFF : 0);
     }
 
     return true;
