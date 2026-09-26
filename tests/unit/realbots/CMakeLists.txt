@@ -48,6 +48,7 @@ add_executable(tests-realbots
   CombatMessagesTests.cpp
   SpellCastTests.cpp
   AuraPacketsTests.cpp
+  CombatLogTests.cpp
   BotWorldViewTests.cpp
   BotWorldConnectionTests.cpp
   BotWorldLoginTests.cpp
