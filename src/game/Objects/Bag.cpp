@@ -39,6 +39,12 @@ Bag::~Bag()
         delete i;
 }
 
+void Bag::ClearUpdateMask(bool remove)
+{
+    Item::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&Bag::m_containerData);
+}
+
 void Bag::AddToWorld()
 {
     Item::AddToWorld();

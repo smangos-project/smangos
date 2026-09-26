@@ -755,6 +755,10 @@ class Player final: public Unit
         explicit Player (WorldSession* session);
         ~Player() override;
 
+        UpdateField<UFPlayerData, -1, TYPEID_PLAYER> m_playerData;
+        UpdateField<UFActivePlayerData, -1, TYPEID_ACTIVE_PLAYER> m_activePlayerData;
+        void ClearUpdateMask(bool remove) override;
+
         void CleanupsBeforeDelete() override;
 
         // Initializes a new Player object that was not loaded from the database.

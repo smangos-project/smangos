@@ -32,6 +32,7 @@
 #include "ObjectGuid.h"
 #include "UpdateData.h"
 #include "UpdateMask.h"
+#include "Updates/UpdateFieldFill.h"
 #include "Util.h"
 #include "Geometry.h"
 #include "Transport.h"
@@ -225,7 +226,7 @@ void MovementInfo::Write(ByteBuffer& data) const
 }
 
 
-Object::Object() : m_updateFlag(0)
+Object::Object() : m_values(this), m_updateFlag(0)
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
@@ -1005,6 +1006,8 @@ void Object::ClearUpdateMask(bool remove)
 {
     if (m_uint32Values)
         memcpy(m_uint32Values_mirror, m_uint32Values, sizeof(uint32) * m_valuesCount);
+
+    m_values.ClearChangesMask(&Object::m_objectData);
 
     if (m_objectUpdated)
     {
@@ -2966,6 +2969,8 @@ struct WorldObjectChangeAccumulator
 
 void WorldObject::BuildUpdateData(UpdateDataMapType & update_players)
 {
+    FillUpdateFieldData(*this);
+
     WorldObjectChangeAccumulator notifier(*this, update_players);
     // Update with modifier for long range players
     Cell::VisitWorldObjects(this, notifier, std::max(GetMap()->GetVisibilityDistance(), GetVisibilityModifier()));

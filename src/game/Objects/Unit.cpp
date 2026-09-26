@@ -8263,6 +8263,12 @@ uint32 Unit::GetCreatePowers(Powers power) const
     return 0;
 }
 
+void Unit::ClearUpdateMask(bool remove)
+{
+    Object::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&Unit::m_unitData);
+}
+
 void Unit::AddToWorld()
 {
     Object::AddToWorld();

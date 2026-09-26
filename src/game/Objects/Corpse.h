@@ -56,6 +56,9 @@ class Corpse : public WorldObject
         explicit Corpse(CorpseType type = CORPSE_BONES);
         ~Corpse() override;
 
+        UpdateField<UFCorpseData, -1, TYPEID_CORPSE> m_corpseData;
+        void ClearUpdateMask(bool remove) override;
+
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

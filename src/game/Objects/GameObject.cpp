@@ -117,6 +117,12 @@ GameObject* GameObject::CreateGameObject(uint32 entry)
     return new GameObject;
 }
 
+void GameObject::ClearUpdateMask(bool remove)
+{
+    Object::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&GameObject::m_gameObjectData);
+}
+
 void GameObject::AddToWorld()
 {
     // Register the gameobject for guid lookup

@@ -2189,6 +2189,13 @@ void Player::ProcessDelayedOperations()
     m_delayedOperations = 0;
 }
 
+void Player::ClearUpdateMask(bool remove)
+{
+    Unit::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&Player::m_playerData);
+    m_values.ClearChangesMask(&Player::m_activePlayerData);
+}
+
 void Player::AddToWorld()
 {
     // Do not add/remove the player from the object storage

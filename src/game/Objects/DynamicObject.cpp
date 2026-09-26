@@ -37,6 +37,12 @@ DynamicObject::DynamicObject() : WorldObject(), m_spellId(0), m_effIndex(EFFECT_
     m_valuesCount = DYNAMICOBJECT_END;
 }
 
+void DynamicObject::ClearUpdateMask(bool remove)
+{
+    Object::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&DynamicObject::m_dynamicObjectData);
+}
+
 void DynamicObject::AddToWorld()
 {
     // Register the dynamicObject for guid lookup

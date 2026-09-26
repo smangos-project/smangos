@@ -37,6 +37,9 @@ class Bag : public Item
         Bag();
         ~Bag() override;
 
+        UpdateField<UFContainerData, -1, TYPEID_CONTAINER> m_containerData;
+        void ClearUpdateMask(bool remove) override;
+
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

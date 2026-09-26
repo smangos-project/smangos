@@ -28,6 +28,8 @@
 #include "ByteBuffer.h"
 #include "UpdateFields.h"
 #include "UpdateData.h"
+#include "Updates/UpdateField.h"
+#include "Updates/UpdateFieldStructs.h"
 #include "ObjectGuid.h"
 #include "SharedDefines.h"
 #include "ObjectDefines.h"
@@ -148,6 +150,11 @@ class Object
         }
 
         void SetObjectScale(float newScale);
+
+        // 1.15 update-field storage, filled from the flat values array above before an update is
+        // built (Updates/UpdateFieldFill.h); not written directly by game code.
+        UpdateFieldHolder m_values;
+        UpdateField<UFObjectData, -1, TYPEID_OBJECT> m_objectData;
 
         uint8 GetTypeId() const { return m_objectTypeId; }
         uint8 GetTypeMask() const { return m_objectType; }
@@ -363,7 +370,7 @@ class Object
                 RemoveFlag64(index, flag);
         }
 
-        void ClearUpdateMask(bool remove);
+        virtual void ClearUpdateMask(bool remove);
 
         bool LoadValues(char const* data);
 

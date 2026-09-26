@@ -73,6 +73,9 @@ struct UpdateFieldSetter
     template<typename F>
     friend bool SetUpdateFieldValue(UpdateFieldSetter<F>& setter, typename UpdateFieldSetter<F>::value_type&& value);
 
+    template<typename F>
+    friend bool SetUpdateFieldValue(UpdateFieldSetter<F>&& setter, typename UpdateFieldSetter<F>::value_type value);
+
     UpdateFieldSetter(T& value) : _value(value)
     {
     }
@@ -670,6 +673,8 @@ class UpdateFieldBase : public IsUpdateFieldHolderTag
     template<std::size_t Bits>
     friend class HasChangesMask;
 
+    friend class UpdateFieldHolder;
+
 public:
     using value_type = T;
 
@@ -693,6 +698,46 @@ private:
 template<typename T, int32 BlockBit, uint32 Bit>
 class UpdateField : public UpdateFieldBase<T>
 {
+};
+
+// Bit position for ActivePlayerData in UpdateFieldHolder's changed-object-type mask. Not a real
+// TypeID (Object::GetTypeId() never returns it): PlayerData and ActivePlayerData share TYPEID_PLAYER's
+// object, so ActivePlayerData needs a bit of its own past the real TypeID range (0-7).
+inline constexpr uint32 TYPEID_ACTIVE_PLAYER = 8;
+
+class Object;
+
+// Tracks which of an object's top-level update-field structs (m_objectData, m_unitData, ...)
+// changed, one bit per TypeID. Every top-level UpdateField<T,...> member is reached through this
+// so ModifyValue can mark that bit; the struct's own field-level change mask (HasChangesMask) is
+// separate and still comes from the ModifyValue chain below it.
+class UpdateFieldHolder
+{
+public:
+    explicit UpdateFieldHolder(Object* owner) : _owner(owner)
+    {
+    }
+
+    template<typename Derived, typename T, int32 BlockBit, uint32 Bit>
+    MutableFieldReference<T, false> ModifyValue(UpdateField<T, BlockBit, Bit>(Derived::* field))
+    {
+        _changesMask |= GetUpdateFieldBlockFlag(Bit);
+        return { (static_cast<Derived*>(_owner)->*field)._value };
+    }
+
+    template<typename Derived, typename T, int32 BlockBit, uint32 Bit>
+    void ClearChangesMask(UpdateField<T, BlockBit, Bit>(Derived::* field))
+    {
+        (static_cast<Derived*>(_owner)->*field)._value.ClearChangesMask();
+        _changesMask &= ~GetUpdateFieldBlockFlag(Bit);
+    }
+
+    uint32 GetChangedObjectTypeMask() const { return _changesMask; }
+    bool HasChanged(uint32 index) const { return (_changesMask & GetUpdateFieldBlockFlag(index)) != 0; }
+
+private:
+    Object* _owner;
+    uint32 _changesMask = 0;
 };
 
 template<typename T>

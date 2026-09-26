@@ -46,6 +46,9 @@ class GameObject : public SpellCaster
 
         static GameObject* CreateGameObject(uint32 entry);
 
+        UpdateField<UFGameObjectData, -1, TYPEID_GAMEOBJECT> m_gameObjectData;
+        void ClearUpdateMask(bool remove) override;
+
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

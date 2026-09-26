@@ -317,6 +317,9 @@ class Unit : public SpellCaster
 
         virtual ~Unit() override;
 
+        UpdateField<UFUnitData, -1, TYPEID_UNIT> m_unitData;
+        void ClearUpdateMask(bool remove) override;
+
         void AddToWorld() override;
         void RemoveFromWorld() override;
         void CleanupsBeforeDelete() override;               // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)

@@ -13,6 +13,9 @@ struct ClassicGuid
 
     bool IsEmpty() const { return Low == 0 && High == 0; }
 
+    bool operator==(ClassicGuid const& right) const { return Low == right.Low && High == right.High; }
+    bool operator!=(ClassicGuid const& right) const { return !(*this == right); }
+
     void Write(ByteBuffer& data) const
     {
         uint8 lowBytes[8], highBytes[8];

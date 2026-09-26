@@ -53,6 +53,12 @@ Corpse::~Corpse()
         GetMap()->RemoveBones(this);
 }
 
+void Corpse::ClearUpdateMask(bool remove)
+{
+    Object::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&Corpse::m_corpseData);
+}
+
 void Corpse::AddToWorld()
 {
     // Register the corpse for guid lookup

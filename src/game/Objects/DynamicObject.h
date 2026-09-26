@@ -40,6 +40,9 @@ class DynamicObject : public WorldObject
         typedef std::map<ObjectGuid, uint32> AffectedMap;
         explicit DynamicObject();
 
+        UpdateField<UFDynamicObjectData, -1, TYPEID_DYNAMICOBJECT> m_dynamicObjectData;
+        void ClearUpdateMask(bool remove) override;
+
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

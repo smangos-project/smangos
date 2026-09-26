@@ -232,6 +232,12 @@ bool Item::Create(uint32 guidlow, uint32 itemid, ObjectGuid ownerGuid)
     return true;
 }
 
+void Item::ClearUpdateMask(bool remove)
+{
+    Object::ClearUpdateMask(remove);
+    m_values.ClearChangesMask(&Item::m_itemData);
+}
+
 void Item::RemoveFromWorld()
 {
     Player* owner = GetOwner();

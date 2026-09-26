@@ -44,6 +44,9 @@ class Item : public Object
 
         Item();
 
+        UpdateField<UFItemData, -1, TYPEID_ITEM> m_itemData;
+        void ClearUpdateMask(bool remove) override;
+
         virtual bool Create(uint32 guidlow, uint32 itemid, ObjectGuid ownerGuid = ObjectGuid());
         void RemoveFromWorld() override;
 

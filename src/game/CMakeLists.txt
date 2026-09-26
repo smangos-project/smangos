@@ -183,6 +183,7 @@ set (game_SRCS
     Objects/Unit.cpp
     Objects/UpdateData.cpp
     Objects/Updates/UpdateField.cpp
+    Objects/Updates/UpdateFieldFill.cpp
     Objects/Updates/UpdateFieldStructs.cpp
     Objects/Updates/UpdateFieldStructsOwners.cpp
     Objects/UpdateFields.cpp
