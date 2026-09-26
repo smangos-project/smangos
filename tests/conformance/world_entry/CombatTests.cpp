@@ -84,3 +84,46 @@ TEST_CASE("combat: a bot sitting down and standing up is told each new stand sta
         CHECK(standing->StandState == 0);
     });
 }
+
+TEST_CASE("combat: a creature that is attacked turns hostile and both bots are told", "[gameplay]")
+{
+    if (ConformanceRun::GmTarget().empty())
+        SKIP("the target has no game master accounts (" << ConformanceRun::Target() << "-gm)");
+
+    RunTest([]() -> TestRoutine
+    {
+        TestBot gm(TestBotOptions().Gm());
+        TestBot watcher;
+        REQUIRE(co_await gm.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await watcher.Stage(BotStage::InWorld, 30000));
+
+        ClassicGuid const gmGuid = gm.GetCharacterGuid();
+        REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(gmGuid).has_value(); }, 10000));
+
+        std::vector<ClassicGuid> const before = KnownUnits(gm);
+        SayCommand(gm, ".npc spawn add 6");
+
+        std::optional<ClassicGuid> victim;
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            victim = FindNewUnit(gm, before);
+            return victim.has_value();
+        }, 10000));
+        REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(*victim).has_value(); }, 10000));
+
+        SetSelection select;
+        select.Target = *victim;
+        gm.Send(select);
+        AttackSwing swing;
+        swing.Victim = *victim;
+        gm.Send(swing);
+
+        auto isHostile = [&](AIReactionUpdate const& p) { return p.Unit == *victim && p.Reaction == 2; }; // AI_REACTION_HOSTILE
+        CHECK(co_await gm.WaitReceived<AIReactionUpdate>(10000, isHostile));
+        CHECK(co_await watcher.WaitReceived<AIReactionUpdate>(10000, isHostile));
+
+        AttackStop stop;
+        gm.Send(stop);
+        SayCommand(gm, ".npc despawn");
+    });
+}

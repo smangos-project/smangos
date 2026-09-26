@@ -176,3 +176,27 @@ TEST_CASE("MeleeAttackingStateUpdate round-trips with absorb, resist and block s
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("AIReactionUpdate round-trips", "[packets]")
+{
+    AIReactionUpdate packet;
+    packet.Unit = { 0x1122, 0 };
+    packet.Reaction = 2;
+    RoundTrip(packet, [](AIReactionUpdate const& a, AIReactionUpdate const& b)
+    {
+        CHECK(a.Unit == b.Unit);
+        CHECK(a.Reaction == b.Reaction);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("CancelAutoRepeat round-trips", "[packets]")
+{
+    CancelAutoRepeat packet;
+    packet.Target = { 0x3344, 0 };
+    RoundTrip(packet, [](CancelAutoRepeat const& a, CancelAutoRepeat const& b)
+    {
+        CHECK(a.Target == b.Target);
+    });
+    RejectsEveryTruncation(packet);
+}
