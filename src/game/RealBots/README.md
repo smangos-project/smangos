@@ -552,6 +552,18 @@ None of these is proven against a real 1.15.6 client yet.
   (`SMSG_MASTER_LOOT_CANDIDATE_LIST`) is not sent yet: it belongs with the groups slice.
 - **Money.** `SMSG_LOOT_MONEY_NOTIFY` is now sent for solo looting as well (the modern client prints the "you loot"
   line from it), with the sole-looter flag set.
+- **Gossip window.** TrinityCore's `SMSG_GOSSIP_MESSAGE` carries per-option ids, an order index, status, optional
+  spell and icon and a text id the client queries; vibemangos's is an older, shorter shape (no option NPC id,
+  no text-id bit). **Followed: TrinityCore.** The gossip id is the NPC's entry rather than the DB menu id:
+  vibemangos diffed a real client's traffic and found the client only accepts the entry. An option id is the
+  index the server gave the option in the menu it sent. Quests in the list are typed 2 available, 4 in the log
+  and 0 ready to hand in, with vibemangos's flag default of 8. The vanilla server pushed NPC text
+  (`SendTalking`) unasked; the client now queries it, so that code is gone.
+- **Vendors.** A vendor row is TrinityCore's (price, 1-based row id, type, stack count, quantity left, extended
+  cost, item). The buy request carries an item count where the vanilla one carried stacks, so the server
+  divides by the item's buy count. TrinityCore reads an item-type integer before the item instance in `CMSG_BUY_ITEM`;
+  vibemangos (from a proxy's traffic) puts three bits after it. **Followed: TrinityCore.** Buyback slots and every
+  bag slot in a purchase go through the slot translation.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
