@@ -51,6 +51,7 @@ add_executable(tests-conformance
   world_entry/QueryTests.cpp
   world_entry/ItemTests.cpp
   world_entry/LootTests.cpp
+  world_entry/NpcTests.cpp
   chat/ChatTests.cpp
   world_socket/WorldSocketTests.cpp
   session/SessionTests.cpp
