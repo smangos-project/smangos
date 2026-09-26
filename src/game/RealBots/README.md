@@ -509,6 +509,16 @@ None of these is proven against a real 1.15.6 client yet.
   TrinityCore.** If a real client's accept never resurrects, this is the first thing to flip. The offer
   (`SMSG_RESURRECT_REQUEST`) is the same in both. `SMSG_PLAYER_SKINNED` is no longer sent: TrinityCore has no
   body for it and it only ever carried a constant zero.
+- **Creature query response.** TrinityCore writes a quest-currency count after the quest-item count; vibemangos
+  (built against an older client) does not. It also disagrees on an empty title: TrinityCore writes a length
+  of 1 and no bytes, vibemangos a length of 0. **Followed: TrinityCore** for both (our build is the newer
+  client), so the response carries the extra count and an empty title is length 1. If a real client drops
+  creature names, these two are the first suspects. Only the first name slot is filled; the other three and
+  every alternate are empty with length 1.
+- **Game object query response.** Both write 35 data words; TrinityCore ends with a content tuning id, vibemangos
+  with a required level (both `u32`, always zero here). **Followed: TrinityCore.**
+- **NPC text.** Both send only probabilities and broadcast text ids, since the client reads the text from its own
+  data; the server's broadcast text ids only match if the client's data does (`port-plan.md`, step 7).
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
