@@ -448,8 +448,8 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_DUEL_INBOUNDS,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DUEL_COMPLETE,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DUEL_WINNER,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_DUEL_ACCEPTED,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleDuelAcceptedOpcode);
-    DEFINE_HANDLER(CMSG_DUEL_CANCELLED,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleDuelCancelledOpcode);
+    INVALID_PACKET(CMSG_DUEL_ACCEPTED,                UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_DUEL_CANCELLED,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MOUNTRESULT,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DISMOUNTRESULT,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PUREMOUNT_CANCELLED_OBSOLETE, UnhandleReason::SendByServer);
@@ -1070,6 +1070,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPOP_REQUEST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepopRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RESURRECT_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleResurrectResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAN_DUEL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCanDuelOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DUEL_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleDuelResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PLAYER_NAMES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryPlayerNamesOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CREATURE, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleCreatureQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_GAME_OBJECT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleGameObjectQueryOpcode);

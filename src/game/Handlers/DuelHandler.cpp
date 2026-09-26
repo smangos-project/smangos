@@ -26,16 +26,43 @@
 #include "Opcodes.h"
 #include "UpdateData.h"
 #include "Player.h"
+#include "ObjectMgr.h"
+#include "Packets/Classic/GuidMapping.h"
 
-void WorldSession::HandleDuelAcceptedOpcode(WorldPackets::Duel::DuelAccepted const& /*packet*/)
+void WorldSession::HandleCanDuelOpcode(CanDuel const& packet)
 {
-    if (!GetPlayer()->m_duel)                                 // ignore accept from duel-sender
+    nonstd::optional<ObjectGuid> const targetGuid = ClassicGuidMapping::FromClassic(packet.Target);
+    Player* target = targetGuid ? sObjectMgr.GetPlayer(*targetGuid) : nullptr;
+    if (!target)
         return;
 
-    Player* pl       = GetPlayer();
+    CanDuelResult response;
+    response.Target = packet.Target;
+    response.Result = !target->m_duel;
+    SendClassic(response);
+}
+
+void WorldSession::HandleDuelResponseOpcode(DuelResponse const& packet)
+{
+    if (packet.Accepted && !packet.Forfeited)
+        HandleDuelAccepted(packet.Arbiter);
+    else
+        HandleDuelCancelled();
+}
+
+void WorldSession::HandleDuelAccepted(ClassicGuid const& arbiter)
+{
+    Player* pl = GetPlayer();
+    if (!pl->m_duel)                                          // ignore accept from duel-sender
+        return;
+
     Player* plTarget = pl->m_duel->opponent;
 
     if (pl == pl->m_duel->initiator || !plTarget || !plTarget->m_duel || pl == plTarget || pl->m_duel->startTime != 0 || plTarget->m_duel->startTime != 0)
+        return;
+
+    nonstd::optional<ObjectGuid> const arbiterGuid = ClassicGuidMapping::FromClassic(arbiter);
+    if (!arbiterGuid || pl->GetGuidValue(PLAYER_DUEL_ARBITER) != *arbiterGuid)
         return;
 
     time_t now = time(nullptr);
@@ -46,7 +73,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPackets::Duel::DuelAccepted con
     plTarget->SendDuelCountdown(3000);
 }
 
-void WorldSession::HandleDuelCancelledOpcode(WorldPackets::Duel::DuelCancelled const& /*packet*/)
+void WorldSession::HandleDuelCancelled()
 {
     auto pPlayer = GetPlayer();
     // no duel requested

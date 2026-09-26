@@ -6721,7 +6721,7 @@ void Player::CheckDuelDistance(time_t currTime)
         {
             m_duel->outOfBound = currTime;
 
-            GetSession()->SendPacket(std::make_unique<WorldPackets::Duel::DuelOutOfBounds>());
+            GetSession()->SendClassic(DuelOutOfBounds());
         }
     }
     else
@@ -6731,7 +6731,7 @@ void Player::CheckDuelDistance(time_t currTime)
         {
             m_duel->outOfBound = 0;
 
-            GetSession()->SendPacket(std::make_unique<WorldPackets::Duel::DuelInBounds>());
+            GetSession()->SendClassic(DuelInBounds());
         }
         else if (currTime >= (m_duel->outOfBound + 10))
         {
@@ -6757,24 +6757,20 @@ void Player::DuelComplete(DuelCompleteType type)
         return;
 
     {
-        // TODO Use broadcaster to send it to self and opponent
-        auto packet = std::make_unique<WorldPackets::Duel::DuelComplete>();
-        packet->started = (type != DUEL_INTERRUPTED);
-        GetSession()->SendPacket(std::move(packet));
-    }
-    {
-        auto packet = std::make_unique<WorldPackets::Duel::DuelComplete>();
-        packet->started = (type != DUEL_INTERRUPTED);
-        m_duel->opponent->GetSession()->SendPacket(std::move(packet));
+        DuelCompleteNotice complete;
+        complete.Started = (type != DUEL_INTERRUPTED);
+        GetSession()->SendClassic(complete);
+        m_duel->opponent->GetSession()->SendClassic(complete);
     }
 
     if (type != DUEL_INTERRUPTED)
     {
-        auto packet = std::make_unique<WorldPackets::Duel::DuelWinner>();
-        packet->fled = (type != DUEL_WON);         // 0 = just won; 1 = fled
-        packet->winnerName = m_duel->opponent->GetName();
-        packet->loserName = GetName();
-        SendObjectMessageToSet(std::move(packet), true);
+        DuelWinner winner;
+        winner.Fled = (type != DUEL_WON);
+        winner.WinnerName = m_duel->opponent->GetName();
+        winner.BeatenName = GetName();
+        WorldPacket data = MakeClassicPacket(winner);
+        SendObjectMessageToSet(&data, true);
     }
 
     //Remove Duel Flag object
@@ -21188,9 +21184,9 @@ void Player::SetRestType(RestType restType, uint32 areaTriggerId /*= 0*/)
 
 void Player::SendDuelCountdown(uint32 counter) const
 {
-    auto packet = std::make_unique<WorldPackets::Duel::DuelCountdown>();
-    packet->countdown = counter;
-    GetSession()->SendPacket(std::move(packet));
+    DuelCountdown countdown;
+    countdown.Countdown = counter;
+    GetSession()->SendClassic(countdown);
 }
 
 void Player::RemoveAI()

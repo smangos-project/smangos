@@ -52,7 +52,7 @@
 #include "Packets/DeathMessages.h"
 #include "Packets/Auras.h"
 #include "Packets/SpellCast.h"
-#include "Packets/Duel.h"
+#include "Packets/DuelMessages.h"
 #include "Packets/GmTicket.h"
 #include "Packets/GroupMessages.h"
 #include "Packets/Guild.h"
@@ -749,8 +749,10 @@ class WorldSession
         void HandleStableRevivePet(NullClientPacket const& packet);
         void HandleStableSwapPet(WorldPackets::Npc::StableSwapPet const& packet);
 
-        void HandleDuelAcceptedOpcode(WorldPackets::Duel::DuelAccepted const& packet);
-        void HandleDuelCancelledOpcode(WorldPackets::Duel::DuelCancelled const& packet);
+        void HandleCanDuelOpcode(CanDuel const& packet);
+        void HandleDuelResponseOpcode(DuelResponse const& packet);
+        void HandleDuelAccepted(ClassicGuid const& arbiter);
+        void HandleDuelCancelled();
 
         void HandleAcceptTradeOpcode(WorldPackets::Trade::AcceptTrade const& packet);
         void HandleBeginTradeOpcode(NullClientPacket const& packet);

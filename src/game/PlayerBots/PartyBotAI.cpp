@@ -28,6 +28,7 @@
 #include "Chat.h"
 #include "Utilities/Random.h"
 #include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/ClassicClient.h"
 #include "Server/Packets/CombatLog.h"
 
 #include <random>
@@ -556,10 +557,11 @@ void PartyBotAI::OnPacketReceived(WorldPacket const* packet)
                 m_resetSpellData = true;
             return;
         }
-        case SMSG_DUEL_REQUESTED:
+        case CLASSIC_SMSG_DUEL_REQUESTED:
         {
-            auto data = std::make_unique<WorldPackets::Duel::DuelAccepted>();
-            data->playerGuid = me->GetObjectGuid();
+            auto data = std::make_unique<ClassicClient<DuelResponse>>();
+            data->Body.Arbiter = ClassicGuidMapping::ToClassic(me->GetGuidValue(PLAYER_DUEL_ARBITER), realmID);
+            data->Body.Accepted = true;
             me->GetSession()->QueuePacket(std::move(data));
             return;
         }

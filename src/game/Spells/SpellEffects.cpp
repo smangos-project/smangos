@@ -4672,11 +4672,12 @@ void Spell::EffectDuel(SpellEffectIndex effIdx)
     //END
 
     // Send request
-    WorldPacket data(SMSG_DUEL_REQUESTED, 8 + 8);
-    data << pGameObj->GetObjectGuid();
-    data << caster->GetObjectGuid();
-    caster->GetSession()->SendPacket(&data);
-    target->GetSession()->SendPacket(&data);
+    DuelRequested request;
+    request.Arbiter = ClassicGuidMapping::ToClassic(pGameObj->GetObjectGuid(), realmID);
+    request.RequestedBy = ClassicGuidMapping::ToClassic(caster->GetObjectGuid(), realmID);
+    request.RequestedByAccount = ClassicGuidMapping::MakeAccount(caster->GetSession()->GetAccountId());
+    caster->GetSession()->SendClassic(request);
+    target->GetSession()->SendClassic(request);
 
     // create duel-info
     DuelInfo* duel   = new DuelInfo;
