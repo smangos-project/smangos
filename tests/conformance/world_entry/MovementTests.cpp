@@ -6,6 +6,7 @@
 #include "TestCommands.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
+#include <algorithm>
 #include <cmath>
 
 static float FlatDistance(BotKnownObject const& a, BotKnownObject const& b)
@@ -115,9 +116,18 @@ TEST_CASE("movement: a root is acknowledged and other bots see the rooted flag",
         REQUIRE(rooted);
         CHECK(rooted->Status.Guid == guid);
 
+        auto hasRootAura = [&](TestBot const& viewer)
+        {
+            std::optional<BotKnownObject> const known = viewer.GetKnownObject(guid);
+            return known && std::any_of(known->Auras.begin(), known->Auras.end(), [](BotAura const& aura) { return aura.SpellId == 122; });
+        };
+        REQUIRE(co_await TestWaitUntil([&]() { return hasRootAura(gm); }, 10000));
+        REQUIRE(co_await TestWaitUntil([&]() { return hasRootAura(watcher); }, 10000));
+
         SayCommand(gm, ".unaura 122");
         REQUIRE(co_await gm.Packet<MoveUnroot>(10000));
         REQUIRE(co_await watcher.Packet<MoveUpdate>(10000, [](MoveUpdate const& p) { return (p.Status.Flags & CLASSIC_MOVEFLAG_ROOT) == 0; }));
+        REQUIRE(co_await TestWaitUntil([&]() { return !hasRootAura(gm) && !hasRootAura(watcher); }, 10000));
     });
 }
 
