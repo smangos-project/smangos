@@ -853,6 +853,9 @@ struct QuaternionData
     QuaternionData() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) { }
     QuaternionData(float X, float Y, float Z, float W) : x(X), y(Y), z(Z), w(W) { }
 
+    bool operator==(QuaternionData const& right) const { return x == right.x && y == right.y && z == right.z && w == right.w; }
+    bool operator!=(QuaternionData const& right) const { return !(*this == right); }
+
     bool isUnit() const;
     void toEulerAnglesZYX(float& Z, float& Y, float& X) const;
     static QuaternionData fromEulerAnglesZYX(float Z, float Y, float X);

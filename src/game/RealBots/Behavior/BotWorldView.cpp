@@ -11,8 +11,9 @@ constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT = 2;
 constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT2 = 3;
 
 // Mirrors Objects/Updates/UpdateObjectWriter.cpp's BuildMovementUpdate bit for bit, but only
-// understands the shapes it currently produces (a standing unit/player, the active player's own
-// action-button array): an unexpected true bit means the wire moved and this needs updating too.
+// understands the shapes it currently produces (a standing unit/player, a stationary object's
+// position and a game object's packed rotation, the active player's own action-button array): an
+// unexpected true bit means the wire moved and this needs updating too.
 bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o)
 {
     data.ReadBit(); // HasPositionFragment
@@ -37,7 +38,7 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
     data.ResetBitPos();
 
     if (noBirthAnim || enablePortals || movementTransport || combatVictim || serverTime || vehicle ||
-        animKit || rotation || areaTrigger || gameObject || smoothPhasing || sceneObject || conversation)
+        animKit || areaTrigger || gameObject || smoothPhasing || sceneObject || conversation)
         return false;
 
     if (movementUpdate)
@@ -93,8 +94,17 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
 
     uint32_t pauseTimesCount;
     data >> pauseTimesCount;
-    if (pauseTimesCount != 0 || stationary)
+    if (pauseTimesCount != 0)
         return false;
+
+    if (stationary)
+        data >> x >> y >> z >> o;
+
+    if (rotation)
+    {
+        uint64_t packedRotation;
+        data >> packedRotation;
+    }
 
     if (activePlayer)
     {

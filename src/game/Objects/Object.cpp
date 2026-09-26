@@ -33,6 +33,7 @@
 #include "UpdateData.h"
 #include "UpdateMask.h"
 #include "Updates/UpdateFieldFill.h"
+#include "Updates/UpdateObjectWriter.h"
 #include "Util.h"
 #include "Geometry.h"
 #include "Transport.h"
@@ -309,11 +310,9 @@ void Object::BuildMovementUpdateBlock(UpdateData& /*data*/, uint8 /*flags*/) con
     // The modern movement block (Objects/Updates) doesn't exist yet; nothing is written until it does.
 }
 
-void Object::BuildCreateUpdateBlockForPlayer(UpdateData& /*data*/, Player* /*target*/) const
+void Object::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) const
 {
-    // Player::BuildCreateUpdateBlockForPlayer writes a real block for a player's own view of
-    // itself (Updates/UpdateObjectWriter.h); every other object and viewer still lands here until
-    // its fill function and viewer gating exist.
+    ::BuildCreateUpdateBlockForPlayer(*this, data, target);
 }
 
 void Object::SendCreateUpdateToPlayer(Player* player)

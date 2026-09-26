@@ -90,4 +90,15 @@ class DynamicObject : public WorldObject
     private:
         GridReference<DynamicObject> m_gridRef;
 };
+
+inline DynamicObject* Object::ToDynamicObject()
+{
+    return IsDynamicObject() ? static_cast<DynamicObject*>(this) : nullptr;
+}
+
+inline DynamicObject const* Object::ToDynamicObject() const
+{
+    return IsDynamicObject() ? static_cast<DynamicObject const*>(this) : nullptr;
+}
+
 #endif

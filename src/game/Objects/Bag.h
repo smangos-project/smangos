@@ -81,4 +81,14 @@ inline Item* NewItemOrBag(ItemPrototype const* proto)
     return new Item;
 }
 
+inline Bag* Item::ToBag()
+{
+    return GetTypeId() == TYPEID_CONTAINER ? static_cast<Bag*>(this) : nullptr;
+}
+
+inline Bag const* Item::ToBag() const
+{
+    return GetTypeId() == TYPEID_CONTAINER ? static_cast<Bag const*>(this) : nullptr;
+}
+
 #endif

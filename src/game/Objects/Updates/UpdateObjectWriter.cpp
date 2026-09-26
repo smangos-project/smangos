@@ -1,10 +1,16 @@
 #include "UpdateObjectWriter.h"
+#include "UpdateFieldFill.h"
 #include "UpdateFieldStructs.h"
 #include "WowCSEntityDefinitions.h"
 #include "Objects/Object.h"
 #include "Objects/Unit.h"
 #include "Objects/UnitDefines.h"
 #include "Objects/Player.h"
+#include "Objects/Item.h"
+#include "Objects/Bag.h"
+#include "Objects/GameObject.h"
+#include "Objects/Corpse.h"
+#include "Objects/DynamicObject.h"
 #include "Objects/UpdateData.h"
 #include "Objects/MovementInfo.h"
 #include "Chat/MasterPlayer.h"
@@ -56,8 +62,14 @@ CreateObjectBits ComputeCreateObjectBits(Object const& object, Player const* tar
         if (unit->IsHovering())
             flags.PlayHoverAnim = true;
     }
-    else
+    else if (object.ToWorldObject())
+    {
+        // Items carry no position (not a WorldObject); everything else that isn't a unit is a
+        // fixed-position object whose transform rides the movement frame's stationary section.
         flags.Stationary = true;
+        if (object.GetTypeId() == TYPEID_GAMEOBJECT)
+            flags.Rotation = true;
+    }
 
     if (target && static_cast<Object const*>(target) == &object)
     {
@@ -124,11 +136,19 @@ void WriteEntityFragments(ByteBuffer& data, Object const& object)
 EnumFlag<UpdateFieldFlag> GetUpdateFieldFlagsFor(Object const& object, Player const* target)
 {
     UpdateFieldFlag flags = UpdateFieldFlag::None;
-    if (target && &object == static_cast<Object const*>(target))
-        flags |= UpdateFieldFlag::Owner;
+    if (!target)
+        return flags;
 
-    // Item ownership, party/raid visibility and the empathy/special-info flag all gate fields that
-    // aren't filled yet (bot-phase-4.md slice C5/C6); nothing reads them until then.
+    if (&object == static_cast<Object const*>(target))
+        flags |= UpdateFieldFlag::Owner;
+    else if (Item const* item = object.ToItem())
+    {
+        if (item->GetOwnerGuid() == target->GetObjectGuid())
+            flags |= UpdateFieldFlag::Owner;
+    }
+
+    // Party/raid visibility and the empathy/special-info flag still aren't filled (bot-phase-4.md
+    // slice C6); nothing reads them until then.
     return flags;
 }
 
@@ -223,7 +243,29 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data.FlushBits();
     }
 
-    data << uint32(0);                                           // PauseTimes.size(): no game object here
+    data << uint32(0);                                           // PauseTimes.size(): no transport support yet
+
+    if (flags.Stationary)
+    {
+        if (GameObject const* gameObject = object.ToGameObject())
+        {
+            data << float(gameObject->GetStationaryX());
+            data << float(gameObject->GetStationaryY());
+            data << float(gameObject->GetStationaryZ());
+            data << float(gameObject->GetStationaryO());
+        }
+        else
+        {
+            WorldObject const& worldObject = static_cast<WorldObject const&>(object);
+            data << float(worldObject.GetPositionX());
+            data << float(worldObject.GetPositionY());
+            data << float(worldObject.GetPositionZ());
+            data << float(worldObject.GetOrientation());
+        }
+    }
+
+    if (flags.Rotation)
+        data << uint64(static_cast<GameObject const&>(object).GetRotation());
 
     if (flags.ActivePlayer)
     {
@@ -268,6 +310,18 @@ void BuildValuesCreate(Object const& object, ByteBuffer& data, EnumFlag<UpdateFi
                 player->m_activePlayerData->WriteCreate(data, flags, player, target);
         }
     }
+    else if (Item const* item = object.ToItem())
+    {
+        item->m_itemData->WriteCreate(data, flags, item, target);
+        if (Bag const* bag = item->ToBag())
+            bag->m_containerData->WriteCreate(data, flags, bag, target);
+    }
+    else if (GameObject const* gameObject = object.ToGameObject())
+        gameObject->m_gameObjectData->WriteCreate(data, flags, gameObject, target);
+    else if (Corpse const* corpse = object.ToCorpse())
+        corpse->m_corpseData->WriteCreate(data, flags, corpse, target);
+    else if (DynamicObject const* dynamicObject = object.ToDynamicObject())
+        dynamicObject->m_dynamicObjectData->WriteCreate(data, flags, dynamicObject, target);
 }
 }
 
@@ -275,6 +329,12 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 {
     if (!target)
         return;
+
+    // The typed structs are a derived cache of the flat values array (decision 5); refreshing it
+    // here, rather than trusting the per-tick values pump to have already run, also covers items,
+    // which never enter that pump (Item::BuildUpdateData only rebuilds values blocks for players
+    // who already see the item).
+    FillUpdateFieldData(const_cast<Object&>(object));
 
     uint8 updateType = object.IsNewObject() ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
     uint8 objectType = object.GetTypeId();

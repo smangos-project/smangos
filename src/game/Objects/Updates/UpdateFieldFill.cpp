@@ -8,6 +8,11 @@
 #include "Objects/Object.h"
 #include "Objects/Unit.h"
 #include "Objects/Player.h"
+#include "Objects/Item.h"
+#include "Objects/Bag.h"
+#include "Objects/GameObject.h"
+#include "Objects/Corpse.h"
+#include "Objects/DynamicObject.h"
 #include "Objects/UnitDefines.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "World.h"
@@ -234,6 +239,89 @@ void FillActivePlayerData(Player& player)
     }
 }
 
+void FillItemData(Item& item)
+{
+    FillObjectData(item, 0);
+
+    FillField(item, &Item::m_itemData, &UFItemData::Owner, ToClassic(item.GetOwnerGuid()));
+    FillField(item, &Item::m_itemData, &UFItemData::ContainedIn, ToClassic(item.GetGuidValue(ITEM_FIELD_CONTAINED)));
+    FillField(item, &Item::m_itemData, &UFItemData::Creator, ToClassic(item.GetGuidValue(ITEM_FIELD_CREATOR)));
+    FillField(item, &Item::m_itemData, &UFItemData::GiftCreator, ToClassic(item.GetGuidValue(ITEM_FIELD_GIFTCREATOR)));
+    FillField(item, &Item::m_itemData, &UFItemData::StackCount, item.GetUInt32Value(ITEM_FIELD_STACK_COUNT));
+    FillField(item, &Item::m_itemData, &UFItemData::Expiration, item.GetUInt32Value(ITEM_FIELD_DURATION));
+    FillField(item, &Item::m_itemData, &UFItemData::DynamicFlags, item.GetUInt32Value(ITEM_FIELD_FLAGS));
+    FillField(item, &Item::m_itemData, &UFItemData::PropertySeed, int32(item.GetItemSuffixFactor()));
+    FillField(item, &Item::m_itemData, &UFItemData::RandomPropertiesID, item.GetItemRandomPropertyId());
+    FillField(item, &Item::m_itemData, &UFItemData::Durability, item.GetUInt32Value(ITEM_FIELD_DURABILITY));
+    FillField(item, &Item::m_itemData, &UFItemData::MaxDurability, item.GetUInt32Value(ITEM_FIELD_MAXDURABILITY));
+
+    for (uint8 i = 0; i < 5; ++i)
+        FillField(item, &Item::m_itemData, &UFItemData::SpellCharges, i, item.GetSpellCharges(i));
+
+    for (uint32 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+    {
+        auto getEnchant = [&]() { return item.m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UFItemData::Enchantment, slot); };
+        UFItemEnchantment const& current = item.m_itemData->Enchantment[slot];
+        EnchantmentSlot enchantSlot = EnchantmentSlot(slot);
+        FillField(current, getEnchant, &UFItemEnchantment::ID, int32(item.GetEnchantmentId(enchantSlot)));
+        FillField(current, getEnchant, &UFItemEnchantment::Duration, item.GetEnchantmentDuration(enchantSlot));
+        FillField(current, getEnchant, &UFItemEnchantment::Charges, int16(item.GetEnchantmentCharges(enchantSlot)));
+    }
+}
+
+void FillContainerData(Bag& bag)
+{
+    FillField(bag, &Bag::m_containerData, &UFContainerData::NumSlots, bag.GetBagSize());
+
+    for (uint32 i = 0; i < MAX_BAG_SIZE; ++i)
+    {
+        Item const* slotItem = bag.GetItemByPos(uint8(i));
+        FillField(bag, &Bag::m_containerData, &UFContainerData::Slots, i, slotItem ? ToClassic(slotItem->GetObjectGuid()) : ClassicGuid());
+    }
+}
+
+void FillGameObjectData(GameObject& gameObject)
+{
+    FillObjectData(gameObject, gameObject.GetUInt32Value(GAMEOBJECT_DYN_FLAGS));
+
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::DisplayID, int32(gameObject.GetDisplayId()));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Flags, gameObject.GetUInt32Value(GAMEOBJECT_FLAGS));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::ParentRotation, gameObject.GetLocalRotation());
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::FactionTemplate, int32(gameObject.GetUInt32Value(GAMEOBJECT_FACTION)));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Level, int32(gameObject.GetUInt32Value(GAMEOBJECT_LEVEL)));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::State, int8(gameObject.GetGoState()));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::TypeID, int8(gameObject.GetGoType()));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::PercentHealth, uint8(gameObject.GetGoAnimProgress()));
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::ArtKit, gameObject.GetGoArtKit());
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::CreatedBy, ToClassic(gameObject.GetOwnerGuid()));
+}
+
+void FillCorpseData(Corpse& corpse)
+{
+    FillObjectData(corpse, 0);
+
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Owner, ToClassic(corpse.GetOwnerGuid()));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::DisplayID, corpse.GetUInt32Value(CORPSE_FIELD_DISPLAY_ID));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::RaceID, corpse.GetByteValue(CORPSE_FIELD_BYTES_1, 1));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Sex, corpse.GetByteValue(CORPSE_FIELD_BYTES_1, 2));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Flags, corpse.GetUInt32Value(CORPSE_FIELD_FLAGS));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::DynamicFlags, corpse.GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::FactionTemplate, int32(corpse.GetFactionTemplateId()));
+
+    for (uint32 i = 0; i < 19; ++i)
+        FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Items, i, corpse.GetUInt32Value(CORPSE_FIELD_ITEM + i));
+}
+
+void FillDynamicObjectData(DynamicObject& dynamicObject)
+{
+    FillObjectData(dynamicObject, 0);
+
+    FillField(dynamicObject, &DynamicObject::m_dynamicObjectData, &UFDynamicObjectData::Caster, ToClassic(dynamicObject.GetCasterGuid()));
+    FillField(dynamicObject, &DynamicObject::m_dynamicObjectData, &UFDynamicObjectData::Type, uint8(dynamicObject.GetType()));
+    FillField(dynamicObject, &DynamicObject::m_dynamicObjectData, &UFDynamicObjectData::SpellID, int32(dynamicObject.GetSpellId()));
+    FillField(dynamicObject, &DynamicObject::m_dynamicObjectData, &UFDynamicObjectData::Radius, dynamicObject.GetRadius());
+}
+
 void FillUpdateFieldData(Object& object)
 {
     if (Unit* unit = object.ToUnit())
@@ -245,10 +333,18 @@ void FillUpdateFieldData(Object& object)
             FillActivePlayerData(*player);
         }
     }
-    else
+    else if (Item* item = object.ToItem())
     {
-        // Game objects, corpses, items/containers and dynamic objects get their own fill in a
-        // later step; their typed structs stay at their zero-initialized default until then.
-        FillObjectData(object, 0);
+        FillItemData(*item);
+        if (Bag* bag = item->ToBag())
+            FillContainerData(*bag);
     }
+    else if (GameObject* gameObject = object.ToGameObject())
+        FillGameObjectData(*gameObject);
+    else if (Corpse* corpse = object.ToCorpse())
+        FillCorpseData(*corpse);
+    else if (DynamicObject* dynamicObject = object.ToDynamicObject())
+        FillDynamicObjectData(*dynamicObject);
+    else
+        FillObjectData(object, 0);
 }

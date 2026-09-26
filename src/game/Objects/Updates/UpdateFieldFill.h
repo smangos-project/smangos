@@ -7,6 +7,11 @@
 class Object;
 class Unit;
 class Player;
+class Item;
+class Bag;
+class GameObject;
+class Corpse;
+class DynamicObject;
 
 // Copies one leaf field to `value`, touching the change mask (via the ModifyValue chain `getRef`
 // lazily builds) only when the value actually differs from `current`'s -- ModifyValue marks its
@@ -56,6 +61,11 @@ void FillObjectData(Object& object, uint32 dynamicFlags);
 void FillUnitData(Unit& unit);
 void FillPlayerData(Player& player);
 void FillActivePlayerData(Player& player);
+void FillItemData(Item& item);
+void FillContainerData(Bag& bag);
+void FillGameObjectData(GameObject& gameObject);
+void FillCorpseData(Corpse& corpse);
+void FillDynamicObjectData(DynamicObject& dynamicObject);
 
 // Fills whichever of the above apply to `object`'s concrete type. Called once per dirty object per
 // update, before its create/values blocks are built.

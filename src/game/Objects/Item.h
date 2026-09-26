@@ -161,6 +161,9 @@ class Item : public Object
         bool IsCharter() const { return GetEntry() == 5863u; }
         static void GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* proto, ItemRandomPropertiesEntry const* randomProp, int dbLocale, LocaleConstant dbcLocale);
 
+        Bag* ToBag();
+        Bag const* ToBag() const;
+
     private:
         bool generatedLoot;
         uint8 m_slot;
@@ -170,5 +173,15 @@ class Item : public Object
         bool mb_in_trade;                                   // true if item is currently in trade-window
         ItemLootUpdateState m_lootState;
 };
+
+inline Item* Object::ToItem()
+{
+    return IsItem() ? static_cast<Item*>(this) : nullptr;
+}
+
+inline Item const* Object::ToItem() const
+{
+    return IsItem() ? static_cast<Item const*>(this) : nullptr;
+}
 
 #endif

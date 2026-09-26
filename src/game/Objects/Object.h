@@ -48,6 +48,8 @@ class WorldPacket;
 class UpdateData;
 class Corpse;
 class Creature;
+class DynamicObject;
+class Item;
 class Pet;
 class Player;
 class Unit;
@@ -410,6 +412,14 @@ class Object
         virtual inline bool IsCorpse() const { return GetTypeId() == TYPEID_CORPSE; }
         Corpse* ToCorpse();
         Corpse const* ToCorpse() const;
+
+        inline bool IsItem() const { return GetTypeId() == TYPEID_ITEM || GetTypeId() == TYPEID_CONTAINER; }
+        Item* ToItem();
+        Item const* ToItem() const;
+
+        inline bool IsDynamicObject() const { return GetTypeId() == TYPEID_DYNAMICOBJECT; }
+        DynamicObject* ToDynamicObject();
+        DynamicObject const* ToDynamicObject() const;
 
         virtual bool IsPet() const;
         Pet* ToPet();

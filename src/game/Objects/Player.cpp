@@ -4201,10 +4201,7 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) c
         }
     }
 
-    if (target == this)
-        ::BuildCreateUpdateBlockForPlayer(*this, data, target);
-    else
-        Unit::BuildCreateUpdateBlockForPlayer(data, target);
+    ::BuildCreateUpdateBlockForPlayer(*this, data, target);
 }
 
 void Player::DestroyForPlayer(Player const* target) const
