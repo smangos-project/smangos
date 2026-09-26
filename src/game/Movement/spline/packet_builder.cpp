@@ -52,6 +52,8 @@ uint32 ToModernSplineFlags(MoveSplineFlag const& flags, bool allowUncompressedPa
 void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_spline, MonsterMove& packet)
 {
     packet.Mover = ClassicGuidMapping::ToClassic(unit.GetObjectGuid(), realmID);
+    if (unit.HasUnitMovementFlag(MOVEFLAG_ONTRANSPORT) && !unit.m_movementInfo.GetTransportGuid().IsEmpty())
+        packet.Transport = ClassicGuidMapping::ToClassic(unit.m_movementInfo.GetTransportGuid(), realmID);
 
     Spline<int32> const& spline = move_spline.spline;
     int32 const first = int32(spline.first());

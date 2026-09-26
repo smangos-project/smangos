@@ -212,8 +212,10 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data << uint32(0);                                       // RemoveForcesIDs.size()
         data << uint32(0);                                       // MoveIndex
 
+        bool const hasTransport = mi.HasMovementFlag(MOVEFLAG_ONTRANSPORT) && !mi.GetTransportGuid().IsEmpty();
+
         data.WriteBit(false);                                    // HasStandingOnGameObjectGUID
-        data.WriteBit(false);                                    // HasTransport: not wired up yet
+        data.WriteBit(hasTransport);                             // HasTransport
         data.WriteBit(false);                                    // HasFall
         data.WriteBit(hasSpline);                                // HasSpline
         data.WriteBit(false);                                    // HeightChangeFailed
@@ -221,6 +223,16 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data.WriteBit(false);                                    // HasInertia
         data.WriteBit(false);                                    // HasAdvFlying
         data.FlushBits();
+
+        if (hasTransport)
+        {
+            ToClassic(mi.GetTransportGuid()).Write(data);
+            data << mi.GetTransportPos().x << mi.GetTransportPos().y << mi.GetTransportPos().z << mi.GetTransportPos().o;
+            data << int8(-1) << uint32(0);                       // Seat, Time: no 1.12 source
+            data.WriteBit(false);                                // HasPrevTime
+            data.WriteBit(false);                                // HasVehicleId
+            data.FlushBits();
+        }
 
         data << float(unit.GetSpeed(MOVE_WALK));
         data << float(unit.GetSpeed(MOVE_RUN));
