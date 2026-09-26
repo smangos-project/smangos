@@ -374,11 +374,6 @@ BindIP = "0.0.0.0"
 #                     Range: 0..2000
 #        Default:     0 (Disabled)
 #
-#    Movement.MaxPointsPerPacket
-#        Maximum spline/movement points packed into one movement packet.
-#                     Range: 5..10000
-#        Default:     80
-#
 #    Movement.PendingAckResponseTime
 #        Time to wait (ms) for a client movement-change ACK before treating it as delayed/missing.
 #        Default:     4000
@@ -453,7 +448,6 @@ AsyncQueriesTickTimeout = 0
 Movement.ExtrapolateChargePosition = 1
 Movement.ExtrapolatePetPosition = 1
 Movement.RelocationVmapsCheckDelay = 0
-Movement.MaxPointsPerPacket = 80
 
 ###################################################################################################################
 # ANTICRASH CONFIGURATION

@@ -10624,17 +10624,6 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         if (HasPendingSplineDone() && !IsPlayer() && !GetPossessorGuid().IsPlayer())
             SetSplineDonePending(false);
     }
-    else if (!movespline->isCyclic() && movespline->getLastPointSent() >= 0 && movespline->getLastPointSent() < (movespline->currentPathIdx() + 3))
-    {
-        WorldPacket data(SMSG_MONSTER_MOVE, 64);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        data << GetPackGUID();
-#else
-        data << GetGUID();
-#endif
-        movespline->setLastPointSent(Movement::PacketBuilder::WriteMonsterMove(*movespline, data, movespline->getLastPointSent() + 1));
-        SendMovementMessageToSet(std::move(data), true);
-    }
 
     Movement::Location loc = movespline->ComputePosition();
     if (GenericTransport* t = GetTransport())

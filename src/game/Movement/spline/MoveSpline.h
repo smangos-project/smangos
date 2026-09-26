@@ -61,7 +61,6 @@ namespace Movement
 
             int32           time_passed;
             int32           point_Idx;
-            int32           last_point_sent_Idx;
             int32           point_Idx_offset;
             bool            m_uninterruptible;
             char const*     mvtOrigin; // For debug purposes
@@ -120,8 +119,6 @@ namespace Movement
             Vector3 GetPoint(uint32 idx) const { return spline.getPoint(idx); }
             uint32 CountSplinePoints() const { return spline.last(); }
             int32 currentPathIdx() const;
-            int32 getLastPointSent() const { return last_point_sent_Idx; }
-            void setLastPointSent(int i) { last_point_sent_Idx = i; }
 
             int32 Duration() const { return spline.length();}
             int32 Duration(int first, int last) const { return spline.length(first, last);}

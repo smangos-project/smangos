@@ -20,19 +20,17 @@
 #ifndef MANGOSSERVER_PACKET_BUILDER_H
 #define MANGOSSERVER_PACKET_BUILDER_H
 
-class ByteBuffer;
-class WorldPacket;
+class Unit;
+struct MonsterMove;
 
 namespace Movement
 {
     class MoveSpline;
     class PacketBuilder
     {
-            static void WriteCommonMonsterMovePart(MoveSpline const& mov, WorldPacket& data);
         public:
-
-            static int WriteMonsterMove(MoveSpline const& mov, WorldPacket& data, int firstPoint = 1);
-            static void WriteCreate(MoveSpline const& mov, ByteBuffer& data);
+            // The message telling the players around `unit` how the spline it has started moves it.
+            static void BuildMonsterMove(Unit const& unit, MoveSpline const& mov, MonsterMove& packet);
     };
 }
 #endif // MANGOSSERVER_PACKET_BUILDER_H

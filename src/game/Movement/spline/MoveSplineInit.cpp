@@ -26,6 +26,9 @@
 #include "ObjectMgr.h"
 #include "ObjectAccessor.h"
 #include "Anticheat.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/MonsterMove.h"
+#include "World.h"
 #include "MovementPacketSender.h"
 
 namespace Movement
@@ -136,37 +139,25 @@ int32 MoveSplineInit::Launch()
     move_spline.SetMovementOrigin(movementType);
     move_spline.Initialize(args);
     
-    WorldPacket data(SMSG_MONSTER_MOVE, 64);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << unit.GetPackGUID();
-#else
-    data << unit.GetGUID();
-#endif
-
-    if (newTransport)
-    {
-        data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        data << newTransport->GetPackGUID();
-#else
-        data << newTransport->GetGUID();
-#endif
-    }
-
     if (unit.GetTransport() && unit.GetTransport() != newTransport)
         unit.GetTransport()->RemovePassenger(&unit);
     if (newTransport && unit.GetTransport() != newTransport)
         newTransport->AddPassenger(&unit);
 
-    // Stop packet
+    MonsterMove packet;
     if (args.flags.done)
     {
-        data << real_position.x << real_position.y << real_position.z;
-        data << move_spline.GetId();
-        data << uint8(1); // MonsterMoveStop=1
+        // A stop: a movement with no path.
+        packet.Mover = ClassicGuidMapping::ToClassic(unit.GetObjectGuid(), realmID);
+        packet.Start = { real_position.x, real_position.y, real_position.z };
+        packet.SplineId = move_spline.GetId();
     }
     else
-        move_spline.setLastPointSent(PacketBuilder::WriteMonsterMove(move_spline, data));
+    {
+        PacketBuilder::BuildMonsterMove(unit, move_spline, packet);
+        if (newTransport)
+            packet.Transport = ClassicGuidMapping::ToClassic(newTransport->GetObjectGuid(), realmID);
+    }
 
     if ((oldMoveFlags & MOVEFLAG_ROOT) && !args.flags.done)
         MovementPacketSender::SendMovementFlagChangeToAll(&unit, MOVEFLAG_ROOT, false);
@@ -175,7 +166,7 @@ int32 MoveSplineInit::Launch()
     if (moveFlags & MOVEFLAG_WALK_MODE && !(oldMoveFlags & MOVEFLAG_WALK_MODE)) // Switch to walk mode
         MovementPacketSender::SendToggleRunWalkToAll(&unit, false);
         
-    unit.SendMovementMessageToSet(std::move(data), true);
+    unit.SendMovementMessageToSet(MakeClassicPacket(packet), true);
 
     // Restore correct walk mode for players
     if (unit.GetTypeId() == TYPEID_PLAYER && (moveFlags & MOVEFLAG_WALK_MODE) != (oldMoveFlags & MOVEFLAG_WALK_MODE))
