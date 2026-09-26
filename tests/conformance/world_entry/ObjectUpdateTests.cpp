@@ -1,4 +1,5 @@
-// What a bot learns about the objects around it from SMSG_UPDATE_OBJECT create blocks.
+// What a bot learns about the objects around it from SMSG_UPDATE_OBJECT.
+#include "Packets/ChatMessages.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
@@ -75,5 +76,48 @@ TEST_CASE("world_entry: a bot sees creatures near where it enters the world", "[
                 co_await TestDelay(100);
         }
         CHECK(found);
+    });
+}
+
+TEST_CASE("world_entry: a bot sees another bot's values change", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot botA;
+        TestBot botB;
+        REQUIRE(co_await botA.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await botB.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await WaitForObject(botB, botA.GetCharacterGuid(), 10000));
+
+        // Setting AFK changes the player's flags, which everyone who sees them is told about.
+        ClassicGuid const guid = botA.GetCharacterGuid();
+        uint32_t const before = botB.GetKnownObject(guid)->ValuesUpdates;
+
+        ChatMessageAfk afk;
+        afk.Message = "away";
+        botA.Send(afk);
+
+        REQUIRE(co_await TestWaitUntil([&botB, guid, before]()
+        {
+            std::optional<BotKnownObject> const seen = botB.GetKnownObject(guid);
+            return seen && seen->ValuesUpdates > before;
+        }, 10000));
+    });
+}
+
+TEST_CASE("world_entry: a bot stops knowing an object that leaves the world", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot botA;
+        TestBot botB;
+        REQUIRE(co_await botA.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await botB.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await WaitForObject(botA, botB.GetCharacterGuid(), 10000));
+
+        ClassicGuid const guid = botB.GetCharacterGuid();
+        botB.Disconnect(true);
+
+        REQUIRE(co_await TestWaitUntil([&botA, guid]() { return !botA.GetKnownObject(guid).has_value(); }, 20000));
     });
 }

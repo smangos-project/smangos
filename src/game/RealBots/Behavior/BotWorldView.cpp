@@ -132,6 +132,11 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
 
 void BotWorldView::OnUpdateObject(UpdateObject const& packet)
 {
+    for (ClassicGuid const& gone : packet.DestroyGUIDs)
+        Remove(gone);
+    for (ClassicGuid const& gone : packet.OutOfRangeGUIDs)
+        Remove(gone);
+
     ByteBuffer data;
     data.append(packet.BlockData);
     data.rpos(0);
@@ -157,6 +162,9 @@ void BotWorldView::OnUpdateObject(UpdateObject const& packet)
             if (data.size() - data.rpos() < size)
                 break;
             data.rpos(data.rpos() + size);
+            for (BotKnownObject& existing : m_objects)
+                if (existing.Guid == guid)
+                    ++existing.ValuesUpdates;
             continue;
         }
 
@@ -201,6 +209,11 @@ void BotWorldView::OnUpdateObject(UpdateObject const& packet)
         if (!replaced)
             m_objects.push_back(known);
     }
+}
+
+void BotWorldView::Remove(ClassicGuid const& guid)
+{
+    std::erase_if(m_objects, [&guid](BotKnownObject const& obj) { return obj.Guid == guid; });
 }
 
 std::optional<BotKnownObject> BotWorldView::Get(ClassicGuid const& guid) const

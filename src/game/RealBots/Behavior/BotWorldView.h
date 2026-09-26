@@ -21,7 +21,7 @@ constexpr uint8_t BOT_TYPEID_CORPSE = 10;
 
 // One object as this bot currently knows it, from parsing SMSG_UPDATE_OBJECT itself -- written
 // from the wire layout, not by sharing the server's serializer (bot-phase-4.md's decision 5 risk
-// note). A create block gives guid, type and position; nothing else is read yet.
+// note). A create block gives guid, type and position; values blocks are only counted.
 struct BotKnownObject
 {
     ClassicGuid Guid;
@@ -30,11 +30,11 @@ struct BotKnownObject
     float Y = 0.0f;
     float Z = 0.0f;
     float O = 0.0f;
+    uint32_t ValuesUpdates = 0;
 };
 
-// A per-bot registry of objects seen through SMSG_UPDATE_OBJECT create blocks. Values, destroy and
-// out-of-range handling are later slices' job (bot-phase-4.md slice C6); a block this reader
-// doesn't recognize yet is simply not parsed further (the objects already known stay as they were).
+// A per-bot registry of objects seen through SMSG_UPDATE_OBJECT. A block this reader doesn't
+// recognize is not parsed further; the objects already known stay as they were.
 class BotWorldView
 {
 public:
@@ -44,6 +44,8 @@ public:
     std::vector<BotKnownObject> GetAll() const { return m_objects; }
 
 private:
+    void Remove(ClassicGuid const& guid);
+
     std::vector<BotKnownObject> m_objects;
 };
 
