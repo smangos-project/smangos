@@ -4,9 +4,11 @@
 #include "BotLogin.h"
 #include "BotTaskRegistry.h"
 #include "BotWorldLogin.h"
+#include "Packets/MovementMessages.h"
 #include "RealBot.h"
 
 #include <cctype>
+#include <cmath>
 #include <string>
 
 namespace
@@ -140,6 +142,78 @@ BotRoutine DisconnectAfterRoutine(BotContext& ctx, uint32 delayMs, bool clean)
     ctx.Disconnect(clean);
     co_return BotTaskResult::Done;
 }
+
+// Walks in a straight line to (x, y, z) at `speed` yards a second: a start message, a heartbeat
+// every step, a stop at the destination. The terrain is not consulted; z is interpolated between
+// where the bot starts and the given z.
+BotRoutine MoveToRoutine(BotContext& ctx, float x, float y, float z, float speed)
+{
+    RealBot& bot = ctx.GetBot();
+    ClassicGuid const guid = ctx.GetIdentity().CharacterGuid;
+
+    std::optional<BotKnownObject> self = bot.GetKnownObject(guid);
+    for (uint32 waited = 0; !self && waited < 5000; waited += 100)
+    {
+        co_await ctx.Delay(100);
+        self = bot.GetKnownObject(guid);
+    }
+    if (!self)
+        co_return BotTaskResult::Failed;
+
+    float const startX = self->X;
+    float const startY = self->Y;
+    float const startZ = self->Z;
+    float const distance = std::hypot(x - startX, y - startY);
+    float const facing = std::atan2(y - startY, x - startX);
+
+    ClassicMovementInfo status;
+    status.Guid = guid;
+    status.Flags = CLASSIC_MOVEFLAG_FORWARD;
+    status.X = startX;
+    status.Y = startY;
+    status.Z = startZ;
+    status.O = facing < 0.0f ? facing + 6.2831853f : facing;
+    status.Time = ctx.GetTimeMs();
+
+    ClientPlayerMovement<CLASSIC_CMSG_MOVE_START_FORWARD> start;
+    start.Status = status;
+    ctx.Send(start);
+    bot.NoteOwnMovement(status);
+
+    uint32 lastMs = status.Time;
+    float walked = 0.0f;
+    while (walked < distance)
+    {
+        co_await ctx.Delay(200);
+
+        uint32 const now = ctx.GetTimeMs();
+        walked = std::min(distance, walked + speed * float(now - lastMs) / 1000.0f);
+        lastMs = now;
+
+        float const fraction = distance > 0.0f ? walked / distance : 1.0f;
+        status.X = startX + (x - startX) * fraction;
+        status.Y = startY + (y - startY) * fraction;
+        status.Z = startZ + (z - startZ) * fraction;
+        status.Time = now;
+
+        if (walked < distance)
+        {
+            MoveHeartbeat heartbeat;
+            heartbeat.Status = status;
+            ctx.Send(heartbeat);
+        }
+        bot.NoteOwnMovement(status);
+    }
+
+    status.Flags = 0;
+    status.Time = ctx.GetTimeMs();
+    MoveStop stop;
+    stop.Status = status;
+    ctx.Send(stop);
+    bot.NoteOwnMovement(status);
+
+    co_return BotTaskResult::Done;
+}
 }
 
 void RegisterBuiltinBotTasks()
@@ -152,6 +226,11 @@ void RegisterBuiltinBotTasks()
     sBotTaskRegistry.RegisterRoutine("idle", [](BotContext& ctx, BotTaskArgs const&)
     {
         return IdleRoutine(ctx);
+    });
+
+    sBotTaskRegistry.RegisterRoutine("move_to", [](BotContext& ctx, BotTaskArgs const& args)
+    {
+        return MoveToRoutine(ctx, args.GetFloat("x"), args.GetFloat("y"), args.GetFloat("z"), args.GetFloat("speed", 6.0f));
     });
 
     sBotTaskRegistry.RegisterRoutine("disconnect_after", [](BotContext& ctx, BotTaskArgs const& args)

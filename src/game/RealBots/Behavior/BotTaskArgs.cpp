@@ -40,6 +40,15 @@ uint32 BotTaskArgs::GetUInt32(std::string const& key, uint32 def) const
     return static_cast<uint32>(std::strtoul(it->second.c_str(), nullptr, 10));
 }
 
+float BotTaskArgs::GetFloat(std::string const& key, float def) const
+{
+    auto it = m_values.find(key);
+    if (it == m_values.end())
+        return def;
+
+    return std::strtof(it->second.c_str(), nullptr);
+}
+
 bool BotTaskArgs::GetBool(std::string const& key, bool def) const
 {
     auto it = m_values.find(key);

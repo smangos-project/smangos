@@ -5,6 +5,7 @@
 #include "ClassicOpcodes.h"
 #include "Packets/Session.h"
 #include "Packets/ObjectUpdate.h"
+#include "Packets/MovementMessages.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>
@@ -358,6 +359,31 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             }
             break;
         }
+        case CLASSIC_SMSG_MOVE_SET_ACTIVE_MOVER:
+        {
+            MoveSetActiveMover activeMover;
+            if (activeMover.Read(body))
+            {
+                SetActiveMover confirm;
+                confirm.Mover = activeMover.Mover;
+                Send(confirm);
+
+                MoveInitActiveMoverComplete init;
+                init.Ticks = m_elapsedMs;
+                Send(init);
+            }
+            break;
+        }
+        case CLASSIC_SMSG_MOVE_UPDATE:
+        {
+            MoveUpdate update;
+            if (update.Read(body))
+            {
+                std::lock_guard<std::mutex> lock(m_worldViewLock);
+                m_worldView.OnMoveUpdate(update.Status);
+            }
+            break;
+        }
         case CLASSIC_SMSG_UPDATE_OBJECT:
         {
             UpdateObject update;
@@ -383,6 +409,12 @@ std::vector<BotKnownObject> RealBot::GetKnownObjects() const
 {
     std::lock_guard<std::mutex> lock(m_worldViewLock);
     return m_worldView.GetAll();
+}
+
+void RealBot::NoteOwnMovement(ClassicMovementInfo const& status)
+{
+    std::lock_guard<std::mutex> lock(m_worldViewLock);
+    m_worldView.OnMoveUpdate(status);
 }
 
 void RealBot::UpdateLogout(uint32 diff)

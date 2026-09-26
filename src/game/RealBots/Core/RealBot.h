@@ -237,6 +237,8 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         // ApplyDefaultHandling on the bot thread; safe to call from any thread.
         std::optional<BotKnownObject> GetKnownObject(ClassicGuid const& guid) const;
         std::vector<BotKnownObject> GetKnownObjects() const;
+        // Where this bot itself now stands, after it sent a movement message.
+        void NoteOwnMovement(ClassicMovementInfo const& status);
 
     private:
         void ProcessCommands();

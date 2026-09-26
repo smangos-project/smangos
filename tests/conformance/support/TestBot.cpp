@@ -3,6 +3,7 @@
 #include "BotContext.h"
 #include "BotTask.h"
 #include "ConformanceRun.h"
+#include "BotTaskRegistry.h"
 #include "RealBot.h"
 #include <stdexcept>
 
@@ -147,6 +148,15 @@ void TestBot::PushTask(std::unique_ptr<BotTask> task) const
     std::shared_ptr<RealBot> bot = m_bot;
     auto shared = std::make_shared<std::unique_ptr<BotTask>>(std::move(task));
     bot->Post([bot, shared]() { bot->GetBrain().PushTask(std::move(*shared), bot->GetContext()); });
+}
+
+void TestBot::RunTask(std::string const& taskName, BotTaskArgs const& args) const
+{
+    std::shared_ptr<RealBot> bot = m_bot;
+    bot->Post([bot, taskName, args]()
+    {
+        bot->GetBrain().PushTask(sBotTaskRegistry.Create(taskName, bot->GetContext(), args), bot->GetContext());
+    });
 }
 
 BotTask* TestBot::AddHook(std::unique_ptr<BotTask> hook, bool persistent) const

@@ -333,6 +333,8 @@ class TestBot
         // A TestBot is never reaped while Disconnected or Failed, so this always has a bot to act on.
         void Reconnect() const;
         void PushTask(std::unique_ptr<BotTask> task) const;
+        // Starts a registered task by name (BotTaskRegistry) on top of the bot's current one.
+        void RunTask(std::string const& taskName, BotTaskArgs const& args) const;
 
         // Hooks live beside the brain's stack (bot-phase-2.md, "Hooks off the stack"): they see
         // packets and stage changes but never bury the running routine, so unlike PushTask they're

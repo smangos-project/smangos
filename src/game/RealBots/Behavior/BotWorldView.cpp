@@ -1,5 +1,6 @@
 #include "BotWorldView.h"
 #include "Packets/ObjectUpdate.h"
+#include "Packets/MovementMessages.h"
 #include "ByteBuffer.h"
 
 namespace
@@ -208,6 +209,21 @@ void BotWorldView::OnUpdateObject(UpdateObject const& packet)
         }
         if (!replaced)
             m_objects.push_back(known);
+    }
+}
+
+void BotWorldView::OnMoveUpdate(ClassicMovementInfo const& status)
+{
+    for (BotKnownObject& obj : m_objects)
+    {
+        if (obj.Guid != status.Guid)
+            continue;
+        obj.X = status.X;
+        obj.Y = status.Y;
+        obj.Z = status.Z;
+        obj.O = status.O;
+        ++obj.MoveUpdates;
+        return;
     }
 }
 

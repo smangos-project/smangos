@@ -7,6 +7,7 @@
 #include <vector>
 
 struct UpdateObject;
+struct ClassicMovementInfo;
 
 // The client's object type ids, as a create block's objectType byte carries them. The receiving
 // player's own object is BOT_TYPEID_ACTIVE_PLAYER, everyone else's is BOT_TYPEID_PLAYER.
@@ -31,6 +32,7 @@ struct BotKnownObject
     float Z = 0.0f;
     float O = 0.0f;
     uint32_t ValuesUpdates = 0;
+    uint32_t MoveUpdates = 0;
 };
 
 // A per-bot registry of objects seen through SMSG_UPDATE_OBJECT. A block this reader doesn't
@@ -39,6 +41,8 @@ class BotWorldView
 {
 public:
     void OnUpdateObject(UpdateObject const& packet);
+    // Another unit's movement: moves the object to where the block says it now is.
+    void OnMoveUpdate(ClassicMovementInfo const& status);
 
     std::optional<BotKnownObject> Get(ClassicGuid const& guid) const;
     std::vector<BotKnownObject> GetAll() const { return m_objects; }

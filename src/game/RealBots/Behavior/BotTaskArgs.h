@@ -18,6 +18,7 @@ class BotTaskArgs
 
         std::string GetString(std::string const& key, std::string const& def = "") const;
         uint32 GetUInt32(std::string const& key, uint32 def = 0) const;
+        float GetFloat(std::string const& key, float def = 0.0f) const;
         bool GetBool(std::string const& key, bool def = false) const;
 
     private:
