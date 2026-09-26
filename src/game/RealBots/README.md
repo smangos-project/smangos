@@ -540,6 +540,18 @@ None of these is proven against a real 1.15.6 client yet.
 - **Using an item.** The modern request names the spell to cast, not the item's spell slot; the server accepts it
   only if it is one of the item's on-use spells. `SMSG_OPEN_CONTAINER` has no modern message (TrinityCore leaves it
   unhandled) and is no longer sent.
+- **Loot object guid.** A modern loot window is named by a loot object guid that TrinityCore mints separately from the
+  looted unit's. vibemangos reuses the looted object's own guid (one open loot per player), and so does this tree:
+  `LootResponse.Owner` and `.LootObj` are the same, and a request is checked against the loot the server has open
+  for the player, never trusted. If a real client will not open the window, a real loot object guid is the first
+  thing to try. Loot slots are 0-based inside the server and 1-based on the wire.
+- **Roll messages.** TrinityCore's start/broadcast/won/all-passed bodies carry a dungeon encounter id, an off-spec
+  bit and a "main spec" bit; vibemangos's are older and lack them. **Followed: TrinityCore.** A vote is broadcast
+  with roll -1 and the number follows once the roll is counted, and `SMSG_LOOT_ROLLS_COMPLETE` closes the roll frame
+  (vibemangos sends it too; the vanilla server never did). The master looter candidate list
+  (`SMSG_MASTER_LOOT_CANDIDATE_LIST`) is not sent yet: it belongs with the groups slice.
+- **Money.** `SMSG_LOOT_MONEY_NOTIFY` is now sent for solo looting as well (the modern client prints the "you loot"
+  line from it), with the sole-looter flag set.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
