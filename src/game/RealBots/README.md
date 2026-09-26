@@ -635,6 +635,24 @@ None of these is proven against a real 1.15.6 client yet.
   still runs away, silently), and the pet-skill wipe confirmation with its `CMSG_PET_UNLEARN` reply (the beast
   trainer's "unlearn pet skills" gossip option now only closes the window). The stable master stays on the legacy
   lane: its list rides update fields in the modern protocol. Unverified against a real client.
+- **Groups.** Every client request follows TrinityCore: an optional party-index bit leads the body and the index
+  byte trails it, where vibemangos reads a leading index byte before the bits (`CMSG_PARTY_INVITE`,
+  `_INVITE_RESPONSE`, `_UNINVITE`, `LEAVE_GROUP`, `SET_PARTY_LEADER`, `SET_LOOT_METHOD`, the ping, roll, raid marker
+  and ready check requests). The index is parsed and ignored: a player has one party (the battleground's shows as
+  index 1). `CMSG_PARTY_INVITE` puts `ProposedRoles` after the two name lengths (vibemangos has a virtual realm
+  address there) and `SMSG_PARTY_INVITE` writes it as one byte (vibemangos four). `SMSG_PARTY_UPDATE` lists every
+  member, the recipient included, with `MyIndex` marking them; the party guid is the group's own id (vibemangos uses
+  one constant per party index), and a party the client must drop is sent with the destroyed flag, no members and
+  index -1 under the group's guid. The voice chat id is announced as length 1 with no bytes, as both references
+  do. Only `SMSG_PARTY_MEMBER_FULL_STATE` is sent (TrinityCore never sends a partial state, vibemangos builds
+  one): a change resends the whole state, auras included, to the members who cannot see the player. Its auras come
+  from the visible aura slots in slot order with the flags of `SMSG_AURA_UPDATE`; phase and tuning options are
+  always the defaults, the spec is 0. The vanilla party result numbers are the modern ones now (one reason, "not in
+  your instance", sits at 3), and uninviting reports operation 1. A raid marker request with a symbol outside 0-7
+  (other than -1, the list request) is dropped. Not done: `CMSG_SET_EVERYONE_IS_ASSISTANT`, roles and the role
+  poll, dungeon finder blocks, `CMSG_OPT_OUT_OF_LOOT`, `SMSG_SET_LOOT_METHOD_FAILED`, world raid markers
+  (`CMSG_CLEAR_RAID_MARKER`), turning a raid back into a party, `PlayerData.PartyType` in the player update, and a
+  ready check timeout (it ends once every online member has answered). Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
