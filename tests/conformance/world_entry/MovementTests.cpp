@@ -161,3 +161,23 @@ TEST_CASE("movement: a teleport within the map reaches the mover and is relayed 
         REQUIRE(co_await watcher.Packet<MoveUpdateTeleport>(10000, [&](MoveUpdateTeleport const& p) { return std::fabs(p.Status.X - start.X) < 0.5f; }));
     });
 }
+
+TEST_CASE("movement: a bot sees creatures around it move", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+
+        // Creatures wander on their own; one of the nearby ones sets out within a minute.
+        REQUIRE(co_await TestWaitUntil([&bot]()
+        {
+            for (BotKnownObject const& object : bot.GetKnownObjects())
+            {
+                if (object.ObjectType == BOT_TYPEID_UNIT && object.MonsterMoves > 0)
+                    return true;
+            }
+            return false;
+        }, 60000));
+    });
+}

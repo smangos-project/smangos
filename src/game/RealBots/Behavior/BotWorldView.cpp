@@ -1,5 +1,6 @@
 #include "BotWorldView.h"
 #include "Packets/ObjectUpdate.h"
+#include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
 #include "ByteBuffer.h"
 
@@ -223,6 +224,29 @@ void BotWorldView::OnMoveUpdate(ClassicMovementInfo const& status)
         obj.Z = status.Z;
         obj.O = status.O;
         ++obj.MoveUpdates;
+        return;
+    }
+}
+
+void BotWorldView::OnMonsterMove(MonsterMove const& move)
+{
+    for (BotKnownObject& obj : m_objects)
+    {
+        if (obj.Guid != move.Mover)
+            continue;
+        if (move.Points.empty())
+        {
+            obj.X = move.Start.X;
+            obj.Y = move.Start.Y;
+            obj.Z = move.Start.Z;
+        }
+        else
+        {
+            obj.X = move.Points.back().X;
+            obj.Y = move.Points.back().Y;
+            obj.Z = move.Points.back().Z;
+        }
+        ++obj.MonsterMoves;
         return;
     }
 }

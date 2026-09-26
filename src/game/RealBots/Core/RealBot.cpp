@@ -5,6 +5,7 @@
 #include "ClassicOpcodes.h"
 #include "Packets/Session.h"
 #include "Packets/ObjectUpdate.h"
+#include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
@@ -496,6 +497,16 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
         BOT_ACK_SPEED(MoveSetSwimBackSpeed, MoveForceSwimBackSpeedChangeAck)
         BOT_ACK_SPEED(MoveSetTurnRate, MoveForceTurnRateChangeAck)
 #undef BOT_ACK_SPEED
+        case CLASSIC_SMSG_ON_MONSTER_MOVE:
+        {
+            MonsterMove move;
+            if (move.Read(body))
+            {
+                std::lock_guard<std::mutex> lock(m_worldViewLock);
+                m_worldView.OnMonsterMove(move);
+            }
+            break;
+        }
         case CLASSIC_SMSG_MOVE_UPDATE:
         {
             MoveUpdate update;

@@ -8,6 +8,7 @@
 
 struct UpdateObject;
 struct ClassicMovementInfo;
+struct MonsterMove;
 
 // The client's object type ids, as a create block's objectType byte carries them. The receiving
 // player's own object is BOT_TYPEID_ACTIVE_PLAYER, everyone else's is BOT_TYPEID_PLAYER.
@@ -33,6 +34,7 @@ struct BotKnownObject
     float O = 0.0f;
     uint32_t ValuesUpdates = 0;
     uint32_t MoveUpdates = 0;
+    uint32_t MonsterMoves = 0;
 };
 
 // A per-bot registry of objects seen through SMSG_UPDATE_OBJECT. A block this reader doesn't
@@ -43,6 +45,8 @@ public:
     void OnUpdateObject(UpdateObject const& packet);
     // Another unit's movement: moves the object to where the block says it now is.
     void OnMoveUpdate(ClassicMovementInfo const& status);
+    // A server-driven unit's path: the object is placed at the path's end, where the unit ends up.
+    void OnMonsterMove(MonsterMove const& move);
 
     std::optional<BotKnownObject> Get(ClassicGuid const& guid) const;
     std::vector<BotKnownObject> GetAll() const { return m_objects; }
