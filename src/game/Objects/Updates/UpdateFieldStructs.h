@@ -297,7 +297,9 @@ struct UFUnitData : public IsUpdateFieldStructureTag, public HasChangesMask<228>
     DynamicUpdateField<int32, 0, 3> WorldEffects;
     DynamicUpdateField<ClassicGuid, 0, 4> ChannelObjects;
     UpdateField<int64, 0, 5> Health;
+    struct HealthTag : ViewerDependentValueTag<int64> {};
     UpdateField<int64, 0, 6> MaxHealth;
+    struct MaxHealthTag : ViewerDependentValueTag<int64> {};
     UpdateField<int32, 0, 7> DisplayID;
     struct DisplayIDTag : ViewerDependentValueTag<int32> {};
     UpdateField<uint32, 0, 8> NpcFlags;

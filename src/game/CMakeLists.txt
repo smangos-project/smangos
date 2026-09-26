@@ -187,6 +187,7 @@ set (game_SRCS
     Objects/Updates/UpdateFieldStructs.cpp
     Objects/Updates/UpdateFieldStructsOwners.cpp
     Objects/Updates/UpdateObjectWriter.cpp
+    Objects/Updates/ViewerDependentValues.cpp
     Objects/UpdateFields.cpp
     OutdoorPvP/OutdoorPvPEP.cpp
     OutdoorPvP/OutdoorPvPSI.cpp

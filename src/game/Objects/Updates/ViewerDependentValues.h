@@ -8,14 +8,20 @@ class Unit;
 class GameObject;
 class Player;
 
-// Fields whose value depends on who's looking (loot flags only the looter sees, health shown as
-// a display value, NPC flags hidden in combat, ...) are read through this hook at serialize time
-// instead of the plain stored value. Every specialization here is a placeholder that returns the
-// stored value unchanged; the per-viewer logic moves in field by field as it's ported.
+// Fields whose value depends on who's looking are read through this hook at serialize time.
 template<typename Tag>
 class ViewerDependentValue
 {
 };
+
+// Defined in ViewerDependentValues.cpp.
+uint32 GetViewerDynamicFlags(UFObjectData const* data, Object const* owner, Player const* receiver);
+uint32 GetViewerNpcFlags(UFUnitData const* data, Unit const* owner, Player const* receiver);
+ClassicGuid GetViewerTarget(UFUnitData const* data, Unit const* owner, Player const* receiver);
+int32 GetViewerFactionTemplate(UFUnitData const* data, Unit const* owner, Player const* receiver);
+uint32 GetViewerUnitFlags(UFUnitData const* data, Unit const* owner, Player const* receiver);
+int64 GetViewerHealth(UFUnitData const* data, Unit const* owner, Player const* receiver);
+int64 GetViewerMaxHealth(UFUnitData const* data, Unit const* owner, Player const* receiver);
 
 template<>
 class ViewerDependentValue<UFObjectData::EntryIDTag>
@@ -35,9 +41,9 @@ class ViewerDependentValue<UFObjectData::DynamicFlagsTag>
 public:
     using value_type = UFObjectData::DynamicFlagsTag::value_type;
 
-    static value_type GetValue(UFObjectData const* data, Object const* /*owner*/, Player const* /*receiver*/)
+    static value_type GetValue(UFObjectData const* data, Object const* owner, Player const* receiver)
     {
-        return data->DynamicFlags;
+        return GetViewerDynamicFlags(data, owner, receiver);
     }
 };
 
@@ -50,6 +56,30 @@ public:
     static value_type GetValue(UFUnitData const* data, Unit const* /*owner*/, Player const* /*receiver*/)
     {
         return &*data->StateWorldEffectIDs;
+    }
+};
+
+template<>
+class ViewerDependentValue<UFUnitData::HealthTag>
+{
+public:
+    using value_type = UFUnitData::HealthTag::value_type;
+
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
+    {
+        return GetViewerHealth(data, owner, receiver);
+    }
+};
+
+template<>
+class ViewerDependentValue<UFUnitData::MaxHealthTag>
+{
+public:
+    using value_type = UFUnitData::MaxHealthTag::value_type;
+
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
+    {
+        return GetViewerMaxHealth(data, owner, receiver);
     }
 };
 
@@ -71,9 +101,9 @@ class ViewerDependentValue<UFUnitData::NpcFlagsTag>
 public:
     using value_type = UFUnitData::NpcFlagsTag::value_type;
 
-    static value_type GetValue(UFUnitData const* data, Unit const* /*owner*/, Player const* /*receiver*/)
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
     {
-        return data->NpcFlags;
+        return GetViewerNpcFlags(data, owner, receiver);
     }
 };
 
@@ -131,9 +161,9 @@ class ViewerDependentValue<UFUnitData::TargetTag>
 public:
     using value_type = UFUnitData::TargetTag::value_type;
 
-    static value_type GetValue(UFUnitData const* data, Unit const* /*owner*/, Player const* /*receiver*/)
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
     {
-        return data->Target;
+        return GetViewerTarget(data, owner, receiver);
     }
 };
 
@@ -143,9 +173,9 @@ class ViewerDependentValue<UFUnitData::FactionTemplateTag>
 public:
     using value_type = UFUnitData::FactionTemplateTag::value_type;
 
-    static value_type GetValue(UFUnitData const* data, Unit const* /*owner*/, Player const* /*receiver*/)
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
     {
-        return data->FactionTemplate;
+        return GetViewerFactionTemplate(data, owner, receiver);
     }
 };
 
@@ -155,9 +185,9 @@ class ViewerDependentValue<UFUnitData::FlagsTag>
 public:
     using value_type = UFUnitData::FlagsTag::value_type;
 
-    static value_type GetValue(UFUnitData const* data, Unit const* /*owner*/, Player const* /*receiver*/)
+    static value_type GetValue(UFUnitData const* data, Unit const* owner, Player const* receiver)
     {
-        return data->Flags;
+        return GetViewerUnitFlags(data, owner, receiver);
     }
 };
 

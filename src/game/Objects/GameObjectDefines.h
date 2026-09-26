@@ -104,9 +104,12 @@ inline char const* GameObjectFlagToString(uint32 flag)
 
 enum GameObjectDynamicLowFlags
 {
-    GO_DYNFLAG_LO_ACTIVATE          = 0x01,                 // enables interaction with GO
-    GO_DYNFLAG_LO_ANIMATE           = 0x02,                 // possibly more distinct animation of GO
-    GO_DYNFLAG_LO_NO_INTERACT       = 0x04,                 // appears to disable interaction (not fully verified)
+    GO_DYNFLAG_LO_HIDE_MODEL                = 0x0002,
+    GO_DYNFLAG_LO_ACTIVATE                  = 0x0004,       // enables interaction with GO
+    GO_DYNFLAG_LO_ANIMATE                   = 0x0008,
+    GO_DYNFLAG_LO_SPARKLE                   = 0x0020,
+    GO_DYNFLAG_LO_NO_INTERACT               = 0x0080,
+    GO_DYNFLAG_LO_STATE_TRANSITION_ANIM_DONE = 0x8000,
 };
 
 inline char const* GameObjectDynamicFlagToString(uint32 flag)

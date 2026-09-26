@@ -773,8 +773,8 @@ void UFUnitData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
 {
     ViewerDependentValue<StateWorldEffectIDsTag>::value_type stateWorldEffectIDs = {};
 
-    data << int64(Health);
-    data << int64(MaxHealth);
+    data << int64(ViewerDependentValue<HealthTag>::GetValue(this, owner, receiver));
+    data << int64(ViewerDependentValue<MaxHealthTag>::GetValue(this, owner, receiver));
     data << int32(ViewerDependentValue<DisplayIDTag>::GetValue(this, owner, receiver));
     data << uint32(ViewerDependentValue<NpcFlagsTag>::GetValue(this, owner, receiver));
     data << uint32(ViewerDependentValue<NpcFlags2Tag>::GetValue(this, owner, receiver));
@@ -1079,11 +1079,11 @@ void UFUnitData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
         }
         if (changesMask[5])
         {
-            data << int64(Health);
+            data << int64(ViewerDependentValue<HealthTag>::GetValue(this, owner, receiver));
         }
         if (changesMask[6])
         {
-            data << int64(MaxHealth);
+            data << int64(ViewerDependentValue<MaxHealthTag>::GetValue(this, owner, receiver));
         }
         if (changesMask[7])
         {
