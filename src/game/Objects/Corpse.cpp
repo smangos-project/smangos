@@ -103,6 +103,7 @@ bool Corpse::Create(uint32 guidlow, Player* owner)
     SetFloatValue(CORPSE_FIELD_POS_Z, GetPositionZ());
     SetFloatValue(CORPSE_FIELD_FACING, GetOrientation());
     SetGuidValue(CORPSE_FIELD_OWNER, owner->GetObjectGuid());
+    m_faction = sObjectMgr.GetFactionTemplateEntry(owner->GetFactionTemplateId());
 
     m_grid = MaNGOS::ComputeGridPair(GetPositionX(), GetPositionY());
 
@@ -209,6 +210,7 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
         return false;
     }
     SetUInt32Value(CORPSE_FIELD_DISPLAY_ID, gender == GENDER_FEMALE ? info->displayId_f : info->displayId_m);
+    m_faction = sObjectMgr.GetFactionTemplateEntry(Player::GetFactionForRace(race));
 
     // Load equipment
     Tokens data = StrSplit(fields[18].GetCppString(), " ");
@@ -295,5 +297,5 @@ bool Corpse::IsExpired(time_t t) const
 
 uint32 Corpse::GetFactionTemplateId() const
 {
-    return m_faction->ID;
+    return m_faction ? m_faction->ID : 0;
 }
