@@ -653,6 +653,7 @@ None of these is proven against a real 1.15.6 client yet.
   poll, dungeon finder blocks, `CMSG_OPT_OUT_OF_LOOT`, `SMSG_SET_LOOT_METHOD_FAILED`, world raid markers
   (`CMSG_CLEAR_RAID_MARKER`), turning a raid back into a party, `PlayerData.PartyType` in the player update, and a
   ready check timeout (it ends once every online member has answered). Unverified against a real client.
+- **Duels.** Bodies follow TrinityCore: `SMSG_DUEL_COMPLETE` is one bit, and `SMSG_DUEL_WINNER` is two 6-bit name lengths, the fled bit, two realm addresses (0) and the beaten player's name before the winner's (vibemangos writes a byte, then the winner's name first). `SMSG_DUEL_REQUESTED` carries the arbiter, the challenger and the challenger's account guid; vibemangos leaves the account guid out. `CMSG_DUEL_RESPONSE` replaces accept and cancel, and an accept naming an arbiter other than the player's own is ignored. The wire struct for the completion message is `DuelCompleteNotice` because `Player::DuelComplete` hides the plain name. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
