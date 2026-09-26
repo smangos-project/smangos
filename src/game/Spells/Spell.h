@@ -30,7 +30,9 @@
 #include "Object.h"
 #include "Player.h"
 #include "SpellCastTargetsInfo.h"
+#include "Packets/Classic/Guid.h"
 #include "Packets/Spell.h"
+#include "Packets/SpellCast.h"
 #include <vector>
 #include <memory>
 
@@ -43,18 +45,15 @@ class GameObject;
 class Group;
 class Aura;
 
-enum SpellCastFlags
+enum SpellCastFlags : uint32
 {
     CAST_FLAG_NONE              = 0x00000000,
-    CAST_FLAG_HIDDEN_COMBATLOG  = 0x00000001,               // hide in combat log?
-    CAST_FLAG_UNKNOWN2          = 0x00000002,
-    CAST_FLAG_UNKNOWN3          = 0x00000004,
-    CAST_FLAG_UNKNOWN4          = 0x00000008,
-    CAST_FLAG_UNKNOWN5          = 0x00000010,
+    CAST_FLAG_PENDING           = 0x00000001,
+    CAST_FLAG_HAS_TRAJECTORY    = 0x00000002,
     CAST_FLAG_AMMO              = 0x00000020,               // Projectiles visual
-    CAST_FLAG_UNKNOWN7          = 0x00000040,               // !0x41 mask used to call CGTradeSkillInfo::DoRecast
-    CAST_FLAG_UNKNOWN8          = 0x00000080,
     CAST_FLAG_UNKNOWN9          = 0x00000100,
+    CAST_FLAG_POWER_LEFT_SELF   = 0x00000800,               // RemainingPower entries follow
+    CAST_FLAG_FROM_CLIENT       = 0x00040000,
 };
 
 enum SpellNotifyPushType
@@ -252,8 +251,9 @@ class Spell
 
         void DoCreateItem(SpellEffectIndex effIdx, uint32 itemtype);
 
-        void WriteSpellGoTargets(WorldPackets::Spell::SpellGo& packet);
+        void WriteSpellGoTargets(SpellCastData& data);
         void WriteAmmoToPacket(uint32& ammoDisplayId, uint32& ammoInventoryType);
+        void FillCastData(SpellCastData& data, uint32 castFlags);
 
         typedef std::list<Unit*> UnitList;
         void FillTargetMap();
@@ -269,12 +269,13 @@ class Spell
         PetTameFailureReason CheckTamingSpell(Player* caster, bool gm);
 
         static void SendCastResult(Player const* caster, SpellEntry const* spellInfo, SpellCastResult result);
+        static void SendCastResult(Player const* caster, SpellEntry const* spellInfo, SpellCastResult result, ClassicGuid const& castId, int32 visual);
         void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
         void SendSpellCooldown();
         void SendLogExecute();
-        void SendInterrupted(uint8 result);
+        void SendInterrupted(SpellCastResult result);
         void SendAllTargetsMiss();
         void SendChannelUpdate(uint32 time, bool interrupted = false);
         void SendChannelStart(uint32 duration);
@@ -332,6 +333,14 @@ class Spell
         bool CheckTargetCreatureType(Unit* target) const;
         void CleanupTargetList();
         void ClearCastItem();
+
+        // The id the client gave a cast it asked for and the visual it named, echoed back where they
+        // pair the cast. Both stay empty for a cast the server starts.
+        ClassicGuid m_clientCastId;
+        int32 m_clientVisual = 0;
+        // The id every message about this cast carries; minted on first use.
+        ClassicGuid const& GetCastId();
+        static ClassicGuid MakeCastId(uint32 mapId, uint32 spellId);
 
         bool m_isClientStarted = false;
         void SetClientStarted(bool isClientStarted);
@@ -531,6 +540,7 @@ class Spell
         SpellScript* m_spellScript = nullptr;
 
         uint32 m_spellState = SPELL_STATE_NULL;
+        ClassicGuid m_castId;
         uint32 m_timer = 0;
     public:
         uint32 m_triggeredByAuraBasePoints = 0;

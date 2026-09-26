@@ -19,6 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/ClassicCastResult.h"
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 #include "DBCStores.h"
@@ -202,14 +204,14 @@ bool ChatHandler::HandleDebugSendSpellFailCommand(char* args)
     SpellEntry const* spellEntry = sSpellMgr.GetSpellEntry(133); // Fireball
     MANGOS_ASSERT(spellEntry);
 
-    auto packet = std::make_unique<WorldPackets::Spell::CastResult>();
-    packet->spellId = spellEntry->Id;
-    packet->result = static_cast<uint8>(SPELL_RESULT_STATUS_FAIL);
-    packet->failureReason = static_cast<uint8>(failnum);
-    packet->failureArg1 = failarg1;
-    packet->failureArg2 = failarg2;
+    CastFailed packet;
+    packet.CastId = Spell::MakeCastId(m_session->GetPlayer()->GetMapId(), spellEntry->Id);
+    packet.SpellId = spellEntry->Id;
+    packet.Reason = int32(ToClassicCastResult(failnum));
+    packet.FailedArg1 = int32(failarg1);
+    packet.FailedArg2 = int32(failarg2);
 
-    m_session->SendPacket(std::move(packet));
+    m_session->SendClassic(packet);
 
     return true;
 }
@@ -240,10 +242,11 @@ bool ChatHandler::HandleDebugSendNextChannelSpellVisualCommand(char *args)
     }
     if (id && id <= sSpellMgr.GetMaxSpellId())
     {
-        auto packet = std::make_unique<WorldPackets::Spell::ChannelStart>();
-        packet->spellId = id;
-        packet->duration = 60000;
-        m_session->SendPacket(std::move(packet));
+        SpellChannelStart packet;
+        packet.CasterGuid = ClassicGuidMapping::ToClassic(m_session->GetPlayer()->GetObjectGuid(), realmID);
+        packet.SpellId = id;
+        packet.ChannelDuration = 60000;
+        m_session->SendClassic(packet);
         m_session->GetPlayer()->SetUInt32Value(UNIT_CHANNEL_SPELL, id);
         PSendSysMessage("Playing channel visual of spell %u %s %s", id, spellInfo->SpellName[0].c_str(), spellInfo->Rank[0].c_str());
         return true;
@@ -261,10 +264,11 @@ bool ChatHandler::HandleSendSpellChannelVisualCommand(char *args)
 
     if (uiPlayId && uiPlayId <= sSpellMgr.GetMaxSpellId())
     {
-        auto packet = std::make_unique<WorldPackets::Spell::ChannelStart>();
-        packet->spellId = uiPlayId;
-        packet->duration = 60000;
-        m_session->SendPacket(std::move(packet));
+        SpellChannelStart packet;
+        packet.CasterGuid = ClassicGuidMapping::ToClassic(m_session->GetPlayer()->GetObjectGuid(), realmID);
+        packet.SpellId = uiPlayId;
+        packet.ChannelDuration = 60000;
+        m_session->SendClassic(packet);
         m_session->GetPlayer()->SetUInt32Value(UNIT_CHANNEL_SPELL, uiPlayId);
         SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(uiPlayId);
         PSendSysMessage("Playing channel visual of spell %u %s %s", uiPlayId, spellInfo->SpellName[0].c_str(), spellInfo->Rank[0].c_str());

@@ -49,6 +49,7 @@
 #include "Packets/ChatMessages.h"
 #include "Packets/Combat.h"
 #include "Packets/CombatMessages.h"
+#include "Packets/SpellCast.h"
 #include "Packets/Duel.h"
 #include "Packets/GmTicket.h"
 #include "Packets/Group.h"
@@ -782,7 +783,7 @@ class WorldSession
         void HandleItemTextQuery(WorldPackets::Misc::ItemTextQuery const& packet);
         void HandleMailCreateTextItem(WorldPackets::Mail::MailCreateTextItem const& packet);
         void HandleQueryNextMailTime(NullClientPacket const& packet);
-        void HandleCancelChanneling(WorldPackets::Spell::CancelChanneling const& packet);
+        void HandleCancelChanneling(CancelChannelling const& packet);
 
         void HandleSplitItemOpcode(WorldPackets::Item::SplitItem const& packet);
         void HandleSwapInvItemOpcode(WorldPackets::Item::SwapInvItem const& packet);
@@ -808,11 +809,11 @@ class WorldSession
 
         void HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packet);
         void HandleOpenItemOpcode(WorldPackets::Spell::OpenItem const& packet);
-        void HandleCastSpellOpcode(WorldPackets::Spell::CastSpell const& packet);
-        void HandleCancelCastOpcode(WorldPackets::Spell::CancelCast const& packet);
+        void HandleCastSpellOpcode(CastSpell const& packet);
+        void HandleCancelCastOpcode(CancelCast const& packet);
         void HandleCancelAuraOpcode(WorldPackets::Spell::CancelAura const& packet);
         void HandleCancelGrowthAuraOpcode(NullClientPacket const& packet);
-        void HandleCancelAutoRepeatSpellOpcode(NullClientPacket const& packet);
+        void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
         void HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetActionBarToggles const& packet);
         void HandleLearnTalentOpcode(WorldPackets::Skill::LearnTalent const& packet);
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);

@@ -259,37 +259,36 @@ void WorldSession::HandleGameObjectUseOpcode(WorldPackets::Misc::GameObjectUse c
     }
 }
 
-void WorldSession::HandleCastSpellOpcode(WorldPackets::Spell::CastSpell const& packet)
+void WorldSession::HandleCastSpellOpcode(CastSpell const& packet)
 {
-    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(packet.spellId);
+    SpellCastRequest const& request = packet.Cast;
+    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(request.SpellId);
 
     if (!spellInfo)
         return;
 
     // not have spell in spellbook or spell passive and not casted by client
-    if (!_player->HasActiveSpell(packet.spellId) || spellInfo->IsPassiveSpell())
+    if (!_player->HasActiveSpell(request.SpellId) || spellInfo->IsPassiveSpell())
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "World: Player %u casts spell %u which he shouldn't have", _player->GetGUIDLow(), packet.spellId);
-        //cheater? kick? ban?
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "World: Player %u casts spell %u which he shouldn't have", _player->GetGUIDLow(), request.SpellId);
+        Spell::SendCastResult(_player, spellInfo, SPELL_FAILED_NOT_KNOWN, request.CastId, request.Visual.SpellXSpellVisualId);
         return;
     }
 
     // client provided targets
-    const_cast<SpellCastTargets&>(packet.targets).PrepareForSpellSystem(_player);
+    SpellCastTargets targets;
+    targets.ReadTargetData(request.Target);
+    targets.PrepareForSpellSystem(_player);
     SpellEntry const* originalSpellInfo = spellInfo;
 
     // auto-selection buff level base at target level (in spellInfo)
-    if (Unit* target = packet.targets.getUnitTarget())
+    if (Unit* target = targets.getUnitTarget())
     {
         // Cannot cast negative spells on yourself. Handle it here since casting negative
         // spells on yourself is frequently used within the core itself for certain mechanics.
         if (target == _player && IsExplicitlySelectedUnitTarget(spellInfo->EffectImplicitTargetA[0]) && !spellInfo->IsPositiveSpell(_player, target))
         {
-            auto castPacket = std::make_unique<WorldPackets::Spell::CastResult>();
-            castPacket->spellId = spellInfo->Id;
-            castPacket->result = static_cast<uint8>(SPELL_RESULT_STATUS_FAIL);
-            castPacket->failureReason = static_cast<uint8>(SPELL_FAILED_BAD_TARGETS);
-            SendPacket(std::move(castPacket));
+            Spell::SendCastResult(_player, spellInfo, SPELL_FAILED_BAD_TARGETS, request.CastId, request.Visual.SpellXSpellVisualId);
             return;
         }
 
@@ -305,18 +304,26 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spell::CastSpell const& p
             DoLootRelease(lootGuid);
     }
 
-    Spell* spell = new Spell(_player, spellInfo, false, ObjectGuid(), nullptr, packet.targets.getUnitTarget());
+    Spell* spell = new Spell(_player, spellInfo, false, ObjectGuid(), nullptr, targets.getUnitTarget());
 
     // Spell has been down-ranked, remember what client wanted to cast.
     if (spellInfo != originalSpellInfo)
         spell->m_originalSpellInfo = originalSpellInfo;
 
+    spell->m_clientCastId = request.CastId;
+    spell->m_clientVisual = request.Visual.SpellXSpellVisualId;
+
+    SpellPrepare prepare;
+    prepare.ClientCastId = request.CastId;
+    prepare.ServerCastId = spell->GetCastId();
+    SendClassic(prepare);
+
     // Nostalrius : Ivina
     spell->SetClientStarted(true);
-    spell->prepare(std::move(const_cast<SpellCastTargets&>(packet.targets)));
+    spell->prepare(std::move(targets));
 }
 
-void WorldSession::HandleCancelCastOpcode(WorldPackets::Spell::CancelCast const& packet)
+void WorldSession::HandleCancelCastOpcode(CancelCast const& packet)
 {
     // ignore for remote control state (for player case)
     Unit* mover = _player->GetMover();
@@ -324,7 +331,7 @@ void WorldSession::HandleCancelCastOpcode(WorldPackets::Spell::CancelCast const&
         return;
 
     if (_player->IsNonMeleeSpellCasted(false))
-        _player->InterruptNonMeleeSpells(false, packet.spellId);
+        _player->InterruptNonMeleeSpells(false, uint32(packet.SpellId));
 
     if (_player->IsNextSwingSpellCasted())
         _player->InterruptSpell(CURRENT_MELEE_SPELL);
@@ -436,14 +443,14 @@ void WorldSession::HandleCancelGrowthAuraOpcode(NullClientPacket const& /*packet
     // nothing do
 }
 
-void WorldSession::HandleCancelAutoRepeatSpellOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& /*packet*/)
 {
     // may be better send SMSG_CANCEL_AUTO_REPEAT?
     // cancel and prepare for deleting
     _player->GetMover()->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
-void WorldSession::HandleCancelChanneling(WorldPackets::Spell::CancelChanneling const& /*packet*/)
+void WorldSession::HandleCancelChanneling(CancelChannelling const& /*packet*/)
 {
     // ignore for remote control state (for player case)
     Unit* mover = _player->GetMover();

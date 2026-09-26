@@ -117,3 +117,12 @@ TEST_CASE("A mapped guid survives the packed wire format", "[classicguid]")
     REQUIRE(back.has_value());
     CHECK(*back == guid);
 }
+
+TEST_CASE("A cast guid carries the map, spell and counter, and maps to no server guid", "[classicguid]")
+{
+    ClassicGuid const cast = ClassicGuidMapping::MakeCast(REALM, 530, 6673, 42);
+    CHECK(cast.Low == 42);
+    CHECK(cast.High == ((uint64(47) << 58) | (uint64(REALM) << 42) | (uint64(530) << 29) | (uint64(6673) << 6)));
+    CHECK_FALSE(cast.IsEmpty());
+    CHECK_FALSE(ClassicGuidMapping::FromClassic(cast).has_value());
+}

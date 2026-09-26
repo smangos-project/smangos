@@ -21038,9 +21038,11 @@ void Player::SendSpellRemoved(uint32 spellId) const
 
 void Player::SendChannelUpdate(uint32 time) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::ChannelUpdate>();
-    packet->duration = time;
-    GetSession()->SendPacket(std::move(packet));
+    SpellChannelUpdate packet;
+    packet.CasterGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.TimeRemaining = int32(time);
+    WorldPacket data = MakeClassicPacket(packet);
+    SendObjectMessageToSet(&data, true);
 }
 
 void Player::UpdateChannelStartPosition()

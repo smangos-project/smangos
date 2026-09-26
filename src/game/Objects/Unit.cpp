@@ -10730,23 +10730,19 @@ void Unit::SendSpellGo(Unit* target, uint32 spellId) const
     SpellCastTargets targets;
     targets.setUnitTarget(target);
 
-    WorldPacket data(SMSG_SPELL_GO, 53);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << GetPackGUID();
-    data << GetPackGUID();
-#else
-    data << GetGUID();
-    data << GetGUID();
-#endif
-    data << uint32(spellId);
-    data << uint16(CAST_FLAG_UNKNOWN9);
+    SpellGo packet;
+    SpellCastData& cast = packet.Cast;
+    cast.CasterGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    cast.CasterUnit = cast.CasterGuid;
+    cast.CastId = Spell::MakeCastId(GetMapId(), spellId);
+    cast.SpellId = int32(spellId);
+    if (SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(spellId))
+        cast.Visual.SpellXSpellVisualId = int32(spellInfo->SpellVisual);
+    cast.CastFlags = CAST_FLAG_UNKNOWN9;
+    cast.HitTargets.push_back(ClassicGuidMapping::ToClassic(target->GetObjectGuid(), realmID));
+    targets.WriteTargetData(cast.Target);
 
-    //WriteSpellGoTargets(&data);
-    data << uint8(1);
-    data << target->GetObjectGuid();
-    data << uint8(0);
-
-    data << targets;
+    WorldPacket data = MakeClassicPacket(packet);
     SendMessageToSet(&data, true);
 }
 

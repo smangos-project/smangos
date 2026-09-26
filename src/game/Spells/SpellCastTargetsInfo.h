@@ -7,6 +7,7 @@
 
 #include <string>
 
+struct SpellTargetData;
 class SpellCaster;
 class Unit;
 class GameObject;
@@ -23,6 +24,10 @@ class SpellCastTargets
 
         void read(ByteBuffer& data);
         void write(ByteBuffer& data) const;
+
+        // The modern wire form of a target block. A guid that maps to no server object reads as empty.
+        void ReadTargetData(SpellTargetData const& data);
+        void WriteTargetData(SpellTargetData& data) const;
 
         SpellCastTargets& operator=(SpellCastTargets const& target)
         {

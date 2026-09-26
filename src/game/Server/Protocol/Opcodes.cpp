@@ -384,8 +384,8 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_LEARNED_SPELL,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SUPERCEDED_SPELL,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_NEW_SPELL_SLOT,               UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CAST_SPELL,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleCastSpellOpcode);
-    DEFINE_HANDLER(CMSG_CANCEL_CAST,                  STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleCancelCastOpcode);
+    INVALID_PACKET(CMSG_CAST_SPELL,                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_CANCEL_CAST,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CAST_RESULT,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_START,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_GO,                     UnhandleReason::SendByServer);
@@ -397,7 +397,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PET_CAST_FAILED,              UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_CHANNEL_START,                 UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_CHANNEL_UPDATE,                UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CANCEL_CHANNELLING,           STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleCancelChanneling);
+    INVALID_PACKET(CMSG_CANCEL_CHANNELLING,           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_AI_REACTION,                  UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_SELECTION,                UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_SET_TARGET_OBSOLETE,          STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleSetMouseOverTargetOpcode);
@@ -714,7 +714,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_SET_ACTIVE_MOVER,             UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_PET_CANCEL_AURA,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetCancelAuraOpcode);
     INVALID_PACKET(CMSG_PLAYER_AI_CHEAT,              UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CANCEL_AUTO_REPEAT_SPELL,     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleCancelAutoRepeatSpellOpcode);
+    INVALID_PACKET(CMSG_CANCEL_AUTO_REPEAT_SPELL,     UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_GM_ACCOUNT_ONLINE,             UnhandleReason::Unhandled);
     DEFINE_HANDLER(MSG_LIST_STABLED_PETS,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleListStabledPetsOpcode);
     DEFINE_HANDLER(CMSG_STABLE_PET,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleStablePet);
@@ -1062,6 +1062,10 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_SWING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackSwingOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_STOP, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackStopOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_STAND_STATE_CHANGE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleStandStateChangeOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAST_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCastSpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CAST, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelCastOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CHANNELLING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelChanneling);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AUTO_REPEAT_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelAutoRepeatSpellOpcode);
 
     return list;
 }

@@ -481,6 +481,24 @@ None of these is proven against a real 1.15.6 client yet.
 
 - **`SMSG_STAND_STATE_UPDATE` field order.** TrinityCore writes the stand state byte then the anim kit id; vibemangos writes the anim kit id (u32) then the stand state byte, noting the order was checked against a real client through a translating proxy. **Followed: vibemangos**, since that is live evidence and TrinityCore targets a different client. Unverified against our build.
 
+- **`SMSG_SPELL_GO` / `SMSG_SPELL_START` body.** The two references disagree on where the per-target
+  miss status sits (TrinityCore: after the target block, one byte per miss, a second byte for a reflect;
+  vibemangos: before it, four bits per miss) and on the remaining-power entry (TrinityCore: `i8` type,
+  `i32` cost; vibemangos: two `u32`) and the ammo fields (TrinityCore: `i32` display id only when set,
+  the inventory type is never sent). **Followed: TrinityCore** for all three. Unverified; a cast with a
+  miss or a reflect is where a real client would show it.
+- **Cast failure reasons.** The server's `SpellCastResult` is the 1.12 numbering; the modern client's
+  differs. vibemangos sends the server value as is, so the client shows the wrong message. Here
+  `Packets/ClassicCastResult.h` maps each server reason to the modern one by name; a reason with no
+  modern name goes out as the generic unknown reason. Unverified against a client.
+- **Spell visuals.** Every cast message carries a `SpellXSpellVisual` id. The server has only the
+  1.12 `SpellVisual` id, so it echoes the id a client cast request named and otherwise sends the raw 1.12
+  id. Unverified; the real mapping is client data.
+- **The cast id.** Cast messages pair by a 128-bit cast guid (type, realm, map, spell, counter). A client
+  cast is answered with `SMSG_SPELL_PREPARE` naming the client's id and the server's, and everything
+  after uses the server's id. Both references do this; a cast guid with no bits set crashes the client,
+  so the server never sends one.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are

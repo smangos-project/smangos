@@ -20,6 +20,10 @@ class ClassicGuidMapping
         // counter doesn't fit the server's guid layout. A classic transport comes back as
         // HIGHGUID_TRANSPORT.
         static nonstd::optional<ObjectGuid> FromClassic(ClassicGuid const& guid);
+
+        // A cast guid: unique per cast (`counter`), keyed on the map and spell it belongs to. The
+        // client pairs a cast's start, go and failure messages by it, and rejects an empty one.
+        static ClassicGuid MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter);
 };
 
 #endif

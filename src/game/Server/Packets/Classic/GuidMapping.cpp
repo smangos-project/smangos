@@ -12,6 +12,7 @@ enum ClassicGuidType : uint8
     CLASSIC_GUID_GAMEOBJECT     = 11,
     CLASSIC_GUID_DYNAMICOBJECT  = 12,
     CLASSIC_GUID_CORPSE         = 14,
+    CLASSIC_GUID_CAST           = 47,
 };
 
 // high = type << 58 | realm << 42 | map << 29 | entry << 6 | subtype, low = counter (40 bits).
@@ -20,6 +21,8 @@ constexpr uint64 TYPE_SHIFT = 58;
 constexpr uint64 REALM_SHIFT = 42;
 constexpr uint64 ENTRY_SHIFT = 6;
 constexpr uint64 TRANSPORT_COUNTER_SHIFT = 38;
+constexpr uint64 MAP_SHIFT = 29;
+constexpr uint64 MAP_MASK = 0x1FFF;
 constexpr uint64 REALM_MASK = 0x1FFF;
 constexpr uint64 ENTRY_MASK = 0x7FFFFF;
 constexpr uint64 TRANSPORT_COUNTER_MASK = 0xFFFFF;
@@ -104,4 +107,15 @@ nonstd::optional<ObjectGuid> ClassicGuidMapping::FromClassic(ClassicGuid const& 
     if (type == CLASSIC_GUID_CREATURE || type == CLASSIC_GUID_PET || type == CLASSIC_GUID_GAMEOBJECT)
         return ObjectGuid(high, uint32((guid.High >> ENTRY_SHIFT) & ENTRY_MASK), uint32(counter));
     return ObjectGuid(high, uint32(counter));
+}
+
+ClassicGuid ClassicGuidMapping::MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter)
+{
+    ClassicGuid out;
+    out.Low = counter & COUNTER_MASK;
+    out.High = (uint64(CLASSIC_GUID_CAST) << TYPE_SHIFT)
+        | ((uint64(realmId) & REALM_MASK) << REALM_SHIFT)
+        | ((uint64(mapId) & MAP_MASK) << MAP_SHIFT)
+        | ((uint64(spellId) & ENTRY_MASK) << ENTRY_SHIFT);
+    return out;
 }

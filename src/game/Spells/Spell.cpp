@@ -44,15 +44,26 @@
 #include "PathFinder.h"
 #include "CharacterDatabaseCache.h"
 #include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/ClassicCastResult.h"
 #include "ZoneScript.h"
 #include "TradeData.h"
 #include "Geometry.h"
 #include "Anticheat.h"
 #include "Utilities/Random.h"
 
+#include <atomic>
+
 using namespace Spells;
 
 #define SPELL_CHANNEL_VISUAL_TIMER 800
+
+namespace
+{
+ClassicGuid ToClassicGuid(ObjectGuid const& guid)
+{
+    return ClassicGuidMapping::ToClassic(guid, realmID);
+}
+}
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -3536,7 +3547,7 @@ void Spell::cancel()
         //(no break)
         case SPELL_STATE_DELAYED:
         {
-            SendInterrupted(0);
+            SendInterrupted(SPELL_FAILED_INTERRUPTED);
             if (sendInterrupt && !GetDelayStart())
                 SendCastResult(SPELL_FAILED_INTERRUPTED);
         }
@@ -3557,7 +3568,7 @@ void Spell::cancel()
             }
 
             SendChannelUpdate(0, true);
-            SendInterrupted(0);
+            SendInterrupted(SPELL_FAILED_INTERRUPTED);
 
             if (m_caster->IsPlayer())
             {
@@ -3609,7 +3620,7 @@ void Spell::cast(bool skipCheck)
         else
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
 
-        SendInterrupted(2);
+        SendInterrupted(SPELL_FAILED_ERROR);
         SendCastResult(SPELL_FAILED_ERROR);
         finish(false);
         SetExecutedCurrently(false);
@@ -3622,7 +3633,7 @@ void Spell::cast(bool skipCheck)
     // cancel at lost main target unit
     if (!m_targets.getUnitTarget() && m_targets.getUnitTargetGuid() && m_targets.getUnitTargetGuid() != m_caster->GetObjectGuid())
     {
-        SendInterrupted(2);
+        SendInterrupted(SPELL_FAILED_INTERRUPTED);
         cancel();
         m_caster->DecreaseCastCounter();
         SetExecutedCurrently(false);
@@ -3648,7 +3659,7 @@ void Spell::cast(bool skipCheck)
         castResult = CheckPower();
         if (castResult != SPELL_CAST_OK)
         {
-            SendInterrupted(2);
+            SendInterrupted(castResult);
             SendCastResult(castResult);
             //restore spell mods
             if (m_caster->IsPlayer())
@@ -3663,7 +3674,7 @@ void Spell::cast(bool skipCheck)
         castResult = CheckCast(false);
         if (castResult != SPELL_CAST_OK)
         {
-            SendInterrupted(2);
+            SendInterrupted(castResult);
             SendCastResult(castResult);
             finish(false);
             m_caster->DecreaseCastCounter();
@@ -4440,54 +4451,95 @@ void Spell::SendCastResult(SpellCastResult result)
     if (((Player*)m_caster)->GetSession()->PlayerLoading()) // don't send cast results at loading time
         return;
 
-    if (result == SPELL_CAST_OK && m_IsTriggeredSpell)
-        return;
-
-    SendCastResult((Player*)m_caster, m_originalSpellInfo ? m_originalSpellInfo : m_spellInfo, result);
+    SendCastResult((Player*)m_caster, m_originalSpellInfo ? m_originalSpellInfo : m_spellInfo, result, GetCastId(), m_clientVisual);
 }
 
 void Spell::SendCastResult(Player const* caster, SpellEntry const* spellInfo, SpellCastResult result)
 {
-    auto packet = std::make_unique<WorldPackets::Spell::CastResult>();
-    packet->spellId = spellInfo->Id;
-    packet->failureReason = result;
+    SendCastResult(caster, spellInfo, result, MakeCastId(caster->GetMapId(), spellInfo->Id), 0);
+}
 
-    if (result != SPELL_CAST_OK && !spellInfo->HasAttribute(SPELL_ATTR_EX2_DO_NOT_REPORT_SPELL_FAILURE))
+void Spell::SendCastResult(Player const* caster, SpellEntry const* spellInfo, SpellCastResult result, ClassicGuid const& castId, int32 visual)
+{
+    if (result == SPELL_CAST_OK)
+        return;
+
+    CastFailed packet;
+    packet.CastId = castId;
+    packet.SpellId = spellInfo->Id;
+    packet.Visual.SpellXSpellVisualId = visual ? visual : int32(spellInfo->SpellVisual);
+    packet.Reason = int32(ToClassicCastResult(spellInfo->HasAttribute(SPELL_ATTR_EX2_DO_NOT_REPORT_SPELL_FAILURE) || spellInfo->IsPassiveSpell() ? SPELL_FAILED_DONT_REPORT : result));
+
+    switch (result)
     {
-        packet->result = static_cast<uint8>(SPELL_RESULT_STATUS_FAIL);
-        packet->failureReason = static_cast<uint8>(spellInfo->IsPassiveSpell() ? SPELL_FAILED_DONT_REPORT : result);
-        switch (result)
-        {
-            case SPELL_FAILED_NOT_READY:
-                if (spellInfo->HasAttribute(SPELL_ATTR_COOLDOWN_ON_EVENT))
-                    packet->failureArg1 = caster->IsSpellOnPermanentCooldown(spellInfo);
-                break;
-            case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
-                packet->failureArg1 = spellInfo->RequiresSpellFocus;
-                break;
-            case SPELL_FAILED_REQUIRES_AREA:
-                packet->failureArg1 = sSpellMgr.GetRequiredAreaForSpell(spellInfo->Id);
-                break;
-            case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
+        case SPELL_FAILED_NOT_READY:
+            if (spellInfo->HasAttribute(SPELL_ATTR_COOLDOWN_ON_EVENT))
+                packet.FailedArg1 = caster->IsSpellOnPermanentCooldown(spellInfo);
+            break;
+        case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
+            packet.FailedArg1 = spellInfo->RequiresSpellFocus;
+            break;
+        case SPELL_FAILED_REQUIRES_AREA:
+            packet.FailedArg1 = sSpellMgr.GetRequiredAreaForSpell(spellInfo->Id);
+            break;
+        case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-            case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND:
+        case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND:
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-            case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
+        case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
 #endif
-                packet->failureArg1 = spellInfo->EquippedItemClass;
-                packet->failureArg2 = spellInfo->EquippedItemSubClassMask;
-                break;
-            default:
-                break;
-        }
-    }
-    else
-    {
-        packet->result = static_cast<uint8>(SPELL_RESULT_STATUS_OKAY);
+            packet.FailedArg1 = spellInfo->EquippedItemClass;
+            packet.FailedArg2 = spellInfo->EquippedItemSubClassMask;
+            break;
+        default:
+            break;
     }
 
-    caster->GetSession()->SendPacket(std::move(packet));
+    caster->GetSession()->SendClassic(packet);
+}
+
+ClassicGuid Spell::MakeCastId(uint32 mapId, uint32 spellId)
+{
+    static std::atomic<uint64> castCounter{ 1 };
+    return ClassicGuidMapping::MakeCast(realmID, mapId, spellId, castCounter.fetch_add(1));
+}
+
+ClassicGuid const& Spell::GetCastId()
+{
+    if (m_castId.IsEmpty())
+        m_castId = MakeCastId(m_caster->GetMapId(), m_spellInfo->Id);
+    return m_castId;
+}
+
+void Spell::FillCastData(SpellCastData& data, uint32 castFlags)
+{
+    data.CasterGuid = ToClassicGuid(m_CastItem ? m_CastItem->GetObjectGuid() : m_caster->GetObjectGuid());
+    data.CasterUnit = ToClassicGuid(m_caster->GetObjectGuid());
+    data.CastId = GetCastId();
+    data.SpellId = m_spellInfo->Id;
+    data.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+
+    if (m_isClientStarted)
+        castFlags |= CAST_FLAG_FROM_CLIENT;
+
+    if (m_caster->IsPlayer() && m_powerCost && m_casterUnit)
+    {
+        castFlags |= CAST_FLAG_POWER_LEFT_SELF;
+        Powers const power = m_casterUnit->GetPowerType();
+        data.RemainingPower.push_back({ int8(power), int32(m_casterUnit->GetPower(power)) });
+    }
+
+    if (castFlags & CAST_FLAG_AMMO)
+    {
+        uint32 ammoDisplayId = 0;
+        uint32 ammoInventoryType = 0;
+        WriteAmmoToPacket(ammoDisplayId, ammoInventoryType);
+        data.AmmoDisplayId = int32(ammoDisplayId);
+    }
+
+    data.CastFlags = castFlags;
+    m_targets.WriteTargetData(data.Target);
 }
 
 void Spell::SendSpellStart()
@@ -4497,34 +4549,21 @@ void Spell::SendSpellStart()
 
     DEBUG_FILTER_LOG(LOG_FILTER_SPELL_CAST, "Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
 
-    uint16 castFlags = CAST_FLAG_UNKNOWN2;
+    uint32 castFlags = CAST_FLAG_HAS_TRAJECTORY;
     if (m_spellInfo->IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
 
     // Youfie <Nostalrius> : Sandtrap : no debuff in the combat log before the Sand trap appears
     // Only non Blizz-like thing: the player casts the spell instead of Kurinaxx; needs to be fixed in the Kurinaxx script when the core supports it
     if (m_spellInfo->Id == 25648)
-        castFlags = CAST_FLAG_HIDDEN_COMBATLOG;
+        castFlags = CAST_FLAG_PENDING;
 
-    auto packet = std::make_unique<WorldPackets::Spell::SpellStart>();
-    
-    if (m_CastItem)
-        packet->casterGuid = m_CastItem->GetObjectGuid();
-    else
-        packet->casterGuid = m_caster->GetObjectGuid();
+    SpellStart packet;
+    FillCastData(packet.Cast, castFlags);
+    packet.Cast.CastTime = m_timer;
 
-    if (m_casterUnit)
-        packet->unitCasterGuid = m_casterUnit->GetObjectGuid();
-
-    packet->spellId = m_spellInfo->Id;
-    packet->castFlags = castFlags;
-    packet->castTimer = m_timer;
-    packet->targets = m_targets;
-
-    if (castFlags & CAST_FLAG_AMMO) // projectile info
-        WriteAmmoToPacket(packet->ammoDisplayId, packet->ammoInventoryType);
-
-    m_caster->SendObjectMessageToSet(std::move(packet), true);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendObjectMessageToSet(&data, true);
 }
 
 void Spell::SendSpellGo()
@@ -4536,29 +4575,17 @@ void Spell::SendSpellGo()
         return;
     }
 
-    uint16 castFlags = CAST_FLAG_UNKNOWN9;
+    uint32 castFlags = CAST_FLAG_UNKNOWN9;
     if (m_spellInfo->IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
 
-    auto packet = std::make_unique<WorldPackets::Spell::SpellGo>();
+    SpellGo packet;
+    WriteSpellGoTargets(packet.Cast);
+    FillCastData(packet.Cast, castFlags);
+    packet.Cast.CastTime = WorldTimer::getMSTime();
 
-    if (m_CastItem)
-        packet->casterGuid = m_CastItem->GetObjectGuid();
-    else
-        packet->casterGuid = m_caster->GetObjectGuid();
-
-    if (m_casterUnit)
-        packet->unitCasterGuid = m_casterUnit->GetObjectGuid();
-
-    packet->spellId = m_spellInfo->Id;
-    packet->castFlags = castFlags;
-    WriteSpellGoTargets(*packet);
-    packet->targets = m_targets;
-
-    if (castFlags & CAST_FLAG_AMMO) // projectile info
-        WriteAmmoToPacket(packet->ammoDisplayId, packet->ammoInventoryType);
-
-    m_caster->SendObjectMessageToSet(std::move(packet), true);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendObjectMessageToSet(&data, true);
 }
 
 void Spell::WriteAmmoToPacket(uint32& ammoDisplayId, uint32& ammoInventoryType)
@@ -4623,7 +4650,7 @@ void Spell::WriteAmmoToPacket(uint32& ammoDisplayId, uint32& ammoInventoryType)
     }
 }
 
-void Spell::WriteSpellGoTargets(WorldPackets::Spell::SpellGo& packet)
+void Spell::WriteSpellGoTargets(SpellCastData& data)
 {
     // This function also fill data for channeled spells:
     // m_needAliveTargetMask req for stop channelig if one target die
@@ -4638,15 +4665,18 @@ void Spell::WriteSpellGoTargets(WorldPackets::Spell::SpellGo& packet)
     {
         if (ihit.missCondition == SPELL_MISS_NONE)
         {
-            packet.hitTargets.push_back(ihit.targetGUID);
+            data.HitTargets.push_back(ToClassicGuid(ihit.targetGUID));
             m_needAliveTargetMask |= ihit.effectMask;
         }
         else
-            packet.missTargets.emplace_back(ihit.targetGUID, (uint8)ihit.missCondition, (uint8)ihit.reflectResult);
+        {
+            data.MissTargets.push_back(ToClassicGuid(ihit.targetGUID));
+            data.MissStatus.push_back({ uint8(ihit.missCondition), uint8(ihit.reflectResult) });
+        }
     }
 
     for (const auto& ighit : m_UniqueGOTargetInfo)
-        packet.hitTargets.push_back(ighit.targetGUID); // Always hits
+        data.HitTargets.push_back(ToClassicGuid(ighit.targetGUID)); // Always hits
 
     // Reset m_needAliveTargetMask for non channeled spell
     if (!m_channeled)
@@ -4679,15 +4709,25 @@ void Spell::SendLogExecute()
     m_caster->SendMessageToSet(std::move(packet), true);
 }
 
-void Spell::SendInterrupted(uint8 result)
+void Spell::SendInterrupted(SpellCastResult result)
 {
-    // Nostalrius: fix cast animation when a spell is interrupted
-    // This first packet is apparently useless...
-    // This second packet informs surrounding players that the spell has been interrupted.
-    auto packet = std::make_unique<WorldPackets::Spell::SpellFailedOther>();
-    packet->casterGuid = m_caster->GetObjectGuid();
-    packet->spellId = m_spellInfo->Id;
-    m_caster->SendObjectMessageToSet(std::move(packet), true);
+    SpellFailure failure;
+    failure.CasterUnit = ToClassicGuid(m_caster->GetObjectGuid());
+    failure.CastId = GetCastId();
+    failure.SpellId = m_spellInfo->Id;
+    failure.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+    failure.Reason = uint16(ToClassicCastResult(result));
+    WorldPacket failureData = MakeClassicPacket(failure);
+    m_caster->SendObjectMessageToSet(&failureData, true);
+
+    SpellFailedOther other;
+    other.CasterUnit = failure.CasterUnit;
+    other.CastId = failure.CastId;
+    other.SpellId = failure.SpellId;
+    other.Visual = failure.Visual;
+    other.Reason = uint8(failure.Reason);
+    WorldPacket otherData = MakeClassicPacket(other);
+    m_caster->SendObjectMessageToSet(&otherData, true);
 }
 
 void Spell::SendAllTargetsMiss()
@@ -4868,12 +4908,15 @@ WorldObject* Spell::GetChannelTarget() const
 
 void Spell::SendChannelStart(uint32 duration)
 {
-    if (m_caster->IsPlayer())
+    if (m_casterUnit)
     {
-        auto packet = std::make_unique<WorldPackets::Spell::ChannelStart>();
-        packet->spellId = m_spellInfo->Id;
-        packet->duration = duration;
-        ((Player*)m_caster)->GetSession()->SendPacket(std::move(packet));
+        SpellChannelStart packet;
+        packet.CasterGuid = ToClassicGuid(m_caster->GetObjectGuid());
+        packet.SpellId = m_spellInfo->Id;
+        packet.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+        packet.ChannelDuration = duration;
+        WorldPacket data = MakeClassicPacket(packet);
+        m_caster->SendObjectMessageToSet(&data, true);
     }
 
     m_timer = duration;
@@ -5640,14 +5683,14 @@ SpellCastResult Spell::CheckCast(bool strict)
         //Must be behind the target.
         if (m_spellInfo->IsFromBehindOnlySpell() && m_casterUnit && !m_casterUnit->IsBehindTarget(target, strict))
         {
-            SendInterrupted(2);
+            SendInterrupted(SPELL_FAILED_NOT_BEHIND);
             return SPELL_FAILED_NOT_BEHIND;
         }
 
         //Target must be facing you.
         if ((m_spellInfo->Attributes == 0x150010) && !target->HasInArc(m_caster))
         {
-            SendInterrupted(2);
+            SendInterrupted(SPELL_FAILED_NOT_INFRONT);
             return SPELL_FAILED_NOT_INFRONT;
         }
     }
@@ -7498,10 +7541,11 @@ void Spell::Delayed()
 
     DETAIL_FILTER_LOG(LOG_FILTER_SPELL_CAST, "Spell %u partially interrupted for (%d) ms at damage", m_spellInfo->Id, delayTime);
 
-    auto packet = std::make_unique<WorldPackets::Spell::SpellDelayed>();
-    packet->casterGuid = m_caster->GetObjectGuid();
-    packet->delayTime = delayTime;
-    ((Player*)m_caster)->GetSession()->SendPacket(std::move(packet));
+    SpellDelayed packet;
+    packet.Caster = ToClassicGuid(m_caster->GetObjectGuid());
+    packet.ActualDelay = uint32(delayTime);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_caster->SendObjectMessageToSet(&data, true);
 }
 
 void Spell::DelayedChannel()

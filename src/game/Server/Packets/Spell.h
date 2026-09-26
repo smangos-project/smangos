@@ -13,16 +13,6 @@ class SpellEntry;
 
 namespace WorldPackets { namespace Spell
 {
-    class CastSpell final : public ClientPacket
-    {
-    public:
-        uint32               spellId = 0;
-        SpellCastTargets     targets;
-
-        explicit CastSpell() : ClientPacket(CMSG_CAST_SPELL) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class UseItem final : public ClientPacket
     {
     public:
@@ -45,15 +35,6 @@ namespace WorldPackets { namespace Spell
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class CancelCast final : public ClientPacket
-    {
-    public:
-        uint32 spellId = 0;
-
-        explicit CancelCast() : ClientPacket(CMSG_CANCEL_CAST) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class CancelAura final : public ClientPacket
     {
     public:
@@ -63,29 +44,7 @@ namespace WorldPackets { namespace Spell
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class CancelChanneling final : public ClientPacket
-    {
-    public:
-        uint32 spellId = 0; // not used by server
-
-        explicit CancelChanneling() : ClientPacket(CMSG_CANCEL_CHANNELLING) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
     // --- Server Packets ---
-
-    class CastResult final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;
-        uint8 result = 0;
-        uint8 failureReason = 0;
-        nonstd::optional<uint32> failureArg1; // optional argument 1
-        nonstd::optional<uint32> failureArg2; // optional argument 2
-
-        explicit CastResult() : ServerPacket(SMSG_CAST_RESULT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
     class PlaySpellVisual final : public ServerPacket
     {
@@ -311,49 +270,6 @@ namespace WorldPackets { namespace Spell
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class SpellStart final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        ObjectGuid unitCasterGuid;
-        uint32 spellId = 0;
-        uint16 castFlags = 0;
-        uint32 castTimer = 0;
-        SpellCastTargets targets;
-        uint32 ammoDisplayId = 0;
-        uint32 ammoInventoryType = 0;
-
-        explicit SpellStart() : ServerPacket(SMSG_SPELL_START) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class SpellGo final : public ServerPacket
-    {
-    public:
-        struct SpellGoMissTarget
-        {
-            SpellGoMissTarget(ObjectGuid target, uint8 miss, uint8 reflect) : targetGuid(target), missCondition(miss), reflectResult(reflect) {};
-            ObjectGuid targetGuid;
-            uint8 missCondition = 0;
-            uint8 reflectResult = 0;
-        };
-
-        ObjectGuid casterGuid;
-        ObjectGuid unitCasterGuid;
-        uint32 spellId = 0;
-        uint16 castFlags = 0;
-        std::vector<ObjectGuid> hitTargets;
-        std::vector<SpellGoMissTarget> missTargets;
-        SpellCastTargets targets;
-        uint32 ammoDisplayId = 0;
-        uint32 ammoInventoryType = 0;
-
-        explicit SpellGo() : ServerPacket(SMSG_SPELL_GO) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class SpellLogExecute final : public ServerPacket
     {
     public:
@@ -422,38 +338,6 @@ namespace WorldPackets { namespace Spell
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class SpellFailedOther final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        uint32 spellId = 0;
-
-        explicit SpellFailedOther() : ServerPacket(SMSG_SPELL_FAILED_OTHER) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class ChannelStart final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;
-        uint32 duration = 0;
-
-        explicit ChannelStart() : ServerPacket(MSG_CHANNEL_START) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class ChannelUpdate final : public ServerPacket
-    {
-    public:
-        uint32 duration = 0;
-
-        explicit ChannelUpdate() : ServerPacket(MSG_CHANNEL_UPDATE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     class SpellUpdateChainTargets final : public ServerPacket
     {
@@ -477,17 +361,6 @@ namespace WorldPackets { namespace Spell
         bool delayed = false; // if false ignore delay sent with SMSG_CORPSE_RECLAIM_DELAY
 
         explicit ResurrectRequest() : ServerPacket(SMSG_RESURRECT_REQUEST) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class SpellDelayed final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        uint32 delayTime = 0;
-
-        explicit SpellDelayed() : ServerPacket(SMSG_SPELL_DELAYED) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

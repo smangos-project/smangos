@@ -11,6 +11,8 @@
 #include "TradeData.h"
 #include "Map.h"
 #include "ObjectAccessor.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/SpellCast.h"
 
 SpellCastTargets::SpellCastTargets()
 {
@@ -231,4 +233,72 @@ void SpellCastTargets::write(ByteBuffer& data) const
 
     if (m_targetMask & TARGET_FLAG_STRING)
         data << m_strTarget;
+}
+
+namespace
+{
+ObjectGuid ToServerGuid(ClassicGuid const& guid)
+{
+    return ClassicGuidMapping::FromClassic(guid).value_or(ObjectGuid());
+}
+}
+
+void SpellCastTargets::ReadTargetData(SpellTargetData const& data)
+{
+    m_targetMask = uint16(data.Flags);
+
+    if (m_targetMask & TARGET_FLAG_UNIT)
+        m_unitTargetGUID = ToServerGuid(data.UnitGuid);
+    else if (m_targetMask & TARGET_FLAG_GAMEOBJECT)
+        m_GOTargetGUID = ToServerGuid(data.UnitGuid);
+    else if (m_targetMask & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY))
+        m_CorpseTargetGUID = ToServerGuid(data.UnitGuid);
+
+    if (m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM))
+        m_itemTargetGUID = ToServerGuid(data.ItemGuid);
+
+    if (data.SrcLocation)
+    {
+        m_srcX = data.SrcLocation->X;
+        m_srcY = data.SrcLocation->Y;
+        m_srcZ = data.SrcLocation->Z;
+        if (!MaNGOS::IsValidMapCoord(m_srcX, m_srcY, m_srcZ))
+            m_targetMask &= uint16(~TARGET_FLAG_SOURCE_LOCATION);
+    }
+
+    if (data.DstLocation)
+    {
+        m_destX = data.DstLocation->X;
+        m_destY = data.DstLocation->Y;
+        m_destZ = data.DstLocation->Z;
+        if (!MaNGOS::IsValidMapCoord(m_destX, m_destY, m_destZ))
+            m_targetMask &= uint16(~TARGET_FLAG_DEST_LOCATION);
+    }
+
+    if (m_targetMask & TARGET_FLAG_STRING)
+        m_strTarget = data.Name;
+}
+
+void SpellCastTargets::WriteTargetData(SpellTargetData& data) const
+{
+    data.Flags = m_targetMask;
+
+    if (m_targetMask & TARGET_FLAG_UNIT)
+        data.UnitGuid = ClassicGuidMapping::ToClassic(m_unitTarget ? m_unitTarget->GetObjectGuid() : m_unitTargetGUID, realmID);
+    else if (m_targetMask & TARGET_FLAG_GAMEOBJECT)
+        data.UnitGuid = ClassicGuidMapping::ToClassic(m_GOTarget ? m_GOTarget->GetObjectGuid() : m_GOTargetGUID, realmID);
+    else if (m_targetMask & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY))
+        data.UnitGuid = ClassicGuidMapping::ToClassic(m_CorpseTargetGUID, realmID);
+
+    if (m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM))
+        data.ItemGuid = ClassicGuidMapping::ToClassic(m_itemTarget ? m_itemTarget->GetObjectGuid() : m_itemTargetGUID, realmID);
+
+    if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
+        data.SrcLocation = TargetLocation{ ClassicGuid(), m_srcX, m_srcY, m_srcZ };
+
+    if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
+        data.DstLocation = TargetLocation{ ClassicGuid(), m_destX, m_destY, m_destZ };
+
+    if (m_targetMask & TARGET_FLAG_STRING)
+        data.Name = m_strTarget;
 }
