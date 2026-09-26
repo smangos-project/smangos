@@ -9340,9 +9340,9 @@ void Unit::SetStandState(uint8 state)
 
     if (IsPlayer())
     {
-        auto packet = std::make_unique<WorldPackets::Misc::StandStateUpdate>();
-        packet->standState = static_cast<uint8>(state);
-        ((Player*)this)->GetSession()->SendPacket(std::move(packet));
+        StandStateUpdate packet;
+        packet.StandState = state;
+        ((Player*)this)->GetSession()->SendClassic(packet);
         ((Player*)this)->ClearScheduledStandUp();
     }
 }

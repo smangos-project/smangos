@@ -636,7 +636,7 @@ class WorldSession
         void HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& packet);
         void HandleSetSelectionOpcode(SetSelection const& packet);
         void HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget const& packet);
-        void HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateChange const& packet);
+        void HandleStandStateChangeOpcode(StandStateChange const& packet);
         void HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet);
         void HandleFriendListOpcode(SendContactList const& packet);
         void HandleSetContactNotesOpcode(SetContactNotes const& packet);

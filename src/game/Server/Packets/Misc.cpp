@@ -12,11 +12,6 @@ void WorldPackets::Misc::WorldTeleport::ReadFromWorldPacket(WorldPacket& recv_da
     recv_data >> location.o;
 }
 
-void WorldPackets::Misc::StandStateChange::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> animState;
-}
-
 void WorldPackets::Misc::AreaTrigger::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> triggerId;
@@ -221,16 +216,6 @@ size_t WorldPackets::Misc::LogoutCancelAck::EstimateFinalSize() const
 
 void WorldPackets::Misc::LogoutCancelAck::AppendBodyTo(ByteBuffer& /*buffer*/) const
 {
-}
-
-size_t WorldPackets::Misc::StandStateUpdate::EstimateFinalSize() const
-{
-    return sizeof(standState);
-}
-
-void WorldPackets::Misc::StandStateUpdate::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << standState;
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1

@@ -1,7 +1,7 @@
 #ifndef MANGOS_PACKETS_COMBATMESSAGES_H
 #define MANGOS_PACKETS_COMBATMESSAGES_H
 
-// The modern combat wire: target selection and melee. Light like Packets/TaxiMessages.h, so
+// The modern combat wire: target selection, melee and stand state. Light like Packets/TaxiMessages.h, so
 // RealBots can include it.
 
 #include "ByteBuffer.h"
@@ -110,6 +110,47 @@ struct SAttackStop
             return false;
         NowDead = data.ReadBit();
         data.ResetBitPos();
+        return true;
+    }
+};
+
+// The client's sit/stand/kneel/sleep request. Only the low byte of the value is read.
+struct StandStateChange
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_STAND_STATE_CHANGE;
+
+    uint8 StandState = 0;
+
+    void Write(ByteBuffer& data) const { data << StandState; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8))
+            return false;
+        data >> StandState;
+        return true;
+    }
+};
+
+struct StandStateUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_STAND_STATE_UPDATE;
+
+    uint32 AnimKitId = 0;
+    uint8 StandState = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << AnimKitId;
+        data << StandState;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint8))
+            return false;
+        data >> AnimKitId;
+        data >> StandState;
         return true;
     }
 };

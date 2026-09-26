@@ -479,6 +479,8 @@ None of these is proven against a real 1.15.6 client yet.
   forced with-flags update; vibemangos writes `0x03` for both. **Followed: TrinityCore.** Unverified;
   resolve with a captured real-client session.
 
+- **`SMSG_STAND_STATE_UPDATE` field order.** TrinityCore writes the stand state byte then the anim kit id; vibemangos writes the anim kit id (u32) then the stand state byte, noting the order was checked against a real client through a translating proxy. **Followed: vibemangos**, since that is live evidence and TrinityCore targets a different client. Unverified against our build.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are

@@ -21,15 +21,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class StandStateChange final : public ClientPacket
-    {
-    public:
-        uint32 animState = 0;
-
-        explicit StandStateChange() : ClientPacket(CMSG_STANDSTATECHANGE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class AreaTrigger final : public ClientPacket
     {
     public:
@@ -340,16 +331,6 @@ namespace WorldPackets { namespace Misc
     {
     public:
         explicit LogoutCancelAck() : ServerPacket(SMSG_LOGOUT_CANCEL_ACK) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class StandStateUpdate final : public ServerPacket
-    {
-    public:
-        uint8 standState = 0;
-
-        explicit StandStateUpdate() : ServerPacket(SMSG_STANDSTATE_UPDATE) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

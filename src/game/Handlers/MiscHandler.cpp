@@ -392,9 +392,9 @@ void WorldSession::HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& 
     // Note: There might be a better place to perform this trigger
     if (m_clientOS == CLIENT_OS_MAC && GetPlayer()->m_movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
-        auto packet = std::make_unique<WorldPackets::Misc::StandStateUpdate>();
-        packet->standState = GetPlayer()->GetStandState();
-        GetPlayer()->GetSession()->SendPacket(std::move(packet));
+        StandStateUpdate packet;
+        packet.StandState = GetPlayer()->GetStandState();
+        SendClassic(packet);
     }
 }
 
@@ -437,9 +437,9 @@ void WorldSession::HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget 
 {
 }
 
-void WorldSession::HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateChange const& packet)
+void WorldSession::HandleStandStateChangeOpcode(StandStateChange const& packet)
 {
-    switch (packet.animState)
+    switch (packet.StandState)
     {
         case UNIT_STAND_STATE_STAND:
         case UNIT_STAND_STATE_SIT:
@@ -455,7 +455,7 @@ void WorldSession::HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateCh
 
     _player->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_ANIM_CANCELS);
     _player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_ANIM_CANCELS);
-    _player->SetStandState(packet.animState);
+    _player->SetStandState(packet.StandState);
 }
 
 void WorldSession::HandleFriendListOpcode(SendContactList const& packet)

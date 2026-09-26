@@ -1,4 +1,4 @@
-// Target selection and melee: what a GM bot sees of its own swings, and what a bystander sees.
+// Target selection, melee and stand state: what a GM bot sees of its own swings, and what a bystander sees.
 #include "Packets/ChatMessages.h"
 #include "Packets/CombatMessages.h"
 #include "TestBot.h"
@@ -88,5 +88,28 @@ TEST_CASE("combat: a GM bot attacks a spawned creature and a bystander sees the 
         REQUIRE(stopped);
 
         SayCommand(gm, ".npc despawn");
+    });
+}
+
+TEST_CASE("combat: a bot sitting down and standing up is told each new stand state", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot;
+        REQUIRE(co_await bot.Stage(BotStage::InWorld, 30000));
+
+        StandStateChange sit;
+        sit.StandState = 1; // UNIT_STAND_STATE_SIT
+        bot.Send(sit);
+        auto sitting = co_await bot.Packet<StandStateUpdate>(10000);
+        REQUIRE(sitting);
+        CHECK(sitting->StandState == 1);
+
+        StandStateChange stand;
+        stand.StandState = 0; // UNIT_STAND_STATE_STAND
+        bot.Send(stand);
+        auto standing = co_await bot.Packet<StandStateUpdate>(10000);
+        REQUIRE(standing);
+        CHECK(standing->StandState == 0);
     });
 }

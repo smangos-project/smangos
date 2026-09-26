@@ -339,7 +339,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_TUTORIAL_FLAG,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialFlagOpcode);
     DEFINE_HANDLER(CMSG_TUTORIAL_CLEAR,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialClearOpcode);
     DEFINE_HANDLER(CMSG_TUTORIAL_RESET,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialResetOpcode);
-    DEFINE_HANDLER(CMSG_STANDSTATECHANGE,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleStandStateChangeOpcode);
+    INVALID_PACKET(CMSG_STANDSTATECHANGE,             UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_EMOTE,                        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleEmoteOpcode);
     INVALID_PACKET(SMSG_EMOTE,                        UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_TEXT_EMOTE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTextEmoteOpcode);
@@ -1061,6 +1061,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_SELECTION, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleSetSelectionOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_SWING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackSwingOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_STOP, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackStopOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_STAND_STATE_CHANGE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleStandStateChangeOpcode);
 
     return list;
 }

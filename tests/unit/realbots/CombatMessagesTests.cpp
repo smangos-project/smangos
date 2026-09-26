@@ -73,6 +73,39 @@ TEST_CASE("SAttackStop round-trips", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
+TEST_CASE("StandStateChange round-trips", "[packets]")
+{
+    StandStateChange packet;
+    packet.StandState = 1;
+    RoundTrip(packet, [](StandStateChange const& a, StandStateChange const& b)
+    {
+        CHECK(a.StandState == b.StandState);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("StandStateChange reads the low byte of a four-byte body", "[packets]")
+{
+    ByteBuffer data;
+    data << uint32(8);
+    StandStateChange in;
+    REQUIRE(in.Read(data));
+    CHECK(in.StandState == 8);
+}
+
+TEST_CASE("StandStateUpdate round-trips", "[packets]")
+{
+    StandStateUpdate packet;
+    packet.AnimKitId = 0;
+    packet.StandState = 4;
+    RoundTrip(packet, [](StandStateUpdate const& a, StandStateUpdate const& b)
+    {
+        CHECK(a.AnimKitId == b.AnimKitId);
+        CHECK(a.StandState == b.StandState);
+    });
+    RejectsEveryTruncation(packet);
+}
+
 TEST_CASE("MeleeAttackingStateUpdate round-trips with no optional hit-info fields", "[packets]")
 {
     MeleeAttackingStateUpdate packet;
