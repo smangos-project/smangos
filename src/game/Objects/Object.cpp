@@ -311,7 +311,9 @@ void Object::BuildMovementUpdateBlock(UpdateData& /*data*/, uint8 /*flags*/) con
 
 void Object::BuildCreateUpdateBlockForPlayer(UpdateData& /*data*/, Player* /*target*/) const
 {
-    // The modern create block (Objects/Updates) doesn't exist yet; nothing is written until it does.
+    // Player::BuildCreateUpdateBlockForPlayer writes a real block for a player's own view of
+    // itself (Updates/UpdateObjectWriter.h); every other object and viewer still lands here until
+    // its fill function and viewer gating exist.
 }
 
 void Object::SendCreateUpdateToPlayer(Player* player)

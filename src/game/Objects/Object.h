@@ -117,6 +117,7 @@ class Object
         virtual ~Object();
 
         void SetIsNewObject(bool state) { m_isNewObject = state; }
+        bool IsNewObject() const { return m_isNewObject; }
         bool const& IsInWorld() const { return m_inWorld; }
         virtual void AddToWorld()
         {

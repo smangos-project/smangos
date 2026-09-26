@@ -37,6 +37,7 @@
 #include "QuestDef.h"
 #include "GossipDef.h"
 #include "UpdateData.h"
+#include "Updates/UpdateObjectWriter.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
 #include "MapManager.h"
@@ -4200,7 +4201,10 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) c
         }
     }
 
-    Unit::BuildCreateUpdateBlockForPlayer(data, target);
+    if (target == this)
+        ::BuildCreateUpdateBlockForPlayer(*this, data, target);
+    else
+        Unit::BuildCreateUpdateBlockForPlayer(data, target);
 }
 
 void Player::DestroyForPlayer(Player const* target) const

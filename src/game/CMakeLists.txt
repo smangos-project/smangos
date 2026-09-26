@@ -186,6 +186,7 @@ set (game_SRCS
     Objects/Updates/UpdateFieldFill.cpp
     Objects/Updates/UpdateFieldStructs.cpp
     Objects/Updates/UpdateFieldStructsOwners.cpp
+    Objects/Updates/UpdateObjectWriter.cpp
     Objects/UpdateFields.cpp
     OutdoorPvP/OutdoorPvPEP.cpp
     OutdoorPvP/OutdoorPvPSI.cpp
@@ -428,7 +429,9 @@ set (game_SRCS
     Objects/Updates/UpdateField.h
     Objects/Updates/UpdateFieldMask.h
     Objects/Updates/UpdateFieldStructs.h
+    Objects/Updates/UpdateObjectWriter.h
     Objects/Updates/ViewerDependentValues.h
+    Objects/Updates/WowCSEntityDefinitions.h
     OutdoorPvP/OutdoorPvPEP.h
     OutdoorPvP/OutdoorPvPSI.h
     PacketBroadcast/MovementBroadcaster.h
@@ -540,6 +543,8 @@ if (ENABLE_REALBOTS)
       RealBots/Behavior/BotBrain.h
       RealBots/Behavior/BotContext.cpp
       RealBots/Behavior/BotContext.h
+      RealBots/Behavior/BotWorldView.cpp
+      RealBots/Behavior/BotWorldView.h
       RealBots/Behavior/BotTaskArgs.cpp
       RealBots/Behavior/BotTaskArgs.h
       RealBots/Behavior/BotTaskRegistry.cpp
