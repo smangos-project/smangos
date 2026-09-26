@@ -465,6 +465,7 @@ set (game_SRCS
     Server/Packets/ChatMessages.h
     Server/Packets/MovementMessages.h
     Server/Packets/MonsterMove.h
+    Server/Packets/WorldTransfer.h
     Server/Packets/Combat.h
     Server/Packets/Duel.h
     Server/Packets/GmTicket.h
