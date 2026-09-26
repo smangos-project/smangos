@@ -476,10 +476,6 @@ void Map::ExistingPlayerLogin(Player* player)
     NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
     player->GetViewPoint().Event_AddedToWorld(&(*grid)(cell.CellX(), cell.CellY()));
     UpdateObjectVisibility(player, cell, p);
-
-    // Refresh aura durations
-    for (const auto& it : player->GetSpellAuraHolderMap())
-        it.second->UpdateAuraDuration();
 }
 
 template<class T>

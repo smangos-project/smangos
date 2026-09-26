@@ -41,6 +41,8 @@
 #include "CreatureAI.h"
 #include "ScriptMgr.h"
 #include "Util.h"
+#include "Packets/Auras.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -373,7 +375,6 @@ void SpellAuraHolder::Refresh(Unit* caster, Unit* target, SpellAuraHolder* pRefr
             pAura->Refresh(caster, target, pRefreshWithHolder);
     }
     UpdateAuraDuration();
-    UpdateAuraApplication();
 }
 
 bool SpellAuraHolder::CanBeRefreshedBy(SpellAuraHolder* other) const
@@ -6786,9 +6787,6 @@ void SpellAuraHolder::_AddSpellAuraHolder()
     if (slot < MAX_AURAS)                                   // slot found
     {
         SetAura(slot, false);
-        SetAuraFlag(slot, true);
-        SetAuraLevel(slot, caster ? caster->GetLevel() : sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL));
-        UpdateAuraApplication();
 
         // update for out of range group members
         m_target->UpdateAuraForGroup(slot);
@@ -6843,8 +6841,6 @@ void SpellAuraHolder::_RemoveSpellAuraHolder()
         if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + slot)) == 0)
             return;
         SetAura(slot, true);
-        SetAuraFlag(slot, false);
-        SetAuraLevel(slot, 0);
     }
 
     // unregister aura diminishing (and store last time)
@@ -6853,13 +6849,15 @@ void SpellAuraHolder::_RemoveSpellAuraHolder()
 
     m_procCharges = 0;
     m_stackAmount = 1;
-    UpdateAuraApplication();
 
     if (m_removeMode != AURA_REMOVE_BY_DELETE)
     {
         // update for out of range group members
         if (slot < MAX_AURAS)
+        {
+            SendAuraUpdate(true);
             m_target->UpdateAuraForGroup(slot);
+        }
 
         // Update target aura state flag (at last aura remove)
         uint32 removeState = 0;
@@ -7504,73 +7502,68 @@ void SpellAuraHolder::SetAura(uint32 slot, bool remove)
     m_target->SetUInt32Value(UNIT_FIELD_AURA + slot, remove ? 0 : GetId());
 }
 
-void SpellAuraHolder::SetAuraFlag(uint32 slot, bool add)
+void SpellAuraHolder::BuildAuraInfo(AuraInfo& info) const
 {
-    uint32 index    = slot >> 3;
-    uint32 byte     = (slot & 7) << 2;
-    uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
-    val &= ~(uint32(AFLAG_MASK_ALL) << byte);
-    if (add)
+    info.Slot = GetAuraSlot();
+    AuraDataInfo& aura = info.AuraData.emplace();
+
+    // The client links an aura to its cast by this guid and crashes on an empty one.
+    aura.CastId = ClassicGuidMapping::MakeCast(realmID, m_target->GetMapId(), GetId(),
+                                               m_target->GetObjectGuid().GetCounter(), CLASSIC_CAST_SOURCE_AURA);
+    aura.SpellId = GetId();
+    aura.Visual.SpellXSpellVisualId = m_spellProto->SpellVisual;
+
+    uint16 flags = CLASSIC_AURA_FLAG_NONE;
+    if (IsPositive())
     {
-        uint32 flags = AFLAG_NONE;
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-        if (IsPositive() && !m_spellProto->HasAttribute(SPELL_ATTR_NO_AURA_CANCEL))
-#else
-        if (IsPositive())
-#endif
-            flags |= AFLAG_CANCELABLE;
-
-        if (GetAuraByEffectIndex(EFFECT_INDEX_0))
-            flags |= AFLAG_EFF_INDEX_0;
-        if (GetAuraByEffectIndex(EFFECT_INDEX_1))
-            flags |= AFLAG_EFF_INDEX_1;
-        if (GetAuraByEffectIndex(EFFECT_INDEX_2))
-            flags |= AFLAG_EFF_INDEX_2;
-
-        val |= (flags << byte);
+        flags |= CLASSIC_AURA_FLAG_POSITIVE;
+        if (!IsPassive() && !m_spellProto->HasAttribute(SPELL_ATTR_NO_AURA_CANCEL))
+            flags |= CLASSIC_AURA_FLAG_CANCELABLE;
     }
-    m_target->SetUInt32Value(UNIT_FIELD_AURAFLAGS + index, val);
+    else
+        flags |= CLASSIC_AURA_FLAG_NEGATIVE;
+    if (IsPassive())
+        flags |= CLASSIC_AURA_FLAG_PASSIVE;
+    if (GetAuraMaxDuration() > 0 && !m_permanent)
+    {
+        flags |= CLASSIC_AURA_FLAG_DURATION;
+        aura.Duration = uint32(GetAuraMaxDuration());
+        aura.Remaining = uint32(std::max(GetAuraDuration(), 0));
+    }
+    aura.Flags = flags;
+
+    for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        if (GetAuraByEffectIndex(SpellEffectIndex(i)))
+            aura.ActiveFlags |= (1u << i);
+
+    Unit const* caster = GetCaster();
+    aura.CastLevel = caster ? caster->GetLevel() : GetAuraLevel();
+    uint32 const stackCount = m_procCharges > 0 ? m_procCharges * m_stackAmount : m_stackAmount;
+    aura.Applications = uint8(std::min<uint32>(stackCount, 255));
+
+    if (GetCasterGuid() != m_target->GetObjectGuid())
+        aura.CastUnit = ClassicGuidMapping::ToClassic(GetCasterGuid(), realmID);
 }
 
-void SpellAuraHolder::SetAuraLevel(uint32 slot, uint32 level)
+void SpellAuraHolder::SendAuraUpdate(bool remove) const
 {
-    uint32 index    = slot / 4;
-    uint32 byte     = (slot % 4) * 8;
-    uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURALEVELS + index);
-    val &= ~(0xFF << byte);
-    val |= (level << byte);
-    m_target->SetUInt32Value(UNIT_FIELD_AURALEVELS + index, val);
-}
-
-void SpellAuraHolder::UpdateAuraApplication()
-{
-    if (m_auraSlot >= MAX_AURAS)
+    if (GetAuraSlot() >= MAX_AURAS)
         return;
 
-    uint32 stackCount = m_procCharges > 0 ? m_procCharges * m_stackAmount : m_stackAmount;
+    AuraUpdate packet;
+    packet.UnitGuid = ClassicGuidMapping::ToClassic(m_target->GetObjectGuid(), realmID);
+    if (remove)
+        packet.Auras.emplace_back().Slot = GetAuraSlot();
+    else
+        BuildAuraInfo(packet.Auras.emplace_back());
 
-    uint32 index    = m_auraSlot / 4;
-    uint32 byte     = (m_auraSlot % 4) * 8;
-    uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS + index);
-    val &= ~(0xFF << byte);
-    // field expect count-1 for proper amount show, also prevent overflow at client side
-    val |= ((uint8(stackCount <= 255 ? stackCount - 1 : 255 - 1)) << byte);
-    m_target->SetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS + index, val);
+    WorldPacket data = MakeClassicPacket(packet);
+    m_target->SendMessageToSet(&data, true);
 }
 
 void SpellAuraHolder::UpdateAuraDuration() const
 {
-    if (GetAuraSlot() >= MAX_AURAS || m_permanent)
-        return;
-
-    if (m_target->GetTypeId() == TYPEID_PLAYER)
-    {
-        WorldPacket data(SMSG_UPDATE_AURA_DURATION, 5);
-        data << uint8(GetAuraSlot());
-        data << uint32(GetAuraDuration());
-        ((Player*)m_target)->SendDirectMessage(&data);
-    }
+    SendAuraUpdate(false);
 }
 
 void SpellAuraHolder::SetAffectedByVisibleSlotLimit(bool isAffectedByDebuffLimit)

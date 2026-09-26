@@ -5,6 +5,9 @@
 #include "ObjectGuid.h"
 #include "nonstd/optional.hpp"
 
+// The cast guid source an aura carries.
+constexpr uint8 CLASSIC_CAST_SOURCE_AURA = 13;
+
 // Maps between the server's 64-bit object guids and the 128-bit guids the modern protocol carries.
 class ClassicGuidMapping
 {
@@ -23,7 +26,8 @@ class ClassicGuidMapping
 
         // A cast guid: unique per cast (`counter`), keyed on the map and spell it belongs to. The
         // client pairs a cast's start, go and failure messages by it, and rejects an empty one.
-        static ClassicGuid MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter);
+        // `source` says what started the cast; an aura's own cast guid uses CLASSIC_CAST_SOURCE_AURA.
+        static ClassicGuid MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter, uint8 source = 0);
 };
 
 #endif

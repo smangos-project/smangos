@@ -392,7 +392,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SPELL_FAILURE,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_COOLDOWN,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_COOLDOWN_EVENT,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_CANCEL_AURA,                  STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleCancelAuraOpcode);
+    INVALID_PACKET(CMSG_CANCEL_AURA,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_UPDATE_AURA_DURATION,         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_CAST_FAILED,              UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_CHANNEL_START,                 UnhandleReason::Unhandled);
@@ -1064,6 +1064,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_STAND_STATE_CHANGE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleStandStateChangeOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAST_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCastSpellOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CAST, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelCastOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelAuraOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CHANNELLING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelChanneling);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AUTO_REPEAT_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelAutoRepeatSpellOpcode);
 

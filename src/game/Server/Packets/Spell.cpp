@@ -16,11 +16,6 @@ void WorldPackets::Spell::OpenItem::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> slot;
 }
 
-void WorldPackets::Spell::CancelAura::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> spellId;
-}
-
 size_t WorldPackets::Spell::PlaySpellVisual::EstimateFinalSize() const
 {
     return sizeof(casterGuid) +

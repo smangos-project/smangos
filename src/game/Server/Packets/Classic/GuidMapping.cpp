@@ -25,6 +25,7 @@ constexpr uint64 MAP_SHIFT = 29;
 constexpr uint64 MAP_MASK = 0x1FFF;
 constexpr uint64 REALM_MASK = 0x1FFF;
 constexpr uint64 ENTRY_MASK = 0x7FFFFF;
+constexpr uint64 SUBTYPE_MASK = 0x3F;
 constexpr uint64 TRANSPORT_COUNTER_MASK = 0xFFFFF;
 constexpr uint64 COUNTER_MASK = 0xFFFFFFFFFFULL;
 
@@ -109,13 +110,14 @@ nonstd::optional<ObjectGuid> ClassicGuidMapping::FromClassic(ClassicGuid const& 
     return ObjectGuid(high, uint32(counter));
 }
 
-ClassicGuid ClassicGuidMapping::MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter)
+ClassicGuid ClassicGuidMapping::MakeCast(uint32 realmId, uint32 mapId, uint32 spellId, uint64 counter, uint8 source)
 {
     ClassicGuid out;
     out.Low = counter & COUNTER_MASK;
     out.High = (uint64(CLASSIC_GUID_CAST) << TYPE_SHIFT)
         | ((uint64(realmId) & REALM_MASK) << REALM_SHIFT)
         | ((uint64(mapId) & MAP_MASK) << MAP_SHIFT)
-        | ((uint64(spellId) & ENTRY_MASK) << ENTRY_SHIFT);
+        | ((uint64(spellId) & ENTRY_MASK) << ENTRY_SHIFT)
+        | (uint64(source) & SUBTYPE_MASK);
     return out;
 }

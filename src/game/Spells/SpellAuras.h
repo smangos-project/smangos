@@ -83,6 +83,7 @@ class DynamicObject;
 class SpellCaster;
 class SpellEntry;
 struct AuraScript;
+struct AuraInfo;
 struct SpellModifier;
 struct ProcTriggerSpell;
 
@@ -235,11 +236,12 @@ class SpellAuraHolder
         bool HasMechanic(uint32 mechanic) const;
         bool HasMechanicMask(uint32 mechanicMask) const;
 
+        // Resends the aura's visible slot to everyone who sees the target.
         void UpdateAuraDuration() const;
+        void BuildAuraInfo(AuraInfo& info) const;
+        void SendAuraUpdate(bool remove) const;
 
         void SetAura(uint32 slot, bool remove);
-        void SetAuraFlag(uint32 slot, bool add);
-        void SetAuraLevel(uint32 slot, uint32 level);
 
         void SetTargetSecondaryThreatFocus(bool v) { m_makesTargetSecondaryFocus = v; }
         bool IsTargetSecondaryThreatFocus() const { return m_makesTargetSecondaryFocus; }
@@ -253,7 +255,7 @@ class SpellAuraHolder
 
         ~SpellAuraHolder();
     private:
-        void UpdateAuraApplication();                       // called at charges or stack changes
+        void UpdateAuraApplication() const { UpdateAuraDuration(); } // called at charges or stack changes
 
         Unit* m_target;
         ObjectGuid m_casterGuid;

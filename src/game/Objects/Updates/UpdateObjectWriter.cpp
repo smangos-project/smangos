@@ -4,6 +4,7 @@
 #include "WowCSEntityDefinitions.h"
 #include "Objects/Object.h"
 #include "Objects/Unit.h"
+#include "Spells/SpellAuras.h"
 #include "Objects/UnitDefines.h"
 #include "Objects/Player.h"
 #include "Objects/Item.h"
@@ -503,6 +504,21 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     buf << uint8(1);                                             // IndirectFragmentActive: CGObject
     BuildValuesCreate(object, buf, fieldFlags, target);
     buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
+
+    if (Unit const* unit = object.ToUnit())
+    {
+        AuraUpdate auras;
+        auras.UpdateAll = true;
+        auras.UnitGuid = ToClassic(unit->GetObjectGuid());
+        for (auto const& entry : unit->GetSpellAuraHolderMap())
+        {
+            SpellAuraHolder const* holder = entry.second;
+            if (holder->GetAuraSlot() < MAX_AURAS)
+                holder->BuildAuraInfo(auras.Auras.emplace_back());
+        }
+        if (!auras.Auras.empty())
+            data.AddAuraUpdate(std::move(auras));
+    }
 }
 
 void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)

@@ -19144,9 +19144,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
 {
     SendBindPointUpdate();
 
-    // SMSG_SET_PROFICIENCY
-    // SMSG_UPDATE_AURA_DURATION
-
     SendInitialSpells();
 
     if (MasterPlayer* masterPlayer = GetSession()->GetMasterPlayer())
@@ -19154,8 +19151,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     m_reputationMgr.SendInitialReputations();
     m_honorMgr.Update();
-
-    // SMSG_SET_AURA_SINGLE
 
     {
         LoginSetTimeSpeed packet;

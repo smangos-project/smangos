@@ -337,9 +337,10 @@ void WorldSession::HandleCancelCastOpcode(CancelCast const& packet)
         _player->InterruptSpell(CURRENT_MELEE_SPELL);
 }
 
-void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spell::CancelAura const& packet)
+void WorldSession::HandleCancelAuraOpcode(CancelAura const& packet)
 {
-    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(packet.spellId);
+    uint32 const spellId = uint32(packet.SpellId);
+    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(spellId);
     if (!spellInfo)
         return;
 
@@ -357,7 +358,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spell::CancelAura const&
     if (spellInfo->IsPassiveSpell())
         return;
 
-    if (!IsPositiveSpell(packet.spellId))
+    if (!IsPositiveSpell(spellId))
     {
         // ignore for remote control state
         if (!_player->IsSelfMover())
@@ -396,19 +397,19 @@ void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spell::CancelAura const&
     if (spellInfo->IsChanneledSpell())
     {
         if (Spell* curSpell = _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-            if (curSpell->m_spellInfo->Id == packet.spellId)
+            if (curSpell->m_spellInfo->Id == spellId)
                 _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
         return;
     }
 
-    SpellAuraHolder* holder = _player->GetSpellAuraHolder(packet.spellId);
+    SpellAuraHolder* holder = _player->GetSpellAuraHolder(spellId);
 
     // not own area auras can't be cancelled (note: maybe need to check for aura on holder and not general on spell)
     if (holder && holder->GetCasterGuid() != _player->GetObjectGuid() && holder->GetSpellProto()->HasAreaAuraEffect())
         return;
 
     // non channeled case
-    _player->RemoveAurasDueToSpellByCancel(packet.spellId);
+    _player->RemoveAurasDueToSpellByCancel(spellId);
 }
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPackets::Pet::PetCancelAura const& packet)

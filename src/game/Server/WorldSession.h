@@ -49,6 +49,7 @@
 #include "Packets/ChatMessages.h"
 #include "Packets/Combat.h"
 #include "Packets/CombatMessages.h"
+#include "Packets/Auras.h"
 #include "Packets/SpellCast.h"
 #include "Packets/Duel.h"
 #include "Packets/GmTicket.h"
@@ -811,7 +812,7 @@ class WorldSession
         void HandleOpenItemOpcode(WorldPackets::Spell::OpenItem const& packet);
         void HandleCastSpellOpcode(CastSpell const& packet);
         void HandleCancelCastOpcode(CancelCast const& packet);
-        void HandleCancelAuraOpcode(WorldPackets::Spell::CancelAura const& packet);
+        void HandleCancelAuraOpcode(CancelAura const& packet);
         void HandleCancelGrowthAuraOpcode(NullClientPacket const& packet);
         void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
         void HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetActionBarToggles const& packet);

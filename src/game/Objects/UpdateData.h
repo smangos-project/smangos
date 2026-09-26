@@ -24,8 +24,10 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 #include "ByteBuffer.h"
 #include "ObjectGuid.h"
+#include "Packets/Auras.h"
 #include "Packets/ObjectUpdate.h"
 
 class WorldPacket;
@@ -56,6 +58,9 @@ class UpdateData
         void AddOutOfRangeGUID(ObjectGuid const& guid);
         void AddDestroyObject(ObjectGuid const& guid);
         ByteBuffer& AddUpdateBlockAndGetBuffer();
+        // Aura lists of the units whose create blocks are in this update; sent right after the blocks,
+        // since the client drops aura updates for a unit it has not been told about yet.
+        void AddAuraUpdate(AuraUpdate&& packet) { m_auraUpdates.push_back(std::move(packet)); }
         // Fills `packet` with this update's first (or only) block, if any, and the destroy/out-of-
         // range guid lists, which are then cleared. For a caller that wants to build the wire
         // packet once and reuse the same bytes across several sessions (Send() below rebuilds one
@@ -73,6 +78,7 @@ class UpdateData
         ObjectGuidSet m_outOfRangeGUIDs;
         ObjectGuidSet m_destroyGUIDs;
         std::list<UpdateDataBlock> m_datas;
+        std::vector<AuraUpdate> m_auraUpdates;
 };
 
 #endif

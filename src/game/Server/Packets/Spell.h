@@ -35,15 +35,6 @@ namespace WorldPackets { namespace Spell
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class CancelAura final : public ClientPacket
-    {
-    public:
-        uint32 spellId = 0;
-
-        explicit CancelAura() : ClientPacket(CMSG_CANCEL_AURA) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     // --- Server Packets ---
 
     class PlaySpellVisual final : public ServerPacket

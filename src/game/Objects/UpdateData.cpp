@@ -122,11 +122,16 @@ void UpdateData::Send(WorldSession* session)
         session->SendClassic(packet);
     }
     m_datas.clear();
+
+    for (AuraUpdate const& auras : m_auraUpdates)
+        session->SendClassic(auras);
+    m_auraUpdates.clear();
 }
 
 void UpdateData::Clear()
 {
     m_datas.clear();
+    m_auraUpdates.clear();
     m_outOfRangeGUIDs.clear();
     m_destroyGUIDs.clear();
 }
