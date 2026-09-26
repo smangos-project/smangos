@@ -564,6 +564,15 @@ None of these is proven against a real 1.15.6 client yet.
   divides by the item's buy count. TrinityCore reads an item-type integer before the item instance in `CMSG_BUY_ITEM`;
   vibemangos (from a proxy's traffic) puts three bits after it. **Followed: TrinityCore.** Buyback slots and every
   bag slot in a purchase go through the slot translation.
+- **Trainers.** `SMSG_TRAINER_LIST`'s per-spell row is TrinityCore's (spell id, money cost, skill line and rank,
+  three ability requirements, a usable enum, req level); vmangos's own shape carried two "primary profession"
+  confirmation flags and a trailing always-zero field TrinityCore has no room for. **Followed: TrinityCore.**
+  Neither reference sends a purchase-succeeded ack (the modern client infers it from the resulting spellbook and
+  gold changes), so `SMSG_TRAINER_BUY_SUCCEEDED` is gone. `NpcInteractionOpenResult` (one packet, tagged by a
+  `PlayerInteractionType`) replaces the separate `SMSG_SHOW_BANK` / `SMSG_PLAYER_TABARD_VENDOR_ACTIVATE` /
+  binder-confirm opcodes for banker and tabard vendor; binder and spirit healer send no packet of their own
+  (the existing bind-spell cast and resurrect-and-teleport paths are unchanged, only their CMSG moved to the
+  classic table). Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
