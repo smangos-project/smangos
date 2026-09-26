@@ -616,6 +616,25 @@ None of these is proven against a real 1.15.6 client yet.
   `Allow = false` reply where the vanilla lookup stayed silent. `SMSG_QUEST_GIVER_STATUS_MULTIPLE` lists
   only the visible creatures and game objects whose status is not "none", so a marker the client already
   shows is cleared by the single-giver status the server sends on every change. Unverified against a real client.
+- **Pets.** `SMSG_PET_SPELLS_MESSAGE` follows TrinityCore's body (family, specialization 0, time limit, command /
+  flag / react bytes, ten action buttons, action and cooldown counts, an always-empty spell history), which
+  vibemangos agrees with; it is used for the pet, a charmed unit and a possessed unit alike (the time limit carries
+  the charm duration). Both references also agree that the flag byte set for a disabled bar (`0x8`, vanilla's
+  "enabled flags") is never read back from the wire; it is still sent, in `SMSG_PET_SPELLS_MESSAGE` and
+  `SMSG_PET_MODE`. The spell list only carries the learned spells of a warlock's own summon or a hunter pet
+  (`IsPermanentPetFor`). vibemangos defers the message by one tick because the pet's create block may still sit
+  in the same visibility batch and a real client drops the bar when it cannot resolve the guid yet; that
+  deferral is not ported, so a real client may need it. `CMSG_PET_SET_ACTION` carries one button per message, not
+  the vanilla batch of up to two: a command or reaction button is accepted only while the bar still holds it in
+  another slot (a move is two messages), and is never cleared by an empty action. `CMSG_PET_CAST_SPELL` shares
+  `SpellCastRequest` with the player cast, and the server answers it with `SMSG_SPELL_PREPARE` like one.
+  `SMSG_PET_CAST_FAILED` carries the cast id (the request's own when there is one) and an int reason.
+  `SMSG_PET_NAME_INVALID` has a plain-byte name length where its request has a bit-packed one (TrinityCore's own
+  asymmetry). A pet name lookup for a guid the server cannot resolve answers `Allow = false` where the vanilla
+  lookup stayed silent. Three vanilla sends have no modern message and are gone: `SMSG_PET_BROKEN` (the pet
+  still runs away, silently), and the pet-skill wipe confirmation with its `CMSG_PET_UNLEARN` reply (the beast
+  trainer's "unlearn pet skills" gossip option now only closes the window). The stable master stays on the legacy
+  lane: its list rides update fields in the modern protocol. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
