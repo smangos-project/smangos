@@ -34,6 +34,7 @@
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/Classic/InventorySlots.h"
 #include "Packets/LootMessages.h"
+#include "Packets/QuestMessages.h"
 #include "Packets/ClassicInventoryResult.h"
 #include "Packets/CombatLog.h"
 #include "WorldPacket.h"
@@ -13389,7 +13390,7 @@ bool Player::SatisfyQuestLog(bool msg) const
 
     if (msg)
     {
-        GetSession()->SendPacket(std::make_unique<WorldPackets::Quest::QuestLogFull>());
+        GetSession()->SendClassic(QuestLogFull());
     }
     return false;
 }
@@ -14379,40 +14380,29 @@ void Player::SendQuestCompleteEvent(uint32 questId) const
 {
     if (questId)
     {
-        auto packet = std::make_unique<WorldPackets::Quest::QuestUpdateComplete>();
-        packet->questId = questId;
-        GetSession()->SendPacket(std::move(packet));
+        QuestUpdateComplete packet;
+        packet.QuestId = questId;
+        GetSession()->SendClassic(packet);
     }
 }
 
 void Player::SendQuestReward(Quest const* pQuest, uint32 XP) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverQuestComplete>();
-    packet->questId = pQuest->GetQuestId();
-    packet->unknown = 0x03;
+    QuestGiverQuestComplete packet;
+    packet.QuestId = pQuest->GetQuestId();
 
     if (GetLevel() < sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
     {
-        packet->xp = XP;
-        packet->money = pQuest->GetRewOrReqMoney();
+        packet.XpReward = XP;
+        packet.MoneyReward = pQuest->GetRewOrReqMoney();
     }
     else
     {
-        packet->xp = 0;
-        packet->money = pQuest->GetRewOrReqMoney() + pQuest->GetRewMoneyMaxLevelAtComplete();
+        packet.XpReward = 0;
+        packet.MoneyReward = pQuest->GetRewOrReqMoney() + pQuest->GetRewMoneyMaxLevelAtComplete();
     }
 
-    for (uint32 i = 0; i < pQuest->GetRewItemsCount(); ++i)
-    {
-        WorldPackets::Quest::QuestRewardItem item;
-        if (pQuest->RewItemId[i] > 0)
-        {
-            item.itemId = pQuest->RewItemId[i];
-            item.itemCount = pQuest->RewItemCount[i];
-        }
-        packet->rewardItems.push_back(item);
-    }
-    GetSession()->SendPacket(std::move(packet));
+    GetSession()->SendClassic(packet);
 }
 
 // Sent when a quest is failed to be given off at questtaker. Specifically handled reasons:
@@ -14473,22 +14463,24 @@ void Player::SendQuestConfirmAccept(Quest const* pQuest, Player const* pReceiver
             }
         }
 
-        auto packet = std::make_unique<WorldPackets::Quest::QuestConfirmAcceptResponse>();
-        packet->questId = pQuest->GetQuestId();
-        packet->questTitle = std::move(strTitle);
-        packet->senderGuid = GetObjectGuid();
-        pReceiver->GetSession()->SendPacket(std::move(packet));
+        QuestConfirmAcceptResponse packet;
+        packet.QuestId = pQuest->GetQuestId();
+        packet.QuestTitle = std::move(strTitle);
+        packet.InitiatedBy = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+        pReceiver->GetSession()->SendClassic(packet);
     }
 }
 
-void Player::SendPushToPartyResponse(Player const* pPlayer, uint8 msg) const
+void Player::SendPushToPartyResponse(Player const* pPlayer, uint8 msg, Quest const* pQuest) const
 {
     if (pPlayer)
     {
-        auto packet = std::make_unique<WorldPackets::Quest::QuestPushResultResponse>();
-        packet->senderGuid = pPlayer->GetObjectGuid();
-        packet->msg = msg;                                 // enum QuestShareMessages
-        GetSession()->SendPacket(std::move(packet));
+        QuestPushResultResponse packet;
+        packet.SenderGuid = ClassicGuidMapping::ToClassic(pPlayer->GetObjectGuid(), realmID);
+        packet.Result = msg;                                 // enum QuestShareMessages
+        if (pQuest)
+            packet.QuestTitle = pQuest->GetTitle();
+        GetSession()->SendClassic(packet);
     }
 }
 
@@ -14500,10 +14492,13 @@ void Player::SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32
         MANGOS_ASSERT(batchCount < 64 && "Quest slot count store is limited to 6 bits 2^6 = 64 (0..63)");
 
         // Update quest watcher and fire QUEST_WATCH_UPDATE for the current batch
-        auto packet = std::make_unique<WorldPackets::Quest::QuestUpdateAddItem>();
-        packet->itemId = pQuest->ReqItemId[item_idx];
-        packet->count = batchCount;
-        GetSession()->SendPacket(std::move(packet));
+        QuestUpdateAddCredit packet;
+        packet.QuestId = pQuest->GetQuestId();
+        packet.ObjectId = int32(pQuest->ReqItemId[item_idx]);
+        packet.Count = uint16(current + batchCount);
+        packet.Required = uint16(pQuest->ReqItemCount[item_idx]);
+        packet.ObjectiveType = 1;  // item
+        GetSession()->SendClassic(packet);
 
         // Update player field and fire UNIT_QUEST_LOG_CHANGED for self for the current batch
         uint16 slot = FindQuestSlot(pQuest->GetQuestId());
@@ -14523,18 +14518,20 @@ void Player::SendQuestUpdateAddCreatureOrGo(Quest const* pQuest, ObjectGuid guid
     MANGOS_ASSERT(count < 64 && "Quest slot count store is limited to 6 bits 2^6 = 64 (0..63)");
 
     int32 entry = pQuest->ReqCreatureOrGOId[ creatureOrGO_idx ];
-    if (entry < 0)
+    bool const isGameObject = entry < 0;
+    if (isGameObject)
         // client expected gameobject template id in form (id|0x80000000)
         entry = (-entry) | 0x80000000;
 
     // Update quest watcher and fire QUEST_WATCH_UPDATE
-    auto addKillPacket = std::make_unique<WorldPackets::Quest::QuestUpdateAddKill>();
-    addKillPacket->questId = pQuest->GetQuestId();
-    addKillPacket->entry = static_cast<uint32>(entry);
-    addKillPacket->count = count;
-    addKillPacket->required = pQuest->ReqCreatureOrGOCount[ creatureOrGO_idx ];
-    addKillPacket->guid = guid;
-    GetSession()->SendPacket(std::move(addKillPacket));
+    QuestUpdateAddCredit packet;
+    packet.VictimGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    packet.QuestId = pQuest->GetQuestId();
+    packet.ObjectId = entry;
+    packet.Count = uint16(count);
+    packet.Required = uint16(pQuest->ReqCreatureOrGOCount[ creatureOrGO_idx ]);
+    packet.ObjectiveType = isGameObject ? 2 : 0;  // gameobject : monster
+    GetSession()->SendClassic(packet);
 
     // Update player field and fire UNIT_QUEST_LOG_CHANGED for self
     uint16 slot = FindQuestSlot(pQuest->GetQuestId());

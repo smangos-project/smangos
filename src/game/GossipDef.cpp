@@ -29,6 +29,7 @@
 #include "World.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/NpcMessages.h"
+#include "Packets/QuestMessages.h"
 
 namespace
 {
@@ -45,6 +46,24 @@ int32 GossipQuestTypeForDialogStatus(uint8 dialogStatus)
             return 0;
         default:
             return 2;
+    }
+}
+
+// The modern client's quest-giver status is a bitmask (TrinityCore's QuestGiverStatus: Future=0x2,
+// Trivial=0x4, Reward=0x20, RepeatableTurnin=0x100, Quest=0x400, RewardCompleteNoPOI=0x800,
+// RewardCompletePOI=0x1000), not this engine's sequential 0-7 DIALOG_STATUS_* enum (QuestDef.h).
+uint64 ToModernQuestGiverStatus(uint8 dialogStatus)
+{
+    switch (dialogStatus)
+    {
+        case DIALOG_STATUS_UNAVAILABLE: return 0x000002;  // Future
+        case DIALOG_STATUS_CHAT:        return 0x000004;  // Trivial
+        case DIALOG_STATUS_INCOMPLETE:  return 0x000020;  // Reward
+        case DIALOG_STATUS_REWARD_REP:  return 0x000100;  // RepeatableTurnin
+        case DIALOG_STATUS_AVAILABLE:   return 0x000400;  // Quest
+        case DIALOG_STATUS_REWARD_OLD:  return 0x000800;  // RewardCompleteNoPOI (never produced by GetDialogStatus)
+        case DIALOG_STATUS_REWARD2:     return 0x001000;  // RewardCompletePOI -- ready to turn in, show map marker
+        default:                        return 0x000000;
     }
 }
 }
@@ -313,50 +332,176 @@ void QuestMenu::ClearMenu()
     m_qItems.clear();
 }
 
+namespace
+{
+// Fills the reward-item/choice-item/faction arrays and money/xp shared by QuestGiverQuestDetails
+// and QuestGiverOfferReward. Rewards are always sent in full: this engine's only "hidden rewards"
+// behavior was the vanilla QUEST_FLAGS_HIDDEN_REWARDS zero-out, which has no field to carry it here.
+QuestRewardsBlock BuildQuestRewardsBlock(Quest const* quest)
+{
+    QuestRewardsBlock rewards;
+    rewards.ItemCount = quest->GetRewItemsCount();
+    for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    {
+        rewards.Items[i].ItemId = quest->RewItemId[i];
+        rewards.Items[i].Quantity = quest->RewItemCount[i];
+    }
+    rewards.ChoiceItemCount = quest->GetRewChoiceItemsCount();
+    for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+    {
+        rewards.ChoiceItems[i].ItemId = quest->RewChoiceItemId[i];
+        rewards.ChoiceItems[i].Quantity = quest->RewChoiceItemCount[i];
+    }
+    rewards.Money = quest->GetRewOrReqMoney();
+    rewards.Xp = quest->XPValue(0);
+    for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    {
+        rewards.Factions[i].FactionId = quest->RewRepFaction[i];
+        rewards.Factions[i].Value = quest->RewRepValue[i];
+    }
+    rewards.SpellCompletionId = quest->GetRewSpellCast() ? quest->GetRewSpellCast() : quest->GetRewSpell();
+    return rewards;
+}
+
+std::string LocalizedQuestTitle(Quest const* quest, int locIdx)
+{
+    std::string title = quest->GetTitle();
+    if (locIdx >= 0)
+        if (QuestLocale const* ql = sObjectMgr.GetQuestLocale(quest->GetQuestId()))
+            if (ql->Title.size() > size_t(locIdx) && !ql->Title[locIdx].empty())
+                title = ql->Title[locIdx];
+    return title;
+}
+}
+
 void PlayerMenu::SendQuestGiverQuestList(QuestNpcEmoteInfo fallbackEmote, std::string const& Title, ObjectGuid guid) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverQuestList>();
-    packet->sessionDbLocaleIndex = GetMenuSession()->GetSessionDbLocaleIndex();
-    packet->npcGuid = guid;
-    packet->fallbackTitle = Title;
-    packet->fallbackEmoteDelay = fallbackEmote.delay;
-    packet->fallbackEmote = fallbackEmote.emote;
+    int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();
+
+    QuestGiverQuestList packet;
+    packet.NpcGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+
+    if (QuestGreetingLocale const* questGreeting = sObjectMgr.GetQuestGreetingLocale(guid.GetEntry(), guid.IsAnyTypeCreature() ? 0 : 1))
+    {
+        if (int32(questGreeting->Content.size()) > locIdx + 1 && !questGreeting->Content[locIdx + 1].empty())
+            packet.Greeting = questGreeting->Content[locIdx + 1];
+        else
+            packet.Greeting = questGreeting->Content[0];
+        packet.GreetEmoteDelay = questGreeting->EmoteDelay;
+        packet.GreetEmoteType = questGreeting->Emote;
+    }
+    else
+    {
+        packet.Greeting = Title;
+        packet.GreetEmoteDelay = fallbackEmote.delay;
+        packet.GreetEmoteType = fallbackEmote.emote;
+    }
 
     for (uint32 count = 0; count < mQuestMenu.MenuItemCount(); ++count)
     {
         QuestMenuItem const& qmi = mQuestMenu.GetItem(count);
-        if (Quest const* pQuest = sObjectMgr.GetQuestTemplate(qmi.m_qId))
-            packet->quests.push_back(WorldPackets::Quest::QuestListEntry(pQuest, qmi.m_qIcon));
+        Quest const* pQuest = sObjectMgr.GetQuestTemplate(qmi.m_qId);
+        if (!pQuest)
+            continue;
+
+        QuestGiverQuestListEntry& entry = packet.Quests.emplace_back();
+        entry.QuestId = pQuest->GetQuestId();
+        entry.QuestType = GossipQuestTypeForDialogStatus(qmi.m_qIcon);
+        entry.QuestLevel = int32(pQuest->GetQuestLevel());
+        entry.QuestFlags[0] = 8;
+        entry.Repeatable = pQuest->IsRepeatable();
+        entry.Title = LocalizedQuestTitle(pQuest, locIdx);
     }
-    GetMenuSession()->SendPacket(std::move(packet));
+
+    GetMenuSession()->SendClassic(packet);
 }
 
 void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, ObjectGuid npcGUID) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverStatus>();
-    packet->npcGuid = npcGUID;
-    packet->status = questStatus;
-    GetMenuSession()->SendPacket(std::move(packet));
+    QuestGiverStatus packet;
+    packet.NpcGuid = ClassicGuidMapping::ToClassic(npcGUID, realmID);
+    packet.Status = ToModernQuestGiverStatus(questStatus);
+    GetMenuSession()->SendClassic(packet);
 }
 
 void PlayerMenu::SendQuestGiverQuestDetails(Quest const* pQuest, ObjectGuid npcGUID, bool ActivateAccept) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverQuestDetails>();
-    packet->sessionDbLocaleIndex = GetMenuSession()->GetSessionDbLocaleIndex();
-    packet->npcGuid = npcGUID;
-    packet->quest = pQuest;
-    packet->autoFinish = ActivateAccept; // I have no idea here this is used
-    GetMenuSession()->SendPacket(std::move(packet));
+    int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();
+    QuestLocale const* ql = locIdx >= 0 ? sObjectMgr.GetQuestLocale(pQuest->GetQuestId()) : nullptr;
+
+    QuestGiverQuestDetails packet;
+    packet.NpcGuid = ClassicGuidMapping::ToClassic(npcGUID, realmID);
+    packet.QuestId = pQuest->GetQuestId();
+    packet.QuestFlags[0] = pQuest->GetQuestFlags();
+    packet.SuggestedPartyMembers = int32(pQuest->GetSuggestedPlayers());
+    for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
+    {
+        packet.DetailsEmote[i] = pQuest->DetailsEmote[i];
+        packet.DetailsEmoteDelay[i] = pQuest->DetailsEmoteDelay[i];
+    }
+    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        if (pQuest->ReqCreatureOrGOId[i] == 0)
+            continue;
+        int32 const raw = pQuest->ReqCreatureOrGOId[i];
+        QuestGiverQuestDetailsObjective& obj = packet.Objectives.emplace_back();
+        obj.Id = uint32(packet.Objectives.size() - 1);
+        obj.ObjectId = raw > 0 ? raw : ((-raw) | int32(0x80000000));
+        obj.Amount = int32(pQuest->ReqCreatureOrGOCount[i]);
+        obj.Type = raw > 0 ? 0 : 2;  // monster : gameobject
+    }
+    for (uint32 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+    {
+        if (pQuest->ReqItemId[i] == 0)
+            continue;
+        QuestGiverQuestDetailsObjective& obj = packet.Objectives.emplace_back();
+        obj.Id = uint32(packet.Objectives.size() - 1);
+        obj.ObjectId = int32(pQuest->ReqItemId[i]);
+        obj.Amount = int32(pQuest->ReqItemCount[i]);
+        obj.Type = 1;  // item
+    }
+    packet.Rewards = BuildQuestRewardsBlock(pQuest);
+    packet.Title = LocalizedQuestTitle(pQuest, locIdx);
+    packet.DescriptionText = pQuest->GetDetails();
+    packet.LogDescription = pQuest->GetObjectives();
+    if (ql)
+    {
+        if (ql->Details.size() > size_t(locIdx) && !ql->Details[locIdx].empty())
+            packet.DescriptionText = ql->Details[locIdx];
+        if (ql->Objectives.size() > size_t(locIdx) && !ql->Objectives[locIdx].empty())
+            packet.LogDescription = ql->Objectives[locIdx];
+    }
+    packet.AutoLaunched = ActivateAccept; // I have no idea here this is used
+
+    GetMenuSession()->SendClassic(packet);
 }
 
 void PlayerMenu::SendQuestGiverOfferReward(Quest const* pQuest, ObjectGuid npcGuid, bool EnableNext) const
 {
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverOfferReward>();
-    packet->sessionDbLocaleIndex = GetMenuSession()->GetSessionDbLocaleIndex();
-    packet->npcGuid = npcGuid;
-    packet->quest = pQuest;
-    packet->autoFinish = EnableNext; // I have no idea here this is used
-    GetMenuSession()->SendPacket(std::move(packet));
+    int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();
+    QuestLocale const* ql = locIdx >= 0 ? sObjectMgr.GetQuestLocale(pQuest->GetQuestId()) : nullptr;
+
+    QuestGiverOfferReward packet;
+    packet.NpcGuid = ClassicGuidMapping::ToClassic(npcGuid, realmID);
+    packet.QuestId = pQuest->GetQuestId();
+    packet.QuestFlags[0] = pQuest->GetQuestFlags();
+    packet.SuggestedPartyMembers = int32(pQuest->GetSuggestedPlayers());
+    for (uint32 emoteId : pQuest->OfferRewardEmote)
+    {
+        if (emoteId == 0)
+            break;
+        QuestDescEmoteEntry& emote = packet.Emotes.emplace_back();
+        emote.Type = int32(pQuest->OfferRewardEmote[packet.Emotes.size() - 1]);
+        emote.Delay = pQuest->OfferRewardEmoteDelay[packet.Emotes.size() - 1];
+    }
+    packet.Rewards = BuildQuestRewardsBlock(pQuest);
+    packet.Title = LocalizedQuestTitle(pQuest, locIdx);
+    packet.OfferRewardText = pQuest->GetOfferRewardText();
+    if (ql && ql->OfferRewardText.size() > size_t(locIdx) && !ql->OfferRewardText[locIdx].empty())
+        packet.OfferRewardText = ql->OfferRewardText[locIdx];
+    packet.AutoLaunched = EnableNext; // I have no idea here this is used
+
+    GetMenuSession()->SendClassic(packet);
 }
 
 void PlayerMenu::SendQuestGiverRequestItems(Quest const* pQuest, ObjectGuid npcGuid, bool isComplete, bool closeOnCancel) const
@@ -373,11 +518,30 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* pQuest, ObjectGuid npcG
         return;
     }
 
-    auto packet = std::make_unique<WorldPackets::Quest::QuestGiverRequestItems>();
-    packet->sessionDbLocaleIndex = GetMenuSession()->GetSessionDbLocaleIndex();
-    packet->npcGuid = npcGuid;
-    packet->quest = pQuest;
-    packet->isComplete = isComplete;
-    packet->closeOnCancel = closeOnCancel;
-    GetMenuSession()->SendPacket(std::move(packet));
+    int const locIdx = GetMenuSession()->GetSessionDbLocaleIndex();
+    QuestLocale const* ql = locIdx >= 0 ? sObjectMgr.GetQuestLocale(pQuest->GetQuestId()) : nullptr;
+
+    QuestGiverRequestItems packet;
+    packet.NpcGuid = ClassicGuidMapping::ToClassic(npcGuid, realmID);
+    packet.QuestId = pQuest->GetQuestId();
+    packet.QuestFlags[0] = pQuest->GetQuestFlags();
+    packet.SuggestedPartyMembers = int32(pQuest->GetSuggestedPlayers());
+    packet.MoneyToGet = pQuest->GetRewOrReqMoney() < 0 ? -pQuest->GetRewOrReqMoney() : 0;
+    packet.CompEmoteType = isComplete ? pQuest->GetCompleteEmote() : pQuest->GetIncompleteEmote();
+    for (uint32 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+    {
+        if (!pQuest->ReqItemId[i])
+            continue;
+        QuestGiverRequestItemsObjective& obj = packet.Collect.emplace_back();
+        obj.ObjectId = pQuest->ReqItemId[i];
+        obj.Amount = pQuest->ReqItemCount[i];
+    }
+    packet.IsComplete = isComplete;
+    packet.Title = LocalizedQuestTitle(pQuest, locIdx);
+    packet.RequestItemsText = pQuest->GetRequestItemsText();
+    if (ql && ql->RequestItemsText.size() > size_t(locIdx) && !ql->RequestItemsText[locIdx].empty())
+        packet.RequestItemsText = ql->RequestItemsText[locIdx];
+
+    (void)closeOnCancel;  // no modern field carries this -- Escape/gossip cancel already covers it
+    GetMenuSession()->SendClassic(packet);
 }

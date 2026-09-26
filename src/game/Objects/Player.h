@@ -1155,18 +1155,6 @@ class Player final: public Unit
         QuestStatus GetQuestStatus(uint32 questId) const;
         void SetQuestStatus(uint32 questId, QuestStatus status);
 
-        void SwapQuestSlot(uint16 slot1,uint16 slot2)
-        {
-            for (int i = 0; i < MAX_QUEST_OFFSET ; ++i)
-            {
-                uint32 temp1 = GetUInt32Value(PLAYER_QUEST_LOG_1_1 + MAX_QUEST_OFFSET *slot1 + i);
-                uint32 temp2 = GetUInt32Value(PLAYER_QUEST_LOG_1_1 + MAX_QUEST_OFFSET *slot2 + i);
-
-                SetUInt32Value(PLAYER_QUEST_LOG_1_1 + MAX_QUEST_OFFSET *slot1 + i, temp2);
-                SetUInt32Value(PLAYER_QUEST_LOG_1_1 + MAX_QUEST_OFFSET *slot2 + i, temp1);
-            }
-        }
-
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         void RewardSinglePlayerAtKill(Unit const* pVictim);
         void RewardPlayerAndGroupAtEvent(uint32 creatureId, WorldObject const* pRewardSource);
@@ -1195,7 +1183,7 @@ class Player final: public Unit
         void SendQuestTimerFailed(uint32 questId) const;
         void SendCanTakeQuestResponse(uint32 msg) const;
         void SendQuestConfirmAccept(Quest const* pQuest, Player const* pReceiver) const;
-        void SendPushToPartyResponse(Player const* pPlayer, uint8 msg) const;
+        void SendPushToPartyResponse(Player const* pPlayer, uint8 msg, Quest const* pQuest = nullptr) const;
         void SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32 current, uint32 count);
         void SendQuestUpdateAddCreatureOrGo(Quest const* pQuest, ObjectGuid guid, uint32 creatureOrGO_idx, uint32 count);
 

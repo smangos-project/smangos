@@ -70,6 +70,7 @@
 #include "Packets/Query.h"
 #include "Packets/QueryMessages.h"
 #include "Packets/Quest.h"
+#include "Packets/QuestMessages.h"
 #include "Packets/Skill.h"
 #include "Packets/Social.h"
 #include "Packets/Spell.h"
@@ -824,21 +825,19 @@ class WorldSession
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);
         void HandleUnlearnSkillOpcode(WorldPackets::Skill::UnlearnSkill const& packet);
 
-        void HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestgiverStatusQuery const& packet);
-        void HandleQuestgiverHelloOpcode(WorldPackets::Quest::QuestgiverHello const& packet);
-        void HandleQuestgiverAcceptQuestOpcode(WorldPackets::Quest::QuestgiverAcceptQuest const& packet);
-        void HandleQuestgiverQueryQuestOpcode(WorldPackets::Quest::QuestgiverQueryQuest const& packet);
-        void HandleQuestgiverChooseRewardOpcode(WorldPackets::Quest::QuestgiverChooseReward const& packet);
-        void HandleQuestgiverRequestRewardOpcode(WorldPackets::Quest::QuestgiverRequestReward const& packet);
+        void HandleQuestgiverStatusQueryOpcode(QuestgiverStatusQuery const& packet);
+        void HandleQuestgiverHelloOpcode(QuestgiverHello const& packet);
+        void HandleQuestgiverAcceptQuestOpcode(QuestgiverAcceptQuest const& packet);
+        void HandleQuestgiverQueryQuestOpcode(QuestgiverQueryQuest const& packet);
+        void HandleQuestgiverChooseRewardOpcode(QuestgiverChooseReward const& packet);
+        void HandleQuestgiverRequestRewardOpcode(QuestgiverRequestReward const& packet);
         void HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuest const& packet);
-        void HandleQuestgiverCancel(NullClientPacket const& packet);
-        void HandleQuestLogSwapQuest(WorldPackets::Quest::QuestLogSwapQuest const& packet);
-        void HandleQuestLogRemoveQuest(WorldPackets::Quest::QuestLogRemoveQuest const& packet);
-        void HandleQuestConfirmAccept(WorldPackets::Quest::QuestConfirmAccept const& packet);
-        void HandleQuestgiverCompleteQuest(WorldPackets::Quest::QuestgiverCompleteQuest const& packet);
-        void HandleQuestgiverQuestAutoLaunch(NullClientPacket const& packet);
-        void HandlePushQuestToParty(WorldPackets::Quest::PushQuestToParty const& packet);
-        void HandleQuestPushResult(WorldPackets::Quest::QuestPushResult const& packet);
+        void HandleQuestgiverCancel(QuestGiverCloseQuest const& packet);
+        void HandleQuestLogRemoveQuest(QuestLogRemoveQuest const& packet);
+        void HandleQuestConfirmAccept(QuestConfirmAccept const& packet);
+        void HandleQuestgiverCompleteQuest(QuestgiverCompleteQuest const& packet);
+        void HandlePushQuestToParty(PushQuestToParty const& packet);
+        void HandleQuestPushResult(QuestPushResult const& packet);
 
         bool SanitizeChatMessage(std::string& msg, uint32 lang, uint32 msgType);
         bool SanitizeChatMessageAndProcessCommand(std::string& msg, uint32 lang, uint32 msgType);
