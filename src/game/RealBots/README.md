@@ -470,6 +470,11 @@ None of these is proven against a real 1.15.6 client yet.
   (`vibemangos.txt`). `SMSG_CONNECT_TO` itself is identical in both (`... port, serial, con, key`).
   Resolve with a captured real-client session.
 
+- **Values block "contents changed" byte.** A values block carries one byte after the entity-fragment
+  flag: TrinityCore writes `0x02` (CGObject changed) for a normal change-mask update and `0x03` for a
+  forced with-flags update; vibemangos writes `0x03` for both. **Followed: TrinityCore.** Unverified;
+  resolve with a captured real-client session.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are
