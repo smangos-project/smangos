@@ -694,34 +694,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    struct TransferPendingTransportInfo
-    {
-        TransferPendingTransportInfo(uint32 transport, uint32 map) : transportEntry(transport), oldMapId(map) {};
-        uint32 transportEntry = 0;
-        uint32 oldMapId = 0;
-    };
-
-    class TransferPending final : public ServerPacket
-    {
-    public:
-        uint32 mapId = 0;
-        nonstd::optional<TransferPendingTransportInfo> transportInfo;
-
-        explicit TransferPending() : ServerPacket(SMSG_TRANSFER_PENDING) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class NewWorld final : public ServerPacket
-    {
-    public:
-        WorldLocation location;
-
-        explicit NewWorld() : ServerPacket(SMSG_NEW_WORLD) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class LogXpGain final : public ServerPacket
     {
     public:
@@ -872,16 +844,6 @@ namespace WorldPackets { namespace Misc
         uint32 areaId = 0;
 
         explicit PlayerBound() : ServerPacket(SMSG_PLAYERBOUND) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class TransferAborted final : public ServerPacket
-    {
-    public:
-        uint8 reason = 0; // transfer abort reason
-
-        explicit TransferAborted() : ServerPacket(SMSG_TRANSFER_ABORTED) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

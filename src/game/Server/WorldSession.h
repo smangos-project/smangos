@@ -68,6 +68,7 @@
 #include "Packets/Spell.h"
 #include "Packets/Taxi.h"
 #include "Packets/Trade.h"
+#include "Packets/WorldTransfer.h"
 
 #include <array>
 #include <map>
@@ -583,7 +584,7 @@ class WorldSession
         void HandleForceSpeedChangeAck(ClassicOpcodes opcode, ClassicMovementAck const& ack, float speed);
         template<ClassicOpcodes Op>
         void HandleClassicSpeedAck(ClientMovementSpeedAck<Op> const& packet) { HandleForceSpeedChangeAck(Op, packet.Ack, packet.Speed); }
-        void HandleMoveWorldportAckOpcode(NullClientPacket const& packet);
+        void HandleMoveWorldportAckOpcode(WorldPortResponse const& packet);
         void HandleMoveWorldportAck();                // for server-side calls
         void HandleMovementOpcodes(uint32 opcode, MovementInfo& movementInfo);
         void HandleClassicMovement(ClassicOpcodes opcode, ClassicMovementInfo const& status);

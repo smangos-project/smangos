@@ -637,41 +637,6 @@ void WorldPackets::Misc::PauseMirrorTimer::AppendBodyTo(ByteBuffer& buffer) cons
     buffer << paused;
 }
 
-size_t WorldPackets::Misc::TransferPending::EstimateFinalSize() const
-{
-    size_t result = sizeof(mapId);
-    if (transportInfo)
-    {
-        result += sizeof(TransferPendingTransportInfo::transportEntry) +
-                  sizeof(TransferPendingTransportInfo::oldMapId);
-    }
-    return result;
-}
-
-void WorldPackets::Misc::TransferPending::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << mapId;
-    if (transportInfo)
-    {
-        buffer << transportInfo->transportEntry;
-        buffer << transportInfo->oldMapId;
-    }
-}
-
-size_t WorldPackets::Misc::NewWorld::EstimateFinalSize() const
-{
-    return sizeof(WorldLocation);
-}
-
-void WorldPackets::Misc::NewWorld::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << location.mapId;
-    buffer << location.x;
-    buffer << location.y;
-    buffer << location.z;
-    buffer << location.o;
-}
-
 size_t WorldPackets::Misc::LogXpGain::EstimateFinalSize() const
 {
     size_t result = sizeof(victimGuid) +
@@ -844,16 +809,6 @@ void WorldPackets::Misc::PlayerBound::AppendBodyTo(ByteBuffer& buffer) const
     buffer << areaId;
 }
 
-
-size_t WorldPackets::Misc::TransferAborted::EstimateFinalSize() const
-{
-    return sizeof(reason);
-}
-
-void WorldPackets::Misc::TransferAborted::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << reason;
-}
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
 size_t WorldPackets::Misc::RaidInstanceMessage::EstimateFinalSize() const

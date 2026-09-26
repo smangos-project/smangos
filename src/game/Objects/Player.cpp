@@ -2069,12 +2069,18 @@ bool Player::ExecuteTeleportFar(ScheduledTeleportData* data)
         if (!GetSession()->PlayerLogout())
         {
             // send transfer packet to display load screen
-            auto packet = std::make_unique<WorldPackets::Misc::TransferPending>();
-            packet->mapId = mapId;
+            TransferPending packet;
+            packet.MapId = int32(mapId);
+            packet.X = data->x;
+            packet.Y = data->y;
+            packet.Z = data->z;
             if (m_transport)
-                packet->transportInfo = WorldPackets::Misc::TransferPendingTransportInfo{ m_transport->GetEntry(), GetMapId() };
-            GetCheatData()->LogMovementPacket(*packet);
-            GetSession()->SendPacket(std::move(packet));
+            {
+                packet.ShipEntry = m_transport->GetEntry();
+                packet.ShipOriginMapId = int32(GetMapId());
+            }
+            GetCheatData()->LogMovementPacket(false, MakeClassicPacket(packet));
+            GetSession()->SendClassic(packet);
         }
 
         // remove from old map now
@@ -2117,9 +2123,14 @@ bool Player::ExecuteTeleportFar(ScheduledTeleportData* data)
 void Player::SendNewWorld()
 {
     // transfer finished, inform client to start load
-    auto packet = std::make_unique<WorldPackets::Misc::NewWorld>();
-    packet->location = m_transport ? m_movementInfo.GetTransportPos().WithMapId(m_teleportDest.mapId) : m_teleportDest;
-    GetSession()->SendPacket(std::move(packet));
+    WorldLocation const location = m_transport ? m_movementInfo.GetTransportPos().WithMapId(m_teleportDest.mapId) : m_teleportDest;
+    NewWorld packet;
+    packet.MapId = int32(location.mapId);
+    packet.X = location.x;
+    packet.Y = location.y;
+    packet.Z = location.z;
+    packet.O = location.o;
+    GetSession()->SendClassic(packet);
     SendSavedInstances();
 }
 
@@ -19235,9 +19246,10 @@ void Player::SendUpdateToOutOfRangeGroupMembers()
 
 void Player::SendTransferAborted(uint8 reason) const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::TransferAborted>();
-    packet->reason = reason;
-    GetSession()->SendPacket(std::move(packet));
+    TransferAborted packet;
+    packet.MapId = GetMapId();
+    packet.Reason = reason;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendInstanceResetWarning(uint32 mapId, uint32 resetTime) const

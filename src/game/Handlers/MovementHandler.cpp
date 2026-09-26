@@ -40,7 +40,7 @@
 #include "MovementInfoWire.h"
 #include "Packets/Classic/GuidMapping.h"
 
-void WorldSession::HandleMoveWorldportAckOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleMoveWorldportAckOpcode(WorldPortResponse const& /*packet*/)
 {
     HandleMoveWorldportAck();
 }
