@@ -239,6 +239,10 @@ class RealBot : public std::enable_shared_from_this<RealBot>
         std::vector<BotKnownObject> GetKnownObjects() const;
         // Where this bot itself now stands, after it sent a movement message.
         void NoteOwnMovement(ClassicMovementInfo const& status);
+        // The bot's own movement info as of now: its position, and the flags the server has
+        // changed on it (root, water walk, hover, feather fall). Bot thread only.
+        ClassicMovementInfo CurrentMovementInfo() const;
+        uint32_t GetMovementFlags() const { return m_movementFlags; }
 
     private:
         void ProcessCommands();
@@ -302,6 +306,7 @@ class RealBot : public std::enable_shared_from_this<RealBot>
 
         mutable std::mutex m_worldViewLock;
         BotWorldView m_worldView;
+        uint32_t m_movementFlags = 0;
 };
 
 #endif

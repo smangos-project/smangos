@@ -324,6 +324,63 @@ void RealBot::ProcessIncoming(uint32 diff)
     }
 }
 
+namespace
+{
+// Answers a server message asking the bot to change one movement flag, applying the change to
+// the flags it moves with.
+template<typename Message, typename Ack, typename Send>
+void AckFlagChange(ByteBuffer& body, ClassicMovementInfo status, uint32 flag, bool apply, uint32& flags, Send&& send)
+{
+    Message message;
+    if (!message.Read(body))
+        return;
+
+    if (apply)
+        flags |= flag;
+    else
+        flags &= ~flag;
+
+    Ack ack;
+    ack.Ack.Status = status;
+    ack.Ack.Status.Guid = message.Mover;
+    ack.Ack.Status.Flags = flags;
+    ack.Ack.AckIndex = int32(message.SequenceIndex);
+    send(ack);
+}
+
+// Answers a speed change with the speed the server asked for.
+template<typename Message, typename Ack, typename Send>
+void AckSpeedChange(ByteBuffer& body, ClassicMovementInfo status, Send&& send)
+{
+    Message message;
+    if (!message.Read(body))
+        return;
+
+    Ack ack;
+    ack.Ack.Status = status;
+    ack.Ack.Status.Guid = message.Mover;
+    ack.Ack.AckIndex = int32(message.SequenceIndex);
+    ack.Speed = message.Speed;
+    send(ack);
+}
+}
+
+ClassicMovementInfo RealBot::CurrentMovementInfo() const
+{
+    ClassicMovementInfo status;
+    status.Guid = m_identity.CharacterGuid;
+    status.Flags = m_movementFlags;
+    status.Time = m_elapsedMs;
+    if (std::optional<BotKnownObject> const self = GetKnownObject(m_identity.CharacterGuid))
+    {
+        status.X = self->X;
+        status.Y = self->Y;
+        status.Z = self->Z;
+        status.O = self->O;
+    }
+    return status;
+}
+
 void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
 {
     if (dir != BotPacketDir::Incoming)
@@ -374,6 +431,71 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             }
             break;
         }
+        case CLASSIC_SMSG_MOVE_TELEPORT:
+        {
+            MoveTeleport teleport;
+            if (!teleport.Read(body))
+                break;
+
+            ClassicMovementInfo status = CurrentMovementInfo();
+            status.X = teleport.X;
+            status.Y = teleport.Y;
+            status.Z = teleport.Z;
+            status.O = teleport.Facing;
+            NoteOwnMovement(status);
+
+            MoveTeleportAck ack;
+            ack.Mover = teleport.Mover;
+            ack.AckIndex = int32(teleport.SequenceIndex);
+            ack.MoveTime = int32(m_elapsedMs);
+            Send(ack);
+            break;
+        }
+        case CLASSIC_SMSG_MOVE_KNOCK_BACK:
+        {
+            MoveKnockBack knock;
+            if (!knock.Read(body))
+                break;
+
+            MoveKnockBackAck ack;
+            ack.Ack.Status = CurrentMovementInfo();
+            ack.Ack.Status.Guid = knock.Mover;
+            ack.Ack.Status.Flags |= CLASSIC_MOVEFLAG_FALLING;
+            ClassicMovementInfo::Fall fall;
+            fall.HasDirection = true;
+            fall.CosAngle = knock.DirectionX;
+            fall.SinAngle = knock.DirectionY;
+            fall.XYSpeed = knock.HorizontalSpeed;
+            fall.ZSpeed = knock.VerticalSpeed;
+            ack.Ack.Status.FallInfo = fall;
+            ack.Ack.AckIndex = int32(knock.SequenceIndex);
+            Send(ack);
+            break;
+        }
+#define BOT_ACK_FLAG(Message, Ack, flag, apply) \
+        case Message::Opcode: \
+            AckFlagChange<Message, Ack>(body, CurrentMovementInfo(), flag, apply, m_movementFlags, [this](auto const& reply) { Send(reply); }); \
+            break;
+        BOT_ACK_FLAG(MoveRoot, MoveForceRootAck, CLASSIC_MOVEFLAG_ROOT, true)
+        BOT_ACK_FLAG(MoveUnroot, MoveForceUnrootAck, CLASSIC_MOVEFLAG_ROOT, false)
+        BOT_ACK_FLAG(MoveSetWaterWalk, MoveWaterWalkAck, CLASSIC_MOVEFLAG_WATERWALKING, true)
+        BOT_ACK_FLAG(MoveSetLandWalk, MoveWaterWalkAck, CLASSIC_MOVEFLAG_WATERWALKING, false)
+        BOT_ACK_FLAG(MoveSetHovering, MoveHoverAck, CLASSIC_MOVEFLAG_HOVER, true)
+        BOT_ACK_FLAG(MoveUnsetHovering, MoveHoverAck, CLASSIC_MOVEFLAG_HOVER, false)
+        BOT_ACK_FLAG(MoveSetFeatherFall, MoveFeatherFallAck, CLASSIC_MOVEFLAG_FALLING_SLOW, true)
+        BOT_ACK_FLAG(MoveSetNormalFall, MoveFeatherFallAck, CLASSIC_MOVEFLAG_FALLING_SLOW, false)
+#undef BOT_ACK_FLAG
+#define BOT_ACK_SPEED(Message, Ack) \
+        case Message::Opcode: \
+            AckSpeedChange<Message, Ack>(body, CurrentMovementInfo(), [this](auto const& reply) { Send(reply); }); \
+            break;
+        BOT_ACK_SPEED(MoveSetWalkSpeed, MoveForceWalkSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetRunSpeed, MoveForceRunSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetRunBackSpeed, MoveForceRunBackSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetSwimSpeed, MoveForceSwimSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetSwimBackSpeed, MoveForceSwimBackSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetTurnRate, MoveForceTurnRateChangeAck)
+#undef BOT_ACK_SPEED
         case CLASSIC_SMSG_MOVE_UPDATE:
         {
             MoveUpdate update;

@@ -168,7 +168,8 @@ BotRoutine MoveToRoutine(BotContext& ctx, float x, float y, float z, float speed
 
     ClassicMovementInfo status;
     status.Guid = guid;
-    status.Flags = CLASSIC_MOVEFLAG_FORWARD;
+    uint32 const heldFlags = bot.GetMovementFlags();
+    status.Flags = heldFlags | CLASSIC_MOVEFLAG_FORWARD;
     status.X = startX;
     status.Y = startY;
     status.Z = startZ;
@@ -205,7 +206,7 @@ BotRoutine MoveToRoutine(BotContext& ctx, float x, float y, float z, float speed
         bot.NoteOwnMovement(status);
     }
 
-    status.Flags = 0;
+    status.Flags = heldFlags;
     status.Time = ctx.GetTimeMs();
     MoveStop stop;
     stop.Status = status;
