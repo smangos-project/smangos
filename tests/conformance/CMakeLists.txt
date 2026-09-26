@@ -48,6 +48,7 @@ add_executable(tests-conformance
   world_entry/AuraTests.cpp
   world_entry/CombatLogTests.cpp
   world_entry/DeathTests.cpp
+  world_entry/GroupTests.cpp
   world_entry/QueryTests.cpp
   world_entry/ItemTests.cpp
   world_entry/LootTests.cpp

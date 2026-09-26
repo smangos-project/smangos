@@ -56,6 +56,7 @@ add_executable(tests-realbots
   NpcMessagesTests.cpp
   PetMessagesTests.cpp
   QuestMessagesTests.cpp
+  GroupMessagesTests.cpp
   VendorMessagesTests.cpp
   BotWorldViewTests.cpp
   BotWorldConnectionTests.cpp
