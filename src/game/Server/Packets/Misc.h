@@ -567,17 +567,6 @@ namespace WorldPackets { namespace Misc
     };
 #endif
 
-    class AiReaction final : public ServerPacket
-    {
-    public:
-        ObjectGuid unitGuid;
-        uint32 reaction = 0; // AIReactionType enum value
-
-        explicit AiReaction() : ServerPacket(SMSG_AI_REACTION) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class ZoneUnderAttack final : public ServerPacket
     {
     public:
@@ -695,15 +684,6 @@ namespace WorldPackets { namespace Misc
     {
     public:
         explicit DurabilityDamageDeath() : ServerPacket(SMSG_DURABILITY_DAMAGE_DEATH) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    // SMSG_CANCEL_AUTO_REPEAT: empty body; tells client to cancel auto-repeat
-    class CancelAutoRepeat final : public ServerPacket
-    {
-    public:
-        explicit CancelAutoRepeat() : ServerPacket(SMSG_CANCEL_AUTO_REPEAT) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };

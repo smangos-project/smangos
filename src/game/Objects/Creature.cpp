@@ -33,6 +33,8 @@
 #include "GameEventMgr.h"
 #include "PoolManager.h"
 #include "Opcodes.h"
+#include "Server/Packets/CombatMessages.h"
+#include "Server/Packets/Classic/GuidMapping.h"
 #include "Log.h"
 #include "LootMgr.h"
 #include "MapManager.h"
@@ -2509,10 +2511,11 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
 
 void Creature::SendAIReaction(AiReaction reactionType)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::AiReaction>();
-    packet->unitGuid = GetObjectGuid();
-    packet->reaction = static_cast<uint32>(reactionType);
-    SendObjectMessageToSet(std::move(packet), true);
+    AIReactionUpdate packet;
+    packet.Unit = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Reaction = static_cast<uint32>(reactionType);
+    WorldPacket data = MakeClassicPacket(packet);
+    SendObjectMessageToSet(&data, true);
 
     DEBUG_FILTER_LOG(LOG_FILTER_AI_AND_MOVEGENSS, "WORLD: Sent SMSG_AI_REACTION, type %u.", reactionType);
 }

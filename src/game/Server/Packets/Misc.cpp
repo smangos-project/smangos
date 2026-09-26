@@ -512,18 +512,6 @@ void WorldPackets::Misc::InvalidatePlayer::AppendBodyTo(ByteBuffer& buffer) cons
 }
 #endif
 
-size_t WorldPackets::Misc::AiReaction::EstimateFinalSize() const
-{
-    return sizeof(unitGuid) +
-           sizeof(reaction);
-}
-
-void WorldPackets::Misc::AiReaction::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << unitGuid;
-    buffer << reaction;
-}
-
 size_t WorldPackets::Misc::ZoneUnderAttack::EstimateFinalSize() const
 {
     return sizeof(areaId);
@@ -652,15 +640,6 @@ size_t WorldPackets::Misc::DurabilityDamageDeath::EstimateFinalSize() const
 }
 
 void WorldPackets::Misc::DurabilityDamageDeath::AppendBodyTo(ByteBuffer& /*buffer*/) const
-{
-}
-
-size_t WorldPackets::Misc::CancelAutoRepeat::EstimateFinalSize() const
-{
-    return 0;
-}
-
-void WorldPackets::Misc::CancelAutoRepeat::AppendBodyTo(ByteBuffer& /*buffer*/) const
 {
 }
 

@@ -2102,7 +2102,7 @@ void SpellCaster::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed)
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
         {
             if (GetTypeId() == TYPEID_PLAYER)
-                ((Player*)this)->SendAutoRepeatCancel();
+                ((Player*)this)->SendAutoRepeatCancel(m_currentSpells[spellType]->m_targets.getUnitTargetGuid());
         }
 
         if (m_currentSpells[spellType]->getState() != SPELL_STATE_FINISHED)

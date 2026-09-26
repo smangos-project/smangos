@@ -17088,9 +17088,11 @@ void Player::SendAttackSwingBadFacingAttack() const
     GetSession()->SendClassic(packet);
 }
 
-void Player::SendAutoRepeatCancel() const
+void Player::SendAutoRepeatCancel(ObjectGuid target) const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Misc::CancelAutoRepeat>());
+    CancelAutoRepeat packet;
+    packet.Target = ClassicGuidMapping::ToClassic(target, realmID);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendFeignDeathResisted() const

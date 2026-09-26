@@ -9083,10 +9083,10 @@ void Unit::SendPetAIReaction()
 {
     if (Player* pOwner = GetOwnerPlayer())
     {
-        auto packet = std::make_unique<WorldPackets::Misc::AiReaction>();
-        packet->unitGuid = GetObjectGuid();
-        packet->reaction = static_cast<uint32>(AI_REACTION_HOSTILE);
-        pOwner->GetSession()->SendPacket(std::move(packet));
+        AIReactionUpdate packet;
+        packet.Unit = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+        packet.Reaction = static_cast<uint32>(AI_REACTION_HOSTILE);
+        pOwner->GetSession()->SendClassic(packet);
     }
 }
 

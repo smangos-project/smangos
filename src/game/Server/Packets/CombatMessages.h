@@ -316,4 +316,40 @@ struct MeleeAttackingStateUpdate
     }
 };
 
+// A creature's reaction to a target (alert, hostile, ...); `Reaction` is the AiReaction value.
+struct AIReactionUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AI_REACTION;
+
+    ClassicGuid Unit;
+    uint32 Reaction = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Unit.Write(data);
+        data << Reaction;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Unit.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> Reaction;
+        return true;
+    }
+};
+
+// Tells the client an auto-repeat spell (Auto Shot, Shoot) ended; names the target it was aimed at.
+struct CancelAutoRepeat
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CANCEL_AUTO_REPEAT;
+
+    ClassicGuid Target;
+
+    void Write(ByteBuffer& data) const { Target.Write(data); }
+    bool Read(ByteBuffer& data) { return Target.Read(data); }
+};
+
 #endif // MANGOS_PACKETS_COMBATMESSAGES_H

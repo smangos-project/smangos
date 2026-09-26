@@ -1950,7 +1950,7 @@ class Player final: public Unit
         void SendAttackSwingDeadTarget() const;
         void SendAttackSwingNotInRange() const;
         void SendAttackSwingBadFacingAttack() const;
-        void SendAutoRepeatCancel() const;
+        void SendAutoRepeatCancel(ObjectGuid target) const;
         void SendFeignDeathResisted() const;
         void SendExplorationExperience(uint32 Area, uint32 Experience) const;
         void SendFactionAtWar(uint32 reputationId, bool apply) const;
