@@ -2,10 +2,12 @@ add_executable(tests-game
   ${CMAKE_SOURCE_DIR}/src/game/Server/Packets/Classic/GuidMapping.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateField.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateFieldStructs.cpp
+  ${CMAKE_SOURCE_DIR}/src/game/Objects/MovementFlags.cpp
   ViewerDependentStubs.cpp
   ClassicGuidMappingTests.cpp
   ClassicClientTests.cpp
   UpdateFieldTests.cpp
+  MovementFlagsTests.cpp
   TestMain.cpp
 )
 

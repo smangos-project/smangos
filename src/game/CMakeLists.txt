@@ -173,6 +173,7 @@ set (game_SRCS
     Objects/Item.cpp
     Objects/MirrorTimer.cpp
     Objects/Object.cpp
+    Objects/MovementFlags.cpp
     Objects/MovementInfoWire.cpp
     Objects/Pet.cpp
     Objects/Player.cpp
@@ -412,6 +413,7 @@ set (game_SRCS
     Objects/ItemDefines.h
     Objects/ItemPrototype.h
     Objects/MirrorTimer.h
+    Objects/MovementFlags.h
     Objects/MovementInfo.h
     Objects/MovementInfoWire.h
     Objects/Object.h
