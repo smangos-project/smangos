@@ -1,5 +1,6 @@
 // Movement a bot sends and what the bots around it see of it.
 #include "Packets/ChatMessages.h"
+#include "Packets/MountSpecialAnim.h"
 #include "Packets/MovementMessages.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
@@ -159,6 +160,31 @@ TEST_CASE("movement: a teleport within the map reaches the mover and is relayed 
         // use this account must still find it next to everyone else.
         SayCommand(gm, ".go xyz " + std::to_string(start.X) + " " + std::to_string(start.Y) + " " + std::to_string(start.Z));
         REQUIRE(co_await watcher.Packet<MoveUpdateTeleport>(10000, [&](MoveUpdateTeleport const& p) { return std::fabs(p.Status.X - start.X) < 0.5f; }));
+    });
+}
+
+TEST_CASE("movement: a mount special anim request is relayed to a nearby bot", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot caster;
+        TestBot watcher;
+        REQUIRE(co_await caster.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await watcher.Stage(BotStage::InWorld, 30000));
+
+        ClassicGuid const guid = caster.GetCharacterGuid();
+        REQUIRE(co_await TestWaitUntil([&]() { return WaitForKnown(watcher, guid); }, 10000));
+
+        MountSpecial request;
+        request.SpellVisualKitIDs = { 321, 654 };
+        request.SequenceVariation = 2;
+        caster.Send(request);
+
+        auto relayed = co_await watcher.Packet<SpecialMountAnim>(10000);
+        REQUIRE(relayed);
+        CHECK(relayed->UnitGuid == guid);
+        CHECK(relayed->SpellVisualKitIDs == std::vector<int32>{ 321, 654 });
+        CHECK(relayed->SequenceVariation == 2);
     });
 }
 
