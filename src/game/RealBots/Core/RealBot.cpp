@@ -4,6 +4,7 @@
 #include "BotWorldConnection.h"
 #include "ClassicOpcodes.h"
 #include "Packets/Session.h"
+#include "Packets/Auras.h"
 #include "Packets/ObjectUpdate.h"
 #include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
@@ -531,6 +532,16 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             {
                 std::lock_guard<std::mutex> lock(m_worldViewLock);
                 m_worldView.OnMoveUpdate(update.Status);
+            }
+            break;
+        }
+        case CLASSIC_SMSG_AURA_UPDATE:
+        {
+            AuraUpdate update;
+            if (update.Read(body))
+            {
+                std::lock_guard<std::mutex> lock(m_worldViewLock);
+                m_worldView.OnAuraUpdate(update);
             }
             break;
         }

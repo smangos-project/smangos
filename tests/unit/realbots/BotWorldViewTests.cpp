@@ -2,6 +2,7 @@
 // (bot-phase-4.md decision 5's risk note). These build blocks by hand from the wire layout
 // (UpdateObjectWriter.cpp's BuildMovementUpdate), not from the server's own serializer.
 #include "BotWorldView.h"
+#include "Packets/Auras.h"
 #include "Packets/ObjectUpdate.h"
 #include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
@@ -339,4 +340,59 @@ TEST_CASE("BotWorldView: a MonsterMove with no points places the object at its s
     CHECK(known->Y == 8.0f);
     CHECK(known->Z == 9.0f);
     CHECK(known->MonsterMoves == 1);
+}
+
+namespace
+{
+AuraInfo MakeAura(uint8 slot, int32 spellId, uint8 applications = 1)
+{
+    AuraInfo info;
+    info.Slot = slot;
+    info.AuraData.emplace().SpellId = spellId;
+    info.AuraData->Applications = applications;
+    return info;
+}
+}
+
+TEST_CASE("BotWorldView: a full aura list replaces the unit's auras and a delta changes one slot", "[realbots]")
+{
+    BotWorldView view;
+    ClassicGuid const unit = TestGuid(0x50);
+    ByteBuffer blocks;
+    WriteCreateBlock(blocks, unit, BOT_TYPEID_UNIT, MovementFrameOptions{});
+    view.OnUpdateObject(MakePacket(blocks, 1));
+
+    AuraUpdate full;
+    full.UpdateAll = true;
+    full.UnitGuid = unit;
+    full.Auras = { MakeAura(0, 6673), MakeAura(1, 21562) };
+    view.OnAuraUpdate(full);
+    REQUIRE(view.Get(unit)->Auras.size() == 2);
+
+    AuraUpdate delta;
+    delta.UnitGuid = unit;
+    delta.Auras = { MakeAura(0, 6673, 3), AuraInfo{ 1, std::nullopt } };
+    view.OnAuraUpdate(delta);
+
+    std::vector<BotAura> const auras = view.Get(unit)->Auras;
+    REQUIRE(auras.size() == 1);
+    CHECK(auras[0].Slot == 0);
+    CHECK(auras[0].SpellId == 6673);
+    CHECK(auras[0].Applications == 3);
+
+    full.Auras = { MakeAura(5, 133) };
+    view.OnAuraUpdate(full);
+    REQUIRE(view.Get(unit)->Auras.size() == 1);
+    CHECK(view.Get(unit)->Auras[0].SpellId == 133);
+}
+
+TEST_CASE("BotWorldView: an aura update for an unknown unit is ignored", "[realbots]")
+{
+    BotWorldView view;
+    AuraUpdate update;
+    update.UpdateAll = true;
+    update.UnitGuid = TestGuid(0x51);
+    update.Auras = { MakeAura(0, 6673) };
+    view.OnAuraUpdate(update);
+    CHECK_FALSE(view.Get(update.UnitGuid));
 }

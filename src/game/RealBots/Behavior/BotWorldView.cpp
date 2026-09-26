@@ -1,4 +1,5 @@
 #include "BotWorldView.h"
+#include "Packets/Auras.h"
 #include "Packets/ObjectUpdate.h"
 #include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
@@ -338,4 +339,23 @@ std::optional<BotKnownObject> BotWorldView::Get(ClassicGuid const& guid) const
         if (obj.Guid == guid)
             return obj;
     return std::nullopt;
+}
+
+void BotWorldView::OnAuraUpdate(AuraUpdate const& update)
+{
+    for (BotKnownObject& obj : m_objects)
+    {
+        if (obj.Guid != update.UnitGuid)
+            continue;
+
+        if (update.UpdateAll)
+            obj.Auras.clear();
+        for (AuraInfo const& info : update.Auras)
+        {
+            std::erase_if(obj.Auras, [&info](BotAura const& aura) { return aura.Slot == info.Slot; });
+            if (info.AuraData)
+                obj.Auras.push_back({ info.Slot, info.AuraData->SpellId, info.AuraData->Flags, info.AuraData->Applications });
+        }
+        return;
+    }
 }
