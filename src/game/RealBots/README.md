@@ -601,6 +601,21 @@ None of these is proven against a real 1.15.6 client yet.
   `ItemInstance`, not vibemangos's placeholder list-of-five-items body carried over from the vanilla
   struct); this engine has no notion of a single "highlighted" reward item distinct from the full list
   already shown in the offer window, so that field is always empty.
+- **Quest failure toasts.** `SMSG_QUEST_GIVER_INVALID_QUEST` follows TrinityCore's body (reason, contribution
+  reward id, error-message bit, reason text), and its reason is the modern `QuestFailedReason` numbering, not
+  the engine's `INVALIDREASON_*`: low level 1, wrong race 6, one timed quest 12, already on 13, missing items
+  21, not enough money 23; a requirement the client has no text for is 0. `SMSG_QUEST_GIVER_QUEST_FAILED` keeps
+  the inventory-result reasons the engine already used (4 inventory full, 17 duplicate item).
+  `SMSG_QUEST_UPDATE_FAILED` has no body in TrinityCore (unhandled there); vibemangos's single quest id is used.
+  Unverified against a real client.
+- **Quest info by id and area status.** `SMSG_QUERY_QUEST_INFO_RESPONSE` follows TrinityCore's field order,
+  including its two treasure-picker counts, `QuestGiverCreatureID` and the two conditional-text counts;
+  vibemangos writes a single treasure picker id and omits the rest, which does not line up with
+  TrinityCore's serializer. A game object objective carries its plain entry with type 2 (TrinityCore); the
+  `0x80000000` mark vibemangos puts on it belongs to `QuestUpdateAddCredit`. An unknown quest gets an
+  `Allow = false` reply where the vanilla lookup stayed silent. `SMSG_QUEST_GIVER_STATUS_MULTIPLE` lists
+  only the visible creatures and game objects whose status is not "none", so a marker the client already
+  shows is cleared by the single-giver status the server sends on every change. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
