@@ -13,6 +13,8 @@
 #include "Objects/DynamicObject.h"
 #include "Objects/UpdateData.h"
 #include "Objects/MovementInfoWire.h"
+#include "Movement/spline/MoveSpline.h"
+#include "Movement/spline/packet_builder.h"
 #include "Chat/MasterPlayer.h"
 #include "Server/WorldSession.h"
 #include "Server/Packets/Classic/GuidMapping.h"
@@ -182,9 +184,19 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         Unit const& unit = static_cast<Unit const&>(object);
         MovementInfo const& mi = unit.m_movementInfo;
 
+        // A unit mid-path travels along its spline, and the client only accepts a create that
+        // says so consistently: forward movement without walking, and the spline in both places
+        // that announce it. A creature not on a path is presented standing.
+        bool const hasSpline = unit.movespline && unit.movespline->Initialized() && !unit.movespline->Finalized();
+        uint32 moveFlags = mi.moveFlags;
+        if (hasSpline)
+            moveFlags = (moveFlags & ~MOVEFLAG_WALK_MODE) | MOVEFLAG_FORWARD;
+        else if (unit.IsCreature())
+            moveFlags &= ~(MOVEFLAG_WALK_MODE | MOVEFLAG_MASK_MOVING_OR_TURN | MOVEFLAG_ROOT);
+
         data << ToClassic(object.GetObjectGuid());              // MoverGUID
 
-        data << uint32(ToModernMovementFlags(mi.moveFlags));
+        data << uint32(ToModernMovementFlags(moveFlags));
         data << uint32(0);                                       // extra movement flags: not tracked yet
         data << uint32(0);                                       // extra movement flags 2: not tracked yet
 
@@ -203,7 +215,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data.WriteBit(false);                                    // HasStandingOnGameObjectGUID
         data.WriteBit(false);                                    // HasTransport: not wired up yet
         data.WriteBit(false);                                    // HasFall
-        data.WriteBit(false);                                    // HasSpline
+        data.WriteBit(hasSpline);                                // HasSpline
         data.WriteBit(false);                                    // HeightChangeFailed
         data.WriteBit(false);                                    // RemoteTimeValid
         data.WriteBit(false);                                    // HasInertia
@@ -241,8 +253,11 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data << float(7.0f);                                     // advFlyingOverMaxDeceleration
         data << float(0.4f);                                     // advFlyingLaunchSpeedCoefficient
 
-        data.WriteBit(false);                                    // HasSpline
+        data.WriteBit(hasSpline);                                // HasSpline
         data.FlushBits();
+
+        if (hasSpline)
+            Movement::PacketBuilder::WriteCreateSpline(*unit.movespline, data);
     }
 
     data << uint32(0);                                           // PauseTimes.size(): no transport support yet

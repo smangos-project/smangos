@@ -12,6 +12,80 @@ constexpr uint8_t BOT_UPDATETYPE_VALUES = 0;
 constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT = 2;
 constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT2 = 3;
 
+// Steps over the spline section of a unit's create block: the spline id and destination, then,
+// if the unit is on a path, its flags, timing, facing and nodes. The optional extras the server
+// never sends are not understood.
+bool SkipCreateSpline(ByteBuffer& data)
+{
+    if (data.size() - data.rpos() < 4 * sizeof(uint32_t) + 1)
+        return false;
+    uint32_t splineId;
+    float destination[3];
+    data >> splineId >> destination[0] >> destination[1] >> destination[2];
+
+    bool const hasSplineMove = data.ReadBit();
+    data.ResetBitPos();
+    if (!hasSplineMove)
+        return true;
+
+    if (data.size() - data.rpos() < 3 * sizeof(uint32_t) + 2 * sizeof(float) + 3)
+        return false;
+    uint32_t flags, duration;
+    int32_t elapsed;
+    float durationModifier, nextDurationModifier;
+    data >> flags >> elapsed >> duration >> durationModifier >> nextDurationModifier;
+
+    uint32_t const face = data.ReadBits(2);
+    bool const hasFadeObjectTime = data.ReadBit();
+    uint32_t const nodeCount = data.ReadBits(16);
+    bool const hasFilter = data.ReadBit();
+    bool const hasSpellEffect = data.ReadBit();
+    bool const hasJump = data.ReadBit();
+    bool const hasAnimTier = data.ReadBit();
+    bool const hasUnknown = data.ReadBit();
+    data.ResetBitPos();
+    if (hasFadeObjectTime || hasFilter || hasSpellEffect || hasJump || hasAnimTier || hasUnknown)
+        return false;
+
+    switch (face)
+    {
+        case 1: // facing a spot
+        {
+            if (data.size() - data.rpos() < 3 * sizeof(float))
+                return false;
+            float spot[3];
+            data >> spot[0] >> spot[1] >> spot[2];
+            break;
+        }
+        case 2: // facing a unit
+        {
+            ClassicGuid target;
+            if (!target.Read(data))
+                return false;
+            break;
+        }
+        case 3: // facing an angle
+        {
+            if (data.size() - data.rpos() < sizeof(float))
+                return false;
+            float angle;
+            data >> angle;
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (data.size() - data.rpos() < uint64_t(nodeCount) * 3 * sizeof(float))
+        return false;
+    for (uint32_t i = 0; i < nodeCount; ++i)
+    {
+        float node[3];
+        data >> node[0] >> node[1] >> node[2];
+    }
+    return true;
+}
+
 // Mirrors Objects/Updates/UpdateObjectWriter.cpp's BuildMovementUpdate bit for bit, but only
 // understands the shapes it currently produces (a standing unit/player, a stationary object's
 // position and a game object's packed rotation, the active player's own action-button array): an
@@ -69,7 +143,7 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
         bool const hasAdvFlying = data.ReadBit();
         data.ResetBitPos();
 
-        if (hasTransport || hasFall || hasSpline || hasInertia || hasAdvFlying)
+        if (hasTransport || hasFall || hasInertia || hasAdvFlying)
             return false;
 
         for (int i = 0; i < 9; ++i) // speed floats
@@ -90,7 +164,9 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
 
         bool const trailingHasSpline = data.ReadBit();
         data.ResetBitPos();
-        if (trailingHasSpline)
+        if (trailingHasSpline != hasSpline)
+            return false;
+        if (trailingHasSpline && !SkipCreateSpline(data))
             return false;
     }
 

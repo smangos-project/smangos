@@ -151,6 +151,8 @@ int32 MoveSplineInit::Launch()
         packet.Mover = ClassicGuidMapping::ToClassic(unit.GetObjectGuid(), realmID);
         packet.Start = { real_position.x, real_position.y, real_position.z };
         packet.SplineId = move_spline.GetId();
+        packet.Flags = CLASSIC_SPLINEFLAG_DONE;
+        packet.StopDistanceTolerance = 2;
     }
     else
     {

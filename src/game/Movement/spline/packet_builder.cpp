@@ -27,13 +27,17 @@ namespace Movement
 {
 namespace
 {
-uint32 ToModernSplineFlags(MoveSplineFlag const& flags)
+uint32 ToModernSplineFlags(MoveSplineFlag const& flags, bool allowUncompressedPath)
 {
-    uint32 modern = CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH;
+    uint32 modern = 0;
     if (flags.falling)
         modern |= CLASSIC_SPLINEFLAG_FALLING;
     if (flags.flying)
+    {
         modern |= CLASSIC_SPLINEFLAG_FLYING | CLASSIC_SPLINEFLAG_CATMULLROM;
+        if (allowUncompressedPath)
+            modern |= CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH;
+    }
     if (flags.no_spline)
         modern |= CLASSIC_SPLINEFLAG_NO_SPLINE;
     if (flags.cyclic)
@@ -42,6 +46,15 @@ uint32 ToModernSplineFlags(MoveSplineFlag const& flags)
         modern |= CLASSIC_SPLINEFLAG_FROZEN;
     return modern;
 }
+
+// A point packed into a word: x and y in 11 bits, z in 10, all at quarter yard precision.
+uint32 PackXYZ(Vector3 const& point)
+{
+    uint32 packed = uint32(int32(point.x * 4.0f)) & 0x7FF;
+    packed |= (uint32(int32(point.y * 4.0f)) & 0x7FF) << 11;
+    packed |= (uint32(int32(point.z * 4.0f)) & 0x3FF) << 22;
+    return packed;
+}
 }
 
 void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_spline, MonsterMove& packet)
@@ -49,12 +62,16 @@ void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_sp
     packet.Mover = ClassicGuidMapping::ToClassic(unit.GetObjectGuid(), realmID);
 
     Spline<int32> const& spline = move_spline.spline;
-    Vector3 const& start = spline.getPoint(spline.first());
+    int32 const first = int32(spline.first());
+    int32 const last = int32(spline.last());
+    int32 const span = last - first;
+
+    Vector3 const& start = spline.getPoint(first);
     packet.Start = { start.x, start.y, start.z };
     packet.SplineId = move_spline.GetId();
 
     MoveSplineFlag const flags = move_spline.splineflags;
-    packet.Flags = ToModernSplineFlags(flags);
+    packet.Flags = ToModernSplineFlags(flags, true);
     packet.Elapsed = move_spline.timePassed();
     packet.MoveTime = move_spline.Duration();
 
@@ -66,7 +83,7 @@ void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_sp
             break;
         case MoveSplineFlag::Final_Angle:
             packet.Face = CLASSIC_MONSTERMOVE_FACING_ANGLE;
-            packet.FaceDirection = move_spline.facing.angle;
+            packet.FaceDirection = G3D::wrap(move_spline.facing.angle, 0.0f, float(G3D::twoPi()));
             break;
         case MoveSplineFlag::Final_Point:
             packet.Face = CLASSIC_MONSTERMOVE_FACING_SPOT;
@@ -76,14 +93,92 @@ void PacketBuilder::BuildMonsterMove(Unit const& unit, MoveSpline const& move_sp
             break;
     }
 
-    // The first and last control points are padding for the interpolation; a cyclic path also has
-    // no separate start.
-    uint32 const count = spline.getPointCount() - 3;
-    uint32 const firstNode = flags.cyclic ? 1 : 2;
-    for (uint32 i = 0; i < count; ++i)
+    if (span <= 0)
+        return;
+
+    if (packet.Flags & CLASSIC_SPLINEFLAG_UNCOMPRESSED_PATH)
     {
-        Vector3 const& node = spline.getPoint(firstNode + i);
-        packet.Points.push_back({ node.x, node.y, node.z });
+        for (int32 i = first + 1; i <= last; ++i)
+        {
+            Vector3 const& node = spline.getPoint(i);
+            packet.Points.push_back({ node.x, node.y, node.z });
+        }
+        return;
     }
+
+    // Everyday ground movement: the destination, and the nodes between as offsets from the
+    // midpoint of the path.
+    Vector3 const& destination = spline.getPoint(last);
+    packet.Points.push_back({ destination.x, destination.y, destination.z });
+
+    Vector3 const midpoint = (start + destination) * 0.5f;
+    for (int32 i = first + 1; i < last; ++i)
+        packet.PackedDeltas.push_back(PackXYZ(midpoint - spline.getPoint(i)));
+}
+
+void PacketBuilder::WriteCreateSpline(MoveSpline const& move_spline, ByteBuffer& data)
+{
+    data << uint32(move_spline.GetId());
+
+    if (move_spline.isCyclic())
+        data << float(0.0f) << float(0.0f) << float(0.0f);
+    else
+    {
+        Vector3 const destination = move_spline.FinalDestination();
+        data << destination.x << destination.y << destination.z;
+    }
+
+    // The path's nodes, padding included, are what the client interpolates over here; the
+    // compressed form monster moves use is not accepted in a create.
+    auto const& path = move_spline.getPath();
+    bool const hasSplineMove = !move_spline.Finalized() && !path.empty();
+    data.WriteBit(hasSplineMove);
+    data.FlushBits();
+    if (!hasSplineMove)
+        return;
+
+    MoveSplineFlag const flags = move_spline.splineflags;
+    data << uint32(ToModernSplineFlags(flags, false));
+    data << int32(move_spline.timePassed());
+    data << uint32(move_spline.Duration());
+    data << float(1.0f);                                        // duration modifier
+    data << float(1.0f);                                        // next duration modifier
+
+    uint8 face = CLASSIC_MONSTERMOVE_FACING_NONE;
+    switch (flags & MoveSplineFlag::Mask_Final_Facing)
+    {
+        case MoveSplineFlag::Final_Point:   face = CLASSIC_MONSTERMOVE_FACING_SPOT; break;
+        case MoveSplineFlag::Final_Target:  face = CLASSIC_MONSTERMOVE_FACING_TARGET; break;
+        case MoveSplineFlag::Final_Angle:   face = CLASSIC_MONSTERMOVE_FACING_ANGLE; break;
+        default:                            break;
+    }
+
+    data.WriteBits(face, 2);
+    data.WriteBit(false);                                       // fade object time
+    data.WriteBits(uint32(path.size()), 16);
+    data.WriteBit(false);                                       // spline filter
+    data.WriteBit(false);                                       // spell effect extra data
+    data.WriteBit(false);                                       // jump extra data
+    data.WriteBit(false);                                       // animation tier transition
+    data.WriteBit(false);                                       // unknown
+    data.FlushBits();
+
+    switch (face)
+    {
+        case CLASSIC_MONSTERMOVE_FACING_SPOT:
+            data << move_spline.facing.f.x << move_spline.facing.f.y << move_spline.facing.f.z;
+            break;
+        case CLASSIC_MONSTERMOVE_FACING_TARGET:
+            ClassicGuidMapping::ToClassic(ObjectGuid(move_spline.facing.target), realmID).Write(data);
+            break;
+        case CLASSIC_MONSTERMOVE_FACING_ANGLE:
+            data << G3D::wrap(move_spline.facing.angle, 0.0f, float(G3D::twoPi()));
+            break;
+        default:
+            break;
+    }
+
+    for (Vector3 const& node : path)
+        data << node.x << node.y << node.z;
 }
 }

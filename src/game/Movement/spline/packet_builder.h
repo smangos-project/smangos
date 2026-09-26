@@ -20,6 +20,7 @@
 #ifndef MANGOSSERVER_PACKET_BUILDER_H
 #define MANGOSSERVER_PACKET_BUILDER_H
 
+class ByteBuffer;
 class Unit;
 struct MonsterMove;
 
@@ -31,6 +32,9 @@ namespace Movement
         public:
             // The message telling the players around `unit` how the spline it has started moves it.
             static void BuildMonsterMove(Unit const& unit, MoveSpline const& mov, MonsterMove& packet);
+            // The spline section of a unit's create block, for a unit that is mid-path when the
+            // player first sees it.
+            static void WriteCreateSpline(MoveSpline const& mov, ByteBuffer& data);
     };
 }
 #endif // MANGOSSERVER_PACKET_BUILDER_H
