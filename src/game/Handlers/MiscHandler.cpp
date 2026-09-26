@@ -398,12 +398,13 @@ void WorldSession::HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& 
     }
 }
 
-void WorldSession::HandleSetSelectionOpcode(WorldPackets::Misc::SetSelection const& packet)
+void WorldSession::HandleSetSelectionOpcode(SetSelection const& packet)
 {
-    _player->SetSelectionGuid(packet.guid);
+    ObjectGuid const targetGuid = ClassicGuidMapping::FromClassic(packet.Target).value_or(ObjectGuid());
+    _player->SetSelectionGuid(targetGuid);
 
     // update reputation list if need
-    Unit* unit = ObjectAccessor::GetUnit(*_player, packet.guid);   // can select group members at diff maps
+    Unit* unit = ObjectAccessor::GetUnit(*_player, targetGuid);   // can select group members at diff maps
 
     if (unit)
         if (FactionTemplateEntry const* factionTemplateEntry = unit->GetFactionTemplateEntry())
@@ -412,7 +413,7 @@ void WorldSession::HandleSetSelectionOpcode(WorldPackets::Misc::SetSelection con
 
     // Drop combo points only for rogues and druids
     // Warriors use combo points internally, do no reset for everyone
-    if ((_player->GetClass() == CLASS_ROGUE || _player->GetClass() == CLASS_DRUID) && unit && packet.guid != _player->GetComboTargetGuid())
+    if ((_player->GetClass() == CLASS_ROGUE || _player->GetClass() == CLASS_DRUID) && unit && targetGuid != _player->GetComboTargetGuid())
         _player->ClearComboPoints();
 
     // Update autoshot if need

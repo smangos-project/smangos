@@ -44,11 +44,6 @@ void WorldPackets::Misc::TextEmote::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> guid;
 }
 
-void WorldPackets::Misc::SetSelection::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-}
-
 void WorldPackets::Misc::SetTarget::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;

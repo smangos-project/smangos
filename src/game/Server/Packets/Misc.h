@@ -77,15 +77,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class SetSelection final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit SetSelection() : ClientPacket(CMSG_SET_SELECTION) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetTarget final : public ClientPacket
     {
     public:

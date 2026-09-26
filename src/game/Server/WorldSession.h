@@ -48,6 +48,7 @@
 #include "Packets/Chat.h"
 #include "Packets/ChatMessages.h"
 #include "Packets/Combat.h"
+#include "Packets/CombatMessages.h"
 #include "Packets/Duel.h"
 #include "Packets/GmTicket.h"
 #include "Packets/Group.h"
@@ -633,7 +634,7 @@ class WorldSession
 
         void HandleTogglePvP(WorldPackets::Misc::TogglePvP const& packet);
         void HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& packet);
-        void HandleSetSelectionOpcode(WorldPackets::Misc::SetSelection const& packet);
+        void HandleSetSelectionOpcode(SetSelection const& packet);
         void HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget const& packet);
         void HandleStandStateChangeOpcode(WorldPackets::Misc::StandStateChange const& packet);
         void HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet);
@@ -801,8 +802,8 @@ class WorldSession
         void HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBankItem const& packet);
         void HandleWrapItemOpcode(WorldPackets::Item::WrapItem const& packet);
 
-        void HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing const& packet);
-        void HandleAttackStopOpcode(NullClientPacket const& packet);
+        void HandleAttackSwingOpcode(AttackSwing const& packet);
+        void HandleAttackStopOpcode(AttackStop const& packet);
         void HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed const& packet);
 
         void HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packet);

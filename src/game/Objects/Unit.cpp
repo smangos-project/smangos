@@ -58,6 +58,8 @@
 #include "InstanceStatistics.h"
 #include "MovementPacketSender.h"
 #include "MovementInfoWire.h"
+#include "Server/Packets/CombatMessages.h"
+#include "Server/Packets/Classic/GuidMapping.h"
 #include "Errors.h"
 #include "Utilities/Random.h"
 
@@ -2311,20 +2313,22 @@ float Unit::CalculateDamage(WeaponAttackType attType, bool normalized, uint8 ind
 
 void Unit::SendMeleeAttackStart(Unit const* pVictim) const
 {
-    auto packet = std::make_unique<WorldPackets::Combat::AttackStart>();
-    packet->attackerGuid = GetObjectGuid();
-    packet->victimGuid = pVictim->GetObjectGuid();
-    SendObjectMessageToSet(std::move(packet), true);
+    AttackStart packet;
+    packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Victim = ClassicGuidMapping::ToClassic(pVictim->GetObjectGuid(), realmID);
+    WorldPacket data = MakeClassicPacket(packet);
+    SendObjectMessageToSet(&data, true);
 }
 
 void Unit::SendMeleeAttackStop(Unit const* pVictim) const
 {
-    auto packet = std::make_unique<WorldPackets::Combat::AttackStop>();
-    packet->attackerGuid = GetObjectGuid();
+    SAttackStop packet;
+    packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
     if (pVictim)
-        packet->victimGuid = pVictim->GetObjectGuid();
-    packet->isDead = GetHealth() == 0;
-    SendObjectMessageToSet(std::move(packet), true);
+        packet.Victim = ClassicGuidMapping::ToClassic(pVictim->GetObjectGuid(), realmID);
+    packet.NowDead = GetHealth() == 0;
+    WorldPacket data = MakeClassicPacket(packet);
+    SendObjectMessageToSet(&data, true);
 }
 
 bool Unit::IsSpellPartiallyBlocked(SpellCaster const* pCaster, SpellEntry const* spellEntry, WeaponAttackType attackType) const
@@ -4328,38 +4332,79 @@ void Unit::HandleTriggers(Unit* pVictim, uint32 procExtra, uint32 amount, uint32
     }
 }
 
+namespace
+{
+// No level-scaling system exists in this engine, so this is a best-effort "scaling disabled"
+// classification rather than something the client uses to compute anything here; TargetLevel is
+// the one field cheap to fill for real.
+uint8 GetAttackerStateContentTuningType(Unit const* attacker, Unit const* victim)
+{
+    enum : uint8 { CREATURE_TO_PLAYER = 1, PLAYER_TO_CREATURE = 2, CREATURE_TO_CREATURE = 4 };
+    if (attacker->IsPlayer())
+        return victim->IsPlayer() ? CREATURE_TO_PLAYER : PLAYER_TO_CREATURE;
+    return victim->IsPlayer() ? CREATURE_TO_PLAYER : CREATURE_TO_CREATURE;
+}
+}
+
 void Unit::SendAttackStateUpdate(CalcDamageInfo const* damageInfo) const
 {
-    auto packet = std::make_unique<WorldPackets::Combat::MeleeAttackingStateUpdate>();
-    packet->hitInfo = damageInfo->HitInfo;
-    packet->attackerGuid = GetObjectGuid();
-    packet->victimGuid = damageInfo->target->GetObjectGuid();
-    packet->totalDamage = damageInfo->totalDamage;
-    packet->subDamage.resize(m_weaponDamageCount[damageInfo->attackType]);
-    for (uint32 i = 0; i < packet->subDamage.size(); ++i)
-        packet->subDamage[i] = damageInfo->subDamage[i];
-    packet->victimState = damageInfo->TargetState;
-    packet->blockedAmount = damageInfo->blocked_amount;
-    SendMessageToSet(std::move(packet), true);
+    MeleeAttackingStateUpdate packet;
+    packet.HitInfoFlags = damageInfo->HitInfo;
+    packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Victim = ClassicGuidMapping::ToClassic(damageInfo->target->GetObjectGuid(), realmID);
+    packet.TotalDamage = int32(damageInfo->totalDamage);
+    packet.OriginalDamage = int32(damageInfo->totalDamage) + int32(damageInfo->totalAbsorb) + damageInfo->totalResist + int32(damageInfo->blocked_amount);
+    int32 const overkill = int32(damageInfo->totalDamage) - int32(damageInfo->target->GetHealth());
+    packet.OverDamage = overkill < 0 ? -1 : overkill;
+    packet.SubDamage.resize(m_weaponDamageCount[damageInfo->attackType]);
+    for (uint32 i = 0; i < packet.SubDamage.size(); ++i)
+    {
+        packet.SubDamage[i].SchoolMask = uint32(damageInfo->subDamage[i].damageSchoolMask);
+        packet.SubDamage[i].Damage = damageInfo->subDamage[i].damage;
+        packet.SubDamage[i].Absorb = damageInfo->subDamage[i].absorb;
+        packet.SubDamage[i].Resist = damageInfo->subDamage[i].resist;
+    }
+    packet.VictimState = uint8(damageInfo->TargetState);
+    packet.BlockedAmount = int32(damageInfo->blocked_amount);
+    packet.ContentTuningType = GetAttackerStateContentTuningType(this, damageInfo->target);
+    packet.ContentTuningTargetLevel = uint8(damageInfo->target->GetLevel());
+    WorldPacket data = MakeClassicPacket(packet);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::SendAttackStateUpdate(uint32 hitInfo, Unit const* target, SpellSchoolMask damageSchoolMask, uint32 damage, uint32 absorbDamage, int32 resist, VictimState targetState, uint32 blockedAmount) const
 {
-    auto packet = std::make_unique<WorldPackets::Combat::MeleeAttackingStateUpdate>();
-    packet->hitInfo = hitInfo;
-    packet->attackerGuid = GetObjectGuid();
-    packet->victimGuid = target->GetObjectGuid();
-    packet->totalDamage = damage;
-    packet->totalDamage += (resist < 0 ? uint32(std::abs(resist)) : 0);
-    packet->totalDamage -= (absorbDamage + (resist > 0 ? uint32(resist) : 0) + blockedAmount);
-    packet->subDamage.resize(1);
-    packet->subDamage[0].damage = packet->totalDamage;
-    packet->subDamage[0].damageSchoolMask = damageSchoolMask;
-    packet->subDamage[0].absorb = absorbDamage;
-    packet->subDamage[0].resist = resist;
-    packet->victimState = targetState;
-    packet->blockedAmount = blockedAmount;
-    SendMessageToSet(std::move(packet), true);
+    // ABSORB/RESIST/BLOCK are only written to the wire when the matching HitInfo bit is set, so set
+    // them here from the caller's own values instead of relying on every call site to remember to
+    // OR them into hitInfo itself.
+    if (absorbDamage)
+        hitInfo |= HITINFO_ABSORB;
+    if (resist)
+        hitInfo |= HITINFO_RESIST;
+    if (blockedAmount)
+        hitInfo |= HITINFO_BLOCK;
+
+    MeleeAttackingStateUpdate packet;
+    packet.HitInfoFlags = hitInfo;
+    packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Victim = ClassicGuidMapping::ToClassic(target->GetObjectGuid(), realmID);
+    packet.OriginalDamage = int32(damage);
+    packet.TotalDamage = int32(damage);
+    packet.TotalDamage += (resist < 0 ? uint32(std::abs(resist)) : 0);
+    packet.TotalDamage -= int32(absorbDamage + (resist > 0 ? uint32(resist) : 0) + blockedAmount);
+    int32 const overkill = packet.TotalDamage - int32(target->GetHealth());
+    packet.OverDamage = overkill < 0 ? -1 : overkill;
+    packet.SubDamage.resize(1);
+    packet.SubDamage[0].Damage = uint32(packet.TotalDamage);
+    packet.SubDamage[0].SchoolMask = uint32(damageSchoolMask);
+    packet.SubDamage[0].Absorb = absorbDamage;
+    packet.SubDamage[0].Resist = resist;
+    packet.VictimState = uint8(targetState);
+    packet.BlockedAmount = int32(blockedAmount);
+    packet.ContentTuningType = GetAttackerStateContentTuningType(this, target);
+    packet.ContentTuningTargetLevel = uint8(target->GetLevel());
+    WorldPacket data = MakeClassicPacket(packet);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::SetPowerType(Powers new_powertype)

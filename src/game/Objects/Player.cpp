@@ -17059,22 +17059,23 @@ void Player::SavePositionInDB(ObjectGuid guid, uint32 mapId, float x, float y, f
 
 void Player::SendAttackSwingNotInRange() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::AttackSwingNotInRange>());
-}
-
-void Player::SendAttackSwingNotStanding() const
-{
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::AttackSwingNotStanding>());
+    AttackSwingError packet;
+    packet.Reason = CLASSIC_ATTACKSWINGERR_NOT_IN_RANGE;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendAttackSwingDeadTarget() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::AttackSwingDeadTarget>());
+    AttackSwingError packet;
+    packet.Reason = CLASSIC_ATTACKSWINGERR_DEAD_TARGET;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendAttackSwingCantAttack() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::AttackSwingCantAttack>());
+    AttackSwingError packet;
+    packet.Reason = CLASSIC_ATTACKSWINGERR_CANT_ATTACK;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendAttackSwingCancelAttack() const
@@ -17084,7 +17085,9 @@ void Player::SendAttackSwingCancelAttack() const
 
 void Player::SendAttackSwingBadFacingAttack() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::AttackSwingBadFacing>());
+    AttackSwingError packet;
+    packet.Reason = CLASSIC_ATTACKSWINGERR_BAD_FACING;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendAutoRepeatCancel() const

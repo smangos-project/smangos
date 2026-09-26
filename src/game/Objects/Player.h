@@ -1948,7 +1948,6 @@ class Player final: public Unit
         void SendAttackSwingCantAttack() const;
         void SendAttackSwingCancelAttack() const;
         void SendAttackSwingDeadTarget() const;
-        void SendAttackSwingNotStanding() const;
         void SendAttackSwingNotInRange() const;
         void SendAttackSwingBadFacingAttack() const;
         void SendAutoRepeatCancel() const;

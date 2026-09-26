@@ -28,13 +28,15 @@
 #include "ObjectGuid.h"
 #include "Player.h"
 #include "Map.h"
+#include "Packets/Classic/GuidMapping.h"
 
-void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing const& packet)
+void WorldSession::HandleAttackSwingOpcode(AttackSwing const& packet)
 {
-    if (!packet.targetGuid.IsUnit())
+    nonstd::optional<ObjectGuid> const targetGuid = ClassicGuidMapping::FromClassic(packet.Victim);
+    if (!targetGuid || !targetGuid->IsUnit())
         return;
 
-    Unit* pEnemy = _player->GetMap()->GetUnit(packet.targetGuid);
+    Unit* pEnemy = _player->GetMap()->GetUnit(*targetGuid);
 
     if (!pEnemy)
     {
@@ -61,7 +63,7 @@ void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing con
     _player->Attack(pEnemy, true);
 }
 
-void WorldSession::HandleAttackStopOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleAttackStopOpcode(AttackStop const& /*packet*/)
 {
     GetPlayer()->AttackStop();
 
@@ -89,12 +91,12 @@ void WorldSession::HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed con
 
 void WorldSession::SendAttackStop(Unit const* enemy)
 {
-    auto packet = std::make_unique<WorldPackets::Combat::AttackStop>();
-    packet->attackerGuid = GetPlayer()->GetObjectGuid();
+    SAttackStop packet;
+    packet.Attacker = ClassicGuidMapping::ToClassic(GetPlayer()->GetObjectGuid(), realmID);
     if (enemy)
     {
-        packet->victimGuid = enemy->GetObjectGuid();
-        packet->isDead = enemy->IsDead();
+        packet.Victim = ClassicGuidMapping::ToClassic(enemy->GetObjectGuid(), realmID);
+        packet.NowDead = enemy->IsDead();
     }
-    SendPacket(std::move(packet));
+    SendClassic(packet);
 }

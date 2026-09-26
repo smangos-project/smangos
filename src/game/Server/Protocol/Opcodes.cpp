@@ -399,10 +399,10 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(MSG_CHANNEL_UPDATE,                UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_CANCEL_CHANNELLING,           STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleCancelChanneling);
     INVALID_PACKET(SMSG_AI_REACTION,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SET_SELECTION,                STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleSetSelectionOpcode);
+    INVALID_PACKET(CMSG_SET_SELECTION,                UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_SET_TARGET_OBSOLETE,          STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleSetMouseOverTargetOpcode);
-    DEFINE_HANDLER(CMSG_ATTACKSWING,                  STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleAttackSwingOpcode);
-    DEFINE_HANDLER(CMSG_ATTACKSTOP,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SPELLS,        &WorldSession::HandleAttackStopOpcode);
+    INVALID_PACKET(CMSG_ATTACKSWING,                  UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_ATTACKSTOP,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ATTACKSTART,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ATTACKSTOP,                   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ATTACKSWING_NOTINRANGE,       UnhandleReason::SendByServer);
@@ -1058,6 +1058,9 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TAXI_QUERY_AVAILABLE_NODES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTaxiQueryAvailableNodes);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ENABLE_TAXI_NODE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleEnableTaxiNodeOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ACTIVATE_TAXI, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleActivateTaxiOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_SELECTION, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleSetSelectionOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_SWING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackSwingOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_STOP, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackStopOpcode);
 
     return list;
 }

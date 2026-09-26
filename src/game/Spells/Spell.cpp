@@ -43,6 +43,7 @@
 #include "Util.h"
 #include "PathFinder.h"
 #include "CharacterDatabaseCache.h"
+#include "Server/Packets/Classic/GuidMapping.h"
 #include "ZoneScript.h"
 #include "TradeData.h"
 #include "Geometry.h"
@@ -4946,30 +4947,28 @@ void Spell::SendResurrectRequest(Player* target, bool sickness)
 
 void Spell::SendMeleeAttackingStateUpdate(TargetInfo const* target, SpellNonMeleeDamage const* damageInfo)
 {
-    auto packet = std::make_unique<WorldPackets::Combat::MeleeAttackingStateUpdate>();
-
-    packet->attackerGuid = m_casterUnit->GetObjectGuid();
-    packet->victimGuid = m_casterUnit->GetVictim()->GetObjectGuid();
-    packet->subDamage.resize(1);
+    MeleeAttackingStateUpdate packet;
+    Unit const* victim = m_casterUnit->GetVictim();
+    packet.Attacker = ClassicGuidMapping::ToClassic(m_casterUnit->GetObjectGuid(), realmID);
+    packet.Victim = ClassicGuidMapping::ToClassic(victim->GetObjectGuid(), realmID);
+    packet.SubDamage.resize(1);
 
     if (damageInfo && !m_spellInfo->HasAttribute(SPELL_ATTR_ON_NEXT_SWING_NO_DAMAGE))
     {
-        packet->totalDamage = packet->meleeSpellDamage = damageInfo->damage;
-        for (uint32 i = 0; i < packet->subDamage.size(); ++i)
-        {
-            packet->subDamage[i].damage = damageInfo->damage;
-            packet->subDamage[i].absorb = damageInfo->absorb;
-            packet->subDamage[i].resist = damageInfo->resist;
-            packet->subDamage[i].damageSchoolMask = GetSchoolMask(damageInfo->school);
-        }
-        packet->blockedAmount = damageInfo->blocked;
+        packet.TotalDamage = int32(damageInfo->damage);
+        packet.SubDamage[0].Damage = damageInfo->damage;
+        packet.SubDamage[0].Absorb = damageInfo->absorb;
+        packet.SubDamage[0].Resist = damageInfo->resist;
+        packet.SubDamage[0].SchoolMask = uint32(GetSchoolMask(damageInfo->school));
+        packet.BlockedAmount = int32(damageInfo->blocked);
     }
 
-    packet->victimState = SpellMissInfoToVictimState(target->missCondition);
-    packet->attackerState = packet->victimState == VICTIMSTATE_NORMAL ? 1000 : 0;
-    packet->meleeSpellId = m_spellInfo->Id;
-    packet->hitInfo = target->meleeHitInfo | HITINFO_NOACTION;
-    m_casterUnit->SetDamageIndependentHitInfoFlags(packet->hitInfo, m_casterUnit->GetVictim(), m_attackType);
+    packet.VictimState = uint8(SpellMissInfoToVictimState(target->missCondition));
+    packet.AttackerState = packet.VictimState == VICTIMSTATE_NORMAL ? 1000 : 0;
+    packet.MeleeSpellId = m_spellInfo->Id;
+
+    uint32 hitInfo = target->meleeHitInfo | HITINFO_NOACTION;
+    m_casterUnit->SetDamageIndependentHitInfoFlags(hitInfo, victim, m_attackType);
 
     // On a dodge or parry there is no damage info at all,
     // so unlike auto attacks we cannot tell how hard the
@@ -4978,14 +4977,17 @@ void Spell::SendMeleeAttackingStateUpdate(TargetInfo const* target, SpellNonMele
     // blood spurt is never present for dodge or parry with spells.
     // Which means we don't need to supply total damage as param.
     if (damageInfo)
-        m_casterUnit->SetDamageDependentHitInfoFlags(packet->hitInfo, m_casterUnit->GetVictim(), packet->victimState, 0, damageInfo->damage, damageInfo->blocked, damageInfo->absorb, damageInfo->resist);
+        m_casterUnit->SetDamageDependentHitInfoFlags(hitInfo, victim, packet.VictimState, 0, damageInfo->damage, damageInfo->blocked, damageInfo->absorb, damageInfo->resist);
 
-    if (!packet->totalDamage && !packet->blockedAmount &&
-        !packet->subDamage[0].absorb && !packet->subDamage[0].resist &&
-        packet->victimState != VICTIMSTATE_UNAFFECTED)
-        packet->hitInfo |= HITINFO_SUPPRESS_MISS_TEXT;
+    if (!packet.TotalDamage && !packet.BlockedAmount &&
+        !packet.SubDamage[0].Absorb && !packet.SubDamage[0].Resist &&
+        packet.VictimState != VICTIMSTATE_UNAFFECTED)
+        hitInfo |= HITINFO_SUPPRESS_MISS_TEXT;
 
-    m_casterUnit->SendMessageToSet(std::move(packet), true);
+    packet.HitInfoFlags = hitInfo;
+    packet.ContentTuningTargetLevel = uint8(victim->GetLevel());
+    WorldPacket data = MakeClassicPacket(packet);
+    m_casterUnit->SendMessageToSet(&data, true);
 }
 
 void Spell::TakeCastItem()
