@@ -782,8 +782,6 @@ class Unit : public SpellCaster
         int32 GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
         float GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_value) const;
 
-        uint64 GetAuraApplicationMask() const;
-        uint64 GetNegativeAuraApplicationMask() const;
 
         SpellAuraHolderBounds GetSpellAuraHolderBounds(uint32 spellId)
         {

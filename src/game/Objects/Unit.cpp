@@ -570,30 +570,6 @@ bool Unit::HasAuraTypeByCaster(AuraType auraType, ObjectGuid casterGuid) const
     return false;
 }
 
-uint64 Unit::GetAuraApplicationMask() const
-{
-    if (!IsInWorld())
-        return 0;
-
-    uint64 mask = 0x0;
-    for (uint64 i = 0; i < MAX_AURAS; ++i)
-        if (GetUInt32Value(UNIT_FIELD_AURA + i))
-            mask |= uint64(1) << i;
-    return mask;
-}
-
-uint64 Unit::GetNegativeAuraApplicationMask() const
-{
-    if (!IsInWorld())
-        return 0;
-
-    uint64 mask = 0x0;
-    for (uint64 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; ++i)
-        if (GetUInt32Value(UNIT_FIELD_AURA + i))
-            mask |= uint64(1) << i;
-    return mask;
-}
-
 void Unit::RemoveSpellsCausingAura(AuraType auraType, SpellAuraHolder const* except)
 {
     for (AuraList::const_iterator iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end();)
@@ -9750,8 +9726,7 @@ void Unit::UpdateAuraForGroup(uint8 slot)
     {
         if (pPlayer->GetGroup())
         {
-            pPlayer->SetGroupUpdateFlag(slot < MAX_POSITIVE_AURAS ? GROUP_UPDATE_FLAG_AURAS : GROUP_UPDATE_FLAG_AURAS_NEGATIVE);
-            pPlayer->SetAuraUpdateSlot(slot);
+            pPlayer->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_AURAS);
         }
     }
     else if (Pet* pPet = ToPet())
@@ -9762,8 +9737,7 @@ void Unit::UpdateAuraForGroup(uint8 slot)
             {
                 if (pOwner->GetGroup())
                 {
-                    pOwner->SetGroupUpdateFlag(slot < MAX_POSITIVE_AURAS ? GROUP_UPDATE_FLAG_PET_AURAS : GROUP_UPDATE_FLAG_PET_AURAS_NEGATIVE);
-                    pPet->SetAuraUpdateSlot(slot);
+                    pOwner->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET_AURAS);
                 }
             }
         }

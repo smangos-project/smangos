@@ -45,6 +45,7 @@ class Creature;
 class Unit;
 class ServerPacket;
 struct LFGGroupQueueInfo;
+struct PartyMemberFullState;
 
 #define MAX_GROUP_SIZE 5
 #define MAX_RAID_SIZE 40
@@ -121,36 +122,33 @@ enum GroupType
 
 enum GroupUpdateFlags
 {
-    GROUP_UPDATE_FLAG_NONE              = 0x00000000,       // nothing
-    GROUP_UPDATE_FLAG_STATUS            = 0x00000001,       // 0 : uint8, flags
-    GROUP_UPDATE_FLAG_CUR_HP            = 0x00000002,       // 1 : uint16
-    GROUP_UPDATE_FLAG_MAX_HP            = 0x00000004,       // 2 : uint16
-    GROUP_UPDATE_FLAG_POWER_TYPE        = 0x00000008,       // 3 : uint8
-    GROUP_UPDATE_FLAG_CUR_POWER         = 0x00000010,       // 4 : uint16
-    GROUP_UPDATE_FLAG_MAX_POWER         = 0x00000020,       // 5 : uint16
-    GROUP_UPDATE_FLAG_LEVEL             = 0x00000040,       // 6 : uint16
-    GROUP_UPDATE_FLAG_ZONE              = 0x00000080,       // 7 : uint16
-    GROUP_UPDATE_FLAG_POSITION          = 0x00000100,       // 8 : uint16, uint16
-    GROUP_UPDATE_FLAG_AURAS             = 0x00000200,       // 9 : uint32 mask, for each bit set uint16 spellid
-    GROUP_UPDATE_FLAG_AURAS_NEGATIVE    = 0x00000400,       // 10: uint16 mask, for each bit set uint16 spellid
-    GROUP_UPDATE_FLAG_PET_GUID          = 0x00000800,       // 11: uint64 pet guid
-    GROUP_UPDATE_FLAG_PET_NAME          = 0x00001000,       // 12: pet name, NULL terminated string
-    GROUP_UPDATE_FLAG_PET_MODEL_ID      = 0x00002000,       // 13: uint16, model id
-    GROUP_UPDATE_FLAG_PET_CUR_HP        = 0x00004000,       // 14: uint16 pet cur health
-    GROUP_UPDATE_FLAG_PET_MAX_HP        = 0x00008000,       // 15: uint16 pet max health
-    GROUP_UPDATE_FLAG_PET_POWER_TYPE    = 0x00010000,       // 16: uint8 pet power type
-    GROUP_UPDATE_FLAG_PET_CUR_POWER     = 0x00020000,       // 17: uint16 pet cur power
-    GROUP_UPDATE_FLAG_PET_MAX_POWER     = 0x00040000,       // 18: uint16 pet max power
-    GROUP_UPDATE_FLAG_PET_AURAS         = 0x00080000,       // 19: uint32 mask, for each bit set uint16 spellid, pet auras...
-    GROUP_UPDATE_FLAG_PET_AURAS_NEGATIVE= 0x00100000,       // 20: uint16 mask, for each bit set uint16 spellid
+    GROUP_UPDATE_FLAG_NONE              = 0x00000000,
+    GROUP_UPDATE_FLAG_STATUS            = 0x00000001,
+    GROUP_UPDATE_FLAG_CUR_HP            = 0x00000002,
+    GROUP_UPDATE_FLAG_MAX_HP            = 0x00000004,
+    GROUP_UPDATE_FLAG_POWER_TYPE        = 0x00000008,
+    GROUP_UPDATE_FLAG_CUR_POWER         = 0x00000010,
+    GROUP_UPDATE_FLAG_MAX_POWER         = 0x00000020,
+    GROUP_UPDATE_FLAG_LEVEL             = 0x00000040,
+    GROUP_UPDATE_FLAG_ZONE              = 0x00000080,
+    GROUP_UPDATE_FLAG_POSITION          = 0x00000100,
+    GROUP_UPDATE_FLAG_AURAS             = 0x00000200,
+    GROUP_UPDATE_FLAG_PET_GUID          = 0x00000800,
+    GROUP_UPDATE_FLAG_PET_NAME          = 0x00001000,
+    GROUP_UPDATE_FLAG_PET_MODEL_ID      = 0x00002000,
+    GROUP_UPDATE_FLAG_PET_CUR_HP        = 0x00004000,
+    GROUP_UPDATE_FLAG_PET_MAX_HP        = 0x00008000,
+    GROUP_UPDATE_FLAG_PET_POWER_TYPE    = 0x00010000,
+    GROUP_UPDATE_FLAG_PET_CUR_POWER     = 0x00020000,
+    GROUP_UPDATE_FLAG_PET_MAX_POWER     = 0x00040000,
+    GROUP_UPDATE_FLAG_PET_AURAS         = 0x00080000,
 
     GROUP_UPDATE_PET                    = 0x001FF800,       // all pet flags
     GROUP_UPDATE_FULL                   = 0x001FFFFF,       // all known flags
 };
 
-#define GROUP_UPDATE_FLAGS_COUNT          21
-                                                                // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16,17,18,19
-static uint8 const GroupUpdateLength[GROUP_UPDATE_FLAGS_COUNT] = { 1, 2, 2, 1, 2, 2, 2, 2, 4, 4, 2, 8, 1, 2, 2, 2, 1, 2, 2, 4, 2};
+// Fills what a party frame shows of `player`, the pet's included.
+void FillPartyMemberFullState(Player const* player, PartyMemberFullState& state);
 
 class Roll : public LootValidatorRef
 {
@@ -323,13 +321,15 @@ class Group
         }
 
         ObjectGuid GetTargetWithIcon(RaidTargetIcon id) const { return m_targetIcons[id]; }
-        void SetTargetIcon(uint8 id, ObjectGuid targetGuid);
+        void SetTargetIcon(uint8 id, ObjectGuid targetGuid, ObjectGuid changedBy = ObjectGuid());
         void ClearTargetIcon(ObjectGuid targetGuid);
         bool InCombatToInstance(uint32 instanceId);
         void ResetInstances(InstanceResetMethod method, Player* SendMsgTo);
 
         void SendTargetIconList(WorldSession* session);
         void SendUpdate();
+        // Tells `player`'s client to drop this party's frames.
+        void SendDestroyUpdate(Player* player) const;
         void UpdatePlayerOutOfRange(Player* pPlayer);
         void UpdatePlayerOnlineStatus(Player* player, bool online = true);
         void UpdateOfflineLeader(time_t time, uint32 delay);
@@ -337,8 +337,9 @@ class Group
         /// ignore: GUID of the player that will not receive the packet
         void BroadcastPacket(std::unique_ptr<ServerPacket> packet, bool ignorePlayersInBGRaid, int raidSubGroup=-1, ObjectGuid ignore = ObjectGuid());
         void BroadcastPacket(WorldPacket* packet, bool ignorePlayersInBGRaid, int raidSubGroup=-1, ObjectGuid ignore = ObjectGuid());
-        void BroadcastReadyCheck(WorldPacket* packet);
-        void OfflineReadyCheck();
+
+        void StartReadyCheck(ObjectGuid initiator);
+        void SetMemberReadyCheck(ObjectGuid guid, bool ready);
 
         void RewardGroupAtKill(Unit* pVictim, Player* pPlayerTap);
 
@@ -464,5 +465,9 @@ class Group
         uint8*              m_subGroupsCounts;
         Team                m_groupTeam; // ALLIANCE / HORDE / TEAM_NONE / TEAM_CROSSFACTION
         uint32              m_LFGAreaId;
+        bool                m_readyCheckActive = false;
+        std::set<ObjectGuid> m_readyCheckAnswered;
+
+        void EndReadyCheck();
 };
 #endif

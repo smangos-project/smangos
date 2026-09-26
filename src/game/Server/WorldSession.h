@@ -54,7 +54,7 @@
 #include "Packets/SpellCast.h"
 #include "Packets/Duel.h"
 #include "Packets/GmTicket.h"
-#include "Packets/Group.h"
+#include "Packets/GroupMessages.h"
 #include "Packets/Guild.h"
 #include "Packets/Item.h"
 #include "Packets/ItemMessages.h"
@@ -110,6 +110,7 @@ struct PlayerBotEntry;
 enum PartyOperation
 {
     PARTY_OP_INVITE = 0,
+    PARTY_OP_UNINVITE = 1,
     PARTY_OP_LEAVE = 2,
 };
 
@@ -118,13 +119,13 @@ enum PartyResult
     ERR_PARTY_RESULT_OK                 = 0,
     ERR_BAD_PLAYER_NAME_S               = 1,    // "Cannot find '%s'."
     ERR_TARGET_NOT_IN_GROUP_S           = 2,    // "%s is not in your party."
-    ERR_GROUP_FULL                      = 3,    // "Your party is full."
-    ERR_ALREADY_IN_GROUP_S              = 4,    // "%s is already in a group."
-    ERR_NOT_IN_GROUP                    = 5,    // "You aren't in a party."
-    ERR_NOT_LEADER                      = 6,    // "You are not the party leader."
-    ERR_PLAYER_WRONG_FACTION            = 7,
-    ERR_IGNORING_YOU_S                  = 8,    // "%s is ignoring you."
-    ERR_INTERNAL_BATTLEGROUND           = 10,   // Does not exist client-side
+    ERR_GROUP_FULL                      = 4,    // "Your party is full."
+    ERR_ALREADY_IN_GROUP_S              = 5,    // "%s is already in a group."
+    ERR_NOT_IN_GROUP                    = 6,    // "You aren't in a party."
+    ERR_NOT_LEADER                      = 7,    // "You are not the party leader."
+    ERR_PLAYER_WRONG_FACTION            = 8,
+    ERR_IGNORING_YOU_S                  = 9,    // "%s is ignoring you."
+    ERR_INTERNAL_BATTLEGROUND           = 13,   // The client has no reason of its own for this
 };
 
 #define ACCOUNT_TUTORIALS_COUNT 8
@@ -522,9 +523,6 @@ class WorldSession
         void SendMeetingstoneFailed(uint8 status);
         void SendMeetingstoneSetqueue(uint32 areaid, uint8 status);
 
-        // Group
-        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data);
-        void BuildPartyMemberStatsPacket(Player* player, WorldPacket* data, uint32 updateMask, bool sendAllAuras);
     public:                                                 // opcodes handlers
         template<typename TClientPacket>
         static std::unique_ptr<ClientPacket> Handle_GenericRead(WorldPacket& recvPacket)
@@ -676,26 +674,23 @@ class WorldSession
         void HandleGameObjectQueryOpcode(QueryGameObject const& packet);
 
         void HandleRequestRaidInfoOpcode(NullClientPacket const& packet);
-        void HandleGroupInviteOpcode(WorldPackets::Group::GroupInvite const& packet);
-        void HandleGroupAcceptOpcode(NullClientPacket const& packet);
-        void HandleGroupDeclineOpcode(NullClientPacket const& packet);
-        void HandleGroupUninviteOpcode(WorldPackets::Group::GroupUninvite const& packet);
-        void HandleGroupUninviteGuidOpcode(WorldPackets::Group::GroupUninviteGuid const& packet);
-        void HandleGroupSetLeaderOpcode(WorldPackets::Group::GroupSetLeader const& packet);
-        void HandleGroupDisbandOpcode(NullClientPacket const& packet);
-        void HandleLootMethodOpcode(WorldPackets::Group::LootMethod const& packet);
+        void HandlePartyInvite(PartyInviteClient const& packet);
+        void HandlePartyInviteResponse(PartyInviteResponse const& packet);
+        void HandlePartyUninvite(PartyUninvite const& packet);
+        void HandleLeaveGroup(LeaveGroup const& packet);
+        void HandleSetPartyLeader(SetPartyLeader const& packet);
+        void HandleSetAssistantLeader(SetAssistantLeader const& packet);
+        void HandleSetPartyAssignment(SetPartyAssignment const& packet);
+        void HandleSetLootMethod(SetLootMethod const& packet);
         void HandleLootRoll(LootRoll const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        void HandleRequestPartyMemberStatsOpcode(WorldPackets::Group::RequestPartyMemberStats const& packet);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
-        void HandleRaidTargetUpdateOpcode(WorldPackets::Group::RaidTargetUpdate const& packet);
-        void HandleRaidReadyCheckOpcode(WorldPackets::Group::RaidReadyCheckFromClient const& packet);
-#endif
-        void HandleGroupRaidConvertOpcode(NullClientPacket const& packet);
-        void HandleGroupChangeSubGroupOpcode(WorldPackets::Group::GroupChangeSubGroup const& packet);
-        void HandleGroupSwapSubGroupOpcode(WorldPackets::Group::GroupSwapSubGroup const& packet);
-        void HandleGroupAssistantLeaderOpcode(WorldPackets::Group::GroupAssistantLeader const& packet);
+        void HandleRequestPartyMemberStats(RequestPartyMemberStats const& packet);
+        void HandleRequestPartyJoinUpdates(RequestPartyJoinUpdates const& packet);
+        void HandleUpdateRaidTarget(UpdateRaidTarget const& packet);
+        void HandleDoReadyCheck(DoReadyCheck const& packet);
+        void HandleReadyCheckResponse(ReadyCheckResponseClient const& packet);
+        void HandleConvertRaid(ConvertRaid const& packet);
+        void HandleChangeSubGroup(ChangeSubGroup const& packet);
+        void HandleSwapSubGroups(SwapSubGroups const& packet);
 
         void HandlePetitionBuyOpcode(WorldPackets::Petition::PetitionBuy const& packet);
         void HandlePetitionShowSignOpcode(WorldPackets::Petition::PetitionShowSignatures const& packet);
@@ -932,8 +927,8 @@ class WorldSession
         void HandleLeaveBattlefieldOpcode(WorldPackets::Battleground::LeaveBattlefield const& packet);
 #endif
 
-        void HandleMinimapPingOpcode(WorldPackets::Group::MinimapPing const& packet);
-        void HandleRandomRollOpcode(WorldPackets::Group::RandomRoll const& packet);
+        void HandleMinimapPing(MinimapPingClient const& packet);
+        void HandleRandomRoll(RandomRollClient const& packet);
         void HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet);
         void HandleWhoisOpcode(WorldPackets::Query::Whois const& packet);
         void HandleResetInstancesOpcode(NullClientPacket const& packet);

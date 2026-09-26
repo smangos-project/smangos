@@ -2420,7 +2420,7 @@ class Player final: public Unit
         GroupReference m_originalGroup;
         Group* m_groupInvite;
         uint32 m_groupUpdateMask;
-        uint64 m_auraUpdateMask;
+        uint32 m_groupUpdateSequence;
         uint32 m_LFGAreaId;
     public:
         Group* GetGroupInvite() const { return m_groupInvite; }
@@ -2432,9 +2432,8 @@ class Player final: public Unit
         uint8 GetSubGroup() const { return m_group.getSubGroup(); }
         uint32 GetGroupUpdateFlag() const { return m_groupUpdateMask; }
         void SetGroupUpdateFlag(uint32 flag) { m_groupUpdateMask |= flag; }
-        uint64 const& GetAuraUpdateMask() const { return m_auraUpdateMask; }
-        void SetAuraUpdateSlot(uint8 slot) { m_auraUpdateMask |= (uint64(1) << slot); }
-        void SetAuraUpdateMask(uint64 mask) { m_auraUpdateMask = mask; }
+        // Each party update carries a number that only grows, so the client can tell a stale one.
+        uint32 NextGroupUpdateSequenceNumber() { return m_groupUpdateSequence++; }
         Player* GetNextRandomRaidMember(float radius);
         PartyResult CanUninviteFromGroup(ObjectGuid uninvitedGuid) const;
         void UpdateGroupLeaderFlag(bool const remove = false);

@@ -23,6 +23,9 @@ class ClassicGuidMapping
         static ClassicGuid MakeAccount(uint32 accountId);
         static ClassicGuid MakeBnetAccount(uint32 accountId);
 
+        // A party guid carries nothing but the group's id.
+        static ClassicGuid MakeParty(uint32 groupId);
+
         // nullopt for a guid type the server has no ObjectGuid for (party, guild, ...) or one whose
         // counter doesn't fit the server's guid layout. A classic transport comes back as
         // HIGHGUID_TRANSPORT.

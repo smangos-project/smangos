@@ -171,7 +171,7 @@ Player::Player(WorldSession* session) : Unit(),
     // group is initialized in the reference constructor
     SetGroupInvite(nullptr);
     m_groupUpdateMask = 0;
-    m_auraUpdateMask = 0;
+    m_groupUpdateSequence = 0;
     m_LFGAreaId = 0;
 
     m_duel = nullptr;
@@ -19222,9 +19222,6 @@ void Player::SendUpdateToOutOfRangeGroupMembers()
         group->UpdatePlayerOutOfRange(this);
 
     m_groupUpdateMask = GROUP_UPDATE_FLAG_NONE;
-    m_auraUpdateMask = 0;
-    if (Pet* pet = GetPet())
-        pet->ResetAuraUpdateMask();
 }
 
 void Player::SendTransferAborted(uint8 reason) const

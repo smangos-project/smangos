@@ -255,11 +255,6 @@ class Pet : public Creature
         uint32  m_resetTalentsCost;
         time_t  m_resetTalentsTime;
 
-        uint64 const& GetAuraUpdateMask() const { return m_auraUpdateMask; }
-        void SetAuraUpdateSlot(uint8 slot) { m_auraUpdateMask |= (uint64(1) << slot); }
-        void SetAuraUpdateMask(uint64 mask) { m_auraUpdateMask = mask; }
-        void ResetAuraUpdateMask() { m_auraUpdateMask = 0; }
-
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed (saved)
         
         static uint32 const LevelUpLoyalty[6];
@@ -273,7 +268,6 @@ class Pet : public Creature
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
         int32   m_loyaltyPoints;
         int32   m_bonusdamage;
-        uint64  m_auraUpdateMask;
         bool    m_loading;
         CharacterPetCache* m_pTmpCache;
         bool    m_unSummoned;                               // If this pet has already been unsummoned

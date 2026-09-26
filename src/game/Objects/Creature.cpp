@@ -34,6 +34,7 @@
 #include "PoolManager.h"
 #include "Opcodes.h"
 #include "Server/Packets/CombatMessages.h"
+#include "Server/Packets/GroupMessages.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -3699,11 +3700,11 @@ void Creature::OnEnterCombat(Unit* pWho, bool notInCombat)
         {
             if (Player* pOwner = GetOwnerPlayer())
             {
-                WorldPacket data(MSG_MINIMAP_PING, (8 + 4 + 4));
-                data << GetObjectGuid();
-                data << float(GetPositionX());
-                data << float(GetPositionY());
-                pOwner->SendDirectMessage(&data);
+                MinimapPing ping;
+                ping.Sender = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+                ping.PositionX = GetPositionX();
+                ping.PositionY = GetPositionY();
+                pOwner->GetSession()->SendClassic(ping);
             }
         }
     }
