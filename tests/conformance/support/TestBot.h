@@ -3,6 +3,7 @@
 
 #include "BotPacket.h"
 #include "BotStage.h"
+#include "ConformanceRun.h"
 #include "ByteBuffer.h"
 #include "RealBotMgr.h"
 #include "TestPacketRecorder.h"
@@ -58,6 +59,9 @@ class TestBotOptions
         // only "framework: connecting to a dead address fails" needs this, to reach a target
         // that's deliberately unreachable rather than the one under test.
         TestBotOptions& TargetOverride(std::string name) { m_targetOverride = std::move(name); return *this; }
+        // Leases a game master account (ConformanceRun::GmTarget()): a scenario that uses this checks
+        // GmTarget() is not empty first.
+        TestBotOptions& Gm() { m_targetOverride = ConformanceRun::GmTarget(); return *this; }
         // Logs in on the same account as `other` (a TestBot) without a second lease, for the
         // duplicate-login scenarios: two sessions on one account, on purpose.
         template<typename Bot>

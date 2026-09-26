@@ -60,6 +60,18 @@ RealBots.Target.vmangos.VerifyServerSignature = 1
 RealBots.Target.vmangos.ConnectTimeoutMs      = 10000
 RealBots.Target.vmangos.StageTimeoutMs        = 30000
 
+# Game master accounts for the scenarios that drive the server with chat commands (a speed change, a
+# root, a teleport): a companion target named "<target>-gm", holding accounts at security level 4 or
+# above (`account set gmlevel <name> 4 -1`). Scenarios that need one skip when it is not listed
+# in RealBots.Targets. No Tags: it is never run against, only leased from.
+# RealBots.Target.vmangos-gm.LoginAddress          = "127.0.0.1"
+# RealBots.Target.vmangos-gm.RestPort              = 8091
+# RealBots.Target.vmangos-gm.RpcPort               = 1129
+# RealBots.Target.vmangos-gm.RealmName             = "VMangosPort"
+# RealBots.Target.vmangos-gm.ClientBuild           = 58797
+# RealBots.Target.vmangos-gm.ClientVersion         = "1.15.6"
+# RealBots.Target.vmangos-gm.Accounts              = "botgm1:pass"
+
 # Deliberately unreachable (RFC 5737 TEST-NET-3, reserved for documentation) -- only
 # framework/FrameworkTests.cpp's "connecting to a dead address fails cleanly" uses this, via
 # TestBotOptions().TargetOverride("deadhost") rather than --target.

@@ -432,6 +432,10 @@ holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server avai
    its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
    commands and the `Accounts` line.
 6. `tests-conformance --target vmangos` with the `vmangos` block of `tests-conformance.conf.dist`.
+   Scenarios that need a game master (a speed change, a root or a teleport, driven by chat
+   commands) lease from a companion target named `<target>-gm` and skip when it is not configured:
+   create one account, `account set gmlevel <name> 4 -1`, and list it as the `vmangos-gm` target's
+   only account (same address and realm as `vmangos`, no `Tags`).
 7. `debug unported` on the `mangosd` console (or in game, `.debug unported`) lists every vanilla SMSG a
    session tried to send and the legacy lane dropped, with counts. This is the server-side list of
    what Phase 4 still has to port. After one `world_entry:` login (`SMSG_LOGIN_VERIFY_WORLD carries

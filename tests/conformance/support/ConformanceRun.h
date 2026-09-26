@@ -18,6 +18,10 @@ struct RealBotTarget;
 
 namespace ConformanceRun
 {
+    // The companion target holding accounts with game master rights, "<target>-gm" (a scenario that
+    // needs one skips when it is not configured), or empty.
+    std::string GmTarget();
+
     // The target's own config block (timeouts, tags, ServerCloseTimeoutMs, ...); the target must
     // exist, which TestMain checks before anything runs.
     RealBotTarget const& TargetConfig();
