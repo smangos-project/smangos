@@ -209,3 +209,195 @@ TEST_CASE("The active mover messages round-trip", "[packets]")
     });
     RejectsEveryTruncation(control);
 }
+
+TEST_CASE("Speed change messages round-trip", "[packets]")
+{
+    MoveSetRunSpeed set;
+    set.Mover = TestGuid(9);
+    set.SequenceIndex = 4;
+    set.Speed = 8.5f;
+    RoundTrip(set, [](MoveSetRunSpeed const& a, MoveSetRunSpeed const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.SequenceIndex == b.SequenceIndex);
+        CHECK(a.Speed == b.Speed);
+    });
+    RejectsEveryTruncation(set);
+    static_assert(MoveSetTurnRate::Opcode == CLASSIC_SMSG_MOVE_SET_TURN_RATE);
+
+    MoveSplineSetSwimSpeed spline;
+    spline.Mover = TestGuid(9);
+    spline.Speed = 4.75f;
+    RoundTrip(spline, [](MoveSplineSetSwimSpeed const& a, MoveSplineSetSwimSpeed const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.Speed == b.Speed);
+    });
+    RejectsEveryTruncation(spline);
+
+    MoveUpdateRunBackSpeed update;
+    update.Status = Standing();
+    update.Speed = 4.5f;
+    RoundTrip(update, [](MoveUpdateRunBackSpeed const& a, MoveUpdateRunBackSpeed const& b)
+    {
+        CheckSame(a.Status, b.Status);
+        CHECK(a.Speed == b.Speed);
+    });
+    RejectsEveryTruncation(update);
+
+    MoveForceRunSpeedChangeAck ack;
+    ack.Ack.Status = Standing();
+    ack.Ack.AckIndex = 4;
+    ack.Speed = 8.5f;
+    RoundTrip(ack, [](MoveForceRunSpeedChangeAck const& a, MoveForceRunSpeedChangeAck const& b)
+    {
+        CheckSame(a.Ack.Status, b.Ack.Status);
+        CHECK(a.Ack.AckIndex == b.Ack.AckIndex);
+        CHECK(a.Speed == b.Speed);
+    });
+    RejectsEveryTruncation(ack);
+}
+
+TEST_CASE("Flag change messages round-trip", "[packets]")
+{
+    MoveRoot root;
+    root.Mover = TestGuid(9);
+    root.SequenceIndex = 11;
+    RoundTrip(root, [](MoveRoot const& a, MoveRoot const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.SequenceIndex == b.SequenceIndex);
+    });
+    RejectsEveryTruncation(root);
+    static_assert(MoveSetHovering::Opcode == CLASSIC_SMSG_MOVE_SET_HOVERING);
+
+    MoveSplineUnroot spline;
+    spline.Mover = TestGuid(9);
+    RoundTrip(spline, [](MoveSplineUnroot const& a, MoveSplineUnroot const& b) { CHECK(a.Mover == b.Mover); });
+    RejectsEveryTruncation(spline);
+
+    MoveHoverAck ack;
+    ack.Ack.Status = Standing();
+    ack.Ack.AckIndex = 11;
+    RoundTrip(ack, [](MoveHoverAck const& a, MoveHoverAck const& b)
+    {
+        CheckSame(a.Ack.Status, b.Ack.Status);
+        CHECK(a.Ack.AckIndex == b.Ack.AckIndex);
+    });
+    RejectsEveryTruncation(ack);
+}
+
+TEST_CASE("Teleport messages round-trip", "[packets]")
+{
+    MoveTeleport teleport;
+    teleport.Mover = TestGuid(9);
+    teleport.SequenceIndex = 3;
+    teleport.X = 1.0f;
+    teleport.Y = 2.0f;
+    teleport.Z = 3.0f;
+    teleport.Facing = 4.0f;
+    teleport.Transport = TestGuid(500);
+    RoundTrip(teleport, [](MoveTeleport const& a, MoveTeleport const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.SequenceIndex == b.SequenceIndex);
+        CHECK(a.X == b.X);
+        CHECK(a.Y == b.Y);
+        CHECK(a.Z == b.Z);
+        CHECK(a.Facing == b.Facing);
+        CHECK(a.Transport == b.Transport);
+    });
+    RejectsEveryTruncation(teleport);
+
+    teleport.Transport.reset();
+    RoundTrip(teleport, [](MoveTeleport const& a, MoveTeleport const& b) { CHECK(a.Transport == b.Transport); });
+
+    MoveUpdateTeleport update;
+    update.Status = Standing();
+    update.Speeds[1] = 9.0f;
+    update.Speeds[7] = 3.14f;
+    RoundTrip(update, [](MoveUpdateTeleport const& a, MoveUpdateTeleport const& b)
+    {
+        CheckSame(a.Status, b.Status);
+        for (size_t i = 0; i < MoveUpdateTeleport::SpeedCount; ++i)
+            CHECK(a.Speeds[i] == b.Speeds[i]);
+    });
+    RejectsEveryTruncation(update);
+
+    MoveTeleportAck ack;
+    ack.Mover = TestGuid(9);
+    ack.AckIndex = 3;
+    ack.MoveTime = 555;
+    RoundTrip(ack, [](MoveTeleportAck const& a, MoveTeleportAck const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.AckIndex == b.AckIndex);
+        CHECK(a.MoveTime == b.MoveTime);
+    });
+    RejectsEveryTruncation(ack);
+}
+
+TEST_CASE("Knock back messages round-trip", "[packets]")
+{
+    MoveKnockBack knock;
+    knock.Mover = TestGuid(9);
+    knock.SequenceIndex = 6;
+    knock.DirectionX = 0.6f;
+    knock.DirectionY = 0.8f;
+    knock.HorizontalSpeed = 12.0f;
+    knock.VerticalSpeed = 5.0f;
+    RoundTrip(knock, [](MoveKnockBack const& a, MoveKnockBack const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.SequenceIndex == b.SequenceIndex);
+        CHECK(a.DirectionX == b.DirectionX);
+        CHECK(a.DirectionY == b.DirectionY);
+        CHECK(a.HorizontalSpeed == b.HorizontalSpeed);
+        CHECK(a.VerticalSpeed == b.VerticalSpeed);
+    });
+    RejectsEveryTruncation(knock);
+
+    MoveUpdateKnockBack update;
+    update.Status = Standing();
+    RoundTrip(update, [](MoveUpdateKnockBack const& a, MoveUpdateKnockBack const& b) { CheckSame(a.Status, b.Status); });
+
+    MoveKnockBackAck ack;
+    ack.Ack.Status = Standing();
+    ack.Ack.AckIndex = 6;
+    ack.Speeds = std::make_pair(12.0f, 5.0f);
+    RoundTrip(ack, [](MoveKnockBackAck const& a, MoveKnockBackAck const& b)
+    {
+        CheckSame(a.Ack.Status, b.Ack.Status);
+        CHECK(a.Ack.AckIndex == b.Ack.AckIndex);
+        CHECK(a.Speeds == b.Speeds);
+    });
+    RejectsEveryTruncation(ack);
+
+    ack.Speeds.reset();
+    RoundTrip(ack, [](MoveKnockBackAck const& a, MoveKnockBackAck const& b) { CHECK(a.Speeds == b.Speeds); });
+    RejectsEveryTruncation(ack);
+}
+
+TEST_CASE("Spline done and time messages round-trip", "[packets]")
+{
+    MoveSplineDone done;
+    done.Status = Standing();
+    done.SplineId = 77;
+    RoundTrip(done, [](MoveSplineDone const& a, MoveSplineDone const& b)
+    {
+        CheckSame(a.Status, b.Status);
+        CHECK(a.SplineId == b.SplineId);
+    });
+    RejectsEveryTruncation(done);
+
+    MoveTimeSkipped skipped;
+    skipped.Mover = TestGuid(9);
+    skipped.TimeSkipped = 250;
+    RoundTrip(skipped, [](MoveTimeSkipped const& a, MoveTimeSkipped const& b)
+    {
+        CHECK(a.Mover == b.Mover);
+        CHECK(a.TimeSkipped == b.TimeSkipped);
+    });
+    RejectsEveryTruncation(skipped);
+    static_assert(MoveSkipTime::Opcode == CLASSIC_SMSG_MOVE_SKIP_TIME);
+}

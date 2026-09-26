@@ -8,6 +8,7 @@
 #include "ClassicOpcodes.h"
 #include "Packets/Classic/Guid.h"
 #include <optional>
+#include <utility>
 #include <vector>
 
 // Modern movement flag bits (the first of the three flag words).
@@ -378,5 +379,502 @@ struct ControlUpdate
         return true;
     }
 };
+
+// A change the server asks the moving client to apply: the client applies it and answers with
+// the matching acknowledgement carrying the same sequence index.
+template<ClassicOpcodes Op>
+struct MoveSetSpeed
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicGuid Mover;
+    uint32 SequenceIndex = 0;
+    float Speed = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << SequenceIndex << Speed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(float))
+            return false;
+        data >> SequenceIndex >> Speed;
+        return true;
+    }
+};
+
+using MoveSetWalkSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_WALK_SPEED>;
+using MoveSetRunSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_RUN_SPEED>;
+using MoveSetRunBackSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_RUN_BACK_SPEED>;
+using MoveSetSwimSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_SWIM_SPEED>;
+using MoveSetSwimBackSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_SWIM_BACK_SPEED>;
+using MoveSetTurnRate = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_TURN_RATE>;
+
+// The same speed change for a unit no client is moving.
+template<ClassicOpcodes Op>
+struct MoveSplineSetSpeed
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicGuid Mover;
+    float Speed = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << Speed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(float))
+            return false;
+        data >> Speed;
+        return true;
+    }
+};
+
+using MoveSplineSetWalkSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_WALK_SPEED>;
+using MoveSplineSetRunSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_RUN_SPEED>;
+using MoveSplineSetRunBackSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED>;
+using MoveSplineSetSwimSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_SWIM_SPEED>;
+using MoveSplineSetSwimBackSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED>;
+using MoveSplineSetTurnRate = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_TURN_RATE>;
+
+// A player-moved unit's speed change, relayed to the players who see it.
+template<ClassicOpcodes Op>
+struct MoveUpdateSpeed
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicMovementInfo Status;
+    float Speed = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Status.Write(data);
+        data << Speed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Status.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(float))
+            return false;
+        data >> Speed;
+        return true;
+    }
+};
+
+using MoveUpdateWalkSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_WALK_SPEED>;
+using MoveUpdateRunSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_RUN_SPEED>;
+using MoveUpdateRunBackSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_RUN_BACK_SPEED>;
+using MoveUpdateSwimSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_SWIM_SPEED>;
+using MoveUpdateSwimBackSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_SWIM_BACK_SPEED>;
+using MoveUpdateTurnRate = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_TURN_RATE>;
+
+// Root, water walk, hover and feather fall (and their opposites) each have a message of this shape.
+template<ClassicOpcodes Op>
+struct MoveSetFlag
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicGuid Mover;
+    uint32 SequenceIndex = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << SequenceIndex;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> SequenceIndex;
+        return true;
+    }
+};
+
+using MoveRoot = MoveSetFlag<CLASSIC_SMSG_MOVE_ROOT>;
+using MoveUnroot = MoveSetFlag<CLASSIC_SMSG_MOVE_UNROOT>;
+using MoveSetWaterWalk = MoveSetFlag<CLASSIC_SMSG_MOVE_SET_WATER_WALK>;
+using MoveSetLandWalk = MoveSetFlag<CLASSIC_SMSG_MOVE_SET_LAND_WALK>;
+using MoveSetHovering = MoveSetFlag<CLASSIC_SMSG_MOVE_SET_HOVERING>;
+using MoveUnsetHovering = MoveSetFlag<CLASSIC_SMSG_MOVE_UNSET_HOVERING>;
+using MoveSetFeatherFall = MoveSetFlag<CLASSIC_SMSG_MOVE_SET_FEATHER_FALL>;
+using MoveSetNormalFall = MoveSetFlag<CLASSIC_SMSG_MOVE_SET_NORMAL_FALL>;
+
+// The same flag changes for a unit no client is moving, and the run/walk mode toggles.
+template<ClassicOpcodes Op>
+struct MoveSplineSetFlag
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicGuid Mover;
+
+    void Write(ByteBuffer& data) const { Mover.Write(data); }
+    bool Read(ByteBuffer& data) { return Mover.Read(data); }
+};
+
+using MoveSplineRoot = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_ROOT>;
+using MoveSplineUnroot = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_UNROOT>;
+using MoveSplineSetWaterWalk = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_WATER_WALK>;
+using MoveSplineSetLandWalk = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_LAND_WALK>;
+using MoveSplineSetHover = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_HOVER>;
+using MoveSplineUnsetHover = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_UNSET_HOVER>;
+using MoveSplineSetFeatherFall = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_FEATHER_FALL>;
+using MoveSplineSetNormalFall = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_NORMAL_FALL>;
+using MoveSplineSetRunMode = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_RUN_MODE>;
+using MoveSplineSetWalkMode = MoveSplineSetFlag<CLASSIC_SMSG_MOVE_SPLINE_SET_WALK_MODE>;
+
+// Moves the client's unit to a new position; answered by MoveTeleportAck.
+struct MoveTeleport
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_MOVE_TELEPORT;
+
+    ClassicGuid Mover;
+    uint32 SequenceIndex = 0;
+    float X = 0.0f;
+    float Y = 0.0f;
+    float Z = 0.0f;
+    float Facing = 0.0f;
+    uint8 PreloadWorld = 0;
+    std::optional<ClassicGuid> Transport;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << SequenceIndex << X << Y << Z << Facing << PreloadWorld;
+        data.WriteBit(Transport.has_value());
+        data.WriteBit(false); // no vehicle
+        data.FlushBits();
+        if (Transport)
+            Transport->Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32) + 4 * sizeof(float) + sizeof(uint8) + 1)
+            return false;
+        data >> SequenceIndex >> X >> Y >> Z >> Facing >> PreloadWorld;
+        bool const hasTransport = data.ReadBit();
+        bool const hasVehicle = data.ReadBit();
+        data.ResetBitPos();
+        if (hasVehicle)
+            return false;
+
+        Transport.reset();
+        if (hasTransport)
+        {
+            ClassicGuid guid;
+            if (!guid.Read(data))
+                return false;
+            Transport = guid;
+        }
+        return true;
+    }
+};
+
+// A teleport, relayed to the players who see the unit. Speeds are only listed when they differ
+// from the defaults, in the order walk, run, run back, swim, swim back, flight, flight back, turn
+// rate, pitch rate.
+struct MoveUpdateTeleport
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_MOVE_UPDATE_TELEPORT;
+    static constexpr size_t SpeedCount = 9;
+
+    ClassicMovementInfo Status;
+    std::optional<float> Speeds[SpeedCount];
+
+    void Write(ByteBuffer& data) const
+    {
+        Status.Write(data);
+        data << uint32(0); // movement forces
+        for (std::optional<float> const& speed : Speeds)
+            data.WriteBit(speed.has_value());
+        data.FlushBits();
+        for (std::optional<float> const& speed : Speeds)
+            if (speed)
+                data << *speed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Status.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32) + 2)
+            return false;
+        uint32 forces;
+        data >> forces;
+        if (forces != 0)
+            return false;
+
+        bool present[SpeedCount];
+        for (bool& bit : present)
+            bit = data.ReadBit();
+        data.ResetBitPos();
+
+        for (size_t i = 0; i < SpeedCount; ++i)
+        {
+            Speeds[i].reset();
+            if (!present[i])
+                continue;
+            if (data.size() - data.rpos() < sizeof(float))
+                return false;
+            float value;
+            data >> value;
+            Speeds[i] = value;
+        }
+        return true;
+    }
+};
+
+// Throws the client's unit through the air: a horizontal direction and two speeds; answered by
+// MoveKnockBackAck.
+struct MoveKnockBack
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_MOVE_KNOCK_BACK;
+
+    ClassicGuid Mover;
+    uint32 SequenceIndex = 0;
+    float DirectionX = 0.0f;
+    float DirectionY = 0.0f;
+    float HorizontalSpeed = 0.0f;
+    float VerticalSpeed = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << SequenceIndex << DirectionX << DirectionY << HorizontalSpeed << VerticalSpeed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32) + 4 * sizeof(float))
+            return false;
+        data >> SequenceIndex >> DirectionX >> DirectionY >> HorizontalSpeed >> VerticalSpeed;
+        return true;
+    }
+};
+
+// A knock back, relayed to the players who see the unit.
+struct MoveUpdateKnockBack
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_MOVE_UPDATE_KNOCK_BACK;
+
+    ClassicMovementInfo Status;
+
+    void Write(ByteBuffer& data) const { Status.Write(data); }
+    bool Read(ByteBuffer& data) { return Status.Read(data); }
+};
+
+// A movement info block plus the sequence index of the server change it answers.
+struct ClassicMovementAck
+{
+    ClassicMovementInfo Status;
+    int32 AckIndex = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Status.Write(data);
+        data << AckIndex;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Status.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> AckIndex;
+        return true;
+    }
+};
+
+// The answer to a root/unroot, water walk, hover or feather fall change; the opcode says which one
+// and whether it was applied.
+template<ClassicOpcodes Op>
+struct ClientMovementAck
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicMovementAck Ack;
+
+    void Write(ByteBuffer& data) const { Ack.Write(data); }
+    bool Read(ByteBuffer& data) { return Ack.Read(data); }
+};
+
+using MoveForceRootAck = ClientMovementAck<CLASSIC_CMSG_MOVE_FORCE_ROOT_ACK>;
+using MoveForceUnrootAck = ClientMovementAck<CLASSIC_CMSG_MOVE_FORCE_UNROOT_ACK>;
+using MoveWaterWalkAck = ClientMovementAck<CLASSIC_CMSG_MOVE_WATER_WALK_ACK>;
+using MoveHoverAck = ClientMovementAck<CLASSIC_CMSG_MOVE_HOVER_ACK>;
+using MoveFeatherFallAck = ClientMovementAck<CLASSIC_CMSG_MOVE_FEATHER_FALL_ACK>;
+
+// The answer to a speed change, carrying the speed the client applied.
+template<ClassicOpcodes Op>
+struct ClientMovementSpeedAck
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicMovementAck Ack;
+    float Speed = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        Ack.Write(data);
+        data << Speed;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Ack.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(float))
+            return false;
+        data >> Speed;
+        return true;
+    }
+};
+
+using MoveForceWalkSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK>;
+using MoveForceRunSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK>;
+using MoveForceRunBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK>;
+using MoveForceSwimSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK>;
+using MoveForceSwimBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK>;
+using MoveForceTurnRateChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK>;
+
+struct MoveKnockBackAck
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_MOVE_KNOCK_BACK_ACK;
+
+    ClassicMovementAck Ack;
+    // The horizontal and vertical speeds the client applied, if it says so.
+    std::optional<std::pair<float, float>> Speeds;
+
+    void Write(ByteBuffer& data) const
+    {
+        Ack.Write(data);
+        data.WriteBit(Speeds.has_value());
+        data.FlushBits();
+        if (Speeds)
+            data << Speeds->first << Speeds->second;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Ack.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 1)
+            return false;
+        bool const hasSpeeds = data.ReadBit();
+        data.ResetBitPos();
+
+        Speeds.reset();
+        if (hasSpeeds)
+        {
+            if (data.size() - data.rpos() < 2 * sizeof(float))
+                return false;
+            float horizontal, vertical;
+            data >> horizontal >> vertical;
+            Speeds = std::make_pair(horizontal, vertical);
+        }
+        return true;
+    }
+};
+
+struct MoveTeleportAck
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_MOVE_TELEPORT_ACK;
+
+    ClassicGuid Mover;
+    int32 AckIndex = 0;
+    int32 MoveTime = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << AckIndex << MoveTime;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2 * sizeof(int32))
+            return false;
+        data >> AckIndex >> MoveTime;
+        return true;
+    }
+};
+
+// Sent when a server-driven spline the client was told about has finished.
+struct MoveSplineDone
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_MOVE_SPLINE_DONE;
+
+    ClassicMovementInfo Status;
+    int32 SplineId = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Status.Write(data);
+        data << SplineId;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Status.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> SplineId;
+        return true;
+    }
+};
+
+// Milliseconds of movement time the client lost, and the same told to the players who see it.
+template<ClassicOpcodes Op>
+struct MoveTimeMessage
+{
+    static constexpr ClassicOpcodes Opcode = Op;
+
+    ClassicGuid Mover;
+    uint32 TimeSkipped = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Mover.Write(data);
+        data << TimeSkipped;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Mover.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> TimeSkipped;
+        return true;
+    }
+};
+
+using MoveTimeSkipped = MoveTimeMessage<CLASSIC_CMSG_MOVE_TIME_SKIPPED>;
+using MoveSkipTime = MoveTimeMessage<CLASSIC_SMSG_MOVE_SKIP_TIME>;
 
 #endif // MANGOS_PACKETS_MOVEMENTMESSAGES_H
