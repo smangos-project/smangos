@@ -931,11 +931,13 @@ void WorldSession::SendActiveMover(Unit const* mover)
     SendClassic(packet);
 }
 
-void WorldSession::HandleMountSpecialAnimOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleMountSpecialAnimOpcode(MountSpecial const& packet)
 {
-    auto packet = std::make_unique<WorldPackets::Movement::MountSpecialAnim>();
-    packet->mountedUnitGuid = GetPlayer()->GetObjectGuid();
-    GetPlayer()->SendMovementMessageToSet(std::move(packet), false);
+    SpecialMountAnim anim;
+    anim.UnitGuid = ClassicGuidMapping::ToClassic(GetPlayer()->GetObjectGuid(), realmID);
+    anim.SpellVisualKitIDs = packet.SpellVisualKitIDs;
+    anim.SequenceVariation = packet.SequenceVariation;
+    GetPlayer()->SendMovementMessageToSet(MakeClassicPacket(anim), false);
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse const& packet)

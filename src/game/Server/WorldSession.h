@@ -56,7 +56,7 @@
 #include "Packets/Loot.h"
 #include "Packets/Mail.h"
 #include "Packets/Misc.h"
-#include "Packets/Movement.h"
+#include "Packets/MountSpecialAnim.h"
 #include "Packets/MovementMessages.h"
 #include "Packets/Npc.h"
 #include "Packets/Pet.h"
@@ -598,7 +598,7 @@ class WorldSession
         void HandleClassicFlagAck(ClientMovementAck<Op> const& packet) { HandleMovementFlagChangeToggleAck(Op, packet.Ack); }
         void HandleMoveSplineDoneOpcode(MoveSplineDone const& packet);
         void HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport const& packet);
-        void HandleMountSpecialAnimOpcode(NullClientPacket const& packet);
+        void HandleMountSpecialAnimOpcode(MountSpecial const& packet);
         void HandleTeleportToUnitOpcode(WorldPackets::Misc::TeleportToUnit const& packet);
 
         void HandleInspectOpcode(WorldPackets::Misc::Inspect const& packet);

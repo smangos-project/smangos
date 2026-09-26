@@ -453,7 +453,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_MOUNTRESULT,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DISMOUNTRESULT,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PUREMOUNT_CANCELLED_OBSOLETE, UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_MOUNTSPECIAL_ANIM,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMountSpecialAnimOpcode);
+    INVALID_PACKET(CMSG_MOUNTSPECIAL_ANIM,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MOUNTSPECIAL_ANIM,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_TAME_FAILURE,             UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_PET_SET_ACTION,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetSetAction);
@@ -1053,6 +1053,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTIVE_MOVER, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleSetActiveMoverOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_INIT_ACTIVE_MOVER_COMPLETE, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveInitActiveMoverCompleteOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_WORLD_PORT_RESPONSE, STATUS_TRANSFER, PACKET_PROCESS_WORLD, &WorldSession::HandleMoveWorldportAckOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOUNT_SPECIAL_ANIM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMountSpecialAnimOpcode);
 
     return list;
 }

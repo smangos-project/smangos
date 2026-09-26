@@ -221,7 +221,6 @@ set (game_SRCS
     Server/Packets/Loot.cpp
     Server/Packets/Mail.cpp
     Server/Packets/Misc.cpp
-    Server/Packets/Movement.cpp
     Server/Packets/Npc.cpp
     Server/Packets/Pet.cpp
     Server/Packets/Petition.cpp
@@ -479,7 +478,7 @@ set (game_SRCS
     Server/Packets/Loot.h
     Server/Packets/Mail.h
     Server/Packets/Misc.h
-    Server/Packets/Movement.h
+    Server/Packets/MountSpecialAnim.h
     Server/Packets/Npc.h
     Server/Packets/ObjectUpdate.h
     Server/Packets/Pet.h
