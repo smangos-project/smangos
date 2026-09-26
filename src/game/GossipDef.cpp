@@ -26,6 +26,28 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Formulas.h"
+#include "World.h"
+#include "Packets/Classic/GuidMapping.h"
+#include "Packets/NpcMessages.h"
+
+namespace
+{
+// The quest list shows a quest as available (2), in the log (4) or ready to hand in (0).
+int32 GossipQuestTypeForDialogStatus(uint8 dialogStatus)
+{
+    switch (dialogStatus)
+    {
+        case DIALOG_STATUS_INCOMPLETE:
+            return 4;
+        case DIALOG_STATUS_REWARD_REP:
+        case DIALOG_STATUS_REWARD_OLD:
+        case DIALOG_STATUS_REWARD2:
+            return 0;
+        default:
+            return 2;
+    }
+}
+}
 
 GossipMenu::GossipMenu(WorldSession* session) : m_session(session)
 {
@@ -155,99 +177,68 @@ bool PlayerMenu::GossipOptionCoded(unsigned int Selection) const
 
 void PlayerMenu::SendGossipMenu(uint32 textId, ObjectGuid objectGuid)
 {
-    constexpr size_t mainPartSize =
-        sizeof(ObjectGuid) + // objectGuid
-        sizeof(uint32) + // textId
-        sizeof(uint32) + // gossipOptionsCount
-        sizeof(uint32); // questOptionsCount
-
-    constexpr size_t gossipPartSize =
-        sizeof(uint32) + // index
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-        sizeof(uint8) + // icon
-        sizeof(uint8) + // coded
-#else
-        sizeof(uint32) + // icon
-#endif
-        128; // message (average)
-
-    constexpr size_t questPartSize =
-        sizeof(uint32) + // questId
-        sizeof(uint32) + // icon
-        sizeof(uint32) + // level
-        64; // title (average)
-
-    WorldPacket data(SMSG_GOSSIP_MESSAGE, (mainPartSize + gossipPartSize * mGossipMenu.MenuItemCount() + questPartSize * mQuestMenu.MenuItemCount()));
-    data << ObjectGuid(objectGuid);
-    data << uint32(textId);
-    data << uint32(mGossipMenu.MenuItemCount());            // [ZERO] max count 15
+    GossipMessage message;
+    message.GossipGuid = ClassicGuidMapping::ToClassic(objectGuid, realmID);
+    message.GossipId = int32(objectGuid.GetEntry());
+    message.TextId = int32(textId);
 
     for (uint32 iI = 0; iI < mGossipMenu.MenuItemCount(); ++iI)
     {
         GossipMenuItem const& gItem = mGossipMenu.GetItem(iI);
-        data << uint32(iI);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
-        data << uint8(gItem.m_gIcon);
-        data << uint8(gItem.m_gCoded);                      // makes pop up box password
-#else
-        data << uint32(gItem.m_gIcon);
-#endif
-        data << gItem.m_gMessage;                           // text for gossip item, max 0x800
-    }
 
-    data << uint32(mQuestMenu.MenuItemCount());             // max count 0x20
+        GossipOptionData& option = message.Options.emplace_back();
+        option.GossipOptionId = int32(iI);
+        option.OptionNpc = gItem.m_gIcon;
+        option.OptionFlags = gItem.m_gCoded ? 1 : 0;           // makes pop up box password
+        option.OrderIndex = int32(iI);
+        option.Text = gItem.m_gMessage;
+        option.Confirm = gItem.m_gBoxMessage;
+    }
 
     for (uint32 iI = 0; iI < mQuestMenu.MenuItemCount(); ++iI)
     {
         QuestMenuItem const& qItem = mQuestMenu.GetItem(iI);
         uint32 questID = qItem.m_qId;
         Quest const* pQuest = sObjectMgr.GetQuestTemplate(questID);
+        if (!pQuest)
+            continue;
 
-        data << uint32(questID);
-        data << uint32(qItem.m_qIcon);
-        data << uint32(pQuest->GetQuestLevel());
-        char const* title = pQuest->GetTitle().c_str();
-        size_t titleLen = pQuest->GetTitle().length();
+        GossipQuestEntry& entry = message.Quests.emplace_back();
+        entry.QuestId = int32(questID);
+        entry.QuestType = GossipQuestTypeForDialogStatus(qItem.m_qIcon);
+        entry.QuestLevel = pQuest->GetQuestLevel();
+        entry.QuestFlags[0] = 8;
+        entry.Repeatable = pQuest->IsRepeatable();
+        entry.Title = pQuest->GetTitle();
 
         int loc_idx = GetMenuSession()->GetSessionDbLocaleIndex();
         if (loc_idx >= 0)
         {
             if (QuestLocale const* ql = sObjectMgr.GetQuestLocale(questID))
-            {
                 if (ql->Title.size() > (size_t)loc_idx && !ql->Title[loc_idx].empty())
-                {
-                    title = ql->Title[loc_idx].c_str();
-                    titleLen = ql->Title[loc_idx].length();
-                }
-            }
+                    entry.Title = ql->Title[loc_idx];
         }
-        data.append(title, titleLen + 1); // max 0x200
     }
 
-    GetMenuSession()->SendPacket(&data);
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Sent SMSG_GOSSIP_MESSAGE NPCGuid=%u",GUID_LOPART(npcGUID));
+    GetMenuSession()->SendClassic(message);
 }
 
 void PlayerMenu::CloseGossip()
 {
-    GetMenuSession()->SendPacket(std::make_unique<WorldPackets::Npc::GossipComplete>());
-
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Sent SMSG_GOSSIP_COMPLETE");
+    GetMenuSession()->SendClassic(GossipComplete());
 }
 
 // Outdated
 void PlayerMenu::SendPointOfInterest(float X, float Y, uint32 Icon, uint32 Flags, uint32 Data, char const* locName)
 {
-    WorldPacket data(SMSG_GOSSIP_POI, (4 + 4 + 4 + 4 + 4 + 40)); // guess size
-    data << uint32(Flags);
-    data << float(X);
-    data << float(Y);
-    data << uint32(Icon);
-    data << uint32(Data);
-    data << locName;
-
-    GetMenuSession()->SendPacket(&data);
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Sent SMSG_GOSSIP_POI");
+    GossipPoi poi;
+    poi.Flags = Flags;
+    poi.X = X;
+    poi.Y = Y;
+    poi.Icon = int32(Icon);
+    poi.Importance = int32(Data);
+    poi.Name = locName ? locName : "";
+    GetMenuSession()->SendClassic(poi);
 }
 
 void PlayerMenu::SendPointOfInterest(uint32 poi_id)
@@ -259,137 +250,24 @@ void PlayerMenu::SendPointOfInterest(uint32 poi_id)
         return;
     }
 
-    char const* iconName = poi->icon_name.c_str();
-    size_t iconNameLen = poi->icon_name.length();
+    GossipPoi message;
+    message.Id = int32(poi_id);
+    message.Flags = poi->flags;
+    message.X = poi->x;
+    message.Y = poi->y;
+    message.Icon = int32(poi->icon);
+    message.Importance = int32(poi->data);
+    message.Name = poi->icon_name;
 
     int loc_idx = GetMenuSession()->GetSessionDbLocaleIndex();
     if (loc_idx >= 0)
     {
         if (PointOfInterestLocale const* pl = sObjectMgr.GetPointOfInterestLocale(poi_id))
-        {
             if (pl->IconName.size() > size_t(loc_idx) && !pl->IconName[loc_idx].empty())
-            {
-                iconName = pl->IconName[loc_idx].c_str();
-                iconNameLen = pl->IconName[loc_idx].length();
-            }
-        }
+                message.Name = pl->IconName[loc_idx];
     }
 
-    constexpr size_t fixedSize =
-        sizeof(uint32) + // flags
-        sizeof(float) + // x
-        sizeof(float) + // y
-        sizeof(uint32) + // icon
-        sizeof(uint32) + // data
-        sizeof(char); // icon name
-
-    WorldPacket data(SMSG_GOSSIP_POI, fixedSize + iconNameLen);
-    data << uint32(poi->flags);
-    data << float(poi->x);
-    data << float(poi->y);
-    data << uint32(poi->icon);
-    data << uint32(poi->data);
-    data.append(iconName, iconNameLen + 1);
-
-    GetMenuSession()->SendPacket(&data);
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: Sent SMSG_GOSSIP_POI");
-}
-
-void PlayerMenu::SendTalking(uint32 textID)
-{
-    NpcText const* pGossip = sObjectMgr.GetNpcText(textID);
-
-    WorldPacket data(SMSG_NPC_TEXT_UPDATE, 512);            // guess size
-    data << textID;                                         // can be < 0
-
-    if (!pGossip)
-    {
-        for (uint32 i = 0; i < 8; ++i)
-        {
-            data << float(0);
-            data << "Greetings $N";
-            data << "Greetings $N";
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-        }
-    }
-    else
-    {
-        int loc_idx = GetMenuSession()->GetSessionDbLocaleIndex();
-        for (int i = 0; i < 8; ++i)
-        {
-            BroadcastText const* bct = sObjectMgr.GetBroadcastTextLocale(pGossip->Options[i].BroadcastTextID);
-            if (bct)
-            {
-                std::string const& maleText = bct->GetText(loc_idx, GENDER_MALE, true);
-                std::string const& femaleText = bct->GetText(loc_idx, GENDER_FEMALE, true);
-
-                data << pGossip->Options[i].Probability;
-
-                if (maleText.empty())
-                    data << femaleText;
-                else
-                    data << maleText;
-
-                if (femaleText.empty())
-                    data << maleText;
-                else
-                    data << femaleText;
-
-                data << bct->languageId;
-
-                data << bct->emoteDelay1;
-                data << bct->emoteId1;
-                data << bct->emoteDelay2;
-                data << bct->emoteId2;
-                data << bct->emoteDelay3;
-                data << bct->emoteId3;
-            }
-            else
-            {
-                data << float(0);
-                data << "Greetings $N";
-                data << "Greetings $N";
-                data << uint32(0);
-                data << uint32(0);
-                data << uint32(0);
-                data << uint32(0);
-                data << uint32(0);
-                data << uint32(0);
-                data << uint32(0);
-            }
-        }
-    }
-    GetMenuSession()->SendPacket(&data);
-}
-
-void PlayerMenu::SendTalking(char const* title, char const* text)
-{
-    size_t const titleLen = strlen(title) + 1;
-    size_t const textLen = strlen(text) + 1;
-
-    WorldPacket data(SMSG_NPC_TEXT_UPDATE, sizeof(uint32) + 8 * (8 * sizeof(uint32) + titleLen + textLen));
-    data << uint32(0);
-    for (uint32 i = 0; i < 8; ++i)
-    {
-        data << float(0);
-        data.append(title, titleLen);
-        data.append(text, textLen);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-    }
-
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendClassic(message);
 }
 
 /*********************************************************/

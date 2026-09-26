@@ -481,6 +481,7 @@ set (game_SRCS
     Server/Packets/Misc.h
     Server/Packets/MountSpecialAnim.h
     Server/Packets/Npc.h
+    Server/Packets/NpcMessages.h
     Server/Packets/ObjectUpdate.h
     Server/Packets/Pet.h
     Server/Packets/Petition.h
@@ -491,6 +492,7 @@ set (game_SRCS
     Server/Packets/Social.h
     Server/Packets/Spell.h
     Server/Packets/TaxiMessages.h
+    Server/Packets/VendorMessages.h
     Server/Packets/Trade.h
     Server/WorldPacket.h
     Server/WorldSession.h

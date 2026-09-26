@@ -465,8 +465,8 @@ Handlers BuildOpcodeList()
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_PET_MODE,                     UnhandleReason::SendByServer);
 #endif
-    DEFINE_HANDLER(CMSG_GOSSIP_HELLO,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGossipHelloOpcode);
-    DEFINE_HANDLER(CMSG_GOSSIP_SELECT_OPTION,         STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGossipSelectOptionOpcode);
+    INVALID_PACKET(CMSG_GOSSIP_HELLO,                           UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GOSSIP_SELECT_OPTION,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GOSSIP_MESSAGE,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GOSSIP_COMPLETE,              UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_NPC_TEXT_QUERY,               UnhandleReason::Unhandled);
@@ -500,12 +500,12 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_QUEST_CONFIRM_ACCEPT,         STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleQuestConfirmAccept);
     INVALID_PACKET(SMSG_QUEST_CONFIRM_ACCEPT,         UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_PUSHQUESTTOPARTY,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePushQuestToParty);
-    DEFINE_HANDLER(CMSG_LIST_INVENTORY,               STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleListInventoryOpcode);
+    INVALID_PACKET(CMSG_LIST_INVENTORY,                         UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LIST_INVENTORY,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SELL_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleSellItemOpcode);
+    INVALID_PACKET(CMSG_SELL_ITEM,                              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SELL_ITEM,                    UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BUY_ITEM,                     STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleBuyItemOpcode);
-    DEFINE_HANDLER(CMSG_BUY_ITEM_IN_SLOT,             STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleBuyItemInSlotOpcode);
+    INVALID_PACKET(CMSG_BUY_ITEM,                               UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_BUY_ITEM_IN_SLOT,                       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BUY_ITEM,                     UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BUY_FAILED,                   UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_TAXICLEARALLNODES,            UnhandleReason::Unhandled);
@@ -753,7 +753,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_AUCTION_REMOVED_NOTIFICATION, UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_GROUP_RAID_CONVERT,           STATUS_LOGGEDIN,  PACKET_PROCESS_GROUP,         &WorldSession::HandleGroupRaidConvertOpcode);
     DEFINE_HANDLER(CMSG_GROUP_ASSISTANT_LEADER,       STATUS_LOGGEDIN,  PACKET_PROCESS_GROUP,         &WorldSession::HandleGroupAssistantLeaderOpcode);
-    DEFINE_HANDLER(CMSG_BUYBACK_ITEM,                 STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleBuybackItem);
+    INVALID_PACKET(CMSG_BUYBACK_ITEM,                           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SERVER_MESSAGE,               UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_MEETINGSTONE_JOIN,            STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleMeetingStoneJoinOpcode);
     DEFINE_HANDLER(CMSG_MEETINGSTONE_LEAVE,           STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleMeetingStoneLeaveOpcode);
@@ -777,7 +777,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SET_FORCED_REACTIONS,         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_FAILED_OTHER,           UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GAMEOBJECT_RESET_STATE,       UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_REPAIR_ITEM,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleRepairItemOpcode);
+    INVALID_PACKET(CMSG_REPAIR_ITEM,                            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CHAT_PLAYER_NOT_FOUND,        UnhandleReason::SendByServer);
     DEFINE_HANDLER(MSG_TALENT_WIPE_CONFIRM,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTalentWipeConfirmOpcode);
     INVALID_PACKET(SMSG_SUMMON_REQUEST,               UnhandleReason::SendByServer);
@@ -1091,6 +1091,13 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_RELEASE, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleLootReleaseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOOT_ROLL, STATUS_LOGGEDIN, PACKET_PROCESS_GROUP, &WorldSession::HandleLootRoll);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MASTER_LOOT_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleLootMasterGiveOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TALK_TO_GOSSIP, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGossipHelloOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GOSSIP_SELECT_OPTION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGossipSelectOptionOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LIST_INVENTORY, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleListInventoryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SELL_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleSellItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUY_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleBuyItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUY_BACK_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleBuybackItem);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPAIR_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepairItemOpcode);
 
     return list;
 }

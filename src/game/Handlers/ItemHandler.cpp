@@ -33,6 +33,7 @@
 #include "Anticheat.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/Classic/InventorySlots.h"
+#include <algorithm>
 
 void WorldSession::HandleSplitItemOpcode(SplitItem const& request)
 {
@@ -490,16 +491,24 @@ void WorldSession::HandleReadItemOpcode(ReadItem const& request)
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
 }
 
-void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& packet)
+void WorldSession::HandleSellItemOpcode(SellItem const& request)
 {
-    if (!packet.itemGuid || !GetPlayer()->IsInWorld())
+    auto const vendorId = ClassicGuidMapping::FromClassic(request.Vendor);
+    auto const itemId = ClassicGuidMapping::FromClassic(request.ItemGuid);
+    if (!vendorId || !itemId)
+        return;
+    ObjectGuid const vendorGuid = *vendorId;
+    ObjectGuid const itemGuid = *itemId;
+    uint8 const amount = uint8(std::min<uint32>(request.Amount, 255));
+
+    if (!itemGuid || !GetPlayer()->IsInWorld())
         return;
 
-    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(packet.vendorGuid, UNIT_NPC_FLAG_VENDOR);
+    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleSellItemOpcode - %s not found or you can't interact with him.", packet.vendorGuid.GetString().c_str());
-        _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, nullptr, packet.itemGuid, 0);
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleSellItemOpcode - %s not found or you can't interact with him.", vendorGuid.GetString().c_str());
+        _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, nullptr, itemGuid, 0);
         return;
     }
 
@@ -507,7 +516,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
     if (GetPlayer()->HasUnitState(UNIT_STATE_FEIGN_DEATH))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    Item *pItem = _player->GetItemByGuid(packet.itemGuid);
+    Item *pItem = _player->GetItemByGuid(itemGuid);
 
     if (!pItem)
         return;
@@ -515,32 +524,32 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
     // prevent sell not owner item
     if (_player->GetObjectGuid() != pItem->GetOwnerGuid())
     {
-        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
     // prevent selling item in bank slot
     if (_player->IsBankPos(pItem->GetPos()))
     {
-        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
     // prevent sell non empty bag by drag-and-drop at vendor's item list
     if (pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
     {
-        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
     // prevent sell currently looted item
     if (_player->GetLootGuid() == pItem->GetObjectGuid())
     {
-        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
-    uint8 actualCount = packet.count;
+    uint8 actualCount = amount;
 
     // special case at auto sell (sell all)
     if (actualCount == 0)
@@ -552,7 +561,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
         // prevent sell more items that exist in stack (possible only not from client)
         if (actualCount > pItem->GetCount())
         {
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
             return;
         }
     }
@@ -561,13 +570,13 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
 
     if (!pProto)
     {
-        _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
     if (pProto->SellPrice == 0)
     {
-        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
         return;
     }
 
@@ -598,7 +607,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
             DurabilityCostsEntry const* dcost = sDurabilityCostsStore.LookupEntry(pProto->ItemLevel);
             if (!dcost)
             {
-                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
                 sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "RepairDurability: Wrong item lvl %u", pProto->ItemLevel);
                 return;
             }
@@ -607,7 +616,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
             DurabilityQualityEntry const* dQualitymodEntry = sDurabilityQualityStore.LookupEntry(dQualitymodEntryId);
             if (!dQualitymodEntry)
             {
-                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
                 sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "RepairDurability: Wrong dQualityModEntry %u", dQualitymodEntryId);
                 return;
             }
@@ -632,7 +641,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
         if (!pNewItem)
         {
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "WORLD: HandleSellItemOpcode - could not create clone of item %u; count = %u", pItem->GetEntry(), actualCount);
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, packet.itemGuid, 0);
+            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, pCreature, itemGuid, 0);
             return;
         }
 
@@ -642,7 +651,7 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
             pItem->SendCreateUpdateToPlayer(_player);
         pItem->SetState(ITEM_CHANGED, _player);
 
-        _player->AddItemToBuyBackSlot(pNewItem, money, packet.vendorGuid);
+        _player->AddItemToBuyBackSlot(pNewItem, money, vendorGuid);
         if (_player->IsInWorld())
             pNewItem->SendCreateUpdateToPlayer(_player);
     }
@@ -652,24 +661,29 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem const& pack
         _player->RemoveItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
         _player->InterruptSpellsWithCastItem(pItem);
         pItem->RemoveFromUpdateQueueOf(_player);
-        _player->AddItemToBuyBackSlot(pItem, money, packet.vendorGuid);
+        _player->AddItemToBuyBackSlot(pItem, money, vendorGuid);
     }
 
     _player->LogModifyMoney(money, "SellItem", pCreature->GetObjectGuid(), pItem->GetEntry());
 }
 
-void WorldSession::HandleBuybackItem(WorldPackets::Item::BuybackItem const& packet)
+void WorldSession::HandleBuybackItem(BuyBackItem const& request)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-    uint32 slot = packet.slot;
-#else
-    uint32 slot = BUYBACK_SLOT_START;
-#endif
+    auto const vendorId = ClassicGuidMapping::FromClassic(request.Vendor);
+    if (!vendorId)
+        return;
+    ObjectGuid const vendorGuid = *vendorId;
 
-    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(packet.vendorGuid, UNIT_NPC_FLAG_VENDOR);
+    auto const buybackSlot = request.Slot < 256 ? ClassicSlotToServer(uint8(request.Slot)) : std::nullopt;
+    if (!buybackSlot)
+        return;
+
+    uint32 slot = *buybackSlot;
+
+    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleBuybackItem - %s not found or you can't interact with him.", packet.vendorGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleBuybackItem - %s not found or you can't interact with him.", vendorGuid.GetString().c_str());
         _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, nullptr, ObjectGuid(), 0);
         return;
     }
@@ -707,46 +721,77 @@ void WorldSession::HandleBuybackItem(WorldPackets::Item::BuybackItem const& pack
     _player->StoreItem(dest, pItem, true);
 }
 
-void WorldSession::HandleBuyItemInSlotOpcode(WorldPackets::Item::BuyItemInSlot const& packet)
+void WorldSession::HandleBuyItemOpcode(BuyItem const& request)
 {
-    uint8 bag = NULL_BAG;                                   // init for case invalid bagGUID
+    auto const vendor = ClassicGuidMapping::FromClassic(request.Vendor);
+    if (!vendor || request.Quantity <= 0)
+        return;
 
-    // find bag slot by bag guid
-    if (packet.bagGuid == _player->GetObjectGuid())
-        bag = INVENTORY_SLOT_BAG_0;
-    else
+    uint8 bag = NULL_BAG;                                   // no container: the server picks
+    uint8 slot = NULL_SLOT;
+
+    if (!request.Container.IsEmpty())
     {
-        for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        auto const container = ClassicGuidMapping::FromClassic(request.Container);
+        if (!container)
+            return;
+
+        // find the bag by its guid
+        bag = NULL_BAG;
+        if (*container == _player->GetObjectGuid())
+            bag = INVENTORY_SLOT_BAG_0;
+        else
         {
-            if (Bag *pBag = (Bag*)_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
             {
-                if (packet.bagGuid == pBag->GetObjectGuid())
+                if (Bag* pBag = (Bag*)_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
                 {
-                    bag = i;
-                    break;
+                    if (*container == pBag->GetObjectGuid())
+                    {
+                        bag = i;
+                        break;
+                    }
                 }
             }
         }
+
+        // bag not found, cheating?
+        if (bag == NULL_BAG)
+            return;
+
+        if (request.Slot < 256)
+        {
+            if (bag == INVENTORY_SLOT_BAG_0)
+            {
+                auto const inventorySlot = request.Slot == CLASSIC_NULL_SLOT ? std::optional<uint8>(NULL_SLOT) : ClassicSlotToServer(uint8(request.Slot));
+                if (!inventorySlot)
+                    return;
+                slot = *inventorySlot;
+            }
+            else
+                slot = uint8(request.Slot);
+        }
     }
 
-    // bag not found, cheating?
-    if (bag == NULL_BAG)
+    // the request counts items; the vendor sells them in stacks of the item's buy count
+    ItemPrototype const* proto = sObjectMgr.GetItemPrototype(uint32(request.Item.ItemId));
+    uint32 const buyCount = proto && proto->BuyCount ? proto->BuyCount : 1;
+    uint32 const stacks = std::max<uint32>(uint32(request.Quantity) / buyCount, 1);
+
+    GetPlayer()->BuyItemFromVendor(*vendor, uint32(request.Item.ItemId), uint8(std::min<uint32>(stacks, 255)), bag, slot);
+}
+
+void WorldSession::HandleListInventoryOpcode(ListInventory const& request)
+{
+    auto const vendorId = ClassicGuidMapping::FromClassic(request.Vendor);
+    if (!vendorId)
         return;
+    ObjectGuid const vendorGuid = *vendorId;
 
-    GetPlayer()->BuyItemFromVendor(packet.vendorGuid, packet.item, packet.count, bag, packet.bagslot);
-}
-
-void WorldSession::HandleBuyItemOpcode(WorldPackets::Item::BuyItem const& packet)
-{
-    GetPlayer()->BuyItemFromVendor(packet.vendorGuid, packet.item, packet.count, NULL_BAG, NULL_SLOT);
-}
-
-void WorldSession::HandleListInventoryOpcode(WorldPackets::Item::ListInventory const& packet)
-{
     if (!GetPlayer()->IsAlive())
         return;
 
-    SendListInventory(packet.guid);
+    SendListInventory(vendorGuid);
 }
 
 void WorldSession::SendListInventory(ObjectGuid vendorguid, uint8 menu_type)
@@ -774,68 +819,45 @@ void WorldSession::SendListInventory(ObjectGuid vendorguid, uint8 menu_type)
     VendorItemData const* vItems = menu_type & VENDOR_MENU_NORMAL ? pCreature->GetVendorItems() : nullptr;
     VendorItemData const* tItems = menu_type & VENDOR_MENU_TEMPLATE ? pCreature->GetVendorTemplateItems() : nullptr;
 
-    if (!vItems && !tItems)
+    VendorInventory inventory;
+    inventory.Vendor = ClassicGuidMapping::ToClassic(vendorguid, realmID);
+
+    if (vItems || tItems)
     {
-        WorldPacket data(SMSG_LIST_INVENTORY, (8 + 1 + 1));
-        data << ObjectGuid(vendorguid);
-        data << uint8(0);                                   // count==0, next will be error code
-        data << uint8(0);                                   // "Vendor has no inventory"
-        SendPacket(&data);
-        return;
-    }
+        uint8 customitems = vItems ? vItems->GetItemCount() : 0;
+        uint8 numitems = customitems + (tItems ? tItems->GetItemCount() : 0);
 
-    uint8 customitems = vItems ? vItems->GetItemCount() : 0;
-    uint8 numitems = customitems + (tItems ? tItems->GetItemCount() : 0);
+        float discountMod = _player->GetReputationPriceDiscount(pCreature);
 
-    uint8 count = 0;
-
-    WorldPacket data(SMSG_LIST_INVENTORY, (8 + 1 + numitems * 7 * 4));
-    data << ObjectGuid(vendorguid);
-
-    size_t count_pos = data.wpos();
-    data << uint8(count);
-
-    float discountMod = _player->GetReputationPriceDiscount(pCreature);
-
-    for (int i = 0; i < numitems; ++i)
-    {
-        VendorItem const* crItem = i < customitems ? vItems->GetItem(i) : tItems->GetItem(i - customitems);
-
-        if (crItem)
+        for (int i = 0; i < numitems; ++i)
         {
-            if (ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(crItem->item))
+            VendorItem const* crItem = i < customitems ? vItems->GetItem(i) : tItems->GetItem(i - customitems);
+
+            if (crItem)
             {
-                if (!_player->IsVendorItemVisible(pCreature, crItem, pProto))
-                    continue;
+                if (ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(crItem->item))
+                {
+                    if (!_player->IsVendorItemVisible(pCreature, crItem, pProto))
+                        continue;
 
-                ++count;
+                    // reputation discount
+                    uint32 price = uint32(pProto->BuyPrice * discountMod + 0.5f);
 
-                // reputation discount
-                uint32 price = uint32(pProto->BuyPrice * discountMod + 0.5f);
+                    VendorListItem& row = inventory.Items.emplace_back();
+                    row.MuId = uint32(inventory.Items.size());
+                    row.Price = price;
+                    row.StackCount = int32(pProto->BuyCount);
+                    row.Quantity = crItem->maxcount <= 0 ? -1 : int32(pCreature->GetVendorItemCurrentCount(crItem));
+                    row.Item.ItemId = int32(crItem->item);
 
-                data << uint32(count);
-                data << uint32(crItem->item);
-                data << uint32(pProto->DisplayInfoID);
-                data << uint32(crItem->maxcount <= 0 ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem));
-                data << uint32(price);
-                data << uint32(pProto->MaxDurability);
-                data << uint32(pProto->BuyCount);
-
-                if (count >= MAX_VENDOR_ITEMS)
-                    break;
+                    if (inventory.Items.size() >= MAX_VENDOR_ITEMS)
+                        break;
+                }
             }
         }
     }
 
-    if (count == 0)
-    {
-        data << uint8(0);                                   // "Vendor has no inventory"
-        SendPacket(&data);
-        return;
-    }
-
-    data.put<uint8>(count_pos, count);
-    SendPacket(&data);
+    SendClassic(inventory);
 }
 
 void WorldSession::HandleAutoStoreBagItemOpcode(AutoStoreBagItem const& request)

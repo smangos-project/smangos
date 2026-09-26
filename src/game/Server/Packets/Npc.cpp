@@ -1,10 +1,5 @@
 #include "Npc.h"
 
-void WorldPackets::Npc::GossipHello::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> npcGuid;
-}
-
 void WorldPackets::Npc::TrainerList::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;
@@ -36,12 +31,6 @@ void WorldPackets::Npc::SpiritHealerActivate::ReadFromWorldPacket(WorldPacket& r
     recv_data >> guid;
 }
 
-void WorldPackets::Npc::RepairItem::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> npcGuid;
-    recv_data >> itemGuid;
-}
-
 void WorldPackets::Npc::ListStabledPets::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> npcGuid;
@@ -69,26 +58,7 @@ void WorldPackets::Npc::StableSwapPet::ReadFromWorldPacket(WorldPacket& recv_dat
     recv_data >> petNumber;
 }
 
-void WorldPackets::Npc::GossipSelectOption::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-    recv_data >> gossipListId;
-    if (!recv_data.empty())
-    {
-        recv_data >> code;
-    }
-}
-
 // --- Server Packets ---
-
-size_t WorldPackets::Npc::GossipComplete::EstimateFinalSize() const
-{
-    return 0;
-}
-
-void WorldPackets::Npc::GossipComplete::AppendBodyTo(ByteBuffer& /*buffer*/) const
-{
-}
 
 size_t WorldPackets::Npc::ShowBank::EstimateFinalSize() const
 {

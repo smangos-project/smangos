@@ -11616,20 +11616,20 @@ void Player::SendEquipError(InventoryResult msg, Item const* pItem, Item const* 
 
 void Player::SendBuyError(BuyResult msg, Creature const* pCreature, uint32 item, uint32 /*param*/) const
 {
-    auto packet = std::make_unique<WorldPackets::Item::BuyFailed>();
-    packet->vendorGuid = pCreature ? pCreature->GetObjectGuid() : ObjectGuid();
-    packet->itemEntry = item;
-    packet->reason = msg;
-    GetSession()->SendPacket(std::move(packet));
+    BuyFailed packet;
+    packet.Vendor = ClassicGuidMapping::ToClassic(pCreature ? pCreature->GetObjectGuid() : ObjectGuid(), realmID);
+    packet.MuId = item;
+    packet.Reason = int32(msg);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendSellError(SellResult msg, Creature const* pCreature, ObjectGuid itemGuid, uint32 /*param*/) const
 {
-    auto packet = std::make_unique<WorldPackets::Item::SellItemResponse>();
-    packet->vendorGuid = pCreature ? pCreature->GetObjectGuid() : ObjectGuid();
-    packet->itemGuid = itemGuid;
-    packet->reason = msg;
-    GetSession()->SendPacket(std::move(packet));
+    SellResponse packet;
+    packet.Vendor = ClassicGuidMapping::ToClassic(pCreature ? pCreature->GetObjectGuid() : ObjectGuid(), realmID);
+    packet.ItemGuids.push_back(ClassicGuidMapping::ToClassic(itemGuid, realmID));
+    packet.Reason = int32(msg);
+    GetSession()->SendClassic(packet);
 }
 
 Player* Player::GetTrader() const
@@ -18556,12 +18556,12 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
             ++clientVendorSlot;
     }
 
-    auto packet = std::make_unique<WorldPackets::Item::BuyItemResponse>();
-    packet->vendorGuid = pCreature->GetObjectGuid();
-    packet->vendorSlot = clientVendorSlot;
-    packet->newCount = crItem->maxcount > 0 ? new_count : 0xFFFFFFFF;
-    packet->purchaseCount = count;
-    GetSession()->SendPacket(std::move(packet));
+    BuySucceeded packet;
+    packet.Vendor = ClassicGuidMapping::ToClassic(pCreature->GetObjectGuid(), realmID);
+    packet.MuId = clientVendorSlot;
+    packet.NewQuantity = crItem->maxcount > 0 ? int32(new_count) : -1;
+    packet.QuantityBought = totalCount;
+    GetSession()->SendClassic(packet);
 
     SendNewItem(pItem, totalCount, true, false, false);
 

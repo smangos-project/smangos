@@ -64,6 +64,7 @@
 #include "Packets/MountSpecialAnim.h"
 #include "Packets/MovementMessages.h"
 #include "Packets/Npc.h"
+#include "Packets/NpcMessages.h"
 #include "Packets/Pet.h"
 #include "Packets/Petition.h"
 #include "Packets/Query.h"
@@ -73,6 +74,7 @@
 #include "Packets/Social.h"
 #include "Packets/Spell.h"
 #include "Packets/TaxiMessages.h"
+#include "Packets/VendorMessages.h"
 #include "Packets/Trade.h"
 #include "Packets/WorldTransfer.h"
 
@@ -610,7 +612,7 @@ class WorldSession
         void HandleInspectHonorStatsOpcode(WorldPackets::Misc::InspectHonorStats const& packet);
         void HandleShowingHelmOpcode(NullClientPacket const& packet);
         void HandleShowingCloakOpcode(NullClientPacket const& packet);
-        void HandleRepairItemOpcode(WorldPackets::Npc::RepairItem const& packet);
+        void HandleRepairItemOpcode(RepairItem const& packet);
 
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
@@ -740,8 +742,8 @@ class WorldSession
         void HandleTrainerListOpcode(WorldPackets::Npc::TrainerList const& packet);
         void HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpell const& packet);
         void HandlePetitionShowListOpcode(WorldPackets::Petition::PetitionShow const& packet);
-        void HandleGossipHelloOpcode(WorldPackets::Npc::GossipHello const& packet);
-        void HandleGossipSelectOptionOpcode(WorldPackets::Npc::GossipSelectOption const& packet);
+        void HandleGossipHelloOpcode(GossipHello const& packet);
+        void HandleGossipSelectOptionOpcode(GossipSelectOption const& packet);
         void HandleSpiritHealerActivateOpcode(WorldPackets::Npc::SpiritHealerActivate const& packet);
         void HandleNpcTextQueryOpcode(QueryNpcText const& packet);
         void HandleBinderActivateOpcode(WorldPackets::Npc::BinderActivate const& packet);
@@ -794,15 +796,14 @@ class WorldSession
         void HandleDestroyItemOpcode(DestroyItem const& packet);
         void HandleAutoEquipItemOpcode(AutoEquipItem const& packet);
         void HandleItemQuerySingleOpcode(WorldPackets::Item::QueryItem const& packet);
-        void HandleSellItemOpcode(WorldPackets::Item::SellItem const& packet);
-        void HandleBuyItemInSlotOpcode(WorldPackets::Item::BuyItemInSlot const& packet);
-        void HandleBuyItemOpcode(WorldPackets::Item::BuyItem const& packet);
-        void HandleListInventoryOpcode(WorldPackets::Item::ListInventory const& packet);
+        void HandleSellItemOpcode(SellItem const& packet);
+        void HandleBuyItemOpcode(BuyItem const& packet);
+        void HandleListInventoryOpcode(ListInventory const& packet);
         void HandleAutoStoreBagItemOpcode(AutoStoreBagItem const& packet);
         void HandleReadItemOpcode(ReadItem const& packet);
         void HandleAutoEquipItemSlotOpcode(AutoEquipItemSlot const& packet);
         void HandleSwapItem(SwapItem const& packet);
-        void HandleBuybackItem(WorldPackets::Item::BuybackItem const& packet);
+        void HandleBuybackItem(BuyBackItem const& packet);
         void HandleAutoBankItemOpcode(WorldPackets::Item::AutoBankItem const& packet);
         void HandleAutoStoreBankItemOpcode(WorldPackets::Item::AutoStoreBankItem const& packet);
         void HandleWrapItemOpcode(WorldPackets::Item::WrapItem const& packet);

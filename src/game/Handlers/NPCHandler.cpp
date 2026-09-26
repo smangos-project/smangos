@@ -29,6 +29,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "Player.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "GossipDef.h"
 #include "ScriptMgr.h"
 #include "Creature.h"
@@ -342,12 +343,16 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::Npc::TrainerBuySpel
         SendTrainingFailure(packet.guid, packet.spellId, TRAIN_FAIL_UNAVAILABLE);
 }
 
-void WorldSession::HandleGossipHelloOpcode(WorldPackets::Npc::GossipHello const& packet)
+void WorldSession::HandleGossipHelloOpcode(GossipHello const& request)
 {
-    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(packet.npcGuid, UNIT_NPC_FLAG_NONE);
+    auto const guid = ClassicGuidMapping::FromClassic(request.Unit);
+    if (!guid)
+        return;
+
+    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(*guid, UNIT_NPC_FLAG_NONE);
     if (!pCreature)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipHelloOpcode - %s not found or you can't interact with him.", packet.npcGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipHelloOpcode - %s not found or you can't interact with him.", guid->GetString().c_str());
         return;
     }
 
@@ -367,28 +372,34 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::Npc::GossipHello const&
     }
 }
 
-void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::Npc::GossipSelectOption const& packet)
+void WorldSession::HandleGossipSelectOptionOpcode(GossipSelectOption const& request)
 {
-    bool const isCoded = _player->PlayerTalkClass->GossipOptionCoded(packet.gossipListId);
-    if (isCoded && packet.code.empty())
+    auto const unitGuid = ClassicGuidMapping::FromClassic(request.GossipUnit);
+    if (!unitGuid || request.GossipOptionId < 0)
+        return;
+    ObjectGuid const guid = *unitGuid;
+    uint32 const gossipListId = uint32(request.GossipOptionId);
+
+    bool const isCoded = _player->PlayerTalkClass->GossipOptionCoded(gossipListId);
+    if (isCoded && request.PromotionCode.empty())
         return;  // coded option requires a code from the client
 
     GetPlayer()->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_INTERACTING_CANCELS);
 
-    uint32 sender = _player->PlayerTalkClass->GossipOptionSender(packet.gossipListId);
-    uint32 action = _player->PlayerTalkClass->GossipOptionAction(packet.gossipListId);
+    uint32 sender = _player->PlayerTalkClass->GossipOptionSender(gossipListId);
+    uint32 action = _player->PlayerTalkClass->GossipOptionAction(gossipListId);
 
     // Only forward a non-null code to scripts for coded gossip options.
-    const char* code = (isCoded && !packet.code.empty()) ? packet.code.c_str() : nullptr;
+    const char* code = (isCoded && !request.PromotionCode.empty()) ? request.PromotionCode.c_str() : nullptr;
 
-    if (packet.guid.IsAnyTypeCreature())
+    if (guid.IsAnyTypeCreature())
     {
-        Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(packet.guid, UNIT_NPC_FLAG_NONE);
+        Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
 
         if (!pCreature)
         {
-            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipSelectOptionOpcode - %s not found or you can't interact with it.", packet.guid.GetString().c_str());
+            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipSelectOptionOpcode - %s not found or you can't interact with it.", guid.GetString().c_str());
             return;
         }
 
@@ -396,20 +407,20 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::Npc::GossipSelec
             pCreature->PauseOutOfCombatMovement();
 
         if (!sScriptMgr.OnGossipSelect(_player, pCreature, sender, action, code))
-            _player->OnGossipSelect(pCreature, packet.gossipListId);
+            _player->OnGossipSelect(pCreature, gossipListId);
     }
-    else if (packet.guid.IsGameObject())
+    else if (guid.IsGameObject())
     {
-        GameObject* pGo = GetPlayer()->GetGameObjectIfCanInteractWith(packet.guid);
+        GameObject* pGo = GetPlayer()->GetGameObjectIfCanInteractWith(guid);
 
         if (!pGo)
         {
-            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipSelectOptionOpcode - %s not found or you can't interact with it.", packet.guid.GetString().c_str());
+            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleGossipSelectOptionOpcode - %s not found or you can't interact with it.", guid.GetString().c_str());
             return;
         }
 
         if (!sScriptMgr.OnGossipSelect(_player, pGo, sender, action, code))
-            _player->OnGossipSelect(pGo, packet.gossipListId);
+            _player->OnGossipSelect(pGo, gossipListId);
     }
 }
 
@@ -1000,12 +1011,19 @@ void WorldSession::HandleStableSwapPet(WorldPackets::Npc::StableSwapPet const& p
     }
 }
 
-void WorldSession::HandleRepairItemOpcode(WorldPackets::Npc::RepairItem const& packet)
+void WorldSession::HandleRepairItemOpcode(RepairItem const& request)
 {
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.npcGuid, UNIT_NPC_FLAG_REPAIR);
+    auto const npcId = ClassicGuidMapping::FromClassic(request.Npc);
+    auto const itemId = ClassicGuidMapping::FromClassic(request.ItemGuid);
+    if (!npcId || !itemId)
+        return;
+    ObjectGuid const npcGuid = *npcId;
+    ObjectGuid const itemGuid = *itemId;
+
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_REPAIR);
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleRepairItemOpcode - %s not found or you can't interact with him.", packet.npcGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleRepairItemOpcode - %s not found or you can't interact with him.", npcGuid.GetString().c_str());
         return;
     }
 
@@ -1015,15 +1033,15 @@ void WorldSession::HandleRepairItemOpcode(WorldPackets::Npc::RepairItem const& p
     // reputation discount
     float discountMod = _player->GetReputationPriceDiscount(unit);
 
-    if (packet.itemGuid)
+    if (itemGuid)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "ITEM: %s repair of %s", packet.npcGuid.GetString().c_str(), packet.itemGuid.GetString().c_str());
-        if (Item* item = _player->GetItemByGuid(packet.itemGuid))
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "ITEM: %s repair of %s", npcGuid.GetString().c_str(), itemGuid.GetString().c_str());
+        if (Item* item = _player->GetItemByGuid(itemGuid))
             _player->DurabilityRepair(item->GetPos(), true, discountMod);
     }
     else
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "ITEM: %s repair all items", packet.npcGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "ITEM: %s repair all items", npcGuid.GetString().c_str());
         _player->DurabilityRepairAll(true, discountMod);
     }
 }

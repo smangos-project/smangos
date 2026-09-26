@@ -8,15 +8,6 @@
 
 namespace WorldPackets { namespace Npc
 {
-    class GossipHello final : public ClientPacket
-    {
-    public:
-        ObjectGuid npcGuid;
-
-        explicit GossipHello() : ClientPacket(CMSG_GOSSIP_HELLO) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class TrainerList final : public ClientPacket
     {
     public:
@@ -72,16 +63,6 @@ namespace WorldPackets { namespace Npc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class RepairItem final : public ClientPacket
-    {
-    public:
-        ObjectGuid npcGuid;
-        ObjectGuid itemGuid;
-
-        explicit RepairItem() : ClientPacket(CMSG_REPAIR_ITEM) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class ListStabledPets final : public ClientPacket
     {
     public:
@@ -129,25 +110,7 @@ namespace WorldPackets { namespace Npc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class GossipSelectOption final : public ClientPacket
-    {
-    public:
-        ObjectGuid  guid;
-        uint32      gossipListId = 0;
-        std::string code;
-
-        explicit GossipSelectOption() : ClientPacket(CMSG_GOSSIP_SELECT_OPTION) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
     // --- Server Packets ---
-
-    class GossipComplete final : public ServerPacket
-    {
-    public:
-        explicit GossipComplete() : ServerPacket(SMSG_GOSSIP_COMPLETE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
     class ShowBank final : public ServerPacket
     {
