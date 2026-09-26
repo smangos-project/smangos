@@ -176,13 +176,10 @@ class Object
         void ExecuteDelayedActions();
 
         void BuildValuesUpdateBlockForPlayer(UpdateData& data, Player* target) const;
-        void BuildValuesUpdateBlockForPlayerWithFlags(UpdateData& data, Player* target, UpdateFieldFlags flags, bool includingEmpty = false) const;
-        void BuildValuesUpdateBlockForPlayer(UpdateData& data, UpdateMask& updateMask, Player* target) const;
+        void BuildValuesUpdateBlockForPlayerWithFlag(UpdateData& data, Player* target, EnumFlag<UpdateFieldFlag> flags) const;
+        void BuildDynamicFlagsUpdateBlockForPlayer(UpdateData& data, Player* target) const;
         void BuildOutOfRangeUpdateBlock(UpdateData& data) const;
-        void BuildMovementUpdateBlock(UpdateData& data, uint8 flags = 0) const;
 
-        void BuildMovementUpdate(ByteBuffer* data, uint8 updateFlags) const;
-        void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* updateMask, Player* target) const;
         void BuildUpdateDataForPlayer(Player* pl, UpdateDataMapType& update_players);
 
         void SendOutOfRangeUpdateToPlayer(Player const* player);
@@ -252,8 +249,15 @@ class Object
         void ApplyModPositiveFloatValue(uint16 index, float val, bool apply);
         void ApplyModSignedFloatValue(uint16 index, float val, bool apply);
 
-        void ForceValuesUpdateAtIndex(uint16 index);
-        void MarkUpdateFieldsWithFlagForUpdate(UpdateMask& updateMask, uint16 flag, bool includingEmpty = false) const;
+        enum ForcedUpdateField
+        {
+            FORCED_UPDATE_DYNAMIC_FLAGS,
+            FORCED_UPDATE_TARGET,
+            FORCED_UPDATE_FACTION_TEMPLATE,
+            FORCED_UPDATE_HEALTH,
+            FORCED_UPDATE_PLAYER_FLAGS,
+        };
+        void ForceValuesUpdate(ForcedUpdateField field);
 
         void ApplyPercentModFloatValue(uint16 index, float val, bool apply)
         {
@@ -434,14 +438,10 @@ class Object
         void _InitValues();
         void _Create (uint32 guidlow, uint32 entry, HighGuid guidhigh);
 
-        uint16 GetUpdateFieldFlagsForTarget(Player const* target, uint16 const*& flags) const;
-        void _SetCreateBits(UpdateMask& updateMask, Player const* target) const;
-        void _SetUpdateBits(UpdateMask& updateMask, Player const* target) const;
         void _LoadIntoDataField(std::string const& data, uint32 startOffset, uint32 count);
 
         uint16 m_objectType;
         uint8 m_objectTypeId;
-        uint8 m_updateFlag = 0;
 
         union
         {
@@ -449,8 +449,6 @@ class Object
             uint32* m_uint32Values;
             float* m_floatValues;
         };
-
-        uint32* m_uint32Values_mirror;
 
         uint16 m_valuesCount;
 
@@ -699,9 +697,7 @@ class WorldObject : public Object
 
         virtual void SendMessageToSetInRange(WorldPacket* data, float dist, bool self) const;
         void SendMessageToSetExcept(WorldPacket* data, Player const* skipped_receiver) const;
-        void DirectSendPublicValueUpdate(uint32 index, uint32 count = 1);
-        void DirectSendPublicValueUpdate(UpdateMask& updateMask);
-        void DirectSendPublicValueUpdate(std::initializer_list<uint32> indexes);
+        void DirectSendValueUpdate();
 
         void PlayDistanceSound(uint32 sound_id, Player const* target = nullptr) const;
         void PlayDirectSound(uint32 sound_id, Player const* target = nullptr) const;

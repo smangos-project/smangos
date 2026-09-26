@@ -33,11 +33,6 @@ Corpse::Corpse(CorpseType type) : WorldObject(), loot(this), lootRecipient(nullp
 {
     m_objectType |= TYPEMASK_CORPSE;
     m_objectTypeId = TYPEID_CORPSE;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    m_updateFlag = (UPDATEFLAG_ALL | UPDATEFLAG_HAS_POSITION);
-#else
-    m_updateFlag = 0;
-#endif
     m_valuesCount = CORPSE_END;
 
     m_type = type;

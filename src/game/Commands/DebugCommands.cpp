@@ -2464,18 +2464,34 @@ bool ChatHandler::HandleDebugForceUpdateCommand(char *args)
         return false;
     }
 
-    char* indexStr = strtok((char*)args, " ");
+    char* fieldStr = strtok((char*)args, " ");
 
-    if (!indexStr)
+    Object::ForcedUpdateField field;
+    if (!fieldStr)
     {
-        SendSysMessage("Syntax : .debug forceupdate $field");
+        SendSysMessage("Syntax : .debug forceupdate dynamicflags|target|faction|health|playerflags");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    else if (!strcmp(fieldStr, "dynamicflags"))
+        field = Object::FORCED_UPDATE_DYNAMIC_FLAGS;
+    else if (!strcmp(fieldStr, "target"))
+        field = Object::FORCED_UPDATE_TARGET;
+    else if (!strcmp(fieldStr, "faction"))
+        field = Object::FORCED_UPDATE_FACTION_TEMPLATE;
+    else if (!strcmp(fieldStr, "health"))
+        field = Object::FORCED_UPDATE_HEALTH;
+    else if (!strcmp(fieldStr, "playerflags"))
+        field = Object::FORCED_UPDATE_PLAYER_FLAGS;
+    else
+    {
+        SendSysMessage("Syntax : .debug forceupdate dynamicflags|target|faction|health|playerflags");
         SetSentErrorMessage(true);
         return false;
     }
 
-    uint16 index = (uint16)atoi(indexStr);
-    target->ForceValuesUpdateAtIndex(index);
-    PSendSysMessage("Update sent for field %u", index);
+    target->ForceValuesUpdate(field);
+    PSendSysMessage("Update sent for field %s", fieldStr);
     return true;
 }
 

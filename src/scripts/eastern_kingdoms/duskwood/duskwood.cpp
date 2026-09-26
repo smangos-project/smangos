@@ -329,7 +329,7 @@ struct npc_commander_felstromAI : ScriptedAI
     {
         m_uiSuicide_Timer = 1500;
         b_suicide = false;
-        m_creature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
+        m_creature->ForceValuesUpdate(Object::FORCED_UPDATE_DYNAMIC_FLAGS);
     }
 
     void JustDied(Unit* Killer) override

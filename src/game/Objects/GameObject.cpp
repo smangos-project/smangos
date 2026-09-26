@@ -73,9 +73,6 @@ GameObject::GameObject() : SpellCaster(),
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    m_updateFlag = (UPDATEFLAG_ALL | UPDATEFLAG_HAS_POSITION);
-#endif
     m_valuesCount = GAMEOBJECT_END;
     m_respawnTime = 0;
     m_respawnDelayTime = 25;
@@ -249,7 +246,6 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float
 
     if (goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
     {
-        m_updateFlag |= UPDATEFLAG_TRANSPORT;
         SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pause);
         SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
         SetFlag(GAMEOBJECT_FLAGS, (GO_FLAG_TRANSPORT | GO_FLAG_NODESPAWN));
@@ -392,7 +388,7 @@ void GameObject::Update(uint32 update_diff, uint32 /*p_time*/)
                         {
                             m_cooldownTime = 0;
                             m_lootState = GO_READY;
-                            ForceValuesUpdateAtIndex(GAMEOBJECT_DYN_FLAGS);
+                            ForceValuesUpdate(FORCED_UPDATE_DYNAMIC_FLAGS);
                         }
 
                         return;
@@ -639,7 +635,7 @@ void GameObject::Update(uint32 update_diff, uint32 /*p_time*/)
                     {
                         m_cooldownTime = time(nullptr) + m_goInfo->chest.chestRestockTime;
                         SetLootState(GO_NOT_READY);
-                        ForceValuesUpdateAtIndex(GAMEOBJECT_DYN_FLAGS);
+                        ForceValuesUpdate(FORCED_UPDATE_DYNAMIC_FLAGS);
                         return;
                     }
                     break;

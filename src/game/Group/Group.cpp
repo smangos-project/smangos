@@ -387,26 +387,14 @@ bool Group::AddMember(ObjectGuid guid, char const* name, uint8 joinMethod)
                 if (Player* member = itr->getSource())
                 {
                     if (player->IsInVisibleList(member))
-                    {
-                        UpdateMask updateMask;
-                        updateMask.SetCount(member->GetValuesCount());
-                        member->MarkUpdateFieldsWithFlagForUpdate(updateMask, UF_FLAG_GROUP_ONLY);
-                        if (updateMask.HasData())
-                            member->BuildValuesUpdateBlockForPlayer(groupData, updateMask, player);
-                    }
+                        member->BuildValuesUpdateBlockForPlayerWithFlag(groupData, player, UpdateFieldFlag::PartyMember);
 
                     if (member->IsInVisibleList(player))
                     {
-                        UpdateMask updateMask;
-                        updateMask.SetCount(member->GetValuesCount());
-                        member->MarkUpdateFieldsWithFlagForUpdate(updateMask, UF_FLAG_GROUP_ONLY);
-                        if (updateMask.HasData())
-                        {
-                            UpdateData newData;
-                            player->BuildValuesUpdateBlockForPlayer(newData, updateMask, member);
-                            if (newData.HasData())
-                                newData.Send(member->GetSession());
-                        }
+                        UpdateData newData;
+                        player->BuildValuesUpdateBlockForPlayerWithFlag(newData, member, UpdateFieldFlag::PartyMember);
+                        if (newData.HasData())
+                            newData.Send(member->GetSession());
                     }
                 }
             }
@@ -2414,11 +2402,10 @@ struct BroadcastGroupUpdateHelper
     void operator()(Unit* unit) const
     {
         if (unit->GetTypeId() == TYPEID_PLAYER)
-            unit->ForceValuesUpdateAtIndex(PLAYER_FLAGS);
-        unit->ForceValuesUpdateAtIndex(UNIT_FIELD_FACTIONTEMPLATE);
+            unit->ForceValuesUpdate(Object::FORCED_UPDATE_PLAYER_FLAGS);
+        unit->ForceValuesUpdate(Object::FORCED_UPDATE_FACTION_TEMPLATE);
         // Visibilite des points de vie
-        unit->ForceValuesUpdateAtIndex(UNIT_FIELD_HEALTH);
-        unit->ForceValuesUpdateAtIndex(UNIT_FIELD_MAXHEALTH);
+        unit->ForceValuesUpdate(Object::FORCED_UPDATE_HEALTH);
     }
     Unit* source;
 };
@@ -2431,10 +2418,9 @@ void Group::BroadcastGroupUpdate()
         Player* pp = sObjectMgr.GetPlayer(itr.guid);
         if (pp && pp->IsInWorld())
         {
-            pp->ForceValuesUpdateAtIndex(PLAYER_FLAGS);
-            pp->ForceValuesUpdateAtIndex(UNIT_FIELD_FACTIONTEMPLATE);
-            pp->ForceValuesUpdateAtIndex(UNIT_FIELD_HEALTH);
-            pp->ForceValuesUpdateAtIndex(UNIT_FIELD_MAXHEALTH);
+            pp->ForceValuesUpdate(Object::FORCED_UPDATE_PLAYER_FLAGS);
+            pp->ForceValuesUpdate(Object::FORCED_UPDATE_FACTION_TEMPLATE);
+            pp->ForceValuesUpdate(Object::FORCED_UPDATE_HEALTH);
             pp->CallForAllControlledUnits(BroadcastGroupUpdateHelper(pp), CONTROLLED_PET | CONTROLLED_GUARDIANS | CONTROLLED_CHARM | CONTROLLED_MINIPET | CONTROLLED_TOTEMS);
         }
     }

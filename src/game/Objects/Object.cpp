@@ -227,13 +227,12 @@ void MovementInfo::Write(ByteBuffer& data) const
 }
 
 
-Object::Object() : m_values(this), m_updateFlag(0)
+Object::Object() : m_values(this)
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
 
     m_uint32Values      = nullptr;
-    m_uint32Values_mirror = nullptr;
     m_valuesCount       = 0;
 
     m_inWorld           = false;
@@ -260,17 +259,12 @@ Object::~Object()
 
     delete[] m_uint32Values;
     m_uint32Values = nullptr;
-    delete[] m_uint32Values_mirror;
-    m_uint32Values_mirror = nullptr;
 }
 
 void Object::_InitValues()
 {
     m_uint32Values = new uint32[ m_valuesCount ];
     memset(m_uint32Values, 0, m_valuesCount * sizeof(uint32));
-
-    m_uint32Values_mirror = new uint32[ m_valuesCount ];
-    memset(m_uint32Values_mirror, 0, m_valuesCount * sizeof(uint32));
 
     m_objectUpdated = false;
 }
@@ -305,11 +299,6 @@ void Object::SendForcedObjectUpdate()
         itr.second.Send(itr.first->GetSession());
 }
 
-void Object::BuildMovementUpdateBlock(UpdateData& /*data*/, uint8 /*flags*/) const
-{
-    // The modern movement block (Objects/Updates) doesn't exist yet; nothing is written until it does.
-}
-
 void Object::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) const
 {
     ::BuildCreateUpdateBlockForPlayer(*this, data, target);
@@ -324,67 +313,69 @@ void Object::SendCreateUpdateToPlayer(Player* player)
     upd.Send(player->GetSession());
 }
 
-void WorldObject::DirectSendPublicValueUpdate(uint32 index, uint32 count)
+void WorldObject::DirectSendValueUpdate()
 {
-    // Do we need an update ?
-    bool abort = true;
-    for (uint32 i = 0; i < count; i++)
-    {
-        if (m_uint32Values_mirror[index + i] != m_uint32Values[index + i])
-        {
-            abort = false;
-            m_uint32Values_mirror[index + i] = m_uint32Values[index + i];
-        }
-    }
-
-    if (abort)
+    if (!IsInWorld())
         return;
 
-    UpdateMask updateMask;
-    updateMask.SetCount(m_valuesCount);
-    for (uint32 i = 0; i < count; i++)
-        updateMask.SetBit(index + i);
+    bool const queued = m_objectUpdated;
 
-    DirectSendPublicValueUpdate(updateMask);
-}
+    UpdateDataMapType update_players;
+    BuildUpdateData(update_players);
+    if (queued)
+        RemoveFromClientUpdateList();
 
-void WorldObject::DirectSendPublicValueUpdate(std::initializer_list<uint32> indexes)
-{
-    UpdateMask updateMask;
-    updateMask.SetCount(m_valuesCount);
-    for (auto const& index : indexes)
-        updateMask.SetBit(index);
-
-    DirectSendPublicValueUpdate(updateMask);
-}
-
-void WorldObject::DirectSendPublicValueUpdate(UpdateMask& /*updateMask*/)
-{
-    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
+    for (auto& itr : update_players)
+        itr.second.Send(itr.first->GetSession());
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData& data, Player* target) const
 {
-    UpdateMask updateMask;
-    updateMask.SetCount(m_valuesCount);
-
-    _SetUpdateBits(updateMask, target);
-    if (updateMask.HasData())
-        BuildValuesUpdateBlockForPlayer(data, updateMask, target);
+    ::BuildValuesUpdateBlockForPlayer(*this, data, target);
 }
 
-void Object::BuildValuesUpdateBlockForPlayerWithFlags(UpdateData& data, Player* target, UpdateFieldFlags flags, bool includingEmpty) const
+void Object::BuildValuesUpdateBlockForPlayerWithFlag(UpdateData& data, Player* target, EnumFlag<UpdateFieldFlag> flags) const
 {
-    UpdateMask updateMask;
-    updateMask.SetCount(GetValuesCount());
-    MarkUpdateFieldsWithFlagForUpdate(updateMask, (uint16)flags, includingEmpty);
-    if (updateMask.HasData())
-        BuildValuesUpdateBlockForPlayer(data, updateMask, target);
+    ::BuildValuesUpdateBlockForPlayerWithFlag(*this, data, flags, target);
 }
 
-void Object::BuildValuesUpdateBlockForPlayer(UpdateData& /*data*/, UpdateMask& /*updateMask*/, Player* /*target*/) const
+void Object::BuildDynamicFlagsUpdateBlockForPlayer(UpdateData& data, Player* target) const
 {
-    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
+    ::BuildDynamicFlagsUpdateBlockForPlayer(*this, data, target);
+}
+
+void Object::ForceValuesUpdate(ForcedUpdateField field)
+{
+    switch (field)
+    {
+        case FORCED_UPDATE_DYNAMIC_FLAGS:
+            if (Corpse* corpse = ToCorpse())
+                corpse->m_values.ModifyValue(&Corpse::m_corpseData).ModifyValue(&UFCorpseData::DynamicFlags);
+            else
+                m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UFObjectData::DynamicFlags);
+            break;
+        case FORCED_UPDATE_TARGET:
+            if (ToUnit())
+                m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::Target);
+            break;
+        case FORCED_UPDATE_FACTION_TEMPLATE:
+            if (ToUnit())
+                m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::FactionTemplate);
+            break;
+        case FORCED_UPDATE_HEALTH:
+            if (ToUnit())
+            {
+                m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::Health);
+                m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::MaxHealth);
+            }
+            break;
+        case FORCED_UPDATE_PLAYER_FLAGS:
+            if (ToPlayer())
+                m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UFPlayerData::PlayerFlags);
+            break;
+    }
+
+    AddDelayedAction(OBJECT_DELAYED_MARK_CLIENT_UPDATE);
 }
 
 void Object::BuildOutOfRangeUpdateBlock(UpdateData& data) const
@@ -408,509 +399,8 @@ void Object::DestroyForPlayer(Player const* target) const
     data.Send(target->GetSession());
 }
 
-void Object::BuildMovementUpdate(ByteBuffer* data, uint8 updateFlags) const
-{
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    *data << uint8(updateFlags);                            // update flags
-
-    if (updateFlags & UPDATEFLAG_LIVING)
-    {
-        Unit const* unit = ToUnit();
-        ASSERT(unit);
-        WorldObject const* wobject = (WorldObject*)this;
-        MovementInfo m = wobject->m_movementInfo;
-        if (!m.ctime)
-        {
-            m.stime = WorldTimer::getMSTime() + 1000;
-            m.ChangePosition(wobject->GetPositionX(), wobject->GetPositionY(), wobject->GetPositionZ(), wobject->GetOrientation());
-        }
-        if (unit->ToCreature())
-            m.moveFlags = m.moveFlags & ~MOVEFLAG_ROOT;
-        *data << m;
-
-        if (unit)
-        {
-            *data << float(unit->GetSpeed(MOVE_WALK));
-            *data << float(unit->GetSpeed(MOVE_RUN));
-            *data << float(unit->GetSpeed(MOVE_RUN_BACK));
-            *data << float(unit->GetSpeed(MOVE_SWIM));
-            *data << float(unit->GetSpeed(MOVE_SWIM_BACK));
-            *data << float(unit->GetSpeed(MOVE_TURN_RATE));
-            // Send current movement informations
-            if (unit->m_movementInfo.moveFlags & MOVEFLAG_SPLINE_ENABLED)
-                Movement::PacketBuilder::WriteCreate(*(unit->movespline), *data);
-        }
-        else
-            for (int i = 0; i < MAX_MOVE_TYPE; ++i)
-                *data << float(1.0f);
-    }
-    else
-    {
-        if (updateFlags & UPDATEFLAG_HAS_POSITION)                     // 0x40
-        {
-            // 0x02
-            if (updateFlags & UPDATEFLAG_TRANSPORT)
-            {
-                GameObject const* go = static_cast<GameObject const*>(this);
-                *data << float(go->GetStationaryX());
-                *data << float(go->GetStationaryY());
-                *data << float(go->GetStationaryZ());
-                *data << float(go->GetStationaryO());
-            }
-            else
-            {
-                WorldObject const* wo = static_cast<WorldObject const*>(this);
-                *data << float(wo->GetPositionX());
-                *data << float(wo->GetPositionY());
-                *data << float(wo->GetPositionZ());
-                *data << float(wo->GetOrientation());
-            }
-        }
-    }
-    if (updateFlags & UPDATEFLAG_HIGHGUID)
-    {
-        // unk uint32.
-        *data << uint32(0);
-    }
-
-    if (updateFlags & UPDATEFLAG_ALL)                       // 0x10
-    {
-        // unk uint32.
-        *data << uint32(1);
-    }
-
-    if (updateFlags & UPDATEFLAG_MELEE_ATTACKING)
-    {
-        if (Unit const* me = ToUnit())
-        {
-            if (Unit const* victim = me->GetVictim())
-                * data << victim->GetPackGUID();
-            else
-                *data << uint8(0); // Empty pack guid
-        }
-        else
-            *data << uint8(0); // Empty pack guid
-    }
-    // 0x2
-    if (updateFlags & UPDATEFLAG_TRANSPORT)
-    {
-        // transport progress or mstime.
-        GameObject const* go = ToGameObject();
-        if (go && go->IsTransport())
-            *data << uint32(static_cast<GenericTransport const*>(go)->GetPathProgress());
-        else
-            *data << uint32(sWorld.GetCurrentMSTime());
-    }
-#else
-    WorldObject const* wobject = ToWorldObject();
-    MovementInfo m = wobject ? wobject->m_movementInfo : MovementInfo();
-    if (!m.ctime)
-    {
-        m.stime = WorldTimer::getMSTime() + 1000;
-        if (updateFlags & UPDATEFLAG_TRANSPORT)
-        {
-            GameObject const* go = static_cast<GameObject const*>(wobject);
-            m.ChangePosition(go->GetStationaryX(), go->GetStationaryY(), go->GetStationaryZ(), go->GetStationaryO());
-        }
-        else if (wobject)
-            m.ChangePosition(wobject->GetPositionX(), wobject->GetPositionY(), wobject->GetPositionZ(), wobject->GetOrientation());
-    }
-    if (IsCreature())
-        m.moveFlags = m.moveFlags & ~MOVEFLAG_ROOT;
-    *data << m;
-
-    if (Unit const* unit = ToUnit())
-    {
-        *data << float(unit->GetSpeed(MOVE_WALK));
-        *data << float(unit->GetSpeed(MOVE_RUN));
-        *data << float(unit->GetSpeed(MOVE_RUN_BACK));
-        *data << float(unit->GetSpeed(MOVE_SWIM));
-        *data << float(unit->GetSpeed(MOVE_SWIM_BACK));
-        *data << float(unit->GetSpeed(MOVE_TURN_RATE));
-        // Send current movement informations
-        if (unit->m_movementInfo.moveFlags & MOVEFLAG_SPLINE_ENABLED)
-            Movement::PacketBuilder::WriteCreate(*(unit->movespline), *data);
-    }
-    else
-        for (int i = 0; i < MAX_MOVE_TYPE; ++i)
-            *data << float(1.0f);
-#endif
-}
-
-void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* updateMask, Player* target) const
-{
-    if (!target)
-        return;
-
-    bool const ShowHealthValues = sWorld.getConfig(CONFIG_BOOL_OBJECT_HEALTH_VALUE_SHOW);
-
-    bool IsActivateToQuest = false;
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
-#else
-    if (updatetype == UPDATETYPE_CREATE_OBJECT)
-#endif
-    {
-        if (IsType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsTransport())
-        {
-            if (((GameObject*)this)->ActivateToQuest(target) || target->IsGameMaster())
-                IsActivateToQuest = true;
-
-            updateMask->SetBit(GAMEOBJECT_DYN_FLAGS);
-        }
-        else if (IsType(TYPEMASK_UNIT) && target->HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
-        {
-            // Force include dynamic flags to make special info visible.
-            updateMask->SetBit(UNIT_DYNAMIC_FLAGS);
-        }
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-        else if (IsType(TYPEMASK_ITEM))
-        {
-            // Force include flags field in create object packet,
-            // because the static flags need to be sent in that field.
-            updateMask->SetBit(ITEM_FIELD_FLAGS);
-        }
-#endif
-    }
-    else                                                    // case UPDATETYPE_VALUES
-    {
-        if (IsType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsTransport())
-        {
-            if (((GameObject*)this)->ActivateToQuest(target) || target->IsGameMaster())
-                IsActivateToQuest = true;
-
-            updateMask->SetBit(GAMEOBJECT_DYN_FLAGS);
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_12_1
-            updateMask->SetBit(GAMEOBJECT_ANIMPROGRESS);
-#endif
-        }
-    }
-    if (IsType(TYPEMASK_GAMEOBJECT))
-    {
-        std::unique_lock<std::mutex> lock(target->m_visibleGobjsQuestAct_lock);
-        target->m_visibleGobjQuestActivated[GetObjectGuid()] = IsActivateToQuest;
-    }
-
-    MANGOS_ASSERT(updateMask && updateMask->GetCount() == m_valuesCount);
-
-    *data << (uint8)updateMask->GetBlockCount();
-    data->append(updateMask->GetMask(), updateMask->GetLength());
-
-    // 2 specialized loops for speed optimization in non-unit case
-    if (IsType(TYPEMASK_UNIT))                              // unit (creature/player) case
-    {
-        for (uint16 index = 0; index < m_valuesCount; ++index)
-        {
-            if (updateMask->GetBit(index))
-            {
-                if (index == UNIT_NPC_FLAGS)
-                {
-                    uint32 appendValue = m_uint32Values[index];
-
-                    if (GetTypeId() == TYPEID_UNIT)
-                    {
-                        if (appendValue & UNIT_NPC_FLAG_TRAINER)
-                        {
-                            if (!((Creature*)this)->IsTrainerOf(target, false))
-                                appendValue &= ~UNIT_NPC_FLAG_TRAINER;
-                        }
-
-                        if (appendValue & UNIT_NPC_FLAG_STABLEMASTER)
-                        {
-                            if (target->GetClass() != CLASS_HUNTER)
-                                appendValue &= ~UNIT_NPC_FLAG_STABLEMASTER;
-                        }
-
-                        if (appendValue & UNIT_NPC_FLAG_FLIGHTMASTER)
-                        {
-                            QuestRelationsMapBounds bounds = sObjectMgr.GetCreatureQuestRelationsMapBounds(((Creature*)this)->GetEntry());
-                            for (QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
-                            {
-                                Quest const* pQuest = sObjectMgr.GetQuestTemplate(itr->second);
-                                if (target->CanSeeStartQuest(pQuest))
-                                {
-                                    appendValue &= ~UNIT_NPC_FLAG_FLIGHTMASTER;
-                                    break;
-                                }
-                            }
-
-                            if (appendValue & UNIT_NPC_FLAG_FLIGHTMASTER)
-                            {
-                                bounds = sObjectMgr.GetCreatureQuestInvolvedRelationsMapBounds(((Creature*)this)->GetEntry());
-                                for (QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
-                                {
-                                    Quest const* pQuest = sObjectMgr.GetQuestTemplate(itr->second);
-                                    if (target->CanRewardQuest(pQuest, false))
-                                    {
-                                        appendValue &= ~UNIT_NPC_FLAG_FLIGHTMASTER;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    *data << uint32(appendValue);
-                }
-                // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
-                else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
-                {
-                    // convert from float to uint32 and send
-                    *data << uint32(m_floatValues[index] < 0 ? 0 : m_floatValues[index]);
-                }
-
-                // there are some float values which may be negative or can't get negative due to other checks
-                else if ((index >= PLAYER_FIELD_NEGSTAT0    && index <= PLAYER_FIELD_NEGSTAT4) ||
-                         (index >= PLAYER_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (PLAYER_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
-                         (index >= PLAYER_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (PLAYER_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
-                         (index >= PLAYER_FIELD_POSSTAT0    && index <= PLAYER_FIELD_POSSTAT4))
-                    *data << uint32(m_floatValues[index]);
-                // Gamemasters should be always able to select units and view auras
-                else if (index == UNIT_FIELD_FLAGS && target->IsGameMaster())
-                    *data << ((m_uint32Values[index] | UNIT_FLAG_AURAS_VISIBLE) & ~UNIT_FLAG_NOT_SELECTABLE);
-                // hide lootable animation for unallowed players
-                else if (index == UNIT_DYNAMIC_FLAGS)
-                {
-                    uint32 dynamicFlags = m_uint32Values[index];
-                    if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT))
-                    {
-                        if (Unit const* unit = ToUnit())
-                        {
-                            if (!unit->HasAuraTypeByCaster(SPELL_AURA_MOD_STALKED, target->GetObjectGuid()))
-                                dynamicFlags &= ~UNIT_DYNFLAG_TRACK_UNIT;
-                        }
-                    }
-                    if (Creature const* creature = ToCreature())
-                    {
-                        if (creature->HasLootRecipient())
-                        {
-                            if (creature->IsTappedBy(target))
-                                dynamicFlags |= (UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
-                            else
-                            {
-                                dynamicFlags |= UNIT_DYNFLAG_TAPPED;
-                                dynamicFlags &= ~UNIT_DYNFLAG_TAPPED_BY_PLAYER;
-                            }
-                        }
-                        else
-                        {
-                            dynamicFlags &= ~UNIT_DYNFLAG_TAPPED;
-                            dynamicFlags &= ~UNIT_DYNFLAG_TAPPED_BY_PLAYER;
-                        }
-
-                        if (!target->IsAllowedToLoot(creature))
-                            dynamicFlags &= ~UNIT_DYNFLAG_LOOTABLE;
-                    }
-                    if (target->HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
-                        dynamicFlags |= UNIT_DYNFLAG_SPECIALINFO;
-
-                    *data << dynamicFlags;
-                }
-                // RAID ally-horde - Faction
-                else if (index == UNIT_FIELD_FACTIONTEMPLATE)
-                {
-                    Unit const* owner = ((Unit*)this)->GetCharmerOrOwner();
-                    if (!owner)
-                        owner = ToPlayer();
-                    bool forceFriendly = false;
-                    if (owner && owner->IsPlayer())
-                    {
-                        FactionTemplateEntry const* ft1,* ft2;
-                        ft1 = owner->GetFactionTemplateEntry();
-                        ft2 = target->GetFactionTemplateEntry();
-                        if (ft1 && ft2 && !ft1->IsFriendlyTo(*ft2) && static_cast<Player const*>(owner)->IsInSameRaidWith(target))
-                            if (static_cast<Player const*>(owner)->IsInInterFactionMode() && target->IsInInterFactionMode())
-                                forceFriendly = true;
-                    }
-                    uint32 faction = m_uint32Values[index];
-                    if (forceFriendly)
-                        faction = target->GetFactionTemplateId();
-
-                    *data << uint32(faction);
-                }
-                // RAID ally-horde : no FFA flag
-                else if (index == PLAYER_FLAGS && (m_uint32Values[index] & PLAYER_FLAGS_FFA_PVP))
-                {
-                    Player* owner = ((Unit*)this)->GetCharmerOrOwnerPlayerOrPlayerItself();
-                    if (owner && owner != target && owner->IsInSameRaidWith(target))
-                        *data << uint32(m_uint32Values[index] & ~PLAYER_FLAGS_FFA_PVP);
-                    else
-                        *data << uint32(m_uint32Values[index]);
-                }
-                // Hide real health value. Send a percent instead. See ShowHealthValues option in mangosd.conf
-                else if (!ShowHealthValues && (index == UNIT_FIELD_HEALTH || index == UNIT_FIELD_MAXHEALTH))
-                {
-                    if (target->CanSeeHealthOf((Unit*)this))
-                        *data << m_uint32Values[index];
-                    else // Hide
-                    {
-                        if (index == UNIT_FIELD_MAXHEALTH)
-                            *data << uint32(100);
-                        else
-                        {
-                            uint32 pct = 0;
-                            if (m_uint32Values[UNIT_FIELD_HEALTH])
-                            {
-                                pct = uint32((m_uint32Values[UNIT_FIELD_HEALTH] * 100.0f) / m_uint32Values[UNIT_FIELD_MAXHEALTH]);
-                                if (pct > 100)
-                                    pct = 100;
-                                if (!pct)
-                                    pct = 1;
-                            }
-                            *data << pct;
-                        }
-                    }
-                }
-                else if (target == this && (index == PLAYER_TRACK_CREATURES || index == PLAYER_TRACK_RESOURCES))
-                {
-                    *data << m_uint32Values[index];
-                }
-                // This is done to make creatures face the target they are casting on.
-                else if (index == UNIT_FIELD_TARGET)
-                {
-                    if (Creature const* pCreature = ToCreature())
-                    {
-                        if (pCreature->m_castingTargetGuid)
-                        {
-                            *data << *((uint32*)&pCreature->m_castingTargetGuid);
-                            continue;
-                        }
-                    }
-                    *data << m_uint32Values[index];
-                }
-                else if (index == UNIT_FIELD_TARGET+1)
-                {
-                    if (Creature const* pCreature = ToCreature())
-                    {
-                        if (pCreature->m_castingTargetGuid)
-                        {
-                            *data << *(((uint32*)&pCreature->m_castingTargetGuid) + 1);
-                            continue;
-                        }
-                    }
-                    *data << m_uint32Values[index];
-                }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-                else if (index == UNIT_MOD_CAST_SPEED)
-                {
-                    if (m_floatValues[index] < 0.001f)
-                        *data << float(0.0f);
-                    else
-                        *data << m_floatValues[index];
-                }
-#endif
-                else
-                {
-                    // send in current format (float as float, uint32 as uint32)
-                    *data << m_uint32Values[index];
-                }
-            }
-        }
-    }
-    else if (IsType(TYPEMASK_GAMEOBJECT))                   // gameobject case
-    {
-        for (uint16 index = 0; index < m_valuesCount; ++index)
-        {
-            if (updateMask->GetBit(index))
-            {
-                // send in current format (float as float, uint32 as uint32)
-                if (index == GAMEOBJECT_DYN_FLAGS)
-                {
-                    if (IsActivateToQuest)
-                    {
-                        switch (((GameObject*)this)->GetGoType())
-                        {
-                            case GAMEOBJECT_TYPE_QUESTGIVER:
-                            case GAMEOBJECT_TYPE_CHEST:
-                            case GAMEOBJECT_TYPE_GENERIC:
-                            case GAMEOBJECT_TYPE_SPELL_FOCUS:
-                            case GAMEOBJECT_TYPE_GOOBER:
-                                *data << uint16(GO_DYNFLAG_LO_ACTIVATE);
-                                *data << uint16(0);
-                                break;
-                            default:
-                                *data << uint32(0);         // unknown, not happen.
-                                break;
-                        }
-                    }
-                    else
-                        *data << uint32(0);                 // disable quest object
-                }
-                else
-                    *data << m_uint32Values[index];         // other cases
-            }
-        }
-    }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    else if (IsType(TYPEMASK_CORPSE))
-    {
-        for (uint16 index = 0; index < m_valuesCount; ++index)
-        {
-            if (updateMask->GetBit(index))
-            {
-                if (index == CORPSE_FIELD_DYNAMIC_FLAGS)
-                {
-                    uint32 dynFlags = m_uint32Values[CORPSE_FIELD_DYNAMIC_FLAGS];
-                    if (Corpse const* corpse = ToCorpse())
-                    {
-                        Loot const* loot = &corpse->loot;
-                        if (loot->isLooted()) // nothing to loot or everything looted.
-                            dynFlags &= ~CORPSE_DYNFLAG_LOOTABLE;
-                        if (dynFlags & CORPSE_DYNFLAG_LOOTABLE)
-                            if (corpse->IsFriendlyTo(target))
-                                dynFlags &= ~CORPSE_DYNFLAG_LOOTABLE;
-                    }
-                    *data << dynFlags;
-                }
-                else
-                    // send in current format (float as float, uint32 as uint32)
-                    *data << m_uint32Values[index];
-            }
-        }
-    }
-#endif
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-    else if (IsType(TYPEMASK_ITEM))
-    {
-        for (uint16 index = 0; index < m_valuesCount; ++index)
-        {
-            if (updateMask->GetBit(index))
-            {
-                // Static item flags are part of that field prior to patch 1.7.
-                if (index == ITEM_FIELD_FLAGS)
-                {
-                    if (ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(GetEntry()))
-                        *data << uint16(pProto->Flags);
-                    else
-                        *data << uint16(0);
-                    *data << uint16(m_uint32Values[index]);
-                }
-                else
-                    // send in current format (float as float, uint32 as uint32)
-                    *data << m_uint32Values[index];
-            }
-        }
-    }
-#endif
-    else                                                    // other objects case (no special index checks)
-    {
-        for (uint16 index = 0; index < m_valuesCount; ++index)
-        {
-            if (updateMask->GetBit(index))
-            {
-                // send in current format (float as float, uint32 as uint32)
-                *data << m_uint32Values[index];
-            }
-        }
-    }
-}
-
 void Object::ClearUpdateMask(bool remove)
 {
-    if (m_uint32Values)
-        memcpy(m_uint32Values_mirror, m_uint32Values, sizeof(uint32) * m_valuesCount);
-
     m_values.ClearChangesMask(&Object::m_objectData);
 
     if (m_objectUpdated)
@@ -939,68 +429,6 @@ bool Object::LoadValues(char const* data)
     return true;
 }
 
-uint16 Object::GetUpdateFieldFlagsForTarget(Player const* target, uint16 const*& flags) const
-{
-    flags = UpdateFields::GetUpdateFieldFlagsArray(GetTypeId());
-    uint16 visibleFlag = UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC;
-
-    if (target == this)
-        visibleFlag |= UF_FLAG_PRIVATE;
-
-    switch (GetTypeId())
-    {
-        case TYPEID_ITEM:
-        case TYPEID_CONTAINER:
-            if (static_cast<Item const*>(this)->GetOwnerGuid() == target->GetObjectGuid())
-                visibleFlag |= UF_FLAG_OWNER_ONLY | UF_FLAG_UNK2;
-            break;
-        case TYPEID_UNIT:
-        case TYPEID_PLAYER:
-        {
-            if (target->HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
-            {
-                visibleFlag |= UF_FLAG_OWNER_ONLY | UF_FLAG_SPECIAL_INFO | UF_FLAG_GROUP_ONLY;
-            }
-            else
-            {
-                if (static_cast<Unit const*>(this)->GetOwnerGuid() == target->GetObjectGuid() ||
-                    static_cast<Unit const*>(this)->GetCharmerGuid() == target->GetObjectGuid())
-                    visibleFlag |= UF_FLAG_OWNER_ONLY;
-
-                if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_SPECIALINFO))
-                    if (target->CanSeeSpecialInfoOf(static_cast<Unit const*>(this)))
-                        visibleFlag |= UF_FLAG_SPECIAL_INFO;
-
-                if (Player* plr = static_cast<Unit const*>(this)->GetCharmerOrOwnerPlayerOrPlayerItself())
-                    if (plr->IsInSameRaidWith(target))
-                        visibleFlag |= UF_FLAG_GROUP_ONLY;
-            }
-
-            break;
-        }
-        /*
-        Optimization: these objects dont actually have any fields marked as owner only, so comment this out
-
-        case TYPEID_GAMEOBJECT:
-            if (static_cast<GameObject const*>(this)->GetOwnerGuid() == target->GetObjectGuid())
-                visibleFlag |= UF_FLAG_OWNER_ONLY;
-            break;
-        case TYPEID_DYNAMICOBJECT:
-            if (static_cast<DynamicObject const*>(this)->GetCasterGuid() == target->GetObjectGuid())
-                visibleFlag |= UF_FLAG_OWNER_ONLY;
-            break;
-        case TYPEID_CORPSE:
-            if (static_cast<Corpse const*>(this)->GetOwnerGuid() == target->GetObjectGuid())
-                visibleFlag |= UF_FLAG_OWNER_ONLY;
-            break;
-        case TYPEID_OBJECT:
-            break;
-        */
-    }
-
-    return visibleFlag;
-}
-
 void Object::_LoadIntoDataField(std::string const& data, uint32 startOffset, uint32 count)
 {
     if (data.empty())
@@ -1014,62 +442,6 @@ void Object::_LoadIntoDataField(std::string const& data, uint32 startOffset, uin
     for (uint32 index = 0; index < count; ++index)
     {
         m_uint32Values[startOffset + index] = strtoul(tokens[index], nullptr, 10);
-        m_uint32Values_mirror[startOffset + index] = m_uint32Values[startOffset + index] + 1;
-    }
-}
-
-void Object::MarkUpdateFieldsWithFlagForUpdate(UpdateMask& updateMask, uint16 flag, bool includingEmpty) const
-{
-    uint16 const* flags = UpdateFields::GetUpdateFieldFlagsArray(GetTypeId());
-    ASSERT(flags);
-
-    for (uint16 index = 0; index < m_valuesCount; ++index)
-    {
-        if ((includingEmpty || (m_uint32Values[index] != 0)) && (flags[index] & flag))
-            updateMask.SetBit(index);
-    }
-}
-
-void Object::_SetUpdateBits(UpdateMask& updateMask, Player const* target) const
-{
-    uint16 const* flags = nullptr;
-    uint16 visibleFlag = GetUpdateFieldFlagsForTarget(target, flags);
-    ASSERT(flags);
-
-    for (uint16 index = 0; index < m_valuesCount; ++index)
-    {
-        if ((m_uint32Values_mirror[index] != m_uint32Values[index]) && (flags[index] & visibleFlag))
-            updateMask.SetBit(index);
-    }
-}
-
-void Object::_SetCreateBits(UpdateMask& updateMask, Player const* target) const
-{
-    uint16 const* flags = nullptr;
-    uint16 visibleFlag = GetUpdateFieldFlagsForTarget(target, flags);
-    ASSERT(flags);
-    bool const* guidFieldStart = UpdateFields::GetGuidFieldStartArray(GetTypeId());
-
-    for (uint16 index = 0; index < m_valuesCount; ++index)
-    {
-        if (!(flags[index] & visibleFlag))
-            continue;
-
-        // Guid fields must be networked with both halves or not at all. The client
-        // ignores 64 bit values that are only partially present in the create stage,
-        // so sending just the non-zero half (player guids have a zero high half)
-        // makes it display no target for example. See comment in SetUInt64Value.
-        if (guidFieldStart && guidFieldStart[index])
-        {
-            if ((m_uint32Values[index] != 0) || (m_uint32Values[index + 1] != 0))
-            {
-                updateMask.SetBit(index);
-                updateMask.SetBit(index + 1);
-            }
-            ++index; // high half handled together with the low half
-        }
-        else if (m_uint32Values[index] != 0)
-            updateMask.SetBit(index);
     }
 }
 
@@ -1100,23 +472,8 @@ void Object::SetUInt64Value(uint16 index, uint64 const& value)
     MANGOS_ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
     if (*((uint64*) & (m_uint32Values[ index ])) != value)
     {
-        uint32 first = m_uint32Values[index] = *((uint32*)&value);
-        uint32 second = m_uint32Values[index + 1] = *(((uint32*)&value) + 1);
-
-        // Force an update at both mirrored values, even if only one index was changed
-        // If we don't update the second index, it may become perpetually stuck and
-        // lead to weird client behaviour such as not displaying a target (only the
-        // first part is networked). This is typically only an issue for units which
-        // have these values set at create time, as the client will ignore unpacked
-        // 64bit values that arent fully networked in the create stage, yet accept
-        // them in the update stage (presumably it defaults to 0 for both bytes if
-        // not present, making it "OK" if we only send one in the future).
-        // Note that this behaviour is inconsistent as well, sometimes it works
-        // with only one part whereas other times it does not. It appears to be
-        // related to the number of (player) units in the vicinity.
-        // The first update will correct any malformed 64bit data.
-        m_uint32Values_mirror[index] = first + 1;
-        m_uint32Values_mirror[index + 1] = second + 1;
+        m_uint32Values[index] = *((uint32*)&value);
+        m_uint32Values[index + 1] = *(((uint32*)&value) + 1);
         MarkForClientUpdate();
     }
 }
@@ -2898,12 +2255,6 @@ bool WorldObject::IsControlledByPlayer() const
         default:
             return false;
     }
-}
-
-void Object::ForceValuesUpdateAtIndex(uint16 i)
-{
-    m_uint32Values_mirror[i] = GetUInt32Value(i) + 1; // makes server think the field changed
-    AddDelayedAction(OBJECT_DELAYED_MARK_CLIENT_UPDATE);
 }
 
 void WorldObject::SetWorldMask(uint32 newMask)

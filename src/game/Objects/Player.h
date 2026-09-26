@@ -2076,7 +2076,7 @@ class Player final: public Unit
         void ResurrectUsingRequestData();
 
         static bool IsActionButtonDataValid(uint8 button, uint32 action, uint8 type, Player const* player);
-        void RefreshBitsForVisibleUnits(UpdateMask* mask, uint32 objectTypeMask = TYPEMASK_UNIT);
+        void RefreshUnitFlagsForVisibleUnits();
 
         Corpse* GetCorpse() const;
         void SpawnCorpseBones();

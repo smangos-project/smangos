@@ -4827,7 +4827,7 @@ bool ChatHandler::HandleModifyHairStyleCommand(char* args)
 
     target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID, hairstyle);
     target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendPublicValueUpdate(UNIT_FIELD_DISPLAYID);
+    target->DirectSendValueUpdate();
     target->DeMorph();
 
     PSendSysMessage("Character's hair style has been changed to: %u", hairstyle);
@@ -4847,7 +4847,7 @@ bool ChatHandler::HandleModifyHairColorCommand(char* args)
 
     target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID, haircolor);
     target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendPublicValueUpdate(UNIT_FIELD_DISPLAYID);
+    target->DirectSendValueUpdate();
     target->DeMorph();
 
     PSendSysMessage("Character's hair color has been changed to: %u", haircolor);
@@ -4867,7 +4867,7 @@ bool ChatHandler::HandleModifySkinColorCommand(char* args)
 
     target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID, skincolor);
     target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendPublicValueUpdate(UNIT_FIELD_DISPLAYID);
+    target->DirectSendValueUpdate();
     target->DeMorph();
 
     PSendSysMessage("Character's skin color has been changed to: %u", skincolor);
@@ -4887,7 +4887,7 @@ bool ChatHandler::HandleModifyAccessoriesCommand(char* args)
 
     target->SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE, accessories);
     target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendPublicValueUpdate(UNIT_FIELD_DISPLAYID);
+    target->DirectSendValueUpdate();
     target->DeMorph();
 
     PSendSysMessage("Character's facial hair / markings / hooves have been changed to: %u", accessories);

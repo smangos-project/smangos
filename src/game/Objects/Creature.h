@@ -428,8 +428,7 @@ class Creature : public Unit
             if (pTarget != GetVictim())
             {
                 m_castingTargetGuid = pTarget->GetGUID();
-                ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET);
-                ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET + 1);
+                ForceValuesUpdate(FORCED_UPDATE_TARGET);
             }
         }
         void ClearCastingTarget()
@@ -437,8 +436,7 @@ class Creature : public Unit
             if (m_castingTargetGuid)
             {
                 m_castingTargetGuid = 0;
-                ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET);
-                ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET + 1);
+                ForceValuesUpdate(FORCED_UPDATE_TARGET);
             }
         }
         uint64 m_castingTargetGuid;

@@ -85,9 +85,6 @@ Unit::Unit()
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    m_updateFlag = (UPDATEFLAG_ALL | UPDATEFLAG_LIVING | UPDATEFLAG_HAS_POSITION);
-#endif
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
     m_attackTimer[RANGED_ATTACK] = 0;
@@ -1150,17 +1147,8 @@ void Unit::Kill(Unit* pVictim, SpellEntry const* spellProto, bool durabilityLoss
         DEBUG_FILTER_LOG(LOG_FILTER_DAMAGE, "SET JUST_DIED");
         pVictim->SetDeathState(JUST_DIED);
 
-        // World of Warcraft Client Patch 1.6.0 (2005-07-12)
-        // - Self-resurrection spells show their name on the button in the release spirit dialog.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-        if (pPlayerVictim && pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL))
-            pVictim->DirectSendPublicValueUpdate(PLAYER_SELF_RES_SPELL);
-#else
-        if (pPlayerVictim && pVictim->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT))
-            pVictim->DirectSendPublicValueUpdate(PLAYER_FLAGS);
-#endif
         // Nostalrius: Instantly send values update for health
-        pVictim->DirectSendPublicValueUpdate(UNIT_FIELD_HEALTH);
+        pVictim->DirectSendValueUpdate();
     }
 
     pVictim->GetHostileRefManager().deleteReferences();
@@ -8084,7 +8072,7 @@ void Unit::SetHealth(uint32 val)
         val = maxHealth;
 
     SetUInt32Value(UNIT_FIELD_HEALTH, val);
-    ForceValuesUpdateAtIndex(UNIT_FIELD_MAXHEALTH); // Necessaire pour script qui cache PV aux joueurs.
+    ForceValuesUpdate(FORCED_UPDATE_HEALTH); // Necessaire pour script qui cache PV aux joueurs.
 
     // group update
     if (Player* pPlayer = ToPlayer())
@@ -8107,7 +8095,7 @@ void Unit::SetMaxHealth(uint32 val)
 {
     uint32 health = GetHealth();
     SetUInt32Value(UNIT_FIELD_MAXHEALTH, val);
-    ForceValuesUpdateAtIndex(UNIT_FIELD_HEALTH); // Cf plus haut.
+    ForceValuesUpdate(FORCED_UPDATE_HEALTH); // Cf plus haut.
 
     // group update
     if (Player* pPlayer = ToPlayer())
@@ -10757,7 +10745,7 @@ void Unit::CancelSpellChannelingAnimationInstantly()
 
     SetChannelObjectGuid(ObjectGuid());
     SetUInt32Value(UNIT_CHANNEL_SPELL, 0);
-    DirectSendPublicValueUpdate({ UNIT_FIELD_CHANNEL_OBJECT , UNIT_FIELD_CHANNEL_OBJECT + 1 , UNIT_CHANNEL_SPELL });
+    DirectSendValueUpdate();
 }
 
 #define PRELOAD if (this == unit) return true; \

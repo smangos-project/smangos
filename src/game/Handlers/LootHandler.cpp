@@ -528,7 +528,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
                 loot->clear();
                 corpse->RemoveFlag(CORPSE_FIELD_DYNAMIC_FLAGS, CORPSE_DYNFLAG_LOOTABLE);
             }
-            corpse->ForceValuesUpdateAtIndex(CORPSE_FIELD_DYNAMIC_FLAGS);
+            corpse->ForceValuesUpdate(Object::FORCED_UPDATE_DYNAMIC_FLAGS);
             corpse->ExecuteDelayedActions();
             break;
         }
@@ -596,7 +596,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
                             group->SendLooter(creature, nullptr);
 
                             // force update of dynamic flags, otherwise other group's players still not able to loot.
-                            creature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
+                            creature->ForceValuesUpdate(Object::FORCED_UPDATE_DYNAMIC_FLAGS);
                         }
                     }
                     else

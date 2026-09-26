@@ -336,8 +336,7 @@ struct boss_sapphironAI : public ScriptedAI
                 if (m_forceTargetUpdateTimer < uiDiff)
                 {
                     m_forceTargetUpdateTimer = 0;
-                    m_creature->ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET);
-                    m_creature->ForceValuesUpdateAtIndex(UNIT_FIELD_TARGET + 1);
+                    m_creature->ForceValuesUpdate(Object::FORCED_UPDATE_TARGET);
                 }
                 else
                     m_forceTargetUpdateTimer -= uiDiff;

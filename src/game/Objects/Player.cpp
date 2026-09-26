@@ -2687,13 +2687,7 @@ void Player::SetGameMaster(bool on, bool notify)
     UpdateForQuestWorldObjects();
 
     // GM can select (UNIT_FIELD_FLAGS) everybody.
-    UpdateMask m;
-    m.SetCount(UNIT_END);
-    m.SetBit(UNIT_FIELD_FLAGS);
-    RefreshBitsForVisibleUnits(&m, TYPEMASK_UNIT);
-    m.SetCount(PLAYER_END);
-    m.SetBit(UNIT_FIELD_FLAGS);
-    RefreshBitsForVisibleUnits(&m, TYPEMASK_PLAYER);
+    RefreshUnitFlagsForVisibleUnits();
 }
 
 void Player::SetGMVisible(bool on, bool notify)
@@ -2900,12 +2894,8 @@ void Player::SetCheatDebugTargetInfo(bool on, bool notify)
             if (!pUnit)
                 continue;
 
-            uint16 updateFlags = UF_FLAG_DYNAMIC;
-            if (on)
-                updateFlags |= UF_FLAG_SPECIAL_INFO;
-
             UpdateData newData;
-            pUnit->BuildValuesUpdateBlockForPlayerWithFlags(newData, this, UpdateFieldFlags(updateFlags), true);
+            pUnit->BuildDynamicFlagsUpdateBlockForPlayer(newData, this);
             if (newData.HasData())
                 newData.Send(GetSession());
         }
@@ -7812,7 +7802,7 @@ void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
 
             permission = ALL_PERMISSION; // Everyone can loot in AV.
             bones->SetFlag(CORPSE_FIELD_DYNAMIC_FLAGS, CORPSE_DYNFLAG_LOOTABLE);
-            bones->ForceValuesUpdateAtIndex(CORPSE_DYNFLAG_LOOTABLE);
+            bones->ForceValuesUpdate(FORCED_UPDATE_DYNAMIC_FLAGS);
             break;
         }
 #endif
@@ -19055,7 +19045,7 @@ void Player::ScheduleCameraUpdate(ObjectGuid guid)
     if (guid.IsEmpty() && m_pendingCameraUpdate.IsEmpty())
     {
         SetGuidValue(PLAYER_FARSIGHT, guid);
-        DirectSendPublicValueUpdate(PLAYER_FARSIGHT, 2);
+        DirectSendValueUpdate();
     }
     else
     {
@@ -19660,7 +19650,7 @@ void Player::UpdateForQuestWorldObjects()
                 if (!obj->IsTransport())
                 {
                     if (m_visibleGobjQuestActivated[obj->GetObjectGuid()] != obj->ActivateToQuest(this))
-                        obj->BuildValuesUpdateBlockForPlayerWithFlags(updateData, this, UF_FLAG_DYNAMIC, true);
+                        obj->BuildDynamicFlagsUpdateBlockForPlayer(updateData, this);
                 }
             }
         }
@@ -21766,9 +21756,13 @@ void Player::SendDestroyGroupMembers(bool includingSelf)
     }
 }
 
-void Player::RefreshBitsForVisibleUnits(UpdateMask* /*mask*/, uint32 /*objectTypeMask*/)
+void Player::RefreshUnitFlagsForVisibleUnits()
 {
-    // The modern values block (Objects/Updates) doesn't exist yet; nothing is written until it does.
+    UpdateData data;
+    for (const auto& guid : m_visibleGUIDs)
+        if (Object* obj = GetObjectByTypeMask(guid, TYPEMASK_UNIT))
+            BuildUnitFlagsUpdateBlockForPlayer(*static_cast<Unit*>(obj), data, this);
+    data.Send(GetSession());
 }
 
 void Player::SetSession(WorldSession* s)

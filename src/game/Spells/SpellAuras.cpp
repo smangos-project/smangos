@@ -2987,7 +2987,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
         if (Player* pPlayerCaster = pCaster->ToPlayer())
         {
             UpdateData newData;
-            pTarget->BuildValuesUpdateBlockForPlayerWithFlags(newData, pPlayerCaster, UF_FLAG_OWNER_ONLY);
+            pTarget->BuildValuesUpdateBlockForPlayerWithFlag(newData, pPlayerCaster, UpdateFieldFlag::Owner);
             if (newData.HasData())
                 newData.Send(pPlayerCaster->GetSession());
         }
@@ -3317,7 +3317,7 @@ void Aura::HandleModCharm(bool apply, bool Real)
             target->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
             UpdateData newData;
-            target->BuildValuesUpdateBlockForPlayerWithFlags(newData, pPlayerCaster, UF_FLAG_OWNER_ONLY);
+            target->BuildValuesUpdateBlockForPlayerWithFlag(newData, pPlayerCaster, UpdateFieldFlag::Owner);
             if (newData.HasData())
                 newData.Send(pPlayerCaster->GetSession());
         }
@@ -4220,7 +4220,7 @@ void Aura::HandleAuraModStalked(bool apply, bool /*Real*/)
     if (apply)
     {
         GetTarget()->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT);
-        GetTarget()->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
+        GetTarget()->ForceValuesUpdate(Object::FORCED_UPDATE_DYNAMIC_FLAGS);
     }
     else
         GetTarget()->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT);
@@ -5607,7 +5607,7 @@ void Aura::HandleAuraEmpathy(bool apply, bool /*Real*/)
         if (Player* pPlayerCaster = ToPlayer(GetCaster()))
         {
             UpdateData newData;
-            target->BuildValuesUpdateBlockForPlayerWithFlags(newData, pPlayerCaster, UpdateFieldFlags(UF_FLAG_SPECIAL_INFO | UF_FLAG_DYNAMIC));
+            target->BuildDynamicFlagsUpdateBlockForPlayer(newData, pPlayerCaster);
             if (newData.HasData())
                 newData.Send(pPlayerCaster->GetSession());
         }

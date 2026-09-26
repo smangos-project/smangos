@@ -581,7 +581,7 @@ void PartyBotAI::OnPacketReceived(WorldPacket const* packet)
                             {
                                 // unassign loot from bot so real players can loot
                                 pCreature->loot.roundRobinPlayer = 0;
-                                pCreature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
+                                pCreature->ForceValuesUpdate(Object::FORCED_UPDATE_DYNAMIC_FLAGS);
                             }
                         }, 1);
                     }

@@ -141,14 +141,34 @@ EnumFlag<UpdateFieldFlag> GetUpdateFieldFlagsFor(Object const& object, Player co
 
     if (&object == static_cast<Object const*>(target))
         flags |= UpdateFieldFlag::Owner;
-    else if (Item const* item = object.ToItem())
+
+    if (Item const* item = object.ToItem())
     {
         if (item->GetOwnerGuid() == target->GetObjectGuid())
             flags |= UpdateFieldFlag::Owner;
     }
+    else if (Unit const* unit = object.ToUnit())
+    {
+        if (target->HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
+        {
+            flags |= UpdateFieldFlag::Owner;
+            flags |= UpdateFieldFlag::PartyMember;
+            flags |= UpdateFieldFlag::Empath;
+        }
+        else
+        {
+            if (unit->GetOwnerGuid() == target->GetObjectGuid() || unit->GetCharmerGuid() == target->GetObjectGuid())
+                flags |= UpdateFieldFlag::Owner;
 
-    // Party/raid visibility and the empathy/special-info flag still aren't filled (bot-phase-4.md
-    // slice C6); nothing reads them until then.
+            if ((unit->GetUInt32Value(UNIT_DYNAMIC_FLAGS) & UNIT_DYNFLAG_SPECIALINFO) && target->CanSeeSpecialInfoOf(unit))
+                flags |= UpdateFieldFlag::Empath;
+
+            if (Player const* controller = unit->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (controller->IsInSameRaidWith(target))
+                    flags |= UpdateFieldFlag::PartyMember;
+        }
+    }
+
     return flags;
 }
 
@@ -338,6 +358,109 @@ uint8 ToWireTypeId(uint8 typeId, bool isSelf)
         default:                   return 0;
     }
 }
+
+// Translates the holder's TypeID bits to the client's numbering.
+uint32 ToWireTypeMask(uint32 holderMask)
+{
+    struct Entry
+    {
+        uint32 holderBit;
+        uint32 wireBit;
+    };
+    static constexpr Entry entries[] =
+    {
+        { TYPEID_OBJECT, 0 }, { TYPEID_ITEM, 1 }, { TYPEID_CONTAINER, 2 }, { TYPEID_UNIT, 5 },
+        { TYPEID_PLAYER, 6 }, { TYPEID_ACTIVE_PLAYER, 7 }, { TYPEID_GAMEOBJECT, 8 },
+        { TYPEID_DYNAMICOBJECT, 9 }, { TYPEID_CORPSE, 10 },
+    };
+
+    uint32 wireMask = 0;
+    for (Entry const& entry : entries)
+        if (holderMask & (1u << entry.holderBit))
+            wireMask |= 1u << entry.wireBit;
+    return wireMask;
+}
+
+template<typename StructT, typename FieldT, int32 BlockBit, uint32 Bit>
+void MarkFieldInMask(typename StructT::Mask& mask, UpdateField<FieldT, BlockBit, Bit> StructT::* /*field*/)
+{
+    if constexpr (BlockBit >= 0)
+        mask.Set(BlockBit);
+    mask.Set(Bit);
+}
+
+uint32 GetChangedTypeMask(Object const& object, bool isSelf)
+{
+    uint32 mask = object.m_values.GetChangedObjectTypeMask();
+    if (!isSelf)
+        mask &= ~(1u << TYPEID_ACTIVE_PLAYER);
+    return mask;
+}
+
+void BuildValuesUpdate(Object const& object, ByteBuffer& data, EnumFlag<UpdateFieldFlag> flags, Player const* target, uint32 changedMask, bool isSelf)
+{
+    data << uint32(ToWireTypeMask(changedMask));
+
+    auto changed = [changedMask](uint32 typeId) { return (changedMask & (1u << typeId)) != 0; };
+
+    if (changed(TYPEID_OBJECT))
+        object.m_objectData->WriteUpdate(data, flags, &object, target);
+
+    if (Unit const* unit = object.ToUnit())
+    {
+        if (changed(TYPEID_UNIT))
+            unit->m_unitData->WriteUpdate(data, flags, unit, target);
+
+        if (Player const* player = unit->ToPlayer())
+        {
+            if (changed(TYPEID_PLAYER))
+                player->m_playerData->WriteUpdate(data, flags, player, target);
+            if (isSelf && changed(TYPEID_ACTIVE_PLAYER))
+                player->m_activePlayerData->WriteUpdate(data, flags, player, target);
+        }
+    }
+    else if (Item const* item = object.ToItem())
+    {
+        if (changed(TYPEID_ITEM))
+            item->m_itemData->WriteUpdate(data, flags, item, target);
+        if (Bag const* bag = item->ToBag())
+            if (changed(TYPEID_CONTAINER))
+                bag->m_containerData->WriteUpdate(data, flags, bag, target);
+    }
+    else if (GameObject const* gameObject = object.ToGameObject())
+    {
+        if (changed(TYPEID_GAMEOBJECT))
+            gameObject->m_gameObjectData->WriteUpdate(data, flags, gameObject, target);
+    }
+    else if (Corpse const* corpse = object.ToCorpse())
+    {
+        if (changed(TYPEID_CORPSE))
+            corpse->m_corpseData->WriteUpdate(data, flags, corpse, target);
+    }
+    else if (DynamicObject const* dynamicObject = object.ToDynamicObject())
+    {
+        if (changed(TYPEID_DYNAMICOBJECT))
+            dynamicObject->m_dynamicObjectData->WriteUpdate(data, flags, dynamicObject, target);
+    }
+}
+
+std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<UpdateFieldFlag> flags, uint8 contentsChangedMask)
+{
+    buf << uint8(UPDATETYPE_VALUES);
+    buf << ToClassic(object.GetObjectGuid());
+
+    std::size_t sizePos = buf.wpos();
+    buf << uint32(0);
+    buf << uint8(flags.HasFlag(UpdateFieldFlag::Owner));
+    buf << uint8(0);                                             // IdsChanged
+    buf << contentsChangedMask;
+    return sizePos;
+}
+
+void CloseValuesBlock(ByteBuffer& buf, std::size_t sizePos)
+{
+    buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
+}
 }
 
 void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
@@ -371,4 +494,104 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     buf << uint8(1);                                             // IndirectFragmentActive: CGObject
     BuildValuesCreate(object, buf, fieldFlags, target);
     buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
+}
+
+void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
+{
+    if (!target)
+        return;
+
+    bool const isSelf = static_cast<Object const*>(target) == &object;
+    uint32 const changedMask = GetChangedTypeMask(object, isSelf);
+    if (!changedMask)
+        return;
+
+    EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(object, target);
+    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectChangedMask);
+    BuildValuesUpdate(object, buf, fieldFlags, target, changedMask, isSelf);
+    CloseValuesBlock(buf, sizePos);
+}
+
+void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& data, EnumFlag<UpdateFieldFlag> flags, Player* target)
+{
+    if (!target)
+        return;
+
+    FillUpdateFieldData(const_cast<Object&>(object));
+
+    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    std::size_t sizePos = OpenValuesBlock(buf, object, flags, CGObjectActiveMask | CGObjectChangedMask);
+
+    Unit const* unit = object.ToUnit();
+    Player const* player = object.ToPlayer();
+    Item const* item = object.ToItem();
+
+    uint32 holderMask = 0;
+    if (unit)
+        holderMask |= 1u << TYPEID_UNIT;
+    if (player)
+        holderMask |= 1u << TYPEID_PLAYER;
+    if (item)
+        holderMask |= 1u << TYPEID_ITEM;
+    buf << uint32(ToWireTypeMask(holderMask));
+
+    if (unit)
+    {
+        UFUnitData::Mask mask;
+        UFUnitData::AppendAllowedFieldsMaskForFlag(mask, flags);
+        unit->m_unitData->WriteUpdate(buf, mask, true, unit, target);
+    }
+    if (player)
+    {
+        UFPlayerData::Mask mask;
+        UFPlayerData::AppendAllowedFieldsMaskForFlag(mask, flags);
+        player->m_playerData->WriteUpdate(buf, mask, true, player, target);
+    }
+    if (item)
+    {
+        UFItemData::Mask mask;
+        UFItemData::AppendAllowedFieldsMaskForFlag(mask, flags);
+        item->m_itemData->WriteUpdate(buf, mask, true, item, target);
+    }
+
+    CloseValuesBlock(buf, sizePos);
+}
+
+void BuildDynamicFlagsUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
+{
+    if (!target)
+        return;
+
+    FillUpdateFieldData(const_cast<Object&>(object));
+
+    EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(object, target);
+    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectActiveMask | CGObjectChangedMask);
+
+    UFObjectData::Mask mask;
+    MarkFieldInMask(mask, &UFObjectData::DynamicFlags);
+
+    buf << uint32(ToWireTypeMask(1u << TYPEID_OBJECT));
+    object.m_objectData->WriteUpdate(buf, mask, true, &object, target);
+    CloseValuesBlock(buf, sizePos);
+}
+
+void BuildUnitFlagsUpdateBlockForPlayer(Unit const& unit, UpdateData& data, Player* target)
+{
+    if (!target)
+        return;
+
+    FillUpdateFieldData(const_cast<Unit&>(unit));
+
+    EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(unit, target);
+    ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    std::size_t sizePos = OpenValuesBlock(buf, unit, fieldFlags, CGObjectActiveMask | CGObjectChangedMask);
+
+    UFUnitData::Mask mask;
+    MarkFieldInMask(mask, &UFUnitData::Flags);
+
+    buf << uint32(ToWireTypeMask(1u << TYPEID_UNIT));
+    unit.m_unitData->WriteUpdate(buf, mask, true, &unit, target);
+    CloseValuesBlock(buf, sizePos);
 }
