@@ -280,7 +280,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(MSG_MOVE_SET_WALK_MODE, UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TOGGLE_LOGGING,           UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TELEPORT,                 UnhandleReason::Unhandled);
-    DEFINE_HANDLER(MSG_MOVE_TELEPORT_CHEAT,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMoveSetRawPosition);
+    INVALID_PACKET(MSG_MOVE_TELEPORT_CHEAT,           UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TELEPORT_ACK, UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TOGGLE_FALL_LOGGING,      UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_FALL_LAND, UnhandleReason::Unhandled);
@@ -307,7 +307,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_MOVE_WATER_WALK,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_MOVE_LAND_WALK,               UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_MOVE_SET_RAW_POSITION_ACK,     UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_MOVE_SET_RAW_POSITION,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMoveSetRawPosition);
+    INVALID_PACKET(CMSG_MOVE_SET_RAW_POSITION,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FORCE_RUN_SPEED_CHANGE,       UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_FORCE_RUN_SPEED_CHANGE_ACK, UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FORCE_RUN_BACK_SPEED_CHANGE,  UnhandleReason::SendByServer);

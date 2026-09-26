@@ -270,15 +270,6 @@ namespace WorldPackets { namespace Misc
     };
 #endif
 
-    class MoveSetRawPosition final : public ClientPacket
-    {
-    public:
-        Position location;
-
-        MoveSetRawPosition() : ClientPacket(OPCODE_WILL_BE_SET_IN_READ_FUNCTION) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class TogglePvP final : public ClientPacket
     {
     public:

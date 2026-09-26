@@ -597,7 +597,6 @@ class WorldSession
         template<ClassicOpcodes Op>
         void HandleClassicFlagAck(ClientMovementAck<Op> const& packet) { HandleMovementFlagChangeToggleAck(Op, packet.Ack); }
         void HandleMoveSplineDoneOpcode(MoveSplineDone const& packet);
-        void HandleMoveSetRawPosition(WorldPackets::Misc::MoveSetRawPosition const& packet);
         void HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport const& packet);
         void HandleMountSpecialAnimOpcode(NullClientPacket const& packet);
         void HandleTeleportToUnitOpcode(WorldPackets::Misc::TeleportToUnit const& packet);

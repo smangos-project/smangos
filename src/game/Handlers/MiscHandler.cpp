@@ -1091,26 +1091,6 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport c
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Received worldport command from player %s", GetPlayer()->GetName());
 }
 
-void WorldSession::HandleMoveSetRawPosition(WorldPackets::Misc::MoveSetRawPosition const& packet)
-{
-    // write in client console: setrawpos x y z o
-    // For now, it is implemented like worldport but on the same map. Consider using MSG_MOVE_SET_RAW_POSITION_ACK.
-    //sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Set to: X=%f, Y=%f, Z=%f, orient=%f", packet.location.x, packet.location.y, packet.location.z, packet.location.o);
-
-    if (!GetPlayer()->IsInWorld() || GetPlayer()->IsTaxiFlying())
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) in a transfer, ignore setrawpos command.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
-        return;
-    }
-
-    if (GetSecurity() >= SEC_ADMINISTRATOR)
-        GetPlayer()->NearTeleportTo(packet.location);
-    else
-        SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
-
-    sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Received setrawpos command from player %s", GetPlayer()->GetName());
-}
-
 void WorldSession::HandleWhoisOpcode(WorldPackets::Query::Whois const& packet)
 {
     if (GetSecurity() < SEC_ADMINISTRATOR)
