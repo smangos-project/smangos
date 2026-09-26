@@ -70,4 +70,16 @@ class WorldPacket : public ByteBuffer
         uint32 m_opcode;
         uint32 m_recvdTime;
 };
+// A packet built from a Classic* wire struct: its Opcode and Write().
+template<typename T>
+WorldPacket MakeClassicPacket(T const& packet)
+{
+    ByteBuffer body;
+    packet.Write(body);
+    WorldPacket data(uint32(T::Opcode), body.size());
+    if (!body.empty())
+        data.append(body.contents(), body.size());
+    return data;
+}
+
 #endif

@@ -12,7 +12,7 @@
 #include "Objects/Corpse.h"
 #include "Objects/DynamicObject.h"
 #include "Objects/UpdateData.h"
-#include "Objects/MovementInfo.h"
+#include "Objects/MovementInfoWire.h"
 #include "Chat/MasterPlayer.h"
 #include "Server/WorldSession.h"
 #include "Server/Packets/Classic/GuidMapping.h"
@@ -77,24 +77,6 @@ CreateObjectBits ComputeCreateObjectBits(Object const& object, Player const* tar
         flags.ActivePlayer = true;
     }
 
-    return flags;
-}
-
-// Only the flags a unit can carry while standing still are translated; the transient ones
-// (forward/strafe/turn/jump/fall) only matter once movement packets exist to set them.
-uint32 ToModernMovementFlags(MovementInfo const& info)
-{
-    uint32 flags = 0;
-    if (info.HasMovementFlag(MOVEFLAG_ROOT))
-        flags |= 0x00000400; // MOVEMENTFLAG_ROOT
-    if (info.HasMovementFlag(MOVEFLAG_SWIMMING))
-        flags |= 0x00100000; // MOVEMENTFLAG_SWIMMING
-    if (info.HasMovementFlag(MOVEFLAG_WATERWALKING))
-        flags |= 0x04000000; // MOVEMENTFLAG_WATERWALKING
-    if (info.HasMovementFlag(MOVEFLAG_SAFE_FALL))
-        flags |= 0x08000000; // MOVEMENTFLAG_FALLING_SLOW
-    if (info.HasMovementFlag(MOVEFLAG_HOVER))
-        flags |= 0x10000000; // MOVEMENTFLAG_HOVER
     return flags;
 }
 
@@ -202,7 +184,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
 
         data << ToClassic(object.GetObjectGuid());              // MoverGUID
 
-        data << uint32(ToModernMovementFlags(mi));
+        data << uint32(ToModernMovementFlags(mi.moveFlags));
         data << uint32(0);                                       // extra movement flags: not tracked yet
         data << uint32(0);                                       // extra movement flags 2: not tracked yet
 

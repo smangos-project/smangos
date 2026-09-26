@@ -133,15 +133,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class SetActiveMover final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit SetActiveMover() : ClientPacket(CMSG_SET_ACTIVE_MOVER) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetFactionAtWar final : public ClientPacket
     {
     public:
@@ -964,19 +955,6 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    class ClientControlUpdate final : public ServerPacket
-    {
-    public:
-        ObjectGuid moverGuid; // guid of the unit the player should control
-        uint8 allowMove = 0;  // whether movement is allowed
-
-        explicit ClientControlUpdate() : ServerPacket(SMSG_CLIENT_CONTROL_UPDATE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-#endif
 
     class UpdateWorldState final : public ServerPacket
     {

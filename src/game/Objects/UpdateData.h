@@ -39,12 +39,6 @@ enum ObjectUpdateType
     UPDATETYPE_CREATE_OBJECT2       = 3,
 };
 
-class PacketCompressor
-{
-    public:
-        static void Compress(void* dst, uint32* dst_size, void* src, int src_size);
-};
-
 // One physical SMSG_UPDATE_OBJECT's worth of already-serialized create/values/movement blocks.
 struct UpdateDataBlock
 {
@@ -80,21 +74,5 @@ class UpdateData
         ObjectGuidSet m_destroyGUIDs;
         std::list<UpdateDataBlock> m_datas;
 };
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-class MovementData
-{
-    public:
-        MovementData() : m_buffer(1024) {}
-        ~MovementData() {}
-        bool CanAddPacket(WorldPacket const& data);
-        void AddPacket(WorldPacket const& data);
-        bool BuildPacket(WorldPacket& data);
-        bool HasData() const { return m_buffer.wpos() != 0; }
-        void ClearBuffer() { m_buffer.clear(); }
-    protected:
-        ByteBuffer m_buffer;
-};
-#endif
 
 #endif

@@ -31,6 +31,7 @@
 #include "Opcodes.h"
 #include "SpellMgr.h"
 #include "World.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "QuestDef.h"
@@ -19186,6 +19187,10 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
 
     if (login)
     {
+        MoveSetActiveMover activeMover;
+        activeMover.Mover = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+        GetSession()->SendClassic(activeMover);
+
         m_Events.AddLambdaEventAtOffset([this]
         {
             ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(GetRace());
@@ -20148,13 +20153,10 @@ void Player::ResurrectUsingRequestData()
 
 void Player::SetClientControl(Unit const* target, uint8 allowMove) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    auto packet = std::make_unique<WorldPackets::Misc::ClientControlUpdate>();
-    packet->moverGuid = target->GetObjectGuid();
-    packet->allowMove = allowMove;
-    GetCheatData()->LogMovementPacket(*packet);
-    GetSession()->SendPacket(std::move(packet));
-#endif
+    ControlUpdate packet;
+    packet.Guid = ClassicGuidMapping::ToClassic(target->GetObjectGuid(), realmID);
+    packet.On = allowMove != 0;
+    GetSession()->SendClassic(packet);
 }
 
 Unit* Player::GetConfirmedMover() const

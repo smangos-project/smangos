@@ -57,6 +57,7 @@
 #include "Packets/Mail.h"
 #include "Packets/Misc.h"
 #include "Packets/Movement.h"
+#include "Packets/MovementMessages.h"
 #include "Packets/Npc.h"
 #include "Packets/Pet.h"
 #include "Packets/Petition.h"
@@ -410,11 +411,7 @@ class WorldSession
         template<typename T>
         void SendClassic(T const& packet)
         {
-            ByteBuffer body;
-            packet.Write(body);
-            WorldPacket data(uint32(T::Opcode), body.size());
-            if (!body.empty())
-                data.append(body.contents(), body.size());
+            WorldPacket data = MakeClassicPacket(packet);
             SendPacket(&data);
         }
         void SendMovementPacket(WorldPacket const* packet);
@@ -582,8 +579,12 @@ class WorldSession
         void HandleForceSpeedChangeAckOpcodes(WorldPackets::Movement::MoveSpeedAck const& packet);
         void HandleMoveWorldportAckOpcode(NullClientPacket const& packet);
         void HandleMoveWorldportAck();                // for server-side calls
-        void HandleMovementOpcodes(WorldPackets::Movement::MovementPacket const& packet);
-        void HandleSetActiveMoverOpcode(WorldPackets::Misc::SetActiveMover const& packet);
+        void HandleMovementOpcodes(uint32 opcode, MovementInfo& movementInfo);
+        void HandleClassicMovement(ClassicOpcodes opcode, ClassicMovementInfo const& status);
+        template<ClassicOpcodes Op>
+        void HandleClassicMovementOpcode(ClientPlayerMovement<Op> const& packet) { HandleClassicMovement(Op, packet.Status); }
+        void HandleSetActiveMoverOpcode(SetActiveMover const& packet);
+        void HandleMoveInitActiveMoverCompleteOpcode(MoveInitActiveMoverComplete const& packet);
         void HandleMoveNotActiveMoverOpcode(WorldPackets::Movement::MoveNotActiveMover const& packet);
         void HandleMoveTimeSkippedOpcode(WorldPackets::Movement::MoveTimeSkipped const& packet);
         void HandleMovementFlagChangeToggleAck(WorldPackets::Movement::MoveFlagChangeAck const& packet);
@@ -999,17 +1000,6 @@ class WorldSession
         AccountData m_accountData[NewAccountData::NUM_ACCOUNT_DATA_TYPES];
         uint32 m_tutorials[ACCOUNT_TUTORIALS_COUNT];
         TutorialDataState m_tutorialState;
-
-        // compressed moves packet does not exist in early clients
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-        MovementData m_movementPacketCompressor;
-        std::mutex m_movementPacketCompressorMutex;
-        void SendCompressedMovementPackets();
-        // dynamically decide when to enable or disable compression
-        uint32 m_movePacketsSentLastInterval = 0;
-        uint32 m_movePacketsSentThisInterval = 0;
-        time_t m_movePacketTrackingIntervalStart = 0;
-#endif
 
         // Clustering system (TODO remove this)
     public:

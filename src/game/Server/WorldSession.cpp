@@ -385,60 +385,10 @@ void WorldSession::VerifyPacketWasCorrectlyRead(WorldPacket const& recvPacket, C
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-void WorldSession::SendMovementPacket(WorldPacket const* packet)
-{
-    // There is a maximum size packet.
-    if (packet->size() > 0x8000)
-    {
-        // Packet will be rejected by client
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "[NETWORK] Packet %s size %u is too large. Not sent [Account %u Player %s]", LookupOpcodeName(packet->GetOpcode()), packet->size(), GetAccountId(), GetPlayerName());
-        return;
-    }
-
-    if (!m_socket)
-    {
-        if (GetBot() && GetBot()->ai)
-            GetBot()->ai->OnPacketReceived(packet);
-        return;
-    }
-
-    if (++m_movePacketsSentThisInterval < sWorld.getConfig(CONFIG_UINT32_COMPRESSION_MOVEMENT_COUNT) &&
-        m_movePacketsSentLastInterval < sWorld.getConfig(CONFIG_UINT32_COMPRESSION_MOVEMENT_COUNT))
-    {
-        SendPacketImpl(packet);
-        return;
-    }
-
-    std::lock_guard<std::mutex> guard(m_movementPacketCompressorMutex);
-    if (m_movementPacketCompressor.CanAddPacket(*packet))
-        m_movementPacketCompressor.AddPacket(*packet);
-    else
-    {
-        // send batched packets first to maintain order of packets
-        SendCompressedMovementPackets();
-        SendPacketImpl(packet);
-    }
-}
-
-void WorldSession::SendCompressedMovementPackets()
-{
-    if (m_movementPacketCompressor.HasData())
-    {
-        WorldPacket packet;
-        if (m_movementPacketCompressor.BuildPacket(packet))
-            SendPacket(&packet);
-        else
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Movement packet compression failed! Packets lost!");
-        m_movementPacketCompressor.ClearBuffer();
-    }
-}
-#else
 void WorldSession::SendMovementPacket(WorldPacket const* packet)
 {
     SendPacket(packet);
 }
-#endif
 
 PacketProcessing GetChatPacketProcessingType(uint32 chatType)
 {
@@ -686,19 +636,6 @@ bool WorldSession::Update(PacketFilter& updater, uint32 diff)
             else
                 m_timeSyncTimer -= diff;
         }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-        // send these out every world update
-        SendCompressedMovementPackets();
-
-        // only enable compression when there's a lot of movement around us
-        if (m_movePacketTrackingIntervalStart + 10 < currTime)
-        {
-            m_movePacketTrackingIntervalStart = currTime;
-            m_movePacketsSentLastInterval = m_movePacketsSentThisInterval;
-            m_movePacketsSentThisInterval = 0;
-        }
-#endif
 
         if (sWorld.getConfig(CONFIG_BOOL_LIMIT_PLAY_TIME) &&
             GetPlayer() && GetPlayer()->IsInWorld())
@@ -1020,10 +957,6 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->CleanupsBeforeDelete();
             Map::DeleteFromWorld(_player);
         }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-        m_movementPacketCompressor.ClearBuffer();
-#endif
 
         SetPlayer(nullptr);                                    // deleted in Remove/DeleteFromWorld call
 

@@ -75,11 +75,6 @@ void WorldPackets::Misc::InspectHonorStats::ReadFromWorldPacket(WorldPacket& rec
     recv_data >> guid;
 }
 
-void WorldPackets::Misc::SetActiveMover::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-}
-
 void WorldPackets::Misc::SetFactionAtWar::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> repListId;
@@ -930,20 +925,6 @@ void WorldPackets::Misc::EmoteNotify::AppendBodyTo(ByteBuffer& buffer) const
     buffer << emoteId;
     buffer << unitGuid;
 }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-size_t WorldPackets::Misc::ClientControlUpdate::EstimateFinalSize() const
-{
-    return sizeof(uint8) + sizeof(uint64) + /*moverGuid, packed*/
-           sizeof(allowMove);
-}
-void WorldPackets::Misc::ClientControlUpdate::AppendBodyTo(ByteBuffer& buffer) const
-{
-    // This packet uses the packed guid format; the old sender serialized target->GetPackGUID() directly.
-    buffer << moverGuid.WriteAsPacked();
-    buffer << allowMove;
-}
-#endif
 
 size_t WorldPackets::Misc::UpdateWorldState::EstimateFinalSize() const
 {

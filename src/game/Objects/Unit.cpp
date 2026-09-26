@@ -57,6 +57,7 @@
 #include "Anticheat.h"
 #include "InstanceStatistics.h"
 #include "MovementPacketSender.h"
+#include "MovementInfoWire.h"
 #include "Errors.h"
 #include "Utilities/Random.h"
 
@@ -507,20 +508,10 @@ bool Unit::HaveOffhandWeapon() const
 
 void Unit::SendHeartBeat(bool includingSelf)
 {
-    SendMovementPacket(MSG_MOVE_HEARTBEAT, includingSelf);
-}
-
-void Unit::SendMovementPacket(uint32 opcode, bool includingSelf)
-{
     m_movementInfo.SetAsServerSide();
-    WorldPacket data(opcode);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << GetPackGUID();
-#else
-    data << GetGUID();
-#endif
-    data << m_movementInfo;
-    SendMovementMessageToSet(std::move(data), includingSelf);
+    MoveUpdate update;
+    update.Status = MovementInfoToWire(m_movementInfo, GetObjectGuid());
+    SendMovementMessageToSet(MakeClassicPacket(update), includingSelf);
 }
 
 void Unit::ResetAttackTimer(WeaponAttackType type)

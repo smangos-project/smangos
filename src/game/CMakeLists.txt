@@ -173,6 +173,7 @@ set (game_SRCS
     Objects/Item.cpp
     Objects/MirrorTimer.cpp
     Objects/Object.cpp
+    Objects/MovementInfoWire.cpp
     Objects/Pet.cpp
     Objects/Player.cpp
     Objects/PlayerTaxi.cpp
@@ -412,6 +413,7 @@ set (game_SRCS
     Objects/ItemPrototype.h
     Objects/MirrorTimer.h
     Objects/MovementInfo.h
+    Objects/MovementInfoWire.h
     Objects/Object.h
     Objects/ObjectDefines.h
     Objects/Pet.h
@@ -461,6 +463,7 @@ set (game_SRCS
     Server/Packets/Character.h
     Server/Packets/Chat.h
     Server/Packets/ChatMessages.h
+    Server/Packets/MovementMessages.h
     Server/Packets/Combat.h
     Server/Packets/Duel.h
     Server/Packets/GmTicket.h

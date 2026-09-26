@@ -37,6 +37,8 @@
 #include "MovementPacketSender.h"
 #include "MoveSpline.h"
 #include "Geometry.h"
+#include "MovementInfoWire.h"
+#include "Packets/Classic/GuidMapping.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(NullClientPacket const& /*packet*/)
 {
@@ -287,12 +289,50 @@ void Player::ExecuteTeleportNear()
     ProcessDelayedOperations();
 }
 
-void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket const& packet)
+// The movement anticheat and fall tracking still key on the 1.12 movement opcode numbers.
+static uint32 ToInternalMovementOpcode(ClassicOpcodes opcode)
 {
-    uint32 opcode = packet.GetOpcode();
+    switch (opcode)
+    {
+        case CLASSIC_CMSG_MOVE_START_FORWARD:       return MSG_MOVE_START_FORWARD;
+        case CLASSIC_CMSG_MOVE_START_BACKWARD:      return MSG_MOVE_START_BACKWARD;
+        case CLASSIC_CMSG_MOVE_STOP:                return MSG_MOVE_STOP;
+        case CLASSIC_CMSG_MOVE_START_STRAFE_LEFT:   return MSG_MOVE_START_STRAFE_LEFT;
+        case CLASSIC_CMSG_MOVE_START_STRAFE_RIGHT:  return MSG_MOVE_START_STRAFE_RIGHT;
+        case CLASSIC_CMSG_MOVE_STOP_STRAFE:         return MSG_MOVE_STOP_STRAFE;
+        case CLASSIC_CMSG_MOVE_JUMP:                return MSG_MOVE_JUMP;
+        case CLASSIC_CMSG_MOVE_START_TURN_LEFT:     return MSG_MOVE_START_TURN_LEFT;
+        case CLASSIC_CMSG_MOVE_START_TURN_RIGHT:    return MSG_MOVE_START_TURN_RIGHT;
+        case CLASSIC_CMSG_MOVE_STOP_TURN:           return MSG_MOVE_STOP_TURN;
+        case CLASSIC_CMSG_MOVE_START_PITCH_UP:      return MSG_MOVE_START_PITCH_UP;
+        case CLASSIC_CMSG_MOVE_START_PITCH_DOWN:    return MSG_MOVE_START_PITCH_DOWN;
+        case CLASSIC_CMSG_MOVE_STOP_PITCH:          return MSG_MOVE_STOP_PITCH;
+        case CLASSIC_CMSG_MOVE_SET_RUN_MODE:        return MSG_MOVE_SET_RUN_MODE;
+        case CLASSIC_CMSG_MOVE_SET_WALK_MODE:       return MSG_MOVE_SET_WALK_MODE;
+        case CLASSIC_CMSG_MOVE_FALL_LAND:           return MSG_MOVE_FALL_LAND;
+        case CLASSIC_CMSG_MOVE_FALL_RESET:          return CMSG_MOVE_FALL_RESET;
+        case CLASSIC_CMSG_MOVE_START_SWIM:          return MSG_MOVE_START_SWIM;
+        case CLASSIC_CMSG_MOVE_STOP_SWIM:           return MSG_MOVE_STOP_SWIM;
+        case CLASSIC_CMSG_MOVE_SET_FACING:          return MSG_MOVE_SET_FACING;
+        case CLASSIC_CMSG_MOVE_SET_PITCH:           return MSG_MOVE_SET_PITCH;
+        default:                                    return MSG_MOVE_HEARTBEAT;
+    }
+}
 
+void WorldSession::HandleClassicMovement(ClassicOpcodes classicOpcode, ClassicMovementInfo const& status)
+{
+    // The mover's own guid rides the block, but the session's confirmed mover is authoritative.
+    MovementInfo movementInfo;
+    if (!MovementInfoFromWire(status, movementInfo))
+        return;
+
+    HandleMovementOpcodes(ToInternalMovementOpcode(classicOpcode), movementInfo);
+}
+
+void WorldSession::HandleMovementOpcodes(uint32 opcode, MovementInfo& movementInfo)
+{
     // Do not accept packets sent before this time.
-    if (packet.movementInfo.stime <= m_moveRejectTime)
+    if (movementInfo.stime <= m_moveRejectTime)
         return;
 
     Unit* pMover = _player->GetConfirmedMover();
@@ -312,13 +352,13 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket 
     if (pPlayerMover && pPlayerMover->IsBeingTeleported())
         return;
 
-    if (!VerifyMovementInfo(packet.movementInfo))
+    if (!VerifyMovementInfo(movementInfo))
         return;
 
     if (pPlayerMover)
     {
-        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)) ||
-            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, const_cast<MovementInfo&>(packet.movementInfo), opcode)))
+        if ((m_moveRejectTime = _player->GetCheatData()->HandleFlagTests(pPlayerMover, movementInfo, opcode)) ||
+            (m_moveRejectTime = _player->GetCheatData()->HandlePositionTests(pPlayerMover, movementInfo, opcode)))
         {
             return;
         }
@@ -332,7 +372,7 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket 
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
     if (opcode == MSG_MOVE_FALL_LAND && pPlayerMover && !pPlayerMover->IsTaxiFlying())
-        pPlayerMover->HandleFall(packet.movementInfo);
+        pPlayerMover->HandleFall(movementInfo);
 
     // TODO: remove it
     // reset knockback state when fall to ground or water
@@ -341,10 +381,10 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket 
         if (IsFallEndOpcode(opcode) && pPlayerMover->IsLaunched())
             pPlayerMover->SetLaunched(false);
 
-        pPlayerMover->UpdateFallInformationIfNeed(packet.movementInfo, opcode);
+        pPlayerMover->UpdateFallInformationIfNeed(movementInfo, opcode);
     }
 
-    HandleMoverRelocation(pMover, const_cast<MovementInfo&>(packet.movementInfo));
+    HandleMoverRelocation(pMover, movementInfo);
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     // this is here to accommodate 1.14 client behavior
@@ -352,9 +392,9 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket 
     // verify that root is applied after having landed
     if (pMover->HasUnitState(UNIT_STATE_ROOT_ON_LANDING))
     {
-        if (packet.movementInfo.HasMovementFlag(MOVEFLAG_ROOT) || !pMover->ShouldBeRooted())
+        if (movementInfo.HasMovementFlag(MOVEFLAG_ROOT) || !pMover->ShouldBeRooted())
             pMover->ClearUnitState(UNIT_STATE_ROOT_ON_LANDING);
-        else if (!packet.movementInfo.HasMovementFlag(MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR))
+        else if (!movementInfo.HasMovementFlag(MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR))
         {
             sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleMovementOpcodes: Has pending root on landing, but sent movement packet with opcode %u not containing root or falling flags!",
                 opcode);
@@ -372,35 +412,10 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::MovementPacket 
     if (opcode == CMSG_MOVE_FALL_RESET)
         return;
 
-    // This opcode has no handler in this client build.
-#if SUPPORTED_CLIENT_BUILD == CLIENT_BUILD_1_9_4
-    if (opcode == MSG_MOVE_FALL_LAND)
-    {
-        if (!packet.movementInfo.HasMovementFlag(MOVEFLAG_MASK_MOVING))
-            opcode = MSG_MOVE_STOP;
-        else if (packet.movementInfo.HasMovementFlag(MOVEFLAG_BACKWARD))
-            opcode = MSG_MOVE_START_BACKWARD;
-        else if (packet.movementInfo.HasMovementFlag(MOVEFLAG_FORWARD))
-            opcode = MSG_MOVE_START_FORWARD;
-        else if (packet.movementInfo.HasMovementFlag(MOVEFLAG_STRAFE_LEFT))
-            opcode = MSG_MOVE_START_STRAFE_LEFT;
-        else if (packet.movementInfo.HasMovementFlag(MOVEFLAG_STRAFE_RIGHT))
-            opcode = MSG_MOVE_START_STRAFE_RIGHT;
-        else
-            opcode = MSG_MOVE_HEARTBEAT;
-    }
-#endif
+    MoveUpdate update;
+    update.Status = MovementInfoToWire(movementInfo, pMover->GetObjectGuid());
 
-    WorldPacket data(opcode, 20 /*estimated size*/);
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    data << m_clientMoverGuid.WriteAsPacked();
-#else
-    data << m_clientMoverGuid.GetRawValue();
-#endif
-    packet.movementInfo.Write(data);
-
-    pMover->SendMovementMessageToSet(std::move(data), true, _player);
+    pMover->SendMovementMessageToSet(MakeClassicPacket(update), true, _player);
 }
 
 /*
@@ -848,15 +863,19 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSpline
     pMover->SendMovementMessageToSet(std::move(data), true, _player);
 }
 
-void WorldSession::HandleSetActiveMoverOpcode(WorldPackets::Misc::SetActiveMover const& packet)
+void WorldSession::HandleSetActiveMoverOpcode(SetActiveMover const& packet)
 {
-    if (!packet.guid.IsEmpty())
+    ObjectGuid moverGuid;
+    if (auto const guid = ClassicGuidMapping::FromClassic(packet.Mover))
+        moverGuid = *guid;
+
+    if (!moverGuid.IsEmpty())
     {
         Unit* pMover = _player->GetMover();
-        if (pMover->GetObjectGuid() != packet.guid)
+        if (pMover->GetObjectGuid() != moverGuid)
         {
             sLog.Player(this, LOG_MOVEMENT, LOG_LVL_ERROR, "HandleSetActiveMover: Incorrect mover guid. Mover is %s and should be %s.",
-                pMover->GetGuidStr().c_str(), packet.guid.GetString().c_str());
+                pMover->GetGuidStr().c_str(), moverGuid.GetString().c_str());
             m_clientMoverGuid = pMover->GetObjectGuid();
             return;
         }
@@ -887,7 +906,13 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPackets::Misc::SetActiveMover
         }
     }
 
-    m_clientMoverGuid = packet.guid;
+    m_clientMoverGuid = moverGuid;
+}
+
+void WorldSession::HandleMoveInitActiveMoverCompleteOpcode(MoveInitActiveMoverComplete const& /*packet*/)
+{
+    if (m_clientMoverGuid.IsEmpty())
+        m_clientMoverGuid = _player->GetMover()->GetObjectGuid();
 }
 
 void WorldSession::HandleMoveNotActiveMoverOpcode(WorldPackets::Movement::MoveNotActiveMover const& packet)

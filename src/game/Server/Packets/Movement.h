@@ -6,15 +6,6 @@
 
 namespace WorldPackets { namespace Movement
 {
-    class MovementPacket final : public ClientPacket
-    {
-    public:
-        MovementInfo movementInfo;
-
-        MovementPacket() : ClientPacket(OPCODE_WILL_BE_SET_IN_READ_FUNCTION) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class MoveTimeSkipped final : public ClientPacket
     {
     public:

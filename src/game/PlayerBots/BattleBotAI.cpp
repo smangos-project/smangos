@@ -442,7 +442,7 @@ void BattleBotAI::DoGraveyardJump()
             {
                 pBot->SetUnitMovementFlags(point->moveFlags);
                 pBot->Relocate(point->position.x, point->position.y, point->position.z, point->position.o);
-                pBot->SendMovementPacket(point->opcode, false);
+                pBot->SendHeartBeat(false);
             }
 
             if (isLast)
@@ -946,7 +946,7 @@ void BattleBotAI::UpdateAI(uint32 const diff)
         if (!me->HasInArc(pVictim, 2 * M_PI_F / 3) && !me->IsMoving())
         {
             me->SetInFront(pVictim);
-            me->SendMovementPacket(MSG_MOVE_SET_FACING, false);
+            me->SendHeartBeat(false);
         }
 
         if (!me->HasUnitState(UNIT_STATE_MELEE_ATTACKING) &&
