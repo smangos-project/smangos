@@ -504,6 +504,11 @@ None of these is proven against a real 1.15.6 client yet.
   1.12 school index, and the spell-cast id when a spell caused it (an empty one otherwise). The execute log
   sends heals, energizes and interrupts through their own messages, where vibemangos also lists their targets
   as generic victims. Unverified against our build.
+- **Answering a resurrection offer.** `CMSG_RESURRECT_RESPONSE`'s `u32` is 0 for accept and non-zero for
+  decline or timeout in TrinityCore, and the other way round (1 accepts) in vibemangos. **Followed:
+  TrinityCore.** If a real client's accept never resurrects, this is the first thing to flip. The offer
+  (`SMSG_RESURRECT_REQUEST`) is the same in both. `SMSG_PLAYER_SKINNED` is no longer sent: TrinityCore has no
+  body for it and it only ever carried a constant zero.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
