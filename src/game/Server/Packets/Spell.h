@@ -13,18 +13,6 @@ class SpellEntry;
 
 namespace WorldPackets { namespace Spell
 {
-    class UseItem final : public ClientPacket
-    {
-    public:
-        uint8 bagIndex;
-        uint8 slot;
-        uint8 spellSlot; // the position of the spell id on the item template
-        SpellCastTargets targets;
-
-        explicit UseItem() : ClientPacket(CMSG_USE_ITEM), bagIndex(0), slot(0), spellSlot(0) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class OpenItem final : public ClientPacket
     {
     public:

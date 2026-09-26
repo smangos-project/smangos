@@ -320,7 +320,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "chanvisual",     SEC_DEVELOPER,      true,  &ChatHandler::HandleSendSpellChannelVisualCommand,   "", nullptr },
         { "chanvisualnext", SEC_DEVELOPER,      true,  &ChatHandler::HandleDebugSendNextChannelSpellVisualCommand, "", nullptr },
         { "impact",         SEC_DEVELOPER,      true,  &ChatHandler::HandleSendSpellImpactCommand,          "", nullptr },
-        { "openbag",        SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugSendOpenBagCommand,         "", nullptr },
         { "worldstate",     SEC_DEVELOPER,      false, &ChatHandler::HandleDebugSendWorldStateCommand,      "", nullptr },
         { nullptr,          0,                  false, nullptr,                                             "", nullptr }
     };

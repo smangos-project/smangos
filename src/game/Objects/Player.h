@@ -1001,7 +1001,6 @@ class Player final: public Unit
         void SendEquipError(InventoryResult msg, Item const* pItem = nullptr, Item const* pItem2 = nullptr, uint8 bagSlot = 0, uint32 itemid = 0) const;
         void SendBuyError(BuyResult msg, Creature const* pCreature, uint32 item, uint32 param) const;
         void SendSellError(SellResult msg, Creature const* pCreature, ObjectGuid itemGuid, uint32 param) const;
-        void SendOpenContainer(ObjectGuid itemGuid) const;
         bool IsVendorItemVisible(Creature* vendor, VendorItem const* vendorItem, ItemPrototype const* itemProto);
         void AddWeaponProficiency(uint32 newflag) { m_weaponProficiency |= newflag; }
         void AddArmorProficiency(uint32 newflag) { m_armorProficiency |= newflag; }
@@ -1053,7 +1052,7 @@ class Player final: public Unit
         bool IsAllowedToLoot(Creature const* creature);
         float GetMaxLootDistance(Unit const* pUnit) const;
 
-        void SendEnchantmentLog(ObjectGuid casterGuid, uint32 itemId, uint32 spellId) const;
+        void SendEnchantmentLog(Item const* item, EnchantmentSlot slot, ObjectGuid casterGuid, uint32 enchantId) const;
         void ApplyEnchantment(Item* item,EnchantmentSlot slot,bool apply, bool apply_dur = true, bool ignore_condition = false);
         void ApplyEnchantment(Item* item,bool apply);
 
@@ -1351,7 +1350,7 @@ class Player final: public Unit
         void SendChannelUpdate(uint32 time) const;
         void UpdateChannelStartPosition();
         void CastItemCombatSpell(Unit* Target, WeaponAttackType attType);
-        void CastItemUseSpell(Item* item, SpellCastTargets const& targets);
+        void CastItemUseSpell(Item* item, SpellCastTargets const& targets, ClassicGuid const& clientCastId = ClassicGuid(), int32 clientVisual = 0);
 
         ItemSetEffect* GetItemSetEffect(uint32 setId);
         ItemSetEffect* AddItemSetEffect(uint32 setId);

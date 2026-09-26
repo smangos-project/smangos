@@ -30,18 +30,21 @@
 #include "SpellAuras.h"
 #include "GameObject.h"
 #include "Map.h"
+#include "Packets/Classic/InventorySlots.h"
 
 using namespace Spells;
 
-void WorldSession::HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packet)
+void WorldSession::HandleUseItemOpcode(UseItem const& request)
 {
+    auto const position = ClassicPosToServer(request.PackSlot, request.Slot);
+
     Player* pUser = _player;
 
     // ignore for remote control state
     if (!pUser->IsSelfMover())
         return;
 
-    Item *pItem = pUser->GetItemByPos(packet.bagIndex, packet.slot);
+    Item* pItem = position ? pUser->GetItemByPos(position->Bag, position->Slot) : nullptr;
     if (!pItem)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
@@ -55,9 +58,12 @@ void WorldSession::HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packe
         return;
     }
 
-    if (packet.spellSlot >= MAX_ITEM_PROTO_SPELLS ||
-        proto->Spells[packet.spellSlot].SpellId == 0 ||
-        proto->Spells[packet.spellSlot].SpellTrigger != ITEM_SPELLTRIGGER_ON_USE)
+    // the request names the spell, which has to be one the item casts when used
+    bool const usable = std::any_of(std::begin(proto->Spells), std::end(proto->Spells), [&](auto const& spell)
+    {
+        return spell.SpellId && spell.SpellId == uint32(request.Cast.SpellId) && spell.SpellTrigger == ITEM_SPELLTRIGGER_ON_USE;
+    });
+    if (!usable)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr);
         return;
@@ -109,19 +115,19 @@ void WorldSession::HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packe
         }
     }
 
-    const_cast<SpellCastTargets&>(packet.targets).PrepareForSpellSystem(_player);
+    SpellCastTargets targets;
+    targets.ReadTargetData(request.Cast.Target);
+    targets.PrepareForSpellSystem(_player);
     SpellCastResult itemCastCheckResult = SPELL_CAST_OK;
 
-    if (!pItem->IsTargetValidForItemUse(packet.targets.getUnitTarget()))
+    if (!pItem->IsTargetValidForItemUse(targets.getUnitTarget()))
         itemCastCheckResult = SPELL_FAILED_BAD_TARGETS;
     else if (pUser->IsShapeShifted())
     {
         // World of Warcraft Client Patch 1.10.0 (2006-03-28)
         // - All shapeshift forms can now use equipped items.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        if (!(packet.bagIndex == INVENTORY_SLOT_BAG_0 && packet.slot < EQUIPMENT_SLOT_END))
-#endif
-        itemCastCheckResult = SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED;
+        if (!(position->Bag == INVENTORY_SLOT_BAG_0 && position->Slot < EQUIPMENT_SLOT_END))
+            itemCastCheckResult = SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED;
     }
 
     if (itemCastCheckResult != SPELL_CAST_OK)
@@ -130,13 +136,13 @@ void WorldSession::HandleUseItemOpcode(WorldPackets::Spell::UseItem const& packe
         pUser->SendEquipError(EQUIP_ERR_NONE, pItem, nullptr);
 
         // send spell error
-        uint32 spellid = proto->Spells[packet.spellSlot].SpellId;
+        uint32 spellid = uint32(request.Cast.SpellId);
         if (SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(spellid))
-            Spell::SendCastResult(_player, spellInfo, itemCastCheckResult);
+            Spell::SendCastResult(_player, spellInfo, itemCastCheckResult, request.Cast.CastId, request.Cast.Visual.SpellXSpellVisualId);
         return;
     }
 
-    pUser->CastItemUseSpell(pItem, const_cast<SpellCastTargets&>(packet.targets));
+    pUser->CastItemUseSpell(pItem, targets, request.Cast.CastId, request.Cast.Visual.SpellXSpellVisualId);
 }
 
 void WorldSession::HandleOpenItemOpcode(WorldPackets::Spell::OpenItem const& packet)

@@ -493,7 +493,6 @@ class ChatHandler
         bool HandleDebugSendMailErrorCommand(char* args);
         bool HandleDebugSendSellErrorCommand(char* args);
         bool HandleDebugSendSpellFailCommand(char* args);
-        bool HandleDebugSendOpenBagCommand(char* args);
         bool HandleDebugSendWorldStateCommand(char* args);
 
         /*

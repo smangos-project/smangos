@@ -253,9 +253,9 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_CHANNEL_MODERATE,             STATUS_LOGGEDIN,  PACKET_PROCESS_CHANNEL,       &WorldSession::HandleChannelModerateOpcode);
     INVALID_PACKET(SMSG_UPDATE_OBJECT,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DESTROY_OBJECT,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_USE_ITEM,                     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleUseItemOpcode);
+    INVALID_PACKET(CMSG_USE_ITEM,                               UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_OPEN_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleOpenItemOpcode);
-    DEFINE_HANDLER(CMSG_READ_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleReadItemOpcode);
+    INVALID_PACKET(CMSG_READ_ITEM,                              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_READ_ITEM_OK,                 UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_READ_ITEM_FAILED,             UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ITEM_COOLDOWN,                UnhandleReason::SendByServer);
@@ -348,14 +348,14 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_AUTOSTORE_GROUND_ITEM,        UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_AUTOSTORE_LOOT_ITEM,          STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutostoreLootItemOpcode);
     INVALID_PACKET(CMSG_STORE_LOOT_IN_SLOT,           UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_AUTOEQUIP_ITEM,               STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutoEquipItemOpcode);
-    DEFINE_HANDLER(CMSG_AUTOSTORE_BAG_ITEM,           STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutoStoreBagItemOpcode);
-    DEFINE_HANDLER(CMSG_SWAP_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleSwapItem);
-    DEFINE_HANDLER(CMSG_SWAP_INV_ITEM,                STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleSwapInvItemOpcode);
-    DEFINE_HANDLER(CMSG_SPLIT_ITEM,                   STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleSplitItemOpcode);
-    DEFINE_HANDLER(CMSG_AUTOEQUIP_ITEM_SLOT,          STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAutoEquipItemSlotOpcode);
+    INVALID_PACKET(CMSG_AUTOEQUIP_ITEM,                         UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_AUTOSTORE_BAG_ITEM,                     UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_SWAP_ITEM,                              UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_SWAP_INV_ITEM,                          UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_SPLIT_ITEM,                             UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_AUTOEQUIP_ITEM_SLOT,                    UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_DROP_ITEM,                    UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_DESTROYITEM,                  STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleDestroyItemOpcode);
+    INVALID_PACKET(CMSG_DESTROYITEM,                            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_INVENTORY_CHANGE_FAILURE,     UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_OPEN_CONTAINER,               UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_INSPECT,                      STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleInspectOpcode);
@@ -1076,6 +1076,15 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_NPC_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleNpcTextQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PAGE_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandlePageTextQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_TIME, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleQueryTimeOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SWAP_INV_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleSwapInvItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SWAP_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleSwapItem);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUTO_EQUIP_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutoEquipItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUTO_EQUIP_ITEM_SLOT, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutoEquipItemSlotOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUTO_STORE_BAG_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleAutoStoreBagItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SPLIT_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleSplitItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DESTROY_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_SELF_ITEMS, &WorldSession::HandleDestroyItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_READ_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReadItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_USE_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleUseItemOpcode);
 
     return list;
 }

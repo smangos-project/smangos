@@ -360,19 +360,7 @@ bool ChatHandler::HandleDebugSendBuyErrorCommand(char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugSendOpenBagCommand(char *args)
-{
-    Player* pTarget = GetSelectedPlayer();
-    if (!pTarget)
-    {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
 
-    pTarget->SendOpenContainer(pTarget->GetObjectGuid());
-    return true;
-}
 
 bool ChatHandler::HandleDebugUnportedCommand(char* /*args*/)
 {

@@ -32,6 +32,8 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "Packets/Classic/InventorySlots.h"
+#include "Packets/ClassicInventoryResult.h"
 #include "Packets/CombatLog.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -7381,7 +7383,7 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
     }
 }
 
-void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets)
+void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, ClassicGuid const& clientCastId, int32 clientVisual)
 {
     ItemPrototype const* proto = item->GetProto();
 
@@ -7411,6 +7413,18 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets)
         Spell* spell = new Spell(this, spellInfo, (count > 0));
         spell->SetClientStarted(!IsBot());
         spell->SetCastItem(item);
+
+        if (!clientCastId.IsEmpty())
+        {
+            spell->m_clientCastId = clientCastId;
+            spell->m_clientVisual = clientVisual;
+
+            SpellPrepare prepare;
+            prepare.ClientCastId = clientCastId;
+            prepare.ServerCastId = spell->GetCastId();
+            GetSession()->SendClassic(prepare);
+        }
+
         spell->prepare(targets);
 
         ++count;
@@ -11564,29 +11578,26 @@ void Player::RemoveItemFromBuyBackSlot(uint32 slot, bool del)
 
 void Player::SendEquipError(InventoryResult msg, Item const* pItem, Item const* pItem2, uint8 bagSlot /*=0*/, uint32 itemid /*= 0*/) const
 {
-    auto packet = std::make_unique<WorldPackets::Item::InventoryChangeFailure>();
-    packet->reason = msg;
+    InventoryChangeFailure packet;
+    packet.BagResult = ClassicInventoryResult(msg);
 
     if (msg != EQUIP_ERR_OK)
     {
         if (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I)
         {
             ItemPrototype const* proto = pItem ? pItem->GetProto() : sObjectMgr.GetItemPrototype(itemid);
-            packet->requiredLevel = proto ? proto->RequiredLevel : 0;
+            packet.Level = proto ? proto->RequiredLevel : 0;
         }
-        packet->item1Guid = pItem ? pItem->GetObjectGuid() : ObjectGuid();
-        packet->item2Guid = pItem2 ? pItem2->GetObjectGuid() : ObjectGuid();
-        packet->bagSlot = bagSlot;
+        if (pItem)
+            packet.Item[0] = ClassicGuidMapping::ToClassic(pItem->GetObjectGuid(), realmID);
+        if (pItem2)
+            packet.Item[1] = ClassicGuidMapping::ToClassic(pItem2->GetObjectGuid(), realmID);
+        packet.ContainerBSlot = bagSlot;
     }
-    GetSession()->SendPacket(std::move(packet));
+    GetSession()->SendClassic(packet);
 }
 
-void Player::SendOpenContainer(ObjectGuid itemGuid) const
-{
-    auto packet = std::make_unique<WorldPackets::Item::OpenContainer>();
-    packet->itemGuid = itemGuid;
-    GetSession()->SendPacket(std::move(packet));
-}
+
 
 void Player::SendBuyError(BuyResult msg, Creature const* pCreature, uint32 item, uint32 /*param*/) const
 {
@@ -11914,28 +11925,22 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
     }
 }
 
-void Player::SendEnchantmentLog(ObjectGuid casterGuid, uint32 itemId, uint32 spellId) const
+void Player::SendEnchantmentLog(Item const* item, EnchantmentSlot slot, ObjectGuid casterGuid, uint32 enchantId) const
 {
-    auto selfEnchant = std::make_unique<WorldPackets::Item::EnchantmentLog>();
-    selfEnchant->ownerGuid = GetObjectGuid();
-    selfEnchant->casterGuid = casterGuid; // message says enchant has faded if empty
-    selfEnchant->itemEntry = itemId;
-    selfEnchant->spellId = spellId;
-    selfEnchant->showAffiliation = false; // only to self
-    GetSession()->SendPacket(std::move(selfEnchant));
+    EnchantmentLog log;
+    log.Owner = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    log.Caster = ClassicGuidMapping::ToClassic(casterGuid, realmID); // message says enchant has faded if empty
+    log.ItemGuid = ClassicGuidMapping::ToClassic(item->GetObjectGuid(), realmID);
+    log.ItemId = int32(item->GetEntry());
+    log.Enchantment = int32(enchantId);
+    log.EnchantSlot = int32(slot);
+    GetSession()->SendClassic(log);
 
-    // If the previous message had an empty casterGuid, we removed the enchantment,
-    // so the unapply message should probably be sent only to self.
-    // But if it has a casterGuid, we want to broadcast the new enchantment.
+    // A removal is only for the owner; a new enchantment is shown to everyone nearby.
     if (!casterGuid.IsEmpty())
     {
-        auto newEnchant = std::make_unique<WorldPackets::Item::EnchantmentLog>();
-        newEnchant->ownerGuid = GetObjectGuid();
-        newEnchant->casterGuid = casterGuid;
-        newEnchant->itemEntry = itemId;
-        newEnchant->spellId = spellId;
-        newEnchant->showAffiliation = true;
-        SendMessageToSet(std::move(newEnchant), false); // exclude self
+        WorldPacket data = MakeClassicPacket(log);
+        SendMessageToSet(&data, false); // exclude self
     }
 }
 
@@ -11956,29 +11961,29 @@ void Player::SendNewItem(Item const* item, uint32 count, bool received, bool cre
     if (!item)                                              // prevent crash
         return;
 
-    static constexpr uint32 STACKED_ITEM_SLOT_MARKER = 0xFFFFFFFFu;
+    ItemPushResult packet;
+    packet.Player = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Pushed = received; // 0=looted, 1=from npc
+    packet.Created = created; // 0=received, 1=created
+    packet.DisplayText = showInChat ? 1 : 0;
+    if (auto const position = ClassicPosFromServer(item->GetBagSlot(), item->GetSlot()))
+    {
+        packet.Slot = position->Bag;
+        // item slot, but when added to an already existing stack there is none
+        packet.SlotInBag = (item->GetCount() == count) ? position->Slot : ItemPushResult::StackedSlot;
+    }
+    packet.Quantity = int32(count);
+    packet.QuantityInInventory = int32(GetItemCount(item->GetEntry()));
+    packet.ItemGuid = ClassicGuidMapping::ToClassic(item->GetObjectGuid(), realmID);
+    packet.Item.ItemId = int32(item->GetEntry());
+    packet.Item.RandomPropertiesSeed = int32(item->GetItemSuffixFactor());
+    packet.Item.RandomPropertiesId = int32(item->GetItemRandomPropertyId());
 
-    auto packet = std::make_unique<WorldPackets::Item::ItemPushResult>();
-    packet->playerGuid = GetObjectGuid();
-    packet->received = received; // 0=looted, 1=from npc
-    packet->created = created;   // 0=received, 1=created
-    packet->showInChat = showInChat;
-    packet->bagSlot = item->GetBagSlot();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
-    // item slot, but when added to an already existing stack its 0xFFFFFFFF
-    packet->itemSlot = (item->GetCount() == count) ? item->GetSlot() : STACKED_ITEM_SLOT_MARKER;
-#endif
-    packet->itemEntry = item->GetEntry();
-    packet->suffixFactor = item->GetItemSuffixFactor();
-    packet->randomPropertyId = item->GetItemRandomPropertyId();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
-    packet->count = count;
-#endif
-
+    WorldPacket data = MakeClassicPacket(packet);
     if (broadcast && GetGroup())
-        GetGroup()->BroadcastPacket(std::move(packet), true);
+        GetGroup()->BroadcastPacket(&data, true);
     else
-        GetSession()->SendPacket(std::move(packet));
+        GetSession()->SendPacket(&data);
 }
 
 /*********************************************************/
@@ -19273,10 +19278,11 @@ void Player::ApplyEquipCooldown(Item const* pItem)
 
         AddCooldown(spellentry, nullptr, false, 30 * IN_MILLISECONDS);
 
-        auto itemCooldownPacket = std::make_unique<WorldPackets::Item::ItemCooldown>();
-        itemCooldownPacket->itemGuid = pItem->GetObjectGuid();
-        itemCooldownPacket->spellId = spellData.SpellId;
-        GetSession()->SendPacket(std::move(itemCooldownPacket));
+        ItemCooldown itemCooldown;
+        itemCooldown.ItemGuid = ClassicGuidMapping::ToClassic(pItem->GetObjectGuid(), realmID);
+        itemCooldown.SpellId = spellData.SpellId;
+        itemCooldown.Cooldown = 30 * IN_MILLISECONDS;
+        GetSession()->SendClassic(itemCooldown);
     }
 }
 

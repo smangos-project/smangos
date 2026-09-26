@@ -459,6 +459,7 @@ set (game_SRCS
     Server/Packets/Classic/Character.h
     Server/Packets/Classic/Guid.h
     Server/Packets/Classic/GuidMapping.h
+    Server/Packets/Classic/InventorySlots.h
     Server/Packets/Battleground.h
     Server/Packets/AuctionHouse.h
     Server/Packets/Channel.h
@@ -474,6 +475,8 @@ set (game_SRCS
     Server/Packets/Group.h
     Server/Packets/Guild.h
     Server/Packets/Item.h
+    Server/Packets/ItemMessages.h
+    Server/Packets/ClassicInventoryResult.h
     Server/Packets/Loot.h
     Server/Packets/Mail.h
     Server/Packets/Misc.h

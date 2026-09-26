@@ -20,6 +20,7 @@
  */
 
 #include "Item.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Bag.h"
 #include "ObjectMgr.h"
 #include "ObjectGuid.h"
@@ -1040,10 +1041,10 @@ void Item::SetEnchantment(EnchantmentSlot slot, uint32 id, uint32 duration, uint
         if (Player* owner = GetOwner())
         {
             if (uint32 oldEnchant = GetEnchantmentId(slot))
-                owner->SendEnchantmentLog(ObjectGuid(), GetEntry(), oldEnchant);
+                owner->SendEnchantmentLog(this, slot, ObjectGuid(), oldEnchant);
 
             if (id)
-                owner->SendEnchantmentLog(casterGuid, GetEntry(), id);
+                owner->SendEnchantmentLog(this, slot, casterGuid, id);
         }
     }
 
@@ -1079,7 +1080,7 @@ void Item::ClearEnchantment(EnchantmentSlot slot, bool sendToClient)
     if (slot < MAX_INSPECTED_ENCHANTMENT_SLOT && sendToClient)
     {
         if (Player* owner = GetOwner())
-            owner->SendEnchantmentLog(ObjectGuid(), GetEntry(), GetEnchantmentId(slot));
+            owner->SendEnchantmentLog(this, slot, ObjectGuid(), GetEnchantmentId(slot));
     }
 
     for (uint8 x = 0; x < 3; ++x)
@@ -1102,10 +1103,10 @@ void Item::SendTimeUpdate(Player const* owner) const
     if (!duration)
         return;
 
-    WorldPacket data(SMSG_ITEM_TIME_UPDATE, (8 + 4));
-    data << ObjectGuid(GetObjectGuid());
-    data << uint32(duration);
-    owner->GetSession()->SendPacket(&data);
+    ItemTimeUpdate update;
+    update.ItemGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    update.DurationLeft = duration;
+    owner->GetSession()->SendClassic(update);
 }
 
 Item* Item::CreateItem(uint32 item, uint32 count, ObjectGuid playerGuid)
