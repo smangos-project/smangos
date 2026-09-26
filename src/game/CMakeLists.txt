@@ -483,6 +483,7 @@ set (game_SRCS
     Server/Packets/Pet.h
     Server/Packets/Petition.h
     Server/Packets/Query.h
+    Server/Packets/QueryMessages.h
     Server/Packets/Quest.h
     Server/Packets/Skill.h
     Server/Packets/Social.h

@@ -17,16 +17,6 @@ namespace WorldPackets { namespace Npc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class NpcTextQuery final : public ClientPacket
-    {
-    public:
-        uint32 textID = 0;
-        ObjectGuid guid;
-
-        explicit NpcTextQuery() : ClientPacket(CMSG_NPC_TEXT_QUERY) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class TrainerList final : public ClientPacket
     {
     public:

@@ -12,6 +12,8 @@ enum ClassicGuidType : uint8
     CLASSIC_GUID_GAMEOBJECT     = 11,
     CLASSIC_GUID_DYNAMICOBJECT  = 12,
     CLASSIC_GUID_CORPSE         = 14,
+    CLASSIC_GUID_WOW_ACCOUNT    = 29,
+    CLASSIC_GUID_BNET_ACCOUNT   = 30,
     CLASSIC_GUID_CAST           = 47,
 };
 
@@ -120,4 +122,14 @@ ClassicGuid ClassicGuidMapping::MakeCast(uint32 realmId, uint32 mapId, uint32 sp
         | ((uint64(spellId) & ENTRY_MASK) << ENTRY_SHIFT)
         | (uint64(source) & SUBTYPE_MASK);
     return out;
+}
+
+ClassicGuid ClassicGuidMapping::MakeAccount(uint32 accountId)
+{
+    return ClassicGuid{ accountId, uint64(CLASSIC_GUID_WOW_ACCOUNT) << TYPE_SHIFT };
+}
+
+ClassicGuid ClassicGuidMapping::MakeBnetAccount(uint32 accountId)
+{
+    return ClassicGuid{ accountId, uint64(CLASSIC_GUID_BNET_ACCOUNT) << TYPE_SHIFT };
 }

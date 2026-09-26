@@ -19,6 +19,10 @@ class ClassicGuidMapping
         // to the classic transport type.
         static ClassicGuid ToClassic(ObjectGuid const& guid, uint32 realmId);
 
+        // Account guids carry nothing but the account id.
+        static ClassicGuid MakeAccount(uint32 accountId);
+        static ClassicGuid MakeBnetAccount(uint32 accountId);
+
         // nullopt for a guid type the server has no ObjectGuid for (party, guild, ...) or one whose
         // counter doesn't fit the server's guid layout. A classic transport comes back as
         // HIGHGUID_TRANSPORT.

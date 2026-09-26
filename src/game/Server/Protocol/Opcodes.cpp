@@ -162,7 +162,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_LOGOUT_COMPLETE,              UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_LOGOUT_CANCEL,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleLogoutCancelOpcode);
     INVALID_PACKET(SMSG_LOGOUT_CANCEL_ACK,            UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_NAME_QUERY,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleQueryPlayerNameOpcode);
+    INVALID_PACKET(CMSG_NAME_QUERY,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_NAME_QUERY_RESPONSE,          UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_PET_NAME_QUERY,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePetNameQueryOpcode);
     INVALID_PACKET(SMSG_PET_NAME_QUERY_RESPONSE,      UnhandleReason::SendByServer);
@@ -172,13 +172,13 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_ITEM_QUERY_MULTIPLE,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ITEM_QUERY_SINGLE_RESPONSE,   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ITEM_QUERY_MULTIPLE_RESPONSE, UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PAGE_TEXT_QUERY,              STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandlePageTextQueryOpcode);
+    INVALID_PACKET(CMSG_PAGE_TEXT_QUERY,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PAGE_TEXT_QUERY_RESPONSE,     UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_QUEST_QUERY,                  STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleQuestQueryOpcode);
     INVALID_PACKET(SMSG_QUEST_QUERY_RESPONSE,         UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GAMEOBJECT_QUERY,             STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleGameObjectQueryOpcode);
+    INVALID_PACKET(CMSG_GAMEOBJECT_QUERY,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GAMEOBJECT_QUERY_RESPONSE,    UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_CREATURE_QUERY,               STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleCreatureQueryOpcode);
+    INVALID_PACKET(CMSG_CREATURE_QUERY,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CREATURE_QUERY_RESPONSE,      UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_WHO,                          STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleWhoOpcode);
     INVALID_PACKET(SMSG_WHO,                          UnhandleReason::SendByServer);
@@ -469,7 +469,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_GOSSIP_SELECT_OPTION,         STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGossipSelectOptionOpcode);
     INVALID_PACKET(SMSG_GOSSIP_MESSAGE,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GOSSIP_COMPLETE,              UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_NPC_TEXT_QUERY,               STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleNpcTextQueryOpcode);
+    INVALID_PACKET(CMSG_NPC_TEXT_QUERY,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_NPC_TEXT_UPDATE,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_NPC_WONT_TALK,                UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_QUESTGIVER_STATUS_QUERY,      STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleQuestgiverStatusQueryOpcode);
@@ -548,7 +548,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_NOTIFICATION,                 UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_PLAYED_TIME,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePlayedTime);
     INVALID_PACKET(SMSG_PLAYED_TIME,                  UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_QUERY_TIME,                   STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleQueryTimeOpcode);
+    INVALID_PACKET(CMSG_QUERY_TIME,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_QUERY_TIME_RESPONSE,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOG_XPGAIN,                   UnhandleReason::SendByServer);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
@@ -1070,6 +1070,12 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPOP_REQUEST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepopRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RESURRECT_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleResurrectResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PLAYER_NAMES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryPlayerNamesOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CREATURE, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleCreatureQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_GAME_OBJECT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleGameObjectQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_NPC_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleNpcTextQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PAGE_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandlePageTextQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_TIME, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleQueryTimeOpcode);
 
     return list;
 }

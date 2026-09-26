@@ -66,6 +66,7 @@
 #include "Packets/Pet.h"
 #include "Packets/Petition.h"
 #include "Packets/Query.h"
+#include "Packets/QueryMessages.h"
 #include "Packets/Quest.h"
 #include "Packets/Skill.h"
 #include "Packets/Social.h"
@@ -433,8 +434,6 @@ class WorldSession
         void SendAuthWaitQue(uint32 position);
 
         void SendNameQueryOpcode(Player* p);
-        void SendNameQueryOpcodeFromDB(ObjectGuid guid);
-        static void SendNameQueryOpcodeFromDBCallBack(QueryResult* result, uint32 accountId);
 
         // Trainer
         void SendTrainerList(ObjectGuid guid);
@@ -667,10 +666,10 @@ class WorldSession
         void HandleMeetingStoneLeaveOpcode(NullClientPacket const& packet);
         void HandleMeetingStoneInfoOpcode(NullClientPacket const& packet);
 
-        void HandleQueryPlayerNameOpcode(WorldPackets::Query::QueryPlayerName const& packet);
-        void HandleQueryTimeOpcode(NullClientPacket const& packet);
-        void HandleCreatureQueryOpcode(WorldPackets::Query::QueryCreature const& packet);
-        void HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject const& packet);
+        void HandleQueryPlayerNamesOpcode(QueryPlayerNames const& packet);
+        void HandleQueryTimeOpcode(QueryTime const& packet);
+        void HandleCreatureQueryOpcode(QueryCreature const& packet);
+        void HandleGameObjectQueryOpcode(QueryGameObject const& packet);
 
         void HandleRequestRaidInfoOpcode(NullClientPacket const& packet);
         void HandleGroupInviteOpcode(WorldPackets::Group::GroupInvite const& packet);
@@ -741,7 +740,7 @@ class WorldSession
         void HandleGossipHelloOpcode(WorldPackets::Npc::GossipHello const& packet);
         void HandleGossipSelectOptionOpcode(WorldPackets::Npc::GossipSelectOption const& packet);
         void HandleSpiritHealerActivateOpcode(WorldPackets::Npc::SpiritHealerActivate const& packet);
-        void HandleNpcTextQueryOpcode(WorldPackets::Npc::NpcTextQuery const& packet);
+        void HandleNpcTextQueryOpcode(QueryNpcText const& packet);
         void HandleBinderActivateOpcode(WorldPackets::Npc::BinderActivate const& packet);
         void HandleListStabledPetsOpcode(WorldPackets::Npc::ListStabledPets const& packet);
         void HandleStablePet(WorldPackets::Npc::StablePet const& packet);
@@ -888,7 +887,7 @@ class WorldSession
         void HandleCompleteCinematic(NullClientPacket const& packet);
         void HandleNextCinematicCamera(NullClientPacket const& packet);
 
-        void HandlePageTextQueryOpcode(WorldPackets::Query::QueryPageText const& packet);
+        void HandlePageTextQueryOpcode(QueryPageText const& packet);
 
         void HandleTutorialFlagOpcode(WorldPackets::Misc::TutorialFlag const& packet);
         void HandleTutorialClearOpcode(NullClientPacket const& packet);

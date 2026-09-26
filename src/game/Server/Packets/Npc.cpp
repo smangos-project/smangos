@@ -5,12 +5,6 @@ void WorldPackets::Npc::GossipHello::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> npcGuid;
 }
 
-void WorldPackets::Npc::NpcTextQuery::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> textID;
-    recv_data >> guid;
-}
-
 void WorldPackets::Npc::TrainerList::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;
