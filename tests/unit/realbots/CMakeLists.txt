@@ -40,6 +40,7 @@ add_executable(tests-realbots
   PlayerStatePacketsTests.cpp
   SocialPacketsTests.cpp
   ChatPacketsTests.cpp
+  MovementPacketsTests.cpp
   ObjectUpdatePacketsTests.cpp
   BotWorldConnectionTests.cpp
   BotWorldLoginTests.cpp
