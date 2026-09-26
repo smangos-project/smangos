@@ -498,6 +498,12 @@ None of these is proven against a real 1.15.6 client yet.
   cast is answered with `SMSG_SPELL_PREPARE` naming the client's id and the server's, and everything
   after uses the server's id. Both references do this; a cast guid with no bits set crashes the client,
   so the server never sends one.
+- **The combat log.** Every body follows TrinityCore, which vibemangos matches after its own fixes. Only the
+  basic form is sent: the advanced-combat-log block and the content-tuning block are never written, and the
+  reader rejects a body that sets either. A damage log carries the school mask (`1 << school`), not the
+  1.12 school index, and the spell-cast id when a spell caused it (an empty one otherwise). The execute log
+  sends heals, energizes and interrupts through their own messages, where vibemangos also lists their targets
+  as generic victims. Unverified against our build.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
