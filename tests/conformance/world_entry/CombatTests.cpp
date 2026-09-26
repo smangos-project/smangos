@@ -5,24 +5,6 @@
 #include "TestRoutine.h"
 #include <catch_amalgamated.hpp>
 
-namespace
-{
-// The creature the GM spawns beside itself isn't the only unit nearby (Northshire Abbey has its
-// own wildlife and NPCs), so the new one is found by diffing the known-object set from before the
-// spawn to after, rather than assuming it's the only BOT_TYPEID_UNIT around.
-std::optional<ClassicGuid> FindNewUnit(TestBot const& bot, std::vector<ClassicGuid> const& before)
-{
-    for (BotKnownObject const& object : bot.GetKnownObjects())
-    {
-        if (object.ObjectType != BOT_TYPEID_UNIT)
-            continue;
-        if (std::find(before.begin(), before.end(), object.Guid) == before.end())
-            return object.Guid;
-    }
-    return std::nullopt;
-}
-}
-
 TEST_CASE("combat: a GM bot attacks a spawned creature and a bystander sees the swings", "[gameplay]")
 {
     if (ConformanceRun::GmTarget().empty())
@@ -38,10 +20,7 @@ TEST_CASE("combat: a GM bot attacks a spawned creature and a bystander sees the 
         ClassicGuid const gmGuid = gm.GetCharacterGuid();
         REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(gmGuid).has_value(); }, 10000));
 
-        std::vector<ClassicGuid> before;
-        for (BotKnownObject const& object : gm.GetKnownObjects())
-            if (object.ObjectType == BOT_TYPEID_UNIT)
-                before.push_back(object.Guid);
+        std::vector<ClassicGuid> const before = KnownUnits(gm);
 
         SayCommand(gm, ".npc spawn add 6"); // Kobold Vermin: hostile to any player faction, level 1-2
 
