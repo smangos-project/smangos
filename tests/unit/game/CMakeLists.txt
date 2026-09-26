@@ -6,6 +6,7 @@ add_executable(tests-game
   ${CMAKE_SOURCE_DIR}/src/game/Movement/spline/MonsterMovePacking.cpp
   ViewerDependentStubs.cpp
   ClassicGuidMappingTests.cpp
+  ClassicInventorySlotsTests.cpp
   ClassicClientTests.cpp
   UpdateFieldTests.cpp
   MovementFlagsTests.cpp

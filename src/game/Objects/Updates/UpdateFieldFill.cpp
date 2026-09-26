@@ -15,6 +15,7 @@
 #include "Objects/DynamicObject.h"
 #include "Objects/UnitDefines.h"
 #include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/Classic/InventorySlots.h"
 #include "World.h"
 #include <algorithm>
 
@@ -219,6 +220,17 @@ void FillActivePlayerData(Player& player)
             FillField(current, getSkill, &UFSkillInfo::SkillMaxRank, pos, player.GetUInt16Value(valueIndex, 1));
             FillField(current, getSkill, &UFSkillInfo::SkillTempBonus, pos, player.GetInt16Value(bonusIndex, 0));
             FillField(current, getSkill, &UFSkillInfo::SkillPermBonus, pos, player.GetUInt16Value(bonusIndex, 1));
+        }
+    }
+
+    // The flat guid fields run in server slot order, two words each, from the head slot to the keyring.
+    for (ClassicInventorySlotRun const& run : CLASSIC_INVENTORY_SLOT_RUNS)
+    {
+        for (uint8 i = 0; i < run.Count; ++i)
+        {
+            uint8 const serverSlot = run.ServerStart + i;
+            FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::InvSlots, uint32(run.ModernStart + i),
+                ToClassic(player.GetGuidValue(PLAYER_FIELD_INV_SLOT_HEAD + serverSlot * 2)));
         }
     }
 
