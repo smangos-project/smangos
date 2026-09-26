@@ -3325,12 +3325,12 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
     //printf("Bot received %s\n", LookupOpcodeName(packet->GetOpcode()));
     switch (packet->GetOpcode())
     {
-        case SMSG_NEW_WORLD:
+        case CLASSIC_SMSG_NEW_WORLD:
         {
             if (!me)
                 return;
 
-            auto data = std::make_unique<NullClientPacket>(MSG_MOVE_WORLDPORT_ACK);
+            auto data = std::make_unique<ClassicClient<WorldPortResponse>>();
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }

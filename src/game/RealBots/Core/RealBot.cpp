@@ -7,6 +7,7 @@
 #include "Packets/ObjectUpdate.h"
 #include "Packets/MonsterMove.h"
 #include "Packets/MovementMessages.h"
+#include "Packets/WorldTransfer.h"
 #include "BotTaskRegistry.h"
 #include "RealBotConfig.h"
 #include <algorithm>
@@ -450,6 +451,22 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
             ack.AckIndex = int32(teleport.SequenceIndex);
             ack.MoveTime = int32(m_elapsedMs);
             Send(ack);
+            break;
+        }
+        case CLASSIC_SMSG_NEW_WORLD:
+        {
+            NewWorld world;
+            if (!world.Read(body))
+                break;
+
+            ClassicMovementInfo status = CurrentMovementInfo();
+            status.X = world.X;
+            status.Y = world.Y;
+            status.Z = world.Z;
+            status.O = world.O;
+            NoteOwnMovement(status);
+
+            Send(WorldPortResponse());
             break;
         }
         case CLASSIC_SMSG_MOVE_KNOCK_BACK:
