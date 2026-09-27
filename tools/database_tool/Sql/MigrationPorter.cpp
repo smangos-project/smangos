@@ -137,6 +137,119 @@ namespace
         return out;
     }
 
+    bool ParseInt64(std::string const& text, int64_t& value)
+    {
+        if (text.empty())
+            return false;
+        char* end = nullptr;
+        long long v = std::strtoll(text.c_str(), &end, 10);
+        if (end != text.c_str() + text.size())
+            return false;
+        value = v;
+        return true;
+    }
+
+    // <int>, @name (a copy), or @name + <int> (an increment). Anything else
+    // -- a subquery, a function call -- isn't evaluated: the caller flags it.
+    bool EvaluateVariableRhs(std::string const& rhs, std::unordered_map<std::string, int64_t> const& variables, int64_t& value)
+    {
+        if (ParseInt64(rhs, value))
+            return true;
+
+        if (rhs.empty() || rhs.front() != '@')
+            return false;
+
+        size_t plusPos = rhs.find('+');
+        std::string name = rhs.substr(1, plusPos == std::string::npos ? std::string::npos : plusPos - 1);
+        while (!name.empty() && std::isspace(static_cast<unsigned char>(name.back())))
+            name.pop_back();
+
+        auto it = variables.find(name);
+        if (it == variables.end())
+            return false;
+
+        if (plusPos == std::string::npos)
+        {
+            value = it->second;
+            return true;
+        }
+
+        std::string delta = rhs.substr(plusPos + 1);
+        while (!delta.empty() && std::isspace(static_cast<unsigned char>(delta.front())))
+            delta.erase(delta.begin());
+        int64_t deltaValue = 0;
+        if (!ParseInt64(delta, deltaValue))
+            return false;
+
+        value = it->second + deltaValue;
+        return true;
+    }
+
+    bool IsAtVariableAtom(Atom const& atom, std::string& name)
+    {
+        if (atom.kind != AtomKind::Word || atom.text.size() < 2 || atom.text[0] != '@')
+            return false;
+        for (size_t k = 1; k < atom.text.size(); ++k)
+            if (!std::isalnum(static_cast<unsigned char>(atom.text[k])) && atom.text[k] != '_')
+                return false;
+        name = atom.text.substr(1);
+        return true;
+    }
+
+    // "@name := <rhs>" used as a value, e.g. inside a VALUES tuple
+    // ("(@POINT := @POINT + 1)"), which TryParseSetVariable never sees since
+    // it isn't its own statement. Each occurrence is folded to a literal in
+    // file order, updating `variables` exactly like a real per-row MySQL
+    // evaluation would, so a counter that increments once per row comes out
+    // right instead of every row getting the same value. An RHS
+    // EvaluateVariableRhs can't evaluate is left as "name :=" for the caller
+    // to flag, rather than emitted as broken SQL.
+    bool RewriteInlineAssignmentAtoms(std::vector<Atom>& atoms, std::unordered_map<std::string, int64_t>& variables)
+    {
+        std::vector<Atom> out;
+        size_t i = 0;
+        while (i < atoms.size())
+        {
+            std::string name;
+            if (IsAtVariableAtom(atoms[i], name) && i + 1 < atoms.size() &&
+                atoms[i + 1].kind == AtomKind::Word && atoms[i + 1].text == ":=")
+            {
+                size_t j = i + 2;
+                int depth = 0;
+                std::vector<Atom> rhs;
+                while (j < atoms.size())
+                {
+                    if (atoms[j].kind == AtomKind::LParen)
+                        ++depth;
+                    else if (atoms[j].kind == AtomKind::RParen)
+                    {
+                        if (depth == 0)
+                            break;
+                        --depth;
+                    }
+                    else if (atoms[j].kind == AtomKind::Comma && depth == 0)
+                        break;
+                    rhs.push_back(atoms[j]);
+                    ++j;
+                }
+
+                int64_t value = 0;
+                if (EvaluateVariableRhs(AssembleAtoms(rhs), variables, value))
+                {
+                    variables[name] = value;
+                    out.push_back({ AtomKind::Word, std::to_string(value) });
+                    i = j;
+                    continue;
+                }
+                return false;
+            }
+            out.push_back(atoms[i]);
+            ++i;
+        }
+        atoms = std::move(out);
+        return true;
+    }
+
     // @variables are plain characters to MysqlLexer, so "@X+1" is one Word
     // atom, not "@X" then "+1": substitution has to work inside a word, not
     // just replace whole-word matches.
@@ -301,7 +414,7 @@ namespace
     // either from RewriteConcatAtoms or from re-escaping a string literal
     // that had a \r/\0/\Z/\t in it (world-sql.md's "' || char(N) || '"
     // pieces), if it ran on already-rewritten text instead.
-    bool PortBodyStatement(std::string const& originalText, std::unordered_map<std::string, int64_t> const& variables,
+    bool PortBodyStatement(std::string const& originalText, std::unordered_map<std::string, int64_t>& variables,
         std::string& rewrittenText, std::string& flagReason)
     {
         std::string_view kind = SkipLeadingMysqlNoise(originalText);
@@ -358,6 +471,11 @@ namespace
         }
 
         std::vector<Atom> atoms = Atomize(originalText);
+        if (!RewriteInlineAssignmentAtoms(atoms, variables))
+        {
+            flagReason = "uses @variable := ... as a value expression, needs a hand port";
+            return false;
+        }
         if (!SubstituteVariablesInAtoms(atoms, variables))
         {
             flagReason = "references an unknown @variable";
@@ -409,53 +527,6 @@ namespace
         return true;
     }
 
-    bool ParseInt64(std::string const& text, int64_t& value)
-    {
-        if (text.empty())
-            return false;
-        char* end = nullptr;
-        long long v = std::strtoll(text.c_str(), &end, 10);
-        if (end != text.c_str() + text.size())
-            return false;
-        value = v;
-        return true;
-    }
-
-    // <int>, @name (a copy), or @name + <int> (an increment). Anything else
-    // -- a subquery, a function call -- isn't evaluated: the caller flags it.
-    bool EvaluateVariableRhs(std::string const& rhs, std::unordered_map<std::string, int64_t> const& variables, int64_t& value)
-    {
-        if (ParseInt64(rhs, value))
-            return true;
-
-        if (rhs.empty() || rhs.front() != '@')
-            return false;
-
-        size_t plusPos = rhs.find('+');
-        std::string name = rhs.substr(1, plusPos == std::string::npos ? std::string::npos : plusPos - 1);
-        while (!name.empty() && std::isspace(static_cast<unsigned char>(name.back())))
-            name.pop_back();
-
-        auto it = variables.find(name);
-        if (it == variables.end())
-            return false;
-
-        if (plusPos == std::string::npos)
-        {
-            value = it->second;
-            return true;
-        }
-
-        std::string delta = rhs.substr(plusPos + 1);
-        while (!delta.empty() && std::isspace(static_cast<unsigned char>(delta.front())))
-            delta.erase(delta.begin());
-        int64_t deltaValue = 0;
-        if (!ParseInt64(delta, deltaValue))
-            return false;
-
-        value = it->second + deltaValue;
-        return true;
-    }
 }
 
 PortedMigration PortMysqlMigration(std::string const& id, std::string const& fileContent)
@@ -522,6 +593,11 @@ PortedMigration PortMysqlMigration(std::string const& id, std::string const& fil
             variables[varName] = value;
             continue;
         }
+
+        // SQLite has no such statement; world-sql.md removes it, same as the
+        // base dump importer already does for the dump's own SET NAMES lines.
+        if (StartsWithMysqlKeyword(kind, "SET NAMES"))
+            continue;
 
         std::string rewritten, flagReason;
         if (!PortBodyStatement(statement.text, variables, rewritten, flagReason))

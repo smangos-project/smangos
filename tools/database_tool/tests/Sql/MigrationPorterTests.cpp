@@ -88,6 +88,43 @@ TEST_CASE("PortMysqlMigration substitutes a variable copy and an increment", "[M
     CHECK(Contains(result.content, "VALUES (15, 10)"));
 }
 
+TEST_CASE("PortMysqlMigration evaluates a counter incremented inline inside a VALUES tuple", "[MigrationPorter]")
+{
+    PortedMigration result = PortMysqlMigration("1",
+        WrapInEnvelope("1",
+            "SET @POINT := 0;\n"
+            "INSERT INTO `creature_movement` (`id`, `point`) VALUES "
+            "(1, (@POINT := @POINT + 1)), (1, (@POINT := @POINT + 1)), (1, (@POINT := @POINT + 1));"));
+
+    INFO(result.flagReason);
+    REQUIRE_FALSE(result.flagged);
+    CHECK_FALSE(Contains(result.content, ":="));
+    CHECK(Contains(result.content, "VALUES (1, (1)), (1, (2)), (1, (3))"));
+}
+
+TEST_CASE("PortMysqlMigration flags an inline @variable assignment it can't evaluate", "[MigrationPorter]")
+{
+    PortedMigration result = PortMysqlMigration("1",
+        WrapInEnvelope("1", "INSERT INTO `t` (`a`) VALUES ((@X := (SELECT COUNT(*) FROM `t`)));"));
+
+    CHECK(result.flagged);
+    CHECK(result.content.empty());
+    CHECK(Contains(result.flagReason, ":="));
+}
+
+TEST_CASE("PortMysqlMigration removes a SET NAMES statement, which SQLite has no equivalent for", "[MigrationPorter]")
+{
+    PortedMigration result = PortMysqlMigration("1",
+        WrapInEnvelope("1",
+            "SET NAMES utf8;\n"
+            "INSERT INTO `t` (`a`) VALUES (1);"));
+
+    INFO(result.flagReason);
+    REQUIRE_FALSE(result.flagged);
+    CHECK_FALSE(Contains(result.content, "SET NAMES"));
+    CHECK(Contains(result.content, "INSERT INTO `t` (`a`) VALUES (1)"));
+}
+
 TEST_CASE("PortMysqlMigration flags an @variable assignment it can't evaluate", "[MigrationPorter]")
 {
     PortedMigration result = PortMysqlMigration("1",
@@ -215,6 +252,14 @@ TEST_CASE("PortMysqlMigration flags a file with no CREATE PROCEDURE envelope", "
 
 TEST_CASE("PortMysqlMigration handles every real world migration without crashing", "[MigrationPorter][real-files]")
 {
+    // sql/migrations is live: earlier years get committed here already
+    // ported (world-sql.md's per-year batches), so this can't assert
+    // against known real ids by name -- a file that ports cleanly today is
+    // exactly the kind that stops existing in MySQL dialect once committed.
+    // What holds regardless of how much of the corpus is already ported:
+    // nothing here ever crashes, an already-ported file is always
+    // recognized as such rather than mis-handled, and a result is either
+    // flagged with no content or unflagged with the migrations line first.
     size_t total = 0;
     size_t ported = 0;
     size_t flagged = 0;
@@ -227,57 +272,31 @@ TEST_CASE("PortMysqlMigration handles every real world migration without crashin
             continue;
 
         ++total;
-        PortedMigration result = PortMysqlMigration(id, ReadFile(entry.path()));
+        std::string fileContent = ReadFile(entry.path());
+        bool hasEnvelope = Contains(fileContent, "DROP PROCEDURE IF EXISTS add_migration");
+
+        PortedMigration result = PortMysqlMigration(id, fileContent);
         if (result.flagged)
         {
             ++flagged;
             flagReasons.insert(result.flagReason.substr(result.flagReason.find(':') + 2));
+            CHECK(result.content.empty());
+            if (!hasEnvelope)
+                CHECK(Contains(result.flagReason, "envelope"));
         }
         else
         {
             ++ported;
+            CHECK(hasEnvelope);
             CHECK(result.content.find("INSERT INTO `migrations` VALUES ('" + id + "');") == 0);
         }
     }
 
     CHECK(total > 1000);
-    CHECK(ported > 0);
-    CHECK(flagged > 0);
 
-    {
-        std::string summary = "total=" + std::to_string(total) + " ported=" + std::to_string(ported) +
-            " flagged=" + std::to_string(flagged);
-        for (std::string const& reason : flagReasons)
-            summary += "\n  - " + reason;
-        WARN(summary);
-    }
-
-    // Known real files, checked by id so the assertions survive future
-    // migrations landing with lower/higher/equal ids.
-    auto PortById = [](std::string const& id)
-    {
-        std::filesystem::path path = std::filesystem::path(DATABASE_TOOL_TEST_MIGRATIONS_DIR) / (id + "_world.sql");
-        REQUIRE(std::filesystem::exists(path));
-        return PortMysqlMigration(id, ReadFile(path));
-    };
-
-    // Has a trailing ALTER TABLE: must be flagged, not partially ported.
-    PortedMigration alterTable = PortById("20210615223353");
-    CHECK(alterTable.flagged);
-    CHECK(alterTable.content.empty());
-
-    // Uses CONCAT(...): must port successfully.
-    PortedMigration concatFile = PortById("20230921171542");
-    INFO(concatFile.flagReason);
-    CHECK_FALSE(concatFile.flagged);
-
-    // Uses TRUNCATE: must port successfully.
-    PortedMigration truncateFile = PortById("20221107183131");
-    INFO(truncateFile.flagReason);
-    CHECK_FALSE(truncateFile.flagged);
-
-    // Uses @variables (SET @X = <int>, then @X+<int> in an INSERT): must port successfully.
-    PortedMigration variableFile = PortById("20210620150858");
-    INFO(variableFile.flagReason);
-    CHECK_FALSE(variableFile.flagged);
+    std::string summary = "total=" + std::to_string(total) + " ported=" + std::to_string(ported) +
+        " flagged=" + std::to_string(flagged);
+    for (std::string const& reason : flagReasons)
+        summary += "\n  - " + reason;
+    WARN(summary);
 }
