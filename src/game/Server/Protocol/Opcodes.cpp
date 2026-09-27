@@ -571,7 +571,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PONG,                         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CLEAR_COOLDOWN,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GAMEOBJECT_PAGETEXT,          UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SETSHEATHED,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetSheathedOpcode);
+    INVALID_PACKET(CMSG_SETSHEATHED,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_COOLDOWN_CHEAT,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_DELAYED,                UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_PLAYER_MACRO_OBSOLETE,        UnhandleReason::Unhandled);
@@ -691,7 +691,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SPELLNONMELEEDAMAGELOG,       UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_LEARN_TALENT,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleLearnTalentOpcode);
     INVALID_PACKET(SMSG_RESURRECT_FAILED,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TOGGLE_PVP,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTogglePvP);
+    INVALID_PACKET(CMSG_TOGGLE_PVP,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ZONE_UNDER_ATTACK,            UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_AUCTION_HELLO,                 UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUCTION_SELL_ITEM,            UnhandleReason::Unhandled);
@@ -1066,6 +1066,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_SWING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackSwingOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ATTACK_STOP, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleAttackStopOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_STAND_STATE_CHANGE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleStandStateChangeOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_SHEATHED, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetSheathedOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_PVP, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetPvP);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAST_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCastSpellOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CAST, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelCastOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelAuraOpcode);

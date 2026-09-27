@@ -89,16 +89,6 @@ void WorldPackets::Misc::SetWatchedFaction::ReadFromWorldPacket(WorldPacket& rec
 }
 #endif
 
-void WorldPackets::Misc::TogglePvP::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    if (recv_data.size() == 1)
-    {
-        bool state;
-        recv_data >> state;
-        targetState = state;
-    }
-}
-
 void WorldPackets::Misc::Who::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> levelMin;

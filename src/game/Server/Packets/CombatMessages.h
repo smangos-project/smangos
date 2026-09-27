@@ -353,4 +353,31 @@ struct CancelAutoRepeat
     bool Read(ByteBuffer& data) { return Target.Read(data); }
 };
 
+// The sheathe/unsheathe weapon button. Replaces the vanilla CMSG_SETSHEATHED body (a plain
+// uint32), which this client never sends.
+struct SetSheathed
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_SHEATHED;
+
+    int32 CurrentSheathState = 0;
+    bool Animate = true;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << CurrentSheathState;
+        data.WriteBit(Animate);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        data >> CurrentSheathState;
+        Animate = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 #endif // MANGOS_PACKETS_COMBATMESSAGES_H

@@ -357,4 +357,28 @@ struct AccountDataUpdateResult
     }
 };
 
+// The PvP toggle button. Replaces vanilla CMSG_TOGGLE_PVP (an optional bool, toggling when
+// absent); this client always sends an explicit desired state.
+struct SetPvP
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_PVP;
+
+    bool EnablePvP = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(EnablePvP);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        EnablePvP = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 #endif

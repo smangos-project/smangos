@@ -181,3 +181,14 @@ TEST_CASE("AccountDataUpdateResult round-trips with and without a payload", "[pa
     RoundTrip(payload, [](AccountDataUpdateResult const& a, AccountDataUpdateResult const& b) { CHECK(a.CompressedData == b.CompressedData); });
     RejectsEveryTruncation(payload);
 }
+
+TEST_CASE("SetPvP round-trips both values", "[packets]")
+{
+    for (bool enable : { false, true })
+    {
+        SetPvP packet;
+        packet.EnablePvP = enable;
+        RoundTrip(packet, [](SetPvP const& a, SetPvP const& b) { CHECK(a.EnablePvP == b.EnablePvP); });
+        RejectsEveryTruncation(packet);
+    }
+}

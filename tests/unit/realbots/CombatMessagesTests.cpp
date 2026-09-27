@@ -200,3 +200,19 @@ TEST_CASE("CancelAutoRepeat round-trips", "[packets]")
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("SetSheathed round-trips both values of Animate", "[packets]")
+{
+    for (bool animate : { false, true })
+    {
+        SetSheathed packet;
+        packet.CurrentSheathState = 2;
+        packet.Animate = animate;
+        RoundTrip(packet, [](SetSheathed const& a, SetSheathed const& b)
+        {
+            CHECK(a.CurrentSheathState == b.CurrentSheathState);
+            CHECK(a.Animate == b.Animate);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}

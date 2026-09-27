@@ -155,15 +155,6 @@ namespace WorldPackets { namespace Misc
     };
 #endif
 
-    class TogglePvP final : public ClientPacket
-    {
-    public:
-        nonstd::optional<bool> targetState;
-
-        explicit TogglePvP() : ClientPacket(CMSG_TOGGLE_PVP) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class Who final : public ClientPacket
     {
     public:

@@ -637,7 +637,7 @@ class WorldSession
         void HandleGMTicketComplaintOpcode(Complaint const& packet);
         void HandleGMTicketBugReportOpcode(BugReport const& packet);
 
-        void HandleTogglePvP(WorldPackets::Misc::TogglePvP const& packet);
+        void HandleSetPvP(SetPvP const& packet);
         void HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& packet);
         void HandleSetSelectionOpcode(SetSelection const& packet);
         void HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget const& packet);
@@ -806,7 +806,7 @@ class WorldSession
 
         void HandleAttackSwingOpcode(AttackSwing const& packet);
         void HandleAttackStopOpcode(AttackStop const& packet);
-        void HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed const& packet);
+        void HandleSetSheathedOpcode(SetSheathed const& packet);
 
         void HandleUseItemOpcode(UseItem const& packet);
         void HandleOpenItemOpcode(WorldPackets::Spell::OpenItem const& packet);

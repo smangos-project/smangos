@@ -79,14 +79,14 @@ void WorldSession::HandleAttackStopOpcode(AttackStop const& /*packet*/)
     GetPlayer()->ResetExtraAttacks();
 }
 
-void WorldSession::HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed const& packet)
+void WorldSession::HandleSetSheathedOpcode(SetSheathed const& packet)
 {
-    if (packet.sheathed >= MAX_SHEATH_STATE)
+    if (packet.CurrentSheathState < 0 || uint32(packet.CurrentSheathState) >= MAX_SHEATH_STATE)
         return;
 
     GetPlayer()->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_SHEATHING_CANCELS);
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_SHEATHING_CANCELS);
-    GetPlayer()->SetSheath(SheathState(packet.sheathed));
+    GetPlayer()->SetSheath(SheathState(packet.CurrentSheathState));
 }
 
 void WorldSession::SendAttackStop(Unit const* enemy)

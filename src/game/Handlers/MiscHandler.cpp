@@ -369,13 +369,9 @@ void WorldSession::HandleLogoutCancelOpcode(NullClientPacket const& /*packet*/)
     GetPlayer()->ApplyModByteFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_FLAGS, PLAYER_FIELD_BYTE_LOGGING_OUT, false);
 }
 
-void WorldSession::HandleTogglePvP(WorldPackets::Misc::TogglePvP const& packet)
+void WorldSession::HandleSetPvP(SetPvP const& packet)
 {
-    // this opcode can be used in two ways: Either set explicit new status or toggle old status
-    if (packet.targetState.has_value())
-        GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_DESIRED, *packet.targetState);
-    else
-        GetPlayer()->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_DESIRED);
+    GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_DESIRED, packet.EnablePvP);
 
     if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_DESIRED))
         GetPlayer()->UpdatePvP(true);
