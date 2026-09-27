@@ -17682,8 +17682,6 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 
 void Player::SendSpellMod(SpellModifier const* mod) const
 {
-    uint32 Opcode = (mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER;
-
     for (int eff = 0; eff < 64; ++eff)
     {
         uint64 _mask = uint64(1) << eff;
@@ -17695,11 +17693,23 @@ void Player::SendSpellMod(SpellModifier const* mod) const
                 if ((*itr)->type == mod->type && !!((*itr)->mask & _mask))
                     val += (*itr)->value;
             }
-            WorldPacket data(Opcode, (1 + 1 + 4));
-            data << uint8(eff);
-            data << uint8(mod->op);
-            data << int32(val);
-            SendDirectMessage(&data);
+
+            SpellModifierData modifier;
+            modifier.ModIndex = uint8(mod->op);
+            modifier.Values.push_back({ float(val), uint8(eff) });
+
+            if (mod->type == SPELLMOD_FLAT)
+            {
+                SetFlatSpellModifier packet;
+                packet.Modifiers.push_back(modifier);
+                GetSession()->SendClassic(packet);
+            }
+            else
+            {
+                SetPctSpellModifier packet;
+                packet.Modifiers.push_back(modifier);
+                GetSession()->SendClassic(packet);
+            }
         }
     }
 }

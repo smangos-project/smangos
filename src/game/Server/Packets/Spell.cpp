@@ -34,20 +34,6 @@ void WorldPackets::Spell::PlaySpellImpact::AppendBodyTo(ByteBuffer& buffer) cons
 }
 #endif
 
-size_t WorldPackets::Spell::SetSpellModifier::EstimateFinalSize() const
-{
-    return sizeof(effectIndex) +
-           sizeof(modOp) +
-           sizeof(value);
-}
-
-void WorldPackets::Spell::SetSpellModifier::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << effectIndex;
-    buffer << modOp;
-    buffer << value;
-}
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
 size_t WorldPackets::Spell::SpellUpdateChainTargets::EstimateFinalSize() const
 {

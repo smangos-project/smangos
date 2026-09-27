@@ -50,19 +50,6 @@ namespace WorldPackets { namespace Spell
 #endif
 
 
-    // SMSG_SET_FLAT_SPELL_MODIFIER / SMSG_SET_PCT_SPELL_MODIFIER
-    class SetSpellModifier final : public ServerPacket
-    {
-    public:
-        uint8 effectIndex = 0; // which spell effect index (0-63)
-        uint8 modOp = 0;       // SpellModOp enum value
-        int32 value = 0;       // flat or percent modifier value
-
-        explicit SetSpellModifier(uint32 opcode) : ServerPacket(opcode) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     class SpellUpdateChainTargets final : public ServerPacket
     {

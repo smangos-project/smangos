@@ -21,6 +21,7 @@
 
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/ClassicCastResult.h"
+#include "Packets/SpellBook.h"
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 #include "DBCStores.h"
@@ -1594,11 +1595,11 @@ bool ChatHandler::HandleDebugSpellModsCommand(char* args)
     if (!typeStr)
         return false;
 
-    uint32 opcode;
+    bool isFlat;
     if (strncmp(typeStr, "flat", strlen(typeStr)) == 0)
-        opcode = SMSG_SET_FLAT_SPELL_MODIFIER;
+        isFlat = true;
     else if (strncmp(typeStr, "pct", strlen(typeStr)) == 0)
-        opcode = SMSG_SET_PCT_SPELL_MODIFIER;
+        isFlat = false;
     else
         return false;
 
@@ -1626,17 +1627,28 @@ bool ChatHandler::HandleDebugSpellModsCommand(char* args)
     if (HasLowerSecurity(chr))
         return false;
 
-    PSendSysMessage(LANG_YOU_CHANGE_SPELLMODS, opcode == SMSG_SET_FLAT_SPELL_MODIFIER ? "flat" : "pct",
+    PSendSysMessage(LANG_YOU_CHANGE_SPELLMODS, isFlat ? "flat" : "pct",
                     spellmodop, value, effidx, GetNameLink(chr).c_str());
     if (needReportToTarget(chr))
         chr->PSendSysMessage(LANG_YOURS_SPELLMODS_CHANGED, GetNameLink().c_str(),
-                                         opcode == SMSG_SET_FLAT_SPELL_MODIFIER ? "flat" : "pct", spellmodop, value, effidx);
+                                         isFlat ? "flat" : "pct", spellmodop, value, effidx);
 
-    auto packet = std::make_unique<WorldPackets::Spell::SetSpellModifier>(opcode);
-    packet->effectIndex = effidx;
-    packet->modOp = spellmodop;
-    packet->value = value;
-    chr->GetSession()->SendPacket(std::move(packet));
+    SpellModifierData modifier;
+    modifier.ModIndex = uint8(spellmodop);
+    modifier.Values.push_back({ float(value), uint8(effidx) });
+
+    if (isFlat)
+    {
+        SetFlatSpellModifier packet;
+        packet.Modifiers.push_back(modifier);
+        chr->GetSession()->SendClassic(packet);
+    }
+    else
+    {
+        SetPctSpellModifier packet;
+        packet.Modifiers.push_back(modifier);
+        chr->GetSession()->SendClassic(packet);
+    }
 
     return true;
 }

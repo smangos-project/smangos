@@ -436,4 +436,79 @@ struct SpellCooldownEvent
     }
 };
 
+// A spell mod's per-effect value: ClassIndex is the bit index into the affected spell's class
+// family mask (this engine's mask is 64 bits, so only 0-63 are ever used, out of the modern
+// client's 128-bit space).
+struct SpellModifierValue
+{
+    float Value = 0.0f;
+    uint8 ClassIndex = 0;
+};
+
+struct SpellModifierData
+{
+    uint8 ModIndex = 0; // SpellModOp
+    std::vector<SpellModifierValue> Values;
+};
+
+inline void WriteSpellModifiers(ByteBuffer& data, std::vector<SpellModifierData> const& modifiers)
+{
+    data << uint32(modifiers.size());
+    for (SpellModifierData const& mod : modifiers)
+    {
+        data << mod.ModIndex;
+        data << uint32(mod.Values.size());
+        for (SpellModifierValue const& value : mod.Values)
+            data << value.Value << value.ClassIndex;
+    }
+}
+
+inline bool ReadSpellModifiers(ByteBuffer& data, std::vector<SpellModifierData>& modifiers)
+{
+    if (data.size() - data.rpos() < sizeof(uint32))
+        return false;
+    uint32 modCount;
+    data >> modCount;
+
+    modifiers.resize(modCount);
+    for (SpellModifierData& mod : modifiers)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8) + sizeof(uint32))
+            return false;
+        data >> mod.ModIndex;
+        uint32 valueCount;
+        data >> valueCount;
+
+        size_t const valueSize = sizeof(float) + sizeof(uint8);
+        if ((data.size() - data.rpos()) / valueSize < valueCount)
+            return false;
+        mod.Values.resize(valueCount);
+        for (SpellModifierValue& value : mod.Values)
+            data >> value.Value >> value.ClassIndex;
+    }
+    return true;
+}
+
+// Talent and other spell-modifier effects on cost, cast time, range and damage. Same shape for
+// flat and percent mods; only the opcode differs, hence the two thin wrapper types.
+struct SetFlatSpellModifier
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SET_FLAT_SPELL_MODIFIER;
+
+    std::vector<SpellModifierData> Modifiers;
+
+    void Write(ByteBuffer& data) const { WriteSpellModifiers(data, Modifiers); }
+    bool Read(ByteBuffer& data) { return ReadSpellModifiers(data, Modifiers); }
+};
+
+struct SetPctSpellModifier
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SET_PCT_SPELL_MODIFIER;
+
+    std::vector<SpellModifierData> Modifiers;
+
+    void Write(ByteBuffer& data) const { WriteSpellModifiers(data, Modifiers); }
+    bool Read(ByteBuffer& data) { return ReadSpellModifiers(data, Modifiers); }
+};
+
 #endif

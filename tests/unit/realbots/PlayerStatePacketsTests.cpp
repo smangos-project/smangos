@@ -290,6 +290,50 @@ TEST_CASE("SpellCooldownEvent round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
+TEST_CASE("SetFlatSpellModifier round-trips one mod with several class-mask values", "[packets]")
+{
+    SetFlatSpellModifier out;
+    SpellModifierData mod;
+    mod.ModIndex = 3;
+    mod.Values.push_back({ -1.0f, 0 });
+    mod.Values.push_back({ 2.5f, 63 });
+    out.Modifiers.push_back(mod);
+
+    RoundTrip(out, [](SetFlatSpellModifier const& a, SetFlatSpellModifier const& b)
+    {
+        REQUIRE(a.Modifiers.size() == b.Modifiers.size());
+        CHECK(a.Modifiers[0].ModIndex == b.Modifiers[0].ModIndex);
+        REQUIRE(a.Modifiers[0].Values.size() == b.Modifiers[0].Values.size());
+        for (size_t i = 0; i < a.Modifiers[0].Values.size(); ++i)
+        {
+            CHECK(a.Modifiers[0].Values[i].Value == b.Modifiers[0].Values[i].Value);
+            CHECK(a.Modifiers[0].Values[i].ClassIndex == b.Modifiers[0].Values[i].ClassIndex);
+        }
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("SetPctSpellModifier round-trips, empty and not", "[packets]")
+{
+    SetPctSpellModifier empty;
+    RoundTrip(empty, [](SetPctSpellModifier const&, SetPctSpellModifier const& b) { CHECK(b.Modifiers.empty()); });
+
+    SetPctSpellModifier out;
+    SpellModifierData mod;
+    mod.ModIndex = 7;
+    mod.Values.push_back({ 20.0f, 5 });
+    out.Modifiers.push_back(mod);
+    RoundTrip(out, [](SetPctSpellModifier const& a, SetPctSpellModifier const& b)
+    {
+        REQUIRE(a.Modifiers.size() == b.Modifiers.size());
+        CHECK(a.Modifiers[0].ModIndex == b.Modifiers[0].ModIndex);
+        REQUIRE(a.Modifiers[0].Values.size() == b.Modifiers[0].Values.size());
+        CHECK(a.Modifiers[0].Values[0].Value == b.Modifiers[0].Values[0].Value);
+        CHECK(a.Modifiers[0].Values[0].ClassIndex == b.Modifiers[0].Values[0].ClassIndex);
+    });
+    RejectsEveryTruncation(out);
+}
+
 TEST_CASE("SendLearnedSpells round-trips entries with and without the optional fields", "[packets]")
 {
     SendLearnedSpells out;
