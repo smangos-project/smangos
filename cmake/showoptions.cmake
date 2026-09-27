@@ -88,6 +88,12 @@ else()
   message(STATUS "Build realbotrunner   : No (default)")
 endif()
 
+if(BUILD_DB_SCHEMA_SETUP)
+  message(STATUS "Build db_schema_setup : Yes")
+else()
+  message(STATUS "Build db_schema_setup : No (default)")
+endif()
+
 if(UNIX)
   if(DEBUG_SYMBOLS)
     message(STATUS "Debug symbols         : Included")
