@@ -6,6 +6,8 @@ add_library(database_tool_lib STATIC
   Sql/MysqlLexer.cpp
   Sql/SqlStatementSplitter.cpp
   Sql/MysqlDdlTranslator.cpp
+  Sql/MysqlInsertParser.cpp
+  Sql/MysqlDumpImport.cpp
   Migrations/MigrationFile.cpp
   Migrations/MigrationState.cpp
   Migrations/MigrationRunner.cpp
