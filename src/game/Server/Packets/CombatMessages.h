@@ -422,4 +422,120 @@ struct PvpCredit
     }
 };
 
+// Nameplate aggro coloring: a new client feature vanilla never had, so this is a fresh design
+// rather than a port of any vmangos wire shape. Field order/widths per TrinityCore's
+// CombatPackets.cpp (ThreatUpdate/HighestThreatUpdate/ThreatRemove/ThreatClear::Write()).
+struct ThreatInfo
+{
+    ClassicGuid UnitGuid;
+    int64 Threat = 0;
+};
+
+// One list entry's threat cannot realistically exceed this in a real fight; guards Read() against
+// an oversized count turning a truncated packet into a huge allocation.
+constexpr uint32 CLASSIC_MAX_THREAT_LIST_SIZE = 256;
+
+inline bool ReadThreatList(ByteBuffer& data, std::vector<ThreatInfo>& list)
+{
+    if (data.size() - data.rpos() < sizeof(int32))
+        return false;
+    int32 count;
+    data >> count;
+    if (count < 0 || uint32(count) > CLASSIC_MAX_THREAT_LIST_SIZE)
+        return false;
+    list.clear();
+    list.reserve(count);
+    for (int32 i = 0; i < count; ++i)
+    {
+        ThreatInfo info;
+        if (!info.UnitGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int64))
+            return false;
+        data >> info.Threat;
+        list.push_back(info);
+    }
+    return true;
+}
+
+inline void WriteThreatList(ByteBuffer& data, std::vector<ThreatInfo> const& list)
+{
+    data << int32(list.size());
+    for (ThreatInfo const& info : list)
+    {
+        info.UnitGuid.Write(data);
+        data << info.Threat;
+    }
+}
+
+struct ThreatUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_THREAT_UPDATE;
+
+    ClassicGuid UnitGuid;
+    std::vector<ThreatInfo> ThreatList;
+
+    void Write(ByteBuffer& data) const
+    {
+        UnitGuid.Write(data);
+        WriteThreatList(data, ThreatList);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        return UnitGuid.Read(data) && ReadThreatList(data, ThreatList);
+    }
+};
+
+struct HighestThreatUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_HIGHEST_THREAT_UPDATE;
+
+    ClassicGuid UnitGuid;
+    ClassicGuid HighestThreatGuid;
+    std::vector<ThreatInfo> ThreatList;
+
+    void Write(ByteBuffer& data) const
+    {
+        UnitGuid.Write(data);
+        HighestThreatGuid.Write(data);
+        WriteThreatList(data, ThreatList);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        return UnitGuid.Read(data) && HighestThreatGuid.Read(data) && ReadThreatList(data, ThreatList);
+    }
+};
+
+// UnitGuid: the creature the list belongs to. AboutGuid: the unit no longer on it.
+struct ThreatRemove
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_THREAT_REMOVE;
+
+    ClassicGuid UnitGuid;
+    ClassicGuid AboutGuid;
+
+    void Write(ByteBuffer& data) const
+    {
+        UnitGuid.Write(data);
+        AboutGuid.Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        return UnitGuid.Read(data) && AboutGuid.Read(data);
+    }
+};
+
+struct ThreatClear
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_THREAT_CLEAR;
+
+    ClassicGuid UnitGuid;
+
+    void Write(ByteBuffer& data) const { UnitGuid.Write(data); }
+    bool Read(ByteBuffer& data) { return UnitGuid.Read(data); }
+};
+
 #endif // MANGOS_PACKETS_COMBATMESSAGES_H

@@ -218,11 +218,26 @@ public:
 
     // Don't must be used for explicit modify threat values in iterator return pointers
     ThreatList const& getThreatList() const { return iThreatContainer.getThreatList(); }
+
+    // Nameplate aggro coloring (SMSG_THREAT_UPDATE and friends): a new client feature vanilla
+    // never had. Ticked from Creature::Update while in combat; throttles the list send to once per
+    // CLIENT_UPDATE_INTERVAL regardless of how many threat changes land in between, same reasoning
+    // TrinityCore's own ThreatManager::Update uses its timer for.
+    void clientUpdate(uint32 diff);
+    void sendRemoveToClients(ObjectGuid const& victimGuid) const;
+    void sendClearAllThreatToClients() const;
 private:
+    static constexpr uint32 CLIENT_UPDATE_INTERVAL = 1000;
+
+    void sendThreatListToClients(bool newHighest) const;
+
     HostileReference* iCurrentVictim;
     Unit* iOwner;
     ThreatContainer iThreatContainer;
     ThreatContainer iThreatOfflineContainer;
+    bool iNeedClientUpdate = false;
+    uint32 iClientUpdateTimer = CLIENT_UPDATE_INTERVAL;
+    ObjectGuid iLastSentHighestThreat;
 };
 
 //=================================================

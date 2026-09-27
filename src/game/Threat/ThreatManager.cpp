@@ -27,6 +27,18 @@
 #include "ObjectAccessor.h"
 #include "UnitEvents.h"
 #include "TargetedMovementGenerator.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "Server/Packets/Classic/GuidMapping.h"
+#include "Server/Packets/CombatMessages.h"
+
+namespace
+{
+ClassicGuid ToClassicGuid(ObjectGuid const& guid)
+{
+    return ClassicGuidMapping::ToClassic(guid, realmID);
+}
+}
 
 //==============================================================
 //================= ThreatCalcHelper ===========================
@@ -522,6 +534,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
             if ((getCurrentVictim() == hostileReference && threatRefStatusChangeEvent->getFValue() < 0.0f) ||
                     (getCurrentVictim() != hostileReference && threatRefStatusChangeEvent->getFValue() > 0.0f))
                 setDirty(true);                             // the order in the threat list might have changed
+            iNeedClientUpdate = true;
             break;
         case UEV_THREAT_REF_ONLINE_STATUS:
             if (!hostileReference->isOnline())
@@ -533,6 +546,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
                 }
                 iThreatContainer.remove(hostileReference);
                 iThreatOfflineContainer.addReference(hostileReference);
+                sendRemoveToClients(hostileReference->getUnitGuid());
             }
             else
             {
@@ -540,6 +554,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
                     setDirty(true);
                 iThreatContainer.addReference(hostileReference);
                 iThreatOfflineContainer.remove(hostileReference);
+                iNeedClientUpdate = true;
             }
             break;
         case UEV_THREAT_REF_REMOVE_FROM_LIST:
@@ -552,6 +567,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
                 iThreatContainer.remove(hostileReference);
             else
                 iThreatOfflineContainer.remove(hostileReference);
+            sendRemoveToClients(hostileReference->getUnitGuid());
             break;
     }
 }
@@ -562,4 +578,76 @@ void ThreatManager::setCurrentVictimIfCan(Unit* pVictim)
     {
         setCurrentVictim(pHRef);
     }
+}
+
+//============================================================
+// Nameplate aggro coloring: throttled client notification, a new client feature vanilla never had.
+
+void ThreatManager::clientUpdate(uint32 diff)
+{
+    if (!iNeedClientUpdate)
+        return;
+
+    if (iClientUpdateTimer > diff)
+    {
+        iClientUpdateTimer -= diff;
+        return;
+    }
+
+    iClientUpdateTimer = CLIENT_UPDATE_INTERVAL;
+    iNeedClientUpdate = false;
+
+    ObjectGuid const currentVictimGuid = iCurrentVictim ? iCurrentVictim->getUnitGuid() : ObjectGuid::Empty;
+    bool const newHighest = currentVictimGuid != iLastSentHighestThreat;
+    iLastSentHighestThreat = currentVictimGuid;
+
+    sendThreatListToClients(newHighest);
+}
+
+void ThreatManager::sendThreatListToClients(bool newHighest) const
+{
+    std::vector<ThreatInfo> entries;
+    entries.reserve(iThreatContainer.getThreatList().size());
+    for (HostileReference const* ref : iThreatContainer.getThreatList())
+    {
+        ThreatInfo entry;
+        entry.UnitGuid = ToClassicGuid(ref->getUnitGuid());
+        entry.Threat = int64(ref->getThreat() * 100);
+        entries.push_back(entry);
+    }
+
+    if (newHighest)
+    {
+        HighestThreatUpdate packet;
+        packet.UnitGuid = ToClassicGuid(getOwner()->GetObjectGuid());
+        packet.HighestThreatGuid = ToClassicGuid(iLastSentHighestThreat);
+        packet.ThreatList = std::move(entries);
+        WorldPacket data = MakeClassicPacket(packet);
+        getOwner()->SendMessageToSet(&data, false);
+    }
+    else
+    {
+        ThreatUpdate packet;
+        packet.UnitGuid = ToClassicGuid(getOwner()->GetObjectGuid());
+        packet.ThreatList = std::move(entries);
+        WorldPacket data = MakeClassicPacket(packet);
+        getOwner()->SendMessageToSet(&data, false);
+    }
+}
+
+void ThreatManager::sendRemoveToClients(ObjectGuid const& victimGuid) const
+{
+    ThreatRemove packet;
+    packet.UnitGuid = ToClassicGuid(getOwner()->GetObjectGuid());
+    packet.AboutGuid = ToClassicGuid(victimGuid);
+    WorldPacket data = MakeClassicPacket(packet);
+    getOwner()->SendMessageToSet(&data, false);
+}
+
+void ThreatManager::sendClearAllThreatToClients() const
+{
+    ThreatClear packet;
+    packet.UnitGuid = ToClassicGuid(getOwner()->GetObjectGuid());
+    WorldPacket data = MakeClassicPacket(packet);
+    getOwner()->SendMessageToSet(&data, false);
 }

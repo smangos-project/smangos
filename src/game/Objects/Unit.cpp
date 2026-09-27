@@ -7475,6 +7475,8 @@ void Unit::AddThreat(Unit* pVictim, float threat /*= 0.0f*/, bool crit /*= false
 
 void Unit::DeleteThreatList()
 {
+    if (!m_threatManager.isThreatListEmpty())
+        m_threatManager.sendClearAllThreatToClients();
     m_threatManager.clearReferences();
 }
 

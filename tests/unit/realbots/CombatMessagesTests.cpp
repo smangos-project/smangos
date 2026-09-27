@@ -239,3 +239,72 @@ TEST_CASE("PvpCredit round-trips", "[packets]")
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("ThreatUpdate round-trips", "[packets]")
+{
+    ThreatUpdate packet;
+    packet.UnitGuid = { 0x1111, 0 };
+    packet.ThreatList = { { { 0x2222, 0 }, 100 }, { { 0x3333, 0 }, 250 } };
+    RoundTrip(packet, [](ThreatUpdate const& a, ThreatUpdate const& b)
+    {
+        CHECK(a.UnitGuid == b.UnitGuid);
+        REQUIRE(a.ThreatList.size() == b.ThreatList.size());
+        for (size_t i = 0; i < a.ThreatList.size(); ++i)
+        {
+            CHECK(a.ThreatList[i].UnitGuid == b.ThreatList[i].UnitGuid);
+            CHECK(a.ThreatList[i].Threat == b.ThreatList[i].Threat);
+        }
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("ThreatUpdate rejects an oversized list", "[packets]")
+{
+    ByteBuffer data;
+    data << ClassicGuid{ 0x1111, 0 };
+    data << int32(CLASSIC_MAX_THREAT_LIST_SIZE + 1);
+
+    ThreatUpdate in;
+    CHECK_FALSE(in.Read(data));
+}
+
+TEST_CASE("HighestThreatUpdate round-trips", "[packets]")
+{
+    HighestThreatUpdate packet;
+    packet.UnitGuid = { 0x1111, 0 };
+    packet.HighestThreatGuid = { 0x2222, 0 };
+    packet.ThreatList = { { { 0x2222, 0 }, 500 } };
+    RoundTrip(packet, [](HighestThreatUpdate const& a, HighestThreatUpdate const& b)
+    {
+        CHECK(a.UnitGuid == b.UnitGuid);
+        CHECK(a.HighestThreatGuid == b.HighestThreatGuid);
+        REQUIRE(a.ThreatList.size() == b.ThreatList.size());
+        CHECK(a.ThreatList[0].UnitGuid == b.ThreatList[0].UnitGuid);
+        CHECK(a.ThreatList[0].Threat == b.ThreatList[0].Threat);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("ThreatRemove round-trips", "[packets]")
+{
+    ThreatRemove packet;
+    packet.UnitGuid = { 0x1111, 0 };
+    packet.AboutGuid = { 0x2222, 0 };
+    RoundTrip(packet, [](ThreatRemove const& a, ThreatRemove const& b)
+    {
+        CHECK(a.UnitGuid == b.UnitGuid);
+        CHECK(a.AboutGuid == b.AboutGuid);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("ThreatClear round-trips", "[packets]")
+{
+    ThreatClear packet;
+    packet.UnitGuid = { 0x1111, 0 };
+    RoundTrip(packet, [](ThreatClear const& a, ThreatClear const& b)
+    {
+        CHECK(a.UnitGuid == b.UnitGuid);
+    });
+    RejectsEveryTruncation(packet);
+}
