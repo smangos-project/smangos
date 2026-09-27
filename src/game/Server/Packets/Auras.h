@@ -209,4 +209,14 @@ struct CancelAura
     }
 };
 
+// The "growth" (levitate/hover-family) aura's client-side cancel button. vmangos never wired
+// this up to anything (the aura is removed server-side); this port keeps that no-op.
+struct CancelGrowthAura
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CANCEL_GROWTH_AURA;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
 #endif // MANGOS_PACKETS_AURAS_H

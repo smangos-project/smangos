@@ -340,3 +340,14 @@ TEST_CASE("AutoBankItem, AutoStoreBankItem and BuyBankSlot round-trip", "[packet
     RoundTrip(buy, [](BuyBankSlot const& a, BuyBankSlot const& b) { CHECK(a.Guid == b.Guid); });
     RejectsEveryTruncation(buy);
 }
+
+TEST_CASE("SetAmmo round-trips a set and a clear", "[packets]")
+{
+    for (uint32 item : { 0u, 2512u })
+    {
+        SetAmmo packet;
+        packet.Item = item;
+        RoundTrip(packet, [](SetAmmo const& a, SetAmmo const& b) { CHECK(a.Item == b.Item); });
+        RejectsEveryTruncation(packet);
+    }
+}

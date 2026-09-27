@@ -1062,7 +1062,7 @@ void WorldSession::HandleAutoStoreBankItemOpcode(AutoStoreBankItem const& packet
     }
 }
 
-void WorldSession::HandleSetAmmoOpcode(WorldPackets::Item::SetAmmo const& packet)
+void WorldSession::HandleSetAmmoOpcode(SetAmmo const& packet)
 {
     if (!GetPlayer()->IsAlive())
     {
@@ -1070,15 +1070,15 @@ void WorldSession::HandleSetAmmoOpcode(WorldPackets::Item::SetAmmo const& packet
         return;
     }
 
-    if (packet.item)
+    if (packet.Item)
     {
-        if (!_player->GetItemCount(packet.item))
+        if (!_player->GetItemCount(packet.Item))
         {
             _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
             return;
         }
 
-        _player->SetAmmo(packet.item);
+        _player->SetAmmo(packet.Item);
     }
     else
         GetPlayer()->RemoveAmmo();

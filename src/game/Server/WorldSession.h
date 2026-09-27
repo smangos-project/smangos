@@ -651,7 +651,7 @@ class WorldSession
         void HandleAddIgnoreOpcode(AddIgnore const& packet);
         void HandleDelIgnoreOpcode(DelIgnore const& packet);
         void HandleBugOpcode(WorldPackets::Misc::Bug const& packet);
-        void HandleSetAmmoOpcode(WorldPackets::Item::SetAmmo const& packet);
+        void HandleSetAmmoOpcode(SetAmmo const& packet);
         void HandleItemNameQueryOpcode(WorldPackets::Query::ItemNameQuery const& packet);
 
         void HandleAreaTriggerOpcode(AreaTrigger const& packet);
@@ -815,7 +815,7 @@ class WorldSession
         void HandleCastSpellOpcode(CastSpell const& packet);
         void HandleCancelCastOpcode(CancelCast const& packet);
         void HandleCancelAuraOpcode(CancelAura const& packet);
-        void HandleCancelGrowthAuraOpcode(NullClientPacket const& packet);
+        void HandleCancelGrowthAuraOpcode(CancelGrowthAura const& packet);
         void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
         void HandleSetActionBarTogglesOpcode(SetActionBarToggles const& packet);
         void HandleLearnTalentOpcode(LearnTalent const& packet);

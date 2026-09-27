@@ -99,3 +99,8 @@ TEST_CASE("CancelAura round-trips", "[packets]")
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("CancelGrowthAura round-trips", "[packets]")
+{
+    RoundTrip(CancelGrowthAura(), [](CancelGrowthAura const&, CancelGrowthAura const&) {});
+}

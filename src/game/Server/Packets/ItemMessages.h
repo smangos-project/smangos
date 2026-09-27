@@ -632,4 +632,25 @@ struct ItemEnchantTimeUpdate
     }
 };
 
+// Sets or clears the quiver/ammo pouch's active ammo item. Neither TrinityCore (ammo was removed
+// after Classic) nor vibemangos (opcode number known but never wired up -- "no cata counterpart")
+// has a reference body for this opcode, so this port keeps the vanilla CMSG_SET_AMMO shape
+// (a single item id, 0 clears ammo) unchanged; own design, see the README dispute note.
+struct SetAmmo
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_AMMO;
+
+    uint32 Item = 0;
+
+    void Write(ByteBuffer& data) const { data << Item; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> Item;
+        return true;
+    }
+};
+
 #endif

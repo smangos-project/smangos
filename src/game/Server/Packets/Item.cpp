@@ -8,11 +8,6 @@ void WorldPackets::Item::QueryItem::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> itemGuid;
 }
 
-void WorldPackets::Item::SetAmmo::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> item;
-}
-
 void WorldPackets::Item::WrapItem::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> giftBag;

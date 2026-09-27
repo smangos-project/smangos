@@ -712,7 +712,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_AUCTION_BIDDER_LIST_RESULT,   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SET_FLAT_SPELL_MODIFIER,      UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SET_PCT_SPELL_MODIFIER,       UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SET_AMMO,                     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetAmmoOpcode);
+    INVALID_PACKET(CMSG_SET_AMMO,                     UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CORPSE_RECLAIM_DELAY,         UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_ACTIVE_MOVER,             UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_PET_CANCEL_AURA,               UnhandleReason::Unhandled);
@@ -767,7 +767,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_MEETINGSTONE_IN_PROGRESS,     UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_MEETINGSTONE_MEMBER_ADDED,    UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GMTICKETSYSTEM_TOGGLE,        UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CANCEL_GROWTH_AURA,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleCancelGrowthAuraOpcode);
+    INVALID_PACKET(CMSG_CANCEL_GROWTH_AURA,           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CANCEL_AUTO_REPEAT,           UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_STANDSTATE_UPDATE,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOOT_ALL_PASSED,              UnhandleReason::SendByServer);
@@ -1274,6 +1274,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_NOT_AT_WAR, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionNotAtWarOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_INACTIVE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionInactiveOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CORPSE_LOCATION_FROM_CLIENT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCorpseQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_AMMO, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetAmmoOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_GROWTH_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelGrowthAuraOpcode);
 
     return list;
 }

@@ -18,15 +18,6 @@ namespace WorldPackets { namespace Item
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class SetAmmo final : public ClientPacket
-    {
-    public:
-        uint32 item = 0;
-
-        explicit SetAmmo() : ClientPacket(CMSG_SET_AMMO) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class WrapItem final : public ClientPacket
     {
     public:
