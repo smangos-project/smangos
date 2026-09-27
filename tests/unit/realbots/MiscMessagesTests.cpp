@@ -275,6 +275,46 @@ TEST_CASE("FarSightRequest round-trips both values", "[packets]")
     }
 }
 
+TEST_CASE("SetWatchedFaction round-trips", "[packets]")
+{
+    SetWatchedFaction packet;
+    packet.FactionIndex = 72; // Stormwind
+    RoundTrip(packet, [](SetWatchedFaction const& a, SetWatchedFaction const& b) { CHECK(a.FactionIndex == b.FactionIndex); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SetFactionAtWar round-trips", "[packets]")
+{
+    SetFactionAtWar packet;
+    packet.FactionIndex = 3;
+    RoundTrip(packet, [](SetFactionAtWar const& a, SetFactionAtWar const& b) { CHECK(a.FactionIndex == b.FactionIndex); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SetFactionNotAtWar round-trips", "[packets]")
+{
+    SetFactionNotAtWar packet;
+    packet.FactionIndex = 3;
+    RoundTrip(packet, [](SetFactionNotAtWar const& a, SetFactionNotAtWar const& b) { CHECK(a.FactionIndex == b.FactionIndex); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SetFactionInactive round-trips both values", "[packets]")
+{
+    for (bool inactive : { false, true })
+    {
+        SetFactionInactive packet;
+        packet.Index = 3;
+        packet.State = inactive;
+        RoundTrip(packet, [](SetFactionInactive const& a, SetFactionInactive const& b)
+        {
+            CHECK(a.Index == b.Index);
+            CHECK(a.State == b.State);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}
+
 TEST_CASE("AreaTrigger round-trips", "[packets]")
 {
     for (bool entered : { false, true })

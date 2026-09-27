@@ -17,20 +17,6 @@ void WorldPackets::Misc::SetTarget::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> guid;
 }
 
-void WorldPackets::Misc::SetFactionAtWar::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> repListId;
-    recv_data >> flag;
-}
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-void WorldPackets::Misc::SetFactionInactive::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> replistid;
-    recv_data >> inactive;
-}
-#endif
-
 void WorldPackets::Misc::ZoneUpdate::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> newZone;
@@ -50,13 +36,6 @@ void WorldPackets::Misc::TeleportToUnit::ReadFromWorldPacket(WorldPacket& recv_d
 {
     recv_data >> playerName;
 }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-void WorldPackets::Misc::SetWatchedFaction::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> repId;
-}
-#endif
 
 void WorldPackets::Misc::Who::ReadFromWorldPacket(WorldPacket& recv_data)
 {

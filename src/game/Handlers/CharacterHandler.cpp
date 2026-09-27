@@ -505,14 +505,24 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
             pGroup->SendLootStartRollsForPlayer(pCurrChar);
 }
 
-void WorldSession::HandleSetFactionAtWarOpcode(WorldPackets::Misc::SetFactionAtWar const& packet)
+void WorldSession::HandleSetFactionAtWarOpcode(SetFactionAtWar const& packet)
 {
     Player* pPlayer = GetPlayer();
 
     if (pPlayer->IsInCombat())
         return;
 
-    pPlayer->GetReputationMgr().SetAtWar(packet.repListId, packet.flag);
+    pPlayer->GetReputationMgr().SetAtWar(packet.FactionIndex, true);
+}
+
+void WorldSession::HandleSetFactionNotAtWarOpcode(SetFactionNotAtWar const& packet)
+{
+    Player* pPlayer = GetPlayer();
+
+    if (pPlayer->IsInCombat())
+        return;
+
+    pPlayer->GetReputationMgr().SetAtWar(packet.FactionIndex, false);
 }
 
 // The modern client folds the legacy set/clear/reset opcode triplet into one CLASSIC_CMSG_TUTORIAL
@@ -549,14 +559,14 @@ void WorldSession::HandleTutorialFlagOpcode(TutorialRequest const& packet)
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-void WorldSession::HandleSetWatchedFactionOpcode(WorldPackets::Misc::SetWatchedFaction const& packet)
+void WorldSession::HandleSetWatchedFactionOpcode(SetWatchedFaction const& packet)
 {
-    GetPlayer()->SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, packet.repId);
+    GetPlayer()->SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, packet.FactionIndex);
 }
 
-void WorldSession::HandleSetFactionInactiveOpcode(WorldPackets::Misc::SetFactionInactive const& packet)
+void WorldSession::HandleSetFactionInactiveOpcode(SetFactionInactive const& packet)
 {
-    _player->GetReputationMgr().SetInactive(packet.replistid, packet.inactive);
+    _player->GetReputationMgr().SetInactive(packet.Index, packet.State);
 }
 #endif
 

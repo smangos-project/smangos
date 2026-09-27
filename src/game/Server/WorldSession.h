@@ -655,10 +655,11 @@ class WorldSession
         void HandleItemNameQueryOpcode(WorldPackets::Query::ItemNameQuery const& packet);
 
         void HandleAreaTriggerOpcode(AreaTrigger const& packet);
-        void HandleSetFactionAtWarOpcode(WorldPackets::Misc::SetFactionAtWar const& packet);
+        void HandleSetFactionAtWarOpcode(SetFactionAtWar const& packet);
+        void HandleSetFactionNotAtWarOpcode(SetFactionNotAtWar const& packet);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        void HandleSetWatchedFactionOpcode(WorldPackets::Misc::SetWatchedFaction const& packet);
-        void HandleSetFactionInactiveOpcode(WorldPackets::Misc::SetFactionInactive const& packet);
+        void HandleSetWatchedFactionOpcode(SetWatchedFaction const& packet);
+        void HandleSetFactionInactiveOpcode(SetFactionInactive const& packet);
 #endif
 
         void HandleUpdateAccountData(AccountDataUpdate const& packet);

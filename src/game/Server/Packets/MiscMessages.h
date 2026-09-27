@@ -549,6 +549,92 @@ struct FarSightRequest
     }
 };
 
+// Which faction's reputation bar is pinned to the experience bar. Same reputation list index as
+// vanilla CMSG_SET_WATCHED_FACTION, per TrinityCore's SetWatchedFaction::Read.
+struct SetWatchedFaction
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_WATCHED_FACTION;
+
+    int32 FactionIndex = 0;
+
+    void Write(ByteBuffer& data) const { data << FactionIndex; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> FactionIndex;
+        return true;
+    }
+};
+
+// Declares or clears "at war" on a faction from the reputation pane's context menu. Vanilla
+// folded both directions into one CMSG_SET_FACTION_ATWAR with a flag byte; the modern client
+// splits it into two opcodes with no body but the faction index, per TrinityCore's
+// SetFactionAtWar/SetFactionNotAtWar::Read. Two thin types, same shape, since the classic
+// dispatch table keys one struct type to exactly one opcode.
+struct SetFactionAtWar
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_FACTION_AT_WAR;
+
+    int32 FactionIndex = 0;
+
+    void Write(ByteBuffer& data) const { data << FactionIndex; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> FactionIndex;
+        return true;
+    }
+};
+
+struct SetFactionNotAtWar
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_FACTION_NOT_AT_WAR;
+
+    int32 FactionIndex = 0;
+
+    void Write(ByteBuffer& data) const { data << FactionIndex; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> FactionIndex;
+        return true;
+    }
+};
+
+// Hides or shows an inactive (below-max) faction's reputation bar. Same (index, state) body as
+// vanilla CMSG_SET_FACTION_INACTIVE with State moved from a byte to a bit, per TrinityCore's
+// SetFactionInactive::Read.
+struct SetFactionInactive
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_FACTION_INACTIVE;
+
+    uint32 Index = 0;
+    bool State = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Index;
+        data.WriteBit(State);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + 1)
+            return false;
+        data >> Index;
+        State = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

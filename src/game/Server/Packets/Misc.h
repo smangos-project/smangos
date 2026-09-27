@@ -31,28 +31,6 @@ namespace WorldPackets { namespace Misc
     };
 
 
-    class SetFactionAtWar final : public ClientPacket
-    {
-    public:
-        uint32 repListId = 0;
-        uint8 flag = 0;
-
-        explicit SetFactionAtWar() : ClientPacket(CMSG_SET_FACTION_ATWAR) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    class SetFactionInactive final : public ClientPacket
-    {
-    public:
-        uint32 replistid = 0;
-        uint8 inactive = 0;
-
-        explicit SetFactionInactive() : ClientPacket(CMSG_SET_FACTION_INACTIVE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-#endif
-
     class ZoneUpdate final : public ClientPacket
     {
     public:
@@ -88,17 +66,6 @@ namespace WorldPackets { namespace Misc
         explicit TeleportToUnit() : ClientPacket(CMSG_TELEPORT_TO_UNIT) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    class SetWatchedFaction final : public ClientPacket
-    {
-    public:
-        int32 repId = 0;
-
-        explicit SetWatchedFaction() : ClientPacket(CMSG_SET_WATCHED_FACTION) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-#endif
 
     class Who final : public ClientPacket
     {

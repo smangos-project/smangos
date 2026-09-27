@@ -378,7 +378,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_INITIALIZE_FACTIONS,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SET_FACTION_VISIBLE,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SET_FACTION_STANDING,         UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SET_FACTION_ATWAR,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetFactionAtWarOpcode);
+    INVALID_PACKET(CMSG_SET_FACTION_ATWAR,            UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_SET_FACTION_CHEAT,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SET_PROFICIENCY,              UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_ACTION_BUTTON,            UnhandleReason::Unhandled);
@@ -907,8 +907,8 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_GAMETIMEBIAS_SET,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_DEBUG_ACTIONS_START,          UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_DEBUG_ACTIONS_STOP,           UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_SET_FACTION_INACTIVE,         STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetFactionInactiveOpcode);
-    DEFINE_HANDLER(CMSG_SET_WATCHED_FACTION,          STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetWatchedFactionOpcode);
+    INVALID_PACKET(CMSG_SET_FACTION_INACTIVE,         UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_SET_WATCHED_FACTION,          UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TIME_SKIPPED,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SPLINE_MOVE_ROOT,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_EXPLORATION_ALL,          UnhandleReason::Unhandled);
@@ -1269,6 +1269,10 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AREA_TRIGGER, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAreaTriggerOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SUMMON_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSummonResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_FAR_SIGHT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleFarSightOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_WATCHED_FACTION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetWatchedFactionOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_AT_WAR, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionAtWarOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_NOT_AT_WAR, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionNotAtWarOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_INACTIVE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionInactiveOpcode);
 
     return list;
 }
