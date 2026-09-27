@@ -796,6 +796,44 @@ None of these is proven against a real 1.15.6 client yet.
     item's template id the way the pre-port vanilla handler passed it -- fixed to pass the guid.
   Unverified against a real client throughout.
 
+- **Auction house.** TrinityCore's `AuctionHousePackets.h` is the retail post-Legion commodity/bucket
+  redesign (browse-by-key, batched commodity purchase, favorites) -- the 1.15 client has none of that
+  UI and never sends those CMSGs, so none of it is implemented here; only vibemangos (cross-checked
+  by its own comments against a real classic-client protocol proxy) covers the pre-bucket wire this
+  client actually speaks. **Followed vibemangos** for the CMSG bodies (hello, sell, place bid, remove
+  item, list items/bidder/owned, the empty pending-sales query) and the notification shapes
+  (`AuctionCommandResult`'s unconditional fixed body; `AuctionClosedNotification` covering both the
+  sold and unsold-expired cases via one bit; `AuctionOutbidNotification` doubling as the closest
+  available signal for "owner cancelled, your bid is refunded", which has no modern equivalent).
+  Two places this port does more than either reference:
+  - **The list-result envelope and per-posting shape are this port's own design**, not carried over
+    from either reference verbatim: vibemangos's own rewrite never defined structs for
+    `SMSG_AUCTION_LIST_ITEMS_RESULT`/`_BIDDED_ITEMS_RESULT`/`_OWNED_ITEMS_RESULT` at all, still
+    building them as raw, unstructured writes; TrinityCore's `AuctionItem`/`AuctionListItemsResult`
+    are the commodity-era shape (a `BucketKey`, a `ListType`, a `TotalCount` outside the item array)
+    this client doesn't use. The per-posting fields TrinityCore's `AuctionItem` struct does share with
+    the pre-bucket wire (item instance, count, owner, min bid/increment/buyout, item and
+    owner-account guid, end time, bidder and bid amount) were kept; the bucket-only fields
+    (`AuctionBucketKey`, `Gems`, a `Creator` distinct from the owner, `UnitPrice`) are always
+    absent, matching this engine's own data model. Unverified against a real client; this is the
+    single largest guess in this bullet.
+  - **`SMSG_AUCTION_OWNER_BID_NOTIFICATION` is wired up**, using TrinityCore's own body for it
+    (vibemangos has no send site at all and folds "a new bid just came in, the auction is still
+    open" into the same closed-auction notification the sold/expired cases use, which is wrong for
+    that case specifically -- the auction isn't closed). This port keeps `AuctionClosedNotification`
+    for the two true-close cases (sold, expired unsold) and sends the owner-bid notification
+    separately from `HandleAuctionPlaceBid`'s non-buyout branch.
+  Real player and NPC guids only (`ClassicGuidMapping::ToClassic`/`FromClassic`); no synthetic guid
+  type needed, matching this engine's own single-stack-per-listing auction model (no commodities).
+  `CLASSIC_CMSG_AUCTION_LIST_BIDDER_ITEMS` (a second, differently-numbered "list bidder items"
+  opcode TrinityCore's own enum also carries with no packet class or handler behind it) is left
+  unbound, matching how this port treats every other TrinityCore-enumerated-but-bodyless opcode.
+  Live-tested: hello, sell, list (browse), and a bid that buys out immediately (owner and bidder both
+  get their live notification). Not covered live: a plain (non-buyout) bid, the bidder-items/
+  owned-items list queries, an owner cancelling an active auction, and a real expiry (this engine's
+  shortest listing is a real 2 hours, far too long for a scenario to wait on) -- all wire-tested only
+  via round trips.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are
