@@ -177,6 +177,19 @@ TEST_CASE("UnlearnSkill round-trips", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
+TEST_CASE("LearnTalent round-trips", "[packets]")
+{
+    LearnTalent packet;
+    packet.TalentId = 1234;
+    packet.Rank = 4;
+    RoundTrip(packet, [](LearnTalent const& a, LearnTalent const& b)
+    {
+        CHECK(a.TalentId == b.TalentId);
+        CHECK(a.Rank == b.Rank);
+    });
+    RejectsEveryTruncation(packet);
+}
+
 TEST_CASE("SendUnlearnSpells round-trips, empty and not", "[packets]")
 {
     SendUnlearnSpells empty;

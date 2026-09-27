@@ -529,4 +529,30 @@ struct UnlearnSkill
     }
 };
 
+// Learns one rank of one talent, picked at the trainer's talent UI. Same (id, rank) body as the
+// vanilla CMSG_LEARN_TALENT, per TrinityCore's WorldPackets::Talent::LearnTalent::Read; only the
+// wire width of Rank changed (uint32 -> uint16, still well within any real talent's rank count).
+struct LearnTalent
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_LEARN_TALENT;
+
+    uint32 TalentId = 0;
+    uint16 Rank = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << TalentId;
+        data << Rank;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint16))
+            return false;
+        data >> TalentId;
+        data >> Rank;
+        return true;
+    }
+};
+
 #endif

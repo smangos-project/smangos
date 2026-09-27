@@ -28,9 +28,9 @@
 #include "WorldSession.h"
 #include "Anticheat.h"
 
-void WorldSession::HandleLearnTalentOpcode(WorldPackets::Skill::LearnTalent const& packet)
+void WorldSession::HandleLearnTalentOpcode(LearnTalent const& packet)
 {
-    _player->LearnTalent(packet.talent_id, packet.requested_rank);
+    _player->LearnTalent(packet.TalentId, packet.Rank);
 }
 
 void WorldSession::HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet)

@@ -689,7 +689,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PERIODICAURALOG,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELLDAMAGESHIELD,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELLNONMELEEDAMAGELOG,       UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_LEARN_TALENT,                 STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleLearnTalentOpcode);
+    INVALID_PACKET(CMSG_LEARN_TALENT,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_RESURRECT_FAILED,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_TOGGLE_PVP,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ZONE_UNDER_ATTACK,            UnhandleReason::SendByServer);
@@ -1264,6 +1264,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPORT_PVP_PLAYER_AFK, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReportPvPAFKOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTION_BUTTON, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetActionButtonOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTION_BAR_TOGGLES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetActionBarTogglesOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LEARN_TALENT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleLearnTalentOpcode);
 
     return list;
 }

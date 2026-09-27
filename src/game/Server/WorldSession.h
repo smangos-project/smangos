@@ -817,7 +817,7 @@ class WorldSession
         void HandleCancelGrowthAuraOpcode(NullClientPacket const& packet);
         void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
         void HandleSetActionBarTogglesOpcode(SetActionBarToggles const& packet);
-        void HandleLearnTalentOpcode(WorldPackets::Skill::LearnTalent const& packet);
+        void HandleLearnTalentOpcode(LearnTalent const& packet);
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);
         void HandleUnlearnSkillOpcode(UnlearnSkill const& packet);
 
