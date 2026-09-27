@@ -655,6 +655,12 @@ None of these is proven against a real 1.15.6 client yet.
   ready check timeout (it ends once every online member has answered). Unverified against a real client.
 - **Duels.** Bodies follow TrinityCore: `SMSG_DUEL_COMPLETE` is one bit, and `SMSG_DUEL_WINNER` is two 6-bit name lengths, the fled bit, two realm addresses (0) and the beaten player's name before the winner's (vibemangos writes a byte, then the winner's name first). `SMSG_DUEL_REQUESTED` carries the arbiter, the challenger and the challenger's account guid; vibemangos leaves the account guid out. `CMSG_DUEL_RESPONSE` replaces accept and cancel, and an accept naming an arbiter other than the player's own is ignored. The wire struct for the completion message is `DuelCompleteNotice` because `Player::DuelComplete` hides the plain name. Unverified against a real client.
 - **Trade.** Bodies follow TrinityCore, which vibemangos matches: `SMSG_TRADE_STATUS` is a bnet-account bit, a 5-bit status and a tail per status (`Proposed` carries the partner and the partner's account guid, `Initiated` a trade id, `Failed` a bag result); `SMSG_TRADE_UPDATED` carries the window's gold, item list and two state indexes, and `CMSG_ACCEPT_TRADE` echoes the partner side's `CurrentStateIndex`, so a stale accept gets status 9. The engine's trade status names keep their vanilla spelling (the values 0-22 match the modern ones) and the wire struct is `TradeStatusUpdate` because `TradeStatus` is that enum. `CMSG_SET_TRADE_GOLD` is a `u64`. Not sent: the trade id (always 0), gems, the "use" enchant and the taplist, currency and wrong-realm failures. The engine's own ignore/busy sends keep their vanilla status numbers (0 and 14), which TrinityCore swaps. Unverified against a real client.
+- **GM tickets.** `CMSG_COMPLAINT`'s mail-spam id: TrinityCore reads it as a `u64`, vibemangos as a `u32`
+  despite crediting the same TrinityCore body. **Followed: TrinityCore.** No external ticket portal exists
+  here, so `SMSG_GM_TICKET_CASE_STATUS` always reports zero cases and the per-case fields are never modeled.
+  The old create/get-text/update-text/delete-ticket SMSG family has no modern wire form at all; a GM's
+  `.ticket` reply, escalation notice or forced close now reaches the player as plain system chat text
+  instead of a packet. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
