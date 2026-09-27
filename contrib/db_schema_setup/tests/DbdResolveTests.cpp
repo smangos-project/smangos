@@ -75,9 +75,8 @@ TEST_CASE("ResolveDbdTable reports Ambiguous when a build matches two blocks", "
     CHECK_FALSE(result.table.has_value());
 }
 
-// The five tables named in the db_schema_setup plan's "Done when": each must resolve for our
-// client build (or its dataBuild) against the pinned WoWDBDefs definitions, with fields that
-// match the .dbd source.
+// A handful of well-known tables, resolved against the pinned WoWDBDefs definitions for our
+// client build (or its dataBuild), with fields checked against the .dbd source.
 
 TEST_CASE("Map resolves for our build", "[DbdResolve][WellKnownTables]")
 {
