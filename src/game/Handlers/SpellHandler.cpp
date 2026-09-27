@@ -234,13 +234,17 @@ void WorldSession::HandleOpenItemOpcode(WorldPackets::Spell::OpenItem const& pac
         pUser->SendLoot(pItem->GetObjectGuid(), LOOT_CORPSE);
 }
 
-void WorldSession::HandleGameObjectUseOpcode(WorldPackets::Misc::GameObjectUse const& packet)
+void WorldSession::HandleGameObjectUseOpcode(GameObjectUse const& packet)
 {
     // ignore for remote control state
     if (!_player->IsSelfMover())
         return;
 
-    GameObject* obj = GetPlayer()->GetMap()->GetGameObject(packet.guid);
+    nonstd::optional<ObjectGuid> const goGuid = ClassicGuidMapping::FromClassic(packet.Guid);
+    if (!goGuid || !goGuid->IsGameObject())
+        return;
+
+    GameObject* obj = GetPlayer()->GetMap()->GetGameObject(*goGuid);
     if (!obj || obj->IsDeleted())
         return;
 

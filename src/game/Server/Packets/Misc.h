@@ -30,15 +30,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class GameObjectUse final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit GameObjectUse() : ClientPacket(CMSG_GAMEOBJ_USE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetTarget final : public ClientPacket
     {
     public:

@@ -665,7 +665,7 @@ class WorldSession
         void HandleRequestAccountData(AccountDataRequest const& packet);
         void HandleSetActionButtonOpcode(SetActionButton const& packet);
 
-        void HandleGameObjectUseOpcode(WorldPackets::Misc::GameObjectUse const& packet);
+        void HandleGameObjectUseOpcode(GameObjectUse const& packet);
         void HandleMeetingStoneJoinOpcode(WorldPackets::Misc::MeetingStoneJoin const& packet);
         void HandleMeetingStoneLeaveOpcode(NullClientPacket const& packet);
         void HandleMeetingStoneInfoOpcode(NullClientPacket const& packet);

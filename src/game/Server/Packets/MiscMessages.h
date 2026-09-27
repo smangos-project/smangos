@@ -450,6 +450,18 @@ struct SetActionBarToggles
     }
 };
 
+// Right-clicking (using) a game object: chests, doors, levers, quest objects. Same single-guid
+// body as vanilla CMSG_GAMEOBJ_USE, per TrinityCore's WorldPackets::GameObject::GameObjUse::Read.
+struct GameObjectUse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_GAME_OBJ_USE;
+
+    ClassicGuid Guid;
+
+    void Write(ByteBuffer& data) const { Guid.Write(data); }
+    bool Read(ByteBuffer& data) { return Guid.Read(data); }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

@@ -239,3 +239,11 @@ TEST_CASE("SetActionBarToggles round-trips", "[packets]")
     RoundTrip(packet, [](SetActionBarToggles const& a, SetActionBarToggles const& b) { CHECK(a.Mask == b.Mask); });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("GameObjectUse round-trips", "[packets]")
+{
+    GameObjectUse packet;
+    packet.Guid = { 0x4242, 0 };
+    RoundTrip(packet, [](GameObjectUse const& a, GameObjectUse const& b) { CHECK(a.Guid == b.Guid); });
+    RejectsEveryTruncation(packet);
+}

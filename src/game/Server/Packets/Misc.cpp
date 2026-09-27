@@ -17,11 +17,6 @@ void WorldPackets::Misc::AreaTrigger::ReadFromWorldPacket(WorldPacket& recv_data
     recv_data >> triggerId;
 }
 
-void WorldPackets::Misc::GameObjectUse::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-}
-
 void WorldPackets::Misc::SetTarget::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;

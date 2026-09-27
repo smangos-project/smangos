@@ -27,6 +27,7 @@
 #include "BattleGroundWS.h"
 #include "Geometry.h"
 #include "Utilities/Random.h"
+#include "Packets/Classic/GuidMapping.h"
 
 using namespace Geometry;
 
@@ -85,8 +86,8 @@ void WSG_AtAllianceFlag(BattleBotAI* pAI)
                 if (pAI->me->IsWithinDistInMap(pFlag, INTERACTION_DISTANCE))
                 {
                     pAI->ClearPath();
-                    WorldPackets::Misc::GameObjectUse packet;
-                    packet.guid = pFlag->GetObjectGuid();
+                    GameObjectUse packet;
+                    packet.Guid = ClassicGuidMapping::ToClassic(pFlag->GetObjectGuid(), realmID);
                     pAI->me->GetSession()->HandleGameObjectUseOpcode(packet);
                     return;
                 }
@@ -120,8 +121,8 @@ void WSG_AtHordeFlag(BattleBotAI* pAI)
                 if (pAI->me->IsWithinDistInMap(pFlag, INTERACTION_DISTANCE))
                 {
                     pAI->ClearPath();
-                    WorldPackets::Misc::GameObjectUse packet;
-                    packet.guid = pFlag->GetObjectGuid();
+                    GameObjectUse packet;
+                    packet.Guid = ClassicGuidMapping::ToClassic(pFlag->GetObjectGuid(), realmID);
                     pAI->me->GetSession()->HandleGameObjectUseOpcode(packet);
                     return;
                 }
