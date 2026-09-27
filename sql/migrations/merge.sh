@@ -11,6 +11,5 @@ merge() {
 merge "characters"
 merge "logon"
 merge "logs"
-merge "world"
 
 find . -type f -size 0 -delete

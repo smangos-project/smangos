@@ -1,32 +1,48 @@
 @ECHO Off
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+SET DB=%1
+IF NOT "%DB%"=="characters" IF NOT "%DB%"=="logon" IF NOT "%DB%"=="logs" IF NOT "%DB%"=="world" (
+    ECHO Usage: make_migration.bat ^<characters^|logon^|logs^|world^>
+    EXIT /B 1
+)
+
 SET UTC=YYYYMMDDHHmmss
 
 REM Get the UTC date-time string to use
 CALL :GetFormattedCurrentUTCDate UTC
 ECHO "Formatted UTC Date time : %UTC%"
 
-SET "output=migrations\%UTC%_world.sql"
+SET "output=migrations\%UTC%_%DB%.sql"
 
-ECHO DROP PROCEDURE IF EXISTS add_migration;>> %output%
-ECHO DELIMITER ??>> %output%
-ECHO CREATE PROCEDURE `add_migration`()>> %output%
-ECHO BEGIN>> %output%
-ECHO DECLARE v INT DEFAULT 1;>> %output%
-ECHO SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='%UTC%');>> %output%
-ECHO IF v = 0 THEN>> %output%
-ECHO INSERT INTO `migrations` VALUES ('%UTC%');>> %output%
-ECHO -- Add your query below.>> %output%
-ECHO.>> %output%
-ECHO.>> %output%
-ECHO.>> %output%
-ECHO -- End of migration.>> %output%
-ECHO END IF;>> %output%
-ECHO END??>> %output%
-ECHO DELIMITER ;>> %output%
-ECHO CALL add_migration();>> %output%
-ECHO DROP PROCEDURE IF EXISTS add_migration;>> %output%
+IF "%DB%"=="world" (
+    ECHO INSERT INTO `migrations` VALUES ('%UTC%');>> %output%
+    ECHO.>> %output%
+    ECHO -- Add your query below.>> %output%
+    ECHO.>> %output%
+    ECHO.>> %output%
+    ECHO.>> %output%
+    ECHO -- End of migration.>> %output%
+) ELSE (
+    ECHO DROP PROCEDURE IF EXISTS add_migration;>> %output%
+    ECHO DELIMITER ??>> %output%
+    ECHO CREATE PROCEDURE `add_migration`()>> %output%
+    ECHO BEGIN>> %output%
+    ECHO DECLARE v INT DEFAULT 1;>> %output%
+    ECHO SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='%UTC%');>> %output%
+    ECHO IF v = 0 THEN>> %output%
+    ECHO INSERT INTO `migrations` VALUES ('%UTC%');>> %output%
+    ECHO -- Add your query below.>> %output%
+    ECHO.>> %output%
+    ECHO.>> %output%
+    ECHO.>> %output%
+    ECHO -- End of migration.>> %output%
+    ECHO END IF;>> %output%
+    ECHO END??>> %output%
+    ECHO DELIMITER ;>> %output%
+    ECHO CALL add_migration();>> %output%
+    ECHO DROP PROCEDURE IF EXISTS add_migration;>> %output%
+)
 
 REM End of the script Body
 :EndOfScriptBody
@@ -46,7 +62,7 @@ REM Sub routine to get the current UTC date as formatted string YYYYMMDD_HHmmss
    IF "%%i" == "Second" ( SET second=%%j)
   )
  )
- 
+
 REM Prepend Zero to the number if less than Ten
  IF %month% LSS 10 SET month=0%month%
  IF %day% LSS 10 SET day=0%day%

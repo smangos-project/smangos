@@ -1,9 +1,29 @@
 #!/usr/bin/env bash
 
-DATE=$(date -u +%Y%m%d%H%M%S) # UTC DATE
-FPATH="migrations/${DATE}_world.sql"
+DB="$1"
+case "$DB" in
+    characters|logon|logs|world) ;;
+    *)
+        echo "Usage: touch_migration.sh <characters|logon|logs|world>"
+        exit 1
+        ;;
+esac
 
-cat <<EOF > "$FPATH"
+DATE=$(date -u +%Y%m%d%H%M%S) # UTC DATE
+FPATH="migrations/${DATE}_${DB}.sql"
+
+if [ "$DB" = "world" ]; then
+    cat <<EOF > "$FPATH"
+INSERT INTO \`migrations\` VALUES ('$DATE');
+
+-- Add your query below.
+
+
+
+-- End of migration.
+EOF
+else
+    cat <<EOF > "$FPATH"
 DROP PROCEDURE IF EXISTS add_migration;
 DELIMITER ??
 CREATE PROCEDURE \`add_migration\`()
@@ -23,6 +43,7 @@ DELIMITER ;
 CALL add_migration();
 DROP PROCEDURE IF EXISTS add_migration;
 EOF
+fi
 
 if [ $? -eq 0 ]; then
     echo "File created: $FPATH"
