@@ -85,9 +85,23 @@ TEST_CASE("SplitMysqlStatements honours a DELIMITER block", "[SqlStatementSplitt
     CHECK(statements[2].text == "CALL p()");
 }
 
-TEST_CASE("SplitMysqlStatements handles a real world migration (normal, lower-case delimiter)", "[SqlStatementSplitter]")
+TEST_CASE("SplitMysqlStatements handles a legacy world migration envelope (normal, lower-case delimiter)", "[SqlStatementSplitter]")
 {
-    std::string content = ReadMigration("20210515110157_world.sql");
+    std::string content =
+        "DROP PROCEDURE IF EXISTS add_migration;\n"
+        "delimiter ??\n"
+        "CREATE PROCEDURE `add_migration`()\n"
+        "BEGIN\n"
+        "DECLARE v INT DEFAULT 1;\n"
+        "SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20210515110157');\n"
+        "IF v=0 THEN\n"
+        "INSERT INTO `migrations` VALUES ('20210515110157');\n"
+        "UPDATE `creature_template` SET `faction` = 21 WHERE `entry` = 10389;\n"
+        "END IF;\n"
+        "END??\n"
+        "delimiter ;\n"
+        "CALL add_migration();\n"
+        "DROP PROCEDURE IF EXISTS add_migration;\n";
     auto statements = SplitMysqlStatements(content);
 
     REQUIRE(statements.size() == 4);
@@ -101,7 +115,21 @@ TEST_CASE("SplitMysqlStatements handles a real world migration (normal, lower-ca
 
 TEST_CASE("SplitMysqlStatements handles a world migration with SET NAMES before the envelope", "[SqlStatementSplitter]")
 {
-    std::string content = ReadMigration("20210628233951_world.sql");
+    std::string content =
+        "SET NAMES utf8;\n"
+        "DROP PROCEDURE IF EXISTS add_migration;\n"
+        "DELIMITER ??\n"
+        "CREATE PROCEDURE `add_migration`()\n"
+        "BEGIN\n"
+        "DECLARE v INT DEFAULT 1;\n"
+        "SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20210628233951');\n"
+        "IF v=0 THEN\n"
+        "INSERT INTO `migrations` VALUES ('20210628233951');\n"
+        "END IF;\n"
+        "END??\n"
+        "DELIMITER ;\n"
+        "CALL add_migration();\n"
+        "DROP PROCEDURE IF EXISTS add_migration;\n";
     auto statements = SplitMysqlStatements(content);
 
     REQUIRE(statements.size() >= 4);

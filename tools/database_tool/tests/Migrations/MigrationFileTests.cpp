@@ -3,6 +3,8 @@
 #include <catch_amalgamated.hpp>
 
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 TEST_CASE("TryParseMigrationFilename parses <id>_<db>.sql", "[MigrationFile]")
 {
@@ -34,7 +36,16 @@ TEST_CASE("DiscoverMigrations finds every real migration for one database, sorte
     for (MigrationFile const& file : world)
     {
         CHECK(file.db == "world");
-        CHECK(file.hasLegacyEnvelope); // none of the 1140 have been ported yet
+
+        // sql/migrations is live: earlier years are already committed ported
+        // to SQLite (world-sql.md's per-year batches), so hasLegacyEnvelope
+        // isn't uniformly true any more -- it must just match what's
+        // actually on disk for this file.
+        std::ifstream stream(file.path, std::ios::binary);
+        std::ostringstream buffer;
+        buffer << stream.rdbuf();
+        bool actuallyHasEnvelope = buffer.str().find("DROP PROCEDURE IF EXISTS add_migration") != std::string::npos;
+        CHECK(file.hasLegacyEnvelope == actuallyHasEnvelope);
     }
 
     CHECK(DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "characters").size() == 8);
