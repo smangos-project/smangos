@@ -2,6 +2,7 @@ add_library(database_tool_lib STATIC
   Version.cpp
   ToolConfig.cpp
   World/DoltLiteDatabase.cpp
+  World/WorldArchive.cpp
   Sql/MysqlLexer.cpp
   Sql/SqlStatementSplitter.cpp
   Sql/MysqlDdlTranslator.cpp
@@ -13,7 +14,10 @@ add_library(database_tool_lib STATIC
 
 target_include_directories(database_tool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(database_tool_lib PUBLIC cxx_std_20)
-target_link_libraries(database_tool_lib PUBLIC doltlite shared framework ${MYSQL_LIBRARY})
+# OPENSSL_LIBRARIES: shared's own SHA256/BigNumber need libcrypto, which
+# (like MYSQL_LIBRARY above) mangosd/bnetserver only pull in at their own
+# executable's link step, in a release/debug split this tool doesn't need.
+target_link_libraries(database_tool_lib PUBLIC doltlite lzmasdk shared framework ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES})
 
 # mangosd/bnetserver only get these via `cmake --install` (see the root
 # CMakeLists.txt install() rules); a standalone tool needs its own copy next
