@@ -19,6 +19,7 @@ add_library(database_tool_lib STATIC
   Dbc/DbcExport.cpp
   Dbc/DbcImport.cpp
   Dbc/DbcSchema.cpp
+  Dbc/Wdbc.cpp
   Dbc/Wdc5Reader.cpp
   Dbc/Wdc5Writer.cpp
   generated/DbcTables.g.cpp

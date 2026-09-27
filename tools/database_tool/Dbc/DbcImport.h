@@ -35,4 +35,9 @@ DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
                                 std::vector<std::string> const& onlyTables = {},
                                 std::span<DbcTableMeta const> tables = GetDbcTables());
 
+// Same as ImportDb2Files, but for dbfilesclient/<fileStem>.dbc (WDBC); dbc_files.format is 'dbc'.
+DbcImportResult ImportDbcFiles(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,
+                                std::vector<std::string> const& onlyTables = {},
+                                std::span<DbcTableMeta const> tables = GetDbcTables());
+
 #endif

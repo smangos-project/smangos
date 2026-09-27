@@ -1,5 +1,6 @@
 #include "DbcExport.h"
 
+#include "Dbc/Wdbc.h"
 #include "Dbc/Wdc5Writer.h"
 #include "World/DoltLiteDatabase.h"
 
@@ -115,6 +116,54 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         }
 
         std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".db2");
+        std::ofstream out(filePath, std::ios::binary | std::ios::trunc);
+        if (!out)
+        {
+            tableResult.error = "failed to open " + filePath.string() + " for writing";
+            result.tables.push_back(std::move(tableResult));
+            continue;
+        }
+        out.write(reinterpret_cast<char const*>(written.bytes.data()), static_cast<std::streamsize>(written.bytes.size()));
+
+        tableResult.rowsExported = static_cast<uint32_t>(rows.size());
+        result.tables.push_back(std::move(tableResult));
+    }
+
+    return result;
+}
+
+DbcExportResult ExportDbcFiles(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,
+                                std::vector<std::string> const& onlyTables, std::span<DbcTableMeta const> tables)
+{
+    DbcExportResult result;
+
+    for (DbcTableMeta const& table : tables)
+    {
+        if (!IsSelected(table, onlyTables))
+            continue;
+
+        DbcExportTableResult tableResult;
+        tableResult.tableName = table.name;
+
+        Wdc5FileInfo unused;
+        if (!LoadFileInfo(world, table, unused))
+        {
+            result.tables.push_back(std::move(tableResult));
+            continue;
+        }
+        tableResult.hasFilesRow = true;
+
+        std::vector<Wdc5Row> rows = LoadRows(world, table);
+
+        WdbcWriteResult written = WriteWdbcFile(table, rows);
+        if (!written.error.empty())
+        {
+            tableResult.error = written.error;
+            result.tables.push_back(std::move(tableResult));
+            continue;
+        }
+
+        std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".dbc");
         std::ofstream out(filePath, std::ios::binary | std::ios::trunc);
         if (!out)
         {

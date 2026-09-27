@@ -2,6 +2,7 @@
 
 #include "Dbc/DbcSchema.h"
 #include "Dbc/DbcTableMeta.h"
+#include "Dbc/Wdbc.h"
 #include "Dbc/Wdc5Reader.h"
 #include "World/DoltLiteDatabase.h"
 
@@ -70,20 +71,21 @@ namespace
         statement.Reset();
     }
 
-    void UpsertDbcFilesRow(DoltLiteDatabase& world, DbcTableMeta const& table, Wdc5FileInfo const& info,
-                            uint32_t rowCount)
+    void UpsertDbcFilesRow(DoltLiteDatabase& world, DbcTableMeta const& table, char const* format,
+                            Wdc5FileInfo const& info, uint32_t rowCount)
     {
         DoltLiteStatement statement = world.Prepare(
             "INSERT OR REPLACE INTO \"dbc_files\" "
             "(\"table_name\", \"format\", \"layout_hash\", \"table_hash\", \"locale\", \"flags\", \"schema\", \"row_count\") "
-            "VALUES (?, 'db2', ?, ?, ?, ?, ?, ?)");
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         statement.BindText(1, table.name);
-        statement.BindInt64(2, static_cast<int64_t>(info.layoutHash));
-        statement.BindInt64(3, static_cast<int64_t>(info.tableHash));
-        statement.BindInt64(4, static_cast<int64_t>(info.locale));
-        statement.BindInt64(5, static_cast<int64_t>(info.flags));
-        statement.BindText(6, info.schema);
-        statement.BindInt64(7, static_cast<int64_t>(rowCount));
+        statement.BindText(2, format);
+        statement.BindInt64(3, static_cast<int64_t>(info.layoutHash));
+        statement.BindInt64(4, static_cast<int64_t>(info.tableHash));
+        statement.BindInt64(5, static_cast<int64_t>(info.locale));
+        statement.BindInt64(6, static_cast<int64_t>(info.flags));
+        statement.BindText(7, info.schema);
+        statement.BindInt64(8, static_cast<int64_t>(rowCount));
         statement.Step();
     }
 }
@@ -140,7 +142,7 @@ DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
                     BindRow(insert, table, row);
             }
 
-            UpsertDbcFilesRow(world, table, read.info, static_cast<uint32_t>(read.rows.size()));
+            UpsertDbcFilesRow(world, table, "db2", read.info, static_cast<uint32_t>(read.rows.size()));
 
             tableResult.rowsImported = static_cast<uint32_t>(read.rows.size());
             result.tables.push_back(std::move(tableResult));
@@ -161,6 +163,91 @@ DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         try
         {
             world.DoltCommit("import db2 (" + std::to_string(importedTableCount) + " tables)");
+        }
+        catch (std::exception const& e)
+        {
+            std::string_view what = e.what();
+            if (what.find("nothing to commit") == std::string_view::npos)
+                result.error = e.what();
+        }
+    }
+
+    return result;
+}
+
+DbcImportResult ImportDbcFiles(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,
+                                std::vector<std::string> const& onlyTables, std::span<DbcTableMeta const> tables)
+{
+    DbcImportResult result;
+    uint32_t importedTableCount = 0;
+
+    try
+    {
+        world.Begin();
+
+        for (DbcTableMeta const& table : tables)
+        {
+            if (!IsSelected(table, onlyTables))
+                continue;
+
+            DbcImportTableResult tableResult;
+            tableResult.tableName = table.name;
+
+            std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".dbc");
+            if (!std::filesystem::exists(filePath))
+            {
+                result.tables.push_back(std::move(tableResult));
+                continue;
+            }
+
+            tableResult.fileFound = true;
+
+            WdbcReadResult read = ReadWdbcFile(filePath, table);
+            if (!read.error.empty())
+            {
+                tableResult.error = read.error;
+                result.tables.push_back(std::move(tableResult));
+                continue;
+            }
+
+            world.Execute("DROP TABLE IF EXISTS \"" + std::string(table.sqlTable) + "\"");
+            world.Execute(BuildDbcTableDdl(table));
+            for (std::string const& indexSql : BuildDbcTableIndexDdl(table))
+                world.Execute(indexSql);
+
+            std::vector<std::string> columnNames;
+            for (uint32_t i = 0; i < table.fieldCount; ++i)
+                for (std::string const& name : DbcColumnNames(table.fields[i]))
+                    columnNames.push_back(name);
+
+            if (!read.rows.empty())
+            {
+                DoltLiteStatement insert = world.Prepare(BuildInsertSql(table, columnNames));
+                for (Wdc5Row const& row : read.rows)
+                    BindRow(insert, table, row);
+            }
+
+            UpsertDbcFilesRow(world, table, "dbc", Wdc5FileInfo{}, static_cast<uint32_t>(read.rows.size()));
+
+            tableResult.rowsImported = static_cast<uint32_t>(read.rows.size());
+            result.tables.push_back(std::move(tableResult));
+            ++importedTableCount;
+        }
+
+        world.Commit();
+    }
+    catch (std::exception const& e)
+    {
+        result.error = e.what();
+        try { world.Rollback(); } catch (std::exception const&) {}
+        return result;
+    }
+
+    if (importedTableCount)
+    {
+        try
+        {
+            world.DoltCommit("import dbc (" + std::to_string(importedTableCount) + " tables)");
         }
         catch (std::exception const& e)
         {

@@ -34,4 +34,9 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
                                 std::vector<std::string> const& onlyTables = {},
                                 std::span<DbcTableMeta const> tables = GetDbcTables());
 
+// Same as ExportDb2Files, but writes dbfilesclient/<fileStem>.dbc (WDBC) instead.
+DbcExportResult ExportDbcFiles(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,
+                                std::vector<std::string> const& onlyTables = {},
+                                std::span<DbcTableMeta const> tables = GetDbcTables());
+
 #endif
