@@ -940,12 +940,12 @@ void WorldSession::HandleMountSpecialAnimOpcode(MountSpecial const& packet)
     GetPlayer()->SendMovementMessageToSet(MakeClassicPacket(anim), false);
 }
 
-void WorldSession::HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse const& packet)
+void WorldSession::HandleSummonResponseOpcode(SummonResponse const& packet)
 {
     if (!_player->IsAlive() || _player->IsInCombat())
         return;
 
-    _player->SummonIfPossible(true);
+    _player->SummonIfPossible(packet.Accept);
 }
 
 void WorldSession::HandleMoveTimeSkippedOpcode(MoveTimeSkipped const& packet)

@@ -1125,22 +1125,21 @@ void WorldSession::HandleWhoisOpcode(WhoIsRequest const& packet)
     _player->GetSession()->SendClassic(response);
 }
 
-void WorldSession::HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet)
+void WorldSession::HandleFarSightOpcode(FarSightRequest const& packet)
 {
     WorldObject* obj = _player->GetMap()->GetWorldObject(_player->GetFarSightGuid());
     if (!obj)
         return;
 
-    switch (packet.op)
+    if (packet.Enable)
     {
-        case 0:
-            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Removed FarSight from %s", _player->GetGuidStr().c_str());
-            _player->GetCamera().ResetView(false);
-            break;
-        case 1:
-            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Added FarSight %s to %s", _player->GetFarSightGuid().GetString().c_str(), _player->GetGuidStr().c_str());
-            _player->GetCamera().SetView(obj, false);
-            break;
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Added FarSight %s to %s", _player->GetFarSightGuid().GetString().c_str(), _player->GetGuidStr().c_str());
+        _player->GetCamera().SetView(obj, false);
+    }
+    else
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Removed FarSight from %s", _player->GetGuidStr().c_str());
+        _player->GetCamera().ResetView(false);
     }
 }
 

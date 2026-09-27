@@ -248,6 +248,33 @@ TEST_CASE("GameObjectUse round-trips", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
+TEST_CASE("SummonResponse round-trips accept and decline", "[packets]")
+{
+    for (bool accept : { false, true })
+    {
+        SummonResponse packet;
+        packet.SummonerGuid = { 0x5555, 0 };
+        packet.Accept = accept;
+        RoundTrip(packet, [](SummonResponse const& a, SummonResponse const& b)
+        {
+            CHECK(a.SummonerGuid == b.SummonerGuid);
+            CHECK(a.Accept == b.Accept);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}
+
+TEST_CASE("FarSightRequest round-trips both values", "[packets]")
+{
+    for (bool enable : { false, true })
+    {
+        FarSightRequest packet;
+        packet.Enable = enable;
+        RoundTrip(packet, [](FarSightRequest const& a, FarSightRequest const& b) { CHECK(a.Enable == b.Enable); });
+        RejectsEveryTruncation(packet);
+    }
+}
+
 TEST_CASE("AreaTrigger round-trips", "[packets]")
 {
     for (bool entered : { false, true })

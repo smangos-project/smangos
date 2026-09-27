@@ -31,15 +31,6 @@ namespace WorldPackets { namespace Misc
     };
 
 
-    class FarSight final : public ClientPacket
-    {
-    public:
-        uint8 op = 0;
-
-        explicit FarSight() : ClientPacket(CMSG_FAR_SIGHT) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetFactionAtWar final : public ClientPacket
     {
     public:
@@ -77,15 +68,6 @@ namespace WorldPackets { namespace Misc
         ObjectGuid guid;
 
         explicit ChatIgnored() : ClientPacket(CMSG_CHAT_IGNORED) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class SummonResponse final : public ClientPacket
-    {
-    public:
-        ObjectGuid summonerGuid;
-
-        explicit SummonResponse() : ClientPacket(CMSG_SUMMON_RESPONSE) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 

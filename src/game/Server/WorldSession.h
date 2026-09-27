@@ -866,7 +866,7 @@ class WorldSession
         void HandleReclaimCorpseOpcode(ReclaimCorpse const& packet);
         void HandleCorpseQueryOpcode(NullClientPacket const& packet);
         void HandleResurrectResponseOpcode(ResurrectResponse const& packet);
-        void HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse const& packet);
+        void HandleSummonResponseOpcode(SummonResponse const& packet);
 
         void HandleJoinChannelOpcode(JoinChannel const& packet);
         void HandleLeaveChannelOpcode(LeaveChannel const& packet);
@@ -927,7 +927,7 @@ class WorldSession
 
         void HandleMinimapPing(MinimapPingClient const& packet);
         void HandleRandomRoll(RandomRollClient const& packet);
-        void HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet);
+        void HandleFarSightOpcode(FarSightRequest const& packet);
         void HandleWhoisOpcode(WhoIsRequest const& packet);
         void HandleResetInstancesOpcode(NullClientPacket const& packet);
 

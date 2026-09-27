@@ -730,7 +730,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PLAY_MUSIC,                   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PLAY_OBJECT_SOUND,            UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_REQUEST_PET_INFO,              UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_FAR_SIGHT,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleFarSightOpcode);
+    INVALID_PACKET(CMSG_FAR_SIGHT,                    UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SPELLDISPELLOG,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DAMAGE_CALC_LOG,              UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_ENABLE_DAMAGE_LOG,            UnhandleReason::Unhandled);
@@ -784,7 +784,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_CHAT_PLAYER_NOT_FOUND,        UnhandleReason::SendByServer);
     DEFINE_HANDLER(MSG_TALENT_WIPE_CONFIRM,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTalentWipeConfirmOpcode);
     INVALID_PACKET(SMSG_SUMMON_REQUEST,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SUMMON_RESPONSE,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSummonResponseOpcode);
+    INVALID_PACKET(CMSG_SUMMON_RESPONSE,              UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_TOGGLE_GRAVITY_CHEAT,     UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MONSTER_MOVE_TRANSPORT,       UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_BROKEN,                   UnhandleReason::SendByServer);
@@ -1267,6 +1267,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LEARN_TALENT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleLearnTalentOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GAME_OBJ_USE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGameObjectUseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AREA_TRIGGER, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAreaTriggerOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SUMMON_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSummonResponseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_FAR_SIGHT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleFarSightOpcode);
 
     return list;
 }

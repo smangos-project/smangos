@@ -494,6 +494,61 @@ struct AreaTrigger
     }
 };
 
+// Accepting or declining a warlock/meeting-stone-style summon. Vanilla CMSG_SUMMON_RESPONSE had
+// no decline case (the client just closed the dialog and sent nothing); the modern client always
+// answers, so Accept can be false. Field order/types per TrinityCore's
+// WorldPackets::Movement::SummonResponse::Read.
+struct SummonResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SUMMON_RESPONSE;
+
+    ClassicGuid SummonerGuid;
+    bool Accept = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        SummonerGuid.Write(data);
+        data.WriteBit(Accept);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!SummonerGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 1)
+            return false;
+        Accept = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// Taking or releasing far sight (Eagle Eye, mind vision-style spells, the camera-only case).
+// Vanilla CMSG_FAR_SIGHT carried a 0/1 op byte; the modern client sends one Enable bit instead,
+// per TrinityCore's WorldPackets::Misc::FarSight::Read.
+struct FarSightRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_FAR_SIGHT;
+
+    bool Enable = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(Enable);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        Enable = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

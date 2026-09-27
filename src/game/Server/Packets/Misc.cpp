@@ -17,11 +17,6 @@ void WorldPackets::Misc::SetTarget::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> guid;
 }
 
-void WorldPackets::Misc::FarSight::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> op;
-}
-
 void WorldPackets::Misc::SetFactionAtWar::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> repListId;
@@ -44,11 +39,6 @@ void WorldPackets::Misc::ZoneUpdate::ReadFromWorldPacket(WorldPacket& recv_data)
 void WorldPackets::Misc::ChatIgnored::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> guid;
-}
-
-void WorldPackets::Misc::SummonResponse::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> summonerGuid;
 }
 
 void WorldPackets::Misc::MeetingStoneJoin::ReadFromWorldPacket(WorldPacket& recv_data)
