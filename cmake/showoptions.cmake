@@ -94,6 +94,12 @@ else()
   message(STATUS "Build db_schema_setup : No (default)")
 endif()
 
+if(BUILD_DATABASE_TOOL)
+  message(STATUS "Build database_tool   : Yes")
+else()
+  message(STATUS "Build database_tool   : No (default)")
+endif()
+
 if(UNIX)
   if(DEBUG_SYMBOLS)
     message(STATUS "Debug symbols         : Included")

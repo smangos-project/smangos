@@ -23,6 +23,10 @@ if (BUILD_EXTRACTORS)
   add_subdirectory(libmpq)
 endif()
 
+if (BUILD_DATABASE_TOOL)
+  add_subdirectory(doltlite)
+endif()
+
 if (ENABLE_CPPTRACE)
   add_subdirectory(cpptrace)
   set_target_properties(cpptrace-lib PROPERTIES FOLDER "3rd Party")
