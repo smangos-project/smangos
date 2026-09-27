@@ -20148,6 +20148,30 @@ void Player::SetClientControl(Unit const* target, uint8 allowMove) const
     GetSession()->SendClassic(packet);
 }
 
+void Player::SetMover(Unit* target)
+{
+    Unit* newMover = target ? target : this;
+    if (newMover == m_mover)
+        return;
+
+    Unit* previousMover = m_mover;
+    m_mover = newMover;
+
+    if (!IsInWorld())
+        return;
+
+    // The 1.12 client picked up a new active mover itself, from CLIENT_CONTROL_UPDATE; the modern
+    // client is told outright, on every change, not only at login (SendInitialPacketsAfterAddToMap).
+    GetSession()->SendActiveMover(m_mover);
+
+    // Regaining control of your own body can look like a turn to an already-running channel (Eye
+    // of Kilrogg's channel-interrupt check): vmangos used to reset this from the client's own final
+    // relocation of the released mover (HandleMoveNotActiveMoverOpcode), a packet the modern
+    // protocol has no equivalent for now that the mover switch is server-driven.
+    if (m_mover == this && previousMover != this)
+        UpdateChannelStartPosition();
+}
+
 Unit* Player::GetConfirmedMover() const
 {
     // no mover client side, is this a fake client?

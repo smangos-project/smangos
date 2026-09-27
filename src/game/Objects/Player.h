@@ -1716,7 +1716,7 @@ class Player final: public Unit
 
         bool IsControlledByOwnClient() const { return m_session->GetClientMoverGuid() == GetObjectGuid(); }
         void SetClientControl(Unit const* target, uint8 allowMove) const;
-        void SetMover(Unit* target) { m_mover = target ? target : this; }
+        void SetMover(Unit* target);
         Unit* GetMover() const { return m_mover; } // can never be null
         Unit* GetConfirmedMover() const; // only returns mover confirmed by client, can be null
         bool IsSelfMover() const { return m_mover == this; } // normal case for player not controlling other unit
