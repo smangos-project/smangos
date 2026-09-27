@@ -424,7 +424,11 @@ TEST_CASE("ReadWdc5File decodes a sparse (variable-length) file", "[Wdc5Reader]"
     size_t sectionPos = file.size();
     // catalogDataOffset and fileOffset are patched in below once known.
     PutSection(file, 0, 0, h.recordCount, 0, 0, 0, 0, /*catalogDataCount*/ 2, 0);
-    PutPad(file, static_cast<size_t>(h.fieldCount) * 4); // field entries, unused (sparse trusts metadata bits)
+    // Field entries: UnusedBits = 32 - the field's real width, the one FieldEntry member sparse
+    // decode actually consults (Offset is unused by every known reader, including this one).
+    PutI16(file, 0);  PutU16(file, 0); // ID: 32 bits
+    PutI16(file, 16); PutU16(file, 0); // Value: 16 bits
+    PutI16(file, 0);  PutU16(file, 0); // Name: irrelevant for strings
 
     // No columnMetaSize -> sparse never uses columnMeta.
 

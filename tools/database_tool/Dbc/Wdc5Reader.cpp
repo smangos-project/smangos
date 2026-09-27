@@ -126,6 +126,7 @@ namespace
         size_t rowIndex;
         uint32_t columnIndex;
         uint32_t inlineFieldIndex;
+        DbcFieldType fieldType;
     };
 
     RawHeader ReadHeader(Cursor& cursor)
@@ -237,6 +238,23 @@ namespace
         return (buffer >> bitOffsetInByte) & mask;
     }
 
+    // Sets exactly one of value.intValue/floatValue, matching the None-compression path: a Float
+    // field's raw bits are reinterpreted, never left as a stray integer.
+    void SetDecodedValue(Wdc5Value& value, DbcFieldType type, uint64_t raw)
+    {
+        if (type == DbcFieldType::Float)
+        {
+            uint32_t bits = static_cast<uint32_t>(raw);
+            float f;
+            std::memcpy(&f, &bits, sizeof(float));
+            value.floatValue = f;
+        }
+        else
+        {
+            value.intValue = static_cast<int64_t>(raw);
+        }
+    }
+
     int64_t SignExtend(uint64_t value, uint32_t bitWidth)
     {
         if (bitWidth >= 64)
@@ -285,7 +303,13 @@ namespace
     {
         Wdc5Value value;
         DbcFieldMeta const& field = *ctx.field;
-        int elementBytes = field.type == DbcFieldType::Float ? 4 : (field.bits ? field.bits / 8 : 4);
+        // For None compression this is the file's own declared width, which is authoritative --
+        // it can legitimately be wider than the field's nominal metadata width (e.g. a writer
+        // that widened a field whose real values didn't fit that nominal width).
+        int elementBytes = field.type == DbcFieldType::Float ? 4
+            : field.type == DbcFieldType::String || field.type == DbcFieldType::LocString ? 4
+            : ctx.columnMeta.bitSize ? ctx.columnMeta.bitSize / 8
+            : (field.bits ? field.bits / 8 : 4);
         size_t recordOffset = static_cast<size_t>(record - buffer);
 
         switch (ctx.columnMeta.compressionType)
@@ -320,16 +344,10 @@ namespace
                 size_t byteOffset = recordOffset + ctx.columnMeta.packed0 / 8 + packedDataOffset;
                 uint32_t bitOffsetInByte = ctx.columnMeta.packed0 & 7;
                 uint64_t raw = ReadPackedBits(buffer, bufferSize, byteOffset, bitOffsetInByte, ctx.columnMeta.packed1);
-                value.intValue = ctx.columnMeta.compressionType == ColumnCompression::SignedImmediate
-                    ? SignExtend(raw, ctx.columnMeta.packed1)
-                    : static_cast<int64_t>(raw);
-                if (field.type == DbcFieldType::Float)
-                {
-                    uint32_t bits = static_cast<uint32_t>(raw);
-                    float f;
-                    std::memcpy(&f, &bits, sizeof(float));
-                    value.floatValue = f;
-                }
+                uint64_t decoded = ctx.columnMeta.compressionType == ColumnCompression::SignedImmediate
+                    ? static_cast<uint64_t>(SignExtend(raw, ctx.columnMeta.packed1))
+                    : raw;
+                SetDecodedValue(value, field.type, decoded);
                 break;
             }
             case ColumnCompression::CommonData:
@@ -337,7 +355,7 @@ namespace
                 // non-inline id is only known once the whole section's id list is read). This
                 // returns the column's default; ResolveCommonData patches in any override once
                 // every row's id is final.
-                value.intValue = static_cast<int64_t>(ctx.columnMeta.packed0);
+                SetDecodedValue(value, field.type, ctx.columnMeta.packed0);
                 break;
             case ColumnCompression::Pallet:
             {
@@ -345,16 +363,7 @@ namespace
                 uint32_t bitOffsetInByte = ctx.columnMeta.packed0 & 7;
                 uint64_t index = ReadPackedBits(buffer, bufferSize, byteOffset, bitOffsetInByte, ctx.columnMeta.packed1);
                 uint32_t raw = ctx.palletValues && index < ctx.palletValues->size() ? (*ctx.palletValues)[index] : 0;
-                if (field.type == DbcFieldType::Float)
-                {
-                    float f;
-                    std::memcpy(&f, &raw, sizeof(float));
-                    value.floatValue = f;
-                }
-                else
-                {
-                    value.intValue = static_cast<int64_t>(raw);
-                }
+                SetDecodedValue(value, field.type, raw);
                 break;
             }
             case ColumnCompression::PalletArray:
@@ -364,7 +373,7 @@ namespace
                 uint64_t index = ReadPackedBits(buffer, bufferSize, byteOffset, bitOffsetInByte, ctx.columnMeta.packed1);
                 size_t flatIndex = static_cast<size_t>(index) * ctx.columnMeta.packed2 + arrayIndex;
                 uint32_t raw = ctx.palletArrayValues && flatIndex < ctx.palletArrayValues->size() ? (*ctx.palletArrayValues)[flatIndex] : 0;
-                value.intValue = static_cast<int64_t>(raw);
+                SetDecodedValue(value, field.type, raw);
                 break;
             }
         }
@@ -441,7 +450,15 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
         for (uint32_t i = 0; i < header.sectionCount; ++i)
             sections[i] = ReadSection(cursor);
 
-        cursor.Skip(static_cast<size_t>(header.fieldCount) * 4); // plain field entries: unused for both layouts here
+        // Plain field entries: only sparse mode needs these (UnusedBits gives each inline int
+        // field's real byte width, which can differ from its nominal metadata width -- see
+        // EffectiveWidthBytes in the writer); regular mode gets everything from columnMeta.
+        std::vector<int16_t> fieldUnusedBits(header.fieldCount);
+        for (uint32_t i = 0; i < header.fieldCount; ++i)
+        {
+            fieldUnusedBits[i] = cursor.Read<int16_t>();
+            cursor.Skip(2); // Offset: unused by every known sparse reader, including this one
+        }
 
         std::vector<RawColumnMeta> columnMeta;
         std::vector<std::vector<uint32_t>> palletValues(header.totalFieldCount);
@@ -590,7 +607,7 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
                             Wdc5Value value = DecodeRegularElement(ctx, combinedData.data(), combinedData.size(), record, a, header.packedDataOffset);
                             uint32_t columnIndex = flattenedStart[fieldIndex] + a;
                             if (ctx.columnMeta.compressionType == ColumnCompression::CommonData)
-                                pendingCommonData.push_back({ rowsById.size(), columnIndex, inlineIndex });
+                                pendingCommonData.push_back({ rowsById.size(), columnIndex, inlineIndex, field.type });
                             row[columnIndex] = value;
                         }
 
@@ -640,7 +657,7 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
 
                     Wdc5Row row(totalColumns);
                     size_t offset = 0;
-                    for (uint32_t fieldIndex = 0; fieldIndex < table.fieldCount; ++fieldIndex)
+                    for (uint32_t fieldIndex = 0, inlineIndex = 0; fieldIndex < table.fieldCount; ++fieldIndex)
                     {
                         DbcFieldMeta const& field = table.fields[fieldIndex];
                         if (field.isNonInline)
@@ -663,7 +680,9 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
                             }
                             else
                             {
-                                int bytes = field.bits ? field.bits / 8 : 4;
+                                // The real per-element width -- from this field's own FieldEntry,
+                                // not its nominal metadata width (see EffectiveWidthBytes).
+                                int bytes = 4 - fieldUnusedBits[inlineIndex] / 8;
                                 uint64_t raw = 0;
                                 std::memcpy(&raw, record + offset, static_cast<size_t>(bytes));
                                 value.intValue = field.isSigned ? NarrowSigned(raw, bytes * 8) : static_cast<int64_t>(raw);
@@ -671,6 +690,8 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
                             }
                             row[flattenedStart[fieldIndex] + a] = value;
                         }
+
+                        ++inlineIndex;
                     }
 
                     uint32_t id;
@@ -732,7 +753,7 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
             uint32_t id = rowIds[pending.rowIndex];
             auto it = commonValues[pending.inlineFieldIndex].find(id);
             if (it != commonValues[pending.inlineFieldIndex].end())
-                rowsById[pending.rowIndex][pending.columnIndex].intValue = static_cast<int64_t>(it->second);
+                SetDecodedValue(rowsById[pending.rowIndex][pending.columnIndex], pending.fieldType, it->second);
         }
 
         // Patch in the non-inline relation from the parent lookup, per section, using the
