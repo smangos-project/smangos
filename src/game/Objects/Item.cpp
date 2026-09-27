@@ -29,6 +29,7 @@
 #include "Database/DatabaseEnv.h"
 #include "ItemEnchantmentMgr.h"
 #include "GuildMgr.h"
+#include "Updates/UpdateFieldFill.h"
 
 void AddItemsSetItem(Player* player, Item* item)
 {
@@ -1182,6 +1183,8 @@ void Item::RemoveFromClientUpdateList()
 
 void Item::BuildUpdateData(UpdateDataMapType& update_players)
 {
+    FillUpdateFieldData(*this);
+
     if (Player* pl = GetOwner())
         BuildUpdateDataForPlayer(pl, update_players);
 
