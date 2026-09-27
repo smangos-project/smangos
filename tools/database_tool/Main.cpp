@@ -2,6 +2,7 @@
 
 #include "Commands/CreateWorldDatabase.h"
 #include "Commands/PortMigrationFile.h"
+#include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
@@ -148,6 +149,57 @@ namespace
         }
 
         return PrintDbcImportSummary(result) ? 1 : 0;
+    }
+
+    // export --format db2 [--tables A,B]
+    int RunExport(std::vector<std::string> const& args)
+    {
+        std::string format;
+        std::vector<std::string> onlyTables;
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            if (args[i] == "--format" && i + 1 < args.size())
+                format = args[++i];
+            else if (args[i] == "--tables" && i + 1 < args.size())
+                onlyTables = SplitCsv(args[++i]);
+        }
+
+        if (format != "db2")
+        {
+            std::printf("export: --format db2 is required (dbc isn't implemented yet)\n");
+            return 1;
+        }
+
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        if (!std::filesystem::exists(worldPath))
+        {
+            std::printf("export: %s does not exist (run create first)\n", worldPath.string().c_str());
+            return 1;
+        }
+
+        DoltLiteDatabase world(worldPath.string());
+        DbcExportResult result = ExportDb2Files(world, DbfilesclientDir(), onlyTables);
+        if (!result.error.empty())
+        {
+            std::printf("export: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        uint32_t exported = 0, missing = 0, failed = 0;
+        for (DbcExportTableResult const& table : result.tables)
+        {
+            if (!table.hasFilesRow)
+                ++missing;
+            else if (!table.error.empty())
+            {
+                std::printf("%s: %s\n", table.tableName.c_str(), table.error.c_str());
+                ++failed;
+            }
+            else
+                ++exported;
+        }
+        std::printf("export db2: %u tables exported, %u with no dbc_files row, %u failed\n", exported, missing, failed);
+        return failed ? 1 : 0;
     }
 
     int RunUpdate(std::vector<std::string> const& args)
@@ -302,6 +354,8 @@ int main(int argc, char** argv)
         return RunCompareWorld(rest);
     if (command == "import")
         return RunImport(rest);
+    if (command == "export")
+        return RunExport(rest);
 
     std::printf("unknown command: %s\n", command.c_str());
     return 1;
