@@ -8,6 +8,7 @@
 #include "Objects/Object.h"
 #include "Objects/Unit.h"
 #include "Objects/Player.h"
+#include "Objects/Pet.h"
 #include "Objects/Item.h"
 #include "Objects/Bag.h"
 #include "Objects/GameObject.h"
@@ -24,6 +25,78 @@ namespace
 ClassicGuid ToClassic(ObjectGuid const& guid)
 {
     return ClassicGuidMapping::ToClassic(guid, realmID);
+}
+
+// TrinityCore UnitDefines.h; 1.12 has no equivalent flag, so this stays a local literal rather
+// than pulling in a game-side enum this file doesn't otherwise need.
+constexpr uint32 MODERN_UNIT_FLAG2_REGENERATE_POWER = 0x00000800;
+
+// UNIT_FIELD_POWER/UNIT_FIELD_MAXPOWER are indexed by a per-class wire slot in the modern client
+// (ChrClassesXPowerTypes.db2), not by this engine's own vanilla Powers ordinal -- e.g. a Rogue's
+// Energy is modern slot 0, not Powers::POWER_ENERGY's ordinal (3). A real client has no DB2 entry
+// for a resource in the wrong slot and never renders that class's power bar at all. Table cross-
+// checked against a live reference capture (see vibemangos's own GetModernPowerWireSlot, which
+// found the same mapping the same way).
+int8 GetModernPowerWireSlot(Unit const& unit, Powers power)
+{
+    if (Player const* player = unit.ToPlayer())
+    {
+        switch (player->GetClass())
+        {
+            case CLASS_WARRIOR:
+                return power == POWER_RAGE ? 0 : -1;
+            case CLASS_PALADIN:
+            case CLASS_HUNTER:
+            case CLASS_PRIEST:
+            case CLASS_SHAMAN:
+            case CLASS_MAGE:
+            case CLASS_WARLOCK:
+                return power == POWER_MANA ? 0 : -1;
+            case CLASS_ROGUE:
+                return power == POWER_ENERGY ? 0 : -1;
+            case CLASS_DRUID:
+                switch (power)
+                {
+                    case POWER_MANA:   return 0;
+                    case POWER_RAGE:   return 1;
+                    case POWER_ENERGY: return 2;
+                    default:           return -1;
+                }
+            default:
+                return -1;
+        }
+    }
+    if (Pet const* pet = unit.ToPet())
+    {
+        if (pet->GetPetType() == HUNTER_PET)
+        {
+            switch (power)
+            {
+                case POWER_FOCUS:     return 0;
+                case POWER_HAPPINESS: return 3;
+                default:              return -1;
+            }
+        }
+        return -1;
+    }
+    // Generic creature: vanilla only ever assigns POWER_MANA in practice, and slot 0 is the
+    // modern default for every class's primary resource.
+    return power == POWER_MANA ? 0 : -1;
+}
+
+// Combo points have no wire field of their own; the modern client reads them from the same
+// per-class Power[] wire slot table as every other resource (only Rogues and Druids have combo
+// points in Classic Era). Neither slot collides with that class's own GetModernPowerWireSlot
+// target above (a Rogue's own resource is slot 0, a Druid's is 0-2), so this can't double-write a
+// slot meant for a real resource.
+int8 GetModernComboPointsWireSlot(Player const& player)
+{
+    switch (player.GetClass())
+    {
+        case CLASS_ROGUE: return 1;
+        case CLASS_DRUID: return 3;
+        default:          return -1;
+    }
 }
 }
 
@@ -109,14 +182,45 @@ void FillUnitData(Unit& unit)
     // 1.15 has no flat home for a fixed hover height; 0 would sink every model into the ground.
     FillField(unit, &Unit::m_unitData, &UFUnitData::HoverHeight, 1.0f);
 
+    // Client-required non-zero placeholders with no 1.12 flat source (decision 5 rule 1): a 0
+    // haste/time-rate multiplier renders as "does nothing", not "no bonus applied".
+    FillField(unit, &Unit::m_unitData, &UFUnitData::Flags2, MODERN_UNIT_FLAG2_REGENERATE_POWER);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::DisplayScale, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::NativeXDisplayScale, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ModHaste, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ModRangedHaste, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ModSpellHaste, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ModHasteRegen, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ModTimeRate, 1.0f);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::ScaleDuration, 100);
+    FillField(unit, &Unit::m_unitData, &UFUnitData::LookAtControllerID, -1);
+    // Slot 6 (RunicPower) has no classic-era data source and is left unset, matching a real
+    // reference capture, which never populates it either.
+    for (uint32 i = 0; i < 6; ++i)
+        FillField(unit, &Unit::m_unitData, &UFUnitData::ModPowerRegen, i, 1.0f);
+
     // Combo points only exist for players in 1.12, stored as the target's guid, not the unit's own.
     if (player)
         FillField(unit, &Unit::m_unitData, &UFUnitData::ComboTarget, ToClassic(player->GetGuidValue(PLAYER_FIELD_COMBO_TARGET)));
 
+    // See GetModernPowerWireSlot: the wire slot a power lives in depends on the unit's class, not
+    // on its own vanilla Powers ordinal.
     for (uint32 i = 0; i < MAX_POWERS && i < 5; ++i)
     {
-        FillField(unit, &Unit::m_unitData, &UFUnitData::Power, i, int32(unit.GetUInt32Value(UNIT_FIELD_POWER1 + i)));
-        FillField(unit, &Unit::m_unitData, &UFUnitData::MaxPower, i, int32(unit.GetUInt32Value(UNIT_FIELD_MAXPOWER1 + i)));
+        int8 const wireSlot = GetModernPowerWireSlot(unit, Powers(i));
+        if (wireSlot < 0)
+            continue;
+        FillField(unit, &Unit::m_unitData, &UFUnitData::Power, uint32(wireSlot), int32(unit.GetUInt32Value(UNIT_FIELD_POWER1 + i)));
+        FillField(unit, &Unit::m_unitData, &UFUnitData::MaxPower, uint32(wireSlot), int32(unit.GetUInt32Value(UNIT_FIELD_MAXPOWER1 + i)));
+    }
+
+    // Combo points have no field of their own in 1.12 (Player::m_comboPoints, plain int); the
+    // modern client reads them out of this same per-class Power[] wire slot.
+    if (player)
+    {
+        int8 const comboSlot = GetModernComboPointsWireSlot(*player);
+        if (comboSlot >= 0)
+            FillField(unit, &Unit::m_unitData, &UFUnitData::Power, uint32(comboSlot), int32(player->GetComboPoints()));
     }
 
     for (uint32 i = 0; i < 5; ++i)
@@ -156,6 +260,12 @@ void FillPlayerData(Player& player)
     FillField(player, &Player::m_playerData, &UFPlayerData::Inebriation, uint8(std::min<uint16>(player.GetDrunkValue(), 100)));
     FillField(player, &Player::m_playerData, &UFPlayerData::DuelTeam, player.GetUInt32Value(PLAYER_DUEL_TEAM));
     FillField(player, &Player::m_playerData, &UFPlayerData::GuildTimeStamp, int32(player.GetUInt32Value(PLAYER_GUILD_TIMESTAMP)));
+
+    // No 1.12 flat source. Without a real per-account WowAccount guid, a modern client can't
+    // resolve another player's identity and shows "Unknown" on their nameplate.
+    FillField(player, &Player::m_playerData, &UFPlayerData::WowAccount, ClassicGuidMapping::MakeAccount(player.GetSession()->GetAccountId()));
+    FillField(player, &Player::m_playerData, &UFPlayerData::HonorLevel, 1);
+    FillField(player, &Player::m_playerData, &UFPlayerData::AvgItemLevel, 3, 1.0f);
 
     for (uint8 slot = 0; slot < 20; ++slot) // 1.12 has 20 quest log slots (MAX_QUEST_LOG_SIZE)
     {
@@ -249,6 +359,35 @@ void FillActivePlayerData(Player& player)
         FillField(current, getRestInfo, &UFRestInfo::Threshold, player.GetUInt32Value(PLAYER_REST_STATE_EXPERIENCE));
         FillField(current, getRestInfo, &UFRestInfo::StateID, player.GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_REST_STATE));
     }
+
+    // RestInfo[1] is the honor-rest slot (TrinityCore RestMgr.h REST_TYPE_HONOR); 1.12 has no
+    // honor-rest concept at all, so this has no flat source. A StateID of 0 isn't a valid
+    // PlayerRestState client-side and crashes MainMenuBar.lua's exhaustion tick on every
+    // PLAYER_ENTERING_WORLD; REST_STATE_NORMAL (2) is TrinityCore's own always-on default for it.
+    {
+        auto getRestInfo = [&]() { return player.m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UFActivePlayerData::RestInfo, 1); };
+        UFRestInfo const& current = player.m_activePlayerData->RestInfo[1];
+        FillField(current, getRestInfo, &UFRestInfo::Threshold, uint32(1));
+        FillField(current, getRestInfo, &UFRestInfo::StateID, uint8(2));
+    }
+
+    // Client-required non-zero placeholders with no 1.12 flat source (decision 5 rule 1).
+    for (uint32 i = 0; i < 7; ++i)
+        FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::ModDamageDonePercent, i, 1.0f);
+    for (uint32 i = 0; i < 3; ++i)
+    {
+        FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::WeaponDmgMultipliers, i, 1.0f);
+        FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::WeaponAtkSpeedMultipliers, i, 1.0f);
+    }
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::ModHealingPercent, 1.0f);
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::ModHealingDonePercent, 1.0f);
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::ModPetHaste, 1.0f);
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::MaxLevel, int32(sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)));
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::HonorNextLevel, int32(5500));
+    // 1.12's INVENTORY_SLOT_ITEM_START/_END is the 16-slot main backpack; without this the client
+    // has no bag-slot count to render for itself.
+    FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::NumBackpackSlots,
+        uint8(INVENTORY_SLOT_ITEM_END - INVENTORY_SLOT_ITEM_START));
 }
 
 void FillItemData(Item& item)
