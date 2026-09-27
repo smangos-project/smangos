@@ -3,6 +3,7 @@ add_library(database_tool_lib STATIC
   ToolConfig.cpp
   World/DoltLiteDatabase.cpp
   World/WorldArchive.cpp
+  World/WorldCompare.cpp
   Sql/MysqlLexer.cpp
   Sql/SqlStatementSplitter.cpp
   Sql/MysqlDdlTranslator.cpp
