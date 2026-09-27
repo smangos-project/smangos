@@ -1,3 +1,5 @@
+#include "DbdFile.h"
+
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -23,11 +25,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    int count = 0;
-    for (auto const& entry : std::filesystem::directory_iterator(definitionsDir))
-        if (entry.is_regular_file() && entry.path().extension() == ".dbd")
-            ++count;
+    int parsed = 0;
+    int failed = 0;
 
-    std::cout << "found " << count << " .dbd files in " << definitionsDir << "\n";
-    return 0;
+    for (auto const& entry : std::filesystem::directory_iterator(definitionsDir))
+    {
+        if (!entry.is_regular_file() || entry.path().extension() != ".dbd")
+            continue;
+
+        try
+        {
+            ParseDbdFile(entry.path().string());
+            ++parsed;
+        }
+        catch (DbdParseError const& error)
+        {
+            ++failed;
+            std::cerr << error.what() << "\n";
+        }
+    }
+
+    std::cout << "parsed " << parsed << " files (" << failed << " failed)\n";
+    return failed != 0 ? 1 : 0;
 }

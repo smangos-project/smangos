@@ -1,0 +1,11 @@
+COLUMNS
+int ID
+int Value
+
+BUILD 1.0.0.100
+$id$ID<32>
+Value<32>
+
+BUILD 2.0.0.1-2.0.0.50
+$id$ID<32>
+Value<u16>
