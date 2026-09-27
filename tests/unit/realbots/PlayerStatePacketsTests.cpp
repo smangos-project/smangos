@@ -169,6 +169,14 @@ TEST_CASE("SendKnownSpells round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
+TEST_CASE("UnlearnSkill round-trips", "[packets]")
+{
+    UnlearnSkill packet;
+    packet.SkillLine = 202; // Engineering
+    RoundTrip(packet, [](UnlearnSkill const& a, UnlearnSkill const& b) { CHECK(a.SkillLine == b.SkillLine); });
+    RejectsEveryTruncation(packet);
+}
+
 TEST_CASE("SendUnlearnSpells round-trips, empty and not", "[packets]")
 {
     SendUnlearnSpells empty;

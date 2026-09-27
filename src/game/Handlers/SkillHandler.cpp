@@ -55,15 +55,15 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipe
     unit->CastSpell(_player, 14867, true); // spell: "Untalent Visual Effect"
 }
 
-void WorldSession::HandleUnlearnSkillOpcode(WorldPackets::Skill::UnlearnSkill const& packet)
+void WorldSession::HandleUnlearnSkillOpcode(UnlearnSkill const& packet)
 {
-    SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(packet.skillId, GetPlayer()->GetRace(), GetPlayer()->GetClass());
+    SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(packet.SkillLine, GetPlayer()->GetRace(), GetPlayer()->GetClass());
     if (!rcEntry || !(rcEntry->flags & SKILL_FLAG_UNLEARNABLE))
     {
         std::stringstream reason;
-        reason << "Attempt to unlearn not unlearnable skill #" << packet.skillId;
+        reason << "Attempt to unlearn not unlearnable skill #" << packet.SkillLine;
         ProcessAnticheatAction("PassiveAnticheat", reason.str().c_str(), CHEAT_ACTION_LOG | CHEAT_ACTION_REPORT_GMS);
         return;
     }
-    GetPlayer()->SetSkill(packet.skillId, 0, 0);
+    GetPlayer()->SetSkill(packet.SkillLine, 0, 0);
 }

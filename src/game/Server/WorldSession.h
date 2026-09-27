@@ -75,6 +75,7 @@
 #include "Packets/Skill.h"
 #include "Packets/Social.h"
 #include "Packets/Spell.h"
+#include "Packets/SpellBook.h"
 #include "Packets/TaxiMessages.h"
 #include "Packets/VendorMessages.h"
 #include "Packets/TradeMessages.h"
@@ -818,7 +819,7 @@ class WorldSession
         void HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetActionBarToggles const& packet);
         void HandleLearnTalentOpcode(WorldPackets::Skill::LearnTalent const& packet);
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);
-        void HandleUnlearnSkillOpcode(WorldPackets::Skill::UnlearnSkill const& packet);
+        void HandleUnlearnSkillOpcode(UnlearnSkill const& packet);
 
         void HandleQuestgiverStatusQueryOpcode(QuestgiverStatusQuery const& packet);
         void HandleQuestgiverHelloOpcode(QuestgiverHello const& packet);
@@ -932,7 +933,7 @@ class WorldSession
 
         void HandleAreaSpiritHealerQueryOpcode(AreaSpiritHealerQuery const& packet);
         void HandleAreaSpiritHealerQueueOpcode(AreaSpiritHealerQueue const& packet);
-        void HandleSelfResOpcode(NullClientPacket const& packet);
+        void HandleSelfResOpcode(SelfRes const& packet);
 
     private:
         // private trade method

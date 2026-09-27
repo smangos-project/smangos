@@ -113,3 +113,11 @@ TEST_CASE("DurabilityDamageDeath round-trips", "[packets]")
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("SelfRes round-trips", "[packets]")
+{
+    SelfRes packet;
+    packet.SpellID = 20707;
+    RoundTrip(packet, [](SelfRes const& a, SelfRes const& b) { CHECK(a.SpellID == b.SpellID); });
+    RejectsEveryTruncation(packet);
+}

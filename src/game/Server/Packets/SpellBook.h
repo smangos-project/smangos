@@ -511,4 +511,22 @@ struct SetPctSpellModifier
     bool Read(ByteBuffer& data) { return ReadSpellModifiers(data, Modifiers); }
 };
 
+// The "unlearn secondary profession" gossip option.
+struct UnlearnSkill
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_UNLEARN_SKILL;
+
+    uint32 SkillLine = 0;
+
+    void Write(ByteBuffer& data) const { data << SkillLine; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> SkillLine;
+        return true;
+    }
+};
+
 #endif

@@ -609,7 +609,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(MSG_LOOKING_FOR_GROUP,             STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleLFGOpcode);
     INVALID_PACKET(CMSG_SET_LOOKING_FOR_GROUP,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_UNLEARN_SPELL,                UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_UNLEARN_SKILL,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleUnlearnSkillOpcode);
+    INVALID_PACKET(CMSG_UNLEARN_SKILL,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_REMOVED_SPELL,                UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_DECHARGE,                     UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GMTICKET_CREATE,              UnhandleReason::Unhandled);
@@ -791,7 +791,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(MSG_MOVE_FEATHER_FALL,             UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_WATER_WALK,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_SERVER_BROADCAST,             UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_SELF_RES,                     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSelfResOpcode);
+    INVALID_PACKET(CMSG_SELF_RES,                     UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FEIGN_DEATH_RESISTED,         UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_RUN_SCRIPT,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SCRIPT_MESSAGE,               UnhandleReason::SendByServer);
@@ -1076,6 +1076,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPOP_REQUEST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepopRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RESURRECT_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleResurrectResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SELF_RES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSelfResOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_UNLEARN_SKILL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleUnlearnSkillOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAN_DUEL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCanDuelOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DUEL_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleDuelResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_INITIATE_TRADE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleInitiateTradeOpcode);

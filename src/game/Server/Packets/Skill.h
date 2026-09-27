@@ -18,15 +18,6 @@ namespace WorldPackets { namespace Skill
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class UnlearnSkill final : public ClientPacket
-    {
-    public:
-        uint32 skillId = 0;
-
-        explicit UnlearnSkill() : ClientPacket(CMSG_UNLEARN_SKILL) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class TalentWipeConfirm final : public ClientPacket
     {
     public:

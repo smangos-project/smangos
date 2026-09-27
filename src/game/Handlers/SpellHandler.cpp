@@ -477,7 +477,7 @@ void WorldSession::HandleCancelChanneling(CancelChannelling const& /*packet*/)
     }
 }
 
-void WorldSession::HandleSelfResOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleSelfResOpcode(SelfRes const& /*packet*/)
 {
 // World of Warcraft Client Patch 1.6.0 (2005-07-12)
 // - Self-resurrection spells show their name on the button in the release spirit dialog.

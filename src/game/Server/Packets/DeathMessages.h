@@ -169,4 +169,24 @@ struct DurabilityDamageDeath
     }
 };
 
+// The "release spirit" dialog's self-resurrect button (soulstone, Reincarnation, Twisting Nether,
+// ...). SpellID is parsed but unused, matching this engine's own server-authoritative choice of
+// spell (Player::PLAYER_SELF_RES_SPELL / GetResurrectionSpellId) -- a client can't offer any other.
+struct SelfRes
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SELF_RES;
+
+    int32 SpellID = 0;
+
+    void Write(ByteBuffer& data) const { data << SpellID; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> SpellID;
+        return true;
+    }
+};
+
 #endif // MANGOS_PACKETS_DEATHMESSAGES_H
