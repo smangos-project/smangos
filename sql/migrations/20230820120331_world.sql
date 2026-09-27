@@ -2367,17 +2367,17 @@ INSERT INTO `creature_equip_template` (`entry`, `patch`, `probability`, `item1`,
 
 CREATE TABLE `creature_equip_template__new2` (
   `entry` INTEGER NOT NULL DEFAULT 0,
-  `patch_min` INTEGER NOT NULL DEFAULT 0,
   `probability` INTEGER NOT NULL DEFAULT 1,
   `item1` INTEGER NOT NULL DEFAULT 0,
   `item2` INTEGER NOT NULL DEFAULT 0,
   `item3` INTEGER NOT NULL DEFAULT 0,
+  `patch_min` INTEGER NOT NULL DEFAULT 0,
   `patch_max` INTEGER NOT NULL DEFAULT 10,
   PRIMARY KEY (`entry`, `item1`, `item2`, `item3`)
 );
 
-INSERT INTO `creature_equip_template__new2` (`entry`, `patch_min`, `probability`, `item1`, `item2`, `item3`)
-SELECT `entry`, `patch`, `probability`, `item1`, `item2`, `item3` FROM `creature_equip_template`;
+INSERT INTO `creature_equip_template__new2` (`entry`, `probability`, `item1`, `item2`, `item3`, `patch_min`)
+SELECT `entry`, `probability`, `item1`, `item2`, `item3`, `patch` FROM `creature_equip_template`;
 
 DROP TABLE `creature_equip_template`;
 ALTER TABLE `creature_equip_template__new2` RENAME TO `creature_equip_template`;
