@@ -328,3 +328,7 @@ endif()
 if (BUILD_EXTRACTORS OR BUILD_REALMMERGE OR BUILD_REALBOT_RUNNER OR BUILD_DB_SCHEMA_SETUP)
     add_subdirectory(contrib)
 endif()
+
+if (BUILD_DATABASE_TOOL)
+    add_subdirectory(tools/database_tool)
+endif()
