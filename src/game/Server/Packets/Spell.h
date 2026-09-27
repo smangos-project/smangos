@@ -49,54 +49,6 @@ namespace WorldPackets { namespace Spell
     };
 #endif
 
-    struct SpellCooldownEntry
-    {
-        uint32 spellId = 0;
-        Milliseconds cooldown{};
-    };
-
-    class SpellCooldown final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        std::vector<SpellCooldownEntry> cooldownEntries;
-
-        explicit SpellCooldown() : ServerPacket(SMSG_SPELL_COOLDOWN) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class ClearCooldown final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;
-        ObjectGuid targetGuid;
-
-        explicit ClearCooldown() : ServerPacket(SMSG_CLEAR_COOLDOWN) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class CooldownCheat final : public ServerPacket
-    {
-    public:
-        ObjectGuid targetGuid;
-
-        explicit CooldownCheat() : ServerPacket(SMSG_COOLDOWN_CHEAT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class CooldownEvent final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;
-        ObjectGuid casterGuid;
-
-        explicit CooldownEvent() : ServerPacket(SMSG_COOLDOWN_EVENT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
     // SMSG_SET_FLAT_SPELL_MODIFIER / SMSG_SET_PCT_SPELL_MODIFIER
     class SetSpellModifier final : public ServerPacket

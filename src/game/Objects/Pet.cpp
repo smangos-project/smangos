@@ -34,6 +34,7 @@
 #include "Util.h"
 #include "Packets/PetMessages.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "Packets/SpellBook.h"
 #include "CharacterDatabaseCache.h"
 #include "Utilities/Random.h"
 
@@ -1526,7 +1527,7 @@ void Pet::_LoadSpellCooldowns()
     if (!m_pTmpCache)
         return;
     
-    std::vector<WorldPackets::Spell::SpellCooldownEntry> cooldownEntries;
+    std::vector<SpellCooldownEntry> cooldownEntries;
     auto curTime = sWorld.GetCurrentClockTime();
     for (const auto& it : m_pTmpCache->spellCooldowns)
     {
@@ -1546,9 +1547,9 @@ void Pet::_LoadSpellCooldowns()
         if (spellRecTime == std::chrono::milliseconds::zero())
             continue;
 
-        WorldPackets::Spell::SpellCooldownEntry entry;
-        entry.spellId = spellEntry->Id;
-        entry.cooldown = spellRecTime;
+        SpellCooldownEntry entry;
+        entry.SpellId = spellEntry->Id;
+        entry.ForcedCooldown = uint32(spellRecTime.count());
         cooldownEntries.emplace_back(entry);
 
         m_cooldownMap.AddCooldown(sWorld.GetCurrentClockTime(), spellEntry, uint32(spellRecTime.count()));
@@ -1563,16 +1564,14 @@ void Pet::_LoadSpellCooldowns()
 
     if (Player* owner = GetOwnerPlayer())
     {
-        auto packet = std::make_unique<WorldPackets::Spell::SpellCooldown>();
-        packet->casterGuid = GetObjectGuid();
-        packet->cooldownEntries = std::move(cooldownEntries);
+        SpellCooldownUpdate packet;
+        packet.Caster = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+        packet.Entries = std::move(cooldownEntries);
 
         // cooldown packet is ignored if create object is not received yet
-        owner->m_Events.AddLambdaEventAtOffset([owner, pkt = std::move(packet)]()
+        owner->m_Events.AddLambdaEventAtOffset([owner, packet]()
         {
-            WorldPacket packet;
-            pkt->WritePacket(packet);
-            owner->GetSession()->SendPacket(&packet);
+            owner->GetSession()->SendClassic(packet);
         }, 1);
     }
 }
@@ -2331,10 +2330,15 @@ void Pet::CastPetAura(PetAura const* aura)
 
 void Pet::RemoveAllCooldowns(bool sendOnly)
 {
+    std::vector<uint32> clearedSpellIds;
+    clearedSpellIds.reserve(m_cooldownMap.size());
+    for (auto& cdItr : m_cooldownMap)
+        clearedSpellIds.push_back(cdItr.second->GetSpellEntry()->Id);
+
     SpellCaster::RemoveAllCooldowns(sendOnly);
 
     if (Player const* pOwner = GetCharmerOrOwnerPlayerOrPlayerItself())
-        pOwner->SendClearAllCooldowns(this);
+        pOwner->SendClearAllCooldowns(this, clearedSpellIds);
 }
 
 void Pet::SynchronizeLevelWithOwner()

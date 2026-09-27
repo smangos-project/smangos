@@ -1370,7 +1370,7 @@ class Player final: public Unit
         void LockOutSpells(SpellSchoolMask schoolMask, uint32 duration) final;
         void RemoveSpellLockout(SpellSchoolMask spellSchoolMask, std::set<uint32>* spellAlreadySent = nullptr);
         void SendClearCooldown(uint32 spellId, Unit const* target) const;
-        void SendClearAllCooldowns(Unit const* target) const;
+        void SendClearAllCooldowns(Unit const* target, std::vector<uint32> const& spellIds) const;
         void SendSpellCooldown(uint32 spellId, Milliseconds cooldown, ObjectGuid target) const;
         void _LoadSpellCooldowns(std::unique_ptr<QueryResult> result);
         void _SaveSpellCooldowns() const;

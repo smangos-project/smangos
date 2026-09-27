@@ -222,6 +222,74 @@ TEST_CASE("SendSpellHistory round-trips entries with and without the optional fi
     RejectsEveryTruncation(out);
 }
 
+TEST_CASE("SpellCooldownUpdate round-trips", "[packets]")
+{
+    SpellCooldownUpdate out;
+    out.Caster.Low = 0x42;
+    out.Caster.High = 0x0800000000000000ull;
+    out.Flags = SPELL_COOLDOWN_FLAG_ON_HOLD;
+    out.Entries.push_back({ 6603, 1500, 1.0f });
+    out.Entries.push_back({ 133, 0, 0.5f });
+
+    RoundTrip(out, [](SpellCooldownUpdate const& a, SpellCooldownUpdate const& b)
+    {
+        CHECK(a.Caster == b.Caster);
+        CHECK(a.Flags == b.Flags);
+        REQUIRE(a.Entries.size() == b.Entries.size());
+        for (size_t i = 0; i < a.Entries.size(); ++i)
+        {
+            CHECK(a.Entries[i].SpellId == b.Entries[i].SpellId);
+            CHECK(a.Entries[i].ForcedCooldown == b.Entries[i].ForcedCooldown);
+            CHECK(a.Entries[i].ModRate == b.Entries[i].ModRate);
+        }
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("ClearSpellCooldown round-trips", "[packets]")
+{
+    ClearSpellCooldown out;
+    out.SpellId = 6603;
+    out.IsPet = true;
+    out.ClearOnHold = true;
+
+    RoundTrip(out, [](ClearSpellCooldown const& a, ClearSpellCooldown const& b)
+    {
+        CHECK(a.SpellId == b.SpellId);
+        CHECK(a.IsPet == b.IsPet);
+        CHECK(a.ClearOnHold == b.ClearOnHold);
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("ClearAllSpellCooldowns round-trips", "[packets]")
+{
+    ClearAllSpellCooldowns out;
+    out.SpellIds = { 6603, 133, 585 };
+    out.IsPet = true;
+
+    RoundTrip(out, [](ClearAllSpellCooldowns const& a, ClearAllSpellCooldowns const& b)
+    {
+        CHECK(a.SpellIds == b.SpellIds);
+        CHECK(a.IsPet == b.IsPet);
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("SpellCooldownEvent round-trips", "[packets]")
+{
+    SpellCooldownEvent out;
+    out.SpellId = 6603;
+    out.IsPet = true;
+
+    RoundTrip(out, [](SpellCooldownEvent const& a, SpellCooldownEvent const& b)
+    {
+        CHECK(a.SpellId == b.SpellId);
+        CHECK(a.IsPet == b.IsPet);
+    });
+    RejectsEveryTruncation(out);
+}
+
 TEST_CASE("SendLearnedSpells round-trips entries with and without the optional fields", "[packets]")
 {
     SendLearnedSpells out;

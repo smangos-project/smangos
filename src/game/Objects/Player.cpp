@@ -21028,28 +21028,29 @@ void Player::_SaveBGData()
 
 void Player::SendClearCooldown(uint32 spellId, Unit const* target) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::ClearCooldown>();
-    packet->spellId = spellId;
-    packet->targetGuid = target->GetObjectGuid();
-    GetSession()->SendPacket(std::move(packet));
+    ClearSpellCooldown packet;
+    packet.SpellId = spellId;
+    packet.IsPet = target != this;
+    GetSession()->SendClassic(packet);
 }
 
-void Player::SendClearAllCooldowns(Unit const* target) const
+void Player::SendClearAllCooldowns(Unit const* target, std::vector<uint32> const& spellIds) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::CooldownCheat>();
-    packet->targetGuid = target->GetObjectGuid();
-    GetSession()->SendPacket(std::move(packet));
+    ClearAllSpellCooldowns packet;
+    packet.IsPet = target != this;
+    packet.SpellIds = spellIds;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendSpellCooldown(uint32 spellId, Milliseconds cooldown, ObjectGuid target) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::SpellCooldown>();
-    packet->casterGuid = target;
-    WorldPackets::Spell::SpellCooldownEntry cooldownEntry;
-    cooldownEntry.spellId = spellId;
-    cooldownEntry.cooldown = cooldown;
-    packet->cooldownEntries.emplace_back(cooldownEntry);
-    GetSession()->SendPacket(std::move(packet));
+    SpellCooldownUpdate packet;
+    packet.Caster = ClassicGuidMapping::ToClassic(target, realmID);
+    SpellCooldownEntry entry;
+    entry.SpellId = spellId;
+    entry.ForcedCooldown = uint32(cooldown.count());
+    packet.Entries.push_back(entry);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendSpellRemoved(uint32 spellId) const
@@ -22267,19 +22268,17 @@ void Player::AddCooldown(SpellEntry const* spellEntry, ItemPrototype const* item
                 auto itr = m_cooldownMap.FindByCategory(spellCategory);
                 if (itr != m_cooldownMap.end() && itr->second->GetSpellEntry() != spellEntry)
                 {
-                    auto cooldownEventPacket = std::make_unique<WorldPackets::Spell::CooldownEvent>();
-                    cooldownEventPacket->spellId = itr->second->GetSpellEntry()->Id;
-                    cooldownEventPacket->casterGuid = GetObjectGuid();
-                    GetSession()->SendPacket(std::move(cooldownEventPacket));
+                    SpellCooldownEvent cooldownEventPacket;
+                    cooldownEventPacket.SpellId = int32(itr->second->GetSpellEntry()->Id);
+                    GetSession()->SendClassic(cooldownEventPacket);
                 }
             }
 
             // Send activate cooldown timer (possible 0) at client side
             {
-                auto cooldownEventPacket = std::make_unique<WorldPackets::Spell::CooldownEvent>();
-                cooldownEventPacket->spellId = spellEntry->Id;
-                cooldownEventPacket->casterGuid = GetObjectGuid();
-                GetSession()->SendPacket(std::move(cooldownEventPacket));
+                SpellCooldownEvent cooldownEventPacket;
+                cooldownEventPacket.SpellId = int32(spellEntry->Id);
+                GetSession()->SendClassic(cooldownEventPacket);
             }
             sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Sending SMSG_COOLDOWN_EVENT with spell id = %u", spellEntry->Id);
         }

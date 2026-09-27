@@ -34,57 +34,6 @@ void WorldPackets::Spell::PlaySpellImpact::AppendBodyTo(ByteBuffer& buffer) cons
 }
 #endif
 
-size_t WorldPackets::Spell::SpellCooldown::EstimateFinalSize() const
-{
-    return sizeof(casterGuid) +
-           cooldownEntries.size() * (sizeof(SpellCooldownEntry::spellId) +
-                                     sizeof(uint32) /*cooldown*/);
-}
-
-void WorldPackets::Spell::SpellCooldown::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << casterGuid;
-    for (auto const& cooldownEntry : cooldownEntries)
-    {
-        buffer << cooldownEntry.spellId;
-        buffer << static_cast<uint32>(cooldownEntry.cooldown.count());
-    }
-}
-
-size_t WorldPackets::Spell::ClearCooldown::EstimateFinalSize() const
-{
-    return sizeof(spellId) +
-           sizeof(targetGuid);
-}
-
-void WorldPackets::Spell::ClearCooldown::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << spellId;
-    buffer << targetGuid;
-}
-
-size_t WorldPackets::Spell::CooldownCheat::EstimateFinalSize() const
-{
-    return sizeof(targetGuid);
-}
-
-void WorldPackets::Spell::CooldownCheat::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << targetGuid;
-}
-
-size_t WorldPackets::Spell::CooldownEvent::EstimateFinalSize() const
-{
-    return sizeof(spellId) +
-           sizeof(casterGuid);
-}
-
-void WorldPackets::Spell::CooldownEvent::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << spellId;
-    buffer << casterGuid;
-}
-
 size_t WorldPackets::Spell::SetSpellModifier::EstimateFinalSize() const
 {
     return sizeof(effectIndex) +

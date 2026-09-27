@@ -1,11 +1,12 @@
 #ifndef MANGOS_PACKETS_SPELLBOOK_H
 #define MANGOS_PACKETS_SPELLBOOK_H
 
-// The spell book and its cooldowns, as sent at login. Light like Packets/Session.h, so RealBots
-// can include it.
+// The spell book and its cooldowns, both at login and as later events change them. Light like
+// Packets/Session.h, so RealBots can include it.
 
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
+#include "Packets/Classic/Guid.h"
 #include <optional>
 #include <vector>
 
@@ -287,6 +288,150 @@ struct SendSpellHistory
                 entry.Unused2 = data.read<uint32>();
             data.ResetBitPos();
         }
+        return true;
+    }
+};
+
+// TrinityCore SpellHistory.h's SpellCooldownFlags; only the two values this port ever needs.
+enum : uint8
+{
+    SPELL_COOLDOWN_FLAG_NONE = 0x0,
+    SPELL_COOLDOWN_FLAG_ON_HOLD = 0x8,
+};
+
+struct SpellCooldownEntry
+{
+    uint32 SpellId = 0;
+    uint32 ForcedCooldown = 0; // milliseconds
+    float ModRate = 1.0f;
+};
+
+// A spell's cooldown starting (or being restored, e.g. after a duel). One caster per packet, so a
+// batch of simultaneous starts (aura fade, duel restore) rides one send.
+struct SpellCooldownUpdate
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SPELL_COOLDOWN;
+
+    ClassicGuid Caster;
+    uint8 Flags = SPELL_COOLDOWN_FLAG_NONE;
+    std::vector<SpellCooldownEntry> Entries;
+
+    void Write(ByteBuffer& data) const
+    {
+        Caster.Write(data);
+        data << Flags;
+        data << uint32(Entries.size());
+        for (SpellCooldownEntry const& entry : Entries)
+            data << entry.SpellId << entry.ForcedCooldown << entry.ModRate;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Caster.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint8) + sizeof(uint32))
+            return false;
+        data >> Flags;
+        uint32 count;
+        data >> count;
+
+        size_t const entrySize = sizeof(uint32) * 2 + sizeof(float);
+        if ((data.size() - data.rpos()) / entrySize < count)
+            return false;
+        Entries.resize(count);
+        for (SpellCooldownEntry& entry : Entries)
+            data >> entry.SpellId >> entry.ForcedCooldown >> entry.ModRate;
+        return true;
+    }
+};
+
+// One spell's cooldown being cleared (unlike SpellCooldownUpdate, no caster: always the client's
+// own character or pet, picked by IsPet).
+struct ClearSpellCooldown
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CLEAR_COOLDOWN;
+
+    uint32 SpellId = 0;
+    bool IsPet = false;
+    bool ClearOnHold = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SpellId;
+        data.WriteBit(ClearOnHold);
+        data.WriteBit(IsPet);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + 1)
+            return false;
+        data >> SpellId;
+        ClearOnHold = data.ReadBit();
+        IsPet = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// Every one of the caster's cooldowns clearing at once (e.g. a pet's abilities on resummon).
+struct ClearAllSpellCooldowns
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CLEAR_COOLDOWNS;
+
+    std::vector<uint32> SpellIds;
+    bool IsPet = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << uint32(SpellIds.size());
+        for (uint32 spellId : SpellIds)
+            data << spellId;
+        data.WriteBit(IsPet);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        uint32 count;
+        data >> count;
+        if (!ReadSpellIdList(data, count, SpellIds))
+            return false;
+        if (data.size() - data.rpos() < 1)
+            return false;
+        IsPet = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// A spell's cooldown timer starting client-side, either on its own (COOLDOWN_ON_EVENT spells like
+// Stealth) or to signal that an about-to-be-shared category's previous occupant just started
+// cooling down (see Player::SendCooldownEvent's two call sites).
+struct SpellCooldownEvent
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_COOLDOWN_EVENT;
+
+    int32 SpellId = 0;
+    bool IsPet = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SpellId;
+        data.WriteBit(IsPet);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        data >> SpellId;
+        IsPet = data.ReadBit();
+        data.ResetBitPos();
         return true;
     }
 };
