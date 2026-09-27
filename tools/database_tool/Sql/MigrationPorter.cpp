@@ -353,7 +353,9 @@ namespace
         return true;
     }
 
-    void RewriteInsertIgnoreAtoms(std::vector<Atom>& atoms)
+    // MySQL's INSERT allows both IGNORE and INTO to be omitted ("INSERT
+    // `t` (...)", "INSERT IGNORE `t` (...)"); SQLite always requires INTO.
+    void RewriteInsertAtoms(std::vector<Atom>& atoms)
     {
         // Skip a leading Comment atom: a statement is routinely preceded by
         // one glued onto its front (see SkipLeadingMysqlNoise), so "INSERT"
@@ -362,11 +364,18 @@ namespace
         while (i < atoms.size() && atoms[i].kind == AtomKind::Comment)
             ++i;
 
-        if (i + 1 < atoms.size() && atoms[i].kind == AtomKind::Word && Lower(atoms[i].text) == "insert" &&
-            atoms[i + 1].kind == AtomKind::Word && Lower(atoms[i + 1].text) == "ignore")
+        if (i >= atoms.size() || atoms[i].kind != AtomKind::Word || Lower(atoms[i].text) != "insert")
+            return;
+
+        size_t next = i + 1;
+        if (next < atoms.size() && atoms[next].kind == AtomKind::Word && Lower(atoms[next].text) == "ignore")
         {
-            atoms[i + 1].text = "OR IGNORE";
+            atoms[next].text = "OR IGNORE";
+            ++next;
         }
+
+        if (next < atoms.size() && atoms[next].kind == AtomKind::Word && Lower(atoms[next].text) != "into")
+            atoms.insert(atoms.begin() + next, { AtomKind::Word, "INTO" });
     }
 
     bool IsMultiTableUpdate(std::string_view kind)
@@ -486,7 +495,7 @@ namespace
             flagReason = "CONCAT(...) has an unbalanced argument list";
             return false;
         }
-        RewriteInsertIgnoreAtoms(atoms);
+        RewriteInsertAtoms(atoms);
         rewrittenText = AssembleAtoms(atoms);
         return true;
     }

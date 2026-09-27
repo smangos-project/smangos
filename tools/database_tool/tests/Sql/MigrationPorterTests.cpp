@@ -190,6 +190,26 @@ TEST_CASE("PortMysqlMigration rewrites INSERT IGNORE to INSERT OR IGNORE", "[Mig
     CHECK(Contains(result.content, "INSERT OR IGNORE INTO"));
 }
 
+TEST_CASE("PortMysqlMigration adds a missing INSERT INTO", "[MigrationPorter]")
+{
+    PortedMigration result = PortMysqlMigration("1",
+        WrapInEnvelope("1", "INSERT `t` (`a`) VALUES (1);"));
+
+    INFO(result.flagReason);
+    REQUIRE_FALSE(result.flagged);
+    CHECK(Contains(result.content, "INSERT INTO `t`"));
+}
+
+TEST_CASE("PortMysqlMigration adds a missing INTO after IGNORE", "[MigrationPorter]")
+{
+    PortedMigration result = PortMysqlMigration("1",
+        WrapInEnvelope("1", "INSERT IGNORE `t` (`a`) VALUES (1);"));
+
+    INFO(result.flagReason);
+    REQUIRE_FALSE(result.flagged);
+    CHECK(Contains(result.content, "INSERT OR IGNORE INTO `t`"));
+}
+
 TEST_CASE("PortMysqlMigration rewrites && to AND", "[MigrationPorter]")
 {
     PortedMigration result = PortMysqlMigration("1",
