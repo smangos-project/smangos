@@ -18,6 +18,8 @@ add_executable(tests-database-tool
   Commands/CreateWorldDatabaseTests.cpp
   Commands/PortMigrationFileTests.cpp
   Dbc/DbcSchemaTests.cpp
+  Dbc/Wdc5ReaderTests.cpp
+  Dbc/Wdc5RealFilesTests.cpp
 )
 
 target_link_libraries(tests-database-tool PRIVATE database_tool_lib Catch2)

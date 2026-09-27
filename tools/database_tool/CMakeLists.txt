@@ -17,6 +17,7 @@ add_library(database_tool_lib STATIC
   Commands/CreateWorldDatabase.cpp
   Commands/PortMigrationFile.cpp
   Dbc/DbcSchema.cpp
+  Dbc/Wdc5Reader.cpp
   generated/DbcTables.g.cpp
 )
 
