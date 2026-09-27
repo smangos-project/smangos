@@ -609,9 +609,9 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_UNLEARN_SKILL,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleUnlearnSkillOpcode);
     INVALID_PACKET(SMSG_REMOVED_SPELL,                UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_DECHARGE,                     UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_GMTICKET_CREATE,              STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleGMTicketCreateOpcode);
+    INVALID_PACKET(CMSG_GMTICKET_CREATE,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_CREATE,              UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GMTICKET_UPDATETEXT,          STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleGMTicketUpdateTextOpcode);
+    INVALID_PACKET(CMSG_GMTICKET_UPDATETEXT,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_UPDATETEXT,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ACCOUNT_DATA_MD5,             UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_REQUEST_ACCOUNT_DATA,         STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleRequestAccountData);
@@ -621,16 +621,16 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_POWERGAINLOG_OBSOLETE,        UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GM_TEACH,                     UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GM_CREATE_ITEM_TARGET,        UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_GMTICKET_GETTICKET,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGMTicketGetTicketOpcode);
+    INVALID_PACKET(CMSG_GMTICKET_GETTICKET,           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_GETTICKET,           UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_UNLEARN_TALENTS,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GAMEOBJECT_SPAWN_ANIM,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GAMEOBJECT_DESPAWN_ANIM,      UnhandleReason::SendByServer);
     DEFINE_HANDLER(MSG_CORPSE_QUERY,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleCorpseQueryOpcode);
-    DEFINE_HANDLER(CMSG_GMTICKET_DELETETICKET,        STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleGMTicketDeleteTicketOpcode);
+    INVALID_PACKET(CMSG_GMTICKET_DELETETICKET,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_DELETETICKET,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAT_WRONG_FACTION,           UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GMTICKET_SYSTEMSTATUS,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGMTicketSystemStatusOpcode);
+    INVALID_PACKET(CMSG_GMTICKET_SYSTEMSTATUS,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_SYSTEMSTATUS,        UnhandleReason::SendByServer);
                // Can call convert corpse on different map.
     INVALID_PACKET(CMSG_SPIRIT_HEALER_ACTIVATE,       UnhandleReason::Unhandled);
@@ -924,7 +924,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GM_UPDATE_TICKET_STATUS,      UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GM_TICKET_STATUS_UPDATE,      UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_SET_DUNGEON_DIFFICULTY,        UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_GMSURVEY_SUBMIT,              STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleGMSurveySubmitOpcode);
+    INVALID_PACKET(CMSG_GMSURVEY_SUBMIT,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_UPDATE_INSTANCE_OWNERSHIP,    UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_IGNORE_KNOCKBACK_CHEAT,       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CHAT_PLAYER_AMBIGUOUS,        UnhandleReason::SendByServer);
@@ -1082,6 +1082,12 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_TRADE_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetTradeItemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CLEAR_TRADE_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleClearTradeItemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_TRADE_GOLD, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetTradeGoldOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GM_TICKET_GET_SYSTEM_STATUS, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketGetSystemStatusOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GM_TICKET_GET_CASE_STATUS, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketGetCaseStatusOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GM_TICKET_ACKNOWLEDGE_SURVEY, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketAcknowledgeSurveyOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SUBMIT_USER_FEEDBACK, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketSubmitUserFeedbackOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_COMPLAINT, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketComplaintOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BUG_REPORT, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleGMTicketBugReportOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PLAYER_NAMES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryPlayerNamesOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CREATURE, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleCreatureQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_GAME_OBJECT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleGameObjectQueryOpcode);

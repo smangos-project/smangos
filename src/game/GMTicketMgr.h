@@ -29,30 +29,6 @@ class Field;
 class QueryResult;
 class WorldPacket;
 class WorldSession;
-namespace WorldPackets { namespace GmTicket { class GmTicketGetTicket; } }
-
-// from blizzard lua
-enum GMTicketSystemStatus
-{
-    GMTICKET_QUEUE_STATUS_DISABLED = 0,
-    GMTICKET_QUEUE_STATUS_ENABLED  = 1
-};
-
-enum GMTicketStatus
-{
-    GMTICKET_STATUS_HASTEXT                      = 0x06,
-    GMTICKET_STATUS_DEFAULT                      = 0x0A
-};
-
-enum GMTicketResponse
-{
-    GMTICKET_RESPONSE_ALREADY_EXIST               = 1,
-    GMTICKET_RESPONSE_CREATE_SUCCESS              = 2,
-    GMTICKET_RESPONSE_CREATE_ERROR                = 3,
-    GMTICKET_RESPONSE_UPDATE_SUCCESS              = 4,
-    GMTICKET_RESPONSE_UPDATE_ERROR                = 5,
-    GMTICKET_RESPONSE_TICKET_DELETED              = 9
-};
 
 // from Blizzard LUA:
 // GMTICKET_ASSIGNEDTOGM_STATUS_NOT_ASSIGNED = 0;    -- ticket is not currently assigned to a gm
@@ -65,13 +41,6 @@ enum GMTicketEscalationStatus
     TICKET_ASSIGNED                               = 1,
     TICKET_IN_ESCALATION_QUEUE                    = 2,
     TICKET_ESCALATED_ASSIGNED                     = 3
-};
-
-// from blizzard lua
-enum GMTicketOpenedByGMStatus
-{
-    GMTICKET_OPENEDBYGM_STATUS_NOT_OPENED = 0,      // ticket has never been opened by a gm
-    GMTICKET_OPENEDBYGM_STATUS_OPENED     = 1       // ticket has been opened by a gm
 };
 
 enum LagReportType
@@ -137,7 +106,9 @@ public:
     void SaveToDB() const;
     void DeleteFromDB();
 
-    void FillPacket(WorldPackets::GmTicket::GmTicketGetTicket& packet) const;
+    // No modern client packet carries ticket text/response back to the player (the old
+    // create/get-text/update-text SMSG family has no wire equivalent at all) -- notify via plain
+    // system chat text instead.
     void SendResponse(WorldSession* session) const;
 
     void TeleportTo(Player* player) const;
@@ -262,7 +233,9 @@ public:
     void ShowClosedList(ChatHandler& handler) const;
     void ShowEscalatedList(ChatHandler& handler) const;
 
-    void SendTicket(WorldSession* session, GmTicket const* ticket) const;
+    // Plain chat notice that a GM touched the player's ticket (viewed/escalated) -- see the
+    // comment on GmTicket::SendResponse for why this isn't a wire packet any more.
+    void NotifyPlayerOfChange(WorldSession* session, GmTicket const* ticket) const;
     void ReloadTicket(uint32 ticketId);
     void ReloadTicketCallback(std::unique_ptr<QueryResult> result);
 

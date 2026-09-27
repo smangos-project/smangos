@@ -53,7 +53,7 @@
 #include "Packets/Auras.h"
 #include "Packets/SpellCast.h"
 #include "Packets/DuelMessages.h"
-#include "Packets/GmTicket.h"
+#include "Packets/GmTicketMessages.h"
 #include "Packets/GroupMessages.h"
 #include "Packets/Guild.h"
 #include "Packets/Item.h"
@@ -626,15 +626,12 @@ class WorldSession
         void HandleLogoutRequestOpcode(NullClientPacket const& packet);
         void HandlePlayerLogoutOpcode(NullClientPacket const& packet);
         void HandleLogoutCancelOpcode(NullClientPacket const& packet);
-        void HandleGMTicketGetTicketOpcode(NullClientPacket const& packet);
-        void HandleGMTicketCreateOpcode(WorldPackets::GmTicket::GmTicketCreate const& packet);
-        void HandleGMTicketSystemStatusOpcode(NullClientPacket const& packet);
-
-        void HandleGMTicketDeleteTicketOpcode(NullClientPacket const& packet);
-        void HandleGMTicketUpdateTextOpcode(WorldPackets::GmTicket::GmTicketUpdateText const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
-        void HandleGMSurveySubmitOpcode(WorldPackets::GmTicket::GMSurveySubmit const& packet);
-#endif
+        void HandleGMTicketGetSystemStatusOpcode(GetSystemStatus const& packet);
+        void HandleGMTicketGetCaseStatusOpcode(GetCaseStatus const& packet);
+        void HandleGMTicketAcknowledgeSurveyOpcode(AcknowledgeSurvey const& packet);
+        void HandleGMTicketSubmitUserFeedbackOpcode(SubmitUserFeedback const& packet);
+        void HandleGMTicketComplaintOpcode(Complaint const& packet);
+        void HandleGMTicketBugReportOpcode(BugReport const& packet);
 
         void HandleTogglePvP(WorldPackets::Misc::TogglePvP const& packet);
         void HandleZoneUpdateOpcode(WorldPackets::Misc::ZoneUpdate const& packet);

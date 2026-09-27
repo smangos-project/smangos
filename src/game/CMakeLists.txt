@@ -213,7 +213,6 @@ set (game_SRCS
     Server/Packets/Character.cpp
     Server/Packets/Chat.cpp
     Server/Packets/Combat.cpp
-    Server/Packets/GmTicket.cpp
     Server/Packets/Guild.cpp
     Server/Packets/Item.cpp
     Server/Packets/Mail.cpp
@@ -465,7 +464,7 @@ set (game_SRCS
     Server/Packets/WorldTransfer.h
     Server/Packets/Combat.h
     Server/Packets/DuelMessages.h
-    Server/Packets/GmTicket.h
+    Server/Packets/GmTicketMessages.h
     Server/Packets/GroupMessages.h
     Server/Packets/Guild.h
     Server/Packets/Item.h

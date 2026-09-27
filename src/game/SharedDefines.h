@@ -1784,6 +1784,12 @@ enum TicketType
     GMTICKET_TECHNICAL              = 8,
     GMTICKET_ACCOUNT_BILLING        = 9,
     GMTICKET_CHARACTER              = 10,
+    // No category selector maps to these on the modern client: CMSG_SUBMIT_USER_FEEDBACK carries
+    // only a free-text note plus an IsSuggestion bool, and CMSG_COMPLAINT carries no category
+    // meaningful here either. Assigned purely for GM-side `.ticket` filtering/display.
+    GMTICKET_BUG                    = 11,
+    GMTICKET_SUGGESTION             = 12,
+    GMTICKET_COMPLAINT              = 13,
     GMTICKET_MAX
 };
 

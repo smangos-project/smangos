@@ -2,7 +2,6 @@
 #include "Chat.h"
 #include "Language.h"
 #include "ObjectMgr.h"
-#include "Opcodes.h"
 #include "Player.h"
 #include "GMTicketMgr.h"
 #include "World.h"
@@ -96,11 +95,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(char* args)
 
     // Inform player, who submitted this ticket, that it is closed
     if (Player* submitter = ticket->GetPlayer())
-    {
-        auto deletePacket = std::make_unique<WorldPackets::GmTicket::GmTicketDeleteTicketResponse>();
-        deletePacket->response = GMTICKET_RESPONSE_TICKET_DELETED;
-        submitter->GetSession()->SendPacket(std::move(deletePacket));
-    }
+        ChatHandler(submitter->GetSession()).SendSysMessage("Your ticket has been closed by a GM.");
     return true;
 }
 
@@ -226,12 +221,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(char* args)
     sTicketMgr->UpdateLastChange();
 
     if (Player* player = ticket->GetPlayer())
-    {
-        // Force abandon ticket
-        auto deletePacket = std::make_unique<WorldPackets::GmTicket::GmTicketDeleteTicketResponse>();
-        deletePacket->response = GMTICKET_RESPONSE_TICKET_DELETED;
-        player->GetSession()->SendPacket(std::move(deletePacket));
-    }
+        ChatHandler(player->GetSession()).SendSysMessage("Your ticket has been deleted by a GM.");
 
     return true;
 }
@@ -263,7 +253,7 @@ bool ChatHandler::HandleGMTicketEscalateCommand(char* args)
     ticket->SetNeededSecurityLevel(GetSession()->GetSecurity() + 1);
 
     if (Player* player = ticket->GetPlayer())
-        sTicketMgr->SendTicket(player->GetSession(), ticket);
+        sTicketMgr->NotifyPlayerOfChange(player->GetSession(), ticket);
 
     sTicketMgr->UpdateLastChange();
     PSendSysMessage(LANG_COMMAND_TICKETESCALATED, ticketId);
@@ -444,7 +434,7 @@ bool ChatHandler::ViewTicket(GmTicket* ticket)
 {
     ticket->SetViewed();
     if (Player* player = ticket->GetPlayer()) // Inform that ticket has been viewed
-        sTicketMgr->SendTicket(player->GetSession(), ticket);
+        sTicketMgr->NotifyPlayerOfChange(player->GetSession(), ticket);
     ticket->SaveToDB();
 
     SendSysMessage(ticket->FormatMessageString(*this, true).c_str());
