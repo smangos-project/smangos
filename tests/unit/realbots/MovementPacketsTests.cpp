@@ -379,6 +379,36 @@ TEST_CASE("Knock back messages round-trip", "[packets]")
     RejectsEveryTruncation(ack);
 }
 
+TEST_CASE("MoveChangeTransport, MoveSetFacingHeartbeat and MoveUpdateFallSpeed share the movement block", "[packets]")
+{
+    static_assert(MoveChangeTransport::Opcode == CLASSIC_CMSG_MOVE_CHANGE_TRANSPORT);
+    static_assert(MoveSetFacingHeartbeat::Opcode == CLASSIC_CMSG_MOVE_SET_FACING_HEARTBEAT);
+    static_assert(MoveUpdateFallSpeed::Opcode == CLASSIC_CMSG_MOVE_UPDATE_FALL_SPEED);
+
+    MoveChangeTransport packet;
+    packet.Status = Standing();
+    RoundTrip(packet, [](MoveChangeTransport const& a, MoveChangeTransport const& b) { CheckSame(a.Status, b.Status); });
+}
+
+TEST_CASE("MoveSetCollisionHeightAck round-trips", "[packets]")
+{
+    MoveSetCollisionHeightAck ack;
+    ack.Ack.Status = Standing();
+    ack.Ack.AckIndex = 3;
+    ack.Height = 2.5f;
+    ack.MountDisplayId = 1234;
+    ack.Reason = 1;
+    RoundTrip(ack, [](MoveSetCollisionHeightAck const& a, MoveSetCollisionHeightAck const& b)
+    {
+        CheckSame(a.Ack.Status, b.Ack.Status);
+        CHECK(a.Ack.AckIndex == b.Ack.AckIndex);
+        CHECK(a.Height == b.Height);
+        CHECK(a.MountDisplayId == b.MountDisplayId);
+        CHECK(a.Reason == b.Reason);
+    });
+    RejectsEveryTruncation(ack);
+}
+
 TEST_CASE("Spline done and time messages round-trip", "[packets]")
 {
     MoveSplineDone done;

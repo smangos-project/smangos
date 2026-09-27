@@ -871,6 +871,11 @@ void WorldSession::HandleMoveSplineDoneOpcode(MoveSplineDone const& packet)
     pMover->SendMovementMessageToSet(MakeClassicPacket(update), true, _player);
 }
 
+void WorldSession::HandleSetCollisionHeightAckOpcode(MoveSetCollisionHeightAck const& /*packet*/)
+{
+    // nothing to do -- this engine never sends SMSG_MOVE_SET_COLLISION_HEIGHT for a client to ack
+}
+
 void WorldSession::HandleSetActiveMoverOpcode(SetActiveMover const& packet)
 {
     ObjectGuid moverGuid;

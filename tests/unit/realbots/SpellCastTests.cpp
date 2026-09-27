@@ -194,6 +194,50 @@ TEST_CASE("CancelAutoRepeatSpell is an empty body", "[packets]")
     CHECK(in.Read(data));
 }
 
+TEST_CASE("CancelQueuedSpell is an empty body", "[packets]")
+{
+    ByteBuffer data;
+    CancelQueuedSpell{}.Write(data);
+    CHECK(data.empty());
+    CancelQueuedSpell in;
+    CHECK(in.Read(data));
+}
+
+TEST_CASE("CancelMountAura is an empty body", "[packets]")
+{
+    ByteBuffer data;
+    CancelMountAura{}.Write(data);
+    CHECK(data.empty());
+    CancelMountAura in;
+    CHECK(in.Read(data));
+}
+
+TEST_CASE("TotemDestroyed round-trips", "[packets]")
+{
+    TotemDestroyed packet;
+    packet.Slot = 2;
+    packet.TotemGuid = { 0x5678, 0x2000000000000000ULL };
+    RoundTrip(packet, [](TotemDestroyed const& a, TotemDestroyed const& b)
+    {
+        CHECK(a.Slot == b.Slot);
+        CHECK(a.TotemGuid == b.TotemGuid);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SpellClick round-trips", "[packets]")
+{
+    SpellClick packet;
+    packet.TargetGuid = { 0x1234, 0x2000000000000000ULL };
+    packet.TryAutoDismount = true;
+    RoundTrip(packet, [](SpellClick const& a, SpellClick const& b)
+    {
+        CHECK(a.TargetGuid == b.TargetGuid);
+        CHECK(a.TryAutoDismount == b.TryAutoDismount);
+    });
+    RejectsEveryTruncation(packet);
+}
+
 TEST_CASE("SpellPrepare round-trips", "[packets]")
 {
     SpellPrepare packet;

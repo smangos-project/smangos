@@ -976,9 +976,10 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
             static_cast<void (WorldSession::*)(ClientPacket const&)>(&WorldSession::Handle_ClassicPacket<PacketT, (handlerPtr)>) }; \
     }
 
-    // For classic opcodes WorldSocket handles itself (handshake-stage packets, and CMSG_PING per
-    // decision 5): a table entry so a reader of this list sees the whole split, never dispatched
-    // through it.
+    // For classic opcodes with no real dispatch entry: opcodes WorldSocket handles itself
+    // (handshake-stage packets, and CMSG_PING per decision 5), and opcodes with no feature behind
+    // them in this engine (and, for a few, not even in TrinityCore). Either way, a table entry so
+    // a reader of this list sees the classification instead of an accidental gap.
     #define CLASSIC_INVALID_PACKET(opcode, reason) \
     { \
         OpcodeHandler& ref = list[uint32(opcode)]; \
@@ -990,6 +991,17 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_AUTH_CONTINUED_SESSION,    UnhandleReason::AlreadyHandledElsewhere);
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_ENTER_ENCRYPTED_MODE_ACK,  UnhandleReason::AlreadyHandledElsewhere);
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_PING,                      UnhandleReason::AlreadyHandledElsewhere);
+
+    // Movement-altering forces (conveyor belts, gravity wells) are a Shadowlands+ feature this
+    // engine has no concept of; TrinityCore itself leaves this bound to Handle_NULL too.
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_MOVE_REMOVE_MOVEMENT_FORCES, UnhandleReason::Unhandled);
+    // The whole client-side time-sync ack/adjustment family below is bound to Handle_NULL on
+    // TrinityCore as well -- nothing server-side reacts to a dropped/failed sync or a discarded
+    // ack batch, and the client never asks for a time adjustment this engine would answer.
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_TIME_SYNC_RESPONSE_DROPPED,  UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_TIME_SYNC_RESPONSE_FAILED,   UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_DISCARDED_TIME_SYNC_ACKS,    UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_TIME_ADJUSTMENT_RESPONSE,    UnhandleReason::Unhandled);
 
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ENUM_CHARACTERS,     STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicCharEnumOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CREATE_CHARACTER,    STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleCharCreateOpcode);
@@ -1039,6 +1051,9 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_SET_FACING, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_SET_FACING>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_SET_PITCH, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_SET_PITCH>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_HEARTBEAT, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_HEARTBEAT>);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_CHANGE_TRANSPORT, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_CHANGE_TRANSPORT>);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_SET_FACING_HEARTBEAT, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_SET_FACING_HEARTBEAT>);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_UPDATE_FALL_SPEED, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicMovementOpcode<CLASSIC_CMSG_MOVE_UPDATE_FALL_SPEED>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicSpeedAck<CLASSIC_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicSpeedAck<CLASSIC_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK>);
@@ -1051,6 +1066,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_HOVER_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicFlagAck<CLASSIC_CMSG_MOVE_HOVER_ACK>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_FEATHER_FALL_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleClassicFlagAck<CLASSIC_CMSG_MOVE_FEATHER_FALL_ACK>);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_KNOCK_BACK_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveKnockBackAck);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_SET_COLLISION_HEIGHT_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleSetCollisionHeightAckOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_TELEPORT_ACK, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveTeleportAckOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_SPLINE_DONE, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveSplineDoneOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MOVE_TIME_SKIPPED, STATUS_LOGGEDIN, PACKET_PROCESS_MOVEMENT, &WorldSession::HandleMoveTimeSkippedOpcode);
@@ -1073,6 +1089,10 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelAuraOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_CHANNELLING, STATUS_LOGGEDIN, PACKET_PROCESS_SPELLS, &WorldSession::HandleCancelChanneling);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_AUTO_REPEAT_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelAutoRepeatSpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_QUEUED_SPELL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelQueuedSpellOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CANCEL_MOUNT_AURA, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCancelMountAuraOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TOTEM_DESTROYED, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTotemDestroyedOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SPELL_CLICK, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSpellClickOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPOP_REQUEST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRepopRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RESURRECT_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleResurrectResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);

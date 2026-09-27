@@ -301,6 +301,9 @@ using MoveStopSwim = ClientPlayerMovement<CLASSIC_CMSG_MOVE_STOP_SWIM>;
 using MoveSetFacing = ClientPlayerMovement<CLASSIC_CMSG_MOVE_SET_FACING>;
 using MoveSetPitch = ClientPlayerMovement<CLASSIC_CMSG_MOVE_SET_PITCH>;
 using MoveHeartbeat = ClientPlayerMovement<CLASSIC_CMSG_MOVE_HEARTBEAT>;
+using MoveChangeTransport = ClientPlayerMovement<CLASSIC_CMSG_MOVE_CHANGE_TRANSPORT>;
+using MoveSetFacingHeartbeat = ClientPlayerMovement<CLASSIC_CMSG_MOVE_SET_FACING_HEARTBEAT>;
+using MoveUpdateFallSpeed = ClientPlayerMovement<CLASSIC_CMSG_MOVE_UPDATE_FALL_SPEED>;
 
 // Another unit's movement, relayed to everyone who sees it.
 struct MoveUpdate
@@ -758,6 +761,39 @@ using MoveForceRunBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_
 using MoveForceSwimSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK>;
 using MoveForceSwimBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK>;
 using MoveForceTurnRateChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK>;
+
+// The answer to a model-scale-driven collision height change (SMSG_MOVE_SET_COLLISION_HEIGHT).
+// This engine never sends that SMSG (no scale-driven collision height feature), so nothing ever
+// prompts this ack in practice; parsed in full and acknowledged as a no-op, same as SpellClick.
+struct MoveSetCollisionHeightAck
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_MOVE_SET_COLLISION_HEIGHT_ACK;
+
+    ClassicMovementAck Ack;
+    float Height = 1.0f;
+    uint32 MountDisplayId = 0;
+    uint8 Reason = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        Ack.Write(data);
+        data << Height;
+        data << MountDisplayId;
+        data << Reason;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Ack.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(float) + sizeof(uint32) + sizeof(uint8))
+            return false;
+        data >> Height;
+        data >> MountDisplayId;
+        data >> Reason;
+        return true;
+    }
+};
 
 struct MoveKnockBackAck
 {

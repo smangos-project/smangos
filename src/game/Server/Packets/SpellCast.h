@@ -363,6 +363,76 @@ struct CancelAutoRepeatSpell
     bool Read(ByteBuffer&) { return true; }
 };
 
+// This engine has no queued-cast buffering (a cast request during another cast is simply
+// rejected) for the client's own "cancel my queued cast" button to have anything to cancel.
+struct CancelQueuedSpell
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CANCEL_QUEUED_SPELL;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
+struct CancelMountAura
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_CANCEL_MOUNT_AURA;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
+struct TotemDestroyed
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_TOTEM_DESTROYED;
+
+    uint8 Slot = 0;
+    ClassicGuid TotemGuid;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Slot;
+        TotemGuid.Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8))
+            return false;
+        data >> Slot;
+        return TotemGuid.Read(data);
+    }
+};
+
+// Fired by right-clicking a spell-clickable NPC (vehicles, Feign Death corpses that can be
+// interacted with, on a reference server). This engine has no NPC_FLAG_SPELLCLICK/vehicle
+// subsystem for the target unit to hook into, so there's nothing to do -- parsed and acknowledged
+// as a no-op rather than silently falling through to "unhandled".
+struct SpellClick
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SPELL_CLICK;
+
+    ClassicGuid TargetGuid;
+    bool TryAutoDismount = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        TargetGuid.Write(data);
+        data.WriteBit(TryAutoDismount);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!TargetGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 1)
+            return false;
+        TryAutoDismount = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 // Sent to a client when its cast request is accepted, pairing the id it sent with the id the cast
 // runs under; the client's spell queue only advances on it.
 struct SpellPrepare

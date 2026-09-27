@@ -30,6 +30,7 @@
 #include "SpellAuras.h"
 #include "GameObject.h"
 #include "Map.h"
+#include "Totem.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/Classic/InventorySlots.h"
 
@@ -464,6 +465,36 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const
     // may be better send SMSG_CANCEL_AUTO_REPEAT?
     // cancel and prepare for deleting
     _player->GetMover()->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+}
+
+void WorldSession::HandleCancelQueuedSpellOpcode(CancelQueuedSpell const& /*packet*/)
+{
+    // nothing to do
+}
+
+void WorldSession::HandleCancelMountAuraOpcode(CancelMountAura const& /*packet*/)
+{
+    _player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+}
+
+void WorldSession::HandleTotemDestroyedOpcode(TotemDestroyed const& packet)
+{
+    if (packet.Slot >= MAX_TOTEM_SLOT)
+        return;
+
+    Totem* totem = _player->GetTotem(TotemSlot(packet.Slot));
+    if (!totem)
+        return;
+
+    if (!packet.TotemGuid.IsEmpty() && ClassicGuidMapping::ToClassic(totem->GetObjectGuid(), realmID) != packet.TotemGuid)
+        return;
+
+    totem->UnSummon();
+}
+
+void WorldSession::HandleSpellClickOpcode(SpellClick const& /*packet*/)
+{
+    // nothing to do
 }
 
 void WorldSession::HandleCancelChanneling(CancelChannelling const& /*packet*/)

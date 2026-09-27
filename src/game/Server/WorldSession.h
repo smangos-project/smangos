@@ -604,6 +604,7 @@ class WorldSession
         template<ClassicOpcodes Op>
         void HandleClassicFlagAck(ClientMovementAck<Op> const& packet) { HandleMovementFlagChangeToggleAck(Op, packet.Ack); }
         void HandleMoveSplineDoneOpcode(MoveSplineDone const& packet);
+        void HandleSetCollisionHeightAckOpcode(MoveSetCollisionHeightAck const& packet);
         void HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport const& packet);
         void HandleMountSpecialAnimOpcode(MountSpecial const& packet);
         void HandleTeleportToUnitOpcode(WorldPackets::Misc::TeleportToUnit const& packet);
@@ -816,6 +817,10 @@ class WorldSession
         void HandleCancelAuraOpcode(CancelAura const& packet);
         void HandleCancelGrowthAuraOpcode(CancelGrowthAura const& packet);
         void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
+        void HandleCancelQueuedSpellOpcode(CancelQueuedSpell const& packet);
+        void HandleCancelMountAuraOpcode(CancelMountAura const& packet);
+        void HandleTotemDestroyedOpcode(TotemDestroyed const& packet);
+        void HandleSpellClickOpcode(SpellClick const& packet);
         void HandleSetActionBarTogglesOpcode(SetActionBarToggles const& packet);
         void HandleLearnTalentOpcode(LearnTalent const& packet);
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);
