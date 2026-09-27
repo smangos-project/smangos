@@ -14,6 +14,8 @@ add_library(database_tool_lib STATIC
   Migrations/MigrationState.cpp
   Migrations/MigrationRunner.cpp
   Commands/CreateMysqlDatabase.cpp
+  Commands/CreateWorldDatabase.cpp
+  Commands/PortMigrationFile.cpp
 )
 
 target_include_directories(database_tool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -40,6 +42,10 @@ endfunction()
 
 add_executable(database_tool Main.cpp)
 target_link_libraries(database_tool PRIVATE database_tool_lib)
+# The CLI's own default paths (.world/, sql/migrations); see plan.md decision
+# 1 -- there is no command-line override, tests call the library directly
+# with temp paths instead.
+target_compile_definitions(database_tool PRIVATE DATABASE_TOOL_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 doltlite_copy_runtime(database_tool)
 database_tool_copy_mysql_runtime(database_tool)
 

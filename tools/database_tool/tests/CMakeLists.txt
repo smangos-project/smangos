@@ -15,6 +15,8 @@ add_executable(tests-database-tool
   Migrations/MigrationRunnerTests.cpp
   ToolConfigTests.cpp
   Commands/CreateMysqlDatabaseTests.cpp
+  Commands/CreateWorldDatabaseTests.cpp
+  Commands/PortMigrationFileTests.cpp
 )
 
 target_link_libraries(tests-database-tool PRIVATE database_tool_lib Catch2)
