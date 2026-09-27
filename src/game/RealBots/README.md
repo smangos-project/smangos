@@ -770,6 +770,32 @@ None of these is proven against a real 1.15.6 client yet.
   affected member's rank id live, which no reference here backs with verified behavior worth the risk.
   Unverified against a real client throughout.
 
+- **Mail.** `CMSG_MAIL_RETURN_TO_SENDER`/`CMSG_MAIL_DELETE` carry no mailbox guid on the real wire,
+  unlike every other mail opcode -- TrinityCore re-checks proximity through a generic "last
+  interaction target" tracker (`PlayerTalkClass::GetInteractionData()`) this engine doesn't have, so
+  `WorldSession::m_currentMailboxGuid` (set by a prior `CMSG_MAIL_GET_LIST`) stands in for it on the
+  return-to-sender path; `MailDelete` gets no proximity check at all, matching TrinityCore's own
+  handler exactly. `SMSG_MAIL_LIST_RESULT`'s per-mail body sends its item body inline (`Body`, a real
+  string) where the old vanilla wire pointed at a separate `CMSG_ITEM_TEXT_QUERY` round trip; this
+  engine still stores mail body text the old way (`Mail::itemTextId` into `ObjectMgr`'s item-text
+  cache), so the handler fetches it by id and inlines it to match the modern shape without changing
+  the storage architecture. **Followed TrinityCore, not vibemangos, for `SMSG_MAIL_LIST_RESULT` and
+  `SMSG_MAIL_COMMAND_RESULT`, both cases where vibemangos's own implementation doesn't match its own
+  credited TrinityCore source** (the same pattern the Guilds bullet above found twice):
+  - `MailListEntry`'s field widths and layout. vibemangos writes `MailID` as `int32` and `SenderType`
+    as `uint8`; TrinityCore's own body writes `uint64`/`uint32`. vibemangos also adds two bits
+    (`hasSenderCharacter`, `hasAltSenderId`) with no counterpart in TrinityCore's `Write()` at all,
+    and moves the sender-guid-or-alt-id block to *after* the attachment list instead of before it.
+    Followed TrinityCore's exact layout and field widths throughout.
+  - `SMSG_MAIL_COMMAND_RESULT` (`MailCommandResult` here, renamed from vanilla's `SendMailResult` to
+    avoid colliding with the `WorldSession` method of that name once namespaces were dropped).
+    vibemangos keeps every field `uint32`, matching the old vanilla shape; TrinityCore's own body
+    widens `MailID` and `AttachID` to `uint64`. Followed TrinityCore. Confirmed at the same time: a
+    real client identifies the taken attachment by the item's own guid (`Player::SendMailResult`'s
+    `itemGuid` parameter, forwarded straight from `HandleMailTakeItem`'s `AttachID`), not by the
+    item's template id the way the pre-port vanilla handler passed it -- fixed to pass the guid.
+  Unverified against a real client throughout.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are
