@@ -54,6 +54,7 @@ add_executable(tests-realbots
   TradeMessagesTests.cpp
   GmTicketMessagesTests.cpp
   PetitionMessagesTests.cpp
+  ChannelMessagesTests.cpp
   QueryMessagesTests.cpp
   ItemMessagesTests.cpp
   LootMessagesTests.cpp
