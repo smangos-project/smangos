@@ -680,6 +680,22 @@ None of these is proven against a real 1.15.6 client yet.
   `PetitionSigns` enum despite sharing several values. `MSG_PETITION_DECLINE` sends nothing back to the
   owner: TrinityCore's own handler has the send commented out with a note that no modern client acts on
   it, and vibemangos matches. Unverified against a real client.
+- **Channels.** The old vanilla `ChannelFlags` scheme packed its own bits (`CUSTOM`/`TRADE`/`GENERAL`/...)
+  that collide with different modern meanings at the same positions (e.g. vanilla `TRADE` at 0x04 is
+  `ReadOnly` on the modern wire, so the Trade channel would render read-only). **Followed: vibemangos**,
+  which found this live and switched the wire `ChannelFlags` to just forward the ChatChannels.dbc `Flags`
+  column bits directly -- there is no separate "wire" scheme any more. `SMSG_CHANNEL_NOTIFY`'s legacy
+  `YOU_JOINED_NOTICE`/`YOU_LEFT_NOTICE` types no longer reach a real client at all: a real player gets the
+  dedicated `SMSG_CHANNEL_NOTIFY_JOINED`/`SMSG_CHANNEL_NOTIFY_LEFT` instead (the generic notify's two types
+  are a fallback for the internal `MasterPlayer` client only). Both the join notice and a `CHAT_MSG_CHANNEL`
+  chat line carry a synthetic channel guid (map/zone/channel-id, the same map-specific layout this engine's
+  own `ClassicGuidMapping` already uses for a creature or game object) the client keys its channel UI and
+  incoming chat lines on -- this also fills the channel-guid gap slice B's chat left open
+  (`ChatHandler::BuildChatPacket` always wrote the "no channel guid" bit). `CMSG_CHANNEL_MODERATE` (the
+  whole-channel moderation toggle) has no modern opcode at all and is dropped outright, matching
+  vibemangos's own finding; `SILENCE_ALL`/`UNSILENCE_ALL`/`DECLINE_INVITE` are true no-ops on a real
+  reference server (TrinityCore's own `Channel::SilenceAll`/`UnsilenceAll`/`DeclineInvite` are empty
+  bodies), so they are not wired to the old per-player mute. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
