@@ -17,6 +17,7 @@ add_executable(tests-game
 # Compiles only the game sources it tests, not `game` itself, so it needs none of the world,
 # script or database code.
 target_include_directories(tests-game PRIVATE
+  ${CMAKE_SOURCE_DIR}/tests/support
   ${CMAKE_SOURCE_DIR}/src/game
   ${CMAKE_SOURCE_DIR}/src/game/Server
   ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol

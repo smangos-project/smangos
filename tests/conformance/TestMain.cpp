@@ -13,6 +13,7 @@
 #include "Log.h"
 #include "RealBotMgr.h"
 #include "RealBotTarget.h"
+#include "SuppressDebugDialogs.h"
 #include <catch_amalgamated.hpp>
 #include <cstdlib>
 #include <filesystem>
@@ -117,6 +118,8 @@ std::string FindExpectationsFile(std::string const& configPath, std::string cons
 
 int main(int argc, char** argv)
 {
+    SuppressDebugDialogs();
+
     std::string targetName;
     std::string configPath = "tests-conformance.conf";
     bool strict = false;

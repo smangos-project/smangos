@@ -15,6 +15,7 @@ add_executable(tests-shared
 )
 
 target_include_directories(tests-shared PRIVATE
+  ${CMAKE_SOURCE_DIR}/tests/support
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/framework
 )
