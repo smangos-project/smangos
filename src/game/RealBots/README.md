@@ -697,6 +697,35 @@ None of these is proven against a real 1.15.6 client yet.
   reference server (TrinityCore's own `Channel::SilenceAll`/`UnsilenceAll`/`DeclineInvite` are empty
   bodies), so they are not wired to the old per-player mute. Unverified against a real client.
 
+- **Inspect.** The 1.12 client reconstructed the inspect window from the target's visible-item update
+  fields and a separate `MSG_INSPECT_HONOR_STATS` round trip; the modern client expects one
+  `SMSG_INSPECT_RESULT` with equipment and honor both, confirmed against both TrinityCore's
+  `InspectResult::Write` and vibemangos's own live-checked body -- the two agree on shape here.
+  `MSG_INSPECT_HONOR_STATS` has no modern client request at all and is retired outright; vibemangos
+  keeps an `SMSG_INSPECT_HONOR_STATS` reply class for wire completeness but never sends it (no send
+  site, and neither reference confirms real content for it), so this port doesn't port it either. Guild
+  data (`InspectResult`'s optional guild block) is deferred to the guild slice (F8g): `HasGuildData` is
+  always false for now. `CMSG_INSPECT_PVP`/`SMSG_INSPECT_PVP` and `CMSG_QUERY_INSPECT_ACHIEVEMENTS` have
+  no vanilla equivalent at all (no arenas, no achievements in 1.12); the PvP tab always answers with an
+  empty bracket list and three empty arena-team slots, and the achievements-tab request is a consumed
+  no-op, matching both references. Unverified against a real client.
+- **Whois, emotes, tutorials and account data.** `CLASSIC_CMSG_WHO_IS`'s name is a 6-bit length-prefixed
+  string and `CLASSIC_SMSG_WHO_IS`'s reply message an 11-bit one (TrinityCore's `WhoIsRequest`/
+  `WhoIsResponse`); the legacy `CMSG_WHOIS`/`SMSG_WHOIS` carried a plain C-string either way. `CMSG_EMOTE`
+  can arrive with an empty body at world entry (a login-time emote-state sync quirk observed by
+  vibemangos); read as a no-op instead of throwing. `CMSG_SEND_TEXT_EMOTE`'s body gained a target guid,
+  a sound index and a variable-length (usually empty) visual-kit list ahead of a trailing sequence
+  variation, all discarded except the target and sound index; `SMSG_TEXT_EMOTE`'s reply carries no name
+  string any more; the client resolves both source and target names from its own cache via the guids
+  alone (TrinityCore's `CTextEmote`/`STextEmote`). The vanilla set/clear/reset tutorial-flag opcode
+  triplet folds into one `CLASSIC_CMSG_TUTORIAL` with a 2-bit action field (TrinityCore's
+  `TutorialSetFlag`); the login-time `SMSG_TUTORIAL_FLAGS` send (`Packets/PlayerSetup.h`) was already
+  ported in an earlier slice and needed no change here. Account data gained a player guid, a timestamp
+  and a real length prefix ahead of the compressed payload on both the request and the update/response
+  bodies (TrinityCore's `ClientConfig::RequestAccountData`/`UpdateAccountData`); the legacy bodies had no
+  guid, no timestamp and, on the response, no way for the client to know where the compressed payload
+  ended. Unverified against a real client.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are

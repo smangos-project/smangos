@@ -38,6 +38,7 @@
 #include "Util.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Anticheat.h"
 #include "AccountMgr.h"
 
@@ -774,7 +775,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage const
     }
 }
 
-void WorldSession::HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet)
+void WorldSession::HandleEmoteOpcode(EmoteRequest const& packet)
 {
     if (!GetPlayer()->IsAlive() || GetPlayer()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_ANIM))
         return;
@@ -787,36 +788,35 @@ void WorldSession::HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet)
     }
 
     // restrict to the only emotes hardcoded in client
-    if (packet.emote != EMOTE_ONESHOT_NONE && packet.emote != EMOTE_ONESHOT_WAVE)
+    if (packet.EmoteId != EMOTE_ONESHOT_NONE && packet.EmoteId != EMOTE_ONESHOT_WAVE)
         return;
 
     GetPlayer()->InterruptSpellsWithChannelFlags(AURA_INTERRUPT_ANIM_CANCELS);
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_ANIM_CANCELS);
-    GetPlayer()->HandleEmoteCommand(packet.emote);
+    GetPlayer()->HandleEmoteCommand(packet.EmoteId);
 }
 
 namespace MaNGOS
 {
+// The modern SMSG_TEXT_EMOTE has no name string at all -- the client resolves both source and
+// target names from its own cache via SourceGuid/TargetGuid. loc_idx is unused now (no localized
+// content left to pick), kept only because LocalizedPacketDo/CameraDistWorker still drive the
+// range-based broadcast below.
 class EmoteChatBuilder
 {
 public:
     EmoteChatBuilder(Player const& pl, uint32 text_emote, uint32 emote_num, Unit const* target)
         : i_player(pl), i_text_emote(text_emote), i_emote_num(emote_num), i_target(target) {}
 
-    void operator()(WorldPacket& data, int32 loc_idx)
+    void operator()(WorldPacket& data, int32 /*loc_idx*/)
     {
-        char const* nam = i_target ? i_target->GetNameForLocaleIdx(loc_idx) : nullptr;
-        uint32 namlen = (nam ? strlen(nam) : 0) + 1;
-
-        data.Initialize(SMSG_TEXT_EMOTE, (20 + namlen));
-        data << ObjectGuid(i_player.GetObjectGuid());
-        data << uint32(i_text_emote);
-        data << uint32(i_emote_num);
-        data << uint32(namlen);
-        if (namlen > 1)
-            data.append(nam, namlen);
-        else
-            data << uint8(0x00);
+        TextEmoteNotify packet;
+        packet.SourceGuid = ClassicGuidMapping::ToClassic(i_player.GetObjectGuid(), realmID);
+        packet.EmoteId = i_text_emote;
+        packet.SoundIndex = i_emote_num;
+        if (i_target)
+            packet.TargetGuid = ClassicGuidMapping::ToClassic(i_target->GetObjectGuid(), realmID);
+        data = MakeClassicPacket(packet);
     }
 
 private:
@@ -827,7 +827,7 @@ private:
 };
 }                                                           // namespace MaNGOS
 
-void WorldSession::HandleTextEmoteOpcode(WorldPackets::Misc::TextEmote const& packet)
+void WorldSession::HandleTextEmoteOpcode(TextEmoteRequest const& packet)
 {
     if (!GetPlayer()->IsAlive() || GetPlayer()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_ANIM))
         return;
@@ -839,7 +839,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Misc::TextEmote const& pa
         return;
     }
 
-    EmotesTextEntry const* em = sEmotesTextStore.LookupEntry(packet.textEmote);
+    EmotesTextEntry const* em = sEmotesTextStore.LookupEntry(packet.EmoteId);
     if (!em)
         return;
 
@@ -859,16 +859,17 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Misc::TextEmote const& pa
         }
     }
 
-    Unit* unit = GetPlayer()->GetMap()->GetUnit(packet.guid);
+    nonstd::optional<ObjectGuid> const targetGuid = ClassicGuidMapping::FromClassic(packet.TargetGuid);
+    Unit* unit = targetGuid ? GetPlayer()->GetMap()->GetUnit(*targetGuid) : nullptr;
 
-    MaNGOS::EmoteChatBuilder emote_builder(*GetPlayer(), packet.textEmote, packet.emoteNum, unit);
+    MaNGOS::EmoteChatBuilder emote_builder(*GetPlayer(), packet.EmoteId, packet.SoundIndex, unit);
     MaNGOS::LocalizedPacketDo<MaNGOS::EmoteChatBuilder > emote_do(emote_builder);
     MaNGOS::CameraDistWorker<MaNGOS::LocalizedPacketDo<MaNGOS::EmoteChatBuilder > > emote_worker(GetPlayer(), sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_TEXTEMOTE), emote_do);
     Cell::VisitWorldObjects(GetPlayer(), emote_worker,  sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_TEXTEMOTE));
 
     //Send scripted event call
     if (unit && unit->IsCreature() && ((Creature*)unit)->AI())
-        ((Creature*)unit)->AI()->ReceiveEmote(GetPlayer(), packet.textEmote);
+        ((Creature*)unit)->AI()->ReceiveEmote(GetPlayer(), packet.EmoteId);
 }
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPackets::Misc::ChatIgnored const& packet)

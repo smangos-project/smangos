@@ -17,25 +17,8 @@ void WorldPackets::Misc::AreaTrigger::ReadFromWorldPacket(WorldPacket& recv_data
     recv_data >> triggerId;
 }
 
-void WorldPackets::Misc::Inspect::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
-}
-
 void WorldPackets::Misc::GameObjectUse::ReadFromWorldPacket(WorldPacket& recv_data)
 {
-    recv_data >> guid;
-}
-
-void WorldPackets::Misc::Emote::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> emote;
-}
-
-void WorldPackets::Misc::TextEmote::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> textEmote;
-    recv_data >> emoteNum;
     recv_data >> guid;
 }
 
@@ -49,20 +32,10 @@ void WorldPackets::Misc::FarSight::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> op;
 }
 
-void WorldPackets::Misc::TutorialFlag::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> iFlag;
-}
-
 void WorldPackets::Misc::SetActionButton::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> button;
     recv_data >> packetData;
-}
-
-void WorldPackets::Misc::InspectHonorStats::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> guid;
 }
 
 void WorldPackets::Misc::SetFactionAtWar::ReadFromWorldPacket(WorldPacket& recv_data)
@@ -114,23 +87,6 @@ void WorldPackets::Misc::MeetingStoneJoin::ReadFromWorldPacket(WorldPacket& recv
 void WorldPackets::Misc::TeleportToUnit::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> playerName;
-}
-
-void WorldPackets::Misc::RequestAccountData::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> type;
-}
-
-void WorldPackets::Misc::UpdateAccountData::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> type;
-    recv_data >> decompressedSize;
-    uint32 remaining = recv_data.size() - recv_data.rpos();
-    compressedData.resize(remaining);
-    if (compressedData.size() > 0)
-    {
-        recv_data.read(compressedData.data(), compressedData.size());
-    }
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
@@ -242,93 +198,6 @@ void WorldPackets::Misc::PlayedTime::AppendBodyTo(ByteBuffer& buffer) const
 {
     buffer << totalPlayedTime;
     buffer << levelPlayedTime;
-}
-
-size_t WorldPackets::Misc::InspectResponse::EstimateFinalSize() const
-{
-    return sizeof(guid);
-}
-
-void WorldPackets::Misc::InspectResponse::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << guid;
-}
-
-size_t WorldPackets::Misc::WhoisResponse::EstimateFinalSize() const
-{
-    return message.size() + sizeof(char) /*null terminator*/;
-}
-
-void WorldPackets::Misc::WhoisResponse::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << message;
-}
-
-size_t WorldPackets::Misc::UpdateAccountDataResponse::EstimateFinalSize() const
-{
-    return sizeof(type) +
-           sizeof(decompressedLength) +
-           compressedData.size();
-}
-
-void WorldPackets::Misc::UpdateAccountDataResponse::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << type;
-    buffer << decompressedLength;
-    buffer.append(compressedData.data(), compressedData.size());
-}
-
-size_t WorldPackets::Misc::InspectHonorStatsResponse::EstimateFinalSize() const
-{
-    return sizeof(playerGuid) +
-           sizeof(highestRank) +
-           sizeof(sessionKills) +
-           sizeof(yesterdayHK) +
-           sizeof(unknownOld1) +
-           sizeof(lastWeekHK) +
-           sizeof(unknownOld2) +
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-           sizeof(thisWeekHK) +
-           sizeof(unknownOld3) +
-#endif
-           sizeof(lifetimeHK) +
-           sizeof(lifetimeDHK) +
-           sizeof(yesterdayHonor) +
-           sizeof(lastWeekHonor) +
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-           sizeof(thisWeekHonor) +
-#endif
-           sizeof(lastWeekRank) +
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-           sizeof(rankBar) +
-#endif
-           0;
-}
-
-void WorldPackets::Misc::InspectHonorStatsResponse::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << playerGuid;
-    buffer << highestRank;
-    buffer << sessionKills;
-    buffer << yesterdayHK;
-    buffer << unknownOld1;
-    buffer << lastWeekHK;
-    buffer << unknownOld2;
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    buffer << thisWeekHK;
-    buffer << unknownOld3;
-#endif
-    buffer << lifetimeHK;
-    buffer << lifetimeDHK;
-    buffer << yesterdayHonor;
-    buffer << lastWeekHonor;
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    buffer << thisWeekHonor;
-#endif
-    buffer << lastWeekRank;
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    buffer << rankBar;
-#endif
 }
 
 size_t WorldPackets::Misc::ServerMessage::EstimateFinalSize() const
@@ -741,18 +610,6 @@ void WorldPackets::Misc::UpdateLastInstance::AppendBodyTo(ByteBuffer& buffer) co
     buffer << mapId;
 }
 #endif
-
-size_t WorldPackets::Misc::EmoteNotify::EstimateFinalSize() const
-{
-    return sizeof(emoteId) +
-           sizeof(unitGuid);
-}
-
-void WorldPackets::Misc::EmoteNotify::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << emoteId;
-    buffer << unitGuid;
-}
 
 size_t WorldPackets::Misc::UpdateWorldState::EstimateFinalSize() const
 {

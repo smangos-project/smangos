@@ -822,37 +822,37 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
     pPlayer->TeleportTo(pTeleTrigger->destination);
 }
 
-void WorldSession::HandleUpdateAccountData(WorldPackets::Misc::UpdateAccountData const& packet)
+void WorldSession::HandleUpdateAccountData(AccountDataUpdate const& packet)
 {
     NewAccountData::AccountDataType dataType;
     if (GetGameBuild() <= CLIENT_BUILD_1_8_4)
-        dataType = ConvertOldAccountDataToNew(packet.type);
+        dataType = ConvertOldAccountDataToNew(packet.DataType);
     else
-        dataType = static_cast<NewAccountData::AccountDataType>(packet.type);
+        dataType = static_cast<NewAccountData::AccountDataType>(packet.DataType);
 
     if (dataType >= NewAccountData::NUM_ACCOUNT_DATA_TYPES)
     {
         std::stringstream oss;
-        oss << "Client sent invalid account data type " << packet.type << " in CMSG_UPDATE_ACCOUNT_DATA.";
+        oss << "Client sent invalid account data type " << packet.DataType << " in CLASSIC_CMSG_UPDATE_ACCOUNT_DATA.";
         ProcessAnticheatAction("PassiveAnticheat", oss.str().c_str(), CHEAT_ACTION_LOG);
         return;
     }
 
-    if (packet.decompressedSize == 0)                       // erase
+    if (packet.DecompressedSize == 0)                       // erase
     {
         SetAccountData(dataType, "");
         return;
     }
 
-    if (packet.decompressedSize > 0xFFFF)
+    if (packet.DecompressedSize > 0xFFFF)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "UAD: Account data packet too big, size %u", packet.decompressedSize);
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "UAD: Account data packet too big, size %u", packet.DecompressedSize);
         return;
     }
 
     nonstd::optional<std::vector<uint8>> uncompressedData = Compression::ZLib::Decompress(
-        packet.compressedData,
-        packet.decompressedSize,
+        packet.CompressedData,
+        packet.DecompressedSize,
         Compression::ZLib::ChecksumOption::IgnoreChecksum // client might not provide ADLER32 checksum
     );
 
@@ -866,47 +866,44 @@ void WorldSession::HandleUpdateAccountData(WorldPackets::Misc::UpdateAccountData
     SetAccountData(dataType, uncompressedString);
 }
 
-void WorldSession::HandleRequestAccountData(WorldPackets::Misc::RequestAccountData const& packet)
+void WorldSession::HandleRequestAccountData(AccountDataRequest const& packet)
 {
     NewAccountData::AccountDataType dataType;
     if (GetGameBuild() <= CLIENT_BUILD_1_8_4)
-        dataType = ConvertOldAccountDataToNew(packet.type);
+        dataType = ConvertOldAccountDataToNew(packet.DataType);
     else
-        dataType = (NewAccountData::AccountDataType)packet.type;
+        dataType = (NewAccountData::AccountDataType)packet.DataType;
 
     if (dataType >= NewAccountData::NUM_ACCOUNT_DATA_TYPES)
     {
         std::stringstream oss;
-        oss << "Client requested invalid account data type " << packet.type << " in CMSG_REQUEST_ACCOUNT_DATA.";
+        oss << "Client requested invalid account data type " << packet.DataType << " in CLASSIC_CMSG_REQUEST_ACCOUNT_DATA.";
         ProcessAnticheatAction("PassiveAnticheat", oss.str().c_str(), CHEAT_ACTION_LOG);
         return;
     }
 
     AccountData* adata = GetAccountData(dataType);
 
+    AccountDataUpdateResult response;
+    response.Timestamp = time(nullptr);
+    response.PlayerGuid = ClassicGuidMapping::ToClassic(_player->GetObjectGuid(), realmID);
+    response.DataType = packet.DataType; // use the original type sent by client
+
     uint32 size = adata->data.size();
-    if (!size)
-    {
-        auto accountDataPacket = std::make_unique<WorldPackets::Misc::UpdateAccountDataResponse>();
-        accountDataPacket->type = packet.type;                         // use the original type sent by client
-        accountDataPacket->decompressedLength = 0;                     // decompressed length
-        SendPacket(std::move(accountDataPacket));
-    }
-    else
+    if (size)
     {
         nonstd::optional<std::vector<uint8>> compressedData = Compression::ZLib::Compress(reinterpret_cast<uint8 const*>(adata->data.data()), adata->data.size());
         if (!compressedData)
         {
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "SMSG_UPDATE_ACCOUNT_DATA: Failed to compress account data");
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CLASSIC_SMSG_UPDATE_ACCOUNT_DATA: Failed to compress account data");
             return;
         }
 
-        auto accountDataPacket = std::make_unique<WorldPackets::Misc::UpdateAccountDataResponse>();
-        accountDataPacket->type = packet.type;                            // use the original type sent by client
-        accountDataPacket->decompressedLength = size;                     // decompressed length
-        accountDataPacket->compressedData = std::move(*compressedData);   // compressed data
-        SendPacket(std::move(accountDataPacket));
+        response.DecompressedLength = size;
+        response.CompressedData = std::move(*compressedData);
     }
+
+    SendClassic(response);
 }
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPackets::Misc::SetActionButton const& packet)
@@ -967,11 +964,15 @@ void WorldSession::HandlePlayedTime(NullClientPacket const& /*packet*/)
     SendPacket(std::move(packet));
 }
 
-void WorldSession::HandleInspectOpcode(WorldPackets::Misc::Inspect const& packet)
+void WorldSession::HandleInspectOpcode(Inspect const& packet)
 {
-    _player->SetSelectionGuid(packet.guid);
+    nonstd::optional<ObjectGuid> const targetGuid = ClassicGuidMapping::FromClassic(packet.TargetGuid);
+    if (!targetGuid)
+        return;
 
-    Player* pTarget = sObjectMgr.GetPlayer(packet.guid);
+    _player->SetSelectionGuid(*targetGuid);
+
+    Player* pTarget = sObjectMgr.GetPlayer(*targetGuid);
     if (!pTarget)
         return;
 
@@ -981,85 +982,70 @@ void WorldSession::HandleInspectOpcode(WorldPackets::Misc::Inspect const& packet
     if (_player->IsValidAttackTarget(pTarget))
         return;
 
-    auto inspectPacket = std::make_unique<WorldPackets::Misc::InspectResponse>();
-    inspectPacket->guid = packet.guid;
-    SendPacket(std::move(inspectPacket));
+    // The 1.12 client reconstructed the inspect window from the target's visible-item update
+    // fields and a separate honor-stats round trip; the 1.14 client expects this one packet with
+    // equipment and honor both up front (TrinityCore 1.14's HandleInspectOpcode confirms the
+    // same wire shape). Guild data is deferred to the guild slice (F8g).
+    InspectResult response;
+    InspectDisplayInfo& displayInfo = response.DisplayInfo;
+    displayInfo.PlayerGuid = packet.TargetGuid;
+    displayInfo.Name = pTarget->GetName();
+    displayInfo.Gender = pTarget->GetGender();
+    displayInfo.Race = pTarget->GetRace();
+    displayInfo.ClassId = pTarget->GetClass();
+
+    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        Item* item = pTarget->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!item)
+            continue;
+
+        InspectItemEntry itemData;
+        itemData.Index = i;
+        itemData.Item.ItemId = int32(item->GetProto()->ItemId);
+        itemData.Item.RandomPropertiesSeed = int32(item->GetItemSuffixFactor());
+        itemData.Item.RandomPropertiesId = int32(item->GetItemRandomPropertyId());
+        itemData.CreatorGuid = ClassicGuidMapping::ToClassic(item->GetGuidValue(ITEM_FIELD_CREATOR), realmID);
+
+        // Permanent + temporary enchant slots only -- vanilla's socket/use-enchant slots occupy
+        // the same field indices and must not be shown here.
+        for (uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; ++j)
+        {
+            if (uint32 enchantId = item->GetEnchantmentId(EnchantmentSlot(j)))
+            {
+                InspectEnchantEntry enchant;
+                enchant.Id = enchantId;
+                enchant.Index = j;
+                itemData.Enchants.push_back(enchant);
+            }
+        }
+        displayInfo.Items.push_back(itemData);
+    }
+
+    response.LifetimeMaxRank = pTarget->GetHonorMgr().GetHighestRank().rank;
+    response.TodayHK = uint16(pTarget->GetUInt32Value(PLAYER_FIELD_SESSION_KILLS));
+    response.YesterdayHK = pTarget->GetUInt16Value(PLAYER_FIELD_YESTERDAY_KILLS, 0);
+    response.LifetimeHK = pTarget->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS);
+
+    SendClassic(response);
 }
 
-void WorldSession::HandleInspectHonorStatsOpcode(WorldPackets::Misc::InspectHonorStats const& packet)
+void WorldSession::HandleInspectPvpOpcode(InspectPvp const& packet)
 {
-    Player* pTarget = sObjectMgr.GetPlayer(packet.guid);
-    if (!pTarget)
-        return;
+    // Vanilla has no arenas or rated brackets, so the response carries an empty bracket list and
+    // the three team slots (2v2/3v3/5v5) empty -- the client still needs the three slots present
+    // to render the tab.
+    InspectPvpResult response;
+    response.PlayerGuid = packet.TargetGuid;
+    response.ArenaTeams.resize(3);
+    SendClassic(response);
+}
 
-    if (_player->GetDistance3dToCenter(pTarget) > INSPECT_DISTANCE)
-        return;
-
-    if (_player->IsValidAttackTarget(pTarget))
-        return;
-
-    auto honorStats = std::make_unique<WorldPackets::Misc::InspectHonorStatsResponse>();
-
-    // player guid
-    honorStats->playerGuid = packet.guid;
-
-// World of Warcraft Client Patch 1.6.0 (2005-07-12)
-// - There is a new "This Week" section of the Honor tab, which will display PvP accomplishments of the current week.
-// World of Warcraft Client Patch 1.6.0 (2005-07-12)
-// - There is now a progress bar on the Honor tab of your character window that displays how close you are to your next rank.
-
-    // Highest Rank
-    honorStats->highestRank = pTarget->GetHonorMgr().GetHighestRank().rank;
-
-    // Today Honorable and Dishonorable Kills
-    honorStats->sessionKills = pTarget->GetUInt32Value(PLAYER_FIELD_SESSION_KILLS);
-
-    // Yesterday Honorable Kills
-    honorStats->yesterdayHK = pTarget->GetUInt16Value(PLAYER_FIELD_YESTERDAY_KILLS, 0);
-
-    // Unknown (deprecated, yesterday dishonourable?)
-    honorStats->unknownOld1 = 0;
-
-    // Last Week Honorable Kills
-    honorStats->lastWeekHK = pTarget->GetUInt16Value(PLAYER_FIELD_LAST_WEEK_KILLS, 0);
-
-    // Unknown (deprecated, last week dishonourable?)
-    honorStats->unknownOld2 = 0;
-
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    // This Week Honorable kills
-    honorStats->thisWeekHK = pTarget->GetUInt16Value(PLAYER_FIELD_THIS_WEEK_KILLS, 0);
-
-    // Unknown (deprecated, this week dishonourable?)
-    honorStats->unknownOld3 = 0;
-#endif
-
-    // Lifetime Honorable Kills
-    honorStats->lifetimeHK = pTarget->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS);
-
-    // Lifetime Dishonorable Kills
-    honorStats->lifetimeDHK = pTarget->GetUInt32Value(PLAYER_FIELD_LIFETIME_DISHONORBALE_KILLS);
-
-    // Yesterday Honor
-    honorStats->yesterdayHonor = pTarget->GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION);
-
-    // Last Week Honor
-    honorStats->lastWeekHonor = pTarget->GetUInt32Value(PLAYER_FIELD_LAST_WEEK_CONTRIBUTION);
-
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    // This Week Honor
-    honorStats->thisWeekHonor = pTarget->GetUInt32Value(PLAYER_FIELD_THIS_WEEK_CONTRIBUTION);
-#endif
-
-    // Last Week Standing
-    honorStats->lastWeekRank = pTarget->GetUInt32Value(PLAYER_FIELD_LAST_WEEK_RANK);
-
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-    // Rank progress bar
-    honorStats->rankBar = pTarget->GetByteValue(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_HONOR_RANK_BAR);
-#endif
-
-    SendPacket(std::move(honorStats));
+void WorldSession::HandleQueryInspectAchievementsOpcode(QueryInspectAchievements const& /*packet*/)
+{
+    // No achievement system in vanilla (1.12 predates achievements) -- consumed no-op so the
+    // opcode stops being logged as unhandled on every inspect. The client tolerates the missing
+    // reply by simply not drawing the achievements tab.
 }
 
 void WorldSession::HandleTeleportToUnitOpcode(WorldPackets::Misc::TeleportToUnit const& packet)
@@ -1093,7 +1079,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPackets::Misc::WorldTeleport c
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Received worldport command from player %s", GetPlayer()->GetName());
 }
 
-void WorldSession::HandleWhoisOpcode(WorldPackets::Query::Whois const& packet)
+void WorldSession::HandleWhoisOpcode(WhoIsRequest const& packet)
 {
     if (GetSecurity() < SEC_ADMINISTRATOR)
     {
@@ -1101,17 +1087,18 @@ void WorldSession::HandleWhoisOpcode(WorldPackets::Query::Whois const& packet)
         return;
     }
 
-    if (packet.charName.empty() || !normalizePlayerName(const_cast<std::string&>(packet.charName)))
+    std::string charName = packet.CharacterName;
+    if (charName.empty() || !normalizePlayerName(charName))
     {
         SendNotification(LANG_NEED_CHARACTER_NAME);
         return;
     }
 
-    Player* plr = sObjectMgr.GetPlayer(packet.charName.c_str());
+    Player* plr = sObjectMgr.GetPlayer(charName.c_str());
 
     if (!plr)
     {
-        SendNotification(LANG_PLAYER_NOT_EXIST_OR_OFFLINE, packet.charName.c_str());
+        SendNotification(LANG_PLAYER_NOT_EXIST_OR_OFFLINE, charName.c_str());
         return;
     }
 
@@ -1120,7 +1107,7 @@ void WorldSession::HandleWhoisOpcode(WorldPackets::Query::Whois const& packet)
     std::unique_ptr<QueryResult> result = LoginDatabase.PQuery("SELECT `username`, `email`, `last_ip` FROM `account` WHERE `id`=%u", accId);
     if (!result)
     {
-        SendNotification(LANG_ACCOUNT_FOR_PLAYER_NOT_FOUND, packet.charName.c_str());
+        SendNotification(LANG_ACCOUNT_FOR_PLAYER_NOT_FOUND, charName.c_str());
         return;
     }
 
@@ -1135,11 +1122,9 @@ void WorldSession::HandleWhoisOpcode(WorldPackets::Query::Whois const& packet)
     if (lastIp.empty())
         lastIp = "Unknown";
 
-    std::string msg = packet.charName + "'s " + "account is " + acc + ", e-mail: " + email + ", last ip: " + lastIp;
-
-    auto whoisPacket = std::make_unique<WorldPackets::Misc::WhoisResponse>();
-    whoisPacket->message = msg;
-    _player->GetSession()->SendPacket(std::move(whoisPacket));
+    WhoIsResult response;
+    response.Message = charName + "'s " + "account is " + acc + ", e-mail: " + email + ", last ip: " + lastIp;
+    _player->GetSession()->SendClassic(response);
 }
 
 void WorldSession::HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet)

@@ -182,7 +182,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_CREATURE_QUERY_RESPONSE,      UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_WHO,                          STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleWhoOpcode);
     INVALID_PACKET(SMSG_WHO,                          UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_WHOIS,                        STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleWhoisOpcode);
+    INVALID_PACKET(CMSG_WHOIS,                        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_WHOIS,                        UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_FRIEND_LIST,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FRIEND_LIST,                  UnhandleReason::SendByServer);
@@ -336,13 +336,13 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_NEXT_CINEMATIC_CAMERA,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleNextCinematicCamera);
     DEFINE_HANDLER(CMSG_COMPLETE_CINEMATIC,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleCompleteCinematic);
     INVALID_PACKET(SMSG_TUTORIAL_FLAGS,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TUTORIAL_FLAG,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialFlagOpcode);
-    DEFINE_HANDLER(CMSG_TUTORIAL_CLEAR,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialClearOpcode);
-    DEFINE_HANDLER(CMSG_TUTORIAL_RESET,               STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTutorialResetOpcode);
+    INVALID_PACKET(CMSG_TUTORIAL_FLAG,                UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_TUTORIAL_CLEAR,               UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_TUTORIAL_RESET,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_STANDSTATECHANGE,             UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_EMOTE,                        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleEmoteOpcode);
+    INVALID_PACKET(CMSG_EMOTE,                        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_EMOTE,                        UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_TEXT_EMOTE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleTextEmoteOpcode);
+    INVALID_PACKET(CMSG_TEXT_EMOTE,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_TEXT_EMOTE,                   UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_AUTOEQUIP_GROUND_ITEM,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOSTORE_GROUND_ITEM,        UnhandleReason::Unhandled);
@@ -358,7 +358,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_DESTROYITEM,                            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_INVENTORY_CHANGE_FAILURE,     UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_OPEN_CONTAINER,               UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_INSPECT,                      STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleInspectOpcode);
+    INVALID_PACKET(CMSG_INSPECT,                      UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_INSPECT,                      UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_INITIATE_TRADE,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_BEGIN_TRADE,                  UnhandleReason::Unhandled);
@@ -614,8 +614,8 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GMTICKET_UPDATETEXT,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_UPDATETEXT,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_ACCOUNT_DATA_MD5,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_REQUEST_ACCOUNT_DATA,         STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleRequestAccountData);
-    DEFINE_HANDLER(CMSG_UPDATE_ACCOUNT_DATA,          STATUS_LOGGEDIN_OR_RECENTLY_LOGGEDOUT, PACKET_PROCESS_WORLD,         &WorldSession::HandleUpdateAccountData);
+    INVALID_PACKET(CMSG_REQUEST_ACCOUNT_DATA,         UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_UPDATE_ACCOUNT_DATA,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_UPDATE_ACCOUNT_DATA,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE,    UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_POWERGAINLOG_OBSOLETE,        UnhandleReason::SendByServer);
@@ -823,7 +823,8 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_BATTLEFIELD_STATUS,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlefieldStatusOpcode);
     INVALID_PACKET(SMSG_BATTLEFIELD_STATUS,           UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_BATTLEFIELD_PORT,             STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleBattleFieldPortOpcode);
-    DEFINE_HANDLER(MSG_INSPECT_HONOR_STATS,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleInspectHonorStatsOpcode);
+    // No modern equivalent: honor stats ride on the tail of CLASSIC_SMSG_INSPECT_RESULT instead.
+    INVALID_PACKET(MSG_INSPECT_HONOR_STATS,           UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_BATTLEMASTER_HELLO,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlemasterHelloOpcode);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(CMSG_MOVE_START_SWIM_CHEAT,        UnhandleReason::Unhandled);
@@ -1194,6 +1195,15 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CHAT_CHANNEL_DECLINE_INVITE, STATUS_LOGGEDIN, PACKET_PROCESS_CHANNEL, &WorldSession::HandleChannelDeclineInviteOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CHAT_CHANNEL_SILENCE_ALL, STATUS_LOGGEDIN, PACKET_PROCESS_CHANNEL, &WorldSession::HandleChannelSilenceAllOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CHAT_CHANNEL_UNSILENCE_ALL, STATUS_LOGGEDIN, PACKET_PROCESS_CHANNEL, &WorldSession::HandleChannelUnsilenceAllOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_INSPECT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleInspectOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_INSPECT_PVP, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleInspectPvpOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_INSPECT_ACHIEVEMENTS, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryInspectAchievementsOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_EMOTE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleEmoteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SEND_TEXT_EMOTE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTextEmoteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TUTORIAL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTutorialFlagOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_WHO_IS, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleWhoisOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_ACCOUNT_DATA, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleRequestAccountData);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_UPDATE_ACCOUNT_DATA, STATUS_LOGGEDIN_OR_RECENTLY_LOGGEDOUT, PACKET_PROCESS_WORLD, &WorldSession::HandleUpdateAccountData);
 
     return list;
 }

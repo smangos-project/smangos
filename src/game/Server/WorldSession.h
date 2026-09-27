@@ -56,11 +56,13 @@
 #include "Packets/GmTicketMessages.h"
 #include "Packets/GroupMessages.h"
 #include "Packets/Guild.h"
+#include "Packets/InspectMessages.h"
 #include "Packets/Item.h"
 #include "Packets/ItemMessages.h"
 #include "Packets/LootMessages.h"
 #include "Packets/Mail.h"
 #include "Packets/Misc.h"
+#include "Packets/MiscMessages.h"
 #include "Packets/MountSpecialAnim.h"
 #include "Packets/MovementMessages.h"
 #include "Packets/Npc.h"
@@ -605,8 +607,9 @@ class WorldSession
         void HandleMountSpecialAnimOpcode(MountSpecial const& packet);
         void HandleTeleportToUnitOpcode(WorldPackets::Misc::TeleportToUnit const& packet);
 
-        void HandleInspectOpcode(WorldPackets::Misc::Inspect const& packet);
-        void HandleInspectHonorStatsOpcode(WorldPackets::Misc::InspectHonorStats const& packet);
+        void HandleInspectOpcode(Inspect const& packet);
+        void HandleInspectPvpOpcode(InspectPvp const& packet);
+        void HandleQueryInspectAchievementsOpcode(QueryInspectAchievements const& packet);
         void HandleShowingHelmOpcode(NullClientPacket const& packet);
         void HandleShowingCloakOpcode(NullClientPacket const& packet);
         void HandleRepairItemOpcode(RepairItem const& packet);
@@ -638,7 +641,7 @@ class WorldSession
         void HandleSetSelectionOpcode(SetSelection const& packet);
         void HandleSetMouseOverTargetOpcode(WorldPackets::Misc::SetTarget const& packet);
         void HandleStandStateChangeOpcode(StandStateChange const& packet);
-        void HandleEmoteOpcode(WorldPackets::Misc::Emote const& packet);
+        void HandleEmoteOpcode(EmoteRequest const& packet);
         void HandleFriendListOpcode(SendContactList const& packet);
         void HandleSetContactNotesOpcode(SetContactNotes const& packet);
         void HandleAddFriendOpcode(AddFriend const& packet);
@@ -656,8 +659,8 @@ class WorldSession
         void HandleSetFactionInactiveOpcode(WorldPackets::Misc::SetFactionInactive const& packet);
 #endif
 
-        void HandleUpdateAccountData(WorldPackets::Misc::UpdateAccountData const& packet);
-        void HandleRequestAccountData(WorldPackets::Misc::RequestAccountData const& packet);
+        void HandleUpdateAccountData(AccountDataUpdate const& packet);
+        void HandleRequestAccountData(AccountDataRequest const& packet);
         void HandleSetActionButtonOpcode(WorldPackets::Misc::SetActionButton const& packet);
 
         void HandleGameObjectUseOpcode(WorldPackets::Misc::GameObjectUse const& packet);
@@ -856,7 +859,7 @@ class WorldSession
         void HandleChatMessageInstanceChatOpcode(ChatMessageInstanceChat const& packet);
         void HandleChatMessageAfkOpcode(ChatMessageAfk const& packet);
         void HandleChatMessageDndOpcode(ChatMessageDnd const& packet);
-        void HandleTextEmoteOpcode(WorldPackets::Misc::TextEmote const& packet);
+        void HandleTextEmoteOpcode(TextEmoteRequest const& packet);
         void HandleChatIgnoredOpcode(WorldPackets::Misc::ChatIgnored const& packet);
         uint32 ChatCooldown();
 
@@ -888,9 +891,7 @@ class WorldSession
 
         void HandlePageTextQueryOpcode(QueryPageText const& packet);
 
-        void HandleTutorialFlagOpcode(WorldPackets::Misc::TutorialFlag const& packet);
-        void HandleTutorialClearOpcode(NullClientPacket const& packet);
-        void HandleTutorialResetOpcode(NullClientPacket const& packet);
+        void HandleTutorialFlagOpcode(TutorialRequest const& packet);
 
         //Pet
         void HandlePetAction(PetAction const& packet);
@@ -930,7 +931,7 @@ class WorldSession
         void HandleMinimapPing(MinimapPingClient const& packet);
         void HandleRandomRoll(RandomRollClient const& packet);
         void HandleFarSightOpcode(WorldPackets::Misc::FarSight const& packet);
-        void HandleWhoisOpcode(WorldPackets::Query::Whois const& packet);
+        void HandleWhoisOpcode(WhoIsRequest const& packet);
         void HandleResetInstancesOpcode(NullClientPacket const& packet);
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2

@@ -465,12 +465,14 @@ set (game_SRCS
     Server/Packets/GmTicketMessages.h
     Server/Packets/GroupMessages.h
     Server/Packets/Guild.h
+    Server/Packets/InspectMessages.h
     Server/Packets/Item.h
     Server/Packets/ItemMessages.h
     Server/Packets/ClassicInventoryResult.h
     Server/Packets/LootMessages.h
     Server/Packets/Mail.h
     Server/Packets/Misc.h
+    Server/Packets/MiscMessages.h
     Server/Packets/MountSpecialAnim.h
     Server/Packets/Npc.h
     Server/Packets/NpcMessages.h

@@ -30,41 +30,12 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class Inspect final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit Inspect() : ClientPacket(CMSG_INSPECT) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class GameObjectUse final : public ClientPacket
     {
     public:
         ObjectGuid guid;
 
         explicit GameObjectUse() : ClientPacket(CMSG_GAMEOBJ_USE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class Emote final : public ClientPacket
-    {
-    public:
-        uint32 emote = 0;
-
-        explicit Emote() : ClientPacket(CMSG_EMOTE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class TextEmote final : public ClientPacket
-    {
-    public:
-        uint32 textEmote = 0;
-        uint32 emoteNum = 0;
-        ObjectGuid guid;
-
-        explicit TextEmote() : ClientPacket(CMSG_TEXT_EMOTE) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
@@ -87,15 +58,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class TutorialFlag final : public ClientPacket
-    {
-    public:
-        uint32 iFlag = 0;
-
-        explicit TutorialFlag() : ClientPacket(CMSG_TUTORIAL_FLAG) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetActionButton final : public ClientPacket
     {
     public:
@@ -103,15 +65,6 @@ namespace WorldPackets { namespace Misc
         uint32 packetData = 0;
 
         explicit SetActionButton() : ClientPacket(CMSG_SET_ACTION_BUTTON) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class InspectHonorStats final : public ClientPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit InspectHonorStats() : ClientPacket(MSG_INSPECT_HONOR_STATS) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
@@ -199,26 +152,6 @@ namespace WorldPackets { namespace Misc
         std::string playerName;
 
         explicit TeleportToUnit() : ClientPacket(CMSG_TELEPORT_TO_UNIT) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class RequestAccountData final : public ClientPacket
-    {
-    public:
-        uint32 type = 0;
-
-        explicit RequestAccountData() : ClientPacket(CMSG_REQUEST_ACCOUNT_DATA) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class UpdateAccountData final : public ClientPacket
-    {
-    public:
-        uint32             type = 0;
-        uint32             decompressedSize = 0;
-        std::vector<uint8> compressedData;
-
-        explicit UpdateAccountData() : ClientPacket(CMSG_UPDATE_ACCOUNT_DATA) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
@@ -347,69 +280,6 @@ namespace WorldPackets { namespace Misc
         uint32 levelPlayedTime = 0;
 
         explicit PlayedTime() : ServerPacket(SMSG_PLAYED_TIME) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class InspectResponse final : public ServerPacket
-    {
-    public:
-        ObjectGuid guid;
-
-        explicit InspectResponse() : ServerPacket(SMSG_INSPECT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class WhoisResponse final : public ServerPacket
-    {
-    public:
-        std::string message; // max CString length allowed: 256
-
-        explicit WhoisResponse() : ServerPacket(SMSG_WHOIS) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class UpdateAccountDataResponse final : public ServerPacket
-    {
-    public:
-        uint32 type = 0;
-        uint32 decompressedLength = 0;
-        std::vector<uint8> compressedData;
-
-        explicit UpdateAccountDataResponse() : ServerPacket(SMSG_UPDATE_ACCOUNT_DATA) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class InspectHonorStatsResponse final : public ServerPacket
-    {
-    public:
-        ObjectGuid playerGuid;
-        uint8 highestRank = 0;          // Highest Rank
-        uint32 sessionKills = 0;        // Today Honorable and Dishonorable Kills
-        uint16 yesterdayHK = 0;         // Yesterday Honorable Kills
-        uint16 unknownOld1 = 0;         // Unknown (deprecated, yesterday dishonourable?)
-        uint16 lastWeekHK = 0;          // Last Week Honorable Kills
-        uint16 unknownOld2 = 0;         // Unknown (deprecated, last week dishonourable?)
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-        uint16 thisWeekHK = 0;          // This Week Honorable kills
-        uint16 unknownOld3 = 0;         // Unknown (deprecated, this week dishonourable?)
-#endif
-        uint32 lifetimeHK = 0;          // Lifetime Honorable Kills
-        uint32 lifetimeDHK = 0;         // Lifetime Dishonorable Kills
-        uint32 yesterdayHonor = 0;      // Yesterday Honor
-        uint32 lastWeekHonor = 0;       // Last Week Honor
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-        uint32 thisWeekHonor = 0;       // This Week Honor
-#endif
-        uint32 lastWeekRank = 0;        // Last Week Standing
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
-        uint8 rankBar = 0;              // Rank progress bar
-#endif
-
-        explicit InspectHonorStatsResponse() : ServerPacket(MSG_INSPECT_HONOR_STATS) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
@@ -775,18 +645,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 #endif
-
-    // SMSG_EMOTE: sent to broadcast a unit's emote animation to nearby clients
-    class EmoteNotify final : public ServerPacket
-    {
-    public:
-        uint32 emoteId = 0;
-        ObjectGuid unitGuid;
-
-        explicit EmoteNotify() : ServerPacket(SMSG_EMOTE) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
     class UpdateWorldState final : public ServerPacket
     {

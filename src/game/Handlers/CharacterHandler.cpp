@@ -515,29 +515,37 @@ void WorldSession::HandleSetFactionAtWarOpcode(WorldPackets::Misc::SetFactionAtW
     pPlayer->GetReputationMgr().SetAtWar(packet.repListId, packet.flag);
 }
 
-void WorldSession::HandleTutorialFlagOpcode(WorldPackets::Misc::TutorialFlag const& packet)
+// The modern client folds the legacy set/clear/reset opcode triplet into one CLASSIC_CMSG_TUTORIAL
+// with a 2-bit Action field.
+void WorldSession::HandleTutorialFlagOpcode(TutorialRequest const& packet)
 {
-    uint32 wInt = (packet.iFlag / 32);
-    if (wInt >= 8)
-        return;
-
-    uint32 rInt = (packet.iFlag % 32);
-
-    uint32 tutflag = GetTutorialInt(wInt);
-    tutflag |= (1 << rInt);
-    SetTutorialInt(wInt, tutflag);
-}
-
-void WorldSession::HandleTutorialClearOpcode(NullClientPacket const& /*packet*/)
-{
-    for (uint32 iI = 0; iI < 8; ++iI)
-        SetTutorialInt(iI, 0xFFFFFFFF);
-}
-
-void WorldSession::HandleTutorialResetOpcode(NullClientPacket const& /*packet*/)
-{
-    for (uint32 iI = 0; iI < 8; iI++)
-        SetTutorialInt(iI, 0x00000000);
+    switch (packet.Action)
+    {
+        case TutorialRequest::ActionUpdate:
+        {
+            uint32 wInt = packet.TutorialBit >> 5;
+            if (wInt >= ACCOUNT_TUTORIALS_COUNT)
+            {
+                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CLASSIC_CMSG_TUTORIAL received bad TutorialBit %u.", packet.TutorialBit);
+                return;
+            }
+            uint32 tutflag = GetTutorialInt(wInt);
+            tutflag |= (1 << (packet.TutorialBit & 0x1F));
+            SetTutorialInt(wInt, tutflag);
+            break;
+        }
+        case TutorialRequest::ActionClear:
+            for (uint32 iI = 0; iI < ACCOUNT_TUTORIALS_COUNT; ++iI)
+                SetTutorialInt(iI, 0xFFFFFFFF);
+            break;
+        case TutorialRequest::ActionReset:
+            for (uint32 iI = 0; iI < ACCOUNT_TUTORIALS_COUNT; ++iI)
+                SetTutorialInt(iI, 0x00000000);
+            break;
+        default:
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CLASSIC_CMSG_TUTORIAL received unknown Action %u.", packet.Action);
+            break;
+    }
 }
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4

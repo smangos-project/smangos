@@ -1807,10 +1807,11 @@ void Unit::TriggerDamageShields(Unit* pVictim)
 
 void Unit::HandleEmoteCommand(uint32 emoteId)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::EmoteNotify>();
-    packet->emoteId = emoteId;
-    packet->unitGuid = GetObjectGuid();
-    SendObjectMessageToSet(std::move(packet), true);
+    EmoteNotify packet;
+    packet.EmoteId = emoteId;
+    packet.UnitGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    WorldPacket data = MakeClassicPacket(packet);
+    SendObjectMessageToSet(&data, true);
 }
 
 void Unit::HandleEmoteState(uint32 emoteId)

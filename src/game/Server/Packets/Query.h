@@ -6,15 +6,6 @@
 
 namespace WorldPackets { namespace Query
 {
-    class Whois final : public ClientPacket
-    {
-    public:
-        std::string charName;
-
-        explicit Whois() : ClientPacket(CMSG_WHOIS) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class ItemNameQuery final : public ClientPacket
     {
     public:
