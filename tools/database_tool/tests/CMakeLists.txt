@@ -11,6 +11,7 @@ add_executable(tests-database-tool
   Sql/MigrationPorterTests.cpp
   Migrations/MigrationFileTests.cpp
   Migrations/MigrationStateTests.cpp
+  Migrations/MigrationRunnerTests.cpp
   ToolConfigTests.cpp
   Commands/CreateMysqlDatabaseTests.cpp
 )
