@@ -834,6 +834,43 @@ None of these is proven against a real 1.15.6 client yet.
   shortest listing is a real 2 hours, far too long for a scenario to wait on) -- all wire-tested only
   via round trips.
 
+- **Battlegrounds.** TrinityCore's `LFG::RideTicket`/`BattlegroundQueueTypeId` are reused as-is
+  (`RideTicket`, `BattlefieldStatusHeader` in `Packets/BattlegroundMessages.h`): the queue ticket
+  identifies a queue slot by (id, time) instead of the old mapId+action shape, and `BattlemasterJoin`'s
+  `QueueId` packs the `BattlemasterListId` in its low 16 bits, numerically identical to this engine's
+  own `BattleGroundTypeId` (AV=1, WS=2, AB=3), so no lookup table is needed either way. The one true
+  ticket per queue slot is minted once (`BattleGroundMgr::GenerateNextTicketId`) and stashed on both
+  `Player::BgBattleGroundQueueID_Rec` and `PlayerQueueInfo` so it survives the queued -> invited ->
+  playing transition and every re-echoed status packet keeps handing back the same (id, time) pair --
+  re-deriving `time` on every echo would make the client treat a repeat of the same invite as a new one.
+  `SMSG_GROUP_JOINED_BATTLEGROUND` and the 1.9-retired `SMSG_BATTLEFIELD_WIN`/`_LOSE` have no modern
+  equivalent at all (confirmed absent from both references): the deserter/join-failed cases now go out
+  as `SMSG_BATTLEFIELD_STATUS_FAILED` (`GroupJoinBattlegroundResult`, TrinityCore's own wire-level
+  codes, only the subset this engine can actually produce), and the win/lose toast is inferred by the
+  client from `SMSG_PVP_LOG_DATA`'s own winner field. `SMSG_BATTLEGROUND_PLAYER_POSITIONS` is confirmed
+  against TrinityCore to carry only WSG's flag-carrier minimap blips, not every teammate's position like
+  the old 1.12 `MSG_BATTLEGROUND_PLAYER_POSITIONS` did (that behavior has no modern equivalent); this
+  port pushes it on a plain 5-second timer (`BG_PLAYER_POSITIONS_UPDATE_INTERVAL`) since neither
+  reference documents the real client-visible cadence. `PvpMatchPlayerStatistics` is a field-by-field
+  match against TrinityCore's `BattlegroundScore::BuildPvPLogPlayerDataPacket` -- notably that
+  production code itself never populates `PrimaryTalentTree`/`Sex`/`Race`/`Class`/`CreatureId`/
+  `HonorLevel`/`Role`/`IsInWorld` from the player object either, so leaving them zeroed matches
+  confirmed real behavior rather than guessing richer data would help. Per-BG scoreboard stat ids are
+  client-hardcoded and never sent on the wire, only the values in insertion order (confirmed against
+  TrinityCore: WSG 928/929, AB 926/927, AV 61/63/64/65); this engine's own `BattleGroundAVScore` also
+  tracks `secondaryObjectives`/`lieutnantCount`/`secondaryNPC`, which have no known modern stat slot and
+  are left out. `BattlefieldList`'s `verification` field is a plain HARDCODE of the client's own
+  hardcoded value (its purpose is unclear even in the references). Retail dropped per-instance BG
+  picking, but Classic Era preserves the original vanilla UX of listing/choosing among active
+  instances, so `BattlefieldList.Battlefields` still carries the same per-instance ids the old
+  pre-modern packet sent. `CMSG_BATTLEFIELD_JOIN` (the old raw mapId+action opcode) has no modern
+  counterpart at all, replaced entirely by `BattlemasterJoin`/`BattleFieldPort`'s ticket-based flow.
+  Wire-tested only via round trips (`BattlegroundMessagesTests.cpp`) and the existing login/queue
+  conformance coverage; no live scenario exists for this slice at all (see the F8j entry,
+  `cur-step.md`) -- actually running a battleground to completion needs more of the surrounding map/AI
+  machinery than one scenario should pull in, so every queue/status/scoreboard/flag-position body here
+  is unverified against a real client.
+
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
   also lists 166 more names at value `0` (retail-only systems with no known classic value); they are
