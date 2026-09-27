@@ -261,8 +261,7 @@ struct InspectPvpBracketEntry
 // target's visible-item update fields and a separate MSG_INSPECT_HONOR_STATS round trip; the
 // 1.14 client expects this one packet with everything (equipment and honor both) up front, and
 // has no modern request left that the honor stats used to answer. Glyphs, talents and the
-// azerite level never applied in vanilla and are always empty/absent. Guild data is deferred to
-// the guild slice (F8g): HasGuildData is always false for now.
+// azerite level never applied in vanilla and are always empty/absent.
 struct InspectResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_INSPECT_RESULT;

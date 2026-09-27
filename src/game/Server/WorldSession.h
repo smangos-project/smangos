@@ -55,7 +55,7 @@
 #include "Packets/DuelMessages.h"
 #include "Packets/GmTicketMessages.h"
 #include "Packets/GroupMessages.h"
-#include "Packets/Guild.h"
+#include "Packets/GuildMessages.h"
 #include "Packets/InspectMessages.h"
 #include "Packets/Item.h"
 #include "Packets/ItemMessages.h"
@@ -701,29 +701,26 @@ class WorldSession
         void HandleOfferPetitionOpcode(OfferPetition const& packet);
         void HandleTurnInPetitionOpcode(TurnInPetition const& packet);
 
-        void HandleGuildQueryOpcode(WorldPackets::Guild::GuildQuery const& packet);
-        void HandleGuildCreateOpcode(WorldPackets::Guild::GuildCreate const& packet);
-        void HandleGuildInviteOpcode(WorldPackets::Guild::GuildInvite const& packet);
-        void HandleGuildRemoveOpcode(WorldPackets::Guild::GuildRemove const& packet);
-        void HandleGuildAcceptOpcode(NullClientPacket const& packet);
-        void HandleGuildDeclineOpcode(NullClientPacket const& packet);
-        void HandleGuildInfoOpcode(NullClientPacket const& packet);
-        void HandleGuildRosterOpcode(NullClientPacket const& packet);
-        void HandleGuildPromoteOpcode(WorldPackets::Guild::GuildPromote const& packet);
-        void HandleGuildDemoteOpcode(WorldPackets::Guild::GuildDemote const& packet);
-        void HandleGuildLeaveOpcode(NullClientPacket const& packet);
-        void HandleGuildDisbandOpcode(NullClientPacket const& packet);
-        void HandleGuildLeaderOpcode(WorldPackets::Guild::GuildLeader const& packet);
-        void HandleGuildMOTDOpcode(WorldPackets::Guild::GuildMOTD const& packet);
-        void HandleGuildSetPublicNoteOpcode(WorldPackets::Guild::GuildSetPublicNote const& packet);
-        void HandleGuildSetOfficerNoteOpcode(WorldPackets::Guild::GuildSetOfficerNote const& packet);
-        void HandleGuildRankOpcode(WorldPackets::Guild::GuildRank const& packet);
-        void HandleGuildAddRankOpcode(WorldPackets::Guild::GuildAddRank const& packet);
-        void HandleGuildDelRankOpcode(NullClientPacket const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        void HandleGuildChangeInfoTextOpcode(WorldPackets::Guild::GuildChangeInfoText const& packet);
-#endif
-        void HandleSaveGuildEmblemOpcode(WorldPackets::Guild::SaveGuildEmblem const& packet);
+        void HandleGuildQueryOpcode(GuildQuery const& packet);
+        void HandleGuildInviteOpcode(GuildInviteByName const& packet);
+        void HandleGuildRemoveOpcode(GuildOfficerRemoveMember const& packet);
+        void HandleGuildAcceptOpcode(AcceptGuildInvite const& packet);
+        void HandleGuildDeclineOpcode(GuildDeclineInvitation const& packet);
+        void HandleGuildRosterOpcode(GuildGetRoster const& packet);
+        void HandleGuildGetRanksOpcode(GuildGetRanks const& packet);
+        void HandleGuildPermissionsQueryOpcode(GuildPermissionsQuery const& packet);
+        void HandleGuildPromoteOpcode(GuildPromoteMember const& packet);
+        void HandleGuildDemoteOpcode(GuildDemoteMember const& packet);
+        void HandleGuildLeaveOpcode(GuildLeave const& packet);
+        void HandleGuildDisbandOpcode(GuildDelete const& packet);
+        void HandleGuildLeaderOpcode(GuildSetGuildMaster const& packet);
+        void HandleGuildMOTDOpcode(GuildUpdateMotdText const& packet);
+        void HandleGuildSetMemberNoteOpcode(GuildSetMemberNote const& packet);
+        void HandleGuildRankOpcode(GuildSetRankPermissions const& packet);
+        void HandleGuildAddRankOpcode(GuildAddRank const& packet);
+        void HandleGuildDelRankOpcode(GuildDeleteRank const& packet);
+        void HandleGuildChangeInfoTextOpcode(GuildUpdateInfoText const& packet);
+        void HandleSaveGuildEmblemOpcode(SaveGuildEmblem const& packet);
 
         void HandleTaxiNodeStatusQueryOpcode(TaxiNodeStatusQuery const& packet);
         void HandleTaxiQueryAvailableNodes(TaxiQueryAvailableNodes const& packet);

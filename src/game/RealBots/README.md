@@ -704,8 +704,9 @@ None of these is proven against a real 1.15.6 client yet.
   `MSG_INSPECT_HONOR_STATS` has no modern client request at all and is retired outright; vibemangos
   keeps an `SMSG_INSPECT_HONOR_STATS` reply class for wire completeness but never sends it (no send
   site, and neither reference confirms real content for it), so this port doesn't port it either. Guild
-  data (`InspectResult`'s optional guild block) is deferred to the guild slice (F8g): `HasGuildData` is
-  always false for now. `CMSG_INSPECT_PVP`/`SMSG_INSPECT_PVP` and `CMSG_QUERY_INSPECT_ACHIEVEMENTS` have
+  data (`InspectResult`'s optional guild block) is filled from the guild slice (F8g): `HasGuildData` is
+  true and `GuildData` carries the target's guild guid and member count when the target is in a guild,
+  false/empty otherwise. `CMSG_INSPECT_PVP`/`SMSG_INSPECT_PVP` and `CMSG_QUERY_INSPECT_ACHIEVEMENTS` have
   no vanilla equivalent at all (no arenas, no achievements in 1.12); the PvP tab always answers with an
   empty bracket list and three empty arena-team slots, and the achievements-tab request is a consumed
   no-op, matching both references. Unverified against a real client.
@@ -725,6 +726,49 @@ None of these is proven against a real 1.15.6 client yet.
   bodies (TrinityCore's `ClientConfig::RequestAccountData`/`UpdateAccountData`); the legacy bodies had no
   guid, no timestamp and, on the response, no way for the client to know where the compressed payload
   ended. Unverified against a real client.
+- **Guilds.** No modern `CMSG_GUILD_CREATE` exists at all (confirmed absent from both references' opcode
+  dispatch); a real client only creates a guild through the petition/charter system (F8d,
+  `PetitionsHandler.cpp`'s `HandleTurnInPetitionOpcode`) or, in this tree, the `.guild create` GM command
+  -- `HandleGuildCreateOpcode` and the vanilla `GuildCreate` wire class are gone, not ported.
+  `CMSG_GUILD_INVITE`/`PROMOTE`/`DEMOTE`/`REMOVE`/`LEADER` and the two note-setters all moved from a
+  name-based body to a guid-based one, and the single vanilla `SMSG_GUILD_EVENT` (a numbered
+  `GuildEvents` enum plus a string-params array) is replaced entirely by around a dozen typed
+  `SMSG_GUILD_EVENT_*`/`SMSG_GUILD_SEND_RANK_CHANGE` messages -- `Guild::BroadcastEvent` is gone, replaced
+  by one `Broadcast*Event` method per typed message plus a generic `BroadcastClassic<T>` guild-wide
+  sender. `CMSG_GUILD_GET_ROSTER` (a real client's guild-roster open) replaces the old bodyless "guild
+  info" request outright: `SMSG_GUILD_INFO` is gone, its created-date/account-count fields folded into
+  `SMSG_GUILD_ROSTER`. **Followed TrinityCore, not vibemangos, for three wire bodies where vibemangos's
+  own implementation doesn't match its own reference's source** (unlike its many other, explicitly
+  live-verified fixes elsewhere in this section):
+  - `SMSG_GUILD_ROSTER`'s per-member body. vibemangos's version omits `GuildClubMemberID` (`u64`) and
+    `RaceID` (`u8`) entirely and adds a `SorEligible` bit with no counterpart in TrinityCore's real
+    `GuildRosterMemberData` struct at all -- every one of those bytes shifts every field after it. Also
+    missing: the trailing (always-empty, this engine has no mythic+) `DungeonScoreSummary` triplet
+    (two `float`s and a run count). Followed TrinityCore's exact layout; `RaceID` is filled for an
+    online member (`Player::GetRace()`), 0 for a cached offline one (not tracked in `MemberSlot`).
+  - `CMSG_GUILD_SET_RANK_PERMISSIONS`'s trailing `OldFlags` field is read *before* the bit-packed rank
+    name in TrinityCore's own `Read()` source, but vibemangos explicitly documents (and this port
+    follows) reading it *before* the name instead, citing a live capture via HermesProxy and a past bug
+    from trusting the source order. This is the one exception to "TrinityCore wins": vibemangos's claim
+    here cites live evidence, TrinityCore's own source does not.
+  - `SMSG_GUILD_PERMISSIONS_QUERY_RESULTS`'s field order: TrinityCore writes rank id, flags, withdraw
+    gold limit, tab count; vibemangos swaps the middle two with no verification comment at all (unlike
+    the `OldFlags` case above). Followed TrinityCore.
+  `SMSG_GUILD_INVITE_DECLINED` (the inviter's "player declined" notification) has no TrinityCore body at
+  all -- a real client never sends anything after a retail guild invite goes unanswered, but the opcode
+  exists in the 1.15.6 table and vibemangos guesses a name-only shape for it; taken as given, unverified
+  by either reference. Guild creation's `SMSG_QUERY_GUILD_INFO_RESPONSE` echoes the query's own guid at
+  the top level and a freshly-built one (from the resolved guild's numeric id) inside, matching a real
+  client capture vibemangos cites that the *response* carries no player guid at all, unlike the request.
+  **Out of scope, matching vibemangos exactly** (its own `Opcodes.cpp` leaves every one of these
+  `DEFINE_UNHANDLED`, several with an explicit "this core does not implement the feature yet" comment):
+  the entire guild bank (`CMSG_GUILD_BANK_*`, `*_GUILD_BANK_ITEM`), achievements, news, challenges,
+  recipes, the Battle.net-friend add, guild party state/XP, guild rename and
+  `CMSG_GUILD_REPLACE_GUILD_MASTER` (an inactive-account leader-transfer flow this engine has no
+  concept of). `CMSG_GUILD_SHIFT_RANK` (drag-reorder a rank in the ranks UI) is also left unbound: this
+  engine's ranks have no separate id/order distinction, so a real reorder would mean reassigning every
+  affected member's rank id live, which no reference here backs with verified behavior worth the risk.
+  Unverified against a real client throughout.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos

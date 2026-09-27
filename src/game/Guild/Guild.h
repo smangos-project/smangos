@@ -38,7 +38,6 @@ enum
     GUILD_NOTE_MAX_LENGTH       = 31,
     GUILD_INFO_MAX_LENGTH       = 500,
     GUILD_MOTD_MAX_LENGTH       = 128,
-    GUILD_ROSTER_MAX_LENGTH     = 0x8000 - 4, // max packet size accepted by client - packet header size
 };
 
 enum GuildDefaultRanks
@@ -73,14 +72,24 @@ enum GuildRankRights
     GR_RIGHT_ALL                = 0x000FF1FF
 };
 
+// The wire's numeric ids for SMSG_GUILD_COMMAND_RESULT's Command field. These are the real
+// GuildCommandType values the client uses to pick toast text, unchanged since 1.12; the
+// leftover names below were already numerically correct, just unlabeled.
 enum Typecommand
 {
-    GUILD_CREATE_S  = 0x00,
-    GUILD_INVITE_S  = 0x01,
-    GUILD_QUIT_S    = 0x03,
-    GUILD_FOUNDER_S = 0x0E,
-    GUILD_UNK19     = 0x13,
-    GUILD_UNK20     = 0x14
+    GUILD_CREATE_S             = 0x00,
+    GUILD_INVITE_S             = 0x01,
+    GUILD_QUIT_S               = 0x03,
+    GUILD_COMMAND_GET_ROSTER   = 0x05,
+    GUILD_COMMAND_PROMOTE      = 0x06,
+    GUILD_COMMAND_DEMOTE       = 0x07,
+    GUILD_COMMAND_REMOVE       = 0x08,
+    GUILD_COMMAND_CHANGE_LEADER = 0x0A,
+    GUILD_COMMAND_EDIT_MOTD    = 0x0B,
+    GUILD_FOUNDER_S            = 0x0E,
+    GUILD_COMMAND_CHANGE_RANK  = 0x10,
+    GUILD_UNK19                = 0x13, // GUILD_COMMAND_EDIT_PUBLIC_NOTE
+    GUILD_UNK20                = 0x14
     // [ZERO] in SMSG_GUILD_COMMAND_RESULT: 2,4-13,15-18 no effect for no error
 };
 
@@ -116,24 +125,6 @@ enum CommandErrors
     ERR_GUILD_RANK_IN_USE           = 0x12,
     ERR_GUILD_IGNORING_YOU_S        = 0x13,
     ERR_GUILD_UNK20                 = 0x14  // for Typecommand 0x05 only
-};
-
-enum GuildEvents
-{
-    GE_PROMOTION                    = 0x00,
-    GE_DEMOTION                     = 0x01,
-    GE_MOTD                         = 0x02,
-    GE_JOINED                       = 0x03,
-    GE_LEFT                         = 0x04,
-    GE_REMOVED                      = 0x05,
-    GE_LEADER_IS                    = 0x06,
-    GE_LEADER_CHANGED               = 0x07,
-    GE_DISBANDED                    = 0x08,
-    GE_TABARDCHANGE                 = 0x09,
-    GE_UPDATE_RANK_NAME             = 0x0A,                 // Arg1: RankID, Arg2: NewRankName
-    GE_UPDATE_ROSTER                = 0x0B,                 // EVENT_GUILD_ROSTER_UPDATE
-    GE_SIGNED_ON                    = 0x0C,                 // ERR_FRIEND_ONLINE_SS
-    GE_SIGNED_OFF                   = 0x0D,                 // ERR_FRIEND_OFFLINE_S
 };
 
 enum GuildRosterPresenceFlags
@@ -267,7 +258,7 @@ class Guild
         void SetEmblem(int32 emblemStyle, int32 emblemColor, int32 borderStyle, int32 borderColor, int32 backgroundColor);
 
         uint32 GetMemberSize() const { return members.size(); }
-        uint32 GetAccountsNumber();
+        uint32 GetAccountsNumber() const;
 
         bool LoadGuildFromDB(const std::unique_ptr<QueryResult>& guildDataResult);
         bool CheckGuildStructure();
@@ -276,14 +267,6 @@ class Guild
 
         void BroadcastToGuild(WorldSession const* senderSession, char const* msg, uint32 language = LANG_UNIVERSAL);
         void BroadcastChatMsgToOfficers(WorldSession const* senderSession, char const* msg, uint32 language = LANG_UNIVERSAL);
-        void BroadcastPacketToRank(std::unique_ptr<ServerPacket> packet, uint32 rankId) const;
-        void BroadcastPacket(std::unique_ptr<ServerPacket> packet) const;
-
-        void BroadcastEvent(GuildEvents event, ObjectGuid guid, char const* str1 = nullptr, char const* str2 = nullptr, char const* str3 = nullptr) const;
-        void BroadcastEvent(GuildEvents event, char const* str1 = nullptr, char const* str2 = nullptr, char const* str3 = nullptr) const
-        {
-            BroadcastEvent(event, ObjectGuid(), str1, str2, str3);
-        }
 
         template<class Do>
         void BroadcastWorker(Do& _do, Player* except = nullptr)
@@ -293,6 +276,28 @@ class Guild
                     if (player != except)
                         _do(player);
         }
+
+        // Sends a modern Guild*.h wire struct to every online member.
+        template<class T>
+        void BroadcastClassic(T const& packet) const
+        {
+            for (auto const& member : members)
+                if (Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HIGHGUID_PLAYER, member.first)))
+                    player->GetSession()->SendClassic(packet);
+        }
+
+        // The typed SMSG_GUILD_EVENT_* broadcasts that replace vanilla's one generic
+        // SMSG_GUILD_EVENT (GuildEvents/GE_*, retired with it).
+        void BroadcastMotdEvent() const;
+        void BroadcastPresenceChange(ObjectGuid guid, std::string const& name, bool loggedOn) const;
+        void BroadcastPlayerJoinedEvent(ObjectGuid guid, std::string const& name) const;
+        void BroadcastPlayerLeftEvent(ObjectGuid leaverGuid, std::string const& leaverName) const;
+        void BroadcastPlayerKickedEvent(ObjectGuid leaverGuid, std::string const& leaverName, ObjectGuid removerGuid, std::string const& removerName) const;
+        void BroadcastRankChangeEvent(ObjectGuid targetGuid, ObjectGuid officerGuid, bool promote, uint32 rankId) const;
+        void BroadcastNewLeaderEvent(ObjectGuid oldGuid, std::string const& oldName, ObjectGuid newGuid, std::string const& newName) const;
+        void BroadcastRanksUpdatedEvent() const;
+        void BroadcastRankInfoChangedEvent(uint32 rankId) const;
+        void BroadcastQueryResponse() const;
 
         void CreateRank(std::string name,uint32 rights);
         void DelRank();
@@ -330,6 +335,8 @@ class Guild
 
         void SendGuildRoster(WorldSession* session = nullptr) const;          // nullptr = broadcast
         void SendQueryResponse(WorldSession* session) const;
+        void SendPermissions(WorldSession* session) const;
+        void SendRanksResponse(WorldSession* session) const;
 
         // Guild EventLog
         void LoadGuildEventLogFromDB();
@@ -355,7 +362,7 @@ class Guild
         int32 m_BorderStyle;
         int32 m_BorderColor;
         int32 m_BackgroundColor;
-        uint32 m_accountsNumber;                            // 0 used as marker for need lazy calculation at request
+        mutable uint32 m_accountsNumber;                    // 0 used as marker for need lazy calculation at request
 
         RankList m_Ranks;
 

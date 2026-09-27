@@ -45,6 +45,7 @@
 #include "AccountMgr.h"
 #include "Packets/Auth.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "Packets/GuildMessages.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -357,12 +358,11 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
 
     if (Guild* guild = sGuildMgr.GetGuildById(pCurrChar->GetGuildId()))
     {
-        auto guildEvent = std::make_unique<WorldPackets::Guild::GuildEvent>();
-        guildEvent->event = GE_MOTD;
-        guildEvent->params.push_back(guild->GetMOTD());
-        SendPacket(std::move(guildEvent));
+        GuildEventMotd motd;
+        motd.MotdText = guild->GetMOTD();
+        SendClassic(motd);
 
-        guild->BroadcastEvent(GE_SIGNED_ON, pCurrChar->GetObjectGuid(), pCurrChar->GetName());
+        guild->BroadcastPresenceChange(pCurrChar->GetObjectGuid(), pCurrChar->GetName(), true);
     }
 
     if (char const* warning = sAccountMgr.GetWarningText(GetAccountId()))

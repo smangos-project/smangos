@@ -28,7 +28,7 @@ TEST_CASE("inspect: a bot inspects another and gets its equipment/honor tab", "[
         REQUIRE(result);
         CHECK(result->DisplayInfo.PlayerGuid == targetGuid);
         CHECK(result->DisplayInfo.Name == target.GetCharacterName());
-        CHECK_FALSE(result->HasGuildData); // guild data is deferred to the guild slice (F8g)
+        CHECK_FALSE(result->HasGuildData); // the pooled target bot isn't in a guild
 
         InspectPvp inspectPvp;
         inspectPvp.TargetGuid = targetGuid;

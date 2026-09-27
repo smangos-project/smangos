@@ -29,6 +29,7 @@
 #include "Player.h"
 #include "Group.h"
 #include "World.h"
+#include "Guild.h"
 #include "GuildMgr.h"
 #include "ObjectMgr.h"
 #include "WorldSession.h"
@@ -985,7 +986,7 @@ void WorldSession::HandleInspectOpcode(Inspect const& packet)
     // The 1.12 client reconstructed the inspect window from the target's visible-item update
     // fields and a separate honor-stats round trip; the 1.14 client expects this one packet with
     // equipment and honor both up front (TrinityCore 1.14's HandleInspectOpcode confirms the
-    // same wire shape). Guild data is deferred to the guild slice (F8g).
+    // same wire shape).
     InspectResult response;
     InspectDisplayInfo& displayInfo = response.DisplayInfo;
     displayInfo.PlayerGuid = packet.TargetGuid;
@@ -1026,6 +1027,13 @@ void WorldSession::HandleInspectOpcode(Inspect const& packet)
     response.TodayHK = uint16(pTarget->GetUInt32Value(PLAYER_FIELD_SESSION_KILLS));
     response.YesterdayHK = pTarget->GetUInt16Value(PLAYER_FIELD_YESTERDAY_KILLS, 0);
     response.LifetimeHK = pTarget->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS);
+
+    if (Guild* guild = sGuildMgr.GetGuildById(pTarget->GetGuildId()))
+    {
+        response.HasGuildData = true;
+        response.GuildData.GuildGuid = ClassicGuidMapping::MakeGuild(guild->GetId());
+        response.GuildData.NumMembers = int32(guild->GetMemberSize());
+    }
 
     SendClassic(response);
 }

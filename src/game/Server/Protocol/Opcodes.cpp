@@ -166,7 +166,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_NAME_QUERY_RESPONSE,          UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_PET_NAME_QUERY,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_NAME_QUERY_RESPONSE,      UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GUILD_QUERY,                  STATUS_AUTHED,    PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildQueryOpcode);
+    INVALID_PACKET(CMSG_GUILD_QUERY,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_QUERY_RESPONSE,         UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_ITEM_QUERY_SINGLE,            STATUS_LOGGEDIN,  PACKET_PROCESS_DB_QUERY,      &WorldSession::HandleItemQuerySingleOpcode);
     INVALID_PACKET(CMSG_ITEM_QUERY_MULTIPLE,          UnhandleReason::Unhandled);
@@ -211,23 +211,26 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PARTY_MEMBER_STATS,           UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PARTY_COMMAND_RESULT,         UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_UPDATE_GROUP_MEMBERS,          UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_GUILD_CREATE,                 STATUS_NEVER,     PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildCreateOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_INVITE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildInviteOpcode);
+    // Every CMSG_GUILD_* here has no modern opcode at all: a real client only creates guilds
+    // through the petition/charter system (see PetitionMessages.h) and does everything else
+    // through the guid-based CLASSIC_CMSG_GUILD_* opcodes bound further below.
+    INVALID_PACKET(CMSG_GUILD_CREATE,                 UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_INVITE,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_INVITE,                 UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GUILD_ACCEPT,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildAcceptOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_DECLINE,                STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildDeclineOpcode);
+    INVALID_PACKET(CMSG_GUILD_ACCEPT,                 UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_DECLINE,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_DECLINE,                UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GUILD_INFO,                   STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildInfoOpcode);
+    INVALID_PACKET(CMSG_GUILD_INFO,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_INFO,                   UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GUILD_ROSTER,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildRosterOpcode);
+    INVALID_PACKET(CMSG_GUILD_ROSTER,                 UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_ROSTER,                 UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GUILD_PROMOTE,                STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildPromoteOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_DEMOTE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildDemoteOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_LEAVE,                  STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildLeaveOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_REMOVE,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildRemoveOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_DISBAND,                STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildDisbandOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_LEADER,                 STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildLeaderOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_MOTD,                   STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildMOTDOpcode);
+    INVALID_PACKET(CMSG_GUILD_PROMOTE,                UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_DEMOTE,                 UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_LEAVE,                  UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_REMOVE,                 UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_DISBAND,                UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_LEADER,                 UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_MOTD,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GUILD_EVENT,                  UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GUILD_COMMAND_RESULT,         UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_UPDATE_GUILD,                  UnhandleReason::Unhandled);
@@ -587,7 +590,7 @@ Handlers BuildOpcodeList()
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_PET_CAST_SPELL,                UnhandleReason::Unhandled);
 #endif
-    DEFINE_HANDLER(MSG_SAVE_GUILD_EMBLEM,             STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleSaveGuildEmblemOpcode);
+    INVALID_PACKET(MSG_SAVE_GUILD_EMBLEM,             UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_TABARDVENDOR_ACTIVATE,         UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAY_SPELL_VISUAL,            UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_ZONEUPDATE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleZoneUpdateOpcode);
@@ -654,11 +657,11 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GM_UBERINVIS,                 UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GM_REQUEST_PLAYER_INFO,       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GM_PLAYER_INFO,               UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_GUILD_RANK,                   STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildRankOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_ADD_RANK,               STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildAddRankOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_DEL_RANK,               STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildDelRankOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_SET_PUBLIC_NOTE,        STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildSetPublicNoteOpcode);
-    DEFINE_HANDLER(CMSG_GUILD_SET_OFFICER_NOTE,       STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildSetOfficerNoteOpcode);
+    INVALID_PACKET(CMSG_GUILD_RANK,                   UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_ADD_RANK,               UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_DEL_RANK,               UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_SET_PUBLIC_NOTE,        UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_GUILD_SET_OFFICER_NOTE,       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LOGIN_VERIFY_WORLD,           UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_CLEAR_EXPLORATION,            UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_SEND_MAIL,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSendMail);
@@ -875,7 +878,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_COMPRESSED_MOVES,             UnhandleReason::SendByServer);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    DEFINE_HANDLER(CMSG_GUILD_INFO_TEXT,              STATUS_LOGGEDIN,  PACKET_PROCESS_GUILD,         &WorldSession::HandleGuildChangeInfoTextOpcode);
+    INVALID_PACKET(CMSG_GUILD_INFO_TEXT,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CHAT_RESTRICTED,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPLINE_SET_RUN_SPEED,         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPLINE_SET_RUN_BACK_SPEED,    UnhandleReason::SendByServer);
@@ -1098,6 +1101,26 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TURN_IN_PETITION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleTurnInPetitionOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PETITION, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetitionQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PETITION_RENAME_GUILD, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePetitionRenameOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_GUILD_INFO, STATUS_AUTHED, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_INVITE_BY_NAME, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildInviteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_OFFICER_REMOVE_MEMBER, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildRemoveOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ACCEPT_GUILD_INVITE, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildAcceptOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_DECLINE_INVITATION, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildDeclineOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_GET_ROSTER, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildRosterOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_GET_RANKS, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildGetRanksOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_PERMISSIONS_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildPermissionsQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_PROMOTE_MEMBER, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildPromoteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_DEMOTE_MEMBER, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildDemoteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_LEAVE, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildLeaveOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_DELETE, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildDisbandOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_SET_GUILD_MASTER, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildLeaderOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_UPDATE_MOTD_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildMOTDOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_SET_MEMBER_NOTE, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildSetMemberNoteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_SET_RANK_PERMISSIONS, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildRankOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_ADD_RANK, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildAddRankOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_DELETE_RANK, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildDelRankOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GUILD_UPDATE_INFO_TEXT, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleGuildChangeInfoTextOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SAVE_GUILD_EMBLEM, STATUS_LOGGEDIN, PACKET_PROCESS_GUILD, &WorldSession::HandleSaveGuildEmblemOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_PLAYER_NAMES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryPlayerNamesOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CREATURE, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleCreatureQueryOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_GAME_OBJECT, STATUS_LOGGEDIN, PACKET_PROCESS_DB_QUERY, &WorldSession::HandleGameObjectQueryOpcode);

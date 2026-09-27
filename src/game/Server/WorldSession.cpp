@@ -899,7 +899,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 slot->UpdateLogoutTime();
             }
 
-            guild->BroadcastEvent(GE_SIGNED_OFF, _player->GetObjectGuid(), _player->GetName());
+            guild->BroadcastPresenceChange(_player->GetObjectGuid(), _player->GetName(), false);
         }
 
         // Remove pet

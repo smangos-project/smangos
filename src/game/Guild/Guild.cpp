@@ -33,6 +33,8 @@
 #include "Language.h"
 #include "World.h"
 #include "Anticheat.h"
+#include "Packets/GuildMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 
 //// MemberSlot ////////////////////////////////////////////
 void MemberSlot::SetMemberStats(Player* player)
@@ -568,8 +570,8 @@ bool Guild::DelMember(ObjectGuid guid, bool isDisbanding)
         // when leader non-exist (at guild load with deleted leader only) not send broadcasts
         if (oldLeader)
         {
-            BroadcastEvent(GE_LEADER_CHANGED, oldLeader->Name.c_str(), best->Name.c_str());
-            BroadcastEvent(GE_LEFT, guid, oldLeader->Name.c_str());
+            BroadcastNewLeaderEvent(guid, oldLeader->Name, newLeaderGUID, best->Name);
+            BroadcastPlayerLeftEvent(guid, oldLeader->Name);
         }
     }
 
@@ -639,37 +641,6 @@ void Guild::BroadcastChatMsgToOfficers(WorldSession const* senderSession, char c
 
         if (target && target->GetSession() && !target->GetSocial()->HasIgnore(senderPlayer->GetObjectGuid()))
             target->GetSession()->SendPacket(&data);
-    }
-}
-
-void Guild::BroadcastPacket(std::unique_ptr<ServerPacket> packet) const
-{
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket binaryPacket;
-    packet->WritePacket(binaryPacket);
-
-    for (const auto& member : members)
-    {
-        Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HIGHGUID_PLAYER, member.first));
-        if (player)
-            player->GetSession()->SendPacket(&binaryPacket);
-    }
-}
-
-void Guild::BroadcastPacketToRank(std::unique_ptr<ServerPacket> packet, uint32 rankId) const
-{
-    // TODO Use broadcaster which does the binary conversion automatically
-    WorldPacket binaryPacket;
-    packet->WritePacket(binaryPacket);
-
-    for (const auto& member : members)
-    {
-        if (member.second.RankId == rankId)
-        {
-            Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HIGHGUID_PLAYER, member.first));
-            if (player)
-                player->GetSession()->SendPacket(&binaryPacket);
-        }
     }
 }
 
@@ -751,7 +722,7 @@ void Guild::SetRankRights(uint32 rankId, uint32 rights)
  */
 void Guild::Disband()
 {
-    BroadcastEvent(GE_DISBANDED);
+    BroadcastClassic(GuildEventDisbanded());
 
     while (!members.empty())
     {
@@ -777,107 +748,98 @@ inline uint8 GetGuildRosterFlagsForPlayer(Player const* pPlayer)
     return flags;
 }
 
-inline int32 GetGuildRosterMemberSerializedSize(WorldPackets::Guild::GuildRosterMember const& member)
-{
-    int32 size =
-        sizeof(ObjectGuid) +               // player guid
-        sizeof(uint8) +                    // online indicator
-        member.name.length() + 1 +         // name + null
-        sizeof(uint32) +                   // rank id
-        sizeof(uint8) +                    // level
-        sizeof(uint8) +                    // class
-        sizeof(uint32) +                   // zone id
-        member.publicNote.length() + 1 +   // player note + null
-        member.officerNote.length() + 1;   // officer note + null
-
-    if (!member.presenceFlags)
-        size += sizeof(float);             // last online time for offline members
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    else
-        size += sizeof(uint8);             // online marker for old clients
-#endif
-
-    return size;
-}
-
 void Guild::SendGuildRoster(WorldSession* session /*= nullptr*/) const
 {
-    auto roster = std::make_unique<WorldPackets::Guild::GuildRoster>();
-    int32 spaceLeft = GUILD_ROSTER_MAX_LENGTH;
-
-    roster->motd = MOTD;
-    spaceLeft -= (sizeof(uint32) + MOTD.length() + 1);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    roster->guildInfo = GINFO;
-    spaceLeft -= (GINFO.length() + 1);
-#endif
-
-    for (const auto& itr : m_Ranks)
-        roster->rankRights.push_back(itr.Rights);
-    spaceLeft -= (sizeof(uint32) + m_Ranks.size() * sizeof(uint32));
+    GuildRoster roster;
+    roster.Motd = MOTD;
+    roster.GuildInfo = GINFO;
+    roster.CreatedDay = m_CreatedDay;
+    roster.CreatedMonth = m_CreatedMonth;
+    roster.CreatedYear = m_CreatedYear;
+    roster.AccountCount = int32(GetAccountsNumber());
 
     bool canViewOfficerNote = session && HasRankRight(session->GetPlayer()->GetRank(), GR_RIGHT_VIEWOFFNOTE);
 
     for (const auto& itr : members)
     {
-        WorldPackets::Guild::GuildRosterMember member;
+        GuildRosterMember member;
         if (Player* pl = ObjectAccessor::FindPlayer(ObjectGuid(HIGHGUID_PLAYER, itr.first)))
         {
-            member.guid = pl->GetObjectGuid();
-            member.presenceFlags = GetGuildRosterFlagsForPlayer(pl);
-            member.name = itr.second.Name;
-            member.rankId = itr.second.RankId;
-            member.level = pl->GetLevel();
-            member.classId = pl->GetClass();
-            member.zoneId = pl->GetCachedZoneId();
+            member.Guid = ClassicGuidMapping::ToClassic(pl->GetObjectGuid(), realmID);
+            member.PresenceFlags = GetGuildRosterFlagsForPlayer(pl);
+            member.Name = itr.second.Name;
+            member.RankId = itr.second.RankId;
+            member.Level = pl->GetLevel();
+            member.ClassId = pl->GetClass();
+            member.RaceId = uint8(pl->GetRace());
+            member.ZoneId = pl->GetCachedZoneId();
         }
         else
         {
-            member.guid = ObjectGuid(HIGHGUID_PLAYER, itr.first);
-            member.presenceFlags = 0; // offline
-            member.name = itr.second.Name;
-            member.rankId = itr.second.RankId;
-            member.level = itr.second.Level;
-            member.classId = itr.second.Class;
-            member.zoneId = itr.second.ZoneId;
-            member.lastOnlineTime = float(float(time(nullptr) - itr.second.LogoutTime) / uint64(DAY));
+            member.Guid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, itr.first), realmID);
+            member.PresenceFlags = 0; // offline
+            member.Name = itr.second.Name;
+            member.RankId = itr.second.RankId;
+            member.Level = itr.second.Level;
+            member.ClassId = itr.second.Class;
+            member.ZoneId = itr.second.ZoneId;
+            member.LastOnlineTime = float(float(time(nullptr) - itr.second.LogoutTime) / uint64(DAY));
         }
-        member.publicNote = itr.second.Pnote;
-        member.officerNote = canViewOfficerNote ? itr.second.OFFnote : "";
-
-        int32 spaceNeeded = GetGuildRosterMemberSerializedSize(member);
-        if (spaceLeft < spaceNeeded)
-            break;
-
-        spaceLeft -= spaceNeeded;
-        roster->rosterMembers.push_back(std::move(member));
+        member.PublicNote = itr.second.Pnote;
+        member.OfficerNote = canViewOfficerNote ? itr.second.OFFnote : "";
+        roster.RosterMembers.push_back(std::move(member));
     }
 
     if (session)
-        session->SendPacket(std::move(roster));
+        session->SendClassic(roster);
     else
-        BroadcastPacket(std::move(roster));
+        BroadcastClassic(roster);
 }
 
 void Guild::SendQueryResponse(WorldSession* session) const
 {
-    auto queryResponse = std::make_unique<WorldPackets::Guild::GuildQueryResponse>();
-    queryResponse->guildId = m_Id;
-    queryResponse->guildName = m_Name;
+    QueryGuildInfoResponse response;
+    response.GuildGuid = ClassicGuidMapping::MakeGuild(m_Id);
+    response.Valid = true;
+    response.ResolvedGuildGuid = ClassicGuidMapping::MakeGuild(m_Id);
+    response.GuildId = m_Id;
+    response.GuildName = m_Name;
+    for (auto const& rank : m_Ranks)
+        response.RankNames.push_back(rank.Name);
+    response.EmblemStyle = m_EmblemStyle;
+    response.EmblemColor = m_EmblemColor;
+    response.BorderStyle = m_BorderStyle;
+    response.BorderColor = m_BorderColor;
+    response.BackgroundColor = m_BackgroundColor;
 
-    for (size_t i = 0; i < GUILD_RANKS_MAX_COUNT; ++i) // show always 10 ranks
+    session->SendClassic(response);
+}
+
+void Guild::SendPermissions(WorldSession* session) const
+{
+    uint32 const rank = session->GetPlayer()->GetRank();
+    GuildPermissionsQueryResults response;
+    response.RankId = rank;
+    response.Flags = int32(GetRankRights(rank));
+    response.WithdrawGoldLimit = 0; // no guild bank in this engine
+    response.NumTabs = 0;           // no guild bank in this engine
+    session->SendClassic(response);
+}
+
+void Guild::SendRanksResponse(WorldSession* session) const
+{
+    GuildRanksResponse response;
+    for (uint32 i = 0; i < m_Ranks.size(); ++i)
     {
-        if (i < m_Ranks.size())
-            queryResponse->rankNames[i] = m_Ranks[i].Name;
+        GuildRankEntry entry;
+        entry.RankId = uint8(i);
+        entry.RankOrder = int32(i);
+        entry.Flags = m_Ranks[i].Rights;
+        entry.WithdrawGoldLimit = 0; // no guild bank in this engine
+        entry.RankName = m_Ranks[i].Name;
+        response.Ranks.push_back(std::move(entry));
     }
-
-    queryResponse->emblemStyle = m_EmblemStyle;
-    queryResponse->emblemColor = m_EmblemColor;
-    queryResponse->borderStyle = m_BorderStyle;
-    queryResponse->borderColor = m_BorderColor;
-    queryResponse->backgroundColor = m_BackgroundColor;
-
-    session->SendPacket(std::move(queryResponse));
+    session->SendClassic(response);
 }
 
 void Guild::SetEmblem(int32 emblemStyle, int32 emblemColor, int32 borderStyle, int32 borderColor, int32 backgroundColor)
@@ -895,7 +857,7 @@ void Guild::SetEmblem(int32 emblemStyle, int32 emblemColor, int32 borderStyle, i
  * Return the number of accounts that are in the guild after possible update if required
  * A player may have many characters in the guild, but with the same account
  */
-uint32 Guild::GetAccountsNumber()
+uint32 Guild::GetAccountsNumber() const
 {
     // not need recalculation
     if (m_accountsNumber)
@@ -990,19 +952,86 @@ ObjectGuid Guild::GetGuildInviter(ObjectGuid playerGuid) const
     return ObjectGuid();
 }
 
-void Guild::BroadcastEvent(GuildEvents event, ObjectGuid guid, char const* str1 /*=nullptr*/, char const* str2 /*=nullptr*/, char const* str3 /*=nullptr*/) const
+void Guild::BroadcastMotdEvent() const
 {
-    auto packet = std::make_unique<WorldPackets::Guild::GuildEvent>();
-    packet->event = event;
+    GuildEventMotd event;
+    event.MotdText = MOTD;
+    BroadcastClassic(event);
+}
 
-    if (str3)
-        packet->params = { str1, str2, str3 };
-    else if (str2)
-        packet->params = { str1, str2 };
-    else if (str1)
-        packet->params = { str1 };
+void Guild::BroadcastPresenceChange(ObjectGuid guid, std::string const& name, bool loggedOn) const
+{
+    GuildEventPresenceChange event;
+    event.Guid = ClassicGuidMapping::ToClassic(guid, realmID);
+    event.Name = name;
+    event.LoggedOn = loggedOn;
+    BroadcastClassic(event);
+}
 
-    packet->affectedPlayerGuid = guid;
+void Guild::BroadcastPlayerJoinedEvent(ObjectGuid guid, std::string const& name) const
+{
+    GuildEventPlayerJoined event;
+    event.Guid = ClassicGuidMapping::ToClassic(guid, realmID);
+    event.Name = name;
+    BroadcastClassic(event);
+}
 
-    BroadcastPacket(std::move(packet));
+void Guild::BroadcastPlayerLeftEvent(ObjectGuid leaverGuid, std::string const& leaverName) const
+{
+    GuildEventPlayerLeft event;
+    event.LeaverGuid = ClassicGuidMapping::ToClassic(leaverGuid, realmID);
+    event.LeaverName = leaverName;
+    event.Removed = false;
+    BroadcastClassic(event);
+}
+
+void Guild::BroadcastPlayerKickedEvent(ObjectGuid leaverGuid, std::string const& leaverName, ObjectGuid removerGuid, std::string const& removerName) const
+{
+    GuildEventPlayerLeft event;
+    event.LeaverGuid = ClassicGuidMapping::ToClassic(leaverGuid, realmID);
+    event.LeaverName = leaverName;
+    event.RemoverGuid = ClassicGuidMapping::ToClassic(removerGuid, realmID);
+    event.RemoverName = removerName;
+    event.Removed = true;
+    BroadcastClassic(event);
+}
+
+void Guild::BroadcastRankChangeEvent(ObjectGuid targetGuid, ObjectGuid officerGuid, bool promote, uint32 rankId) const
+{
+    GuildSendRankChange event;
+    event.OfficerGuid = ClassicGuidMapping::ToClassic(officerGuid, realmID);
+    event.TargetGuid = ClassicGuidMapping::ToClassic(targetGuid, realmID);
+    event.RankId = rankId;
+    event.Promote = promote;
+    BroadcastClassic(event);
+}
+
+void Guild::BroadcastNewLeaderEvent(ObjectGuid oldGuid, std::string const& oldName, ObjectGuid newGuid, std::string const& newName) const
+{
+    GuildEventNewLeader event;
+    event.OldLeaderGuid = ClassicGuidMapping::ToClassic(oldGuid, realmID);
+    event.OldLeaderName = oldName;
+    event.NewLeaderGuid = ClassicGuidMapping::ToClassic(newGuid, realmID);
+    event.NewLeaderName = newName;
+    event.SelfPromoted = false;
+    BroadcastClassic(event);
+}
+
+void Guild::BroadcastRanksUpdatedEvent() const
+{
+    BroadcastClassic(GuildEventRanksUpdated());
+}
+
+void Guild::BroadcastRankInfoChangedEvent(uint32 rankId) const
+{
+    GuildEventRankChanged event;
+    event.RankId = int32(rankId);
+    BroadcastClassic(event);
+}
+
+void Guild::BroadcastQueryResponse() const
+{
+    for (auto const& member : members)
+        if (Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HIGHGUID_PLAYER, member.first)))
+            SendQueryResponse(player->GetSession());
 }

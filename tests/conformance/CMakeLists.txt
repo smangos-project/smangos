@@ -54,6 +54,7 @@ add_executable(tests-conformance
   world_entry/PetitionTests.cpp
   world_entry/ChannelTests.cpp
   world_entry/InspectTests.cpp
+  world_entry/GuildTests.cpp
   world_entry/MiscTests.cpp
   world_entry/GroupTests.cpp
   world_entry/QueryTests.cpp
