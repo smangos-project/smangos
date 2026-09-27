@@ -163,14 +163,15 @@ struct MeleeStateSubDamage
     int32 Resist = 0;
 };
 
-// The wire's HitInfo bits this struct's optional fields are gated on. These three have kept the
-// same bit position from classic through retail, so they're duplicated here rather than pulling in
-// the game's own (build-conditional) HitInfo enum -- this header stays includable by RealBots.
+// The wire's HitInfo bits this struct's optional fields are gated on, in the modern client's bit
+// positions (TrinityCore UnitDefines.h), not this engine's own 1.12 HitInfo enum -- HitInfoFlags is
+// always filled by Unit::ToModernHitInfo before it reaches this struct. Duplicated here (rather
+// than pulling in the game's own HitInfo enum) so this header stays includable by RealBots.
 enum : uint32
 {
     CLASSIC_HITINFO_ABSORB = 0x00000020,
-    CLASSIC_HITINFO_RESIST = 0x00000040,
-    CLASSIC_HITINFO_BLOCK  = 0x00000800,
+    CLASSIC_HITINFO_RESIST = 0x00000080,
+    CLASSIC_HITINFO_BLOCK  = 0x00002000,
 };
 
 // The melee swing result. Through the mandatory content-tuning tail, the body is a length-prefixed

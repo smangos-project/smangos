@@ -4315,12 +4315,60 @@ uint8 GetAttackerStateContentTuningType(Unit const* attacker, Unit const* victim
         return victim->IsPlayer() ? CREATURE_TO_PLAYER : PLAYER_TO_CREATURE;
     return victim->IsPlayer() ? CREATURE_TO_PLAYER : CREATURE_TO_CREATURE;
 }
+
+// This engine's HitInfo (Objects/DamageStructs.h) keeps the 1.12 bit layout; a modern client
+// reads different bit positions (TrinityCore UnitDefines.h), and a few of them collide outright
+// (1.12 CRITICALHIT 0x80 is modern's FULL_RESIST, 1.12 ROLLED_PARRY 0x200 is modern CRITICALHIT).
+// The roll-tracking bits (ROLLED_DODGE/PARRY/BLOCK) have no modern counterpart at all: the client
+// gets that information from VictimState instead.
+uint32 ToModernHitInfo(uint32 legacyHitInfo)
+{
+    enum : uint32
+    {
+        MODERN_HITINFO_AFFECTS_VICTIM   = 0x00000002,
+        MODERN_HITINFO_OFFHAND          = 0x00000004,
+        MODERN_HITINFO_MISS             = 0x00000010,
+        MODERN_HITINFO_FULL_ABSORB      = 0x00000020,
+        MODERN_HITINFO_FULL_RESIST      = 0x00000080,
+        MODERN_HITINFO_CRITICALHIT      = 0x00000200,
+        MODERN_HITINFO_BLOCK            = 0x00002000,
+        MODERN_HITINFO_GLANCING         = 0x00010000,
+        MODERN_HITINFO_CRUSHING         = 0x00020000,
+        MODERN_HITINFO_NO_ANIMATION     = 0x00040000,
+        MODERN_HITINFO_SWINGNOHITSOUND  = 0x00200000,
+    };
+
+    uint32 modernHitInfo = 0;
+    if (legacyHitInfo & HITINFO_AFFECTS_VICTIM)
+        modernHitInfo |= MODERN_HITINFO_AFFECTS_VICTIM;
+    if (legacyHitInfo & HITINFO_LEFTSWING)
+        modernHitInfo |= MODERN_HITINFO_OFFHAND;
+    if (legacyHitInfo & HITINFO_MISS)
+        modernHitInfo |= MODERN_HITINFO_MISS;
+    if (legacyHitInfo & HITINFO_ABSORB)
+        modernHitInfo |= MODERN_HITINFO_FULL_ABSORB;
+    if (legacyHitInfo & HITINFO_RESIST)
+        modernHitInfo |= MODERN_HITINFO_FULL_RESIST;
+    if (legacyHitInfo & HITINFO_CRITICALHIT)
+        modernHitInfo |= MODERN_HITINFO_CRITICALHIT;
+    if (legacyHitInfo & HITINFO_BLOCK)
+        modernHitInfo |= MODERN_HITINFO_BLOCK;
+    if (legacyHitInfo & HITINFO_GLANCING)
+        modernHitInfo |= MODERN_HITINFO_GLANCING;
+    if (legacyHitInfo & HITINFO_CRUSHING)
+        modernHitInfo |= MODERN_HITINFO_CRUSHING;
+    if (legacyHitInfo & HITINFO_NOACTION)
+        modernHitInfo |= MODERN_HITINFO_NO_ANIMATION;
+    if (legacyHitInfo & HITINFO_SWINGNOHITSOUND)
+        modernHitInfo |= MODERN_HITINFO_SWINGNOHITSOUND;
+    return modernHitInfo;
+}
 }
 
 void Unit::SendAttackStateUpdate(CalcDamageInfo const* damageInfo) const
 {
     MeleeAttackingStateUpdate packet;
-    packet.HitInfoFlags = damageInfo->HitInfo;
+    packet.HitInfoFlags = ToModernHitInfo(damageInfo->HitInfo);
     packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
     packet.Victim = ClassicGuidMapping::ToClassic(damageInfo->target->GetObjectGuid(), realmID);
     packet.TotalDamage = int32(damageInfo->totalDamage);
@@ -4356,7 +4404,7 @@ void Unit::SendAttackStateUpdate(uint32 hitInfo, Unit const* target, SpellSchool
         hitInfo |= HITINFO_BLOCK;
 
     MeleeAttackingStateUpdate packet;
-    packet.HitInfoFlags = hitInfo;
+    packet.HitInfoFlags = ToModernHitInfo(hitInfo);
     packet.Attacker = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
     packet.Victim = ClassicGuidMapping::ToClassic(target->GetObjectGuid(), realmID);
     packet.OriginalDamage = int32(damage);
