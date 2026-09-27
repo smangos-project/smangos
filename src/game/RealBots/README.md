@@ -1062,6 +1062,24 @@ None of these is proven against a real 1.15.6 client yet.
   rather than a precise one, since TrinityCore's exact numbers for those specific results aren't
   confirmed here yet.
 
+- **`CLASSIC_CMSG_SET_AMMO` has no reference body.** TrinityCore dropped ranged ammo/quivers after
+  Classic (the opcode and its packet don't exist there at all), and vibemangos only knows the opcode
+  *number* -- it never wires up a handler for it. This port keeps the vanilla shape unchanged (a
+  single item id, 0 clears ammo, `Packets/ItemMessages.h`'s `SetAmmo`) as its own design; unverified
+  against a real client.
+
+- **The pet stable UI is not ported.** Vanilla's `CMSG_STABLE_PET`/`CMSG_UNSTABLE_PET`/
+  `CMSG_BUY_STABLE_SLOT`/`CMSG_STABLE_SWAP_PET`/`MSG_LIST_STABLED_PETS` collapse into just three
+  modern opcodes (`CLASSIC_CMSG_REQUEST_STABLED_PETS`, `CLASSIC_CMSG_STABLE_PET`,
+  `CLASSIC_SMSG_PET_STABLE_RESULT`), but vibemangos -- the primary reference for this exact client
+  build -- never solved the new shape either: it leaves `CLASSIC_CMSG_STABLE_PET` explicitly
+  unhandled ("no cata counterpart") and notes that `PET_ADDED`/`PET_SLOT_UPDATED`/`PET_STABLE_LIST`
+  have no modern opcodes at all. TrinityCore's own retail packets (`RequestStabledPets`/
+  `SetPetSlot`, `NPCPackets.h`) are a different, per-slot redesign that doesn't obviously map onto
+  the three-opcode classic-era shape either. Left unported rather than guessed, the same call as U6
+  (player appearance): it needs a real classic-era client capture to see what the three opcodes
+  actually carry.
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
