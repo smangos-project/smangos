@@ -215,3 +215,27 @@ TEST_CASE("PlayedTimeResult round-trips", "[packets]")
     });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("SetActionButton round-trips a set and a clear", "[packets]")
+{
+    for (uint32 action : { 0u, 0x01000005u })
+    {
+        SetActionButton packet;
+        packet.Action = action;
+        packet.Index = 11;
+        RoundTrip(packet, [](SetActionButton const& a, SetActionButton const& b)
+        {
+            CHECK(a.Action == b.Action);
+            CHECK(a.Index == b.Index);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}
+
+TEST_CASE("SetActionBarToggles round-trips", "[packets]")
+{
+    SetActionBarToggles packet;
+    packet.Mask = 0x3;
+    RoundTrip(packet, [](SetActionBarToggles const& a, SetActionBarToggles const& b) { CHECK(a.Mask == b.Mask); });
+    RejectsEveryTruncation(packet);
+}

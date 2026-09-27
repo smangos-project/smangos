@@ -405,6 +405,51 @@ struct RequestPlayedTime
     }
 };
 
+// Sets or clears one action button. Same packed-uint32 (action, type) body as the vanilla
+// CMSG_SET_ACTION_BUTTON, per TrinityCore's WorldPackets::Spells::SetActionButton::Read
+// (Action/Index): only the opcode number changed.
+struct SetActionButton
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_ACTION_BUTTON;
+
+    uint32 Action = 0;
+    uint8 Index = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Action;
+        data << Index;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint8))
+            return false;
+        data >> Action;
+        data >> Index;
+        return true;
+    }
+};
+
+// Which action bar pages are enabled (stance/form bar swaps). Same single-byte mask as vanilla
+// CMSG_SET_ACTIONBAR_TOGGLES, per TrinityCore's SetActionBarToggles::Read.
+struct SetActionBarToggles
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SET_ACTION_BAR_TOGGLES;
+
+    uint8 Mask = 0;
+
+    void Write(ByteBuffer& data) const { data << Mask; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8))
+            return false;
+        data >> Mask;
+        return true;
+    }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

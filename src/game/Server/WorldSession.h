@@ -663,7 +663,7 @@ class WorldSession
 
         void HandleUpdateAccountData(AccountDataUpdate const& packet);
         void HandleRequestAccountData(AccountDataRequest const& packet);
-        void HandleSetActionButtonOpcode(WorldPackets::Misc::SetActionButton const& packet);
+        void HandleSetActionButtonOpcode(SetActionButton const& packet);
 
         void HandleGameObjectUseOpcode(WorldPackets::Misc::GameObjectUse const& packet);
         void HandleMeetingStoneJoinOpcode(WorldPackets::Misc::MeetingStoneJoin const& packet);
@@ -816,7 +816,7 @@ class WorldSession
         void HandleCancelAuraOpcode(CancelAura const& packet);
         void HandleCancelGrowthAuraOpcode(NullClientPacket const& packet);
         void HandleCancelAutoRepeatSpellOpcode(CancelAutoRepeatSpell const& packet);
-        void HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetActionBarToggles const& packet);
+        void HandleSetActionBarTogglesOpcode(SetActionBarToggles const& packet);
         void HandleLearnTalentOpcode(WorldPackets::Skill::LearnTalent const& packet);
         void HandleTalentWipeConfirmOpcode(WorldPackets::Skill::TalentWipeConfirm const& packet);
         void HandleUnlearnSkillOpcode(UnlearnSkill const& packet);

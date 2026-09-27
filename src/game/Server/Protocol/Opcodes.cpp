@@ -381,7 +381,7 @@ Handlers BuildOpcodeList()
     DEFINE_HANDLER(CMSG_SET_FACTION_ATWAR,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetFactionAtWarOpcode);
     INVALID_PACKET(CMSG_SET_FACTION_CHEAT,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SET_PROFICIENCY,              UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_SET_ACTION_BUTTON,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSetActionButtonOpcode);
+    INVALID_PACKET(CMSG_SET_ACTION_BUTTON,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ACTION_BUTTONS,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_INITIAL_SPELLS,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LEARNED_SPELL,                UnhandleReason::SendByServer);
@@ -803,7 +803,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_PLAYER_SKINNED,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DURABILITY_DAMAGE_DEATH,      UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_EXPLORATION,              UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_SET_ACTIONBAR_TOGGLES,        STATUS_AUTHED,    PACKET_PROCESS_MAP,           &WorldSession::HandleSetActionBarTogglesOpcode);
+    INVALID_PACKET(CMSG_SET_ACTIONBAR_TOGGLES,        UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_DELETE_GUILD_CHARTER,          UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_PETITION_RENAME,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_INIT_WORLD_STATES,            UnhandleReason::SendByServer);
@@ -1262,6 +1262,8 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GET_PVP_OPTIONS_ENABLED, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGetPVPOptionsEnabledOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_RATED_PVP_INFO, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRequestRatedPvpInfoOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPORT_PVP_PLAYER_AFK, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReportPvPAFKOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTION_BUTTON, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetActionButtonOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTION_BAR_TOGGLES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetActionBarTogglesOpcode);
 
     return list;
 }

@@ -58,16 +58,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class SetActionButton final : public ClientPacket
-    {
-    public:
-        uint8 button = 0;
-        uint32 packetData = 0;
-
-        explicit SetActionButton() : ClientPacket(CMSG_SET_ACTION_BUTTON) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetFactionAtWar final : public ClientPacket
     {
     public:
@@ -114,15 +104,6 @@ namespace WorldPackets { namespace Misc
         ObjectGuid summonerGuid;
 
         explicit SummonResponse() : ClientPacket(CMSG_SUMMON_RESPONSE) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
-    class SetActionBarToggles final : public ClientPacket
-    {
-    public:
-        uint8 actionBar = 0;
-
-        explicit SetActionBarToggles() : ClientPacket(CMSG_SET_ACTIONBAR_TOGGLES) {}
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 

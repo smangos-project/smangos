@@ -903,15 +903,15 @@ void WorldSession::HandleRequestAccountData(AccountDataRequest const& packet)
     SendClassic(response);
 }
 
-void WorldSession::HandleSetActionButtonOpcode(WorldPackets::Misc::SetActionButton const& packet)
+void WorldSession::HandleSetActionButtonOpcode(SetActionButton const& packet)
 {
-    uint32 action = ACTION_BUTTON_ACTION(packet.packetData);
-    uint8  type   = ACTION_BUTTON_TYPE(packet.packetData);
+    uint32 action = ACTION_BUTTON_ACTION(packet.Action);
+    uint8  type   = ACTION_BUTTON_TYPE(packet.Action);
 
-    if (!packet.packetData)
+    if (!packet.Action)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "MISC: Remove action from button %u", packet.button);
-        GetMasterPlayer()->removeActionButton(packet.button);
+        sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "MISC: Remove action from button %u", packet.Index);
+        GetMasterPlayer()->removeActionButton(packet.Index);
     }
     else
     {
@@ -923,12 +923,12 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPackets::Misc::SetActionButt
             case ACTION_BUTTON_ITEM:
                 break;
             default:
-                sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "MISC: Unknown action button type %u for action %u into button %u", type, action, packet.button);
+                sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "MISC: Unknown action button type %u for action %u into button %u", type, action, packet.Index);
                 return;
         }
-        if (!Player::IsActionButtonDataValid(packet.button, action, type, GetPlayer()))
+        if (!Player::IsActionButtonDataValid(packet.Index, action, type, GetPlayer()))
             return;
-        GetMasterPlayer()->addActionButton(packet.button, action, type);
+        GetMasterPlayer()->addActionButton(packet.Index, action, type);
     }
 }
 
@@ -941,16 +941,9 @@ void WorldSession::HandleNextCinematicCamera(NullClientPacket const& /*packet*/)
 {
 }
 
-void WorldSession::HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetActionBarToggles const& packet)
+void WorldSession::HandleSetActionBarTogglesOpcode(SetActionBarToggles const& packet)
 {
-    if (!GetPlayer())                                       // ignore until not logged (check needed because STATUS_AUTHED)
-    {
-        if (packet.actionBar != 0)
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "WorldSession::HandleSetActionBarToggles in not logged state with value: %u, ignored", uint32(packet.actionBar));
-        return;
-    }
-
-    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BARS, packet.actionBar);
+    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BARS, packet.Mask);
 }
 
 void WorldSession::HandlePlayedTime(RequestPlayedTime const& packet)

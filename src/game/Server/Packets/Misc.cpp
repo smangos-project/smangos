@@ -32,12 +32,6 @@ void WorldPackets::Misc::FarSight::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> op;
 }
 
-void WorldPackets::Misc::SetActionButton::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> button;
-    recv_data >> packetData;
-}
-
 void WorldPackets::Misc::SetFactionAtWar::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> repListId;
@@ -65,11 +59,6 @@ void WorldPackets::Misc::ChatIgnored::ReadFromWorldPacket(WorldPacket& recv_data
 void WorldPackets::Misc::SummonResponse::ReadFromWorldPacket(WorldPacket& recv_data)
 {
     recv_data >> summonerGuid;
-}
-
-void WorldPackets::Misc::SetActionBarToggles::ReadFromWorldPacket(WorldPacket& recv_data)
-{
-    recv_data >> actionBar;
 }
 
 void WorldPackets::Misc::MeetingStoneJoin::ReadFromWorldPacket(WorldPacket& recv_data)
