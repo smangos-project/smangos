@@ -1,6 +1,8 @@
 add_library(database_tool_lib STATIC
   Version.cpp
   World/DoltLiteDatabase.cpp
+  Sql/MysqlLexer.cpp
+  Sql/SqlStatementSplitter.cpp
 )
 
 target_include_directories(database_tool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
