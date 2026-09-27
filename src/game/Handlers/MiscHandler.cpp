@@ -643,7 +643,7 @@ void WorldSession::HandleResurrectResponseOpcode(ResurrectResponse const& packet
     GetPlayer()->ResurrectUsingRequestData();     // will call SpawnCorpseBones
 }
 
-void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const& packet)
+void WorldSession::HandleAreaTriggerOpcode(AreaTrigger const& packet)
 {
     Player* const pPlayer = GetPlayer();
 
@@ -652,28 +652,28 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
 
     if (pPlayer->IsTaxiFlying())
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) in flight, ignore Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.triggerId);
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) in flight, ignore Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.TriggerId);
         return;
     }
 
-    AreaTriggerEntry const* pTrigger = sObjectMgr.GetAreaTrigger(packet.triggerId);
+    AreaTriggerEntry const* pTrigger = sObjectMgr.GetAreaTrigger(packet.TriggerId);
     if (!pTrigger)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.triggerId);
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.TriggerId);
         return;
     }
 
     // check if player in the range of areatrigger
     if (!IsPointInAreaTriggerZone(pTrigger, pPlayer->GetMapId(), pPlayer->GetPositionX(), pPlayer->GetPositionY(), pPlayer->GetPositionZ(), 5.0f))
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) too far, ignore Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.triggerId);
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Player '%s' (GUID: %u) too far, ignore Area Trigger ID: %u", pPlayer->GetName(), pPlayer->GetGUIDLow(), packet.TriggerId);
         return;
     }
 
     if (pTrigger->script_id || pTrigger->script_name)
         pPlayer->GetMap()->StartAreaTriggerScript(pTrigger, pPlayer);
 
-    uint32 quest_id = sObjectMgr.GetQuestForAreaTrigger(packet.triggerId);
+    uint32 quest_id = sObjectMgr.GetQuestForAreaTrigger(packet.TriggerId);
     if (quest_id && pPlayer->IsAlive() && pPlayer->IsActiveQuest(quest_id))
     {
         Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
@@ -685,15 +685,15 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
     }
 
     // enter to tavern, not overwrite city rest
-    if (sObjectMgr.IsTavernAreaTrigger(packet.triggerId))
+    if (sObjectMgr.IsTavernAreaTrigger(packet.TriggerId))
     {
         // set resting flag we are in the inn
         if (pPlayer->GetRestType() != REST_TYPE_IN_CITY)
-            pPlayer->SetRestType(REST_TYPE_IN_TAVERN, packet.triggerId);
+            pPlayer->SetRestType(REST_TYPE_IN_TAVERN, packet.TriggerId);
         return;
     }
 
-    if (BattlegroundEntranceTrigger const* pBgEntrance = sObjectMgr.GetBattlegroundEntranceTrigger(packet.triggerId))
+    if (BattlegroundEntranceTrigger const* pBgEntrance = sObjectMgr.GetBattlegroundEntranceTrigger(packet.TriggerId))
     {
         BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(pBgEntrance->bgTypeId);
         if (!bg)
@@ -714,18 +714,18 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
     if (pPlayer->InBattleGround())
     {
         if (BattleGround* bg = pPlayer->GetBattleGround())
-            if (bg->HandleAreaTrigger(pPlayer, packet.triggerId))
+            if (bg->HandleAreaTrigger(pPlayer, packet.TriggerId))
                 return;
     }
 
     if (ZoneScript* pZoneScript = pPlayer->GetZoneScript())
     {
-        if (pZoneScript->HandleAreaTrigger(_player, packet.triggerId))
+        if (pZoneScript->HandleAreaTrigger(_player, packet.TriggerId))
             return;
     }
 
     // nullptr if all values default (non teleport trigger)
-    AreaTriggerTeleport const* pTeleTrigger = sObjectMgr.GetAreaTriggerTeleport(packet.triggerId);
+    AreaTriggerTeleport const* pTeleTrigger = sObjectMgr.GetAreaTriggerTeleport(packet.TriggerId);
     if (!pTeleTrigger)
         return;
 
@@ -743,7 +743,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
         // Special case prior Patch 1.3 to revive your corpse if dead in Molten Core
         if (sWorld.GetWowPatch() <= WOW_PATCH_102)
         {
-            if (corpseMapId == MAP_MOLTEN_CORE && packet.triggerId == 1466)
+            if (corpseMapId == MAP_MOLTEN_CORE && packet.TriggerId == 1466)
             {
                 pPlayer->ResurrectPlayer(0.5f);
                 pPlayer->SpawnCorpseBones();
@@ -802,7 +802,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const
                 int locIdx = GetSessionDbLocaleIndex();
                 if (locIdx >= 0)
                 {
-                    AreaTriggerLocale const* locale = sObjectMgr.GetAreaTriggerLocale(packet.triggerId);
+                    AreaTriggerLocale const* locale = sObjectMgr.GetAreaTriggerLocale(packet.TriggerId);
                     if (locale)
                     {
                         if (locale->message.size() > size_t(locIdx) && !locale->message[locIdx].empty())

@@ -654,7 +654,7 @@ class WorldSession
         void HandleSetAmmoOpcode(WorldPackets::Item::SetAmmo const& packet);
         void HandleItemNameQueryOpcode(WorldPackets::Query::ItemNameQuery const& packet);
 
-        void HandleAreaTriggerOpcode(WorldPackets::Misc::AreaTrigger const& packet);
+        void HandleAreaTriggerOpcode(AreaTrigger const& packet);
         void HandleSetFactionAtWarOpcode(WorldPackets::Misc::SetFactionAtWar const& packet);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         void HandleSetWatchedFactionOpcode(WorldPackets::Misc::SetWatchedFaction const& packet);

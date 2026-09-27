@@ -247,3 +247,21 @@ TEST_CASE("GameObjectUse round-trips", "[packets]")
     RoundTrip(packet, [](GameObjectUse const& a, GameObjectUse const& b) { CHECK(a.Guid == b.Guid); });
     RejectsEveryTruncation(packet);
 }
+
+TEST_CASE("AreaTrigger round-trips", "[packets]")
+{
+    for (bool entered : { false, true })
+    {
+        AreaTrigger packet;
+        packet.TriggerId = 3646;
+        packet.Entered = entered;
+        packet.FromClient = true;
+        RoundTrip(packet, [](AreaTrigger const& a, AreaTrigger const& b)
+        {
+            CHECK(a.TriggerId == b.TriggerId);
+            CHECK(a.Entered == b.Entered);
+            CHECK(a.FromClient == b.FromClient);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}

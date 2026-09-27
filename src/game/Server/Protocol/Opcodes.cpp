@@ -265,7 +265,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GAMEOBJ_USE,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GAMEOBJ_CHAIR_USE_OBSOLETE,   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GAMEOBJECT_CUSTOM_ANIM,       UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_AREATRIGGER,                  STATUS_LOGGEDIN,  PACKET_PROCESS_SELF_ITEMS,    &WorldSession::HandleAreaTriggerOpcode);
+    INVALID_PACKET(CMSG_AREATRIGGER,                  UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_START_FORWARD, UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_START_BACKWARD, UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_MOVE_STOP, UnhandleReason::Unhandled);
@@ -1266,6 +1266,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_ACTION_BAR_TOGGLES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetActionBarTogglesOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LEARN_TALENT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleLearnTalentOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GAME_OBJ_USE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGameObjectUseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AREA_TRIGGER, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAreaTriggerOpcode);
 
     return list;
 }

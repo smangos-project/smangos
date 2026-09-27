@@ -462,6 +462,38 @@ struct GameObjectUse
     bool Read(ByteBuffer& data) { return Guid.Read(data); }
 };
 
+// Entering an area trigger volume: quest exploration, instance portals, taverns, battleground
+// entrances. Same trigger id as vanilla CMSG_AREATRIGGER; Entered/FromClient are new fields this
+// port has no use for (matched against vmangos, which only ever handled the "entered" case), per
+// TrinityCore's WorldPackets::AreaTrigger::AreaTrigger::Read.
+struct AreaTrigger
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AREA_TRIGGER;
+
+    int32 TriggerId = 0;
+    bool Entered = true;
+    bool FromClient = true;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << TriggerId;
+        data.WriteBit(Entered);
+        data.WriteBit(FromClient);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        data >> TriggerId;
+        Entered = data.ReadBit();
+        FromClient = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

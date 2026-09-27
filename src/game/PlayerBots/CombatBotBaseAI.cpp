@@ -3291,8 +3291,8 @@ void CombatBotBaseAI::SendBattlemasterJoinPacket(uint8 battlegroundId)
 
 void CombatBotBaseAI::SendAreaTriggerPacket(uint32 areaTriggerId)
 {
-    WorldPackets::Misc::AreaTrigger packet;
-    packet.triggerId = areaTriggerId;
+    AreaTrigger packet;
+    packet.TriggerId = int32(areaTriggerId);
     me->GetSession()->HandleAreaTriggerOpcode(packet);
 }
 

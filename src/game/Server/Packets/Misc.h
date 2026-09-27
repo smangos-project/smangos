@@ -21,15 +21,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class AreaTrigger final : public ClientPacket
-    {
-    public:
-        uint32 triggerId = 0;
-
-        explicit AreaTrigger() : ClientPacket(CMSG_AREATRIGGER) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SetTarget final : public ClientPacket
     {
     public:
