@@ -9,6 +9,7 @@
 #include "Objects/Unit.h"
 #include "Objects/Player.h"
 #include "Objects/Pet.h"
+#include "Objects/Creature.h"
 #include "Objects/Item.h"
 #include "Objects/Bag.h"
 #include "Objects/GameObject.h"
@@ -124,6 +125,9 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::SummonedBy, ToClassic(unit.GetGuidValue(UNIT_FIELD_SUMMONEDBY)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::CreatedBy, ToClassic(unit.GetGuidValue(UNIT_FIELD_CREATEDBY)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::Target, ToClassic(unit.GetGuidValue(UNIT_FIELD_TARGET)));
+    // No flat 1.12 field on the unit itself; a player's guild membership is PLAYER_GUILDID.
+    FillField(unit, &Unit::m_unitData, &UFUnitData::GuildGUID,
+        player && player->GetGuildId() ? ClassicGuidMapping::MakeGuild(player->GetGuildId()) : ClassicGuid());
 
     FillField(*unit.m_unitData->ChannelData, [&]() { return unit.m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::ChannelData); },
         &UFUnitChannel::SpellID, int32(unit.GetUInt32Value(UNIT_CHANNEL_SPELL)));
@@ -155,7 +159,18 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::VisFlags, unit.GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG));
     FillField(unit, &Unit::m_unitData, &UFUnitData::ShapeshiftForm, unit.GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_SHAPESHIFT_FORM));
     FillField(unit, &Unit::m_unitData, &UFUnitData::SheatheState, unit.GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHEATH_STATE));
-    FillField(unit, &Unit::m_unitData, &UFUnitData::PvpFlags, unit.GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_MISC_FLAGS));
+    // The 1.12 misc-flags byte's PVP/FFA_PVP bits are frozen at their creation-time default
+    // (Player::Create always sets PVP, never FFA_PVP -- see the "Nostalrius: Hackfix" comment at
+    // Object.cpp's FFA_PVP checks), not live state; the modern PvpFlags field needs live state, so
+    // this reads the same accessors the game logic itself uses (UNIT_FLAG_PVP, PLAYER_FLAGS_FFA_PVP).
+    {
+        uint8 pvpFlags = 0;
+        if (unit.IsPvP())
+            pvpFlags |= UNIT_BYTE2_FLAG_PVP;
+        if (player && player->IsFFAPvP())
+            pvpFlags |= UNIT_BYTE2_FLAG_FFA_PVP;
+        FillField(unit, &Unit::m_unitData, &UFUnitData::PvpFlags, pvpFlags);
+    }
     FillField(unit, &Unit::m_unitData, &UFUnitData::PetFlags, unit.GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS));
 
     FillField(unit, &Unit::m_unitData, &UFUnitData::PetNumber, unit.GetUInt32Value(UNIT_FIELD_PETNUMBER));
@@ -243,10 +258,14 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 1, unit.GetUInt32Value(UNIT_FIELD_BASEATTACKTIME + 1));
     FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 2, unit.GetUInt32Value(UNIT_FIELD_RANGEDATTACKTIME));
 
+    // UNIT_VIRTUAL_ITEM_SLOT_DISPLAY holds a display id (Creature::SetVirtualItem); the modern
+    // field wants the item id itself, cached separately since nothing else on the flat side keeps
+    // it (Creature::GetVirtualItemId).
+    Creature const* creature = unit.ToCreature();
     for (uint32 i = 0; i < 3; ++i)
     {
         FillField(unit.m_unitData->VirtualItems[i], [&]() { return unit.m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::VirtualItems, i); },
-            &UFVisibleItem::ItemID, int32(unit.GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + i)));
+            &UFVisibleItem::ItemID, int32(creature ? creature->GetVirtualItemId(WeaponAttackType(i)) : 0));
     }
 }
 
@@ -271,9 +290,13 @@ void FillPlayerData(Player& player)
     {
         auto getQuestLog = [&]() { return player.m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UFPlayerData::QuestLog, slot); };
         UFQuestLog const& current = player.m_playerData->QuestLog[slot];
-        uint16 questBase = PLAYER_QUEST_LOG_1_1 + slot * 3;
-        FillField(current, getQuestLog, &UFQuestLog::QuestID, int32(player.GetUInt32Value(questBase)));
-        FillField(current, getQuestLog, &UFQuestLog::StateFlags, player.GetUInt32Value(questBase + 1) >> 24);
+        uint16 questBase = PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET;
+        uint32 const countState = player.GetUInt32Value(questBase + QUEST_COUNT_STATE_OFFSET);
+        FillField(current, getQuestLog, &UFQuestLog::QuestID, int32(player.GetUInt32Value(questBase + QUEST_ID_OFFSET)));
+        FillField(current, getQuestLog, &UFQuestLog::StateFlags, countState >> 24);
+        FillField(current, getQuestLog, &UFQuestLog::EndTime, int64(player.GetUInt32Value(questBase + QUEST_TIME_OFFSET)));
+        for (uint32 objective = 0; objective < 4; ++objective)
+            FillField(current, getQuestLog, &UFQuestLog::ObjectiveProgress, objective, uint16((countState >> (objective * 6)) & 0x3F));
     }
 
     for (uint8 slot = 0; slot < 19; ++slot)
@@ -458,6 +481,8 @@ void FillCorpseData(Corpse& corpse)
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Flags, corpse.GetUInt32Value(CORPSE_FIELD_FLAGS));
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::DynamicFlags, corpse.GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS));
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::FactionTemplate, int32(corpse.GetFactionTemplateId()));
+    FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::GuildGUID,
+        corpse.GetUInt32Value(CORPSE_FIELD_GUILD) ? ClassicGuidMapping::MakeGuild(corpse.GetUInt32Value(CORPSE_FIELD_GUILD)) : ClassicGuid());
 
     for (uint32 i = 0; i < 19; ++i)
         FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Items, i, corpse.GetUInt32Value(CORPSE_FIELD_ITEM + i));

@@ -519,6 +519,7 @@ class Creature : public Unit
         uint32 GetTempPacifiedTimer() const { return m_pacifiedTimer; }
         uint32 m_pacifiedTimer;
         float m_manaRegen;
+        uint32 m_virtualItemId[MAX_ATTACK] = {};
 
         void RegenerateHealth();
         void RegenerateMana();
@@ -528,6 +529,10 @@ class Creature : public Unit
         uint32 GetVirtualItemClass(WeaponAttackType slot) const;
         uint32 GetVirtualItemSubclass(WeaponAttackType slot) const;
         uint32 GetVirtualItemInventoryType(WeaponAttackType slot) const;
+        // UNIT_VIRTUAL_ITEM_SLOT_DISPLAY only ever held the display id (decision 5 rule 1: no flat
+        // field carries the item id itself), so the modern VirtualItems[].ItemID field needs its
+        // own cache, filled from the same item_id SetVirtualItem is already given.
+        uint32 GetVirtualItemId(WeaponAttackType slot) const { return m_virtualItemId[slot]; }
 
         void ResetDamageTakenOrigin()
         {

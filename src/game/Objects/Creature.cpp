@@ -4181,6 +4181,7 @@ void Creature::SetVirtualItem(WeaponAttackType slot, uint32 item_id)
 {
     if (item_id == 0)
     {
+        m_virtualItemId[slot] = 0;
         SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + slot, 0);
         SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + (slot * 2) + 0, 0);
         SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + (slot * 2) + 1, 0);
@@ -4193,6 +4194,8 @@ void Creature::SetVirtualItem(WeaponAttackType slot, uint32 item_id)
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Not listed in 'item_template' item (ID:%u) used as virtual item for %s", item_id, GetGuidStr().c_str());
         return;
     }
+
+    m_virtualItemId[slot] = item_id;
 
     SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + slot, proto->DisplayInfoID);
     SetByteValue(UNIT_VIRTUAL_ITEM_INFO + (slot * 2) + 0, VIRTUAL_ITEM_INFO_0_OFFSET_CLASS,    proto->Class);
