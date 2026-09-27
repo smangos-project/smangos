@@ -19,8 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Packets/Auras.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/ClassicCastResult.h"
+#include "Packets/CombatMessages.h"
 #include "Packets/SpellBook.h"
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -1754,10 +1756,12 @@ bool ChatHandler::HandleSendSpellVisualCommand(char *args)
     }
     PSendSysMessage("Spell %u visual on target '%s'.", uiPlayId, pTarget->GetName());
 
-    auto packet = std::make_unique<WorldPackets::Spell::PlaySpellVisual>();
-    packet->casterGuid = m_session->GetPlayer()->GetObjectGuid();
-    packet->spellVisualId = uiPlayId;
-    pTarget->SendMessageToSet(std::move(packet), true);
+    PlaySpellVisual packet;
+    packet.Source = ClassicGuidMapping::ToClassic(m_session->GetPlayer()->GetObjectGuid(), realmID);
+    packet.Target = ClassicGuidMapping::ToClassic(pTarget->GetObjectGuid(), realmID);
+    packet.SpellVisualId = uiPlayId;
+    WorldPacket data = MakeClassicPacket(packet);
+    pTarget->SendMessageToSet(&data, true);
     m_session->GetPlayer()->SendSpellGo(pTarget, uiPlayId);
 
     // Channeled case
@@ -2388,22 +2392,22 @@ bool ChatHandler::HandleDebugPvPCreditCommand(char *args)
     * uiGradeValue = Honor Rank of Victim
     If uiHonorValue=0 : "Dishonorable Kill"
     */
-    auto packet = std::make_unique<WorldPackets::Misc::PvpCredit>();
+    PvpCredit packet;
     if (pSelection->GetTypeId() == TYPEID_PLAYER)
     {
         uint32 uiHonorValue = urand(1, 100);
-        packet->honor = uiHonorValue;
+        packet.OriginalHonor = packet.Honor = int32(uiHonorValue);
         PSendSysMessage("Honorable Kill : Rank %3u and Honor %3u.", uiRankValue, uiHonorValue);
     }
     else // Dishonorable kill
     {
-        packet->honor = 0;
+        packet.OriginalHonor = packet.Honor = 0;
         PSendSysMessage("Dishonorable Kill.");
         uiRankValue = 0;
     }
-    packet->victimGuid = pSelection->GetObjectGuid();
-    packet->victimRank = uiRankValue;
-    m_session->SendPacket(std::move(packet));
+    packet.Victim = ClassicGuidMapping::ToClassic(pSelection->GetObjectGuid(), realmID);
+    packet.VictimRank = int32(uiRankValue);
+    m_session->SendClassic(packet);
 
     return true;
 }

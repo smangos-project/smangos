@@ -13,7 +13,8 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
-#include "Packets/Misc.h"
+#include "Packets/CombatMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 
 #include <fstream>
 
@@ -1067,17 +1068,18 @@ void HonorMgr::SendPVPCredit(Unit const* victim, float honor)
     if (!m_owner)
         return;
 
-    auto packet = std::make_unique<WorldPackets::Misc::PvpCredit>();
-    packet->honor = static_cast<int32>(honor);
+    PvpCredit packet;
+    packet.OriginalHonor = static_cast<int32>(honor);
+    packet.Honor = static_cast<int32>(honor);
 
     if (victim)
     {
-        packet->victimGuid = victim->GetObjectGuid();
+        packet.Victim = ClassicGuidMapping::ToClassic(victim->GetObjectGuid(), realmID);
 
         if (victim->IsCreature())
         {
             if (victim->ToCreature()->IsRacialLeader())
-                packet->victimRank = 19;
+                packet.VictimRank = 19;
         }
         else if (victim->IsPlayer())
         {
@@ -1089,9 +1091,9 @@ void HonorMgr::SendPVPCredit(Unit const* victim, float honor)
             int32 rank = victim->ToPlayer()->GetHonorMgr().GetRank().rank;
             if (!rank)
                 rank = (HONOR_RANK_COUNT - POSITIVE_HONOR_RANK_COUNT) + 1; // At least "Scout"
-            packet->victimRank = rank;
+            packet.VictimRank = rank;
         }
     }
 
-    m_owner->GetSession()->SendPacket(std::move(packet));
+    m_owner->GetSession()->SendClassic(packet);
 }

@@ -24,6 +24,7 @@
 #include "Opcodes.h"
 #include "ObjectMgr.h"
 #include "Packets/Misc.h"
+#include "Packets/MiscMessages.h"
 #include "Packets/PlayerSetup.h"
 
 #include <numeric>
@@ -133,13 +134,8 @@ void ReputationMgr::SendForceReactions()
 
 void ReputationMgr::SendState(FactionState const* faction)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::SetFactionStanding>();
-    {
-        WorldPackets::Misc::FactionStandingEntry entry;
-        entry.reputationListId = faction->ReputationListID;
-        entry.standing = faction->Standing;
-        packet->factionStandings.push_back(entry);
-    }
+    SetFactionStanding packet;
+    packet.Entries.push_back({ int32(faction->ReputationListID), faction->Standing, int32(faction->ID) });
 
     for (auto& itr : m_factions)
     {
@@ -148,16 +144,11 @@ void ReputationMgr::SendState(FactionState const* faction)
         {
             subFaction.needSend = false;
             if (subFaction.ReputationListID != faction->ReputationListID)
-            {
-                WorldPackets::Misc::FactionStandingEntry entry;
-                entry.reputationListId = subFaction.ReputationListID;
-                entry.standing = subFaction.Standing;
-                packet->factionStandings.push_back(entry);
-            }
+                packet.Entries.push_back({ int32(subFaction.ReputationListID), subFaction.Standing, int32(subFaction.ID) });
         }
     }
 
-    m_player->GetSession()->SendPacket(std::move(packet));
+    m_player->GetSession()->SendClassic(packet);
 }
 
 void ReputationMgr::SendInitialReputations()

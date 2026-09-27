@@ -412,3 +412,25 @@ TEST_CASE("PartyKillLog, LogXPGain and ExplorationExperience round-trip", "[pack
     });
     RejectsEveryTruncation(exploration);
 }
+
+TEST_CASE("LevelUpInfo round-trips", "[packets]")
+{
+    LevelUpInfo packet;
+    packet.Level = 11;
+    packet.HealthGain = 42;
+    packet.PowerGains[0] = 15; // mana
+    packet.StatGains[0] = 2; // strength
+    packet.StatGains[2] = 3; // stamina
+    RoundTrip(packet, [](LevelUpInfo const& a, LevelUpInfo const& b)
+    {
+        CHECK(a.Level == b.Level);
+        CHECK(a.HealthGain == b.HealthGain);
+        for (size_t i = 0; i < LevelUpInfo::PowerCount; ++i)
+            CHECK(a.PowerGains[i] == b.PowerGains[i]);
+        for (size_t i = 0; i < 5; ++i)
+            CHECK(a.StatGains[i] == b.StatGains[i]);
+        CHECK(a.NumNewTalents == b.NumNewTalents);
+        CHECK(a.NumNewPvpTalentSlots == b.NumNewPvpTalentSlots);
+    });
+    RejectsEveryTruncation(packet);
+}

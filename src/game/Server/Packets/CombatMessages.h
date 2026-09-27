@@ -380,4 +380,46 @@ struct SetSheathed
     }
 };
 
+// Empty body; sent when a feign death roll is resisted.
+struct FeignDeathResisted
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_FEIGN_DEATH_RESISTED;
+
+    void Write(ByteBuffer&) const {}
+    bool Read(ByteBuffer&) { return true; }
+};
+
+// Honor gained from a kill. Field order/widths per TrinityCore's PvPCredit::Write()
+// (CombatPackets.cpp): OriginalHonor and Honor are both set to the same gained amount (vanilla had
+// only one honor field).
+struct PvpCredit
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PVP_CREDIT;
+
+    int32 OriginalHonor = 0;
+    int32 Honor = 0;
+    ClassicGuid Victim;
+    int32 VictimRank = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << OriginalHonor << Honor;
+        Victim.Write(data);
+        data << VictimRank;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 2 * sizeof(int32))
+            return false;
+        data >> OriginalHonor >> Honor;
+        if (!Victim.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> VictimRank;
+        return true;
+    }
+};
+
 #endif // MANGOS_PACKETS_COMBATMESSAGES_H

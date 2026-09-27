@@ -47,7 +47,6 @@
 #include "Packets/ClassicClient.h"
 #include "Packets/Chat.h"
 #include "Packets/ChatMessages.h"
-#include "Packets/Combat.h"
 #include "Packets/CombatMessages.h"
 #include "Packets/DeathMessages.h"
 #include "Packets/Auras.h"

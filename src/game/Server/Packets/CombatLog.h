@@ -764,4 +764,47 @@ struct ExplorationExperience
     }
 };
 
+// The level-up toast: health/power/stat gains and, on retail, new talent points. Field order and
+// the 10-power-slot array are per TrinityCore's LevelUpInfo::Write() (MiscPackets.cpp,
+// MAX_POWERS_PER_CLASS); this engine only ever fills slot 0 (mana), matching vanilla's own single
+// mana-gain field. NumNewTalents/NumNewPvpTalentSlots are always 0: this engine reports new talent
+// points through the spellbook messages (SpellBook.h), not this toast, and there are no PvP
+// talents in Classic.
+struct LevelUpInfo
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LEVEL_UP_INFO;
+
+    static constexpr size_t PowerCount = 10;
+
+    int32 Level = 0;
+    int32 HealthGain = 0;
+    int32 PowerGains[PowerCount] = {};
+    int32 StatGains[5] = {};
+    int32 NumNewTalents = 0;
+    int32 NumNewPvpTalentSlots = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Level << HealthGain;
+        for (int32 power : PowerGains)
+            data << power;
+        for (int32 stat : StatGains)
+            data << stat;
+        data << NumNewTalents << NumNewPvpTalentSlots;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!CombatLogHasBytes(data, (2 + PowerCount + 5 + 2) * sizeof(int32)))
+            return false;
+        data >> Level >> HealthGain;
+        for (int32& power : PowerGains)
+            data >> power;
+        for (int32& stat : StatGains)
+            data >> stat;
+        data >> NumNewTalents >> NumNewPvpTalentSlots;
+        return true;
+    }
+};
+
 #endif // MANGOS_PACKETS_COMBATLOG_H

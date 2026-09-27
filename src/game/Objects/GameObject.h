@@ -161,7 +161,7 @@ class GameObject : public SpellCaster
         void SetDisplayId(uint32 modelId);
 
         bool HasCustomAnim() const;
-        void SendGameObjectCustomAnim(uint32 animId = 0);
+        void SendGameObjectCustomAnim(uint32 animId = 0, bool playAsDespawn = false);
         void SendGameObjectReset();
 
         float GetObjectBoundingRadius() const override;              // overwrite WorldObject version

@@ -1612,16 +1612,18 @@ void WorldObject::SendMessageToSetExcept(WorldPacket* data, Player const* skippe
 
 void WorldObject::SendObjectSpawnAnim() const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::GameObjectSpawnAnim>();
-    packet->gameObjectGuid = GetObjectGuid();
-    SendObjectMessageToSet(std::move(packet), true);
+    // No modern opcode exists for a spawn/despawn anim on its own: a game object animates its
+    // appearance purely from its UPDATE_OBJECT create block. GAME_OBJECT_CUSTOM_ANIM's
+    // PlayAsDespawn bit is the closest replacement, and units (e.g. Totem) have no equivalent at
+    // all, so this is a game-object-only send.
+    if (GetTypeId() == TYPEID_GAMEOBJECT)
+        ((GameObject*)this)->SendGameObjectCustomAnim(0, false);
 }
 
 void WorldObject::SendObjectDeSpawnAnim() const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::GameObjectDespawnAnim>();
-    packet->gameObjectGuid = GetObjectGuid();
-    SendObjectMessageToSet(std::move(packet), true);
+    if (GetTypeId() == TYPEID_GAMEOBJECT)
+        ((GameObject*)this)->SendGameObjectCustomAnim(0, true);
 }
 
 bool WorldObject::IsWithinVisibilityDistanceOf(Unit const* viewer, WorldObject const* viewPoint, bool inVisibleList) const

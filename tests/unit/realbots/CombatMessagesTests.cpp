@@ -216,3 +216,26 @@ TEST_CASE("SetSheathed round-trips both values of Animate", "[packets]")
         RejectsEveryTruncation(packet);
     }
 }
+
+TEST_CASE("FeignDeathResisted round-trips its empty body", "[packets]")
+{
+    FeignDeathResisted packet;
+    RoundTrip(packet, [](FeignDeathResisted const&, FeignDeathResisted const&) {});
+}
+
+TEST_CASE("PvpCredit round-trips", "[packets]")
+{
+    PvpCredit packet;
+    packet.OriginalHonor = 42;
+    packet.Honor = 42;
+    packet.Victim = { 0x5566, 0 };
+    packet.VictimRank = 5;
+    RoundTrip(packet, [](PvpCredit const& a, PvpCredit const& b)
+    {
+        CHECK(a.OriginalHonor == b.OriginalHonor);
+        CHECK(a.Honor == b.Honor);
+        CHECK(a.Victim == b.Victim);
+        CHECK(a.VictimRank == b.VictimRank);
+    });
+    RejectsEveryTruncation(packet);
+}

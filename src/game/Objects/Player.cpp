@@ -37,6 +37,8 @@
 #include "Packets/QuestMessages.h"
 #include "Packets/ClassicInventoryResult.h"
 #include "Packets/CombatLog.h"
+#include "Packets/CombatMessages.h"
+#include "Packets/MiscMessages.h"
 #include "Packets/PetMessages.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -881,31 +883,31 @@ void Player::SetEnvironmentFlags(EnvironmentFlags flags, bool apply)
 
 void Player::SendMirrorTimerStart(uint32 type, uint32 remaining, uint32 duration, int32 scale, bool paused/* = false*/, uint32 spellId/* = 0*/)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::StartMirrorTimer>();
-    packet->timerType = type;
-    packet->remaining = remaining;
-    packet->duration = duration;
-    packet->scale = scale;
-    packet->paused = paused;
-    packet->spellId = spellId;
-    GetSession()->SendPacket(std::move(packet));
+    StartMirrorTimer packet;
+    packet.Timer = uint8(type);
+    packet.Value = int32(remaining);
+    packet.MaxValue = int32(duration);
+    packet.Scale = scale;
+    packet.SpellId = int32(spellId);
+    packet.Paused = paused;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendMirrorTimerStop(uint32 type)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::StopMirrorTimer>();
-    packet->timerType = type;
-    GetSession()->SendPacket(std::move(packet));
+    StopMirrorTimer packet;
+    packet.Timer = uint8(type);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendMirrorTimerPause(uint32 type, bool state)
 {
     // Note: Default UI handler for this is bugged, args dont match
     // Gotta do a full update with SMSG_START_MIRROR_TIMER to avoid lua errors
-    auto packet = std::make_unique<WorldPackets::Misc::PauseMirrorTimer>();
-    packet->timerType = type;
-    packet->paused = state;
-    GetSession()->SendPacket(std::move(packet));
+    PauseMirrorTimer packet;
+    packet.Timer = uint8(type);
+    packet.Paused = state;
+    GetSession()->SendClassic(packet);
 }
 
 void Player::FreezeMirrorTimers(bool state)
@@ -3188,14 +3190,14 @@ void Player::GiveLevel(uint32 level)
         + (int32(GetManaBonusFromIntellect(info.stats[STAT_INTELLECT])) - int32(GetManaBonusFromIntellect(GetCreateStat(STAT_INTELLECT)))));
 
     // send levelup info to client
-    auto packet = std::make_unique<WorldPackets::Misc::LevelUpInfo>();
-    packet->level = level;
-    packet->healthGain = hp;
-    packet->powerGains[0] = GetPowerType() == POWER_MANA ? mana : 0;
+    LevelUpInfo packet;
+    packet.Level = int32(level);
+    packet.HealthGain = int32(hp);
+    packet.PowerGains[0] = GetPowerType() == POWER_MANA ? int32(mana) : 0;
     for (int i = STAT_STRENGTH; i < MAX_STATS; ++i)         // Stats loop (0-4)
-        packet->statGains[i] = static_cast<uint32>(int32(info.stats[i]) - GetCreateStat(Stats(i)));
+        packet.StatGains[i] = int32(info.stats[i]) - GetCreateStat(Stats(i));
 
-    GetSession()->SendPacket(std::move(packet));
+    GetSession()->SendClassic(packet);
 
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, sObjectMgr.GetXPForLevel(level));
 
@@ -17103,7 +17105,7 @@ void Player::SendAutoRepeatCancel(ObjectGuid target) const
 
 void Player::SendFeignDeathResisted() const
 {
-    GetSession()->SendPacket(std::make_unique<WorldPackets::Combat::FeignDeathResisted>());
+    GetSession()->SendClassic(FeignDeathResisted{});
 }
 
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience) const
@@ -18279,16 +18281,16 @@ UnitDismountResult Player::Unmount(bool from_aura)
 
 void Player::SendMountResult(UnitMountResult result) const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::MountResult>();
-    packet->result = result;
-    GetSession()->SendPacket(std::move(packet));
+    MountResult packet;
+    packet.Result = uint32(result);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendDismountResult(UnitDismountResult result) const
 {
-    auto packet = std::make_unique<WorldPackets::Misc::DismountResult>();
-    packet->result = result;
-    GetSession()->SendPacket(std::move(packet));
+    DismountResult packet;
+    packet.Result = uint32(result);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::InitDataForForm(bool reapplyMods)
@@ -19653,11 +19655,10 @@ void Player::SendSummonRequest(ObjectGuid summonerGuid, uint32 mapId, uint32 zon
 {
     SetSummonPoint(mapId, x, y, z);
 
-    auto packet = std::make_unique<WorldPackets::Misc::SummonRequest>();
-    packet->summonerGuid = summonerGuid;
-    packet->zoneId = zoneId;
-    packet->autoDeclineDelay = MAX_PLAYER_SUMMON_DELAY * IN_MILLISECONDS;
-    GetSession()->SendPacket(std::move(packet));
+    SummonRequest packet;
+    packet.SummonerGuid = ClassicGuidMapping::ToClassic(summonerGuid, realmID);
+    packet.AreaId = int32(zoneId);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SummonIfPossible(bool agree)

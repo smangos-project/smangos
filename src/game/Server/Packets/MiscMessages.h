@@ -635,6 +635,213 @@ struct SetFactionInactive
     }
 };
 
+// The three MSG_*_MIRROR_TIMER messages: breath, fatigue and environmental-hazard bars. Field
+// widths and order per TrinityCore's StartMirrorTimer/PauseMirrorTimer/StopMirrorTimer::Write()
+// (MiscPackets.cpp) -- Timer is a single byte on the wire, unlike this engine's own uint32
+// MirrorTimerType values, and Paused is a bit, not a full byte.
+struct StartMirrorTimer
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_START_MIRROR_TIMER;
+
+    uint8 Timer = 0;
+    int32 Value = 0;
+    int32 MaxValue = 0;
+    int32 Scale = 0;
+    int32 SpellId = 0;
+    bool Paused = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Timer;
+        data << Value << MaxValue << Scale << SpellId;
+        data.WriteBit(Paused);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8) + 4 * sizeof(int32) + 1)
+            return false;
+        data >> Timer;
+        data >> Value >> MaxValue >> Scale >> SpellId;
+        Paused = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+struct PauseMirrorTimer
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PAUSE_MIRROR_TIMER;
+
+    uint8 Timer = 0;
+    bool Paused = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << Timer;
+        data.WriteBit(Paused);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8) + 1)
+            return false;
+        data >> Timer;
+        Paused = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+struct StopMirrorTimer
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_STOP_MIRROR_TIMER;
+
+    uint8 Timer = 0;
+
+    void Write(ByteBuffer& data) const { data << Timer; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint8))
+            return false;
+        data >> Timer;
+        return true;
+    }
+};
+
+// Taking or losing a mount. The OK case is never sent (the client mounts from the aura update
+// alone); this is the failure toast. Same plain-uint32 body TrinityCore's MountResult::Write()
+// (SpellPackets.cpp) uses.
+struct MountResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_MOUNT_RESULT;
+
+    uint32 Result = 0;
+
+    void Write(ByteBuffer& data) const { data << Result; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> Result;
+        return true;
+    }
+};
+
+// No TrinityCore body exists to check this against (cata_classic's own dismount path never sends
+// SMSG_DISMOUNT_RESULT), but the opcode is real on the 1.15.6 wire; kept as the same plain uint32
+// vanilla already wrote, for the defensive-error path in Player::Unmount. Unverified.
+struct DismountResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_DISMOUNT_RESULT;
+
+    uint32 Result = 0;
+
+    void Write(ByteBuffer& data) const { data << Result; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        data >> Result;
+        return true;
+    }
+};
+
+// The warlock/meeting-stone-style summon offer. TrinityCore's SummonRequest::Write()
+// (MovementPackets.cpp) carries no auto-decline timer at all -- the modern client's dialog times
+// out on its own -- and adds a virtual-realm address (always 0, single-realm server) and a
+// Reason byte (always Spell; this engine has no scenario-summon source). Replaces vanilla's
+// (summonerGuid, zoneId, autoDeclineDelay) body.
+struct SummonRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SUMMON_REQUEST;
+
+    static constexpr uint8 ReasonSpell = 0;
+    static constexpr uint8 ReasonScenario = 1;
+
+    ClassicGuid SummonerGuid;
+    uint32 SummonerVirtualRealmAddress = 0;
+    int32 AreaId = 0;
+    uint8 Reason = ReasonSpell;
+    bool SkipStartingArea = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        SummonerGuid.Write(data);
+        data << SummonerVirtualRealmAddress;
+        data << AreaId;
+        data << Reason;
+        data.WriteBit(SkipStartingArea);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!SummonerGuid.Read(data))
+            return false;
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(int32) + sizeof(uint8) + 1)
+            return false;
+        data >> SummonerVirtualRealmAddress;
+        data >> AreaId;
+        data >> Reason;
+        SkipStartingArea = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// A reputation standing change. TrinityCore's SetFactionStanding::Write() (ReputationPackets.cpp)
+// carries the real Faction.dbc id per entry (vanilla's body only ever had the reputation list
+// index) plus an achievement-bonus float (always 0, no bonus-rep system here) and a ShowVisual bit
+// (always true -- every SendState call already represents a real change worth toasting).
+struct FactionStandingEntry
+{
+    int32 Index = 0;
+    int32 Standing = 0;
+    int32 FactionId = 0;
+};
+
+struct SetFactionStanding
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SET_FACTION_STANDING;
+
+    float BonusFromAchievementSystem = 0.0f;
+    std::vector<FactionStandingEntry> Entries;
+    bool ShowVisual = true;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << BonusFromAchievementSystem;
+        data << uint32(Entries.size());
+        for (FactionStandingEntry const& entry : Entries)
+            data << entry.Index << entry.Standing << entry.FactionId;
+        data.WriteBit(ShowVisual);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(float) + sizeof(uint32))
+            return false;
+        data >> BonusFromAchievementSystem;
+        uint32 count;
+        data >> count;
+        if (data.size() - data.rpos() < size_t(count) * 3 * sizeof(int32) + 1)
+            return false;
+        Entries.assign(count, FactionStandingEntry{});
+        for (FactionStandingEntry& entry : Entries)
+            data >> entry.Index >> entry.Standing >> entry.FactionId;
+        ShowVisual = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 struct PlayedTimeResult
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;

@@ -104,3 +104,29 @@ TEST_CASE("CancelGrowthAura round-trips", "[packets]")
 {
     RoundTrip(CancelGrowthAura(), [](CancelGrowthAura const&, CancelGrowthAura const&) {});
 }
+
+TEST_CASE("PlaySpellVisual round-trips", "[packets]")
+{
+    PlaySpellVisual packet;
+    packet.Source = { 5, 0x0800000000000000ULL };
+    packet.Target = packet.Source;
+    packet.SpellVisualId = 168; // SPELL_VISUAL_KIT_FOOD
+    RoundTrip(packet, [](PlaySpellVisual const& a, PlaySpellVisual const& b)
+    {
+        CHECK(a.Source == b.Source);
+        CHECK(a.Target == b.Target);
+        CHECK(a.Transport == b.Transport);
+        CHECK(a.TargetPosX == b.TargetPosX);
+        CHECK(a.TargetPosY == b.TargetPosY);
+        CHECK(a.TargetPosZ == b.TargetPosZ);
+        CHECK(a.SpellVisualId == b.SpellVisualId);
+        CHECK(a.TravelSpeed == b.TravelSpeed);
+        CHECK(a.HitReason == b.HitReason);
+        CHECK(a.MissReason == b.MissReason);
+        CHECK(a.ReflectStatus == b.ReflectStatus);
+        CHECK(a.LaunchDelay == b.LaunchDelay);
+        CHECK(a.MinDuration == b.MinDuration);
+        CHECK(a.SpeedAsTime == b.SpeedAsTime);
+    });
+    RejectsEveryTruncation(packet);
+}

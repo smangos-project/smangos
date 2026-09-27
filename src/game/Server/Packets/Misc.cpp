@@ -193,20 +193,6 @@ void WorldPackets::Misc::MeetingstoneComplete::AppendBodyTo(ByteBuffer& /*buffer
 {
 }
 
-size_t WorldPackets::Misc::PvpCredit::EstimateFinalSize() const
-{
-    return sizeof(honor) +
-           sizeof(victimGuid) +
-           sizeof(victimRank);
-}
-
-void WorldPackets::Misc::PvpCredit::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << honor;
-    buffer << victimGuid;
-    buffer << victimRank;
-}
-
 size_t WorldPackets::Misc::SetForcedReactions::EstimateFinalSize() const
 {
     return sizeof(uint32) /*size*/ +
@@ -220,22 +206,6 @@ void WorldPackets::Misc::SetForcedReactions::AppendBodyTo(ByteBuffer& buffer) co
     {
         buffer << reaction.factionId;       // faction_id (Faction.dbc)
         buffer << reaction.reputationRank;  // reputation rank
-    }
-}
-
-size_t WorldPackets::Misc::SetFactionStanding::EstimateFinalSize() const
-{
-    return sizeof(uint32) /*size*/ +
-           factionStandings.size() * sizeof(FactionStandingEntry);
-}
-
-void WorldPackets::Misc::SetFactionStanding::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << static_cast<uint32>(factionStandings.size());
-    for (const auto& entry : factionStandings)
-    {
-        buffer << entry.reputationListId;
-        buffer << entry.standing;
     }
 }
 
@@ -312,86 +282,6 @@ void WorldPackets::Misc::PlayObjectSound::AppendBodyTo(ByteBuffer& buffer) const
     buffer << sourceGuid;
 }
 
-size_t WorldPackets::Misc::GameObjectSpawnAnim::EstimateFinalSize() const
-{
-    return sizeof(gameObjectGuid);
-}
-
-void WorldPackets::Misc::GameObjectSpawnAnim::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << gameObjectGuid;
-}
-
-size_t WorldPackets::Misc::GameObjectDespawnAnim::EstimateFinalSize() const
-{
-    return sizeof(gameObjectGuid);
-}
-
-void WorldPackets::Misc::GameObjectDespawnAnim::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << gameObjectGuid;
-}
-
-size_t WorldPackets::Misc::StartMirrorTimer::EstimateFinalSize() const
-{
-    return sizeof(timerType) +
-           sizeof(remaining) +
-           sizeof(duration) +
-           sizeof(scale) +
-           sizeof(paused) +
-           sizeof(spellId);
-}
-
-void WorldPackets::Misc::StartMirrorTimer::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << timerType;
-    buffer << remaining;
-    buffer << duration;
-    buffer << scale;
-    buffer << paused;
-    buffer << spellId;
-}
-
-size_t WorldPackets::Misc::StopMirrorTimer::EstimateFinalSize() const
-{
-    return sizeof(timerType);
-}
-
-void WorldPackets::Misc::StopMirrorTimer::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << timerType;
-}
-
-size_t WorldPackets::Misc::PauseMirrorTimer::EstimateFinalSize() const
-{
-    return sizeof(timerType) +
-           sizeof(paused);
-}
-
-void WorldPackets::Misc::PauseMirrorTimer::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << timerType;
-    buffer << paused;
-}
-
-size_t WorldPackets::Misc::LevelUpInfo::EstimateFinalSize() const
-{
-    return sizeof(level) +
-           sizeof(healthGain) +
-           sizeof(powerGains) +
-           sizeof(statGains);
-}
-
-void WorldPackets::Misc::LevelUpInfo::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << level;
-    buffer << healthGain;
-    for (uint32 i = 0; i < 5; ++i)
-        buffer << powerGains[i];
-    for (uint32 i = 0; i < 5; ++i)
-        buffer << statGains[i];
-}
-
 size_t WorldPackets::Misc::TriggerCinematic::EstimateFinalSize() const
 {
     return sizeof(cinematicSequenceId);
@@ -437,26 +327,6 @@ void WorldPackets::Misc::InstanceResetFailed::AppendBodyTo(ByteBuffer& buffer) c
 }
 #endif
 
-size_t WorldPackets::Misc::MountResult::EstimateFinalSize() const
-{
-    return sizeof(result);
-}
-
-void WorldPackets::Misc::MountResult::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << result;
-}
-
-size_t WorldPackets::Misc::DismountResult::EstimateFinalSize() const
-{
-    return sizeof(result);
-}
-
-void WorldPackets::Misc::DismountResult::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << result;
-}
-
 size_t WorldPackets::Misc::RaidGroupOnly::EstimateFinalSize() const
 {
     return sizeof(timer) +
@@ -496,20 +366,6 @@ void WorldPackets::Misc::RaidInstanceMessage::AppendBodyTo(ByteBuffer& buffer) c
     buffer << resetTime;
 }
 #endif
-
-size_t WorldPackets::Misc::SummonRequest::EstimateFinalSize() const
-{
-    return sizeof(summonerGuid) +
-           sizeof(zoneId) +
-           sizeof(autoDeclineDelay);
-}
-
-void WorldPackets::Misc::SummonRequest::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << summonerGuid;
-    buffer << zoneId;
-    buffer << autoDeclineDelay;
-}
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 size_t WorldPackets::Misc::UpdateInstanceOwnership::EstimateFinalSize() const

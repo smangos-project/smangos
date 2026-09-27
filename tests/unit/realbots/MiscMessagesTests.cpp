@@ -332,3 +332,103 @@ TEST_CASE("AreaTrigger round-trips", "[packets]")
         RejectsEveryTruncation(packet);
     }
 }
+
+TEST_CASE("StartMirrorTimer round-trips", "[packets]")
+{
+    StartMirrorTimer packet;
+    packet.Timer = 0; // MIRROR_TIMER_BREATH
+    packet.Value = 60000;
+    packet.MaxValue = 60000;
+    packet.Scale = -1;
+    packet.SpellId = 0;
+    packet.Paused = false;
+    RoundTrip(packet, [](StartMirrorTimer const& a, StartMirrorTimer const& b)
+    {
+        CHECK(a.Timer == b.Timer);
+        CHECK(a.Value == b.Value);
+        CHECK(a.MaxValue == b.MaxValue);
+        CHECK(a.Scale == b.Scale);
+        CHECK(a.SpellId == b.SpellId);
+        CHECK(a.Paused == b.Paused);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("PauseMirrorTimer round-trips both values", "[packets]")
+{
+    for (bool paused : { false, true })
+    {
+        PauseMirrorTimer packet;
+        packet.Timer = 1; // MIRROR_TIMER_FATIGUE
+        packet.Paused = paused;
+        RoundTrip(packet, [](PauseMirrorTimer const& a, PauseMirrorTimer const& b)
+        {
+            CHECK(a.Timer == b.Timer);
+            CHECK(a.Paused == b.Paused);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}
+
+TEST_CASE("StopMirrorTimer round-trips", "[packets]")
+{
+    StopMirrorTimer packet;
+    packet.Timer = 2; // MIRROR_TIMER_ENVIRONMENTAL
+    RoundTrip(packet, [](StopMirrorTimer const& a, StopMirrorTimer const& b) { CHECK(a.Timer == b.Timer); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("MountResult round-trips", "[packets]")
+{
+    MountResult packet;
+    packet.Result = 0;
+    RoundTrip(packet, [](MountResult const& a, MountResult const& b) { CHECK(a.Result == b.Result); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("DismountResult round-trips", "[packets]")
+{
+    DismountResult packet;
+    packet.Result = 1;
+    RoundTrip(packet, [](DismountResult const& a, DismountResult const& b) { CHECK(a.Result == b.Result); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SummonRequest round-trips", "[packets]")
+{
+    SummonRequest packet;
+    packet.SummonerGuid = { 0x7788, 0 };
+    packet.AreaId = 12;
+    packet.Reason = SummonRequest::ReasonSpell;
+    packet.SkipStartingArea = false;
+    RoundTrip(packet, [](SummonRequest const& a, SummonRequest const& b)
+    {
+        CHECK(a.SummonerGuid == b.SummonerGuid);
+        CHECK(a.AreaId == b.AreaId);
+        CHECK(a.Reason == b.Reason);
+        CHECK(a.SkipStartingArea == b.SkipStartingArea);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("SetFactionStanding round-trips one and several entries", "[packets]")
+{
+    SetFactionStanding packet;
+    packet.BonusFromAchievementSystem = 0.0f;
+    packet.Entries.push_back({ 72, 500, 69 }); // Stormwind
+    packet.Entries.push_back({ 76, -200, 87 }); // Orgrimmar, hated
+    packet.ShowVisual = true;
+    RoundTrip(packet, [](SetFactionStanding const& a, SetFactionStanding const& b)
+    {
+        CHECK(a.BonusFromAchievementSystem == b.BonusFromAchievementSystem);
+        REQUIRE(a.Entries.size() == b.Entries.size());
+        for (size_t i = 0; i < a.Entries.size(); ++i)
+        {
+            CHECK(a.Entries[i].Index == b.Entries[i].Index);
+            CHECK(a.Entries[i].Standing == b.Entries[i].Standing);
+            CHECK(a.Entries[i].FactionId == b.Entries[i].FactionId);
+        }
+        CHECK(a.ShowVisual == b.ShowVisual);
+    });
+    RejectsEveryTruncation(packet);
+}

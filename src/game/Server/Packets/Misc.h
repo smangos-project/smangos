@@ -202,18 +202,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class PvpCredit final : public ServerPacket
-    {
-    public:
-        int32 honor = 0;          // Amount of honor gained
-        ObjectGuid victimGuid;    // GUID of the killed unit (empty if no victim)
-        int32 victimRank = 0;     // Rank of the victim (0 = no rank, 19 = racial leader)
-
-        explicit PvpCredit() : ServerPacket(SMSG_PVP_CREDIT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     struct ForcedReactionEntry
     {
         uint32 factionId = 0;       // Faction ID (Faction.dbc)
@@ -226,22 +214,6 @@ namespace WorldPackets { namespace Misc
         std::vector<ForcedReactionEntry> forcedReactions;
 
         explicit SetForcedReactions() : ServerPacket(SMSG_SET_FORCED_REACTIONS) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    struct FactionStandingEntry
-    {
-        uint32 reputationListId = 0; // Reputation list ID
-        int32 standing = 0;          // Reputation standing
-    };
-
-    class SetFactionStanding final : public ServerPacket  // last check 2.4.0
-    {
-    public:
-        std::vector<FactionStandingEntry> factionStandings;
-
-        explicit SetFactionStanding() : ServerPacket(SMSG_SET_FACTION_STANDING) {}
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
@@ -320,77 +292,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class GameObjectSpawnAnim final : public ServerPacket
-    {
-    public:
-        ObjectGuid gameObjectGuid;
-
-        explicit GameObjectSpawnAnim() : ServerPacket(SMSG_GAMEOBJECT_SPAWN_ANIM) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class GameObjectDespawnAnim final : public ServerPacket
-    {
-    public:
-        ObjectGuid gameObjectGuid;
-
-        explicit GameObjectDespawnAnim() : ServerPacket(SMSG_GAMEOBJECT_DESPAWN_ANIM) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class StartMirrorTimer final : public ServerPacket
-    {
-    public:
-        uint32 timerType = 0;   // mirror timer type (breath, fatigue, environmental)
-        uint32 remaining = 0;   // remaining time in ms
-        uint32 duration = 0;    // full timer duration in ms
-        int32 scale = 0;        // rate of change (-1 = decreasing, 10 = increasing)
-        bool paused = false;
-        uint32 spellId = 0;     // spell causing the timer (nullptr if no spell)
-
-        explicit StartMirrorTimer() : ServerPacket(SMSG_START_MIRROR_TIMER) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class StopMirrorTimer final : public ServerPacket
-    {
-    public:
-        uint32 timerType = 0; // mirror timer type to stop
-
-        explicit StopMirrorTimer() : ServerPacket(SMSG_STOP_MIRROR_TIMER) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    // Note: Default UI handler for this is bugged, args don't match.
-    // Use StartMirrorTimer (SMSG_START_MIRROR_TIMER) to avoid lua errors.
-    class PauseMirrorTimer final : public ServerPacket
-    {
-    public:
-        uint32 timerType = 0; // mirror timer type to pause/unpause
-        bool paused = false;
-
-        explicit PauseMirrorTimer() : ServerPacket(SMSG_PAUSE_MIRROR_TIMER) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class LevelUpInfo final : public ServerPacket
-    {
-    public:
-        uint32 level = 0;
-        uint32 healthGain = 0;
-        uint32 powerGains[5] = {}; // up to 5 powers
-        uint32 statGains[5] = {};  // stat gains for STRENGTH..SPIRIT
-
-        explicit LevelUpInfo() : ServerPacket(SMSG_LEVELUP_INFO) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class TriggerCinematic final : public ServerPacket
     {
     public:
@@ -437,26 +338,6 @@ namespace WorldPackets { namespace Misc
     };
 #endif
 
-    class MountResult final : public ServerPacket
-    {
-    public:
-        uint32 result = 0; // UnitMountResult enum value
-
-        explicit MountResult() : ServerPacket(SMSG_MOUNTRESULT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class DismountResult final : public ServerPacket
-    {
-    public:
-        uint32 result = 0; // UnitDismountResult enum value
-
-        explicit DismountResult() : ServerPacket(SMSG_DISMOUNTRESULT) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class RaidGroupOnly final : public ServerPacket
     {
     public:
@@ -492,18 +373,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 #endif
-
-    class SummonRequest final : public ServerPacket
-    {
-    public:
-        ObjectGuid summonerGuid;
-        uint32 zoneId = 0;           // summoner's zone
-        uint32 autoDeclineDelay = 0; // time in ms before auto decline
-
-        explicit SummonRequest() : ServerPacket(SMSG_SUMMON_REQUEST) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     class UpdateInstanceOwnership final : public ServerPacket

@@ -219,4 +219,52 @@ struct CancelGrowthAura
     bool Read(ByteBuffer&) { return true; }
 };
 
+// A standalone visual effect: eat/drink kits and a channeled spell's beam refresh (this engine's
+// only two callers -- see Unit::SendPlaySpellVisualKit). Field order per TrinityCore's
+// PlaySpellVisual::Write() (SpellPackets.cpp), the full projectile-visual shape retail casts use;
+// this engine has no travel/target data for either caller, so every field past Source/Target/
+// SpellVisualId is a "detonate instantly at the caster" default (Target = Source, zero position,
+// zero travel speed), unverified against a real client.
+struct PlaySpellVisual
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAY_SPELL_VISUAL;
+
+    ClassicGuid Source;
+    ClassicGuid Target;
+    ClassicGuid Transport;
+    float TargetPosX = 0.0f, TargetPosY = 0.0f, TargetPosZ = 0.0f;
+    uint32 SpellVisualId = 0;
+    float TravelSpeed = 0.0f;
+    uint16 HitReason = 0;
+    uint16 MissReason = 0;
+    uint16 ReflectStatus = 0;
+    float LaunchDelay = 0.0f;
+    float MinDuration = 0.0f;
+    bool SpeedAsTime = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        Source.Write(data);
+        Target.Write(data);
+        Transport.Write(data);
+        data << TargetPosX << TargetPosY << TargetPosZ;
+        data << SpellVisualId << TravelSpeed << HitReason << MissReason << ReflectStatus << LaunchDelay << MinDuration;
+        data.WriteBit(SpeedAsTime);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Source.Read(data) || !Target.Read(data) || !Transport.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 3 * sizeof(float) + sizeof(uint32) + sizeof(float) + 3 * sizeof(uint16) + 2 * sizeof(float) + 1)
+            return false;
+        data >> TargetPosX >> TargetPosY >> TargetPosZ;
+        data >> SpellVisualId >> TravelSpeed >> HitReason >> MissReason >> ReflectStatus >> LaunchDelay >> MinDuration;
+        SpeedAsTime = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 #endif // MANGOS_PACKETS_AURAS_H

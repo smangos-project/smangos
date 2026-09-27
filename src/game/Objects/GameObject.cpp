@@ -38,6 +38,8 @@
 #include "MapPersistentStateMgr.h"
 #include "BattleGround.h"
 #include "BattleGroundAV.h"
+#include "Server/Packets/GameObjectMessages.h"
+#include "Server/Packets/Classic/GuidMapping.h"
 #include "Util.h"
 #include "GameObjectAI.h"
 #include "ScriptMgr.h"
@@ -418,9 +420,7 @@ void GameObject::Update(uint32 update_diff, uint32 /*p_time*/)
                             if (Player* caster = ::ToPlayer(GetOwner()))
                             {
                                 caster->FinishSpell(CURRENT_CHANNELED_SPELL);
-
-                                WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                                caster->GetSession()->SendPacket(&data);
+                                caster->GetSession()->SendClassic(FishNotHooked{});
                             }
                             // can be deleted
                             m_lootState = GO_JUST_DEACTIVATED;
@@ -1711,9 +1711,7 @@ void GameObject::Use(Unit* user)
                     {
                         // fish escaped, can be deleted now
                         SetLootState(GO_JUST_DEACTIVATED);
-
-                        WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        player->GetSession()->SendPacket(&data);
+                        player->GetSession()->SendClassic(FishEscaped{});
                     }
                     break;
                 }
@@ -1722,9 +1720,7 @@ void GameObject::Use(Unit* user)
                 default:
                 {
                     SetLootState(GO_JUST_DEACTIVATED);
-
-                    WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    player->GetSession()->SendPacket(&data);
+                    player->GetSession()->SendClassic(FishNotHooked{});
                     break;
                 }
             }
@@ -2451,11 +2447,13 @@ bool GameObject::HasCustomAnim() const
     return false;
 }
 
-void GameObject::SendGameObjectCustomAnim(uint32 animId /*= 0*/)
+void GameObject::SendGameObjectCustomAnim(uint32 animId /*= 0*/, bool playAsDespawn /*= false*/)
 {
-    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8 + 4);
-    data << GetObjectGuid();
-    data << uint32(animId);
+    GameObjectCustomAnim packet;
+    packet.ObjectGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.CustomAnim = animId;
+    packet.PlayAsDespawn = playAsDespawn;
+    WorldPacket data = MakeClassicPacket(packet);
     SendMessageToSet(&data, true);
 }
 

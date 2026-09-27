@@ -25,17 +25,6 @@ namespace WorldPackets { namespace Spell
 
     // --- Server Packets ---
 
-    class PlaySpellVisual final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        uint32 spellVisualId = 0; // SpellVisualKit.dbc index
-
-        explicit PlaySpellVisual() : ServerPacket(SMSG_PLAY_SPELL_VISUAL) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     class PlaySpellImpact final : public ServerPacket
     {

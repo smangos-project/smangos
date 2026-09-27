@@ -209,7 +209,6 @@ set (game_SRCS
     Server/Packets/Classic/GuidMapping.cpp
     Server/Packets/Character.cpp
     Server/Packets/Chat.cpp
-    Server/Packets/Combat.cpp
     Server/Packets/Item.cpp
     Server/Packets/Misc.cpp
     Server/Packets/Npc.cpp
@@ -456,7 +455,6 @@ set (game_SRCS
     Server/Packets/MovementMessages.h
     Server/Packets/MonsterMove.h
     Server/Packets/WorldTransfer.h
-    Server/Packets/Combat.h
     Server/Packets/DuelMessages.h
     Server/Packets/GmTicketMessages.h
     Server/Packets/GroupMessages.h
@@ -466,6 +464,7 @@ set (game_SRCS
     Server/Packets/ItemMessages.h
     Server/Packets/ClassicInventoryResult.h
     Server/Packets/LootMessages.h
+    Server/Packets/GameObjectMessages.h
     Server/Packets/MailMessages.h
     Server/Packets/Misc.h
     Server/Packets/MiscMessages.h

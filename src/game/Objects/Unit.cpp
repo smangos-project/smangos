@@ -58,6 +58,7 @@
 #include "InstanceStatistics.h"
 #include "MovementPacketSender.h"
 #include "MovementInfoWire.h"
+#include "Server/Packets/Auras.h"
 #include "Server/Packets/CombatLog.h"
 #include "Server/Packets/CombatMessages.h"
 #include "Server/Packets/PetMessages.h"
@@ -10753,10 +10754,12 @@ void Unit::SendSpellGo(Unit* target, uint32 spellId) const
 
 void Unit::SendPlaySpellVisualKit(uint32 id) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::PlaySpellVisual>();
-    packet->casterGuid = GetObjectGuid();
-    packet->spellVisualId = id;
-    SendMessageToSet(std::move(packet), true);
+    PlaySpellVisual packet;
+    packet.Source = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.Target = packet.Source; // detonates at the caster: no real travel/target for a kit visual
+    packet.SpellVisualId = id;
+    WorldPacket data = MakeClassicPacket(packet);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::CancelSpellChannelingAnimationInstantly()
