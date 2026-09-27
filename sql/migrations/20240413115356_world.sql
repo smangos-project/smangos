@@ -1,19 +1,23 @@
-DROP PROCEDURE IF EXISTS add_migration;
-DELIMITER ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20240413115356');
-IF v = 0 THEN
 INSERT INTO `migrations` VALUES ('20240413115356');
+
 -- Add your query below.
 
-
 -- Add build to primary key of table.
-ALTER TABLE `spell_threat`
-	DROP PRIMARY KEY,
-	ADD PRIMARY KEY (`entry`, `build_min`, `build_max`);
+CREATE TABLE `spell_threat__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `Threat` REAL NOT NULL DEFAULT 0,
+  `multiplier` REAL NOT NULL DEFAULT 1,
+  `ap_bonus` REAL NOT NULL DEFAULT 0,
+  `build_min` INTEGER NOT NULL DEFAULT 0,
+  `build_max` INTEGER NOT NULL DEFAULT 5875,
+  PRIMARY KEY (`entry`, `build_min`, `build_max`)
+);
 
+INSERT INTO `spell_threat__new` (`entry`, `Threat`, `multiplier`, `ap_bonus`, `build_min`, `build_max`)
+SELECT `entry`, `Threat`, `multiplier`, `ap_bonus`, `build_min`, `build_max` FROM `spell_threat`;
+
+DROP TABLE `spell_threat`;
+ALTER TABLE `spell_threat__new` RENAME TO `spell_threat`;
 
 /*
  World of Warcraft Client Patch 1.7.0 (2005-09-13)
@@ -33,8 +37,3 @@ INSERT INTO `spell_threat` (`entry`, `Threat`, `multiplier`, `ap_bonus`, `build_
 
 
 -- End of migration.
-END IF;
-END??
-DELIMITER ;
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

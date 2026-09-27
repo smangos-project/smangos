@@ -1,18 +1,22 @@
-DROP PROCEDURE IF EXISTS add_migration;
-DELIMITER ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20260514000111');
-IF v = 0 THEN
 INSERT INTO `migrations` VALUES ('20260514000111');
+
 -- Add your query below.
 
+CREATE TABLE `spell_threat__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `threat` REAL NOT NULL DEFAULT 0,
+  `multiplier` REAL NOT NULL DEFAULT 1,
+  `inverse_effect_mask` INTEGER NOT NULL DEFAULT 0,
+  `build_min` INTEGER NOT NULL DEFAULT 0,
+  `build_max` INTEGER NOT NULL DEFAULT 5875,
+  PRIMARY KEY (`entry`, `build_min`, `build_max`)
+);
 
-ALTER TABLE `spell_threat`
-	CHANGE COLUMN `Threat` `threat` FLOAT NOT NULL DEFAULT '0' COMMENT 'flat threat bonus' AFTER `entry`,
-	ADD COLUMN `inverse_effect_mask` TINYINT UNSIGNED NOT NULL DEFAULT '0' COMMENT 'mask for effect indexes to which flat threat bonus does not apply' AFTER `multiplier`,
-	DROP COLUMN `ap_bonus`;
+INSERT INTO `spell_threat__new` (`entry`, `threat`, `multiplier`, `build_min`, `build_max`)
+SELECT `entry`, `Threat`, `multiplier`, `build_min`, `build_max` FROM `spell_threat`;
+
+DROP TABLE `spell_threat`;
+ALTER TABLE `spell_threat__new` RENAME TO `spell_threat`;
 
 UPDATE `spell_threat` SET `inverse_effect_mask`=1 WHERE `entry`=126;
 UPDATE `spell_threat` SET `inverse_effect_mask`=1 WHERE `entry`=6196;
@@ -20,8 +24,3 @@ UPDATE `spell_threat` SET `inverse_effect_mask`=2 WHERE `entry`=22812;
 
 
 -- End of migration.
-END IF;
-END??
-DELIMITER ;
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

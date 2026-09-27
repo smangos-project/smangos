@@ -1,18 +1,24 @@
-DROP PROCEDURE IF EXISTS add_migration;
-DELIMITER ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20240413183703');
-IF v = 0 THEN
 INSERT INTO `migrations` VALUES ('20240413183703');
+
 -- Add your query below.
 
-
 -- Add patch to primary key of table.
-ALTER TABLE `pool_template`
-	DROP PRIMARY KEY,
-	ADD PRIMARY KEY (`entry`, `patch_min`, `patch_max`);
+CREATE TABLE `pool_template__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `max_limit` INTEGER NOT NULL DEFAULT 0,
+  `description` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  `flags` INTEGER NOT NULL DEFAULT 0,
+  `instance` INTEGER NOT NULL DEFAULT 0,
+  `patch_min` INTEGER NOT NULL DEFAULT 0,
+  `patch_max` INTEGER NOT NULL DEFAULT 10,
+  PRIMARY KEY (`entry`, `patch_min`, `patch_max`)
+);
+
+INSERT INTO `pool_template__new` (`entry`, `max_limit`, `description`, `flags`, `instance`, `patch_min`, `patch_max`)
+SELECT `entry`, `max_limit`, `description`, `flags`, `instance`, `patch_min`, `patch_max` FROM `pool_template`;
+
+DROP TABLE `pool_template`;
+ALTER TABLE `pool_template__new` RENAME TO `pool_template`;
 
 /*
  World of Warcraft Client Patch 1.7.0 (2005-09-13)
@@ -50,8 +56,3 @@ INSERT INTO `pool_template` (`entry`, `max_limit`, `description`, `flags`, `inst
 
 
 -- End of migration.
-END IF;
-END??
-DELIMITER ;
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

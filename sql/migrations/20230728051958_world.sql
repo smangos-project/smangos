@@ -1,28 +1,75 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20230728051958');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20230728051958');
+
 -- Add your query below.
 
 
 -- Add ability to specify subpath inside waypoints.
-ALTER TABLE `creature_movement`
-	ADD COLUMN `path_id` INT UNSIGNED NOT NULL DEFAULT '0' AFTER `script_id`;
-ALTER TABLE `creature_movement_special`
-	ADD COLUMN `path_id` INT UNSIGNED NOT NULL DEFAULT '0' AFTER `script_id`;
-ALTER TABLE `creature_movement_template`
-	ADD COLUMN `path_id` INT UNSIGNED NOT NULL DEFAULT '0' AFTER `script_id`;
+CREATE TABLE `creature_movement__new` (
+  `id` INTEGER NOT NULL DEFAULT 0,
+  `point` INTEGER NOT NULL DEFAULT 0,
+  `position_x` REAL NOT NULL DEFAULT 0,
+  `position_y` REAL NOT NULL DEFAULT 0,
+  `position_z` REAL NOT NULL DEFAULT 0,
+  `orientation` REAL NOT NULL DEFAULT 0,
+  `waittime` INTEGER NOT NULL DEFAULT 0,
+  `wander_distance` REAL NOT NULL DEFAULT 0,
+  `script_id` INTEGER NOT NULL DEFAULT 0,
+  `path_id` INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`, `point`)
+);
+
+INSERT INTO `creature_movement__new` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, `path_id`)
+SELECT `id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, 0 FROM `creature_movement`;
+
+DROP TABLE `creature_movement`;
+ALTER TABLE `creature_movement__new` RENAME TO `creature_movement`;
+
+CREATE TABLE `creature_movement_special__new` (
+  `id` INTEGER NOT NULL DEFAULT 0,
+  `point` INTEGER NOT NULL DEFAULT 0,
+  `position_x` REAL NOT NULL DEFAULT 0,
+  `position_y` REAL NOT NULL DEFAULT 0,
+  `position_z` REAL NOT NULL DEFAULT 0,
+  `orientation` REAL NOT NULL DEFAULT 0,
+  `waittime` INTEGER NOT NULL DEFAULT 0,
+  `wander_distance` REAL NOT NULL DEFAULT 0,
+  `script_id` INTEGER NOT NULL DEFAULT 0,
+  `path_id` INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`, `point`)
+);
+
+INSERT INTO `creature_movement_special__new` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, `path_id`)
+SELECT `id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, 0 FROM `creature_movement_special`;
+
+DROP TABLE `creature_movement_special`;
+ALTER TABLE `creature_movement_special__new` RENAME TO `creature_movement_special`;
+
+CREATE TABLE `creature_movement_template__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `point` INTEGER NOT NULL DEFAULT 0,
+  `position_x` REAL NOT NULL DEFAULT 0,
+  `position_y` REAL NOT NULL DEFAULT 0,
+  `position_z` REAL NOT NULL DEFAULT 0,
+  `orientation` REAL NOT NULL DEFAULT 0,
+  `waittime` INTEGER NOT NULL DEFAULT 0,
+  `wander_distance` REAL NOT NULL DEFAULT 0,
+  `script_id` INTEGER NOT NULL DEFAULT 0,
+  `path_id` INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (`entry`, `point`)
+);
+
+INSERT INTO `creature_movement_template__new` (`entry`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, `path_id`)
+SELECT `entry`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, 0 FROM `creature_movement_template`;
+
+DROP TABLE `creature_movement_template`;
+ALTER TABLE `creature_movement_template__new` RENAME TO `creature_movement_template`;
 
 -- Correct waypoints for Pridewing Soarer.
 UPDATE `creature` SET `movement_type`=2 WHERE `guid`=32374;
 DELETE FROM `creature_movement` WHERE `id`=32374;
 INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, `path_id`) VALUES (32374, 1, 1274.96, 998.782, 261.414, 100, 30000, 3, 0, 3237401);
 INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `script_id`, `path_id`) VALUES (32374, 2, 1395.66, 1133.55, 253.876, 100, 30000, 3, 0, 3237402);
-INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (3237401, 1, 1387.64, 1133.09, 248.428),
 (3237401, 2, 1396.62, 1132.77, 252.803),
 (3237401, 3, 1400.68, 1132.62, 254.776),
@@ -62,7 +109,7 @@ INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_
 (3237401, 37, 1267.97, 992.074, 261.108),
 (3237401, 38, 1274.96, 998.782, 261.414),
 (3237401, 39, 1274.96, 998.782, 261.414);
-INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (3237402, 1, 1271.17, 995.105, 250.358),
 (3237402, 2, 1274.09, 998.519, 259.289),
 (3237402, 3, 1275.1, 999.694, 262.364),
@@ -101,7 +148,7 @@ UPDATE `creature` SET `movement_type`=2 WHERE `guid`=32376;
 DELETE FROM `creature_movement` WHERE `id`=32376;
 INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `path_id`) VALUES (32376, 1, 1588.57, 872.573, 184.32, 100, 30000, 3, 3237601);
 INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `wander_distance`, `path_id`) VALUES (32376, 2, 1767.44, 1039.39, 228.905, 100, 30000, 3, 3237602);
-INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (3237601, 1, 1765.87, 1040.09, 217.624),
 (3237601, 2, 1766.04, 1037.96, 227.392),
 (3237601, 3, 1766.09, 1037.38, 230.042),
@@ -137,7 +184,7 @@ INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_
 (3237601, 33, 1584.06, 879.774, 187.403),
 (3237601, 34, 1588.57, 872.573, 184.32),
 (3237601, 35, 1588.57, 872.573, 184.32);
-INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement_special` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (3237602, 1, 1577.96, 877.011, 180.776),
 (3237602, 2, 1587.21, 873.962, 183.062),
 (3237602, 3, 1591.53, 872.536, 184.131),
@@ -172,7 +219,7 @@ UPDATE `creature` SET `movement_type`=3 WHERE `guid`=3344;
 
 -- Add missing Soaring Razorbeak.
 INSERT INTO `creature` (`guid`, `id`, `id2`, `id3`, `id4`, `id5`, `map`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecsmin`, `spawntimesecsmax`, `wander_distance`, `health_percent`, `mana_percent`, `movement_type`, `spawn_flags`, `visibility_mod`, `patch_min`, `patch_max`) VALUES (92913, 8276, 0, 0, 0, 0, 0, 406.208, -3035.6, 168.384, 4.9824, 350, 350, 0, 100, 0, 3, 0, 0, 0, 10);
-INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (92913, 1, 406.208, -3035.6, 168.384),
 (92913, 2, 407.741, -3026.06, 170.978),
 (92913, 3, 408.382, -3022.08, 172.061),
@@ -233,7 +280,7 @@ INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `pos
 
 -- Add missing Brood of Nozdormu.
 INSERT INTO `creature` (`guid`, `id`, `id2`, `id3`, `id4`, `id5`, `map`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecsmin`, `spawntimesecsmax`, `wander_distance`, `health_percent`, `mana_percent`, `movement_type`, `spawn_flags`, `visibility_mod`, `patch_min`, `patch_max`) VALUES (42903, 15185, 0, 0, 0, 0, 1, -8100.03, 1834.71, 128.845, 0.522566, 600, 600, 0, 100, 100, 3, 0, 0, 6, 10);
-INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (42903, 1, -8100.03, 1834.71, 128.845),
 (42903, 2, -8099.8, 1826, 123.925),
 (42903, 3, -8099.74, 1823.73, 122.641),
@@ -292,7 +339,7 @@ INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `pos
 
 -- Add missing Brood of Nozdormu.
 INSERT INTO `creature` (`guid`, `id`, `id2`, `id3`, `id4`, `id5`, `map`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecsmin`, `spawntimesecsmax`, `wander_distance`, `health_percent`, `mana_percent`, `movement_type`, `spawn_flags`, `visibility_mod`, `patch_min`, `patch_max`) VALUES (42920, 15185, 0, 0, 0, 0, 1, -7667.3, 2041.83, 192.263, 0.522566, 600, 600, 0, 100, 100, 3, 0, 0, 6, 10);
-INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES 
+INSERT INTO `creature_movement` (`id`, `point`, `position_x`, `position_y`, `position_z`) VALUES
 (42920, 1, -7667.3, 2041.83, 192.263),
 (42920, 2, -7674.82, 2035.26, 191.629),
 (42920, 3, -7679.21, 2031.43, 191.26),
@@ -378,8 +425,3 @@ UPDATE `creature` SET `wander_distance`=0 WHERE `guid`=42902;
 
 
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

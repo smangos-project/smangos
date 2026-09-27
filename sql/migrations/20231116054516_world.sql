@@ -1,17 +1,29 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20231116054516');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20231116054516');
+
 -- Add your query below.
 
+CREATE TABLE `spell_proc_event__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `SchoolMask` INTEGER NOT NULL DEFAULT 0,
+  `SpellFamilyName` INTEGER NOT NULL DEFAULT 0,
+  `SpellFamilyMask0` INTEGER NOT NULL DEFAULT 0,
+  `SpellFamilyMask1` INTEGER NOT NULL DEFAULT 0,
+  `SpellFamilyMask2` INTEGER NOT NULL DEFAULT 0,
+  `procFlags` INTEGER NOT NULL DEFAULT 0,
+  `procEx` INTEGER NOT NULL DEFAULT 0,
+  `ppmRate` REAL NOT NULL DEFAULT 0,
+  `CustomChance` REAL NOT NULL DEFAULT 0,
+  `Cooldown` INTEGER NOT NULL DEFAULT 0,
+  `build_min` INTEGER NOT NULL DEFAULT 0,
+  `build_max` INTEGER NOT NULL DEFAULT 5875,
+  PRIMARY KEY (`entry`, `build_min`, `build_max`)
+);
 
-ALTER TABLE `spell_proc_event`
-	DROP PRIMARY KEY,
-	ADD PRIMARY KEY (`entry`, `build_min`, `build_max`);
+INSERT INTO `spell_proc_event__new` (`entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`, `build_min`, `build_max`)
+SELECT `entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`, `build_min`, `build_max` FROM `spell_proc_event`;
+
+DROP TABLE `spell_proc_event`;
+ALTER TABLE `spell_proc_event__new` RENAME TO `spell_proc_event`;
 
 /*
 World of Warcraft Client Patch 1.10.0 (2006-03-28)
@@ -25,8 +37,3 @@ INSERT INTO `spell_proc_event` (`entry`, `SchoolMask`, `SpellFamilyName`, `Spell
 
 
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

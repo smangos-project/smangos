@@ -1,17 +1,28 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20230614232809');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20230614232809');
+
 -- Add your query below.
 
+CREATE TABLE `warden_scans__new` (
+  `id` INTEGER NOT NULL DEFAULT 0,
+  `type` INTEGER DEFAULT 0,
+  `str` TEXT COLLATE NOCASE,
+  `data` TEXT COLLATE NOCASE,
+  `address` INTEGER DEFAULT 0,
+  `length` INTEGER DEFAULT 0,
+  `result` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  `flags` INTEGER NOT NULL DEFAULT 0,
+  `penalty` INTEGER NOT NULL DEFAULT -1,
+  `build_min` INTEGER NOT NULL DEFAULT 5875,
+  `build_max` INTEGER NOT NULL DEFAULT 5875,
+  `comment` TEXT NOT NULL DEFAULT '' COLLATE NOCASE
+);
 
-ALTER TABLE `warden_scans`
-	ADD COLUMN `build_min` SMALLINT UNSIGNED NOT NULL DEFAULT '5875' AFTER `penalty`,
-	ADD COLUMN `build_max` SMALLINT UNSIGNED NOT NULL DEFAULT '5875' AFTER `build_min`;
+INSERT INTO `warden_scans__new` (`id`, `type`, `str`, `data`, `address`, `length`, `result`, `flags`, `penalty`, `comment`)
+SELECT `id`, `type`, `str`, `data`, `address`, `length`, `result`, `flags`, `penalty`, `comment` FROM `warden_scans`;
+
+DROP TABLE `warden_scans`;
+ALTER TABLE `warden_scans__new` RENAME TO `warden_scans`;
+CREATE UNIQUE INDEX `warden_scans__id` ON `warden_scans`(`id`);
 
 UPDATE `warden_scans` SET `build_min`=5875, `build_max`=6005, `flags` = (`flags` & ~130958) WHERE `id`=1;
 UPDATE `warden_scans` SET `build_min`=6141, `build_max`=6141, `flags` = (`flags` & ~130958) WHERE `id`=2;
@@ -110,10 +121,4 @@ UPDATE `warden_scans` SET `build_min`=6141, `build_max`=6141, `flags` = (`flags`
 UPDATE `warden_scans` SET `build_min`=5875, `build_max`=5875, `flags` = (`flags` & ~130958) WHERE `id`=95;
 UPDATE `warden_scans` SET `build_min`=5875, `build_max`=5875, `flags` = (`flags` & ~130958) WHERE `id`=96;
 
-
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;
