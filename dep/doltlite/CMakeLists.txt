@@ -125,6 +125,11 @@ if (WIN32)
   )
 endif()
 
+# CACHE INTERNAL, not a plain variable: doltlite_copy_runtime() below is
+# called from tools/database_tool, which is outside dep/doltlite's own
+# directory scope and wouldn't otherwise see this list.
+set(DOLTLITE_RUNTIME_DLLS "${DOLTLITE_RUNTIME_DLLS}" CACHE INTERNAL "")
+
 # Copies doltlite's runtime DLLs next to TARGET's output. Every executable
 # that links doltlite, directly or through a static library, must call this.
 function(doltlite_copy_runtime TARGET)
