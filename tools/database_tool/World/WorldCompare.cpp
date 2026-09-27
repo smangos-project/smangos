@@ -39,6 +39,29 @@ namespace
         return joined;
     }
 
+    // MySQL's default text-protocol serialization for a FLOAT column shows
+    // only ~6 significant digits (e.g. -10350.8 for the true, full-precision
+    // -10350.7587890625), so Field::GetFloat()'s atof() of that already-lossy
+    // string reconstructs a different float32 bit pattern than what's
+    // actually stored. Wrapping in a DECIMAL cast forces MySQL to serialize
+    // it in full; SQLite ignores the (M,N) and just keeps REAL affinity, so
+    // this is a no-op there.
+    std::string JoinSelectList(std::vector<std::string> const& names, std::vector<bool> const& isFloatColumn)
+    {
+        std::string joined;
+        for (size_t i = 0; i < names.size(); ++i)
+        {
+            if (i > 0)
+                joined += ", ";
+            // Scale 30 (MySQL's max) rather than something more modest: game
+            // data includes near-zero values (e.g. a rotation quaternion
+            // component around 1e-8) where a smaller scale would truncate
+            // away the only significant digits a small float32 has.
+            joined += isFloatColumn[i] ? "CAST(`" + names[i] + "` AS DECIMAL(65,30))" : "`" + names[i] + "`";
+        }
+        return joined;
+    }
+
     std::vector<std::string> GetWorldTables(DoltLiteDatabase& world)
     {
         std::vector<std::string> tables;
@@ -185,7 +208,7 @@ namespace
     void CompareRows(DoltLiteDatabase& world, Database& mysql, WorldTableComparison& comparison,
         std::vector<std::string> const& columns, std::vector<bool> const& isFloatColumn, std::vector<std::string> const& orderColumns)
     {
-        std::string selectSql = "SELECT " + JoinBackticked(columns) + " FROM `" + comparison.table + "` ORDER BY " + JoinBackticked(orderColumns);
+        std::string selectSql = "SELECT " + JoinSelectList(columns, isFloatColumn) + " FROM `" + comparison.table + "` ORDER BY " + JoinBackticked(orderColumns);
 
         DoltLiteStatement worldRow = world.Prepare(selectSql);
         auto mysqlResult = mysql.Query(selectSql);

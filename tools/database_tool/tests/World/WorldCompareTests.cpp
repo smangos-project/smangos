@@ -238,3 +238,35 @@ TEST_CASE("CompareWorldWithMysql compares float columns as float32, not as text"
     CHECK(result.tableComparisons[0].rowDifferences.empty());
     CHECK(result.Identical());
 }
+
+TEST_CASE("CompareWorldWithMysql reads a MySQL float at full precision, not its truncated default text", "[WorldCompare][mysql]")
+{
+    char const* connection = MysqlConnectionEnv();
+    if (!connection)
+    {
+        WARN("DATABASE_TOOL_TEST_MYSQL_CONNECTION not set, skipping (needs a real MySQL/MariaDB server)");
+        return;
+    }
+
+    MysqlFixture mysql(connection);
+    REQUIRE(mysql.db.DirectExecute("CREATE TABLE `t` (`id` INT NOT NULL, `pos` FLOAT, PRIMARY KEY (`id`))"));
+    // Chosen for a plain `SELECT pos` to come back as "-10350.8": MySQL's
+    // default text-protocol serialization for FLOAT shows ~6 significant
+    // digits, well short of this value's true float32 precision. Reading
+    // that truncated string back with atof() and casting to float32 (as
+    // Field::GetFloat() does) reconstructs a different bit pattern than the
+    // one actually stored -- a real case found comparing a built .world
+    // against a real MySQL world (a coordinate on a live creature row).
+    REQUIRE(mysql.db.DirectExecute("INSERT INTO `t` (`id`, `pos`) VALUES (1, -10350.7587890625)"));
+
+    TempDoltLiteFile worldFile("float_full_precision");
+    DoltLiteDatabase world(worldFile.path.string());
+    world.Execute("CREATE TABLE `t` (`id` INTEGER PRIMARY KEY, `pos` REAL)");
+    world.Execute("INSERT INTO `t` (`id`, `pos`) VALUES (1, -10350.7587890625)");
+
+    WorldCompareResult result = CompareWorldWithMysql(world, mysql.db);
+
+    REQUIRE(result.tableComparisons.size() == 1);
+    CHECK(result.tableComparisons[0].rowDifferences.empty());
+    CHECK(result.Identical());
+}
