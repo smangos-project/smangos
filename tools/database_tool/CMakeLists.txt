@@ -3,6 +3,8 @@ add_library(database_tool_lib STATIC
   World/DoltLiteDatabase.cpp
   Sql/MysqlLexer.cpp
   Sql/SqlStatementSplitter.cpp
+  Migrations/MigrationFile.cpp
+  Migrations/MigrationState.cpp
 )
 
 target_include_directories(database_tool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -3,6 +3,8 @@ add_executable(tests-database-tool
   World/DoltLiteDatabaseTests.cpp
   Sql/MysqlLexerTests.cpp
   Sql/SqlStatementSplitterTests.cpp
+  Migrations/MigrationFileTests.cpp
+  Migrations/MigrationStateTests.cpp
 )
 
 target_link_libraries(tests-database-tool PRIVATE database_tool_lib Catch2)
