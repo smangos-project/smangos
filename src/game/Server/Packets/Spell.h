@@ -98,38 +98,6 @@ namespace WorldPackets { namespace Spell
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class SupercededSpell final : public ServerPacket
-    {
-    public:
-        uint32 oldSpellId = 0; // spell being replaced/superseded
-        uint32 newSpellId = 0; // new spell that supersedes it
-
-        explicit SupercededSpell() : ServerPacket(SMSG_SUPERCEDED_SPELL) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class LearnedSpell final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;       // sent as uint16
-        uint16 actionBarSlot = 0; // unused on client
-
-        explicit LearnedSpell() : ServerPacket(SMSG_LEARNED_SPELL) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
-    class RemovedSpell final : public ServerPacket
-    {
-    public:
-        uint32 spellId = 0;    // sent as uint16
-
-        explicit RemovedSpell() : ServerPacket(SMSG_REMOVED_SPELL) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     // SMSG_SET_FLAT_SPELL_MODIFIER / SMSG_SET_PCT_SPELL_MODIFIER
     class SetSpellModifier final : public ServerPacket
     {

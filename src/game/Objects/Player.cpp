@@ -3581,10 +3581,7 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
                 if (next_active_spell_id)
                 {
                     // update spell ranks in spellbook and action bar
-                    auto supercededPacket = std::make_unique<WorldPackets::Spell::SupercededSpell>();
-                    supercededPacket->oldSpellId = spellId;
-                    supercededPacket->newSpellId = next_active_spell_id;
-                    GetSession()->SendPacket(std::move(supercededPacket));
+                    SendSpellSuperceded(next_active_spell_id, spellId);
                 }
                 else
                     SendSpellRemoved(spellId);
@@ -3674,12 +3671,7 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
                         if (nextId == spellId)
                         {
                             if (IsInWorld())                // not send spell (re-/over-)learn packets at loading
-                            {
-                                auto supercededPacket = std::make_unique<WorldPackets::Spell::SupercededSpell>();
-                                supercededPacket->oldSpellId = m_spell.first;
-                                supercededPacket->newSpellId = spellId;
-                                GetSession()->SendPacket(std::move(supercededPacket));
-                            }
+                                SendSpellSuperceded(spellId, m_spell.first);
 
                             // mark old spell as disable (SMSG_SUPERCEDED_SPELL replace it in client by new)
                             playerSpell2.active = false;
@@ -3690,12 +3682,7 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
                         else if (m_spell.first == spellId)
                         {
                             if (IsInWorld())                // not send spell (re-/over-)learn packets at loading
-                            {
-                                auto supercededPacket = std::make_unique<WorldPackets::Spell::SupercededSpell>();
-                                supercededPacket->oldSpellId = spellId;
-                                supercededPacket->newSpellId = m_spell.first;
-                                GetSession()->SendPacket(std::move(supercededPacket));
-                            }
+                                SendSpellSuperceded(m_spell.first, spellId);
 
                             // mark new spell as disable (not learned yet for client and will not learned)
                             newspell.active = false;
@@ -3800,9 +3787,11 @@ void Player::LearnSpell(uint32 spellId, bool dependent, bool talent)
     // prevent duplicated entires in spell book, also not send if not in world (loading)
     if (learning && IsInWorld())
     {
-        auto learnedPacket = std::make_unique<WorldPackets::Spell::LearnedSpell>();
-        learnedPacket->spellId = spellId;
-        GetSession()->SendPacket(std::move(learnedPacket));
+        LearnedSpellInfo spellInfo;
+        spellInfo.SpellID = int32(spellId);
+        SendLearnedSpells packet;
+        packet.Spells.push_back(spellInfo);
+        GetSession()->SendClassic(packet);
     }
 
     // learn all disabled higher ranks (recursive) - skip for talent spells
@@ -3934,10 +3923,7 @@ void Player::RemoveSpell(uint32 spellId, bool disabled, bool learnLowRank)
                     if (AddSpell(previousId, true, false, spell.dependent, spell.disabled))
                     {
                         // downgrade spell ranks in spellbook and action bar
-                        auto supercededPacket = std::make_unique<WorldPackets::Spell::SupercededSpell>();
-                        supercededPacket->oldSpellId = spellId;
-                        supercededPacket->newSpellId = previousId;
-                        GetSession()->SendPacket(std::move(supercededPacket));
+                        SendSpellSuperceded(previousId, spellId);
                         previousActivated = true;
                     }
                 }
@@ -21068,9 +21054,19 @@ void Player::SendSpellCooldown(uint32 spellId, Milliseconds cooldown, ObjectGuid
 
 void Player::SendSpellRemoved(uint32 spellId) const
 {
-    auto packet = std::make_unique<WorldPackets::Spell::RemovedSpell>();
-    packet->spellId = spellId;
-    GetSession()->SendPacket(std::move(packet));
+    SendUnlearnedSpells packet;
+    packet.SpellIds.push_back(spellId);
+    GetSession()->SendClassic(packet);
+}
+
+void Player::SendSpellSuperceded(uint32 newSpellId, uint32 oldSpellId) const
+{
+    LearnedSpellInfo spellInfo;
+    spellInfo.SpellID = int32(newSpellId);
+    spellInfo.Superceded = int32(oldSpellId);
+    SendSupercededSpells packet;
+    packet.Spells.push_back(spellInfo);
+    GetSession()->SendClassic(packet);
 }
 
 void Player::SendChannelUpdate(uint32 time) const

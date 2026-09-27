@@ -50,6 +50,151 @@ struct SendKnownSpells
     }
 };
 
+// Shared by SendLearnedSpells and SendSupercededSpells: the spell just learned, and (for the
+// superceded case) the older rank it replaces in the spellbook and action bars.
+struct LearnedSpellInfo
+{
+    int32 SpellID = 0;
+    bool IsFavorite = false;
+    std::optional<int32> Superceded;
+    std::optional<int32> TraitDefinitionID;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SpellID;
+        data.WriteBit(IsFavorite);
+        data.WriteBit(false); // field_8: no known TrinityCore use, never set
+        data.WriteBit(Superceded.has_value());
+        data.WriteBit(TraitDefinitionID.has_value());
+        data.FlushBits();
+        if (Superceded)
+            data << *Superceded;
+        if (TraitDefinitionID)
+            data << *TraitDefinitionID;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) + 1)
+            return false;
+        data >> SpellID;
+        IsFavorite = data.ReadBit();
+        bool const hasField8 = data.ReadBit();
+        bool const hasSuperceded = data.ReadBit();
+        bool const hasTraitDefinitionID = data.ReadBit();
+        data.ResetBitPos();
+
+        size_t const optionalSize = (hasField8 ? sizeof(int32) : 0) + (hasSuperceded ? sizeof(int32) : 0) + (hasTraitDefinitionID ? sizeof(int32) : 0);
+        if (data.size() - data.rpos() < optionalSize)
+            return false;
+        if (hasField8)
+            data.read<int32>(); // discarded: no known TrinityCore use
+        if (hasSuperceded)
+            Superceded = data.read<int32>();
+        if (hasTraitDefinitionID)
+            TraitDefinitionID = data.read<int32>();
+        return true;
+    }
+};
+
+struct SendLearnedSpells
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_LEARNED_SPELLS;
+
+    std::vector<LearnedSpellInfo> Spells;
+    uint32 SpecializationID = 0;
+    bool SuppressMessaging = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << uint32(Spells.size());
+        data << SpecializationID;
+        data.WriteBit(SuppressMessaging);
+        data.FlushBits();
+        for (LearnedSpellInfo const& spell : Spells)
+            spell.Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) * 2 + 1)
+            return false;
+        uint32 count;
+        data >> count >> SpecializationID;
+        SuppressMessaging = data.ReadBit();
+        data.ResetBitPos();
+
+        Spells.resize(count);
+        for (LearnedSpellInfo& spell : Spells)
+            if (!spell.Read(data))
+                return false;
+        return true;
+    }
+};
+
+struct SendSupercededSpells
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SUPERCEDED_SPELLS;
+
+    std::vector<LearnedSpellInfo> Spells;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << uint32(Spells.size());
+        for (LearnedSpellInfo const& spell : Spells)
+            spell.Write(data);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        uint32 count;
+        data >> count;
+
+        Spells.resize(count);
+        for (LearnedSpellInfo& spell : Spells)
+            if (!spell.Read(data))
+                return false;
+        return true;
+    }
+};
+
+// A spell disappearing from the spellbook (unlearned, or a lower rank dropped without a
+// replacement). Not to be confused with SendUnlearnSpells (SMSG_SEND_UNLEARN_SPELLS), the
+// talent-respec list sent once at login.
+struct SendUnlearnedSpells
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_UNLEARNED_SPELLS;
+
+    std::vector<uint32> SpellIds;
+    bool SuppressMessaging = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << uint32(SpellIds.size());
+        for (uint32 spellId : SpellIds)
+            data << spellId;
+        data.WriteBit(SuppressMessaging);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32))
+            return false;
+        uint32 count;
+        data >> count;
+        if (!ReadSpellIdList(data, count, SpellIds))
+            return false;
+        if (data.size() - data.rpos() < 1)
+            return false;
+        SuppressMessaging = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 struct SendUnlearnSpells
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SEND_UNLEARN_SPELLS;

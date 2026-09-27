@@ -85,40 +85,6 @@ void WorldPackets::Spell::CooldownEvent::AppendBodyTo(ByteBuffer& buffer) const
     buffer << casterGuid;
 }
 
-size_t WorldPackets::Spell::SupercededSpell::EstimateFinalSize() const
-{
-    return sizeof(uint16) + /*oldSpellId*/
-           sizeof(uint16) /*newSpellId*/;
-}
-
-void WorldPackets::Spell::SupercededSpell::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << static_cast<uint16>(oldSpellId);
-    buffer << static_cast<uint16>(newSpellId);
-}
-
-size_t WorldPackets::Spell::LearnedSpell::EstimateFinalSize() const
-{
-    return sizeof(uint16) + /*spellId*/
-           sizeof(int16) /*actionBarSlot*/;
-}
-
-void WorldPackets::Spell::LearnedSpell::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << static_cast<uint16>(spellId);
-    buffer << static_cast<int16>(actionBarSlot); // not used
-}
-
-size_t WorldPackets::Spell::RemovedSpell::EstimateFinalSize() const
-{
-    return sizeof(uint16) /*spellId*/;
-}
-
-void WorldPackets::Spell::RemovedSpell::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << static_cast<uint16>(spellId);
-}
-
 size_t WorldPackets::Spell::SetSpellModifier::EstimateFinalSize() const
 {
     return sizeof(effectIndex) +

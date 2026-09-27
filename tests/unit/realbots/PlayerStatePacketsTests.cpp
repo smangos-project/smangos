@@ -222,6 +222,70 @@ TEST_CASE("SendSpellHistory round-trips entries with and without the optional fi
     RejectsEveryTruncation(out);
 }
 
+TEST_CASE("SendLearnedSpells round-trips entries with and without the optional fields", "[packets]")
+{
+    SendLearnedSpells out;
+    out.SpecializationID = 3;
+    out.SuppressMessaging = true;
+
+    LearnedSpellInfo plain;
+    plain.SpellID = 6603;
+    out.Spells.push_back(plain);
+
+    LearnedSpellInfo superceding;
+    superceding.SpellID = 7369;
+    superceding.IsFavorite = true;
+    superceding.Superceded = 6603;
+    superceding.TraitDefinitionID = 42;
+    out.Spells.push_back(superceding);
+
+    RoundTrip(out, [](SendLearnedSpells const& a, SendLearnedSpells const& b)
+    {
+        CHECK(a.SpecializationID == b.SpecializationID);
+        CHECK(a.SuppressMessaging == b.SuppressMessaging);
+        REQUIRE(a.Spells.size() == b.Spells.size());
+        for (size_t i = 0; i < a.Spells.size(); ++i)
+        {
+            CHECK(a.Spells[i].SpellID == b.Spells[i].SpellID);
+            CHECK(a.Spells[i].IsFavorite == b.Spells[i].IsFavorite);
+            CHECK(a.Spells[i].Superceded == b.Spells[i].Superceded);
+            CHECK(a.Spells[i].TraitDefinitionID == b.Spells[i].TraitDefinitionID);
+        }
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("SendSupercededSpells round-trips", "[packets]")
+{
+    SendSupercededSpells out;
+    LearnedSpellInfo entry;
+    entry.SpellID = 7369;
+    entry.Superceded = 6603;
+    out.Spells.push_back(entry);
+
+    RoundTrip(out, [](SendSupercededSpells const& a, SendSupercededSpells const& b)
+    {
+        REQUIRE(a.Spells.size() == b.Spells.size());
+        CHECK(a.Spells[0].SpellID == b.Spells[0].SpellID);
+        CHECK(a.Spells[0].Superceded == b.Spells[0].Superceded);
+    });
+    RejectsEveryTruncation(out);
+}
+
+TEST_CASE("SendUnlearnedSpells round-trips", "[packets]")
+{
+    SendUnlearnedSpells out;
+    out.SpellIds = { 6603, 78 };
+    out.SuppressMessaging = true;
+
+    RoundTrip(out, [](SendUnlearnedSpells const& a, SendUnlearnedSpells const& b)
+    {
+        CHECK(a.SpellIds == b.SpellIds);
+        CHECK(a.SuppressMessaging == b.SuppressMessaging);
+    });
+    RejectsEveryTruncation(out);
+}
+
 TEST_CASE("InitWorldStates round-trips", "[packets]")
 {
     InitWorldStates out;

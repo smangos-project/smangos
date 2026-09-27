@@ -1326,6 +1326,7 @@ class Player final: public Unit
         bool IsSpellFitByClassAndRace(uint32 spellId, uint32* pReqlevel = nullptr) const;
         bool IsImmuneToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex index, bool castOnSelf) const override;
         void SendSpellRemoved(uint32 spellId) const;
+        void SendSpellSuperceded(uint32 newSpellId, uint32 oldSpellId) const;
         void LearnSpell(uint32 spellId, bool dependent, bool talent = false);
         void RemoveSpell(uint32 spellId, bool disabled = false, bool learn_low_rank = true);
         void ResetSpells();
