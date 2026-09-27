@@ -3,6 +3,9 @@
 #include "Commands/CreateWorldDatabase.h"
 #include "Commands/PortMigrationFile.h"
 #include "World/DoltLiteDatabase.h"
+#include "World/WorldCompare.h"
+
+#include "Database/DatabaseEnv.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -105,6 +108,79 @@ namespace
         return 0;
     }
 
+    // compare-world --mysql "<host;port;user;pass;db>"
+    int RunCompareWorld(std::vector<std::string> const& args)
+    {
+        std::string mysqlInfo;
+        for (size_t i = 0; i < args.size(); ++i)
+            if (args[i] == "--mysql" && i + 1 < args.size())
+                mysqlInfo = args[i + 1];
+
+        if (mysqlInfo.empty())
+        {
+            std::printf("compare-world: --mysql \"<host;port;user;pass;db>\" is required\n");
+            return 1;
+        }
+
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        if (!std::filesystem::exists(worldPath))
+        {
+            std::printf("compare-world: %s does not exist (run create first)\n", worldPath.string().c_str());
+            return 1;
+        }
+
+        DoltLiteDatabase world(worldPath.string());
+
+        DatabaseMysql mysql;
+        if (!mysql.Initialize(mysqlInfo.c_str(), 1, 0))
+        {
+            std::printf("compare-world: could not connect to MySQL: %s\n", mysqlInfo.c_str());
+            return 1;
+        }
+
+        WorldCompareResult result = CompareWorldWithMysql(world, mysql);
+
+        for (std::string const& table : result.tablesOnlyInWorld)
+            std::printf("only in .world: %s\n", table.c_str());
+        for (std::string const& table : result.tablesOnlyInMysql)
+            std::printf("only in mysql: %s\n", table.c_str());
+
+        for (WorldTableComparison const& table : result.tableComparisons)
+        {
+            if (!table.columnsMatch)
+            {
+                std::printf("%s: columns differ\n  .world: ", table.table.c_str());
+                for (std::string const& col : table.worldColumns)
+                    std::printf("%s ", col.c_str());
+                std::printf("\n  mysql:  ");
+                for (std::string const& col : table.mysqlColumns)
+                    std::printf("%s ", col.c_str());
+                std::printf("\n");
+                continue;
+            }
+
+            if (!table.rowCountMatches)
+                std::printf("%s: row count differs (.world=%llu, mysql=%llu)\n", table.table.c_str(),
+                    static_cast<unsigned long long>(table.worldRowCount),
+                    static_cast<unsigned long long>(table.mysqlRowCount));
+
+            for (WorldRowDifference const& diff : table.rowDifferences)
+                std::printf("%s: row %llu, column %s differs (.world=%s, mysql=%s)\n", table.table.c_str(),
+                    static_cast<unsigned long long>(diff.rowIndex), diff.column.c_str(),
+                    diff.worldValue.c_str(), diff.mysqlValue.c_str());
+        }
+
+        std::printf("%zu tables compared, %zu only in .world, %zu only in mysql\n",
+            result.tableComparisons.size(), result.tablesOnlyInWorld.size(), result.tablesOnlyInMysql.size());
+
+        if (result.Identical())
+        {
+            std::printf("compare-world: identical\n");
+            return 0;
+        }
+        return 1;
+    }
+
     int RunPortMigration(std::vector<std::string> const& args)
     {
         if (args.empty())
@@ -151,6 +227,8 @@ int main(int argc, char** argv)
         return RunUpdate(rest);
     if (command == "port-migration")
         return RunPortMigration(rest);
+    if (command == "compare-world")
+        return RunCompareWorld(rest);
 
     std::printf("unknown command: %s\n", command.c_str());
     return 1;
