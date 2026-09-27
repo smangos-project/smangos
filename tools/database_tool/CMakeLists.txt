@@ -3,6 +3,7 @@ add_library(database_tool_lib STATIC
   World/DoltLiteDatabase.cpp
   Sql/MysqlLexer.cpp
   Sql/SqlStatementSplitter.cpp
+  Sql/MysqlDdlTranslator.cpp
   Migrations/MigrationFile.cpp
   Migrations/MigrationState.cpp
 )

@@ -3,6 +3,7 @@ add_executable(tests-database-tool
   World/DoltLiteDatabaseTests.cpp
   Sql/MysqlLexerTests.cpp
   Sql/SqlStatementSplitterTests.cpp
+  Sql/MysqlDdlTranslatorTests.cpp
   Migrations/MigrationFileTests.cpp
   Migrations/MigrationStateTests.cpp
 )
