@@ -26,7 +26,8 @@ WorldUpdateResult UpdateWorldDatabase(DoltLiteDatabase& world, std::filesystem::
     return result;
 }
 
-WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory, std::filesystem::path const& migrationsDirectory)
+WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc)
 {
     WorldCreateResult result;
 
@@ -62,7 +63,17 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
     result.dbcSchema = CreateDbcTables(world,
         std::string("world: create dbc tables (") + GetWowDbDefsCommit() + ")");
     if (!result.dbcSchema.error.empty())
+    {
         result.error = result.dbcSchema.error;
+        return result;
+    }
+
+    if (importDbc)
+    {
+        result.dbcImport = ImportDb2Files(world, dbfilesclientDir);
+        if (!result.dbcImport.error.empty())
+            result.error = result.dbcImport.error;
+    }
 
     return result;
 }

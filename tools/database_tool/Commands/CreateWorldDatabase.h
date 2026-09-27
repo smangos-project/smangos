@@ -1,6 +1,7 @@
 #ifndef DATABASE_TOOL_CREATEWORLDDATABASE_H
 #define DATABASE_TOOL_CREATEWORLDDATABASE_H
 
+#include "Dbc/DbcImport.h"
 #include "Dbc/DbcSchema.h"
 #include "Sql/MysqlDumpImport.h"
 #include "World/WorldArchive.h"
@@ -32,6 +33,7 @@ struct WorldCreateResult
     DumpImportResult dumpImport;
     WorldUpdateResult update;
     DbcSchemaResult dbcSchema;
+    DbcImportResult dbcImport; // untouched (default-constructed) when importDbc is false
     std::string error; // empty on success; sourced from whichever step failed
 };
 
@@ -39,8 +41,9 @@ struct WorldCreateResult
 // Fetches the pinned base dump into cacheDirectory (WorldArchive), imports
 // it (ImportMysqlDump), applies every pending `_world` migration
 // (UpdateWorldDatabase) -- vmangos' own recipe, in SQLite (world-sql.md) --
-// then creates the dbc_* tables (CreateDbcTables). dbc_* import
-// (plan.md's create step 6) isn't implemented yet.
-WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory, std::filesystem::path const& migrationsDirectory);
+// creates the dbc_* tables (CreateDbcTables), then, unless importDbc is
+// false, imports every resolved dbfilesclientDir/*.db2 (ImportDb2Files).
+WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc = true);
 
 #endif
