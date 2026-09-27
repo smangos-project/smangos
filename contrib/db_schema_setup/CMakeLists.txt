@@ -1,6 +1,8 @@
 add_library(db_schema_setup STATIC
   DbdBuild.cpp
   DbdFile.cpp
+  DbdResolve.cpp
+  DbdDefinitions.cpp
 )
 
 target_include_directories(db_schema_setup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

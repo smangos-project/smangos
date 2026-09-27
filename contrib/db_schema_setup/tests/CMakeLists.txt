@@ -1,6 +1,8 @@
 add_executable(tests-db-schema-setup
   DbdBuildTests.cpp
   DbdFileTests.cpp
+  DbdResolveTests.cpp
+  DbdDefinitionsTests.cpp
 )
 
 target_link_libraries(tests-db-schema-setup PRIVATE db_schema_setup Catch2)
