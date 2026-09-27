@@ -209,6 +209,8 @@ Player::Player(WorldSession* session) : Unit(),
     {
         j.bgQueueTypeId  = BATTLEGROUND_QUEUE_NONE;
         j.invitedToInstance = 0;
+        j.ticketId = 0;
+        j.ticketTime = 0;
     }
 
     m_loginTime = time(nullptr);
@@ -3168,7 +3170,7 @@ void Player::GiveLevel(uint32 level)
                 bgQueue.RemovePlayer(GetObjectGuid(), true);
                 // player left queue, we should update it
                 sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgTypeId, GetBattleGroundBracketIdFromLevel(bgTypeId, GetLevel()));
-                GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_NONE, 0, 0));
+                sBattleGroundMgr.SendBattleGroundStatusPacket(this, bg, queueSlot, STATUS_NONE, 0, 0);
             }
         }
     }

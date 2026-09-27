@@ -67,19 +67,6 @@ namespace WorldPackets { namespace Npc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    class AreaSpiritHealerTime final : public ServerPacket
-    {
-    public:
-        ObjectGuid spiritHealerGuid;
-        uint32 nextResurrectTime = 0; // time in ms until next resurrection
-
-        explicit AreaSpiritHealerTime() : ServerPacket(SMSG_AREA_SPIRIT_HEALER_TIME) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-#endif
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     class BinderConfirm final : public ServerPacket
     {

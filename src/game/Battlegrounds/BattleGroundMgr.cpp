@@ -36,6 +36,7 @@
 #include "WorldPacket.h"
 #include "Language.h"
 #include "GameEventMgr.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Policies/SingletonImp.h"
 #include <chrono>
 #include <random>
@@ -190,6 +191,8 @@ GroupQueueInfo* BattleGroundQueue::AddGroup(Player* leader, Group* grp, BattleGr
                     pl_info.online = true;
                     pl_info.lastOnlineTime = 0;
                     pl_info.groupInfo = ginfo;
+                    pl_info.ticketId = sBattleGroundMgr.GenerateNextTicketId();
+                    pl_info.ticketTime = time(nullptr);
                     // add the pinfo to ginfo's list
                     ginfo->players[member->GetObjectGuid()] = &pl_info;
                     sLog.Out(LOG_BG, LOG_LVL_DETAIL, "%s:%u [%u:%s] tag BG=%u (groupLeader '%s')",
@@ -205,6 +208,8 @@ GroupQueueInfo* BattleGroundQueue::AddGroup(Player* leader, Group* grp, BattleGr
             pl_info.online           = true;
             pl_info.lastOnlineTime   = 0;
             pl_info.groupInfo        = ginfo;
+            pl_info.ticketId         = sBattleGroundMgr.GenerateNextTicketId();
+            pl_info.ticketTime       = time(nullptr);
             ginfo->players[leader->GetObjectGuid()]  = &pl_info;
             sLog.Out(LOG_BG, LOG_LVL_DETAIL, "%s:%u [%u:%s] tag BG=%u",
                      leader->GetName(),
@@ -440,7 +445,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, BattleGround* bg,
                       player->GetGuidStr().c_str(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
 
             // send status packet
-            player->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0));
+            sBattleGroundMgr.SendBattleGroundStatusPacket(player, bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0);
         }
         return true;
     }
@@ -655,7 +660,7 @@ void BattleGroundQueue::RemoveOfflinePlayer()
                                 {
                                     player->RemoveBattleGroundQueueId(queueTypeId);
 
-                                    player->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_NONE, 0, 0));
+                                    sBattleGroundMgr.SendBattleGroundStatusPacket(player, bg, queueSlot, STATUS_NONE, 0, 0);
                                 }
                             }
                         }
@@ -915,7 +920,7 @@ bool BgQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         if (bgQueue.IsPlayerInvited(m_playerGuid, m_bgInstanceGuid, m_removeTime))
         {
             //we must send remaining time in queue
-            player->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0));
+            sBattleGroundMgr.SendBattleGroundStatusPacket(player, bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0);
         }
     }
     return true;                                            //event will be deleted
@@ -961,7 +966,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             if (bg && bg->GetStatus() != STATUS_WAIT_LEAVE)
                 sBattleGroundMgr.ScheduleQueueUpdate(m_bgQueueTypeId, m_bgTypeId, bg->GetBracketId());
 
-            player->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_NONE, 0, 0));
+            sBattleGroundMgr.SendBattleGroundStatusPacket(player, bg, queueSlot, STATUS_NONE, 0, 0);
         }
     }
 
@@ -1030,116 +1035,253 @@ void BattleGroundMgr::Update(uint32 diff)
     }
 }
 
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildBattleGroundStatusPacket(BattleGround *bg, uint8 queueSlot, uint8 statusId, uint32 time1, uint32 time2)
+// Looks up (or, if the player isn't actually queued -- e.g. already ported into the BG) mints a
+// fresh disposable RideTicket for `player`. Queued tickets are generated once in
+// BattleGroundQueue::AddGroup (BattleGroundMgr::GenerateNextTicketId) and stored in
+// PlayerQueueInfo::ticketId; the client only ever needs to see a structurally valid ticket it can
+// echo back, so a throwaway one is fine once the player is no longer queued.
+RideTicket BattleGroundMgr::BuildRideTicketFor(Player* player, BattleGround* bg)
 {
-    // we can be in 3 queues in same time...
-    if (statusId == 0 || !bg)
+    RideTicket ticket;
+    ticket.RequesterGuid = ClassicGuidMapping::ToClassic(player->GetObjectGuid(), realmID);
+
+    if (bg)
     {
-        auto packet = std::make_unique<WorldPackets::Battleground::BattlefieldStatusEmpty>();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        packet->queueSlot = queueSlot;                      // queue id (0...2)
-#endif
-        return packet;
+        // Prefer the ticket stashed on the player itself (Player::m_bgBattleGroundQueueID) -- it's
+        // assigned once at AddBattleGroundQueueId() and survives the queued -> invited -> playing
+        // transition. BattleGroundQueue::m_queuedPlayers only holds an entry while the player is
+        // still literally sitting in the queue, so once they're an actual match participant (e.g. a
+        // STATUS_NONE sent from RemovePlayerAtLeave when they leave a finished/in-progress BG) that
+        // lookup misses and would otherwise fall through to a brand new, unrelated ticket the client
+        // can't match to the one it already has open, so it would never close out that queue/BG icon.
+        //
+        // The id AND time must both come back verbatim, not just the id with a freshly computed
+        // time: the client keys a ticket by the full (id, time) pair, so re-deriving `time` on every
+        // re-echo (even of the same id) would make the client treat each echo as a brand new,
+        // distinct invite to separately acknowledge/decline.
+        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BgQueueTypeId(bg->GetTypeID());
+        if (uint32 storedTicketId = player->GetBattleGroundQueueTicketId(bgQueueTypeId))
+        {
+            ticket.Id = storedTicketId;
+            ticket.Time = player->GetBattleGroundQueueTicketTime(bgQueueTypeId);
+            return ticket;
+        }
+
+        BattleGroundQueue& bgQueue = sBattleGroundMgr.m_battleGroundQueues[bgQueueTypeId];
+        auto itr = bgQueue.m_queuedPlayers.find(player->GetObjectGuid());
+        if (itr != bgQueue.m_queuedPlayers.end())
+        {
+            ticket.Id = itr->second.ticketId;
+            ticket.Time = itr->second.ticketTime;
+            return ticket;
+        }
     }
 
-    auto packet = std::make_unique<WorldPackets::Battleground::BattlefieldStatus>();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    packet->queueSlot = queueSlot;                          // queue id (0...2) - player can be in 3 queues in time
-#endif
-    packet->mapId = bg->GetMapId();
-    packet->bracketId = bg->GetBracketId();
-    packet->clientInstanceId = bg->GetClientInstanceID();
-    packet->statusId = statusId;
-    packet->time1 = time1;
-    packet->time2 = time2;
+    ticket.Id = sBattleGroundMgr.GenerateNextTicketId();
+    ticket.Time = time(nullptr);
+    return ticket;
+}
 
+static BattlefieldStatusHeader BuildStatusHeader(BattleGround* bg, RideTicket const& ticket)
+{
+    BattlefieldStatusHeader header;
+    header.Ticket = ticket;
+    header.QueueId = uint64(bg->GetTypeID()) | 0x1F10000000000000ULL; // BattlegroundQueueTypeId::GetPacked(), Type=Battleground/Rated=false/TeamSize=0
+    header.RangeMin = 0;
+    header.RangeMax = uint8(bg->GetMaxLevel());
+    header.TeamSize = 0;
+    header.InstanceId = bg->GetClientInstanceID();
+    return header;
+}
+
+void BattleGroundMgr::SendBattleGroundStatusPacket(Player* player, BattleGround* bg, uint8 queueSlot, uint8 statusId, uint32 time1, uint32 time2)
+{
+    RideTicket ticket = BuildRideTicketFor(player, bg);
+
+    if (statusId == STATUS_NONE || !bg)
+    {
+        BattlefieldStatusNone packet;
+        packet.Ticket = ticket;
+        player->GetSession()->SendClassic(packet);
+        return;
+    }
+
+    switch (statusId)
+    {
+        case STATUS_WAIT_QUEUE:
+        {
+            BattlefieldStatusQueued packet;
+            packet.Header = BuildStatusHeader(bg, ticket);
+            packet.AverageWaitTime = time1;
+            packet.WaitTime = time2;
+            packet.AsGroup = false;
+            packet.EligibleForMatchmaking = true;
+            packet.SuspendedQueue = false;
+            player->GetSession()->SendClassic(packet);
+            return;
+        }
+        case STATUS_WAIT_JOIN:
+        {
+            BattlefieldStatusNeedConfirmation packet;
+            packet.Header = BuildStatusHeader(bg, ticket);
+            packet.MapId = bg->GetMapId();
+            packet.Timeout = time1;
+            packet.Role = 0;
+            player->GetSession()->SendClassic(packet);
+            return;
+        }
+        case STATUS_IN_PROGRESS:
+        default:
+        {
+            BattlefieldStatusActive packet;
+            packet.Header = BuildStatusHeader(bg, ticket);
+            packet.MapId = bg->GetMapId();
+            packet.ShutdownTimer = time1;
+            packet.StartTimer = time2;
+            packet.ArenaFaction = false;
+            packet.LeftEarly = false;
+            player->GetSession()->SendClassic(packet);
+            return;
+        }
+    }
+}
+
+BattlefieldStatusFailed BattleGroundMgr::BuildBattlefieldStatusFailed(Player* player, BattleGroundTypeId bgTypeId, int32 reason)
+{
+    BattlefieldStatusFailed packet;
+    packet.Ticket = BuildRideTicketFor(player, nullptr);
+    packet.QueueId = uint64(bgTypeId) | 0x1F10000000000000ULL; // BattlegroundQueueTypeId::GetPacked()
+    packet.Reason = reason;
+    packet.ClientId = ClassicGuidMapping::ToClassic(player->GetObjectGuid(), realmID);
     return packet;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildPvpLogDataPacket(BattleGround const* bg)
+// Field-by-field match against TrinityCore's BattlegroundScore::BuildPvPLogPlayerDataPacket --
+// notably TrinityCore's own production code leaves PrimaryTalentTree/Sex/Race/Class/CreatureId/
+// HonorLevel/Role/IsInWorld at their zero/false defaults; it never populates them from the player
+// object either, so this matches confirmed real behavior rather than guessing richer data would help.
+static void FillPvpMatchPlayerStats(BattleGround const* bg, ObjectGuid playerGuid, BattleGroundScore const* score, PvpMatchPlayerStatistics& entry)
 {
-    auto packet = std::make_unique<WorldPackets::Battleground::PvpLogData>();
-    packet->ended = bg->GetStatus() == STATUS_WAIT_LEAVE;
-    if (packet->ended)
-        packet->winner = bg->GetWinner();                   // who wins
+    entry.PlayerGuid = ClassicGuidMapping::ToClassic(playerGuid, realmID);
+    entry.Kills = score->killingBlows;
+    // TrinityCore sets Faction = PvPTeamId (Horde=0/Alliance=1), confirmed against
+    // BattlegroundScore::BuildPvPLogPlayerDataPacket (`playerData.Faction = TeamId`).
+    entry.Faction = const_cast<BattleGround*>(bg)->GetPlayerTeam(playerGuid) == ALLIANCE
+        ? CLASSIC_PVP_TEAM_ALLIANCE
+        : CLASSIC_PVP_TEAM_HORDE;
+    entry.HasHonorData = score->honorableKills || score->deaths || score->bonusHonor;
+    entry.Honor.HonorKills = score->honorableKills;
+    entry.Honor.Deaths = score->deaths;
+    entry.Honor.ContributionPoints = score->bonusHonor;
+
+    // Per-BG stat ids are client-hardcoded and NOT sent on the wire -- only the value, in
+    // insertion order (see PvpMatchPlayerStatistics's doc comment, Packets/BattlegroundMessages.h).
+    // Order confirmed against TrinityCore: WSG 928/929, AB 926/927, AV 61/63/64/65. This engine's
+    // own BattleGroundAVScore also tracks secondaryObjectives/lieutnantCount/secondaryNPC, which
+    // have no known modern stat slot to map to and are left out.
+    switch (bg->GetTypeID())
+    {
+        case BATTLEGROUND_AV:
+        {
+            auto avScore = static_cast<BattleGroundAVScore const*>(score);
+            entry.Stats.push_back(int32(avScore->towersAssaulted));     // PVP_STAT_TOWERS_ASSAULTED = 61
+            entry.Stats.push_back(int32(avScore->graveyardsAssaulted)); // PVP_STAT_GRAVEYARDS_ASSAULTED = 63
+            entry.Stats.push_back(int32(avScore->towersDefended));      // PVP_STAT_TOWERS_DEFENDED = 64
+            entry.Stats.push_back(int32(avScore->graveyardsDefended));  // PVP_STAT_GRAVEYARDS_DEFENDED = 65
+            break;
+        }
+        case BATTLEGROUND_WS:
+        {
+            auto wsScore = static_cast<BattleGroundWGScore const*>(score);
+            entry.Stats.push_back(int32(wsScore->flagCaptures)); // PVP_STAT_FLAG_CAPTURES = 928
+            entry.Stats.push_back(int32(wsScore->flagReturns));  // PVP_STAT_FLAG_RETURNS = 929
+            break;
+        }
+#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
+        case BATTLEGROUND_AB:
+        {
+            auto abScore = static_cast<BattleGroundABScore const*>(score);
+            entry.Stats.push_back(int32(abScore->basesAssaulted)); // PVP_STAT_BASES_ASSAULTED = 926
+            entry.Stats.push_back(int32(abScore->basesDefended));  // PVP_STAT_BASES_DEFENDED = 927
+            break;
+        }
+#endif
+        default:
+            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Unhandled SMSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
+            break;
+    }
+}
+
+static void FillPvpMatchStatistics(BattleGround const* bg, PvpMatchStatistics& out)
+{
+    out.HasWinner = bg->GetStatus() == STATUS_WAIT_LEAVE;
+    if (out.HasWinner)
+        // WINNER_HORDE=0/WINNER_ALLIANCE=1/WINNER_NONE=2 matches the wire's PvpMatchTeamId numbering exactly.
+        out.Winner = uint8(bg->GetWinner());
 
     uint32 count = bg->GetPlayerScoresSize();
     if (count >= 80) // Client has a hard limit to 80. If we go beyond (but it should not happen ?!), WoW Error (happening !)
         count = 80;
 
-    packet->playerScores.reserve(count);
+    out.PlayerCount[0] = 0;
+    out.PlayerCount[1] = 0;
+    out.Statistics.reserve(count);
     for (BattleGround::BattleGroundScoreMap::const_iterator itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr)
     {
         if (!count)
             break;
-
         --count;
-        BattleGroundScore const* score = itr->second;
 
-        WorldPackets::Battleground::PvpLogData::PlayerScore entry;
-        entry.playerGuid = ObjectGuid(itr->first);
+        PvpMatchPlayerStatistics entry;
+        FillPvpMatchPlayerStats(bg, ObjectGuid(itr->first), itr->second, entry);
+        out.Statistics.push_back(std::move(entry));
 
-        Player* player = ObjectAccessor::FindPlayerNotInWorld(itr->first);
+        Team team = const_cast<BattleGround*>(bg)->GetPlayerTeam(itr->first);
+        out.PlayerCount[team == HORDE ? 0 : 1]++;
+    }
+}
 
-        entry.rank = player ? player->GetHonorMgr().GetRank().rank : 4;
-        entry.killingBlows = score->killingBlows;
-        entry.honorableKills = score->honorableKills;
-        entry.deaths = score->deaths;
-        entry.bonusHonor = score->bonusHonor;
+PvpMatchStatisticsMessage BattleGroundMgr::BuildPvpLogDataPacket(BattleGround const* bg)
+{
+    PvpMatchStatisticsMessage packet;
+    FillPvpMatchStatistics(bg, packet.Data);
+    return packet;
+}
 
-        switch (bg->GetTypeID()) // battleground-specific player stats
+// SMSG_BATTLEGROUND_PLAYER_POSITIONS -- confirmed against TrinityCore to carry ONLY flag-carrier
+// minimap blips, not every teammate's position (unlike the old 1.12 MSG_BATTLEGROUND_PLAYER_POSITIONS,
+// which listed all non-bg-raid teammates -- that behavior has no modern equivalent). Only WSG has
+// flag carriers.
+BattlegroundPlayerPositions BattleGroundMgr::BuildBattlegroundPlayerPositionsPacket(BattleGround const* bg)
+{
+    BattlegroundPlayerPositions packet;
+
+    if (bg->GetTypeID() == BATTLEGROUND_WS)
+    {
+        auto const* wsg = static_cast<BattleGroundWS const*>(bg);
+
+        if (Player* hordeCarrier = sObjectMgr.GetPlayer(wsg->GetHordeFlagPickerGuid()))
         {
-            case BATTLEGROUND_AV:
-            {
-                auto avScore = static_cast<BattleGroundAVScore const*>(score);
-                entry.extraFields.push_back(avScore->graveyardsAssaulted);
-                entry.extraFields.push_back(avScore->graveyardsDefended);
-                entry.extraFields.push_back(avScore->towersAssaulted);
-                entry.extraFields.push_back(avScore->towersDefended);
-                entry.extraFields.push_back(avScore->secondaryObjectives);
-                entry.extraFields.push_back(avScore->lieutnantCount);
-                entry.extraFields.push_back(avScore->secondaryNPC);
-                break;
-            }
-            case BATTLEGROUND_WS:
-            {
-                auto wsScore = static_cast<BattleGroundWGScore const*>(score);
-                entry.extraFields.push_back(wsScore->flagCaptures);
-                entry.extraFields.push_back(wsScore->flagReturns);
-                break;
-            }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-            case BATTLEGROUND_AB:
-            {
-                auto abScore = static_cast<BattleGroundABScore const*>(score);
-                entry.extraFields.push_back(abScore->basesAssaulted);
-                entry.extraFields.push_back(abScore->basesDefended);
-                break;
-            }
-#endif
-            default:
-                sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
-                break;
+            BattlegroundFlagCarrier carrier;
+            carrier.Guid = ClassicGuidMapping::ToClassic(hordeCarrier->GetObjectGuid(), realmID);
+            carrier.X = hordeCarrier->GetPositionX();
+            carrier.Y = hordeCarrier->GetPositionY();
+            carrier.IconId = BattlegroundFlagCarrier::IconHordeFlag;
+            packet.FlagCarriers.push_back(carrier);
         }
-
-        packet->playerScores.push_back(std::move(entry));
+        if (Player* allianceCarrier = sObjectMgr.GetPlayer(wsg->GetAllianceFlagPickerGuid()))
+        {
+            BattlegroundFlagCarrier carrier;
+            carrier.Guid = ClassicGuidMapping::ToClassic(allianceCarrier->GetObjectGuid(), realmID);
+            carrier.X = allianceCarrier->GetPositionX();
+            carrier.Y = allianceCarrier->GetPositionY();
+            carrier.IconId = BattlegroundFlagCarrier::IconAllianceFlag;
+            packet.FlagCarriers.push_back(carrier);
+        }
     }
 
     return packet;
 }
-#endif
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildGroupJoinedBattlegroundPacket(int32 status)
-{
-    auto packet = std::make_unique<WorldPackets::Battleground::GroupJoinedBattleground>();
-    // for status, see enum BattleGroundGroupJoinStatus
-    packet->result = static_cast<uint32>(status);
-
-    return packet;
-}
-#endif
 
 std::unique_ptr<ServerPacket> BattleGroundMgr::BuildUpdateWorldStatePacket(uint32 field, uint32 value)
 {
@@ -1155,24 +1297,6 @@ std::unique_ptr<ServerPacket> BattleGroundMgr::BuildPlaySoundPacket(uint32 sound
     packet->soundId = soundId;
     return packet;
 }
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildPlayerLeftBattleGroundPacket(ObjectGuid guid)
-{
-    auto packet = std::make_unique<WorldPackets::Battleground::BattlegroundPlayerLeft>();
-    packet->playerGuid = guid;
-
-    return packet;
-}
-
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildPlayerJoinedBattleGroundPacket(Player* player)
-{
-    auto packet = std::make_unique<WorldPackets::Battleground::BattlegroundPlayerJoined>();
-    packet->playerGuid = player->GetObjectGuid();
-
-    return packet;
-}
-#endif
 
 BattleGround* BattleGroundMgr::GetBattleGroundThroughClientInstance(uint32 instanceId, BattleGroundTypeId bgTypeId)
 {
@@ -1429,22 +1553,30 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u battlegrounds", count);
 }
 
-std::unique_ptr<ServerPacket> BattleGroundMgr::BuildBattleGroundListPacket(ObjectGuid guid, Player* player, BattleGroundTypeId bgTypeId)
+BattlefieldList BattleGroundMgr::BuildBattleGroundListPacket(ObjectGuid guid, Player* player, BattleGroundTypeId bgTypeId)
 {
-    uint32 mapId = GetBattleGrounMapIdByTypeId(bgTypeId);
+    BattlefieldList packet;
+    packet.BattlemasterGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    packet.BattlemasterListId = int32(bgTypeId); // BattlemasterListId, numerically == BattleGroundTypeId here
+    // `guid` is empty only for the guid-less "queue from anywhere" request path; non-empty when
+    // actually talking to a battlemaster NPC.
+    packet.PvpAnywhere = guid.IsEmpty();
 
-    auto packet = std::make_unique<WorldPackets::Battleground::BattlefieldList>();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    packet->battlemasterGuid = guid;
-#endif
-    packet->mapId = mapId;
-    packet->bracketId = player->GetBattleGroundBracketIdFromLevel(bgTypeId);
+    // MinLevel/MaxLevel are the battleground's overall level range (its template's, e.g. WSG's
+    // whole 10-60 span), NOT the player's own 10-level bracket window.
+    if (BattleGround* bgTemplate = GetBattleGroundTemplate(bgTypeId))
+    {
+        packet.MinLevel = uint8(bgTemplate->GetMinLevel());
+        packet.MaxLevel = uint8(bgTemplate->GetMaxLevel());
+    }
 
+    // Retail dropped per-instance picking, but Classic Era preserves the original vanilla UX of
+    // listing/choosing among active instances -- same data the pre-modern packet sent.
     uint32 bracketId = player->GetBattleGroundBracketIdFromLevel(bgTypeId);
     ClientBattleGroundIdSet const& ids = m_clientBattleGroundIds[bgTypeId][bracketId];
-    packet->instanceIds.reserve(ids.size());
+    packet.Battlefields.reserve(ids.size());
     for (auto const id : ids)
-        packet->instanceIds.push_back(id);
+        packet.Battlefields.push_back(int32(id));
 
     return packet;
 }
@@ -1738,10 +1870,11 @@ void BattleGroundMgr::PlayerLoggedIn(Player* player)
             m_battleGroundQueues[i].GetPlayerGroupInfoData(player->GetObjectGuid(), &groupInfo);
             uint32 avgTime   = m_battleGroundQueues[i].GetAverageQueueWaitTime(&groupInfo, player->GetBattleGroundBracketIdFromLevel(groupInfo.bgTypeId));
             // Send "in queue" packet.
-            uint32 queueSlot = player->AddBattleGroundQueueId(BattleGroundQueueTypeId(i));
+            PlayerQueueInfo& reloginQueueInfo = m_battleGroundQueues[i].m_queuedPlayers[player->GetObjectGuid()];
+            uint32 queueSlot = player->AddBattleGroundQueueId(BattleGroundQueueTypeId(i), reloginQueueInfo.ticketId, reloginQueueInfo.ticketTime);
 
             BattleGround* bg = GetBattleGroundTemplate(groupInfo.bgTypeId);
-            player->GetSession()->SendPacket(BuildBattleGroundStatusPacket(bg, queueSlot, STATUS_WAIT_QUEUE, avgTime, WorldTimer::getMSTimeDiff(groupInfo.joinTime, WorldTimer::getMSTime())));
+            SendBattleGroundStatusPacket(player, bg, queueSlot, STATUS_WAIT_QUEUE, avgTime, WorldTimer::getMSTimeDiff(groupInfo.joinTime, WorldTimer::getMSTime()));
 
             if (groupInfo.isInvitedToBgInstanceGuid)
             {

@@ -668,9 +668,9 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SEND_MAIL_RESULT,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GET_MAIL_LIST,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MAIL_LIST_RESULT,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BATTLEFIELD_LIST,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlefieldListOpcode);
+    INVALID_PACKET(CMSG_BATTLEFIELD_LIST,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BATTLEFIELD_LIST,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BATTLEFIELD_JOIN,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlefieldJoinOpcode);
+    INVALID_PACKET(CMSG_BATTLEFIELD_JOIN,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BATTLEFIELD_WIN,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEFIELD_LOSE,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_TAXICLEARNODE,                UnhandleReason::Unhandled);
@@ -823,12 +823,12 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_MOVE_WATER_WALK_ACK, UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_MOVE_NOT_ACTIVE_MOVER, UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAY_SOUND,                   UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BATTLEFIELD_STATUS,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlefieldStatusOpcode);
+    INVALID_PACKET(CMSG_BATTLEFIELD_STATUS,           UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BATTLEFIELD_STATUS,           UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BATTLEFIELD_PORT,             STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleBattleFieldPortOpcode);
+    INVALID_PACKET(CMSG_BATTLEFIELD_PORT,             UnhandleReason::Unhandled);
     // No modern equivalent: honor stats ride on the tail of CLASSIC_SMSG_INSPECT_RESULT instead.
     INVALID_PACKET(MSG_INSPECT_HONOR_STATS,           UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_BATTLEMASTER_HELLO,           STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlemasterHelloOpcode);
+    INVALID_PACKET(CMSG_BATTLEMASTER_HELLO,           UnhandleReason::Unhandled);
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(CMSG_MOVE_START_SWIM_CHEAT,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_MOVE_STOP_SWIM_CHEAT,         UnhandleReason::Unhandled);
@@ -838,10 +838,10 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK, UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FORCE_TURN_RATE_CHANGE,       UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_FORCE_TURN_RATE_CHANGE_ACK, UnhandleReason::Unhandled);
-    DEFINE_HANDLER(MSG_PVP_LOG_DATA,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePVPLogDataOpcode);
-    DEFINE_HANDLER(CMSG_LEAVE_BATTLEFIELD,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleLeaveBattlefieldOpcode);
-    DEFINE_HANDLER(CMSG_AREA_SPIRIT_HEALER_QUERY,     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleAreaSpiritHealerQueryOpcode);
-    DEFINE_HANDLER(CMSG_AREA_SPIRIT_HEALER_QUEUE,     STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleAreaSpiritHealerQueueOpcode);
+    INVALID_PACKET(MSG_PVP_LOG_DATA,                  UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_LEAVE_BATTLEFIELD,            UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_AREA_SPIRIT_HEALER_QUERY,     UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_AREA_SPIRIT_HEALER_QUEUE,     UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_AREA_SPIRIT_HEALER_TIME,      UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GM_UNTEACH,                   UnhandleReason::Unhandled);
 #endif
@@ -851,7 +851,7 @@ Handlers BuildOpcodeList()
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(SMSG_GROUP_JOINED_BATTLEGROUND,    UnhandleReason::SendByServer);
-    DEFINE_HANDLER(MSG_BATTLEGROUND_PLAYER_POSITIONS, STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattleGroundPlayerPositionsOpcode);
+    INVALID_PACKET(MSG_BATTLEGROUND_PLAYER_POSITIONS, UnhandleReason::Unhandled);
 #endif
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_PARTY_MEMBER_STATS_FULL,      UnhandleReason::SendByServer);
@@ -861,7 +861,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_BINDER_CONFIRM,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEGROUND_PLAYER_JOINED,   UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEGROUND_PLAYER_LEFT,     UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_BATTLEMASTER_JOIN,            STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleBattlemasterJoinOpcode);
+    INVALID_PACKET(CMSG_BATTLEMASTER_JOIN,            UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ADDON_INFO,                   UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_PET_UNLEARN,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_UNLEARN_CONFIRM,          UnhandleReason::SendByServer);
@@ -1245,6 +1245,18 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUCTION_LIST_BIDDED_ITEMS, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleAuctionListBidderItems);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUCTION_PLACE_BID, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleAuctionPlaceBid);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AUCTION_LIST_PENDING_SALES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAuctionListPendingSales);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BATTLEMASTER_HELLO, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleBattlemasterHelloOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BATTLEMASTER_JOIN, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleBattlemasterJoinOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BATTLEFIELD_PORT, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleBattleFieldPortOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BATTLEFIELD_LIST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleBattlefieldListOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_BATTLEFIELD_LEAVE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleLeaveBattlefieldOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_BATTLEFIELD_STATUS, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRequestBattlefieldStatusOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_PVP_LOG_DATA, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePVPLogDataOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AREA_SPIRIT_HEALER_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAreaSpiritHealerQueryOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_AREA_SPIRIT_HEALER_QUEUE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleAreaSpiritHealerQueueOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GET_PVP_OPTIONS_ENABLED, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGetPVPOptionsEnabledOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_RATED_PVP_INFO, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleRequestRatedPvpInfoOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REPORT_PVP_PLAYER_AFK, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReportPvPAFKOpcode);
 
     return list;
 }

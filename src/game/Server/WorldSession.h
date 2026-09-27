@@ -37,7 +37,7 @@
 #include "UpdateData.h"
 #include "LockedQueue.h"
 #include "Packets/AuctionHouseMessages.h"
-#include "Packets/Battleground.h"
+#include "Packets/BattlegroundMessages.h"
 #include "Packets/ChannelMessages.h"
 #include "Packets/Character.h"
 #include "Packets/Auth.h"
@@ -912,20 +912,17 @@ class WorldSession
         static void HandleChangePlayerNameOpcodeCallBack(std::unique_ptr<QueryResult> result, uint32 accountId, std::string newname);
 
         //BattleGround
-        void HandleBattlefieldJoinOpcode(WorldPackets::Battleground::BattlefieldJoin const& packet);
-        void HandleBattlemasterHelloOpcode(WorldPackets::Battleground::BattlemasterHello const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-        void HandleBattlemasterJoinOpcode(WorldPackets::Battleground::BattlemasterJoin const& packet);
-#endif
-        void RequestBgJoinQueue(ObjectGuid battlemaster, uint32 instanceId, uint32 mapId, bool joinAsGroup);
-        void HandleBattleGroundPlayerPositionsOpcode(NullClientPacket const& packet);
-        void HandlePVPLogDataOpcode(NullClientPacket const& packet);
-        void HandleBattlefieldStatusOpcode(NullClientPacket const& packet);
-        void HandleBattleFieldPortOpcode(WorldPackets::Battleground::BattleFieldPort const& packet);
-        void HandleBattlefieldListOpcode(WorldPackets::Battleground::BattlefieldListRequest const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        void HandleLeaveBattlefieldOpcode(WorldPackets::Battleground::LeaveBattlefield const& packet);
-#endif
+        void HandleBattlemasterHelloOpcode(BattlemasterHello const& packet);
+        void HandleBattlemasterJoinOpcode(BattlemasterJoin const& packet);
+        void RequestBgJoinQueue(ObjectGuid battlemaster, uint32 instanceId, BattleGroundTypeId bgTypeId, bool joinAsGroup);
+        void HandlePVPLogDataOpcode(PVPLogDataRequest const& packet);
+        void HandleRequestBattlefieldStatusOpcode(RequestBattlefieldStatus const& packet);
+        void HandleBattleFieldPortOpcode(BattleFieldPort const& packet);
+        void HandleBattlefieldListOpcode(BattlefieldListRequest const& packet);
+        void HandleLeaveBattlefieldOpcode(LeaveBattlefield const& packet);
+        void HandleGetPVPOptionsEnabledOpcode(GetPVPOptionsEnabled const& packet);
+        void HandleRequestRatedPvpInfoOpcode(RequestRatedPvpInfo const& packet);
+        void HandleReportPvPAFKOpcode(ReportPvPPlayerAFK const& packet);
 
         void HandleMinimapPing(MinimapPingClient const& packet);
         void HandleRandomRoll(RandomRollClient const& packet);
@@ -933,10 +930,8 @@ class WorldSession
         void HandleWhoisOpcode(WhoIsRequest const& packet);
         void HandleResetInstancesOpcode(NullClientPacket const& packet);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        void HandleAreaSpiritHealerQueryOpcode(WorldPackets::Battleground::AreaSpiritHealerQuery const& packet);
-        void HandleAreaSpiritHealerQueueOpcode(WorldPackets::Battleground::AreaSpiritHealerQueue const& packet);
-#endif
+        void HandleAreaSpiritHealerQueryOpcode(AreaSpiritHealerQuery const& packet);
+        void HandleAreaSpiritHealerQueueOpcode(AreaSpiritHealerQueue const& packet);
         void HandleSelfResOpcode(NullClientPacket const& packet);
 
     private:

@@ -32,6 +32,8 @@
 #include "Chat.h"
 #include "Utilities/Random.h"
 #include "TargetedMovementGenerator.h"
+#include "Packets/BattlegroundMessages.h"
+#include "Packets/ClassicClient.h"
 
 enum BattleBotSpells
 {
@@ -463,30 +465,27 @@ void BattleBotAI::OnPacketReceived(WorldPacket const* packet)
     //printf("Bot received %s\n", LookupOpcodeName(packet->GetOpcode()));
     switch (packet->GetOpcode())
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        case MSG_PVP_LOG_DATA:
+        case CLASSIC_SMSG_PVP_LOG_DATA:
         {
             if (!me)
                 return;
 
-            uint8 ended = *((uint8*)(*packet).contents());
-            if (ended)
+            ByteBuffer body;
+            body.append(packet->contents(), packet->size());
+            PvpMatchStatisticsMessage log;
+            if (!log.Read(body))
+                return;
+
+            if (log.Data.HasWinner)
             {
                 // Temporary battlebots are removed after bg ends.
                 if (m_temporary)
                     botEntry->requestRemoval = true;
                 else
-                {
-                    auto data = std::make_unique<WorldPackets::Battleground::LeaveBattlefield>();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-                    data->mapId = me->GetMapId();
-#endif
-                    me->GetSession()->QueuePacket(std::move(data));
-                }
+                    me->GetSession()->QueuePacket(std::make_unique<ClassicClient<LeaveBattlefield>>());
             }
             return;
         }
-#endif
     }
 
     CombatBotBaseAI::OnPacketReceived(packet);

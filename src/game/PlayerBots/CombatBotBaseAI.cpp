@@ -13,6 +13,8 @@
 #include "CharacterDatabaseCache.h"
 #include "Utilities/Random.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "Packets/BattlegroundMessages.h"
+#include "BattleGroundMgr.h"
 
 #include <random>
 
@@ -3262,11 +3264,11 @@ void CombatBotBaseAI::SendBattlefieldPortPacket()
     {
         if (me->IsInvitedForBattleGroundQueueType(static_cast<BattleGroundQueueTypeId>(i)))
         {
-            WorldPackets::Battleground::BattleFieldPort packet;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-            packet.mapId = GetBattleGrounMapIdByTypeId(static_cast<BattleGroundTypeId>(i));
-#endif
-            packet.action = 1;
+            BattleFieldPort packet;
+            packet.Ticket.RequesterGuid = ClassicGuidMapping::ToClassic(me->GetObjectGuid(), realmID);
+            packet.Ticket.Id = me->GetBattleGroundQueueTicketId(static_cast<BattleGroundQueueTypeId>(i));
+            packet.Ticket.Time = me->GetBattleGroundQueueTicketTime(static_cast<BattleGroundQueueTypeId>(i));
+            packet.AcceptedInvite = true;
             me->GetSession()->HandleBattleFieldPortOpcode(packet);
             break;
         }
@@ -3276,25 +3278,15 @@ void CombatBotBaseAI::SendBattlefieldPortPacket()
 void CombatBotBaseAI::SendBattlemasterJoinPacket(uint8 battlegroundId)
 {
     uint32 instanceId = 0; // first available
-    uint32 mapId;
-    switch (battlegroundId)
+    BattleGroundTypeId bgTypeId = BattleGroundMgr::BgTemplateId(static_cast<BattleGroundQueueTypeId>(battlegroundId));
+    if (bgTypeId == BATTLEGROUND_TYPE_NONE)
     {
-        case BATTLEGROUND_QUEUE_AV:
-            mapId = MAP_ALTERAC_VALLEY;
-            break;
-        case BATTLEGROUND_QUEUE_WS:
-            mapId = MAP_WARSONG_GULCH;
-            break;
-        case BATTLEGROUND_QUEUE_AB:
-            mapId = MAP_ARATHI_BASIN;
-            break;
-        default:
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "BattleBot: Invalid BG queue type!");
-            botEntry->requestRemoval = true;
-            return;
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "BattleBot: Invalid BG queue type!");
+        botEntry->requestRemoval = true;
+        return;
     }
 
-    me->GetSession()->RequestBgJoinQueue(me->GetObjectGuid(), instanceId, mapId, false);
+    me->GetSession()->RequestBgJoinQueue(me->GetObjectGuid(), instanceId, bgTypeId, false);
 }
 
 void CombatBotBaseAI::SendAreaTriggerPacket(uint32 areaTriggerId)

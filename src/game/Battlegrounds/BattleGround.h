@@ -198,6 +198,12 @@ class BattleGround
         void SendPacketToTeam(Team team, std::unique_ptr<ServerPacket> packet, Player* sender = nullptr, bool self = true);
         void SendPacketToAll(WorldPacket* packet);
         void SendPacketToAll(std::unique_ptr<ServerPacket> packet);
+        // Broadcasts a modern Classic* wire struct (Packets/BattlegroundMessages.h) the same way --
+        // defined and explicitly instantiated in BattleGround.cpp for the structs it actually sends.
+        template<typename T>
+        void SendPacketToTeam(Team team, T const& packet, Player* sender = nullptr, bool self = true);
+        template<typename T>
+        void SendPacketToAll(T const& packet);
 
         template<class Do>
         void BroadcastWorker(Do& _do);
@@ -370,6 +376,7 @@ class BattleGround
         uint32 m_clientInstanceId;                          //the instance-id which is sent to the client and without any other internal use
         uint32 m_startTime;
         int32 m_endTime;                                    // it is set to 120000 when bg is ending and it decreases itself
+        uint32 m_playerPositionsUpdateTimer;                // periodic SMSG_BATTLEGROUND_PLAYER_POSITIONS push (flag-carrier minimap blips)
         BattleGroundBracketId m_bracketId;
         bool   m_inBGFreeSlotQueue;                         // used to make sure that BG is only once inserted into the BattleGroundMgr.m_bgFreeSlotQueue[bgTypeId] deque
         int32  m_startDelayTime;
@@ -415,6 +422,8 @@ class BattleGround
 
         uint32 m_playerSkinReflootId;
 };
+
+uint32 const BG_PLAYER_POSITIONS_UPDATE_INTERVAL = 5000; // ms
 
 // helper functions for world state list fill
 inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, uint32 value)

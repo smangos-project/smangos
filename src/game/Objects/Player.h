@@ -2235,6 +2235,14 @@ class Player final: public Unit
         {
             BattleGroundQueueTypeId bgQueueTypeId;
             uint32 invitedToInstance;
+            // RideTicket id+time handed to the client for this queue slot -- kept here (not just in
+            // BattleGroundQueue::PlayerQueueInfo, which only exists while actually queued) so it
+            // survives the queued -> invited -> playing transition. The same (id, time) pair must
+            // keep being echoed back every time this slot's status is re-sent: the client tracks a
+            // ticket by the full pair, not just the id, so re-deriving a fresh time on every echo
+            // makes it treat each echo as a distinct new invite to separately acknowledge/decline.
+            uint32 ticketId;
+            int64 ticketTime;
         };
 
         BgBattleGroundQueueID_Rec m_bgBattleGroundQueueID[PLAYER_MAX_BATTLEGROUND_QUEUES];
@@ -2267,6 +2275,20 @@ class Player final: public Unit
         }
 
         BattleGroundQueueTypeId GetBattleGroundQueueTypeId(uint32 index) const { return m_bgBattleGroundQueueID[index].bgQueueTypeId; }
+        uint32 GetBattleGroundQueueTicketId(BattleGroundQueueTypeId bgQueueTypeId) const
+        {
+            for (const auto& i : m_bgBattleGroundQueueID)
+                if (i.bgQueueTypeId == bgQueueTypeId)
+                    return i.ticketId;
+            return 0;
+        }
+        int64 GetBattleGroundQueueTicketTime(BattleGroundQueueTypeId bgQueueTypeId) const
+        {
+            for (const auto& i : m_bgBattleGroundQueueID)
+                if (i.bgQueueTypeId == bgQueueTypeId)
+                    return i.ticketTime;
+            return 0;
+        }
         uint32 GetBattleGroundQueueIndex(BattleGroundQueueTypeId bgQueueTypeId) const
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
@@ -2292,16 +2314,23 @@ class Player final: public Unit
             m_bgData.bgTypeID = bgTypeId;
             m_bgData.m_needSave = true;
         }
-        uint32 AddBattleGroundQueueId(BattleGroundQueueTypeId val)
+        uint32 AddBattleGroundQueueId(BattleGroundQueueTypeId val, uint32 ticketId = 0, int64 ticketTime = 0)
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
             {
-                if (m_bgBattleGroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_NONE || m_bgBattleGroundQueueID[i].bgQueueTypeId == val)
+                if (m_bgBattleGroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
                 {
                     m_bgBattleGroundQueueID[i].bgQueueTypeId = val;
                     m_bgBattleGroundQueueID[i].invitedToInstance = 0;
+                    m_bgBattleGroundQueueID[i].ticketId = ticketId;
+                    m_bgBattleGroundQueueID[i].ticketTime = ticketTime;
                     return i;
                 }
+                if (m_bgBattleGroundQueueID[i].bgQueueTypeId == val)
+                    // Already queued for this type -- keep the existing ticket (id AND time) rather
+                    // than overwriting it, so a caller that calls this again for a slot that already
+                    // exists doesn't hand out a ticket the client will treat as a brand new invite.
+                    return i;
             }
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
@@ -2314,6 +2343,8 @@ class Player final: public Unit
                 {
                     i.bgQueueTypeId = BATTLEGROUND_QUEUE_NONE;
                     i.invitedToInstance = 0;
+                    i.ticketId = 0;
+                    i.ticketTime = 0;
                     return;
                 }
             }

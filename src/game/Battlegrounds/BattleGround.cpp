@@ -38,6 +38,8 @@
 #include "Chat.h"
 #include "Utilities/Random.h"
 #include "ScriptMgr.h"
+#include "Packets/BattlegroundMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 
 namespace MaNGOS
 {
@@ -199,6 +201,7 @@ BattleGround::BattleGround()
     m_status            = STATUS_NONE;
     m_clientInstanceId  = 0;
     m_endTime           = 0;
+    m_playerPositionsUpdateTimer = 0;
     m_bracketId         = BG_BRACKET_ID_NONE;        // use as mark bg template
     m_invitedAlliance   = 0;
     m_invitedHorde      = 0;
@@ -461,6 +464,17 @@ void BattleGround::Update(uint32 diff)
 
     //update start time
     m_startTime += diff;
+
+    // periodic SMSG_BATTLEGROUND_PLAYER_POSITIONS push (flag-carrier minimap blips)
+    if (GetStatus() == STATUS_IN_PROGRESS)
+    {
+        m_playerPositionsUpdateTimer += diff;
+        if (m_playerPositionsUpdateTimer >= BG_PLAYER_POSITIONS_UPDATE_INTERVAL)
+        {
+            m_playerPositionsUpdateTimer = 0;
+            SendPacketToAll(sBattleGroundMgr.BuildBattlegroundPlayerPositionsPacket(this));
+        }
+    }
 }
 
 void BattleGround::SetTeamStartLoc(Team team, float x, float y, float z, float o)
@@ -516,6 +530,41 @@ void BattleGround::SendPacketToTeam(Team teamId, std::unique_ptr<ServerPacket> p
     WorldPacket data = BuildWorldPacket(std::move(packet));
     SendPacketToTeam(teamId, &data, sender, self);
 }
+
+template<typename T>
+void BattleGround::SendPacketToAll(T const& packet)
+{
+    for (const auto& itr : m_players)
+        if (Player* pPlayer = sObjectMgr.GetPlayer(itr.first))
+            pPlayer->GetSession()->SendClassic(packet);
+}
+
+template<typename T>
+void BattleGround::SendPacketToTeam(Team teamId, T const& packet, Player* sender, bool self)
+{
+    for (const auto& itr : m_players)
+    {
+        Player* pPlayer = sObjectMgr.GetPlayer(itr.first);
+        if (!pPlayer)
+        {
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "BattleGround:SendPacketToTeam: %s not found!", itr.first.GetString().c_str());
+            continue;
+        }
+
+        if (!self && sender == pPlayer)
+            continue;
+
+        Team team = itr.second.playerTeam;
+        if (!team) team = pPlayer->GetTeam();
+
+        if (team == teamId)
+            pPlayer->GetSession()->SendClassic(packet);
+    }
+}
+
+template void BattleGround::SendPacketToAll(BattlegroundPlayerPositions const&);
+template void BattleGround::SendPacketToTeam(Team, BattlegroundPlayerJoined const&, Player*, bool);
+template void BattleGround::SendPacketToTeam(Team, BattlegroundPlayerLeft const&, Player*, bool);
 
 void BattleGround::PlaySoundToAll(uint32 soundId)
 {
@@ -670,7 +719,7 @@ void BattleGround::EndBattleGround(Team winner)
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     if (m_finalScore.empty())
-        m_finalScore = BuildWorldPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
+        m_finalScore = MakeClassicPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
 #endif
 
     for (const auto& itr : m_players)
@@ -712,17 +761,14 @@ void BattleGround::EndBattleGround(Team winner)
 
         BlockMovement(pPlayer);
 
-        // handler removed in 1.9
-        if (team == winner)
-            pPlayer->GetSession()->SendPacket(std::make_unique<WorldPackets::Battleground::BattlefieldWin>());
-        else
-            pPlayer->GetSession()->SendPacket(std::make_unique<WorldPackets::Battleground::BattlefieldLose>());
+        // No modern equivalent: the client's auto-opened results tab is driven entirely by
+        // SMSG_PVP_LOG_DATA below, which already carries a winner field.
 
         // Send final scoreboard
         pPlayer->GetSession()->SendPacket(&m_finalScore);
 
         BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BgQueueTypeId(GetTypeID());
-        pPlayer->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime()));
+        sBattleGroundMgr.SendBattleGroundStatusPacket(pPlayer, this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
 
         if (LogsDatabase && sWorld.getConfig(CONFIG_BOOL_LOGSDB_BATTLEGROUNDS))
         {
@@ -952,7 +998,7 @@ void BattleGround::RemovePlayerAtLeave(ObjectGuid guid, bool transport, bool sen
 
             if (sendPacket)
             {
-                pPlayer->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_NONE, 0, 0));
+                sBattleGroundMgr.SendBattleGroundStatusPacket(pPlayer, this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_NONE, 0, 0);
             }
 
             // this call is important, because player, when joins to battleground, this method is not called, so it must be called when leaving bg
@@ -978,7 +1024,11 @@ void BattleGround::RemovePlayerAtLeave(ObjectGuid guid, bool transport, bool sen
 
             // Let others know
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-            SendPacketToTeam(team, sBattleGroundMgr.BuildPlayerLeftBattleGroundPacket(guid), pPlayer, false);
+            {
+                BattlegroundPlayerLeft left;
+                left.PlayerGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+                SendPacketToTeam(team, left, pPlayer, false);
+            }
 #endif
         }
     }
@@ -1055,7 +1105,11 @@ void BattleGround::AddPlayer(Player* pPlayer)
     UpdatePlayersCountByTeam(team, false);                  // +1 player
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    SendPacketToTeam(team, sBattleGroundMgr.BuildPlayerJoinedBattleGroundPacket(pPlayer), pPlayer, false);
+    {
+        BattlegroundPlayerJoined joined;
+        joined.PlayerGuid = ClassicGuidMapping::ToClassic(pPlayer->GetObjectGuid(), realmID);
+        SendPacketToTeam(team, joined, pPlayer, false);
+    }
 #endif
 
     // setup BG group membership
@@ -1701,7 +1755,7 @@ void BattleGround::EndNow()
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     if (m_finalScore.empty())
-        m_finalScore = BuildWorldPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
+        m_finalScore = MakeClassicPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
 #endif
 }
 
@@ -1815,10 +1869,10 @@ void BattleGround::PlayerAddedToBGCheckIfBGIsRunning(Player* pPlayer)
     BlockMovement(pPlayer);
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-    pPlayer->GetSession()->SendPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
+    pPlayer->GetSession()->SendClassic(sBattleGroundMgr.BuildPvpLogDataPacket(this));
 #endif
 
-    pPlayer->GetSession()->SendPacket(sBattleGroundMgr.BuildBattleGroundStatusPacket(this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, GetEndTime(), GetStartTime()));
+    sBattleGroundMgr.SendBattleGroundStatusPacket(pPlayer, this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, GetEndTime(), GetStartTime());
 }
 
 uint32 BattleGround::GetAlivePlayersCountByTeam(Team team) const

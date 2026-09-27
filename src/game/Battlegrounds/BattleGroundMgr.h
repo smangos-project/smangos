@@ -28,6 +28,7 @@
 #include "Common.h"
 #include "Packet.h"
 #include "BattleGround.h"
+#include "Packets/BattlegroundMessages.h"
 
 typedef std::map<uint32, BattleGround*> BattleGroundSet;
 
@@ -50,6 +51,8 @@ struct PlayerQueueInfo                                      // stores informatio
     bool    online;
     uint32  lastOnlineTime;                                 // for tracking and removing offline players from queue after 5 minutes
     GroupQueueInfo* groupInfo;                              // pointer to the associated groupqueueinfo
+    uint32  ticketId;                                       // RideTicket id handed to the client for this queue slot (see BattleGroundMgr::GenerateNextTicketId)
+    int64   ticketTime;                                     // RideTicket time handed out alongside ticketId -- must stay fixed for the ticket's lifetime (see Player::BgBattleGroundQueueID_Rec::ticketTime)
 };
 
 typedef std::map<ObjectGuid, PlayerQueueInfo*> GroupQueueInfoPlayers;
@@ -73,13 +76,6 @@ enum BattleGroundQueueGroupTypes
     BG_QUEUE_NORMAL_HORDE       = 3
 };
 #define BG_QUEUE_GROUP_TYPES_COUNT 4
-
-enum BattleGroundGroupJoinStatus : uint32
-{
-    BG_GROUPJOIN_DESERTERS = 0xFFFFFFFE,
-    BG_GROUPJOIN_FAILED = 0xFFFFFFFF,
-    // any other value is a MapID (meaning successful join)
-};
 
 class BattleGround;
 class BattleGroundQueue
@@ -208,18 +204,36 @@ class BattleGroundMgr
         void Update(uint32 diff);
 
         /* Packet Building */
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-        std::unique_ptr<ServerPacket> BuildPlayerJoinedBattleGroundPacket(Player* player);
-        std::unique_ptr<ServerPacket> BuildPlayerLeftBattleGroundPacket(ObjectGuid guid);
-#endif
-        std::unique_ptr<ServerPacket> BuildBattleGroundListPacket(ObjectGuid guid, Player* player, BattleGroundTypeId bgTypeId);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-        std::unique_ptr<ServerPacket> BuildGroupJoinedBattlegroundPacket(int32 status);
-        std::unique_ptr<ServerPacket> BuildPvpLogDataPacket(BattleGround const* bg);
-#endif
+        BattlefieldList BuildBattleGroundListPacket(ObjectGuid guid, Player* player, BattleGroundTypeId bgTypeId);
         std::unique_ptr<ServerPacket> BuildUpdateWorldStatePacket(uint32 field, uint32 value);
-        std::unique_ptr<ServerPacket> BuildBattleGroundStatusPacket(BattleGround* bg, uint8 queueSlot, uint8 statusID, uint32 time1, uint32 time2);
         std::unique_ptr<ServerPacket> BuildPlaySoundPacket(uint32 soundId);
+
+        // SMSG_BATTLEFIELD_STATUS_* family (see BattlefieldStatusHeader, Packets/BattlegroundMessages.h).
+        // Kept as a single dispatcher with the same (bg, player, queueSlot, statusId, time1, time2)
+        // shape the old single-opcode BuildBattleGroundStatusPacket had -- this is called from deep
+        // inside the queue-invite/removal internals (BattleGroundMgr.cpp) as well as the packet
+        // handlers. Sends directly (rather than returning a packet to build) since the concrete reply
+        // type varies by statusId. statusId still uses the existing BattleGroundStatus enum values.
+        void SendBattleGroundStatusPacket(Player* player, BattleGround* bg, uint8 queueSlot, uint8 statusId, uint32 time1, uint32 time2);
+
+        // SMSG_BATTLEFIELD_STATUS_FAILED -- replaces the old SMSG_GROUP_JOINED_BATTLEGROUND, which
+        // has no modern equivalent. `reason` uses GroupJoinBattlegroundResult (BattleGroundDefines.h).
+        // Builds a fresh disposable ticket, since these are sent for join attempts rejected before any
+        // queue entry (and ticket) existed.
+        BattlefieldStatusFailed BuildBattlefieldStatusFailed(Player* player, BattleGroundTypeId bgTypeId, int32 reason);
+
+        // Looks up (or mints a fresh disposable) RideTicket for `player`'s queue slot for `bg` (pass
+        // nullptr if there's no live queue reference, e.g. a rejected join attempt). Exposed publicly
+        // since bot code needs to build the same client packets a real client would.
+        static RideTicket BuildRideTicketFor(Player* player, BattleGround* bg);
+
+        // SMSG_PVP_LOG_DATA -- the modern scoreboard (see PvpMatchStatistics, Packets/BattlegroundMessages.h).
+        PvpMatchStatisticsMessage BuildPvpLogDataPacket(BattleGround const* bg);
+
+        // SMSG_BATTLEGROUND_PLAYER_POSITIONS -- flag-carrier minimap blips (see Packets/BattlegroundMessages.h).
+        BattlegroundPlayerPositions BuildBattlegroundPlayerPositionsPacket(BattleGround const* bg);
+
+        uint32 GenerateNextTicketId() { return ++m_nextTicketId; }
 
         /* Battlegrounds */
         BattleGroundSet::iterator GetBattleGroundsBegin(BattleGroundTypeId bgTypeId) { return m_battleGrounds[bgTypeId].begin(); };
@@ -321,6 +335,7 @@ class BattleGroundMgr
         ClientBattleGroundIdSet m_clientBattleGroundIds[MAX_BATTLEGROUND_TYPE_ID][MAX_BATTLEGROUND_BRACKETS]; // the instanceids just visible for the client
         bool   m_testing;
         std::set<uint32> m_usedRefloot;
+        uint32 m_nextTicketId = 0;
 };
 
 #define sBattleGroundMgr MaNGOS::Singleton<BattleGroundMgr>::Instance()

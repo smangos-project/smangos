@@ -3556,15 +3556,13 @@ void Creature::ClearTemporaryFaction()
 
 void Creature::SendAreaSpiritHealerQueryOpcode(Player* pl)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     uint32 next_resurrect = 0;
     if (Spell* pcurSpell = GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         next_resurrect = pcurSpell->GetCastedTime();
-    auto packet = std::make_unique<WorldPackets::Npc::AreaSpiritHealerTime>();
-    packet->spiritHealerGuid = GetObjectGuid();
-    packet->nextResurrectTime = next_resurrect;
-    pl->GetSession()->SendPacket(std::move(packet));
-#endif
+    AreaSpiritHealerTime packet;
+    packet.SpiritHealerGuid = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.TimeLeft = int32(next_resurrect);
+    pl->GetSession()->SendClassic(packet);
 }
 
 void Creature::DisappearAndDie()

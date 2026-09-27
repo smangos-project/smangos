@@ -254,4 +254,19 @@ enum BattleGroundJoinError
     BG_JOIN_ERR_GROUP_NOT_ENOUGH = 9
 };
 
+// Wire-level reason codes for SMSG_BATTLEFIELD_STATUS_FAILED, confirmed against TrinityCore's
+// GroupJoinBattlegroundResult (SharedDefines.h). Only the subset this engine can actually produce
+// is listed; the rest of TrinityCore's enum is arena/LFG/cross-realm-specific and not applicable.
+enum GroupJoinBattlegroundResult
+{
+    ERR_BATTLEGROUND_NONE                      = 0,
+    ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS      = 2,  // you or a party member is flagged Deserter
+    ERR_BATTLEGROUND_TOO_MANY_QUEUES           = 4,  // already queued for the max number of battles
+    ERR_BATTLEGROUND_NOT_IN_BATTLEGROUND       = 8,  // can't do that in a battleground
+    ERR_BATTLEGROUND_JOIN_TIMED_OUT            = 11, // invite offer expired
+    ERR_BATTLEFIELD_TEAM_PARTY_SIZE            = 22, // incorrect party size for this battleground
+    ERR_BATTLEGROUND_JOIN_FAILED               = 35, // generic "join as group failed"
+    ERR_BATTLEGROUND_DUPE_QUEUE                = 43, // someone in the group is already queued for that
+};
+
 #endif

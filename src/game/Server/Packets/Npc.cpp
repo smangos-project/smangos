@@ -39,20 +39,6 @@ void WorldPackets::Npc::StableResult::AppendBodyTo(ByteBuffer& buffer) const
     buffer << result;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
-size_t WorldPackets::Npc::AreaSpiritHealerTime::EstimateFinalSize() const
-{
-    return sizeof(spiritHealerGuid) +
-           sizeof(nextResurrectTime);
-}
-
-void WorldPackets::Npc::AreaSpiritHealerTime::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << spiritHealerGuid;
-    buffer << nextResurrectTime;
-}
-#endif
-
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 size_t WorldPackets::Npc::BinderConfirm::EstimateFinalSize() const
 {
