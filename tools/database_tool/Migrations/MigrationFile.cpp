@@ -52,7 +52,7 @@ namespace
         std::ostringstream buffer;
         buffer << file.rdbuf();
 
-        for (SqlStatement const& statement : SplitMysqlStatements(buffer.str()))
+        for (SqlScriptStatement const& statement : SplitMysqlStatements(buffer.str()))
         {
             if (StartsWithCreateProcedure(statement.text))
                 return true;

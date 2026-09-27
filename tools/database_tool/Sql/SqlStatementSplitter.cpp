@@ -2,11 +2,11 @@
 
 #include "MysqlLexer.h"
 
-std::vector<SqlStatement> SplitMysqlStatements(std::string_view text)
+std::vector<SqlScriptStatement> SplitMysqlStatements(std::string_view text)
 {
     std::vector<MysqlToken> tokens = TokenizeMysql(text);
 
-    std::vector<SqlStatement> statements;
+    std::vector<SqlScriptStatement> statements;
     std::string delimiter = ";";
     std::string current;
     int currentLine = 1;

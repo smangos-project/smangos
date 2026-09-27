@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-struct SqlStatement
+struct SqlScriptStatement
 {
     std::string text; // trimmed, without the trailing delimiter
     int line;          // 1-based line the statement starts on
@@ -16,6 +16,6 @@ struct SqlStatement
 // procedure envelope every world migration is wrapped in). Delimiters found
 // inside string/identifier/comment text, via MysqlLexer, never split a
 // statement early.
-std::vector<SqlStatement> SplitMysqlStatements(std::string_view text);
+std::vector<SqlScriptStatement> SplitMysqlStatements(std::string_view text);
 
 #endif
