@@ -171,17 +171,6 @@ void WorldPackets::Misc::LogoutResponse::AppendBodyTo(ByteBuffer& buffer) const
     buffer << instant;
 }
 
-size_t WorldPackets::Misc::PlayedTime::EstimateFinalSize() const
-{
-    return sizeof(totalPlayedTime) +
-           sizeof(levelPlayedTime);
-}
-
-void WorldPackets::Misc::PlayedTime::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << totalPlayedTime;
-    buffer << levelPlayedTime;
-}
 
 size_t WorldPackets::Misc::ServerMessage::EstimateFinalSize() const
 {

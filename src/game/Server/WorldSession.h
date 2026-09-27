@@ -581,7 +581,7 @@ class WorldSession
         void HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet);
         void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
         void HandleClassicTimeSyncResponseOpcode(TimeSyncResponse const& packet);
-        void HandlePlayedTime(NullClientPacket const& packet);
+        void HandlePlayedTime(RequestPlayedTime const& packet);
 
         // Movement
         void HandleMoveRootAck(ClassicOpcodes opcode, ClassicMovementAck const& ack);

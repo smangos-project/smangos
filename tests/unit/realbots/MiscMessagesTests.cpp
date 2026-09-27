@@ -192,3 +192,26 @@ TEST_CASE("SetPvP round-trips both values", "[packets]")
         RejectsEveryTruncation(packet);
     }
 }
+
+TEST_CASE("RequestPlayedTime round-trips", "[packets]")
+{
+    RequestPlayedTime packet;
+    packet.TriggerScriptEvent = true;
+    RoundTrip(packet, [](RequestPlayedTime const& a, RequestPlayedTime const& b) { CHECK(a.TriggerScriptEvent == b.TriggerScriptEvent); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("PlayedTimeResult round-trips", "[packets]")
+{
+    PlayedTimeResult packet;
+    packet.TotalTime = 360000;
+    packet.LevelTime = 7200;
+    packet.TriggerEvent = true;
+    RoundTrip(packet, [](PlayedTimeResult const& a, PlayedTimeResult const& b)
+    {
+        CHECK(a.TotalTime == b.TotalTime);
+        CHECK(a.LevelTime == b.LevelTime);
+        CHECK(a.TriggerEvent == b.TriggerEvent);
+    });
+    RejectsEveryTruncation(packet);
+}

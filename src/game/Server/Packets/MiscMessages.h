@@ -381,4 +381,55 @@ struct SetPvP
     }
 };
 
+// The "/played" command's request. TriggerScriptEvent is parsed but unused (no PLAYER_PVP_KILLS-
+// style script hook exists here for it to trigger).
+struct RequestPlayedTime
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_REQUEST_PLAYED_TIME;
+
+    bool TriggerScriptEvent = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(TriggerScriptEvent);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        TriggerScriptEvent = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+struct PlayedTimeResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAYED_TIME;
+
+    int32 TotalTime = 0;
+    int32 LevelTime = 0;
+    bool TriggerEvent = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << TotalTime;
+        data << LevelTime;
+        data.WriteBit(TriggerEvent);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32) * 2 + 1)
+            return false;
+        data >> TotalTime >> LevelTime;
+        TriggerEvent = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
 #endif

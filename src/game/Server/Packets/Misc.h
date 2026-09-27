@@ -253,17 +253,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-    class PlayedTime final : public ServerPacket
-    {
-    public:
-        uint32 totalPlayedTime = 0;
-        uint32 levelPlayedTime = 0;
-
-        explicit PlayedTime() : ServerPacket(SMSG_PLAYED_TIME) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-
     class ServerMessage final : public ServerPacket
     {
     public:

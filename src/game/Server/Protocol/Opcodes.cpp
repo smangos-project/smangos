@@ -549,7 +549,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_FISH_ESCAPED,                 UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_BUG,                          STATUS_NEVER,     PACKET_PROCESS_MAP,           &WorldSession::HandleBugOpcode);
     INVALID_PACKET(SMSG_NOTIFICATION,                 UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_PLAYED_TIME,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandlePlayedTime);
+    INVALID_PACKET(CMSG_PLAYED_TIME,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAYED_TIME,                  UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_QUERY_TIME,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_QUERY_TIME_RESPONSE,          UnhandleReason::SendByServer);
@@ -1078,6 +1078,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_RECLAIM_CORPSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleReclaimCorpseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SELF_RES, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSelfResOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_UNLEARN_SKILL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleUnlearnSkillOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_PLAYED_TIME, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandlePlayedTime);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CAN_DUEL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCanDuelOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_DUEL_RESPONSE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleDuelResponseOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_INITIATE_TRADE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleInitiateTradeOpcode);

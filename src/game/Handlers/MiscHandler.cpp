@@ -953,12 +953,13 @@ void WorldSession::HandleSetActionBarTogglesOpcode(WorldPackets::Misc::SetAction
     GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BARS, packet.actionBar);
 }
 
-void WorldSession::HandlePlayedTime(NullClientPacket const& /*packet*/)
+void WorldSession::HandlePlayedTime(RequestPlayedTime const& packet)
 {
-    auto packet = std::make_unique<WorldPackets::Misc::PlayedTime>();
-    packet->totalPlayedTime = _player->GetTotalPlayedTime();
-    packet->levelPlayedTime = _player->GetLevelPlayedTime();
-    SendPacket(std::move(packet));
+    PlayedTimeResult result;
+    result.TotalTime = int32(_player->GetTotalPlayedTime());
+    result.LevelTime = int32(_player->GetLevelPlayedTime());
+    result.TriggerEvent = packet.TriggerScriptEvent;
+    SendClassic(result);
 }
 
 void WorldSession::HandleInspectOpcode(Inspect const& packet)
