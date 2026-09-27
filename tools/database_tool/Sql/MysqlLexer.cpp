@@ -266,6 +266,49 @@ std::vector<MysqlToken> TokenizeMysql(std::string_view text)
     return Scanner(text).Run();
 }
 
+bool StartsWithMysqlKeyword(std::string_view text, std::string const& keywordUpper)
+{
+    size_t i = 0;
+    while (i < text.size() && std::isspace(static_cast<unsigned char>(text[i])))
+        ++i;
+    if (text.size() - i < keywordUpper.size())
+        return false;
+    for (size_t k = 0; k < keywordUpper.size(); ++k)
+        if (std::toupper(static_cast<unsigned char>(text[i + k])) != keywordUpper[k])
+            return false;
+    return true;
+}
+
+std::string_view SkipLeadingMysqlNoise(std::string_view text)
+{
+    for (;;)
+    {
+        while (!text.empty() && std::isspace(static_cast<unsigned char>(text.front())))
+            text.remove_prefix(1);
+
+        if (text.size() >= 2 && text[0] == '-' && text[1] == '-')
+        {
+            size_t newline = text.find('\n');
+            text = newline == std::string_view::npos ? std::string_view() : text.substr(newline + 1);
+            continue;
+        }
+        if (!text.empty() && text.front() == '#')
+        {
+            size_t newline = text.find('\n');
+            text = newline == std::string_view::npos ? std::string_view() : text.substr(newline + 1);
+            continue;
+        }
+        if (text.size() >= 3 && text[0] == '/' && text[1] == '*' && text[2] != '!')
+        {
+            size_t end = text.find("*/");
+            text = end == std::string_view::npos ? std::string_view() : text.substr(end + 2);
+            continue;
+        }
+        break;
+    }
+    return text;
+}
+
 std::string DecodeMysqlStringLiteral(std::string const& tokenText)
 {
     if (tokenText.size() < 2)

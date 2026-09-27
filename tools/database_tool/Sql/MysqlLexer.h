@@ -37,4 +37,17 @@ std::vector<MysqlToken> TokenizeMysql(std::string_view text);
 // \0, \Z, \%, \_ and doubled quotes) into the string MySQL would store.
 std::string DecodeMysqlStringLiteral(std::string const& tokenText);
 
+// Case-insensitive: does text, after skipping leading whitespace, start with
+// keywordUpper (already uppercase)? Used to classify an already-split
+// statement (MysqlDumpImport, MigrationPorter) by its leading keyword(s).
+bool StartsWithMysqlKeyword(std::string_view text, std::string const& keywordUpper);
+
+// Skips leading whitespace and non-versioned comments ("-- ...", "# ...",
+// "/* ... */", but not "/*! ... */": that's real, executable content). A
+// dump or migration statement is routinely preceded by a HeidiSQL/hand
+// -written comment with no delimiter of its own to end a statement early,
+// so SqlStatementSplitter glues it onto the front of whatever follows;
+// classifying that statement by keyword needs to see past it.
+std::string_view SkipLeadingMysqlNoise(std::string_view text);
+
 #endif

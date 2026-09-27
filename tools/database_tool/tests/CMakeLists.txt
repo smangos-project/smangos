@@ -8,6 +8,7 @@ add_executable(tests-database-tool
   Sql/MysqlInsertParserTests.cpp
   Sql/MysqlDumpImportTests.cpp
   Sql/MysqlDumpImportRealDumpTests.cpp
+  Sql/MigrationPorterTests.cpp
   Migrations/MigrationFileTests.cpp
   Migrations/MigrationStateTests.cpp
   ToolConfigTests.cpp

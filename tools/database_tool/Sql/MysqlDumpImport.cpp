@@ -2,11 +2,11 @@
 
 #include "MysqlDdlTranslator.h"
 #include "MysqlInsertParser.h"
+#include "MysqlLexer.h"
 #include "SqlStatementSplitter.h"
 
 #include "World/DoltLiteDatabase.h"
 
-#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -23,63 +23,11 @@ namespace
         return buffer.str();
     }
 
-    bool StartsWithKeyword(std::string_view text, std::string const& keywordUpper)
-    {
-        size_t i = 0;
-        while (i < text.size() && std::isspace(static_cast<unsigned char>(text[i])))
-            ++i;
-        if (text.size() - i < keywordUpper.size())
-            return false;
-        for (size_t k = 0; k < keywordUpper.size(); ++k)
-            if (std::toupper(static_cast<unsigned char>(text[i + k])) != keywordUpper[k])
-                return false;
-        return true;
-    }
-
-    // Every real statement in the dump is preceded by a `-- Dumping ...`
-    // comment (HeidiSQL's own), and comments have no delimiter of their own
-    // to end a statement early, so SqlStatementSplitter glues each one onto
-    // the front of whatever follows. Classifying a statement by keyword
-    // needs to see past that (execution doesn't: MysqlDdlTranslator/
-    // ParseMysqlInsert already skip comment tokens, and SQLite itself
-    // accepts a leading `--`/`/* */` comment in a statement it's given).
-    std::string_view SkipLeadingNoise(std::string_view text)
-    {
-        for (;;)
-        {
-            while (!text.empty() && std::isspace(static_cast<unsigned char>(text.front())))
-                text.remove_prefix(1);
-
-            if (text.size() >= 2 && text[0] == '-' && text[1] == '-')
-            {
-                size_t newline = text.find('\n');
-                text = newline == std::string_view::npos ? std::string_view() : text.substr(newline + 1);
-                continue;
-            }
-            if (!text.empty() && text.front() == '#')
-            {
-                size_t newline = text.find('\n');
-                text = newline == std::string_view::npos ? std::string_view() : text.substr(newline + 1);
-                continue;
-            }
-            // "/*! ... */" is a versioned comment: real, executable content
-            // (world-sql.md), not noise to skip past.
-            if (text.size() >= 3 && text[0] == '/' && text[1] == '*' && text[2] != '!')
-            {
-                size_t end = text.find("*/");
-                text = end == std::string_view::npos ? std::string_view() : text.substr(end + 2);
-                continue;
-            }
-            break;
-        }
-        return text;
-    }
-
     // A standalone `/*!40101 SET ... */` line and a plain `SET ...` both mean
     // "connection/session setup this tool doesn't need" (world-sql.md).
     bool IsSkippableStatement(std::string_view text)
     {
-        return text.rfind("/*!", 0) == 0 || StartsWithKeyword(text, "SET");
+        return text.rfind("/*!", 0) == 0 || StartsWithMysqlKeyword(text, "SET");
     }
 
     struct PreparedInsert
@@ -150,15 +98,15 @@ DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path con
         {
             currentLine = statement.line;
             std::string const& text = statement.text;
-            std::string_view kind = SkipLeadingNoise(text);
+            std::string_view kind = SkipLeadingMysqlNoise(text);
 
-            if (StartsWithKeyword(kind, "DROP TABLE"))
+            if (StartsWithMysqlKeyword(kind, "DROP TABLE"))
             {
                 db.Execute(text);
                 continue;
             }
 
-            if (StartsWithKeyword(kind, "CREATE TABLE"))
+            if (StartsWithMysqlKeyword(kind, "CREATE TABLE"))
             {
                 TranslatedTable translated = TranslateMysqlCreateTable(text);
                 if (!translated.warnings.empty())
@@ -171,7 +119,7 @@ DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path con
                 continue;
             }
 
-            if (StartsWithKeyword(kind, "INSERT INTO") || StartsWithKeyword(kind, "INSERT IGNORE INTO"))
+            if (StartsWithMysqlKeyword(kind, "INSERT INTO") || StartsWithMysqlKeyword(kind, "INSERT IGNORE INTO"))
             {
                 ParsedInsert parsed = ParseMysqlInsert(text);
                 if (!parsed.error.empty())
