@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -25,9 +25,19 @@
 #include "SocialMgr.h"
 #include "MasterPlayer.h"
 #include "Chat.h"
+#include "Packets/ChannelMessages.h"
+#include "Packets/Classic/GuidMapping.h"
+
+// The modern client associates a channel by a synthetic guid keyed on the joining player's
+// current map and zone (like a creature's guid, with the channel's own dbc id -- or 0 for a
+// custom channel -- standing in for the counter). Only meaningful for a real in-world player.
+static ClassicGuid MakeChannelGuid(Player* player, uint32 channelId)
+{
+    return ClassicGuidMapping::MakeChannel(realmID, player->GetMapId(), player->GetZoneId(), channelId);
+}
 
 Channel::Channel(std::string const& name)
-    : m_area_dependant(true), m_announce(true), m_moderate(false), m_levelRestricted(true),
+    : m_area_dependant(true), m_announce(true), m_levelRestricted(true),
       m_name(name), m_flags(0), m_securityLevel(0), m_channelId(0)
 {
     // set special flags if built-in channel
@@ -37,21 +47,22 @@ Channel::Channel(std::string const& name)
         m_channelId = ch->ChannelID;                        // only built-in channel have channel id != 0
         m_announce = false;                                 // no join/leave announces
 
-        m_flags |= CHANNEL_FLAG_GENERAL;                    // for all built-in channels
+        // Wire ChannelFlags == ChatChannels.dbc Flags column; forward the relevant bits directly
+        // instead of re-deriving a vanilla-scheme value (see the header comment).
+        m_flags = ch->flags & (CHANNEL_DBC_FLAG_AUTO_JOIN | CHANNEL_DBC_FLAG_ZONE_BASED | CHANNEL_DBC_FLAG_READ_ONLY |
+                                CHANNEL_DBC_FLAG_ALLOW_ITEM_LINKS | CHANNEL_DBC_FLAG_ONLY_IN_CITIES | CHANNEL_DBC_FLAG_LINKED_CHANNEL |
+                                CHANNEL_DBC_FLAG_ZONE_ATTACK_ALERTS | CHANNEL_DBC_FLAG_GUILD_RECRUITMENT);
 
-        if (ch->flags & CHANNEL_DBC_FLAG_TRADE)             // for trade channel
-            m_flags |= CHANNEL_FLAG_TRADE;
+        m_generalModerated = true;                          // for all built-in channels
 
-        if (ch->flags & CHANNEL_DBC_FLAG_ZONE_DEP)          // Determine if handled in Master or Node
+        if (ch->flags & CHANNEL_DBC_FLAG_ZONE_BASED)        // Determine if handled in Master or Node
             m_area_dependant = true;
 
-        if (ch->flags & CHANNEL_DBC_FLAG_CITY_ONLY2)        // for city only channels
-            m_flags |= CHANNEL_FLAG_CITY;
+        m_isLFGChannel = (ch->flags & CHANNEL_DBC_FLAG_LFG) != 0;
 
-        if (ch->flags & CHANNEL_DBC_FLAG_LFG)               // for LFG channel
-            m_flags |= CHANNEL_FLAG_LFG;
-        else                                                // for all other channels
-            m_flags |= CHANNEL_FLAG_NOT_LFG;
+        // old code's `GetFlags() == 0x38` (CITY|GENERAL|NOT_LFG) gate for skipping guild-recruitment
+        // auto-join, expressed independently of the wire m_flags value
+        m_skipGuildAutoJoin = (ch->flags & CHANNEL_DBC_FLAG_LINKED_CHANNEL) && !m_isLFGChannel;
     }
     else                                                    // it's custom channel
     {
@@ -63,17 +74,17 @@ Channel::Channel(std::string const& name)
 
         if (m_name == "World")
         {
-            m_flags |= CHANNEL_FLAG_GENERAL;
+            m_generalModerated = true;
             m_announce = false;
         }
         else if (m_name == "China" || m_name == "\xE4\xB8\xAD\xE5\x9B\xBD") // The hex-sequence is the utf8 version of "China" in Mandarin
         {
-            m_flags |= CHANNEL_FLAG_CUSTOM;
+            m_allowOwnership = true;
             m_announce = false;
         }
         else
         {
-            m_flags |= CHANNEL_FLAG_CUSTOM;
+            m_allowOwnership = true;
             m_levelRestricted = false;
         }
     }
@@ -117,7 +128,7 @@ void Channel::Join(ObjectGuid guid, char const* password)
 
     if (pPlayer && pPlayer->ToPlayer())
     {
-        if (pPlayer->GetGuildId() && (GetFlags() == 0x38))
+        if (pPlayer->GetGuildId() && m_skipGuildAutoJoin)
             return;
 
         pPlayer->ToPlayer()->JoinedChannel(this);
@@ -135,13 +146,27 @@ void Channel::Join(ObjectGuid guid, char const* password)
     pinfo.player = guid;
     pinfo.flags = MEMBER_FLAG_NONE;
 
-    MakeYouJoined(&data);
-    SendToOne(&data, guid);
+    // A real player gets the dedicated join notice (carries the channel guid the client keys its
+    // UI and future chat lines on); a MasterPlayer falls back to the legacy generic notify.
+    if (pPlayer && pPlayer->ToPlayer())
+    {
+        ChannelNotifyJoined joined;
+        joined.ChannelName = m_name;
+        joined.ChannelFlags = GetFlags();
+        joined.ChatChannelId = int32(m_channelId);
+        joined.ChannelGuid = MakeChannelGuid(pPlayer->ToPlayer(), m_channelId);
+        pPlayer->GetSession()->SendClassic(joined);
+    }
+    else
+    {
+        MakeYouJoined(&data);
+        SendToOne(&data, guid);
+    }
 
     JoinNotify(guid);
 
     // if no owner first logged will become
-    if (HasFlag(CHANNEL_FLAG_CUSTOM) && !IsConstant() && !m_ownerGuid)
+    if (m_allowOwnership && !m_ownerGuid)
     {
         SetOwner(guid, (m_players.size() > 1));
         m_players[guid].SetModerator(true);
@@ -166,11 +191,23 @@ void Channel::Leave(ObjectGuid guid, bool send)
     // leave channel
     if (send)
     {
-        WorldPacket data;
-        MakeYouLeft(&data);
-        SendToOne(&data, guid);
+        // A real player gets the dedicated leave notice; a MasterPlayer falls back to the legacy
+        // generic notify.
+        if (pPlayer && pPlayer->ToPlayer())
+        {
+            ChannelNotifyLeft left;
+            left.ChannelName = m_name;
+            left.ChatChannelId = int32(m_channelId);
+            left.Suspended = false;
+            pPlayer->GetSession()->SendClassic(left);
+        }
+        else
+        {
+            WorldPacket data;
+            MakeYouLeft(&data);
+            SendToOne(&data, guid);
+        }
         pPlayer->LeftChannel(this);
-        data.clear();
     }
 
     bool changeowner = m_players[guid].IsOwner();
@@ -411,7 +448,7 @@ void Channel::SetMode(ObjectGuid guid, char const* targetName, bool moderator, b
     // set channel moderator
     if (moderator)
     {
-        if (HasFlag(CHANNEL_FLAG_GENERAL) && pTarget->GetSession()->GetSecurity() < SEC_GAMEMASTER)
+        if (m_generalModerated && pTarget->GetSession()->GetSecurity() < SEC_GAMEMASTER)
             return;
 
         SetModerator(targetGuid, set);
@@ -470,7 +507,7 @@ void Channel::SetOwner(ObjectGuid guid, char const* targetName)
         return;
     }
 
-    if (HasFlag(CHANNEL_FLAG_GENERAL) && pTarget->GetSession()->GetSecurity() < SEC_GAMEMASTER)
+    if (m_generalModerated && pTarget->GetSession()->GetSecurity() < SEC_GAMEMASTER)
         return;
 
     // set channel owner
@@ -509,17 +546,13 @@ void Channel::List(PlayerPointer player)
         return;
     }
 
-    // list players in channel
-    WorldPacket data(SMSG_CHANNEL_LIST, (GetName().size() + 1) + 1 + 4 + m_players.size() * (8 + 1));   // guess size
-    data << GetName();                                  // channel name
-    data << uint8(GetFlags());                          // channel flags?
-
-    size_t pos = data.wpos();
-    data << int32(0);                                   // size of list, placeholder
+    ChannelListResponse list;
+    list.Display = true; // a real reference server always sets this
+    list.ChannelName = GetName();
+    list.ChannelFlags = GetFlags();
 
     AccountTypes gmLevelInWhoList = (AccountTypes)sWorld.getConfig(CONFIG_UINT32_GM_LEVEL_IN_WHO_LIST);
 
-    uint32 count = 0;
     for (const auto& itr : m_players)
     {
         if (masterPlayer)
@@ -530,9 +563,7 @@ void Channel::List(PlayerPointer player)
             if (pPlayer && (masterPlayer->GetSession()->GetSecurity() > SEC_PLAYER || pPlayer->GetSession()->GetSecurity() <= gmLevelInWhoList) &&
                 pPlayer->IsVisibleGloballyFor(masterPlayer))
             {
-                data << ObjectGuid(itr.first);
-                data << uint8(itr.second.flags);             // flags seems to be changed...
-                ++count;
+                list.Members.push_back({ ClassicGuidMapping::ToClassic(itr.first, realmID), 0, itr.second.flags });
             }
         }
         else
@@ -544,16 +575,12 @@ void Channel::List(PlayerPointer player)
             if (pPlayer && (asPlayer->GetSession()->GetSecurity() > SEC_PLAYER || pPlayer->GetSession()->GetSecurity() <= gmLevelInWhoList) &&
                 pPlayer->IsVisibleGloballyFor(asPlayer))
             {
-                data << ObjectGuid(itr.first);
-                data << uint8(itr.second.flags);             // flags seems to be changed...
-                ++count;
+                list.Members.push_back({ ClassicGuidMapping::ToClassic(itr.first, realmID), 0, itr.second.flags });
             }
         }
     }
 
-    data.put<int32>(pos, count);
-
-    SendToOne(&data, guid);
+    player->GetSession()->SendClassic(list);
 }
 
 void Channel::Announce(ObjectGuid guid)
@@ -591,41 +618,6 @@ void Channel::Announce(ObjectGuid guid)
     SendToAll(&data);
 }
 
-void Channel::Moderate(ObjectGuid guid)
-{
-    uint32 sec = 0;
-    PlayerPointer pPlayer = GetPlayer(guid);
-    if (pPlayer)
-        sec = pPlayer->GetSession()->GetSecurity();
-
-    if (!IsOn(guid))
-    {
-        WorldPacket data;
-        MakeNotMember(&data);
-        SendToOne(&data, guid);
-        return;
-    }
-
-    if (!m_players[guid].IsModerator() && sec < SEC_GAMEMASTER)
-    {
-        WorldPacket data;
-        MakeNotModerator(&data);
-        SendToOne(&data, guid);
-        return;
-    }
-
-    // toggle channel moderation
-    m_moderate = !m_moderate;
-
-    WorldPacket data;
-    if (m_moderate)
-        MakeModerationOn(&data, guid);
-    else
-        MakeModerationOff(&data, guid);
-
-    SendToAll(&data);
-}
-
 void Channel::Say(ObjectGuid guid, char const* text, uint32 lang, bool skipCheck)
 {
     if (!text)
@@ -652,14 +644,6 @@ void Channel::Say(ObjectGuid guid, char const* text, uint32 lang, bool skipCheck
             SendToOne(&data, guid);
             return;
         }
-
-        if (m_moderate && !m_players[guid].IsModerator() && sec < SEC_GAMEMASTER)
-        {
-            WorldPacket data;
-            MakeNotModerator(&data);
-            SendToOne(&data, guid);
-            return;
-        }
     }
 
     // send channel message
@@ -667,7 +651,12 @@ void Channel::Say(ObjectGuid guid, char const* text, uint32 lang, bool skipCheck
         lang = LANG_UNIVERSAL;
 
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, text, Language(lang), pPlayer ? pPlayer->GetChatTag() : 0, guid, nullptr, ObjectGuid(), "", m_name.c_str(), honor_rank);
+    // Pass the member's name as senderName -- see BuildChatPacket: the modern client suppresses
+    // chat lines whose sender name it cannot resolve from its own (empty on fresh login) name
+    // cache. Also pass the channel guid (the same value the join notice used): the modern client
+    // associates a CHAT_MSG_CHANNEL line with the channel by that guid and drops it otherwise.
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, text, Language(lang), pPlayer ? pPlayer->GetChatTag() : 0, guid, pPlayer ? pPlayer->GetName() : nullptr, ObjectGuid(), "", m_name.c_str(), honor_rank,
+        (pPlayer && pPlayer->ToPlayer()) ? MakeChannelGuid(pPlayer->ToPlayer(), m_channelId) : ClassicGuid());
 
     if (!skipCheck && pPlayer &&
         pPlayer->GetSession()->GetAccountFlags() & ACCOUNT_FLAG_MUTED_FROM_PUBLIC_CHANNELS &&
@@ -744,7 +733,7 @@ void Channel::SetOwner(ObjectGuid guid, bool exclaim)
     if (!pPlayer)
         return;
 
-    if (HasFlag(CHANNEL_FLAG_GENERAL) && pPlayer->GetSession()->GetSecurity() < SEC_GAMEMASTER)
+    if (m_generalModerated && pPlayer->GetSession()->GetSecurity() < SEC_GAMEMASTER)
         return;
 
     if (m_ownerGuid)
@@ -791,47 +780,40 @@ void Channel::SendToOne(WorldPacket* data, ObjectGuid who)
         pPlayer->GetSession()->SendPacket(data);
 }
 
-void Channel::Voice(ObjectGuid /*guid1*/, ObjectGuid /*guid2*/)
+void Channel::MakeNotifyPacket(WorldPacket* data, uint8 notify_type, ObjectGuid senderGuid, ObjectGuid targetGuid, std::string const& sender, uint8 oldFlags, uint8 newFlags)
 {
+    ChannelNotify notify;
+    notify.Type = notify_type;
+    notify.ChannelName = m_name;
+    notify.Sender = sender;
+    notify.SenderGuid = ClassicGuidMapping::ToClassic(senderGuid, realmID);
+    notify.TargetGuid = ClassicGuidMapping::ToClassic(targetGuid, realmID);
+    notify.ChatChannelId = int32(m_channelId);
+    notify.OldFlags = oldFlags;
+    notify.NewFlags = newFlags;
 
-}
-
-void Channel::DeVoice(ObjectGuid /*guid1*/, ObjectGuid /*guid2*/)
-{
-
-}
-
-void Channel::MakeNotifyPacket(WorldPacket* data, uint8 notify_type)
-{
-    data->Initialize(SMSG_CHANNEL_NOTIFY, 1 + m_name.size() + 1);
-    *data << uint8(notify_type);
-    *data << m_name;
+    data->Initialize(CLASSIC_SMSG_CHANNEL_NOTIFY);
+    notify.Write(*data);
 }
 
 void Channel::MakeJoined(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_JOINED_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_JOINED_NOTICE, guid);
 }
 
 void Channel::MakeLeft(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_LEFT_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_LEFT_NOTICE, guid);
 }
 
 void Channel::MakeYouJoined(WorldPacket* data)
 {
     MakeNotifyPacket(data, CHAT_YOU_JOINED_NOTICE);
-    *data << uint32(GetFlags());
-    *data << uint32(0);                                     // the non-zero number will be appended to the channel name
 }
 
 void Channel::MakeYouLeft(WorldPacket* data)
 {
     MakeNotifyPacket(data, CHAT_YOU_LEFT_NOTICE);
-    //*data << uint32(GetChannelId());                        //[-ZERO]
-    //*data << uint8(0);                                      //[-ZERO] can be 0x00 and 0x01 (bool)
 }
 
 void Channel::MakeWrongPassword(WorldPacket* data)
@@ -846,8 +828,12 @@ void Channel::MakeNotMember(WorldPacket* data)
 
 void Channel::MakeNotOnPacket(WorldPacket* data, std::string const& name)
 {
-    data->Initialize(SMSG_CHANNEL_NOTIFY, (1 + name.length() + 1));
-    (*data) << (uint8)CHAT_NOT_MEMBER_NOTICE << name;
+    ChannelNotify notify;
+    notify.Type = CHAT_NOT_MEMBER_NOTICE;
+    notify.ChannelName = name;
+
+    data->Initialize(CLASSIC_SMSG_CHANNEL_NOTIFY);
+    notify.Write(*data);
 }
 
 void Channel::MakeNotModerator(WorldPacket* data)
@@ -857,20 +843,17 @@ void Channel::MakeNotModerator(WorldPacket* data)
 
 void Channel::MakePasswordChanged(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_PASSWORD_CHANGED_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_PASSWORD_CHANGED_NOTICE, guid);
 }
 
 void Channel::MakeOwnerChanged(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_OWNER_CHANGED_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_OWNER_CHANGED_NOTICE, guid);
 }
 
 void Channel::MakePlayerNotFound(WorldPacket* data, std::string const& name)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_NOT_FOUND_NOTICE);
-    *data << name;
+    MakeNotifyPacket(data, CHAT_PLAYER_NOT_FOUND_NOTICE, ObjectGuid(), ObjectGuid(), name);
 }
 
 void Channel::MakeNotOwner(WorldPacket* data)
@@ -885,40 +868,22 @@ void Channel::MakeChannelOwner(WorldPacket* data)
     if (!sObjectMgr.GetPlayerNameByGUID(m_ownerGuid, name) || name.empty())
         name = "PLAYER_NOT_FOUND";
 
-    MakeNotifyPacket(data, CHAT_CHANNEL_OWNER_NOTICE);
-    *data << ((IsConstant() || !m_ownerGuid) ? "Nobody" : name);
+    MakeNotifyPacket(data, CHAT_CHANNEL_OWNER_NOTICE, ObjectGuid(), ObjectGuid(), (IsConstant() || !m_ownerGuid) ? "Nobody" : name);
 }
 
 void Channel::MakeModeChange(WorldPacket* data, ObjectGuid guid, uint8 oldflags)
 {
-    MakeNotifyPacket(data, CHAT_MODE_CHANGE_NOTICE);
-    *data << ObjectGuid(guid);
-    *data << uint8(oldflags);
-    *data << uint8(GetPlayerFlags(guid));
+    MakeNotifyPacket(data, CHAT_MODE_CHANGE_NOTICE, guid, ObjectGuid(), "", oldflags, GetPlayerFlags(guid));
 }
 
 void Channel::MakeAnnouncementsOn(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_ANNOUNCEMENTS_ON_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_ANNOUNCEMENTS_ON_NOTICE, guid);
 }
 
 void Channel::MakeAnnouncementsOff(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_ANNOUNCEMENTS_OFF_NOTICE);
-    *data << ObjectGuid(guid);
-}
-
-void Channel::MakeModerationOn(WorldPacket* data, ObjectGuid guid)
-{
-    MakeNotifyPacket(data, CHAT_MODERATION_ON_NOTICE);
-    *data << ObjectGuid(guid);
-}
-
-void Channel::MakeModerationOff(WorldPacket* data, ObjectGuid guid)
-{
-    MakeNotifyPacket(data, CHAT_MODERATION_OFF_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_ANNOUNCEMENTS_OFF_NOTICE, guid);
 }
 
 void Channel::MakeMuted(WorldPacket* data)
@@ -928,9 +893,7 @@ void Channel::MakeMuted(WorldPacket* data)
 
 void Channel::MakePlayerKicked(WorldPacket* data, ObjectGuid target, ObjectGuid source)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_KICKED_NOTICE);
-    *data << ObjectGuid(target);
-    *data << ObjectGuid(source);
+    MakeNotifyPacket(data, CHAT_PLAYER_KICKED_NOTICE, source, target);
 }
 
 void Channel::MakeBanned(WorldPacket* data)
@@ -940,34 +903,27 @@ void Channel::MakeBanned(WorldPacket* data)
 
 void Channel::MakePlayerBanned(WorldPacket* data, ObjectGuid target, ObjectGuid source)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_BANNED_NOTICE);
-    *data << ObjectGuid(target);
-    *data << ObjectGuid(source);
+    MakeNotifyPacket(data, CHAT_PLAYER_BANNED_NOTICE, source, target);
 }
 
 void Channel::MakePlayerUnbanned(WorldPacket* data, ObjectGuid target, ObjectGuid source)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_UNBANNED_NOTICE);
-    *data << ObjectGuid(target);
-    *data << ObjectGuid(source);
+    MakeNotifyPacket(data, CHAT_PLAYER_UNBANNED_NOTICE, source, target);
 }
 
 void Channel::MakePlayerNotBanned(WorldPacket* data, std::string const& name)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_NOT_BANNED_NOTICE);
-    *data << name;
+    MakeNotifyPacket(data, CHAT_PLAYER_NOT_BANNED_NOTICE, ObjectGuid(), ObjectGuid(), name);
 }
 
 void Channel::MakePlayerAlreadyMember(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_ALREADY_MEMBER_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_PLAYER_ALREADY_MEMBER_NOTICE, guid);
 }
 
 void Channel::MakeInvite(WorldPacket* data, ObjectGuid guid)
 {
-    MakeNotifyPacket(data, CHAT_INVITE_NOTICE);
-    *data << ObjectGuid(guid);
+    MakeNotifyPacket(data, CHAT_INVITE_NOTICE, guid);
 }
 
 void Channel::MakeInviteWrongFaction(WorldPacket* data)
@@ -985,34 +941,74 @@ void Channel::MakeInvalidName(WorldPacket* data)
     MakeNotifyPacket(data, CHAT_INVALID_NAME_NOTICE);
 }
 
-void Channel::MakeNotModerated(WorldPacket* data)
-{
-    MakeNotifyPacket(data, CHAT_NOT_MODERATED_NOTICE);
-}
-
 void Channel::MakePlayerInvited(WorldPacket* data, std::string const& name)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_INVITED_NOTICE);
-    *data << name;
+    MakeNotifyPacket(data, CHAT_PLAYER_INVITED_NOTICE, ObjectGuid(), ObjectGuid(), name);
 }
 
 void Channel::MakePlayerInviteBanned(WorldPacket* data, std::string const& name)
 {
-    MakeNotifyPacket(data, CHAT_PLAYER_INVITE_BANNED_NOTICE);
-    *data << name;
-}
-
-void Channel::MakeThrottled(WorldPacket* data)
-{
-    MakeNotifyPacket(data, CHAT_THROTTLED_NOTICE);
+    MakeNotifyPacket(data, CHAT_PLAYER_INVITE_BANNED_NOTICE, ObjectGuid(), ObjectGuid(), name);
 }
 
 void Channel::JoinNotify(ObjectGuid guid)
 {
+    // Incremental roster update, mirroring TrinityCore's own JoinNotify()/LeaveNotify(). Built-in
+    // channels announce the newcomer to everyone else via USERLIST_ADD; custom channels broadcast
+    // a USERLIST_UPDATE (same packet, also reaching the newcomer so its own roster includes itself).
+    if (IsConstant())
+    {
+        UserlistAdd userlistAdd;
+        userlistAdd.AddedUserGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+        userlistAdd.ChannelFlags = GetFlags();
+        userlistAdd.UserFlags = GetPlayerFlags(guid);
+        userlistAdd.ChannelId = m_channelId;
+        userlistAdd.ChannelName = m_name;
+
+        WorldPacket data = MakeClassicPacket(userlistAdd);
+        for (const auto& itr : m_players)
+        {
+            if (itr.first == guid)                      // everyone except the newcomer
+                continue;
+            if (PlayerPointer pPlayer = GetPlayer(itr.first))
+                pPlayer->GetSession()->SendPacket(&data);
+        }
+    }
+    else
+    {
+        UserlistUpdate userlistUpdate;
+        userlistUpdate.UpdatedUserGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+        userlistUpdate.ChannelFlags = GetFlags();
+        userlistUpdate.UserFlags = GetPlayerFlags(guid);
+        userlistUpdate.ChannelId = m_channelId;
+        userlistUpdate.ChannelName = m_name;
+
+        WorldPacket data = MakeClassicPacket(userlistUpdate);
+        for (const auto& itr : m_players)
+        {
+            if (PlayerPointer pPlayer = GetPlayer(itr.first))
+                pPlayer->GetSession()->SendPacket(&data);
+        }
+    }
 }
 
 void Channel::LeaveNotify(ObjectGuid guid)
 {
+    // The leaver is already erased from m_players by the caller (Channel::Leave), so this reaches
+    // exactly the remaining members -- the leaver's own client drops the channel on the
+    // SMSG_CHANNEL_NOTIFY_LEFT it got before the erase.
+    UserlistRemove userlistRemove;
+    userlistRemove.RemovedUserGuid = ClassicGuidMapping::ToClassic(guid, realmID);
+    userlistRemove.ChannelFlags = GetFlags();
+    userlistRemove.ChannelId = m_channelId;
+    userlistRemove.ChannelName = m_name;
+
+    WorldPacket data = MakeClassicPacket(userlistRemove);
+    for (const auto& itr : m_players)
+    {
+        if (PlayerPointer pPlayer = GetPlayer(itr.first))
+            pPlayer->GetSession()->SendPacket(&data);
+    }
 }
 
 PlayerPointer Channel::GetPlayer(ObjectGuid guid)

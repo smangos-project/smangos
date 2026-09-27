@@ -2613,7 +2613,7 @@ static uint8 ToModernChatMsgType(ChatMsg type)
 void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const* message, Language language /*= LANG_UNIVERSAL*/, uint32 chatTag /*= CHAT_TAG_NONE*/,
                                   ObjectGuid const& senderGuid /*= ObjectGuid()*/, char const* senderName /*= nullptr*/,
                                   ObjectGuid const& targetGuid /*= ObjectGuid()*/, char const* targetName /*= nullptr*/,
-                                  char const* channelName /*= nullptr*/, uint8 playerRank /*= 0*/)
+                                  char const* channelName /*= nullptr*/, uint8 playerRank /*= 0*/, ClassicGuid const& channelGuid /*= ClassicGuid()*/)
 {
     MANGOS_ASSERT(message);
 
@@ -2646,7 +2646,7 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const
     data.WriteBit(false); // HideChatLog
     data.WriteBit(false); // FakeSenderName
     data.WriteBit(false); // Unused_801
-    data.WriteBit(false); // ChannelGUID present; channel join isn't modernized yet
+    data.WriteBit(!channelGuid.IsEmpty()); // ChannelGUID present
     data.FlushBits();
 
     if (!senderNameStr.empty())
@@ -2657,6 +2657,8 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const
         data.append(reinterpret_cast<uint8 const*>(channelNameStr.data()), channelNameStr.size());
     if (!messageStr.empty())
         data.append(reinterpret_cast<uint8 const*>(messageStr.data()), messageStr.size());
+    if (!channelGuid.IsEmpty())
+        channelGuid.Write(data);
 
     (void)playerRank; // HARDCODE: modern SMSG_CHAT has no per-message channel-rank field
 }

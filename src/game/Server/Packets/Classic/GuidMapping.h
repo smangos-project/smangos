@@ -26,6 +26,10 @@ class ClassicGuidMapping
         // A party guid carries nothing but the group's id.
         static ClassicGuid MakeParty(uint32 groupId);
 
+        // A channel guid: map/zone-specific like a creature's, keyed on the joining player's
+        // current map and zone, with the channel's own id (0 for a custom channel) as the counter.
+        static ClassicGuid MakeChannel(uint32 realmId, uint32 mapId, uint32 zoneId, uint32 channelId);
+
         // nullopt for a guid type the server has no ObjectGuid for (party, guild, ...) or one whose
         // counter doesn't fit the server's guid layout. A classic transport comes back as
         // HIGHGUID_TRANSPORT.

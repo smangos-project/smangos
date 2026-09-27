@@ -38,7 +38,7 @@
 #include "LockedQueue.h"
 #include "Packets/AuctionHouse.h"
 #include "Packets/Battleground.h"
-#include "Packets/Channel.h"
+#include "Packets/ChannelMessages.h"
 #include "Packets/Character.h"
 #include "Packets/Auth.h"
 #include "Packets/CharScreen.h"
@@ -865,22 +865,23 @@ class WorldSession
         void HandleResurrectResponseOpcode(ResurrectResponse const& packet);
         void HandleSummonResponseOpcode(WorldPackets::Misc::SummonResponse const& packet);
 
-        void HandleJoinChannelOpcode(WorldPackets::Channel::JoinChannel const& packet);
-        void HandleLeaveChannelOpcode(WorldPackets::Channel::LeaveChannel const& packet);
-        void HandleChannelListOpcode(WorldPackets::Channel::ChannelList const& packet);
-        void HandleChannelPasswordOpcode(WorldPackets::Channel::ChannelPassword const& packet);
-        void HandleChannelSetOwnerOpcode(WorldPackets::Channel::ChannelSetOwner const& packet);
-        void HandleChannelOwnerOpcode(WorldPackets::Channel::ChannelOwner const& packet);
-        void HandleChannelModeratorOpcode(WorldPackets::Channel::ChannelModerator const& packet);
-        void HandleChannelUnmoderatorOpcode(WorldPackets::Channel::ChannelUnmoderator const& packet);
-        void HandleChannelMuteOpcode(WorldPackets::Channel::ChannelMute const& packet);
-        void HandleChannelUnmuteOpcode(WorldPackets::Channel::ChannelUnmute const& packet);
-        void HandleChannelInviteOpcode(WorldPackets::Channel::ChannelInvite const& packet);
-        void HandleChannelKickOpcode(WorldPackets::Channel::ChannelKick const& packet);
-        void HandleChannelBanOpcode(WorldPackets::Channel::ChannelBan const& packet);
-        void HandleChannelUnbanOpcode(WorldPackets::Channel::ChannelUnban const& packet);
-        void HandleChannelAnnouncementsOpcode(WorldPackets::Channel::ChannelAnnouncements const& packet);
-        void HandleChannelModerateOpcode(WorldPackets::Channel::ChannelModerate const& packet);
+        void HandleJoinChannelOpcode(JoinChannel const& packet);
+        void HandleLeaveChannelOpcode(LeaveChannel const& packet);
+        void HandleChannelListOpcode(ChannelList const& packet);
+        void HandleChannelDisplayListOpcode(ChannelDisplayList const& packet);
+        void HandleChannelPasswordOpcode(ChannelPassword const& packet);
+        void HandleChannelSetOwnerOpcode(ChannelSetOwner const& packet);
+        void HandleChannelOwnerOpcode(ChannelOwner const& packet);
+        void HandleChannelModeratorOpcode(ChannelModerator const& packet);
+        void HandleChannelUnmoderatorOpcode(ChannelUnmoderator const& packet);
+        void HandleChannelInviteOpcode(ChannelInvite const& packet);
+        void HandleChannelKickOpcode(ChannelKick const& packet);
+        void HandleChannelBanOpcode(ChannelBan const& packet);
+        void HandleChannelUnbanOpcode(ChannelUnban const& packet);
+        void HandleChannelAnnouncementsOpcode(ChannelAnnouncements const& packet);
+        void HandleChannelDeclineInviteOpcode(ChannelDeclineInvite const& packet);
+        void HandleChannelSilenceAllOpcode(ChannelSilenceAll const& packet);
+        void HandleChannelUnsilenceAllOpcode(ChannelUnsilenceAll const& packet);
 
         void HandleCompleteCinematic(NullClientPacket const& packet);
         void HandleNextCinematicCamera(NullClientPacket const& packet);

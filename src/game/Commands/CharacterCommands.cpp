@@ -5424,20 +5424,20 @@ bool ChatHandler::HandlePetInfoCommand(char* args)
 
 bool ChatHandler::HandleChannelJoinCommand(char* args)
 {
-    WorldPackets::Channel::JoinChannel pkt;
-    pkt.channelName = args;
-    pkt.channelPassword = "";
+    JoinChannel pkt;
+    pkt.ChannelName = args;
+    pkt.Password = "";
     m_session->HandleJoinChannelOpcode(pkt);
-    PSendSysMessage("Joined channel \"%s\"", pkt.channelName.c_str());
+    PSendSysMessage("Joined channel \"%s\"", pkt.ChannelName.c_str());
     return true;
 }
 
 bool ChatHandler::HandleChannelLeaveCommand(char* args)
 {
-    WorldPackets::Channel::LeaveChannel pkt;
-    pkt.channelName = args;
+    LeaveChannel pkt;
+    pkt.ChannelName = args;
     m_session->HandleLeaveChannelOpcode(pkt);
-    PSendSysMessage("Left channel \"%s\"", pkt.channelName.c_str());
+    PSendSysMessage("Left channel \"%s\"", pkt.ChannelName.c_str());
     return true;
 }
 

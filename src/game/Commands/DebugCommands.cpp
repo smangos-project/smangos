@@ -608,10 +608,10 @@ bool ChatHandler::HandleDebugSendChannelNotifyCommand(char* args)
     if (!ExtractUInt32(&args, code) || code > 255)
         return false;
 
-    auto packet = std::make_unique<WorldPackets::Channel::ChannelNotify>();
-    packet->type = code;
-    packet->channelName = name;
-    m_session->SendPacket(std::move(packet));
+    ChannelNotify packet;
+    packet.Type = uint8(code);
+    packet.ChannelName = name;
+    m_session->SendClassic(packet);
 
     return true;
 }

@@ -58,7 +58,7 @@ Channel *ChannelMgr::GetJoinChannel(std::string const& name, bool allowAreaDepen
     if (channels.find(wname) == channels.end())
     {
         ChatChannelsEntry const* ch = GetChannelEntryFor(name);
-        if (!allowAreaDependantChans && ch && ch->flags & Channel::CHANNEL_DBC_FLAG_ZONE_DEP)
+        if (!allowAreaDependantChans && ch && ch->flags & Channel::CHANNEL_DBC_FLAG_ZONE_BASED)
             return nullptr;
         Channel *nchan = new Channel(name);
         channels[wname] = nchan;

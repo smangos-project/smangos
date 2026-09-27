@@ -388,7 +388,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage const
                     }
 
                     // Public channels restrictions
-                    if (!chn->HasFlag(Channel::CHANNEL_FLAG_CUSTOM))
+                    if (!chn->IsCustom())
                     {
                         if (HasTrialRestrictions())
                         {
@@ -432,7 +432,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage const
                     chn->Say(playerPointer->GetObjectGuid(), packet.message.c_str(), packet.lang);
                     SetLastPubChanMsgTime(time(nullptr));
 
-                    if (packet.lang != LANG_ADDON && chn->HasFlag(Channel::ChannelFlags::CHANNEL_FLAG_GENERAL))
+                    if (packet.lang != LANG_ADDON && chn->IsGeneralModerated())
                         if (AntispamInterface *a = sAnticheatMgr->GetAntispam())
                             a->addMessage(packet.message, packet.type, GetPlayerPointer(), nullptr);
                 }

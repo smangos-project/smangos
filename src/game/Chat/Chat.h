@@ -25,6 +25,7 @@
 #include "Common.h"
 #include "SharedDefines.h"
 #include "ObjectGuid.h"
+#include "Packets/Classic/Guid.h"
 #include <memory>
 
 struct AreaTriggerTeleport;
@@ -160,12 +161,13 @@ class ChatHandler
         * \param char const* targetName        : Often null, but needed for type *MONSTER* or *BATTLENET or *BATTLEGROUND*
         * \param char const* channelName       : Required only for CHAT_MSG_CHANNEL
         * \param uint8 playerRank              : Used only for Defensive Channels (Value over 0 will show rank name before character name in channel)
+        * \param ClassicGuid const& channelGuid : The joined channel's guid; CHAT_MSG_CHANNEL only, empty for one the modern client hasn't joined
         **/
         static void BuildChatPacket(
             WorldPacket& data, ChatMsg msgtype, char const* message, Language language = LANG_UNIVERSAL, uint32 chatTag = CHAT_TAG_NONE,
             ObjectGuid const& senderGuid = ObjectGuid(), char const* senderName = nullptr,
             ObjectGuid const& targetGuid = ObjectGuid(), char const* targetName = nullptr,
-            char const* channelName = nullptr, uint8 playerRank = 0);
+            char const* channelName = nullptr, uint8 playerRank = 0, ClassicGuid const& channelGuid = ClassicGuid());
     protected:
         explicit ChatHandler() : m_session(nullptr), m_sentErrorMessage(false) {}      // for CLI subclass
 
