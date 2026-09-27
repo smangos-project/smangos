@@ -1,0 +1,5 @@
+COLUMNS
+int ID
+
+BUILD 1.0.0.1
+$id$ID<32>[oops]

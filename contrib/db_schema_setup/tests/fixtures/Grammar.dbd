@@ -1,0 +1,18 @@
+COLUMNS
+int ID
+int<Map::ID> ContinentID
+string Name?
+locstring Name_lang // display name
+float Weight
+int Flags
+
+LAYOUT AABBCCDD, 11223344
+BUILD 1.0.0.100-1.0.0.200
+BUILD 1.0.1.300, 1.0.1.301
+COMMENT test version block
+$noninline,id$ID<32>
+ContinentID<u16>
+Name
+Name_lang
+Weight // in kg
+Flags<u32>[2]
