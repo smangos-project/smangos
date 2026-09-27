@@ -3,6 +3,7 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Group.h"
+#include "TradeData.h"
 #include "PlayerBotMgr.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -3354,23 +3355,29 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             UpdateVisualHonorRankBasedOnItems();
             break;
         }
-        case SMSG_TRADE_STATUS:
+        case CLASSIC_SMSG_TRADE_STATUS:
         {
             if (!me)
                 return;
 
-            uint32 status = *((uint32*)(*packet).contents());
-            if (status == TRADE_STATUS_BEGIN_TRADE)
+            ByteBuffer body;
+            body.append(packet->contents(), packet->size());
+            TradeStatusUpdate notice;
+            if (!notice.Read(body))
+                return;
+
+            if (notice.Status == TRADE_STATUS_BEGIN_TRADE)
             {
-                auto data = std::make_unique<NullClientPacket>(CMSG_BEGIN_TRADE);
+                me->GetSession()->QueuePacket(std::make_unique<ClassicClient<BeginTrade>>());
+            }
+            else if (notice.Status == TRADE_STATUS_TRADE_ACCEPT)
+            {
+                auto data = std::make_unique<ClassicClient<AcceptTrade>>();
+                if (TradeData* trade = me->GetTradeData())
+                    data->Body.StateIndex = trade->GetTraderData()->GetServerStateIndex();
                 me->GetSession()->QueuePacket(std::move(data));
             }
-            else if (status == TRADE_STATUS_TRADE_ACCEPT)
-            {
-                auto data = std::make_unique<WorldPackets::Trade::AcceptTrade>();
-                me->GetSession()->QueuePacket(std::move(data));
-            }
-            else if (status == TRADE_STATUS_TRADE_COMPLETE)
+            else if (notice.Status == TRADE_STATUS_TRADE_COMPLETE)
             {
                 EquipOrUseNewItem();
                 UpdateVisualHonorRankBasedOnItems();

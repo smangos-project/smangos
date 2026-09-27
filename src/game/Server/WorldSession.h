@@ -75,7 +75,7 @@
 #include "Packets/Spell.h"
 #include "Packets/TaxiMessages.h"
 #include "Packets/VendorMessages.h"
-#include "Packets/Trade.h"
+#include "Packets/TradeMessages.h"
 #include "Packets/WorldTransfer.h"
 
 #include <array>
@@ -754,16 +754,16 @@ class WorldSession
         void HandleDuelAccepted(ClassicGuid const& arbiter);
         void HandleDuelCancelled();
 
-        void HandleAcceptTradeOpcode(WorldPackets::Trade::AcceptTrade const& packet);
-        void HandleBeginTradeOpcode(NullClientPacket const& packet);
-        void HandleBusyTradeOpcode(NullClientPacket const& packet);
-        void HandleCancelTradeOpcode(NullClientPacket const& packet);
-        void HandleClearTradeItemOpcode(WorldPackets::Trade::ClearTradeItem const& packet);
-        void HandleIgnoreTradeOpcode(NullClientPacket const& packet);
-        void HandleInitiateTradeOpcode(WorldPackets::Trade::InitiateTrade const& packet);
-        void HandleSetTradeGoldOpcode(WorldPackets::Trade::SetTradeGold const& packet);
-        void HandleSetTradeItemOpcode(WorldPackets::Trade::SetTradeItem const& packet);
-        void HandleUnacceptTradeOpcode(NullClientPacket const& packet);
+        void HandleAcceptTradeOpcode(AcceptTrade const& packet);
+        void HandleBeginTradeOpcode(BeginTrade const& packet);
+        void HandleBusyTradeOpcode(BusyTrade const& packet);
+        void HandleCancelTradeOpcode(CancelTrade const& packet);
+        void HandleClearTradeItemOpcode(ClearTradeItem const& packet);
+        void HandleIgnoreTradeOpcode(IgnoreTrade const& packet);
+        void HandleInitiateTradeOpcode(InitiateTrade const& packet);
+        void HandleSetTradeGoldOpcode(SetTradeGold const& packet);
+        void HandleSetTradeItemOpcode(SetTradeItem const& packet);
+        void HandleUnacceptTradeOpcode(UnacceptTrade const& packet);
 
         void HandleAuctionHelloOpcode(WorldPackets::AuctionHouse::AuctionHello const& packet);
         void HandleAuctionListItems(WorldPackets::AuctionHouse::AuctionListItems const& packet);

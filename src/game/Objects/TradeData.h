@@ -38,7 +38,8 @@ class TradeData
 public:                                                 // constructors
     TradeData(Player* player, Player* trader) :
         m_player(player), m_trader(trader), m_accepted(false), m_acceptProccess(false),
-        m_money(0), m_spell(0), m_lastModificationTime(0), m_scamPreventionDelay(0) {}
+        m_money(0), m_spell(0), m_lastModificationTime(0), m_scamPreventionDelay(0),
+        m_clientStateIndex(1), m_serverStateIndex(1) {}
 
 public:                                                 // access functions
 
@@ -66,6 +67,13 @@ public:                                                 // access functions
 
     time_t GetScamPreventionDelay() const { return m_scamPreventionDelay; }
     void SetScamPreventionDelay(time_t t) { m_scamPreventionDelay = t; }
+
+    // The client echoes the server index of the partner's last window update when it accepts,
+    // so an accept made before a late change is refused.
+    uint32 GetClientStateIndex() const { return m_clientStateIndex; }
+    void UpdateClientStateIndex() { ++m_clientStateIndex; }
+    uint32 GetServerStateIndex() const { return m_serverStateIndex; }
+    void UpdateServerStateIndex();
 public:                                                 // access functions
 
     void SetItem(TradeSlots slot, Item* item);
@@ -98,6 +106,9 @@ private:                                                // fields
 
     time_t     m_lastModificationTime;                  // to prevent scam (change gold before the other validates)
     time_t     m_scamPreventionDelay;                    // to prevent scam, set a delay in milliseconds (CANNOT be less than or equal to 10ms) before accepting trade.
+
+    uint32     m_clientStateIndex;                      // counts the changes m_player made from its window
+    uint32     m_serverStateIndex;                      // changes to a fresh random value whenever this side of the window changes
 };
 
 #endif

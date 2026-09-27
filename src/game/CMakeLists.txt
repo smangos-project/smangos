@@ -223,7 +223,6 @@ set (game_SRCS
     Server/Packets/Query.cpp
     Server/Packets/Skill.cpp
     Server/Packets/Spell.cpp
-    Server/Packets/Trade.cpp
     Server/WorldSession.cpp
     Server/WorldSocket.cpp
     Server/WorldSocketMgr.cpp
@@ -487,7 +486,7 @@ set (game_SRCS
     Server/Packets/Spell.h
     Server/Packets/TaxiMessages.h
     Server/Packets/VendorMessages.h
-    Server/Packets/Trade.h
+    Server/Packets/TradeMessages.h
     Server/WorldPacket.h
     Server/WorldSession.h
     Server/WorldSocket.h
