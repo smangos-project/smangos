@@ -664,9 +664,9 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GUILD_SET_OFFICER_NOTE,       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_LOGIN_VERIFY_WORLD,           UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_CLEAR_EXPLORATION,            UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_SEND_MAIL,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleSendMail);
+    INVALID_PACKET(CMSG_SEND_MAIL,                    UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SEND_MAIL_RESULT,             UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_GET_MAIL_LIST,                STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleGetMailList);
+    INVALID_PACKET(CMSG_GET_MAIL_LIST,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_MAIL_LIST_RESULT,             UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_BATTLEFIELD_LIST,             STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleBattlefieldListOpcode);
     INVALID_PACKET(SMSG_BATTLEFIELD_LIST,             UnhandleReason::SendByServer);
@@ -675,14 +675,14 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_BATTLEFIELD_LOSE,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_TAXICLEARNODE,                UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_TAXIENABLENODE,               UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_ITEM_TEXT_QUERY,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleItemTextQuery);
+    INVALID_PACKET(CMSG_ITEM_TEXT_QUERY,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_ITEM_TEXT_QUERY_RESPONSE,     UnhandleReason::SendByServer);
-    DEFINE_HANDLER(CMSG_MAIL_TAKE_MONEY,              STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMailTakeMoney);
-    DEFINE_HANDLER(CMSG_MAIL_TAKE_ITEM,               STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD, /*COD*/ &WorldSession::HandleMailTakeItem);
-    DEFINE_HANDLER(CMSG_MAIL_MARK_AS_READ,            STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMailMarkAsRead);
-    DEFINE_HANDLER(CMSG_MAIL_RETURN_TO_SENDER,        STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleMailReturnToSender);
-    DEFINE_HANDLER(CMSG_MAIL_DELETE,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMailDelete);
-    DEFINE_HANDLER(CMSG_MAIL_CREATE_TEXT_ITEM,        STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleMailCreateTextItem);
+    INVALID_PACKET(CMSG_MAIL_TAKE_MONEY,              UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_MAIL_TAKE_ITEM,               UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_MAIL_MARK_AS_READ,            UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_MAIL_RETURN_TO_SENDER,        UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_MAIL_DELETE,                  UnhandleReason::Unhandled);
+    INVALID_PACKET(CMSG_MAIL_CREATE_TEXT_ITEM,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_SPELLLOGMISS,                 UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELLLOGEXECUTE,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DEBUGAURAPROC,                UnhandleReason::SendByServer);
@@ -744,7 +744,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_RESET_FACTION_CHEAT,          UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOSTORE_BANK_ITEM,          UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOBANK_ITEM,                UnhandleReason::Unhandled);
-    DEFINE_HANDLER(MSG_QUERY_NEXT_MAIL_TIME,          STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleQueryNextMailTime);
+    INVALID_PACKET(MSG_QUERY_NEXT_MAIL_TIME,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_RECEIVED_MAIL,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_RAID_GROUP_ONLY,              UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_DURABILITY_CHEAT,         UnhandleReason::Unhandled);
@@ -1227,6 +1227,16 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_WHO_IS, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleWhoisOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_REQUEST_ACCOUNT_DATA, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleRequestAccountData);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_UPDATE_ACCOUNT_DATA, STATUS_LOGGEDIN_OR_RECENTLY_LOGGEDOUT, PACKET_PROCESS_WORLD, &WorldSession::HandleUpdateAccountData);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SEND_MAIL, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSendMailOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_GET_LIST, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleGetMailListOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_TAKE_MONEY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMailTakeMoneyOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_TAKE_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleMailTakeItemOpcode); // COD
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_MARK_AS_READ, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMailMarkAsReadOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_RETURN_TO_SENDER, STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleMailReturnToSenderOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_DELETE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMailDeleteOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_MAIL_CREATE_TEXT_ITEM, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleMailCreateTextItemOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_NEXT_MAIL_TIME, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleQueryNextMailTimeOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ITEM_TEXT_QUERY, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleItemTextQueryOpcode);
 
     return list;
 }

@@ -60,7 +60,7 @@
 #include "Packets/Item.h"
 #include "Packets/ItemMessages.h"
 #include "Packets/LootMessages.h"
-#include "Packets/Mail.h"
+#include "Packets/MailMessages.h"
 #include "Packets/Misc.h"
 #include "Packets/MiscMessages.h"
 #include "Packets/MountSpecialAnim.h"
@@ -770,19 +770,19 @@ class WorldSession
         void HandleAuctionListOwnerItems(WorldPackets::AuctionHouse::AuctionListOwnerItems const& packet);
         void HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlaceBid const& packet);
 
-        void HandleGetMailList(WorldPackets::Mail::GetMailList const& packet);
-        void HandleSendMail(WorldPackets::Mail::SendMail const& packet);
+        void HandleGetMailListOpcode(GetMailList const& packet);
+        void HandleSendMailOpcode(SendMail const& packet);
         class AsyncMailSendRequest;
         void HandleSendMailRequest(AsyncMailSendRequest* req);
         void HandleSendMailCallback(AsyncMailSendRequest* req);
-        void HandleMailTakeMoney(WorldPackets::Mail::MailTakeMoney const& packet);
-        void HandleMailTakeItem(WorldPackets::Mail::MailTakeItem const& packet);
-        void HandleMailMarkAsRead(WorldPackets::Mail::MailMarkAsRead const& packet);
-        void HandleMailReturnToSender(WorldPackets::Mail::MailReturnToSender const& packet);
-        void HandleMailDelete(WorldPackets::Mail::MailDelete const& packet);
-        void HandleItemTextQuery(WorldPackets::Misc::ItemTextQuery const& packet);
-        void HandleMailCreateTextItem(WorldPackets::Mail::MailCreateTextItem const& packet);
-        void HandleQueryNextMailTime(NullClientPacket const& packet);
+        void HandleMailTakeMoneyOpcode(MailTakeMoney const& packet);
+        void HandleMailTakeItemOpcode(MailTakeItem const& packet);
+        void HandleMailMarkAsReadOpcode(MailMarkAsRead const& packet);
+        void HandleMailReturnToSenderOpcode(MailReturnToSender const& packet);
+        void HandleMailDeleteOpcode(MailDelete const& packet);
+        void HandleItemTextQueryOpcode(ItemTextQuery const& packet);
+        void HandleMailCreateTextItemOpcode(MailCreateTextItem const& packet);
+        void HandleQueryNextMailTimeOpcode(QueryNextMailTime const& packet);
         void HandleCancelChanneling(CancelChannelling const& packet);
 
         void HandleSplitItemOpcode(SplitItem const& packet);
@@ -988,6 +988,10 @@ class WorldSession
 
         Player* _player;
         ObjectGuid m_currentPlayerGuid;
+        // The mailbox last opened via a successful GetMailList -- the modern wire drops the
+        // mailbox guid from MailReturnToSender, unlike every other mail opcode, so there is nothing
+        // to re-check proximity against without caching it here.
+        ObjectGuid m_currentMailboxGuid;
         ObjectGuid m_clientMoverGuid;
         uint32 m_moveRejectTime;
         time_t m_createTime;                                // when session was created

@@ -108,17 +108,6 @@ namespace WorldPackets { namespace Misc
         void ReadFromWorldPacket(WorldPacket& recv_data) override;
     };
 
-    class ItemTextQuery final : public ClientPacket
-    {
-    public:
-        uint32 itemTextId = 0;
-        uint32 mailId = 0;
-        uint32 unk = 0;
-
-        explicit ItemTextQuery() : ClientPacket(CMSG_ITEM_TEXT_QUERY) {}
-        void ReadFromWorldPacket(WorldPacket& recv_data) override;
-    };
-
     class SummonResponse final : public ClientPacket
     {
     public:

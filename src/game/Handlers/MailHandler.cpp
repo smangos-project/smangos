@@ -41,25 +41,32 @@
 #include "AccountMgr.h"
 #include "TransactionLog.h"
 #include "Database/DatabaseImpl.h"
+#include "Packets/MailMessages.h"
+#include "Packets/Classic/GuidMapping.h"
+#include <set>
 
 void WorldSession::SendMailResult(uint32 mailId, MailResponseType mailAction, MailResponseResult mailError, uint32 equipError, uint32 item_guid, uint32 item_count)
 {
-    auto packet = std::make_unique<WorldPackets::Mail::SendMailResult>();
-    packet->mailId = mailId;
-    packet->mailAction = mailAction;
-    packet->mailError = mailError;
-    packet->equipError = equipError;
-    packet->itemGuidLow = item_guid;
-    packet->itemCount = item_count;
-    SendPacket(std::move(packet));
+    MailCommandResult packet;
+    packet.MailId = mailId;
+    packet.Command = mailAction;
+    packet.ErrorCode = mailError;
+    if (mailError == MAIL_ERR_EQUIP_ERROR)
+        packet.BagResult = equipError;
+    else if (mailAction == MAIL_ITEM_TAKEN)
+    {
+        packet.AttachId = item_guid;
+        packet.QtyInInventory = item_count;
+    }
+    SendClassic(packet);
 }
 
 void WorldSession::SendNewMail()
 {
     // deliver undelivered mail
-    WorldPacket data(SMSG_RECEIVED_MAIL, 4);
-    data << (uint32)0;
-    SendPacket(&data);
+    ReceivedMail packet;
+    packet.Delay = 0.0f;
+    SendClassic(packet);
 }
 
 bool WorldSession::CheckMailBox(ObjectGuid guid)
@@ -126,9 +133,10 @@ public:
  *
  * @param recv_data the WorldPacket containing the data sent by the client.
  */
-void WorldSession::HandleSendMail(WorldPackets::Mail::SendMail const& packet)
+void WorldSession::HandleSendMailOpcode(SendMail const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
     {
         SendMailResult(0, MAIL_SEND, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -140,16 +148,32 @@ void WorldSession::HandleSendMail(WorldPackets::Mail::SendMail const& packet)
         return;
     }
 
+    // This engine only ever attaches a single item per mail (MAX_MAIL_ITEMS); a real classic
+    // client never sends more than that either.
+    if (packet.Attachments.size() > MAX_MAIL_ITEMS)
+    {
+        SendMailResult(0, MAIL_SEND, MAIL_ERR_INTERNAL_ERROR);
+        return;
+    }
+
+    if (packet.SendMoney < 0 || packet.Cod < 0)
+    {
+        SendMailResult(0, MAIL_SEND, MAIL_ERR_INTERNAL_ERROR);
+        return;
+    }
+
     std::unique_ptr<WorldSession::AsyncMailSendRequest> req = std::make_unique<WorldSession::AsyncMailSendRequest>();
     req->accountId = GetAccountId();
     req->senderGuid = GetMasterPlayer()->GetObjectGuid();
 
-    req->receiverName = packet.receiverName;
-    req->subject = packet.subject;
-    req->body = packet.body;
-    req->itemGuid = packet.itemGuid;
-    req->money = packet.money;
-    req->COD = packet.COD;
+    req->receiverName = packet.Target;
+    req->subject = packet.Subject;
+    req->body = packet.Body;
+    if (!packet.Attachments.empty())
+        if (nonstd::optional<ObjectGuid> const itemGuid = ClassicGuidMapping::FromClassic(packet.Attachments[0].ItemGuid))
+            req->itemGuid = *itemGuid;
+    req->money = uint32(packet.SendMoney);
+    req->COD = uint32(packet.Cod);
 
     // packet read complete, now do check
     if (req->subject.size() > 64)
@@ -432,15 +456,16 @@ void WorldSession::HandleSendMailCallback(WorldSession::AsyncMailSendRequest* re
  * @param recv_data the packet containing information about the mail the player read.
  *
  */
-void WorldSession::HandleMailMarkAsRead(WorldPackets::Mail::MailMarkAsRead const& packet)
+void WorldSession::HandleMailMarkAsReadOpcode(MailMarkAsRead const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
         return;
 
     MasterPlayer* pl = GetMasterPlayer();
     ASSERT(pl);
 
-    if (Mail *m = pl->GetMail(packet.mailId))
+    if (Mail *m = pl->GetMail(uint32(packet.MailId)))
     {
         if (m->state == MAIL_STATE_DELETED)
         {
@@ -466,27 +491,28 @@ void WorldSession::HandleMailMarkAsRead(WorldPackets::Mail::MailMarkAsRead const
  * @param recv_data The packet containing information about the mail being deleted.
  *
  */
-void WorldSession::HandleMailDelete(WorldPackets::Mail::MailDelete const& packet)
+// No mailbox proximity check -- the real wire carries no mailbox guid for this opcode, and
+// TrinityCore's own HandleMailDelete never checks it either (GetMail(mailId) is already scoped to
+// the caller's own mail).
+void WorldSession::HandleMailDeleteOpcode(MailDelete const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
-        return;
-
     MasterPlayer* pl = GetMasterPlayer();
     ASSERT(pl);
     pl->MarkMailsUpdated();
 
-    if (Mail *m = pl->GetMail(packet.mailId))
+    uint32 const mailId = uint32(packet.MailId);
+    if (Mail *m = pl->GetMail(mailId))
     {
         // delete shouldn't show up for COD mails
         if (m->COD)
         {
-            SendMailResult(packet.mailId, MAIL_DELETED, MAIL_ERR_INTERNAL_ERROR);
+            SendMailResult(mailId, MAIL_DELETED, MAIL_ERR_INTERNAL_ERROR);
             return;
         }
 
         m->state = MAIL_STATE_DELETED;
     }
-    SendMailResult(packet.mailId, MAIL_DELETED, MAIL_OK);
+    SendMailResult(mailId, MAIL_DELETED, MAIL_OK);
 }
 /**
  * Handles the Packet sent by the client when returning a mail to sender.
@@ -497,28 +523,33 @@ void WorldSession::HandleMailDelete(WorldPackets::Mail::MailDelete const& packet
  * @param recv_data The packet containing information about the mail being returned.
  *
  */
-void WorldSession::HandleMailReturnToSender(WorldPackets::Mail::MailReturnToSender const& packet)
+// The real wire carries no mailbox guid for this opcode -- m_currentMailboxGuid (set by a prior
+// GetMailList) stands in for the proximity check every other mail opcode gets from its own field.
+void WorldSession::HandleMailReturnToSenderOpcode(MailReturnToSender const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    if (m_currentMailboxGuid.IsEmpty() || !CheckMailBox(m_currentMailboxGuid))
         return;
 
     MasterPlayer* pl = GetMasterPlayer();
     ASSERT(pl);
-    Mail *m = pl->GetMail(packet.mailId);
-    if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
+    uint32 const mailId = uint32(packet.MailId);
+    Mail *m = pl->GetMail(mailId);
+    nonstd::optional<ObjectGuid> const senderGuid = ClassicGuidMapping::FromClassic(packet.SenderGuid);
+    if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr) ||
+        !senderGuid || m->sender != senderGuid->GetCounter())
     {
-        SendMailResult(packet.mailId, MAIL_RETURNED_TO_SENDER, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
     // we can return mail now
     // so firstly delete the old one
     CharacterDatabase.BeginTransaction(pl->GetGUIDLow());
-    CharacterDatabase.PExecute("DELETE FROM `mail` WHERE `id` = '%u'", packet.mailId);
+    CharacterDatabase.PExecute("DELETE FROM `mail` WHERE `id` = '%u'", mailId);
     // needed?
-    CharacterDatabase.PExecute("DELETE FROM `mail_items` WHERE `mail_id` = '%u'", packet.mailId);
+    CharacterDatabase.PExecute("DELETE FROM `mail_items` WHERE `mail_id` = '%u'", mailId);
     CharacterDatabase.CommitTransaction();
-    pl->RemoveMail(packet.mailId);
+    pl->RemoveMail(mailId);
 
     // send back only to existing players and simple drop for other cases
     if (m->messageType == MAIL_NORMAL && m->sender)
@@ -544,50 +575,52 @@ void WorldSession::HandleMailReturnToSender(WorldPackets::Mail::MailReturnToSend
     }
 
     delete m; // we can deallocate old mail
-    SendMailResult(packet.mailId, MAIL_RETURNED_TO_SENDER, MAIL_OK);
+    SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, MAIL_OK);
 }
 
 /**
  * Handles the packet sent by the client when taking an item from the mail.
  */
-void WorldSession::HandleMailTakeItem(WorldPackets::Mail::MailTakeItem const& packet)
+void WorldSession::HandleMailTakeItemOpcode(MailTakeItem const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
         return;
 
     MasterPlayer* pl = GetMasterPlayer();
     Player* loadedPlayer = GetPlayer();
     ASSERT(pl);
 
-    Mail* m = pl->GetMail(packet.mailId);
+    uint32 const mailId = uint32(packet.MailId);
+    Mail* m = pl->GetMail(mailId);
     if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
     {
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
-    // Prevent spoofed packet accessing mail that doesn't actually have items
-    if (!m->HasItems() || m->items.empty())
+    // Prevent spoofed packet accessing mail that doesn't actually have items, or naming an item
+    // the mail doesn't actually carry.
+    if (!m->HasItems() || m->items.empty() || m->items[0].itemGuid != uint32(packet.AttachId))
     {
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
     // prevent cheating with skip client money check
     if (loadedPlayer->GetMoney() < m->COD)
     {
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
         return;
     }
 
     // Do not allow GMs to send COD
     if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && GetSecurity() > SEC_PLAYER && m->COD)
     {
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
         return;
     }
 
-    uint32 itemId = m->items[0].itemId;
     uint32 itemGuid = m->items[0].itemGuid;
 
     Item *it = pl->GetMItem(itemGuid);
@@ -668,38 +701,40 @@ void WorldSession::HandleMailTakeItem(WorldPackets::Mail::MailTakeItem const& pa
         pl->SaveMails();
         CharacterDatabase.CommitTransaction();
 
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemId, count);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemGuid, count);
     }
     else
-        SendMailResult(packet.mailId, MAIL_ITEM_TAKEN, MAIL_ERR_EQUIP_ERROR, msg);
+        SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_EQUIP_ERROR, msg);
 }
 /**
  * Handles the packet sent by the client when taking money from the mail.
  */
-void WorldSession::HandleMailTakeMoney(WorldPackets::Mail::MailTakeMoney const& packet)
+void WorldSession::HandleMailTakeMoneyOpcode(MailTakeMoney const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
         return;
 
     MasterPlayer* pl = GetMasterPlayer();
     Player* loadedPlayer = GetPlayer();
     ASSERT(pl);
 
-    Mail* m = pl->GetMail(packet.mailId);
+    uint32 const mailId = uint32(packet.MailId);
+    Mail* m = pl->GetMail(mailId);
     if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
     {
-        SendMailResult(packet.mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
     // prevent losing money due to reaching gold cap
     if (int64(loadedPlayer->GetMoney()) + int64(m->money) > int64(loadedPlayer->GetMaxMoney()))
     {
-        SendMailResult(packet.mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
-    SendMailResult(packet.mailId, MAIL_MONEY_TAKEN, MAIL_OK);
+    SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_OK);
 
     loadedPlayer->LogModifyMoney(m->money, "Mail", ObjectGuid(HIGHGUID_PLAYER, m->sender));
     m->money = 0;
@@ -717,109 +752,79 @@ void WorldSession::HandleMailTakeMoney(WorldPackets::Mail::MailTakeMoney const& 
  * Handles the packet sent by the client when requesting the current mail list.
  * It will send a list of all available mails in the players mailbox to the client.
  */
-void WorldSession::HandleGetMailList(WorldPackets::Mail::GetMailList const& packet)
+void WorldSession::HandleGetMailListOpcode(GetMailList const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
         return;
+    m_currentMailboxGuid = *mailboxGuid;
 
     MasterPlayer* pl = GetMasterPlayer();
     ASSERT(pl);
 
-    constexpr uint32 averageSizePerMail =
-        sizeof(uint32) /*Message Id*/ +
-        sizeof(uint8) /*Message Type*/ +
-        sizeof(uint64) /*Sender Guid*/ +
-        32 /*Subject (max 64)*/ +
-        sizeof(uint32) /*Item Text Id*/ +
-        sizeof(uint32) /*Unknown*/ +
-        sizeof(uint32) /*Stationery*/ +
-        sizeof(uint32) /*Item Entry*/ +
-        sizeof(uint32) /*Item Enchantment Id*/ +
-        sizeof(uint32) /*Item Random Property Id*/ +
-        sizeof(uint32) /*Item Suffix Factor*/ +
-        sizeof(uint8) /*Item Count*/ +
-        sizeof(uint32) /*Item Spell Charges*/ +
-        sizeof(uint32) /*Item Max Durability*/ +
-        sizeof(uint32) /*Item Durability*/ +
-        sizeof(uint32) /*Money*/ +
-        sizeof(uint32) /*Cod*/ +
-        sizeof(uint32) /*Checked*/ +
-        sizeof(float) /*Expire Time*/
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        + sizeof(uint32) /*Mail Template Id*/
-#endif
-        ;
+    MailListResult response;
+    time_t const cur_time = time(nullptr);
 
-    WorldPacket data(SMSG_MAIL_LIST_RESULT, 1 + std::min(pl->GetMailSize(), 253u) * averageSizePerMail);
-    data << uint8(0);                                       // mail's count
-    time_t cur_time = time(nullptr);
-
-    uint32 mailsCount = 0;                                  // real send to client mails amount
     for (PlayerMails::iterator itr = pl->GetMailBegin(); itr != pl->GetMailEnd(); ++itr)
     {
-        // packet send mail count as uint8, prevent overflow
-        if (mailsCount >= 254)
-            break;
+        Mail const* mail = *itr;
 
         // skip deleted or not delivered (deliver delay not expired) mails
-        if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time || cur_time > (*itr)->expire_time)
+        if (mail->state == MAIL_STATE_DELETED || cur_time < mail->deliver_time || cur_time > mail->expire_time)
             continue;
 
-        data << uint32((*itr)->messageID);                  // Message ID
-        data << uint8((*itr)->messageType);                 // Message Type
-
-        switch ((*itr)->messageType)
+        // the client shows at most 100 at a time; TotalNumRecords tells it there are more to page in
+        if (response.Mails.size() < 100)
         {
-            case MAIL_NORMAL:                               // sender guid
-                data << ObjectGuid(HIGHGUID_PLAYER, (*itr)->sender);
-                break;
-            case MAIL_CREATURE:
-            case MAIL_GAMEOBJECT:
-            case MAIL_AUCTION:
-                data << (uint32)(*itr)->sender;             // creature/gameobject entry, auction id
-                break;
-            case MAIL_ITEM:                                 // item entry (?) sender = "Unknown", NYI
-                break;
+            MailListEntry entry;
+            entry.MailId = mail->messageID;
+            entry.SenderType = mail->messageType;
+            switch (mail->messageType)
+            {
+                case MAIL_NORMAL:
+                    entry.SenderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, mail->sender), realmID);
+                    break;
+                case MAIL_CREATURE:
+                case MAIL_GAMEOBJECT:
+                case MAIL_AUCTION:
+                    entry.AltSenderId = int32(mail->sender);
+                    break;
+                default: // MAIL_ITEM: sender = "Unknown", NYI, matches the legacy handler
+                    break;
+            }
+            entry.Cod = mail->COD;
+            entry.StationeryId = mail->stationery;
+            entry.SentMoney = mail->money;
+            entry.Flags = mail->checked;
+            entry.DaysLeft = float(mail->expire_time - cur_time) / float(DAY);
+            entry.MailTemplateId = mail->mailTemplateId;
+            entry.Subject = mail->subject;
+            entry.Body = mail->itemTextId ? sObjectMgr.GetItemText(mail->itemTextId) : std::string();
+
+            // 1.12.1 can have only a single item
+            if (Item* item = !mail->items.empty() ? pl->GetMItem(mail->items[0].itemGuid) : nullptr)
+            {
+                MailAttachedItem att;
+                att.Position = 0;
+                att.AttachId = item->GetGUIDLow();
+                att.Item.ItemId = int32(item->GetEntry());
+                att.Item.RandomPropertiesSeed = int32(item->GetItemSuffixFactor());
+                att.Item.RandomPropertiesId = int32(item->GetItemRandomPropertyId());
+                att.Count = int32(item->GetCount());
+                att.Charges = int32(item->GetSpellCharges());
+                att.MaxDurability = item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
+                att.Durability = int32(item->GetUInt32Value(ITEM_FIELD_DURABILITY));
+                att.Unlocked = true; // this engine has no lock mechanic on a mail attachment
+                entry.Attachments.push_back(att);
+            }
+
+            response.Mails.push_back(entry);
         }
 
-        data << (*itr)->subject;                            // Subject string - once 00, when mail type = 3
-        data << uint32((*itr)->itemTextId);                 // sure about this
-        data << uint32(0);                                  // package (Package.dbc)
-        data << uint32((*itr)->stationery);                 // stationery (Stationery.dbc)
-
-        // 1.12.1 can have only single item
-        Item *item = !(*itr)->items.empty() ? pl->GetMItem((*itr)->items[0].itemGuid) : nullptr;
-
-        if (item)
-        {
-            data << uint32(item->GetEntry());
-            data << uint32(item->GetEnchantmentId((EnchantmentSlot)PERM_ENCHANTMENT_SLOT)); // permanent enchantment
-            data << uint32(item->GetItemRandomPropertyId());                                // can be negative
-            data << uint32(item->GetItemSuffixFactor());                                    // unk
-            data << uint8(item->GetCount());                                                // stack count
-            data << uint32(item->GetSpellCharges());                                        // charges
-            data << uint32(item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY));                 // durability max
-            data << uint32(item->GetUInt32Value(ITEM_FIELD_DURABILITY));                    // durability current
-        }
-        else
-        {
-            data << uint32(0) << uint32(0) << uint32(0) << uint32(0) << uint8(0) << uint32(0) << uint32(0) << uint32(0);
-        }
-
-        data << uint32((*itr)->money);                      // copper
-        data << uint32((*itr)->COD);                        // Cash on delivery
-        data << uint32((*itr)->checked);                    // flags
-        data << float(float((*itr)->expire_time - time(nullptr)) / float(DAY));// Time
-
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-        data << uint32((*itr)->mailTemplateId);             // mail template (MailTemplate.dbc)
-#endif
-
-        mailsCount += 1;
+        ++response.TotalNumRecords;
     }
 
-    data.put<uint8>(0, mailsCount);                         // set real send mails to client
-    SendPacket(&data);
+    SendClassic(response);
 
     // recalculate m_nextMailDelivereTime and unReadMails
     pl->UpdateNextMailTimeAndUnreads();
@@ -831,16 +836,19 @@ void WorldSession::HandleGetMailList(WorldPackets::Mail::GetMailList const& pack
  * This function is called when client needs mail message body,
  * or when player clicks on item which has some flag set
  */
-void WorldSession::HandleItemTextQuery(WorldPackets::Misc::ItemTextQuery const& packet)
+void WorldSession::HandleItemTextQueryOpcode(ItemTextQuery const& packet)
 {
-    // packet.mailId and packet.unk not used
+    ItemTextQueryResponse response;
+    response.Id = packet.Id;
 
-    // TODO: some check needed, if player has item with guid mailId, or has mail with id mailId
+    nonstd::optional<ObjectGuid> const itemGuid = ClassicGuidMapping::FromClassic(packet.Id);
+    if (Item* item = itemGuid ? GetPlayer()->GetItemByGuid(*itemGuid) : nullptr)
+    {
+        response.Valid = true;
+        response.Text = sObjectMgr.GetItemText(item->GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
+    }
 
-    auto textPacket = std::make_unique<WorldPackets::Mail::ItemTextQueryResponse>();
-    textPacket->itemTextId = packet.itemTextId;
-    textPacket->text = sObjectMgr.GetItemText(packet.itemTextId);
-    SendPacket(std::move(textPacket));
+    SendClassic(response);
 }
 
 /**
@@ -850,19 +858,21 @@ void WorldSession::HandleItemTextQuery(WorldPackets::Misc::ItemTextQuery const& 
  * a new item with the text of the mail and store it in the players inventory (if possible).
  *
  */
-void WorldSession::HandleMailCreateTextItem(WorldPackets::Mail::MailCreateTextItem const& packet)
+void WorldSession::HandleMailCreateTextItemOpcode(MailCreateTextItem const& packet)
 {
-    if (!CheckMailBox(packet.mailboxGuid))
+    nonstd::optional<ObjectGuid> const mailboxGuid = ClassicGuidMapping::FromClassic(packet.MailboxGuid);
+    if (!mailboxGuid || !CheckMailBox(*mailboxGuid))
         return;
 
     MasterPlayer* pl = GetMasterPlayer();
     ASSERT(pl);
     Player* loadedPlayer = _player;
 
-    Mail* m = pl->GetMail(packet.mailId);
+    uint32 const mailId = uint32(packet.MailId);
+    Mail* m = pl->GetMail(mailId);
     if (!m || (!m->itemTextId && !m->mailTemplateId) || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr) || m->checked & MAIL_CHECK_MASK_COPIED)
     {
-        SendMailResult(packet.mailId, MAIL_MADE_PERMANENT, MAIL_ERR_INTERNAL_ERROR);
+        SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
@@ -888,25 +898,64 @@ void WorldSession::HandleMailCreateTextItem(WorldPackets::Mail::MailCreateTextIt
         pl->MarkMailsUpdated();
 
         loadedPlayer->StoreItem(dest, bodyItem, true);
-        SendMailResult(packet.mailId, MAIL_MADE_PERMANENT, MAIL_OK);
+        SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_OK);
     }
     else
     {
-        SendMailResult(packet.mailId, MAIL_MADE_PERMANENT, MAIL_ERR_EQUIP_ERROR, msg);
+        SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_ERR_EQUIP_ERROR, msg);
         delete bodyItem;
     }
 }
 
-/**
- * No idea when this is called.
- */
-void WorldSession::HandleQueryNextMailTime(NullClientPacket const& /*packet*/)
+// Populates up to 2 unread, already-delivered mails, one per distinct sender, matching
+// TrinityCore's own WorldSession::HandleQueryNextMailTime -- the modern wire carries a whole list,
+// not the single flag the vanilla opcode's body allowed for.
+void WorldSession::HandleQueryNextMailTimeOpcode(QueryNextMailTime const& /*packet*/)
 {
-    MasterPlayer* player = GetMasterPlayer();
-    ASSERT(player);
-    auto nextMailTime = std::make_unique<WorldPackets::Mail::QueryNextMailTimeResponse>();
-    nextMailTime->nextMailTime = player->HasUnreadMail() ? 0.0f : -float(DAY);
-    SendPacket(std::move(nextMailTime));
+    MasterPlayer* pl = GetMasterPlayer();
+    ASSERT(pl);
+
+    MailQueryNextTimeResult response;
+    if (pl->HasUnreadMail())
+    {
+        response.NextMailTime = 0.0f;
+
+        time_t const now = time(nullptr);
+        std::set<uint32> sentSenders;
+
+        for (PlayerMails::iterator itr = pl->GetMailBegin(); itr != pl->GetMailEnd(); ++itr)
+        {
+            Mail const* mail = *itr;
+            if (mail->checked & MAIL_CHECK_MASK_READ)
+                continue;
+            if (now < mail->deliver_time) // not delivered yet
+                continue;
+            if (!sentSenders.insert(mail->sender).second) // only once per sender
+                continue;
+
+            MailQueryNextTimeResult::Entry entry;
+            switch (mail->messageType)
+            {
+                case MAIL_NORMAL:
+                    entry.SenderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, mail->sender), realmID);
+                    break;
+                default:
+                    entry.AltSenderId = int32(mail->sender);
+                    break;
+            }
+            entry.TimeLeft = float(mail->deliver_time - now);
+            entry.AltSenderType = int8(mail->messageType);
+            entry.StationeryId = mail->stationery;
+            response.Mails.push_back(entry);
+
+            if (sentSenders.size() >= 2) // do not send more than 2 mails
+                break;
+        }
+    }
+    else
+        response.NextMailTime = -float(DAY);
+
+    SendClassic(response);
 }
 
 /*! @} */
