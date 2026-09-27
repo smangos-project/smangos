@@ -4786,7 +4786,7 @@ INSERT INTO `migrations` VALUES ('20231011030405');
 -- old 3.45, level 55, hits 13
  -- Gloom'rel
  -- Damage Multiplier
- UPDATE `creature_template` SET `damage_multiplier` =5.5WHERE `entry` =9037;
+ UPDATE `creature_template` SET `damage_multiplier` =5.5 WHERE `entry` =9037;
 
 -- old 3.4, level 56, hits 12
  -- Dope'rel
