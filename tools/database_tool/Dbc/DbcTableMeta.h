@@ -35,5 +35,6 @@ struct DbcTableMeta
 // Defined in the generated generated/DbcTables.g.cpp.
 std::span<DbcTableMeta const> GetDbcTables();
 DbcTableMeta const* FindDbcTable(std::string_view name); // case-insensitive
+char const* GetWowDbDefsCommit();
 
 #endif

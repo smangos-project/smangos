@@ -16,6 +16,7 @@ add_library(database_tool_lib STATIC
   Commands/CreateMysqlDatabase.cpp
   Commands/CreateWorldDatabase.cpp
   Commands/PortMigrationFile.cpp
+  Dbc/DbcSchema.cpp
   generated/DbcTables.g.cpp
 )
 

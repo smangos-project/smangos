@@ -137,6 +137,8 @@ DbcGeneratorResult GenerateDbcTablesSource(std::vector<DbdTable> const& tables, 
 
     out << "std::span<DbcTableMeta const> GetDbcTables()\n{\n    return g_dbcTables;\n}\n\n";
 
+    out << "char const* GetWowDbDefsCommit()\n{\n    return \"" << EscapeCString(wowdbdefsCommit) << "\";\n}\n\n";
+
     out << "DbcTableMeta const* FindDbcTable(std::string_view name)\n{\n"
            "    for (DbcTableMeta const& table : g_dbcTables)\n"
            "    {\n"

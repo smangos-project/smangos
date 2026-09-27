@@ -54,7 +54,15 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
 
     result.update = UpdateWorldDatabase(world, migrationsDirectory);
     if (!result.update.error.empty())
+    {
         result.error = result.update.failedFile + ": " + result.update.error;
+        return result;
+    }
+
+    result.dbcSchema = CreateDbcTables(world,
+        std::string("world: create dbc tables (") + GetWowDbDefsCommit() + ")");
+    if (!result.dbcSchema.error.empty())
+        result.error = result.dbcSchema.error;
 
     return result;
 }

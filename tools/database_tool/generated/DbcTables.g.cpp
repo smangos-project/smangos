@@ -9881,6 +9881,11 @@ std::span<DbcTableMeta const> GetDbcTables()
     return g_dbcTables;
 }
 
+char const* GetWowDbDefsCommit()
+{
+    return "e989e99e6f5f97c57b2e138d4d28b16066b4ee9c";
+}
+
 DbcTableMeta const* FindDbcTable(std::string_view name)
 {
     for (DbcTableMeta const& table : g_dbcTables)
