@@ -661,6 +661,25 @@ None of these is proven against a real 1.15.6 client yet.
   The old create/get-text/update-text/delete-ticket SMSG family has no modern wire form at all; a GM's
   `.ticket` reply, escalation notice or forced close now reaches the player as plain system chat text
   instead of a packet. Unverified against a real client.
+- **Petitions.** `CMSG_OFFER_PETITION`: vibemangos's body carries a leading unused id ahead of the two
+  guids (its own comment says a live capture needed it), TrinityCore's does not. **Followed: vibemangos**,
+  live evidence beating an older capture; an extra field a reader skips is cheaper to be wrong about than
+  one it silently misparses. `CMSG_TURN_IN_PETITION` similarly gets a five-`u32` tabard-customization tail
+  in vibemangos only, parsed when present and otherwise left at defaults (this engine's guild creation
+  never reads them). `SMSG_PETITION_SHOW_LIST`: TrinityCore sends a count-prefixed array of
+  `{index, cost, entry, unk, required signs}` rows (a guild-charter row plus, for a non-tabard-designer
+  vendor, three arena-team-charter rows); vibemangos sends just the NPC guid and a `u32` price, no entries
+  list. **Followed: vibemangos**, matching this engine's own charter model (one fixed guild-charter price;
+  no arena-team system exists here to fill the other rows anyway). `SMSG_QUERY_PETITION_RESPONSE`'s
+  choice-text tail: the client reads a fixed ten slots regardless of how many this server actually offers
+  (a guild charter never offers any) -- writing fewer desyncs the bit stream the name and body text read
+  from next, a bug vibemangos's own comment says it found live (a corrupted guild name in the petition
+  window) and fixed by always writing all ten, empty or not. **Followed: vibemangos.** `SMSG_PETITION_SIGN_RESULTS`
+  and `SMSG_TURN_IN_PETITION_RESULT` use their own 4-bit result codes (`PetitionSignResult`/
+  `TurnInPetitionResult` in `PetitionMessages.h`), a different numbering from vmangos's own pre-port
+  `PetitionSigns` enum despite sharing several values. `MSG_PETITION_DECLINE` sends nothing back to the
+  owner: TrinityCore's own handler has the send commented out with a note that no modern client acts on
+  it, and vibemangos matches. Unverified against a real client.
 
 - **The opcode tables agree; the connection routes need TrinityCore.** All 1673 nonzero entries in
   vibemangos's 1.15.6 table match TrinityCore's enum by name and value, with no exceptions. vibemangos
