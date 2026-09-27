@@ -147,6 +147,8 @@ TEST_CASE("combat log: a heal is logged with the healer and the target", "[gamep
         REQUIRE(heal);
         CHECK(heal->Target == gmGuid);
         CHECK(heal->Health > 0);
+        CHECK(heal->OverHeal >= 0);
+        CHECK(heal->OverHeal <= heal->OriginalHeal);
     });
 }
 

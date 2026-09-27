@@ -352,7 +352,7 @@ public:
     void SendSpellDamageResist(Unit const* target, uint32 spellId) const;
     void SendSpellOrDamageImmune(Unit const* target, uint32 spellId) const;
     int32 DealHeal(Unit* pVictim, uint32 addhealth, SpellEntry const* spellProto, bool critical = false);
-    void SendHealSpellLog(Unit const* pTarget, uint32 spellId, uint32 amount, bool critical = false) const;
+    void SendHealSpellLog(Unit const* pTarget, uint32 spellId, uint32 amount, uint32 gain, bool critical = false) const;
     void EnergizeBySpell(Unit* pTarget, uint32 spellId, uint32 amount, Powers powertype);
     void SendEnergizeSpellLog(Unit const* pTarget, uint32 spellId, uint32 amount, Powers powertype) const;
 

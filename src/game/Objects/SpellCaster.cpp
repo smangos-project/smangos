@@ -1048,12 +1048,12 @@ int32 SpellCaster::DealHeal(Unit* pVictim, uint32 addhealth, SpellEntry const* s
         pHealer = pUnit->GetOwner();
 
     if (IsPlayer() || pVictim->IsPlayer())
-        pHealer->SendHealSpellLog(pVictim, spellProto->Id, addhealth, critical);
+        pHealer->SendHealSpellLog(pVictim, spellProto->Id, addhealth, uint32(gain), critical);
 
     return gain;
 }
 
-void SpellCaster::SendHealSpellLog(Unit const* pTarget, uint32 spellId, uint32 amount, bool critical) const
+void SpellCaster::SendHealSpellLog(Unit const* pTarget, uint32 spellId, uint32 amount, uint32 gain, bool critical) const
 {
     SpellHealLog packet;
     packet.Target = ToClassicGuid(pTarget->GetObjectGuid());
@@ -1061,6 +1061,7 @@ void SpellCaster::SendHealSpellLog(Unit const* pTarget, uint32 spellId, uint32 a
     packet.SpellId = int32(spellId);
     packet.Health = int32(amount);
     packet.OriginalHeal = int32(amount);
+    packet.OverHeal = int32(amount - gain);
     packet.Crit = critical;
     WorldPacket data = MakeClassicPacket(packet);
     SendMessageToSet(&data, true);
