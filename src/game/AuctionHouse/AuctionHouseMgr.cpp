@@ -36,6 +36,8 @@
 #include "Mail.h"
 #include "TransactionLog.h"
 #include "Policies/SingletonImp.h"
+#include "Packets/AuctionHouseMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 
 INSTANTIATE_SINGLETON_1(AuctionHouseMgr);
 
@@ -676,7 +678,7 @@ void AuctionHouseObject::Update()
     }
 }
 
-void AuctionHouseObject::BuildListBidderItems(WorldPacket& data, Player* player, uint32 listfrom, uint32& count, uint32& totalcount)
+void AuctionHouseObject::BuildListBidderItems(std::vector<AuctionItem>& items, Player* player, uint32 listfrom, uint32& count, uint32& totalcount)
 {
     for (const auto& itr : AuctionsMap)
     {
@@ -686,13 +688,19 @@ void AuctionHouseObject::BuildListBidderItems(WorldPacket& data, Player* player,
             ++totalcount;
 
             if (count < 50 && totalcount > listfrom)
-                if (itr.second->BuildAuctionInfo(data))
+            {
+                AuctionItem item;
+                if (itr.second->BuildAuctionInfo(item))
+                {
+                    items.push_back(item);
                     ++count;
+                }
+            }
         }
     }
 }
 
-void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, uint32 listfrom, uint32& count, uint32& totalcount)
+void AuctionHouseObject::BuildListOwnerItems(std::vector<AuctionItem>& items, Player* player, uint32 listfrom, uint32& count, uint32& totalcount)
 {
     auto bounds = AccountAuctionMap.equal_range(player->GetSession()->GetAccountId());
     for (auto itr = bounds.first; itr != bounds.second; ++itr)
@@ -702,13 +710,19 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
         {
             ++totalcount;
             if (count < 50 && totalcount > listfrom)
-                if (auctionEntry->BuildAuctionInfo(data))
+            {
+                AuctionItem item;
+                if (auctionEntry->BuildAuctionInfo(item))
+                {
+                    items.push_back(item);
                     ++count;
+                }
+            }
         }
     }
 }
 
-void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player,
+void AuctionHouseObject::BuildListAuctionItems(std::vector<AuctionItem>& items, Player* player,
         AuctionHouseClientQuery const& query,
         uint32& count, uint32& totalcount)
 {
@@ -726,7 +740,9 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
                 if (!itr->second->IsAvailableFor(player))
                     continue;
 
-                itr->second->BuildAuctionInfo(data);
+                AuctionItem item;
+                if (itr->second->BuildAuctionInfo(item))
+                    items.push_back(item);
                 if ((++count) >= 50)
                     break;
             }
@@ -799,7 +815,9 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
             if (count < 50 && totalcount >= query.listfrom)
             {
                 ++count;
-                auctionEntry->BuildAuctionInfo(data);
+                AuctionItem auctionItem;
+                if (auctionEntry->BuildAuctionInfo(auctionItem))
+                    items.push_back(auctionItem);
             }
         }
 
@@ -807,8 +825,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
     }
 }
 
-// this function inserts to WorldPacket auction's data
-bool AuctionEntry::BuildAuctionInfo(WorldPacket& data) const
+bool AuctionEntry::BuildAuctionInfo(AuctionItem& out) const
 {
     Item *pItem = sAuctionMgr.GetAItem(itemGuidLow);
     if (!pItem)
@@ -816,29 +833,28 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket& data) const
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "auction to item, that doesn't exist !!!!");
         return false;
     }
-    data << uint32(Id);
-    data << uint32(pItem->GetEntry());
 
-    // [-ZERO] no other infos about enchantment in 1.12 [?]
-    //for (uint8 i = 0; i < MAX_INSPECTED_ENCHANTMENT_SLOT; ++i)
-    //{
-    data << uint32(pItem->GetEnchantmentId(EnchantmentSlot(PERM_ENCHANTMENT_SLOT)));
-    //    data << uint32(pItem->GetEnchantmentDuration(EnchantmentSlot(i)));
-    //    data << uint32(pItem->GetEnchantmentCharges(EnchantmentSlot(i)));
-    //}
-
-    data << uint32(pItem->GetItemRandomPropertyId());       // random item property id
-    data << uint32(pItem->GetItemSuffixFactor());           // SuffixFactor
-    data << uint32(pItem->GetCount());                      // item->count
-    data << uint32(pItem->GetSpellCharges());               // item->charge FFFFFFF
-    data << ObjectGuid(HIGHGUID_PLAYER, owner);             // Auction->owner
-    data << uint32(startbid);                               // Auction->startbid (not sure if useful)
-    data << uint32(bid ? GetAuctionOutBid() : 0);           // minimal outbid
-    data << uint32(buyout);                                 // auction->buyout
-    int64 const timeLeftMs = std::min<int64>(std::max<int64>(0, int64(expireTime - time(nullptr)) * IN_MILLISECONDS), INT32_MAX);
-    data << uint32(timeLeftMs);                             // time left
-    data << ObjectGuid(HIGHGUID_PLAYER, bidder);            // auction->bidder current
-    data << uint32(bid);                                    // current bid
+    out.Item.ItemId = int32(pItem->GetEntry());
+    out.Item.RandomPropertiesSeed = int32(pItem->GetItemSuffixFactor());
+    out.Item.RandomPropertiesId = pItem->GetItemRandomPropertyId();
+    out.Count = int32(pItem->GetCount());
+    out.Charges = int32(pItem->GetSpellCharges());
+    out.PermanentEnchantId = pItem->GetEnchantmentId(EnchantmentSlot(PERM_ENCHANTMENT_SLOT));
+    out.AuctionId = int32(Id);
+    out.Owner = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, owner), realmID);
+    int64 const durationLeftMs = std::min<int64>(std::max<int64>(0, int64(expireTime - time(nullptr)) * IN_MILLISECONDS), INT32_MAX);
+    out.DurationLeftMs = int32(durationLeftMs);
+    out.MinBid = startbid;
+    out.MinIncrement = bid ? GetAuctionOutBid() : 0;
+    out.BuyoutPrice = buyout;
+    out.ItemGuid = ClassicGuidMapping::ToClassic(pItem->GetObjectGuid(), realmID);
+    out.OwnerAccountGuid = ClassicGuidMapping::MakeAccount(ownerAccount);
+    out.EndTime = uint32(expireTime);
+    if (bidder)
+    {
+        out.Bidder = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, bidder), realmID);
+        out.BidAmount = bid;
+    }
     return true;
 }
 

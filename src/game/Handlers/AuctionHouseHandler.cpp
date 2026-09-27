@@ -33,17 +33,32 @@
 #include "Util.h"
 #include "Chat.h"
 #include "Anticheat.h"
+#include "Packets/Classic/GuidMapping.h"
 
 // please DO NOT use iterator++, because it is slower than ++iterator!!!
 // post-incrementation is always slower than pre-incrementation !
 
-// void called when player click on auctioneer npc
-void WorldSession::HandleAuctionHelloOpcode(WorldPackets::AuctionHouse::AuctionHello const& packet)
+namespace
 {
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER);
+ClassicItemInstance MinimalAuctionItemInstance(AuctionEntry const& auction)
+{
+    ClassicItemInstance item;
+    if (Item* pItem = sAuctionMgr.GetAItem(auction.itemGuidLow))
+        item.ItemId = int32(pItem->GetEntry());
+    else
+        item.ItemId = int32(auction.itemTemplate);
+    return item;
+}
+}
+
+// void called when player click on auctioneer npc
+void WorldSession::HandleAuctionHelloOpcode(AuctionHelloRequest const& packet)
+{
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    Creature* unit = auctioneerGuid ? GetPlayer()->GetNPCIfCanInteractWith(*auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER) : nullptr;
     if (!unit)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleAuctionHelloOpcode - %s not found or you can't interact with him.", packet.auctioneerGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WORLD: HandleAuctionHelloOpcode - auctioneer not found or you can't interact with it.");
         return;
     }
 
@@ -60,88 +75,100 @@ void WorldSession::SendAuctionHello(Unit* unit)
     // always return pointer
     AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit);
 
-    auto helloResponse = std::make_unique<WorldPackets::AuctionHouse::AuctionHelloResponse>();
-    helloResponse->auctioneerGuid = unit->GetObjectGuid();
-    helloResponse->houseId = ahEntry->houseId;
-    SendPacket(std::move(helloResponse));
+    AuctionHelloResponse response;
+    response.AuctioneerGuid = ClassicGuidMapping::ToClassic(unit->GetObjectGuid(), realmID);
+    response.HouseId = ahEntry->houseId;
+    SendClassic(response);
 }
 
 // call this method when player bids, creates, or deletes auction
 void WorldSession::SendAuctionCommandResult(AuctionEntry* auc, AuctionAction Action, AuctionError ErrorCode, InventoryResult invError)
 {
-    auto packet = std::make_unique<WorldPackets::AuctionHouse::AuctionCommandResult>();
-    packet->auctionId = auc ? auc->Id : 0;
-    packet->action = Action;
-    packet->errorCode = ErrorCode;
+    AuctionCommandResult packet;
+    packet.AuctionId = auc ? auc->Id : 0;
+    packet.Action = Action;
+    packet.ErrorCode = ErrorCode;
 
     switch (ErrorCode)
     {
         case AUCTION_OK:
             if (Action == AUCTION_BID_PLACED)
-                packet->auctionOutBid = auc->GetAuctionOutBid();    // new AuctionOutBid?
+                packet.OutBid = auc->GetAuctionOutBid();
             break;
         case AUCTION_ERR_INVENTORY:
-            packet->inventoryError = invError;
+            packet.BagResult = invError;
             break;
         case AUCTION_ERR_HIGHER_BID:
-            packet->newBidderGuid = ObjectGuid(HIGHGUID_PLAYER, auc->bidder); // new bidder guid
-            packet->newBid = auc->bid;                       // new bid
-            packet->auctionOutBid = auc->GetAuctionOutBid(); // new AuctionOutBid?
+            packet.NewBidderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, auc->bidder), realmID);
+            packet.NewBid = auc->bid;
+            packet.OutBid = auc->GetAuctionOutBid();
             break;
         default:
             break;
     }
 
-    SendPacket(std::move(packet));
+    SendClassic(packet);
 }
 
-// this function sends notification, if bidder is online
+// this function sends notification, if bidder is online -- won ? AuctionWonNotification : AuctionOutbidNotification
 void WorldSession::SendAuctionBidderNotification(AuctionEntry* auction, bool won)
 {
-    auto notification = std::make_unique<WorldPackets::AuctionHouse::AuctionBidderNotification>();
-    notification->houseId = auction->GetHouseId();
-    notification->auctionId = auction->Id;
-    notification->bidderGuid = ObjectGuid(HIGHGUID_PLAYER, auction->bidder);
-    // if 0, client shows ERR_AUCTION_WON_S, else ERR_AUCTION_OUTBID_S
-    notification->bidOrZero = won ? 0 : auction->bid;
-    notification->outBid = auction->GetAuctionOutBid();
-    notification->itemTemplate = auction->itemTemplate;
+    if (won)
+    {
+        AuctionWonNotification notification;
+        notification.AuctionId = int32(auction->Id);
+        notification.BidderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, auction->bidder), realmID);
+        notification.Item = MinimalAuctionItemInstance(*auction);
+        SendClassic(notification);
+    }
+    else
+    {
+        AuctionOutbidNotification notification;
+        notification.AuctionId = int32(auction->Id);
+        notification.BidderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, auction->bidder), realmID);
+        notification.Item = MinimalAuctionItemInstance(*auction);
+        notification.BidAmount = auction->bid;
+        notification.MinIncrement = auction->GetAuctionOutBid();
+        SendClassic(notification);
+    }
+}
 
-    Item *item = sAuctionMgr.GetAItem(auction->itemGuidLow);
-    notification->randomPropertyId = item ? item->GetItemRandomPropertyId() : 0;
-
-    SendPacket(std::move(notification));
+// the auction is still open, but a new bid just came in -- distinct from the sold/expired case
+// SendAuctionOwnerNotification below covers
+void WorldSession::SendAuctionOwnerBidNotification(AuctionEntry* auction)
+{
+    AuctionOwnerBidNotification notification;
+    notification.AuctionId = int32(auction->Id);
+    notification.BidAmount = auction->bid;
+    notification.Item = MinimalAuctionItemInstance(*auction);
+    notification.MinIncrement = auction->GetAuctionOutBid();
+    notification.Bidder = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, auction->bidder), realmID);
+    SendClassic(notification);
 }
 
 // this void causes on client to display: "Your auction sold"
 void WorldSession::SendAuctionOwnerNotification(AuctionEntry* auction, bool sold)
 {
-    auto notification = std::make_unique<WorldPackets::AuctionHouse::AuctionOwnerNotification>();
-    notification->auctionId = auction->Id;
-    notification->bid = auction->bid;
-    notification->outBid = auction->GetAuctionOutBid();
-
-    if (!sold)                                               // not sold yet
-        notification->bidderGuid = ObjectGuid(HIGHGUID_PLAYER, auction->bidder);
-
-    notification->itemTemplate = auction->itemTemplate;
-
-    Item *item = sAuctionMgr.GetAItem(auction->itemGuidLow);
-    notification->randomPropertyId = item ? item->GetItemRandomPropertyId() : 0;
-
-    SendPacket(std::move(notification));
+    AuctionClosedNotification notification;
+    notification.AuctionId = int32(auction->Id);
+    notification.BidAmount = auction->bid;
+    notification.Item = MinimalAuctionItemInstance(*auction);
+    notification.Sold = sold;
+    SendClassic(notification);
 }
 
-// shows ERR_AUCTION_REMOVED_S
+// shows ERR_AUCTION_REMOVED_S -- no exact modern equivalent (this is "owner cancelled, your bid is
+// refunded", not really an outbid), AuctionOutbidNotification is the closest available signal that
+// still gets the bidder's attention -- see AuctionOutbidNotification's class comment.
 void WorldSession::SendAuctionRemovedNotification(AuctionEntry* auction)
 {
-    Item *item = sAuctionMgr.GetAItem(auction->itemGuidLow);
-
-    auto packet = std::make_unique<WorldPackets::AuctionHouse::AuctionRemovedNotification>();
-    packet->auctionId = auction->Id;
-    packet->itemTemplate = auction->itemTemplate;
-    packet->randomPropertyId = item ? item->GetItemRandomPropertyId() : 0;
-    SendPacket(std::move(packet));
+    AuctionOutbidNotification packet;
+    packet.AuctionId = int32(auction->Id);
+    packet.BidderGuid = ClassicGuidMapping::ToClassic(ObjectGuid(HIGHGUID_PLAYER, auction->bidder), realmID);
+    packet.Item = MinimalAuctionItemInstance(*auction);
+    packet.BidAmount = auction->bid;
+    packet.MinIncrement = auction->GetAuctionOutBid();
+    SendClassic(packet);
 }
 
 // this function sends mail to old bidder
@@ -227,19 +254,19 @@ AuctionHouseEntry const* WorldSession::GetCheckedAuctionHouseForAuctioneer(Objec
 }
 
 // this void creates new auction and adds auction to some auctionhouse
-void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSellItem const& packet)
+void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
 {
-    if (!packet.bid || !packet.etime)
+    if (!packet.Bid || !packet.Etime)
         return;                                             // check for cheaters
 
     // Client limit
-    if (packet.bid > 2000000000 || packet.buyout > 2000000000)
+    if (packet.Bid > 2000000000 || packet.Buyout > 2000000000)
     {
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_NOT_ENOUGH_MONEY);
         ProcessAnticheatAction("GoldDupe", "Putting too high auction price", CHEAT_ACTION_LOG);
         return;
     }
-    if (packet.buyout && packet.bid > packet.buyout)
+    if (packet.Buyout && packet.Bid > packet.Buyout)
     {
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_HIGHER_BID);
         ProcessAnticheatAction("GoldDupe", "bid > buyout", CHEAT_ACTION_LOG);
@@ -260,7 +287,8 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
 
     Player* pl = GetPlayer();
 
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
     {
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_DATABASE);
@@ -279,7 +307,7 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
     }
 
     // client send time in minutes, convert to common used sec time
-    uint32 etime = packet.etime * MINUTE;
+    uint32 etime = packet.Etime * MINUTE;
 
     // client understand only 3 auction time
     switch (etime)
@@ -299,18 +327,19 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
     if (GetPlayer()->HasUnitState(UNIT_STATE_FEIGN_DEATH))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    if (!packet.itemGuid)
+    nonstd::optional<ObjectGuid> const itemGuid = ClassicGuidMapping::FromClassic(packet.ItemGuid);
+    if (!itemGuid)
     {
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_ITEM_NOT_FOUND);
         return;
     }
 
-    Item *it = pl->GetItemByGuid(packet.itemGuid);
+    Item *it = pl->GetItemByGuid(*itemGuid);
 
     // do not allow to sell already auctioned items
-    if (sAuctionMgr.GetAItem(packet.itemGuid.GetCounter()))
+    if (sAuctionMgr.GetAItem(itemGuid->GetCounter()))
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "AuctionError, %s is sending %s, but item is already in another auction", pl->GetGuidStr().c_str(), packet.itemGuid.GetString().c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "AuctionError, %s is sending %s, but item is already in another auction", pl->GetGuidStr().c_str(), itemGuid->GetString().c_str());
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_INVENTORY, EQUIP_ERR_ITEM_NOT_FOUND);
         return;
     }
@@ -350,6 +379,9 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
         return;
     }
 
+    uint32 const bid = uint32(packet.Bid);
+    uint32 const buyout = uint32(packet.Buyout);
+
     if (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_BOOL_GM_LOG_TRADE))
     {
         sLog.Player(GetAccountId(), LOG_GM, LOG_LVL_BASIC,
@@ -367,19 +399,19 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
     AH->itemTemplate = it->GetEntry();
     AH->owner = pl->GetGUIDLow();
     AH->ownerAccount = pl->GetSession()->GetAccountId();
-    AH->startbid = packet.bid;
+    AH->startbid = bid;
     AH->bidder = 0;
     AH->bid = 0;
-    AH->buyout = packet.buyout;
+    AH->buyout = buyout;
     AH->lockedIpAddress = GetRemoteAddress();
     AH->depositTime = time(nullptr);
     AH->expireTime = time(nullptr) + auction_time;
     AH->deposit = deposit;
     AH->auctionHouseEntry = auctionHouseEntry;
 
-    sLog.Player(this, LOG_MONEY_TRADES, LOG_LVL_MINIMAL, "[AuctionHouse]: Player %s listing %s (%u) at auctioneer %s. Initial bid: %u, buyout: %u, duration: %u, auctionhouse: %u",
+    sLog.Player(this, LOG_MONEY_TRADES, LOG_LVL_MINIMAL, "[AuctionHouse]: Player %s listing %s (%u) at auctioneer. Initial bid: %u, buyout: %u, duration: %u, auctionhouse: %u",
                 pl->GetShortDescription().c_str(), it->GetGuidStr().c_str(), it->GetEntry(),
-                packet.auctioneerGuid.GetString().c_str(), packet.bid, packet.buyout, auction_time, AH->GetHouseId());
+                bid, buyout, auction_time, AH->GetHouseId());
 
     // Log this transaction
     PlayerTransactionData data;
@@ -388,9 +420,9 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
     data.parts[0].itemsEntries[0] = AH->itemTemplate;
     data.parts[0].itemsCount[0] = it->GetCount();
     data.parts[0].itemsGuid[0] = it->GetGUIDLow();
-    data.parts[0].money = packet.bid;
-    data.parts[1].lowGuid = packet.auctioneerGuid.GetCounter();
-    data.parts[1].money = packet.buyout;
+    data.parts[0].money = bid;
+    data.parts[1].lowGuid = auctioneerGuid->GetCounter();
+    data.parts[1].money = buyout;
     sWorld.LogTransaction(data);
 
     auctionHouse->AddAuction(AH);
@@ -409,7 +441,7 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
 }
 
 // this function is called when client bids or buys out auction
-void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlaceBid const& packet)
+void WorldSession::HandleAuctionPlaceBid(AuctionPlaceBid const& packet)
 {
     if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && GetSecurity() > SEC_PLAYER)
     {
@@ -423,13 +455,15 @@ void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlac
         return;
     }
 
-    if (!packet.auctionId || !packet.price)
+    if (!packet.AuctionId || !packet.Price || packet.Price > 2000000000)
     {
         SendAuctionCommandResult(nullptr, AUCTION_BID_PLACED, AUCTION_ERR_ITEM_NOT_FOUND);
         return;
     }
+    uint32 const price = uint32(packet.Price);
 
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
     {
         SendAuctionCommandResult(nullptr, AUCTION_BID_PLACED, AUCTION_ERR_ITEM_NOT_FOUND);
@@ -443,7 +477,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlac
     if (GetPlayer()->HasUnitState(UNIT_STATE_FEIGN_DEATH))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    AuctionEntry* auction = auctionHouse->GetAuction(packet.auctionId);
+    AuctionEntry* auction = auctionHouse->GetAuction(packet.AuctionId);
     Player* pl = GetPlayer();
 
     if (!auction)
@@ -472,14 +506,14 @@ void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlac
     }
 
     // cheating
-    if (packet.price < auction->startbid)
+    if (price < auction->startbid)
     {
         SendAuctionCommandResult(nullptr, AUCTION_BID_PLACED, AUCTION_ERR_BID_INCREMENT);
         return;
     }
 
     // cheating or client lags
-    if (packet.price <= auction->bid)
+    if (price <= auction->bid)
     {
         // client test but possible in result lags
         SendAuctionCommandResult(auction, AUCTION_BID_PLACED, AUCTION_ERR_HIGHER_BID);
@@ -487,37 +521,36 @@ void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlac
     }
 
     // price too low for next bid if not buyout
-    if ((packet.price < auction->buyout || auction->buyout == 0) &&
-         packet.price < auction->bid + auction->GetAuctionOutBid())
+    if ((price < auction->buyout || auction->buyout == 0) &&
+         price < auction->bid + auction->GetAuctionOutBid())
     {
         // client test but possible in result lags
         SendAuctionCommandResult(auction, AUCTION_BID_PLACED, AUCTION_ERR_BID_INCREMENT);
         return;
     }
 
-    if (packet.price > pl->GetMoney())
+    if (price > pl->GetMoney())
     {
         // you don't have enough money!, client tests!
-        // SendAuctionCommandResult(auction->auctionId, AUCTION_ERR_INVENTORY, EQUIP_ERR_NOT_ENOUGH_MONEY);
         return;
     }
 
-    if ((packet.price < auction->buyout) || (auction->buyout == 0))// bid
+    if ((price < auction->buyout) || (auction->buyout == 0))// bid
     {
         if (pl->GetGUIDLow() == auction->bidder)
-            pl->LogModifyMoney(-int32(packet.price - auction->bid), "AuctionBid", ObjectGuid(HIGHGUID_PLAYER, auction->owner), auction->itemTemplate);
+            pl->LogModifyMoney(-int32(price - auction->bid), "AuctionBid", ObjectGuid(HIGHGUID_PLAYER, auction->owner), auction->itemTemplate);
         else
         {
-            pl->LogModifyMoney(-int32(packet.price), "AuctionBid", ObjectGuid(HIGHGUID_PLAYER, auction->owner), auction->itemTemplate);
+            pl->LogModifyMoney(-int32(price), "AuctionBid", ObjectGuid(HIGHGUID_PLAYER, auction->owner), auction->itemTemplate);
             if (auction->bidder)                            // return money to old bidder if present
                 SendAuctionOutbiddedMail(auction);
         }
 
         auction->bidder = pl->GetGUIDLow();
-        auction->bid = packet.price;
+        auction->bid = price;
 
         if (auction_owner)
-            auction_owner->GetSession()->SendAuctionOwnerNotification(auction, false);
+            auction_owner->GetSession()->SendAuctionOwnerBidNotification(auction);
 
         // after this update we should save player's money ...
         CharacterDatabase.PExecute("UPDATE `auction` SET `buyer_guid` = '%u', `last_bid` = '%u' WHERE `id` = '%u'", auction->bidder, auction->bid, auction->Id);
@@ -566,9 +599,10 @@ void WorldSession::HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlac
 }
 
 // this void is called when auction_owner cancels his auction
-void WorldSession::HandleAuctionRemoveItem(WorldPackets::AuctionHouse::AuctionRemoveItem const& packet)
+void WorldSession::HandleAuctionRemoveItem(AuctionRemoveItem const& packet)
 {
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
         return;
 
@@ -578,7 +612,7 @@ void WorldSession::HandleAuctionRemoveItem(WorldPackets::AuctionHouse::AuctionRe
 
     // always return pointer
     AuctionHouseObject* auctionHouse = sAuctionMgr.GetAuctionsMap(auctionHouseEntry);
-    AuctionEntry* auction = auctionHouse->GetAuction(packet.auctionId);
+    AuctionEntry* auction = auctionHouse->GetAuction(packet.AuctionId);
     Player* pl = GetPlayer();
 
     if (auction && auction->owner == pl->GetGUIDLow())
@@ -615,7 +649,7 @@ void WorldSession::HandleAuctionRemoveItem(WorldPackets::AuctionHouse::AuctionRe
     {
         SendAuctionCommandResult(nullptr, AUCTION_REMOVED, AUCTION_ERR_DATABASE);
         // this code isn't possible ... maybe there should be ASSERT
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is nullptr", pl->GetGUIDLow(), packet.auctionId);
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is nullptr", pl->GetGUIDLow(), packet.AuctionId);
         return;
     }
 
@@ -630,7 +664,6 @@ void WorldSession::HandleAuctionRemoveItem(WorldPackets::AuctionHouse::AuctionRe
     auctionHouse->RemoveAuction(auction);
     delete auction;
 }
-
 
 class AuctionHouseClientQueryTask : public AuctionHouseClientQuery
 {
@@ -648,23 +681,24 @@ public:
             if (!player || !player->IsInWorld())
                 return;
 
-            WorldPacket data(0, 12);
+            std::vector<AuctionItem> items;
             uint32 count = 0;
             uint32 totalcount = 0;
-            size_t countPos = data.wpos();
-            data << uint32(count);
+
             switch (_queryType)
             {
                 case AUCTION_QUERY_LIST:
                 {
-                    data.SetOpcode(SMSG_AUCTION_LIST_RESULT);
-                    auctionHouse->BuildListAuctionItems(data, player, *this, count, totalcount);
-
+                    auctionHouse->BuildListAuctionItems(items, player, *this, count, totalcount);
+                    AuctionListItemsResult result;
+                    result.Items = std::move(items);
+                    result.TotalCount = int32(totalcount);
+                    result.OnlyUsable = usable != 0;
+                    sess->SendClassic(result);
                     break;
                 }
                 case AUCTION_QUERY_LIST_BIDDER:
                 {
-                    data.SetOpcode(SMSG_AUCTION_BIDDER_LIST_RESULT);
                     for (const auto& outbiddedAuctionId : outbiddedAuctionIds)
                     {
                         AuctionEntry* auction = auctionHouse->GetAuction(outbiddedAuctionId);
@@ -673,18 +707,31 @@ public:
                             ++totalcount;
 
                             if (count < 50 && totalcount > listfrom)
-                                if (auction->BuildAuctionInfo(data))
+                            {
+                                AuctionItem item;
+                                if (auction->BuildAuctionInfo(item))
+                                {
+                                    items.push_back(item);
                                     ++count;
+                                }
+                            }
                         }
                     }
 
-                    auctionHouse->BuildListBidderItems(data, player, listfrom, count, totalcount);
+                    auctionHouse->BuildListBidderItems(items, player, listfrom, count, totalcount);
+                    AuctionListBiddedItemsResult result;
+                    result.Items = std::move(items);
+                    result.TotalCount = int32(totalcount);
+                    sess->SendClassic(result);
                     break;
                 }
                 case AUCTION_QUERY_LIST_OWNER:
                 {
-                    data.SetOpcode(SMSG_AUCTION_OWNER_LIST_RESULT);
-                    auctionHouse->BuildListOwnerItems(data, player, listfrom, count, totalcount);
+                    auctionHouse->BuildListOwnerItems(items, player, listfrom, count, totalcount);
+                    AuctionListOwnedItemsResult result;
+                    result.Items = std::move(items);
+                    result.TotalCount = int32(totalcount);
+                    sess->SendClassic(result);
                     break;
                 }
                 default:
@@ -693,11 +740,6 @@ public:
                     return;
                 }
             }
-
-            data.put<uint32>(countPos, count);
-            data << uint32(totalcount);
-
-            sess->SendPacket(&data);
         }
     }
     AuctionHouseObject* auctionHouse;
@@ -705,12 +747,13 @@ public:
 };
 
 // called when player lists his bids
-void WorldSession::HandleAuctionListBidderItems(WorldPackets::AuctionHouse::AuctionListBidderItem const& packet)
+void WorldSession::HandleAuctionListBidderItems(AuctionListBiddedItems const& packet)
 {
     if (ReceivedAHListRequest())
         return; // Only one AH request at a time is allowed
 
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
         return;
 
@@ -721,19 +764,20 @@ void WorldSession::HandleAuctionListBidderItems(WorldPackets::AuctionHouse::Auct
     AuctionHouseClientQueryTask task(AUCTION_QUERY_LIST_BIDDER);
     task.auctionHouse = sAuctionMgr.GetAuctionsMap(auctionHouseEntry);
     task.accountId = GetAccountId();
-    task.listfrom = packet.pagingElementStartIndex;
-    task.outbiddedAuctionIds = packet.bidAuctionIdsToRefresh;
+    task.listfrom = packet.Offset;
+    task.outbiddedAuctionIds = packet.AuctionIdsToRefresh;
     SetReceivedAHListRequest(true);
     sWorld.AddAsyncTask(std::move(task));
 }
 
 // this void sends player info about his auctions
-void WorldSession::HandleAuctionListOwnerItems(WorldPackets::AuctionHouse::AuctionListOwnerItems const& packet)
+void WorldSession::HandleAuctionListOwnerItems(AuctionListOwnedItems const& packet)
 {
     if (ReceivedAHListRequest())
         return;
 
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
         return;
 
@@ -744,12 +788,12 @@ void WorldSession::HandleAuctionListOwnerItems(WorldPackets::AuctionHouse::Aucti
     AuctionHouseClientQueryTask task(AUCTION_QUERY_LIST_OWNER);
     task.auctionHouse = sAuctionMgr.GetAuctionsMap(auctionHouseEntry);
     task.accountId = GetAccountId();
-    task.listfrom = packet.listfrom;
+    task.listfrom = packet.ListFrom;
     SetReceivedAHListRequest(true);
     sWorld.AddAsyncTask({std::move(task)});
 }
 
-void WorldSession::HandleAuctionListItems(WorldPackets::AuctionHouse::AuctionListItems const& packet)
+void WorldSession::HandleAuctionListItems(AuctionListItems const& packet)
 {
     if (ReceivedAHListRequest())
         return;
@@ -757,16 +801,17 @@ void WorldSession::HandleAuctionListItems(WorldPackets::AuctionHouse::AuctionLis
     AuctionHouseClientQueryTask task(AUCTION_QUERY_LIST);
     task.accountId = GetAccountId();
 
-    task.listfrom = packet.listfrom;
-    task.levelmin = packet.levelmin;
-    task.levelmax = packet.levelmax;
-    task.auctionSlotID = packet.auctionSlotID;
-    task.auctionMainCategory = packet.auctionMainCategory;
-    task.auctionSubCategory = packet.auctionSubCategory;
-    task.quality = packet.quality;
-    task.usable = packet.usable;
+    task.listfrom = packet.ListFrom;
+    task.levelmin = packet.LevelMin;
+    task.levelmax = packet.LevelMax;
+    task.auctionSlotID = packet.AuctionSlotId;
+    task.auctionMainCategory = packet.AuctionMainCategory;
+    task.auctionSubCategory = packet.AuctionSubCategory;
+    task.quality = packet.Quality;
+    task.usable = packet.Usable;
 
-    AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(packet.auctioneerGuid);
+    nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
+    AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
     if (!auctionHouseEntry)
         return;
 
@@ -778,10 +823,17 @@ void WorldSession::HandleAuctionListItems(WorldPackets::AuctionHouse::AuctionLis
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     // converting string that we try to find to lower case
-    if (!Utf8toWStr(packet.searchedname, task.wsearchedname))
+    if (!Utf8toWStr(packet.SearchedName, task.wsearchedname))
         return;
 
     wstrToLower(task.wsearchedname);
     SetReceivedAHListRequest(true);
     sWorld.AddAsyncTask(std::move(task));
+}
+
+void WorldSession::HandleAuctionListPendingSales(AuctionListPendingSales const& /*packet*/)
+{
+    // This engine resolves auctions immediately and has no pending-sales mailbox, so an empty
+    // reply would be correct anyway -- but CLASSIC_SMSG_AUCTION_LIST_PENDING_SALES_RESULT does not
+    // exist on the modern wire at all, so sending nothing is the only wire-legal answer.
 }

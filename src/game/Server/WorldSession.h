@@ -36,7 +36,7 @@
 #include "PacketProcessing.h"
 #include "UpdateData.h"
 #include "LockedQueue.h"
-#include "Packets/AuctionHouse.h"
+#include "Packets/AuctionHouseMessages.h"
 #include "Packets/Battleground.h"
 #include "Packets/ChannelMessages.h"
 #include "Packets/Character.h"
@@ -496,6 +496,7 @@ class WorldSession
         void SendAuctionHello(Unit* unit);
         void SendAuctionCommandResult(AuctionEntry* auc, AuctionAction Action, AuctionError ErrorCode, InventoryResult invError = EQUIP_ERR_OK);
         void SendAuctionBidderNotification(AuctionEntry* auction, bool won);
+        void SendAuctionOwnerBidNotification(AuctionEntry* auction);
         void SendAuctionOwnerNotification(AuctionEntry* auction, bool sold);
         void SendAuctionRemovedNotification(AuctionEntry* auction);
         void SendAuctionOutbiddedMail(AuctionEntry* auction);
@@ -762,13 +763,14 @@ class WorldSession
         void HandleSetTradeItemOpcode(SetTradeItem const& packet);
         void HandleUnacceptTradeOpcode(UnacceptTrade const& packet);
 
-        void HandleAuctionHelloOpcode(WorldPackets::AuctionHouse::AuctionHello const& packet);
-        void HandleAuctionListItems(WorldPackets::AuctionHouse::AuctionListItems const& packet);
-        void HandleAuctionListBidderItems(WorldPackets::AuctionHouse::AuctionListBidderItem const& packet);
-        void HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSellItem const& packet);
-        void HandleAuctionRemoveItem(WorldPackets::AuctionHouse::AuctionRemoveItem const& packet);
-        void HandleAuctionListOwnerItems(WorldPackets::AuctionHouse::AuctionListOwnerItems const& packet);
-        void HandleAuctionPlaceBid(WorldPackets::AuctionHouse::AuctionPlaceBid const& packet);
+        void HandleAuctionHelloOpcode(AuctionHelloRequest const& packet);
+        void HandleAuctionListItems(AuctionListItems const& packet);
+        void HandleAuctionListBidderItems(AuctionListBiddedItems const& packet);
+        void HandleAuctionSellItem(AuctionSellItem const& packet);
+        void HandleAuctionRemoveItem(AuctionRemoveItem const& packet);
+        void HandleAuctionListOwnerItems(AuctionListOwnedItems const& packet);
+        void HandleAuctionPlaceBid(AuctionPlaceBid const& packet);
+        void HandleAuctionListPendingSales(AuctionListPendingSales const& packet);
 
         void HandleGetMailListOpcode(GetMailList const& packet);
         void HandleSendMailOpcode(SendMail const& packet);

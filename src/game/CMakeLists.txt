@@ -208,7 +208,6 @@ set (game_SRCS
     Server/Protocol/ClassicOpcodes.cpp
     Server/Packets/Classic/GuidMapping.cpp
     Server/Packets/Battleground.cpp
-    Server/Packets/AuctionHouse.cpp
     Server/Packets/Character.cpp
     Server/Packets/Chat.cpp
     Server/Packets/Combat.cpp
@@ -450,7 +449,7 @@ set (game_SRCS
     Server/Packets/Classic/GuidMapping.h
     Server/Packets/Classic/InventorySlots.h
     Server/Packets/Battleground.h
-    Server/Packets/AuctionHouse.h
+    Server/Packets/AuctionHouseMessages.h
     Server/Packets/ChannelMessages.h
     Server/Packets/Character.h
     Server/Packets/Chat.h

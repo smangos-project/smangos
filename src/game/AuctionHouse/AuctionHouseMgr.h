@@ -34,6 +34,7 @@ class Item;
 class Player;
 class Unit;
 class WorldPacket;
+struct AuctionItem;
 
 #define MIN_AUCTION_TIME (2*HOUR)
 
@@ -86,7 +87,7 @@ struct AuctionEntry
     uint32 GetHouseFaction() const { return auctionHouseEntry->faction; }
     uint32 GetAuctionCut() const;
     uint32 GetAuctionOutBid() const;
-    bool BuildAuctionInfo(WorldPacket& data) const;
+    bool BuildAuctionInfo(AuctionItem& out) const;
     void DeleteFromDB() const;
     void SaveToDB() const;
     bool IsAvailableFor(Player* player);
@@ -133,9 +134,9 @@ class AuctionHouseObject
 
         void Update();
 
-        void BuildListBidderItems(WorldPacket& data, Player* player, uint32 listfrom, uint32& count, uint32& totalcount);
-        void BuildListOwnerItems(WorldPacket& data, Player* player, uint32 listfrom, uint32& count, uint32& totalcount);
-        void BuildListAuctionItems(WorldPacket& data, Player* player,
+        void BuildListBidderItems(std::vector<AuctionItem>& items, Player* player, uint32 listfrom, uint32& count, uint32& totalcount);
+        void BuildListOwnerItems(std::vector<AuctionItem>& items, Player* player, uint32 listfrom, uint32& count, uint32& totalcount);
+        void BuildListAuctionItems(std::vector<AuctionItem>& items, Player* player,
                 AuctionHouseClientQuery const& query,
             uint32& count, uint32& totalcount);
         uint32 GetAccountAuctionCount(uint32 accountId) { return AccountAuctionMap.count(accountId); }
