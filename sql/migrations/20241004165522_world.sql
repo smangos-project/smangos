@@ -516,38 +516,38 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Offizielle Befehle für die Flotte
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'In der Zwischenzeit schicke ich Leutnant Alverold auf eine Erkundungsmission rund um den Kontinent Kalimdor. Nach Abschluss der Mission sollen sich seine Truppen wieder den unseren bei Burg Tiragarde anschließen.$B$BEs ist allerdings davon auszugehen, dass Leutnant Alverolds Mission einige Zeit dauern wird. Das neue Land macht einen ebenso weiten wie gefährlichen Eindruck. Sollte Benedict oder mir etwas zustoßen, werden Alverolds Truppen die Burg zurückerobern.$B$BWir werden Welle auf Welle schicken, bis die Festung unser ist!$B$B- Admiral Prachtmeer' WHERE `entry` =338;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1>Anmeldestelle für den Wehrdienst bei der Horde</H1>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>Diese Person hat im Namen der Horde unglaubliche Stärke und großes Geschick bewiesen. Man sollte ihr sofort Arbeit beim Wegekreuz zuweisen.</P>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>Hochachtungsvoll</P>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>In Ordnung.<BR></BR>' || char(13) || '
-- Takrin Pfadsucher</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1>Anmeldestelle für den Wehrdienst bei der Horde</H1>
+<BR></BR>
+<P>Diese Person hat im Namen der Horde unglaubliche Stärke und großes Geschick bewiesen. Man sollte ihr sofort Arbeit beim Wegekreuz zuweisen.</P>
+<BR></BR>
+<BR></BR>
+<P>Hochachtungsvoll</P>
+<BR></BR>
+<BR></BR>
+<BR></BR>
+<BR></BR>
+<P>In Ordnung.<BR></BR>
+- Takrin Pfadsucher</P>
+</BODY>
 </HTML>' WHERE `entry` =340;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1>Anmeldestelle für den Wehrdienst bei der Horde</H1>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>Diese Person hat im Namen der Horde unglaubliche Stärke und großes Geschick bewiesen. Man sollte ihr sofort Arbeit beim Wegekreuz zuweisen.</P>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>Hochachtungsvoll' || char(13) || '
-<BR></BR>- Kargal Schlachtnarbe</P>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<BR></BR>' || char(13) || '
-<P>In Ordnung.<BR></BR>' || char(13) || '
-- Takrin Pfadsucher</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1>Anmeldestelle für den Wehrdienst bei der Horde</H1>
+<BR></BR>
+<P>Diese Person hat im Namen der Horde unglaubliche Stärke und großes Geschick bewiesen. Man sollte ihr sofort Arbeit beim Wegekreuz zuweisen.</P>
+<BR></BR>
+<BR></BR>
+<P>Hochachtungsvoll
+<BR></BR>- Kargal Schlachtnarbe</P>
+<BR></BR>
+<BR></BR>
+<BR></BR>
+<P>In Ordnung.<BR></BR>
+- Takrin Pfadsucher</P>
+</BODY>
 </HTML>' WHERE `entry` =341;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Die Ausgrabung bei Bael Modan$B$BDie Feldmessergruppe, die ursprünglich von der Forscherliga geschickt wurde, hatte tatsächlich Recht, was ihre Funde betraf. Der Boden hier ist reich an Artefakten von unschätzbarem Wert für unser Volk. Wir werden zweifellos viele Antworten in unserem Bestreben nach Wissen unter dem Sand und den Felsen Bael Modans finden.$B$BDie geologische Beschaffenheit der Region erfordert jedoch extreme Maßnahmen. Viele der Sandablagerungen haben sich unter den rauen Bedingungen und dem veränderlichen Klima verfestigt.' WHERE `entry` =342;
@@ -898,36 +898,36 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Ich habe die Hoffnung, dass kein H
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Helgrum,$Bwer auch immer den Befehl gegeben hat, unseren Stützpunkt Kargath im Ödland zu errichten, hat sich ein Kompliment verdient. Es ist der ideale Ort zum Ausbilden unserer Truppen. Das Wetter ist rau, die Wildnis heimtückisch, die Eingeborenen kriegerisch und der gesamte Ort von der Außenwelt abgeschnitten. Von dort werden nur die besten Krieger und Späher kommen.$BGute Planung. Gut gemacht.' WHERE `entry` =711;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Eliza' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"' || char(13) || '
-Mein geliebtes Weib, möge die Erde deinen Hunger stillen.' || char(13) || '
-</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<BR/>
+<BR/>
+<H1 align="center">
+Eliza
+</H1>
+<BR/>
+<BR/>
+<BR/>
+<BR/>
+<P align="center"
+Mein geliebtes Weib, möge die Erde deinen Hunger stillen.
+</P>
+</BODY>
 </HTML>' WHERE `entry` =731;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Eliza' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"Mein Geliebtes Weib. Möge die Erde dein Hunger stillen.</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<BR/>
+<BR/>
+<H1 align="center">
+Eliza
+</H1>
+<BR/>
+<BR/>
+<BR/>
+<BR/>
+<P align="center"Mein Geliebtes Weib. Möge die Erde dein Hunger stillen.</P>
+</BODY>
 </HTML>' WHERE `entry` =750;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Hier sind die Maße für den Kolben:$BLänge: 32 BHB$BBreite: 12 BHB$BGewicht: 23,5 KKG bis 25,5 KKG$BZündung: 70 ZL$BSchubkraft: Mindestens 98$BVerdichtungsrate: Super-Derb oder höher$BFalls Euch Gnomenmaße nicht mehr geläufig sind:$BBHB = Barthaaresbreite$BKKG = Klitzekleine Gramm$BZL = Zehenlocken' WHERE `entry` =751;
@@ -1020,27 +1020,27 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Dem Träger dieses Zertifikats geb
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Ich habe eine Möglichkeit gefunden, in die Kammer von Khaz''mul zu gelangen!$B$BNehmt das Medaillon von Gni''kiv aus meiner Truhe.$B$BBesiegt den Trogg Revelosh in der Kammer vor dem Kartenraum und holt Euch den Schaft von Tsol.$B$BVereinigt das Medaillon und den Schaft zum Stab der Prähistorie.$B$BBenutzt den Stab im Kartenraum und öffnet die Tür zur Kammer von Khaz''mul.$B$BGelingt Euch das, gehört die Kammer Euch!$BBaelog' WHERE `entry` =1011;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P>' || char(13) || '
-Im Andenken an meinen teuren Mentor, Horatio M. Montgomery, promovierter Heiler, Lehrer, Freund.' || char(13) || '
-</P>' || char(13) || '
-<BR/>' || char(13) || '
-<H1 align="center">' || char(13) || '
-50 VTFT - 25 NTFT' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P>' || char(13) || '
-"Es gibt sehr viele Kranke und Müde auf der Welt. Unsere Aufgabe als Heiler, NEE, als Männer und Frauen der Medizin, ist es, sie alle von der ''itis'' zu heilen."' || char(13) || '
-</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P>' || char(13) || '
-- Prof. Dr. Dr. h. c. Großmeisterbauer, Tänzer extraordinaire, Freund der Tiere' || char(13) || '
-</P>' || char(13) || '
-<BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<BR/>
+<BR/>
+<P>
+Im Andenken an meinen teuren Mentor, Horatio M. Montgomery, promovierter Heiler, Lehrer, Freund.
+</P>
+<BR/>
+<H1 align="center">
+50 VTFT - 25 NTFT
+</H1>
+<BR/>
+<P>
+"Es gibt sehr viele Kranke und Müde auf der Welt. Unsere Aufgabe als Heiler, NEE, als Männer und Frauen der Medizin, ist es, sie alle von der ''itis'' zu heilen."
+</P>
+<BR/>
+<P>
+- Prof. Dr. Dr. h. c. Großmeisterbauer, Tänzer extraordinaire, Freund der Tiere
+</P>
+<BR/>
+</BODY>
 </HTML>' WHERE `entry` =1031;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Die Wachen dieses Turms scheinen besonders anfällig für meine Angriffe. Als ich die Rückseite des Turms erkundete, sah mich ein Patrolleur und griff an. Ich konnte die Wache mühelos mit einem rechtzeitigen Schlag in den Solarplexus und einem anschließenden Meuchelangriff besiegen.$B$BIch wartete versteckt auf ihren Partner, der kam, um den Grund der Aufregung zu untersuchen. Der Patrolleur kam zu den Büschen, wo ich den Leichnam hingezerrt hatte, und begann zu suchen. Langsam und vorsichtig schlich ich hinter ihn, damit mein Hinterhalt nicht entdeckt würde.' WHERE `entry` =1051;
@@ -1063,10 +1063,10 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Mir fiel auf, dass die Ablagerung 
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Verliere ich den Verstand? Heute enthauptete ich einen meiner treuesten Patrolleure, um einen Blick auf seine Seele werfen zu können. Als ich in die durchgetrennte Luftröhre sah, fiel mir ein: Ich hatte seit Tagen nichts mehr gegessen!' WHERE `entry` =1153;
 
-UPDATE `locales_page_text` SET `Text_loc3` = 'Mathias Shaw hat eine Botin geschickt, mich zu töten. <unleserlicher Text>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = 'Mathias Shaw hat eine Botin geschickt, mich zu töten. <unleserlicher Text>
 $BSie patrouilliert jetzt draußen. Hirnlose, leblose Drohne.$B$BHahahah!' WHERE `entry` =1154;
 
-UPDATE `locales_page_text` SET `Text_loc3` = 'Van Cleef... <unleserlicher Text>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = 'Van Cleef... <unleserlicher Text>
 $BRuft mich REIN??? FÜR WEN HÄLT DER SICH??? Ich bin Klaven Jagdruf! Ich lasse mir von keinem Insekt vorschreiben, was ich zu tun habe!$B$B<Die restlichen Seiten des Buches fehlen>' WHERE `entry` =1155;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Curgle,$B$Bich warte schon voller Ungeduld auf Eure neueste Erfindung. Ich kann es kaum erwarten, sie zu benutzen, um damit meine Studien zu dokumentieren.$B$BBitte vertraut sie meinem Boten an.$B$B$BMit herzlichen Grüßen,$B$BDaryn Leuchtwind' WHERE `entry` =1156;
@@ -1139,192 +1139,192 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Pelver Deepstomp$B$BDunkelbewahrer
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Solomon,$B$Bder Überbringer dieses Dekrets hat den offiziellen Status eines Stellvertreters von Sturmwind erlangt. Ihr könnt ihn benutzen, um einen Beweis dafür zu finden, dass der schwarze Drachenschwarm sich mit den Orcs des Schwarzfelsklans eingelassen hat. Sollte so ein Beweis gefunden werden, soll dieser Stellvertreter besagten Beweis zu mir nach Sturmwind bringen, woraufhin ich den Befehl erteilen werde, hinreichend Militär zur Unterstützung von Seenhain zu entsenden.$B$BHochachtungsvoll$B$B$B$BHochlord Bolvar Fordragon' WHERE `entry` =1471;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-HANDBUCH FÜR KRISTALLPYLONEN' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center">"Eine Anleitung zum Sammeln und Benutzen von Machtkristallen aus dem Krater von Un''Goro." </P>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 1: Der nördliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 2: Der östliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 3: Der westliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+HANDBUCH FÜR KRISTALLPYLONEN
+</H1>
+<BR/>
+<P align="center">"Eine Anleitung zum Sammeln und Benutzen von Machtkristallen aus dem Krater von Un''Goro." </P>
+<BR/>
+<BR/>
+<P align="left">Kapitel 1: Der nördliche Pylon </P>
+<BR/>
+<P align="left">Kapitel 2: Der östliche Pylon </P>
+<BR/>
+<P align="left">Kapitel 3: Der westliche Pylon </P>
+<BR/>
+</BODY>
 </HTML>' WHERE `entry` =1491;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">HANDBUCH FüR KRISTALLPYLONEN</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center">"Eine Anleitung zum Sammeln und Benutzen von Machtkristallen aus dem Un''Goro Krater." </P>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 1: Der nördliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 2: Der östliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Kapitel 3: Der westliche Pylon </P>' || char(13) || '
-<BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">HANDBUCH FüR KRISTALLPYLONEN</H1>
+<BR/>
+<P align="center">"Eine Anleitung zum Sammeln und Benutzen von Machtkristallen aus dem Un''Goro Krater." </P>
+<BR/>
+<BR/>
+<P align="left">Kapitel 1: Der nördliche Pylon </P>
+<BR/>
+<P align="left">Kapitel 2: Der östliche Pylon </P>
+<BR/>
+<P align="left">Kapitel 3: Der westliche Pylon </P>
+<BR/>
+</BODY>
 </HTML>' WHERE `entry` =1510;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Kapitel 1: DER NÖRDLICHE PYLON' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_mini_north" align="left"/>' || char(13) || '
-<P align="right">Der nördliche<BR/>' || char(13) || '
-Pylon akzeptiert<BR/>' || char(13) || '
-gelbe, rote<BR/>' || char(13) || '
-und grüne<BR/>' || char(13) || '
-Kristalle.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Der Pylon fokussiert auf die Energie, die mit den gelben Kristallen als Hauptenergiequelle erzeugt werden kann.</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+Kapitel 1: DER NÖRDLICHE PYLON
+</H1>
+<BR/>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_mini_north" align="left"/>
+<P align="right">Der nördliche<BR/>
+Pylon akzeptiert<BR/>
+gelbe, rote<BR/>
+und grüne<BR/>
+Kristalle.</P>
+<BR/>
+<BR/>
+<BR/>
+<BR/>
+<P align="left">Der Pylon fokussiert auf die Energie, die mit den gelben Kristallen als Hauptenergiequelle erzeugt werden kann.</P>
+</BODY>
 </HTML>' WHERE `entry` =1511;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Nördliche Kristallkombinationen' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Es gibt zwei mögliche Effekte: Einer, der Schaden erzeugt, und einen, der Schaden verhindert. </P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLSPRENGLADUNG: Erfordert rote und gelbe Kristalle. <BR/>Damit wird eine gewaltige Explosion erzeugt, die Eure Feinde lähmt.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLFLICKER: Erfordert gelbe und grüne Kristalle. <BR/>Das verleiht Euch eine heilende Aura.' || char(13) || '
-</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+Nördliche Kristallkombinationen
+</H1>
+<BR/>
+<P align="left">Es gibt zwei mögliche Effekte: Einer, der Schaden erzeugt, und einen, der Schaden verhindert. </P>
+<BR/>
+<P align="left">KRISTALLSPRENGLADUNG: Erfordert rote und gelbe Kristalle. <BR/>Damit wird eine gewaltige Explosion erzeugt, die Eure Feinde lähmt.</P>
+<BR/>
+<P align="left">KRISTALLFLICKER: Erfordert gelbe und grüne Kristalle. <BR/>Das verleiht Euch eine heilende Aura.
+</P>
+</BODY>
 </HTML>' WHERE `entry` =1512;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-NORDPYLON-SCHRIFTTAFEL-DIAGRAMM' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_north"/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+NORDPYLON-SCHRIFTTAFEL-DIAGRAMM
+</H1>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_north"/>
+</BODY>
 </HTML>' WHERE `entry` =1513;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Kapitel 2: DER ÖSTLICHE PYLON' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_mini_east" align="left"/>' || char(13) || '
-<P align="right">Der östliche<BR/>' || char(13) || '
-Pylon akzeptiert<BR/>' || char(13) || '
-blaue, gelbe und<BR/>' || char(13) || '
-grüne<BR/>' || char(13) || '
-Kristalle.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Der Pylon fokussiert auf die Energie, die mit den blauen Kristallen als Hauptenergiequelle erzeugt werden kann.</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+Kapitel 2: DER ÖSTLICHE PYLON
+</H1>
+<BR/>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_mini_east" align="left"/>
+<P align="right">Der östliche<BR/>
+Pylon akzeptiert<BR/>
+blaue, gelbe und<BR/>
+grüne<BR/>
+Kristalle.</P>
+<BR/>
+<BR/>
+<BR/>
+<BR/>
+<P align="left">Der Pylon fokussiert auf die Energie, die mit den blauen Kristallen als Hauptenergiequelle erzeugt werden kann.</P>
+</BODY>
 </HTML>' WHERE `entry` =1514;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-östliche Kristallkombinationen' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Es gibt zwei mögliche Effekte: Einer verleiht der Willenskraft einen Bonus, einer erzeugt einen Schaden zufügenden Schild.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLKRAFT: Erfordert blaue und grüne Kristalle.<BR/>Das verleiht Euch eine Erhöhung der Willenskraft.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLSPITZE: Erfordert blaue und gelbe Kristalle.<BR/>Damit wird ein Schild erzeugt, der Angreifern Schaden zufügt.' || char(13) || '
-</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+östliche Kristallkombinationen
+</H1>
+<BR/>
+<P align="left">Es gibt zwei mögliche Effekte: Einer verleiht der Willenskraft einen Bonus, einer erzeugt einen Schaden zufügenden Schild.</P>
+<BR/>
+<P align="left">KRISTALLKRAFT: Erfordert blaue und grüne Kristalle.<BR/>Das verleiht Euch eine Erhöhung der Willenskraft.</P>
+<BR/>
+<P align="left">KRISTALLSPITZE: Erfordert blaue und gelbe Kristalle.<BR/>Damit wird ein Schild erzeugt, der Angreifern Schaden zufügt.
+</P>
+</BODY>
 </HTML>' WHERE `entry` =1515;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-OSTPYLON-SCHRIFTTAFEL-DIAGRAMM' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_east"/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+OSTPYLON-SCHRIFTTAFEL-DIAGRAMM
+</H1>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_east"/>
+</BODY>
 </HTML>' WHERE `entry` =1516;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OSTPYLON-SCHRIFTTAFEL-DIAGRAMM</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_east"/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OSTPYLON-SCHRIFTTAFEL-DIAGRAMM</H1>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_east"/>
+</BODY>
 </HTML>' WHERE `entry` =1530;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Kapitel 3: DER WESTLICHE PYLON' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_mini_west" align="left"/>' || char(13) || '
-<P align="right">Der westliche<BR/>' || char(13) || '
-Pylon akzeptiert<BR/>' || char(13) || '
-rote, grüne<BR/>' || char(13) || '
-und blaue<BR/>' || char(13) || '
-Kristalle.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Der Pylon fokussiert auf die Energie, die mit den roten Kristallen als Hauptenergiequelle erzeugt werden kann.</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+Kapitel 3: DER WESTLICHE PYLON
+</H1>
+<BR/>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_mini_west" align="left"/>
+<P align="right">Der westliche<BR/>
+Pylon akzeptiert<BR/>
+rote, grüne<BR/>
+und blaue<BR/>
+Kristalle.</P>
+<BR/>
+<BR/>
+<BR/>
+<BR/>
+<P align="left">Der Pylon fokussiert auf die Energie, die mit den roten Kristallen als Hauptenergiequelle erzeugt werden kann.</P>
+</BODY>
 </HTML>' WHERE `entry` =1531;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-Westliche Kristallkombinationen' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Es gibt zwei mögliche Effekte: Einer erhöht Euren Schutz vor Schaden, einer schwächt die Verteidigung des Gegners.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLBARRIERE: Erfordert rote und grüne Kristalle.<BR/>Das verleiht Euch eine Erhöhung der Rüstung.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">KRISTALLSCHWÄCHER: Erfordert blaue und rote Kristalle.<BR/>Damit kann die Rüstung eines bestimmten Ziels verringert werden.' || char(13) || '
-</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+Westliche Kristallkombinationen
+</H1>
+<BR/>
+<P align="left">Es gibt zwei mögliche Effekte: Einer erhöht Euren Schutz vor Schaden, einer schwächt die Verteidigung des Gegners.</P>
+<BR/>
+<P align="left">KRISTALLBARRIERE: Erfordert rote und grüne Kristalle.<BR/>Das verleiht Euch eine Erhöhung der Rüstung.</P>
+<BR/>
+<P align="left">KRISTALLSCHWÄCHER: Erfordert blaue und rote Kristalle.<BR/>Damit kann die Rüstung eines bestimmten Ziels verringert werden.
+</P>
+</BODY>
 </HTML>' WHERE `entry` =1532;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">' || char(13) || '
-WESTPYLON-SCHRIFTTAFEL-DIAGRAMM' || char(13) || '
-</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_west"/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">
+WESTPYLON-SCHRIFTTAFEL-DIAGRAMM
+</H1>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_west"/>
+</BODY>
 </HTML>' WHERE `entry` =1533;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">WESTPYLON-SCHRIFTTAFEL-DIAGRAMM</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\Pictures\11482_crystals_west"/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">WESTPYLON-SCHRIFTTAFEL-DIAGRAMM</H1>
+<BR/>
+<IMG src="Interface\Pictures\11482_crystals_west"/>
+</BODY>
 </HTML>' WHERE `entry` =1550;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Seid gegrüßt und willkommen, Abenteurer!$B$BIch, Krinkle Goldstahl, brauche Leute, die bereit sind, ihr Leben für ein äußerst schwieriges Unterfangen zu riskieren. Aufgrund der zahlreichen Pflichten und des damit verbundenen Arbeitspensums versichere ich, dass jeder, der tapfer genug ist, diese Liste von Gegenständen fertig zu stellen und sie mir unversehrt zu bringen, reich belohnt werden soll. $B$BDie Liste befindet sich auf den folgenden Seiten...' WHERE `entry` =1551;
@@ -1339,19 +1339,19 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Sucht mir diese Gegenstände und k
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Dieser Amboss ist Eigentum von Jordan Stillbrunn - bitte NICHT benutzen!$B$B- Jordan' WHERE `entry` =1591;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung geringen Arkanums erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =1611;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung geringen Arkanums erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten.$B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =1631;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung geringen Arkanums erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =1632;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung geringen Arkanums erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =1633;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung geringen Arkanums erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten.$B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =1634;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Hallo, Felnok!$B$BMeine Studien in der brennenden Steppe entwickeln sich prächtig. Und ich schulde $N eine Menge für $Gseine:ihre; Hilfe! Ich brauche jedoch noch Folgendes, um weitermachen zu können:$B$BEinen Stahlfeder-Bumberbitzel$BEinen 17er-Eisschraubenschlüssel$B12 Pfund Entenfedern$BEinen Krug deines Klebstoffs$B$BVielen Dank, Felnok, und erinnere mich daran, dass ich dir nicht wieder Kohlen in deine Stiefel stecke, wenn wir uns das nächste Mal sehen!$B$BTinkee' WHERE `entry` =1691;
@@ -2326,211 +2326,211 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Nutzt die Macht des Amuletts der G
 
 UPDATE `locales_page_text` SET `Text_loc3` = '... und so werdet Ihr das legendäre Schwert Aschenbringer des Scharlachroten Hochlords finden.$B$BErstaunlich in was man beim Fischen alles reingeraten kann, nicht?' WHERE `entry` =2611;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung von großem Arkanum erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =2631;
 
 UPDATE `locales_page_text` SET `Text_loc3` = '<Ihr könnt die Schrift auf diesen Seiten nicht entziffern.>' WHERE `entry` =2632;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung von großem Arkanum erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =2633;
 
 UPDATE `locales_page_text` SET `Text_loc3` = '<Die Tinte wirbelt und verändert sich überall auf der Seite. Es ist, als ob das Buch Euch verspotten möchte.>' WHERE `entry` =2634;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<Die Seiten sind mit alten Elfenrunen bedeckt.>
 $BAuf diesen Seiten finden sich Erinnerungen an Ereignisse, die sich bei der Sammlung und Herstellung der zur Anfertigung von großem Arkanum erforderlichen Reagenzien zutrugen.$B$BMöge dieser Buchband niemals in die Hände unserer Feinde geraten. $B$BMöge ich dereinst wieder das fahle Licht des Mondes auf Quel''Thalas scheinen sehen.$B$BMöge ich zum Ruhme von Kael''thas sterben.$B$BMöge ich zum Ruhme Illidans töten.$B$B- Meister Kariel Winthalus' WHERE `entry` =2635;
 
 UPDATE `locales_page_text` SET `Text_loc3` = '<Ihr fühlt einen stechenden Schmerz wenn Ihr auf diese Seiten blickt.>' WHERE `entry` =2636;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '...versteckt Euch unter einem Felsvorsprung oder einer Brücke, wenn in Reichweite. Eine gute, starke Mauer ist auch eine sichere Sache.$B$B$B<mehr verblasster Text.>' || char(13) || '
-$BBenutzt v lst nd g Heilung, zwischen fünf und fünfzehn Kl r r.$B$B$B<mehr verblasster Text.>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '...versteckt Euch unter einem Felsvorsprung oder einer Brücke, wenn in Reichweite. Eine gute, starke Mauer ist auch eine sichere Sache.$B$B$B<mehr verblasster Text.>
+$BBenutzt v lst nd g Heilung, zwischen fünf und fünfzehn Kl r r.$B$B$B<mehr verblasster Text.>
 $BAm Ende eines erfolgreichen Schlachtzugs, lehnt Euch zurück und genießt den Sieg. Nach ganzen zehn bis fünfzehn Sekunden, begebt Euch in die Stadt und zeigt Eure f t e B te, damit''s alle sehen und Euch verehren können.$B$B$B<Ein kurzer Blick auf den Rest des Kompendiums lässt Euch mit Kopfschmerzen zurück.>' WHERE `entry` =2637;
 
 UPDATE `locales_page_text` SET `Text_loc3` = '<Ihr fühlt einen stechenden Schmerz wenn Ihr auf diese Seiten blickt.>' WHERE `entry` =2653;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">ABHANDLUNG MILITÄRISCHER RÄNGE</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRankAlliance" align="left"/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="right">Es folgen</P>' || char(13) || '
-<P align="right">die militärischen Ränge</P>' || char(13) || '
-<P align="right">der Allianz,</P>' || char(13) || '
-<P align="right">gefolgt von</P>' || char(13) || '
-<P align="right">Informationen die</P>' || char(13) || '
-<P align="right">den Völkern</P>' || char(13) || '
-<P align="right">der Horde bekannt sind. Alle</P>' || char(13) || '
-<P align="right">Angaben sind in zwei</P>' || char(13) || '
-<P align="right">Abschnitte unterteilt, Offiziere und Soldaten. Dabei werden ihre Ränge jeweils in absteigender Reihenfolge aufgelistet, vom höchsten bis zum niedrigsten Rang. Lang lebe die Allianz!</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">ABHANDLUNG MILITÄRISCHER RÄNGE</H1>
+<BR/>
+<BR/>
+<IMG src="Interface\PvPRankBadges\PvPRankAlliance" align="left"/>
+<BR/>
+<P align="right">Es folgen</P>
+<P align="right">die militärischen Ränge</P>
+<P align="right">der Allianz,</P>
+<P align="right">gefolgt von</P>
+<P align="right">Informationen die</P>
+<P align="right">den Völkern</P>
+<P align="right">der Horde bekannt sind. Alle</P>
+<P align="right">Angaben sind in zwei</P>
+<P align="right">Abschnitte unterteilt, Offiziere und Soldaten. Dabei werden ihre Ränge jeweils in absteigender Reihenfolge aufgelistet, vom höchsten bis zum niedrigsten Rang. Lang lebe die Allianz!</P>
+</BODY>
 </HTML>' WHERE `entry` =2654;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<P align="center">Teil 1</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>' || char(13) || '
-<P align="right">Großmarschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldmarschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>' || char(13) || '
-<P align="right">Marschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>' || char(13) || '
-<P align="right">Rittmeister</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldkommandant</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>
+<P align="center">Teil 1</P>
+<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>
+<P align="right">Großmarschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>
+<P align="right">Feldmarschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>
+<P align="right">Marschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>
+<P align="right">Rittmeister</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>
+<P align="right">Feldkommandant</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2655;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<P align="center">Teil 2</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>' || char(13) || '
-<P align="right">Ritter der Allianz</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>' || char(13) || '
-<P align="right">Kürassier</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>' || char(13) || '
-<P align="right">Hauptmann</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>' || char(13) || '
-<P align="right">Leutnant</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>
+<P align="center">Teil 2</P>
+<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>
+<P align="right">Ritter der Allianz</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>
+<P align="right">Kürassier</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>
+<P align="right">Hauptmann</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>
+<P align="right">Leutnant</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2656;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">SOLDATENRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>' || char(13) || '
-<P align="right">Fähnrich</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldwebel</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>' || char(13) || '
-<P align="right">Landsknecht</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>' || char(13) || '
-<P align="right">Fußknecht</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>' || char(13) || '
-<P align="right">Gefreiter</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">SOLDATENRÄNGE DER ALLIANZ</H1><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>
+<P align="right">Fähnrich</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>
+<P align="right">Feldwebel</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>
+<P align="right">Landsknecht</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>
+<P align="right">Fußknecht</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>
+<P align="right">Gefreiter</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2657;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<P align="center">Teil 1</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>' || char(13) || '
-<P align="right">Oberster Kriegsfürst</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>' || char(13) || '
-<P align="right">Kriegsfürst</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>' || char(13) || '
-<P align="right">Kriegsherr</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>' || char(13) || '
-<P align="right">Sturmreiter</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldherr</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>
+<P align="center">Teil 1</P>
+<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>
+<P align="right">Oberster Kriegsfürst</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>
+<P align="right">Kriegsfürst</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>
+<P align="right">Kriegsherr</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>
+<P align="right">Sturmreiter</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>
+<P align="right">Feldherr</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2658;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Blickt Ihr in das Auge, erfüllen Bilder eines großen Kampfes Euren Geist.$B$BDieser furchteinflößende Konflikt scheint irgendwo in Lordaeron stattzufinden.$B$BIhr könnt nur schwerlich eine einzelne, weibliche Silhouette ausmachen, die inmitten tausender von Leichen steht und eine Heerschar der Geißel abwehrt. Sie ist hoffnungslos unterlegen.$B$BFöden des Lichts entströmen ihren Händen und schneiden durch hunderte von Untoten.' WHERE `entry` =2659;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01"/><BR/>' || char(13) || '
-<P align="right">Rottenmeister</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank04"/><BR/>' || char(13) || '
-<P align="right">Schlachtrufer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank03"/><BR/>' || char(13) || '
-<P align="right">Waffenträger</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank02"/><BR/>' || char(13) || '
-<P align="right">Grunzer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01"/><BR/>' || char(13) || '
-<P align="right">Späher</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01"/><BR/>
+<P align="right">Rottenmeister</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank04"/><BR/>
+<P align="right">Schlachtrufer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank03"/><BR/>
+<P align="right">Waffenträger</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank02"/><BR/>
+<P align="right">Grunzer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01"/><BR/>
+<P align="right">Späher</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2660;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE &amp; ALLIANZ</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRankHorde" align="left"/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="right">Throm''ka!  In diesem</P>' || char(13) || '
-<P align="right">buch findet Ihr</P>' || char(13) || '
-<P align="right">zahlreiche Auflistungen</P>' || char(13) || '
-<P align="right">der militärischen Ränge</P>' || char(13) || '
-<P align="right">der Horde und</P>' || char(13) || '
-<P align="right">der erbärmlichen Allianz.</P>' || char(13) || '
-<P align="right">Wir beginnen mit der</P>' || char(13) || '
-<P align="right">Horde, dann folgt die Allianz,</P>' || char(13) || '
-<P align="right">jeweils mit einer Liste der Offiziers- und Soldatenränge. Gebührenderweise werden die Stärksten zu Beginn und die Schwächeren darunter aufgelistet.</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE &amp; ALLIANZ</H1>
+<BR/>
+<BR/>
+<IMG src="Interface\PvPRankBadges\PvPRankHorde" align="left"/>
+<BR/>
+<P align="right">Throm''ka!  In diesem</P>
+<P align="right">buch findet Ihr</P>
+<P align="right">zahlreiche Auflistungen</P>
+<P align="right">der militärischen Ränge</P>
+<P align="right">der Horde und</P>
+<P align="right">der erbärmlichen Allianz.</P>
+<P align="right">Wir beginnen mit der</P>
+<P align="right">Horde, dann folgt die Allianz,</P>
+<P align="right">jeweils mit einer Liste der Offiziers- und Soldatenränge. Gebührenderweise werden die Stärksten zu Beginn und die Schwächeren darunter aufgelistet.</P>
+</BODY>
 </HTML>' WHERE `entry` =2661;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<P align="center">Teil 1</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>' || char(13) || '
-<P align="right">Oberster Kriegsfürst</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>' || char(13) || '
-<P align="right">Kriegsfürst</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>' || char(13) || '
-<P align="right">Kriegsherr</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>' || char(13) || '
-<P align="right">Sturmreiter</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldherr</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>
+<P align="center">Teil 1</P>
+<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>
+<P align="right">Oberster Kriegsfürst</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>
+<P align="right">Kriegsfürst</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>
+<P align="right">Kriegsherr</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>
+<P align="right">Sturmreiter</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>
+<P align="right">Feldherr</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2662;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<P align="center">Teil 2</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>' || char(13) || '
-<P align="right">Klinge der Horde</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>' || char(13) || '
-<P align="right">Zornbringer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>' || char(13) || '
-<P align="right">Blutgardist</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>' || char(13) || '
-<P align="right">Steingardist</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>
+<P align="center">Teil 2</P>
+<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>
+<P align="right">Klinge der Horde</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>
+<P align="right">Zornbringer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>
+<P align="right">Blutgardist</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>
+<P align="right">Steingardist</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2663;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>' || char(13) || '
-<P align="right">Rottenmeister</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>' || char(13) || '
-<P align="right">Schlachtrufer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>' || char(13) || '
-<P align="right">Waffenträger</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>' || char(13) || '
-<P align="right">Grunzer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>' || char(13) || '
-<P align="right">Späher</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>
+<P align="right">Rottenmeister</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>
+<P align="right">Schlachtrufer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>
+<P align="right">Waffenträger</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>
+<P align="right">Grunzer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>
+<P align="right">Späher</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2664;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<P align="center">Teil 1</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>' || char(13) || '
-<P align="right">Großmarschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldmarschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>' || char(13) || '
-<P align="right">Marschall</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>' || char(13) || '
-<P align="right">Rittmeister</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldkommandant</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>
+<P align="center">Teil 1</P>
+<IMG src="Interface\PvPRankBadges\PvPRank14" align="left"/><BR/>
+<P align="right">Großmarschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank13" align="left"/><BR/>
+<P align="right">Feldmarschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank12" align="left"/><BR/>
+<P align="right">Marschall</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank11" align="left"/><BR/>
+<P align="right">Rittmeister</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank10" align="left"/><BR/>
+<P align="right">Feldkommandant</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2665;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Völlig umsonst, könnte man annehmen. Einige Augenblicke später wird die Priesterin von einem Schwarm toter Arbeiter umzingelt... Die Gefallenen sind wieder auferstanden.' WHERE `entry` =2666;
@@ -2545,52 +2545,52 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Artorius der Verhängnisvolle:$B$B
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Lasst Euch gewarnt sein, $R, diese Dämonen muss man auf ihre eigene Weise bekämpfen. Haben sie das Gefühl Euch nicht übertreffen zu können, werden sie fliehen.$B$BGEHT ALLEINE.' WHERE `entry` =2675;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">MILITÄRISCHE RÄNGE DER ALLIANZ</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"OFFIZIERE</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"Großmarschall</P>' || char(13) || '
-<P align="center"Feldmarschall</P>' || char(13) || '
-<P align="center"Marschall</P>' || char(13) || '
-<P align="center"Rittmeister</P>' || char(13) || '
-<P align="center"Feldkommandant</P>' || char(13) || '
-<P align="center"Ritter der Allianz</P>' || char(13) || '
-<P align="center"Kürassier</P>' || char(13) || '
-<P align="center"Hauptmann</P>' || char(13) || '
-<P align="center"Leutnant</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"SOLDATEN</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"Fähnrich</P>' || char(13) || '
-<P align="center"Feldwebel</P>' || char(13) || '
-<P align="center"Landsknecht</P>' || char(13) || '
-<P align="center"Fußknecht</P>' || char(13) || '
-<P align="center"Gefreiter</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">MILITÄRISCHE RÄNGE DER ALLIANZ</H1>
+<BR/>
+<P align="center"OFFIZIERE</P>
+<BR/>
+<P align="center"Großmarschall</P>
+<P align="center"Feldmarschall</P>
+<P align="center"Marschall</P>
+<P align="center"Rittmeister</P>
+<P align="center"Feldkommandant</P>
+<P align="center"Ritter der Allianz</P>
+<P align="center"Kürassier</P>
+<P align="center"Hauptmann</P>
+<P align="center"Leutnant</P>
+<BR/>
+<P align="center"SOLDATEN</P>
+<BR/>
+<P align="center"Fähnrich</P>
+<P align="center"Feldwebel</P>
+<P align="center"Landsknecht</P>
+<P align="center"Fußknecht</P>
+<P align="center"Gefreiter</P>
+</BODY>
 </HTML>' WHERE `entry` =2676;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<P align="center"OFFIZIERE</P><BR/>' || char(13) || '
-<P align="center"Oberster Kriegsfürst</P>' || char(13) || '
-<P align="center"Kriegsfürst</P>' || char(13) || '
-<P align="center"Kriegsherr</P>' || char(13) || '
-<P align="center"Sturmreiter</P>' || char(13) || '
-<P align="center"Feldherr</P>' || char(13) || '
-<P align="center"Klinge der Horde</P>' || char(13) || '
-<P align="center"Zornbringer</P>' || char(13) || '
-<P align="center"Blutgardist</P>' || char(13) || '
-<P align="center"Steingardist</P><BR/>' || char(13) || '
-<P align="center"SOLDATEN</P><BR/>' || char(13) || '
-<P align="center"Rottenmeister</P>' || char(13) || '
-<P align="center"Schlachtrufer</P>' || char(13) || '
-<P align="center"Waffenträger</P>' || char(13) || '
-<P align="center"Grunzer</P>' || char(13) || '
-<P align="center"Späher</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE</H1><BR/>
+<P align="center"OFFIZIERE</P><BR/>
+<P align="center"Oberster Kriegsfürst</P>
+<P align="center"Kriegsfürst</P>
+<P align="center"Kriegsherr</P>
+<P align="center"Sturmreiter</P>
+<P align="center"Feldherr</P>
+<P align="center"Klinge der Horde</P>
+<P align="center"Zornbringer</P>
+<P align="center"Blutgardist</P>
+<P align="center"Steingardist</P><BR/>
+<P align="center"SOLDATEN</P><BR/>
+<P align="center"Rottenmeister</P>
+<P align="center"Schlachtrufer</P>
+<P align="center"Waffenträger</P>
+<P align="center"Grunzer</P>
+<P align="center"Späher</P>
+</BODY>
 </HTML>' WHERE `entry` =2677;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Um ein Schreckensross an Euch zu binden, müsst Ihr diese drei Dinge vollbringen:$B$BVollführt das Ritual des mächtigen Beschwörungskreises.$B$Böffnet in diesem Kreis ein Portal nach Xoroth und zieht das Schreckensross dort hindurch.$B$BBesiegt das Schreckensross und unterjocht seinen Geist.$B$BDie folgenden Seiten werden noch eingehender beschreiben, wie diese einzelnen Schritte vollbracht werden müssen. Es wird nicht leicht werden, aber Ihr habt euch als sehr fähig erwiesen. Mit Konzentration und Geschick, bin ich mir sicher, dass das Ross das Eure sein wird.$B$BLest weiter,$B-Mor''zul Bloodbringer' WHERE `entry` =2691;
@@ -2609,40 +2609,40 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Abschluss des Rituals$B$BIhr könn
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Vollendung des Rituals$B$BSie können Ihren Fortschritt anhand der magischen Runen am Rand des Kreises verfolgen.  Wenn neun Runen erscheinen, ist das Ritual abgeschlossen, und du wirst sehen, wie die Energie des neu gestärkten Kreises aufsteigt.$B$BVon dort aus kannst du die Xorothianischen Glyphen beschwören und ein Portal nach Xoroth öffnen, durch das du ein Dreadsteed ziehen kannst.$B$BBesiege das Dreadsteed und befreie seinen Geist.  Wenn du dich dem Geist stellst, wird er in seinen Bann gezogen, und du wirst mit dem Geheimnis seiner Beschwörung belohnt.' WHERE `entry` =2711;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Hier liegt Durotan, der erste Häuptling des Frostwolfklans und Vater unseres verehrten Kriegshäuptlings Thrall. Er war der mutigste unter uns, und er wurde verraten von jenen, die unser Volk versklavt sahen. Durotan gab sein Leben, damit wir die Freiheit erlangen können. Wir verehren ihn zutiefst, und sein Vermächtnis wird uns durch seinen Sohn weitergegeben werden.</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="left">Drek''Thar, Scharfseher der Frostwölfe </P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<BR/>
+<BR/>
+<P align="left">Hier liegt Durotan, der erste Häuptling des Frostwolfklans und Vater unseres verehrten Kriegshäuptlings Thrall. Er war der mutigste unter uns, und er wurde verraten von jenen, die unser Volk versklavt sahen. Durotan gab sein Leben, damit wir die Freiheit erlangen können. Wir verehren ihn zutiefst, und sein Vermächtnis wird uns durch seinen Sohn weitergegeben werden.</P>
+<BR/>
+<P align="left">Drek''Thar, Scharfseher der Frostwölfe </P>
+</BODY>
 </HTML>' WHERE `entry` =2731;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"OFFIZIERE</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"Oberster Kriegsfürst</P>' || char(13) || '
-<P align="center"Kriegsfürst</P>' || char(13) || '
-<P align="center"Kriegsherr</P>' || char(13) || '
-<P align="center"Sturmreiter</P>' || char(13) || '
-<P align="center"Feldherr</P>' || char(13) || '
-<P align="center"Klinge der Horde</P>' || char(13) || '
-<P align="center"Zornbringer</P>' || char(13) || '
-<P align="center"Blutgardist</P>' || char(13) || '
-<P align="center"Steingardist</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"SOLDATEN</P>' || char(13) || '
-<BR/>' || char(13) || '
-<P align="center"Rottenmeister</P>' || char(13) || '
-<P align="center"Schlachtrufer</P>' || char(13) || '
-<P align="center"Waffenträger</P>' || char(13) || '
-<P align="center"Grunzer</P>' || char(13) || '
-<P align="center"Späher</P>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">MILITÄRISCHE RÄNGE DER HORDE</H1>
+<BR/>
+<P align="center"OFFIZIERE</P>
+<BR/>
+<P align="center"Oberster Kriegsfürst</P>
+<P align="center"Kriegsfürst</P>
+<P align="center"Kriegsherr</P>
+<P align="center"Sturmreiter</P>
+<P align="center"Feldherr</P>
+<P align="center"Klinge der Horde</P>
+<P align="center"Zornbringer</P>
+<P align="center"Blutgardist</P>
+<P align="center"Steingardist</P>
+<BR/>
+<P align="center"SOLDATEN</P>
+<BR/>
+<P align="center"Rottenmeister</P>
+<P align="center"Schlachtrufer</P>
+<P align="center"Waffenträger</P>
+<P align="center"Grunzer</P>
+<P align="center"Späher</P>
+</BODY>
 </HTML>' WHERE `entry` =2770;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Schrittweise zum Sieg$BDer ultimative Leitfaden zum schnellen Sieg über die Stormpike$B-Von Drek''Thar$B$BAuf den folgenden Seiten findet Ihr eine Abhandlung über Kampftaktiken und Politik. Der erfahrene Soldat verlässt sich auf sein Wissen. Möge Euch dieses Buch in der Schlacht um das Alteractal leiten.' WHERE `entry` =2771;
@@ -2797,66 +2797,66 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Ich kann es nicht mehr verantworte
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Es war zu spät. Ein dritter Lehrling hatte, ohne dass ich davon wusste, die missratenen Untersuchungen mit einigen anderen weitergeführt. Ich werde versuchen, die Situation in den Griff zu bekommen, aber zuerst muss ich die noch nicht betroffenen Lehrlinge in Sicherheit bringen.$B$BIch werde ihnen erzählen, dass ich auf Forschungsurlaub bei der Zuflucht der Weltenwanderer gehen werde, in der Hoffnung, dort einen neuen Ansatz für das Problem zu finden.$B$BIch muss einen Weg finden, wie ich diese furchtbare Fehleinschätzung wieder gutmachen kann.' WHERE `entry` =2853;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<P align="center">Teil 2</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>' || char(13) || '
-<P align="right">Klinge der Horde</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>' || char(13) || '
-<P align="right">Zornbringer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>' || char(13) || '
-<P align="right">Blutgardist</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>' || char(13) || '
-<P align="right">Steingardist</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER HORDE</H1><BR/>
+<P align="center">Teil 2</P>
+<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>
+<P align="right">Klinge der Horde</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>
+<P align="right">Zornbringer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>
+<P align="right">Blutgardist</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>
+<P align="right">Steingardist</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2854;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>' || char(13) || '
-<P align="right">Rottenmeister</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>' || char(13) || '
-<P align="right">Schlachtrufer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>' || char(13) || '
-<P align="right">Waffenträger</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>' || char(13) || '
-<P align="right">Grunzer</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>' || char(13) || '
-<P align="right">Späher</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">SOLDATENRÄNGE DER HORDE</H1><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>
+<P align="right">Rottenmeister</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>
+<P align="right">Schlachtrufer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>
+<P align="right">Waffenträger</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>
+<P align="right">Grunzer</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>
+<P align="right">Späher</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2855;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<P align="center">Teil 2</P>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>' || char(13) || '
-<P align="right">Ritter der Allianz</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>' || char(13) || '
-<P align="right">Kürassier</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>' || char(13) || '
-<P align="right">Hauptmann</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>' || char(13) || '
-<P align="right">Leutnant</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">OFFIZIERSRÄNGE DER ALLIANZ</H1><BR/>
+<P align="center">Teil 2</P>
+<IMG src="Interface\PvPRankBadges\PvPRank09" align="left"/><BR/>
+<P align="right">Ritter der Allianz</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank08" align="left"/><BR/>
+<P align="right">Kürassier</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank07" align="left"/><BR/>
+<P align="right">Hauptmann</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank06" align="left"/><BR/>
+<P align="right">Leutnant</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2856;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<H1 align="center">SOLDATENRÄNGE DER ALLIANZ</H1><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>' || char(13) || '
-<P align="right">Fähnrich</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>' || char(13) || '
-<P align="right">Feldwebel</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>' || char(13) || '
-<P align="right">Landsknecht</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>' || char(13) || '
-<P align="right">Fußknecht</P><BR/><BR/>' || char(13) || '
-<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>' || char(13) || '
-<P align="right">Gefreiter</P><BR/><BR/>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<H1 align="center">SOLDATENRÄNGE DER ALLIANZ</H1><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank05" align="left"/><BR/>
+<P align="right">Fähnrich</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank04" align="left"/><BR/>
+<P align="right">Feldwebel</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank03" align="left"/><BR/>
+<P align="right">Landsknecht</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank02" align="left"/><BR/>
+<P align="right">Fußknecht</P><BR/><BR/>
+<IMG src="Interface\PvPRankBadges\PvPRank01" align="left"/><BR/>
+<P align="right">Gefreiter</P><BR/><BR/>
+</BODY>
 </HTML>' WHERE `entry` =2857;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'RÄUCHERGEFÄSS DER ANRUFUNG: HANDBUCH$B$BWo man verfluchte Orte findet EINFüHRUNG$B$BAuf diesen Seiten sind die Orte aufgelistet, an denen die gefallenen und korrupten Geister und Seelen derer, die in die Sache mit Lord Valthalak verwickelt waren, angetroffen werden können. Obwohl Ihr meine ehemaligen Kameraden schon errettet habt, würde ich vermuten, dass abscheuliche Echos der Korruption, die sie einst heimsuchte, immer noch an diesen verfluchten Orten verweilen. über eine solche Kraft verfügte der rachsüchtige Geist von Lord Valthalak.$B$BDas Räuchergefäß kann außerdem dazu benutzt werden, Lord Valthalak selbst herbeizurufen. Dies sollte allerdings, wie zuvor, nur mit äußerster Vorsicht getan werden.' WHERE `entry` =2859;
@@ -2911,14 +2911,14 @@ UPDATE `locales_page_text` SET `Text_loc3` = 'Seid gegrüßt. Ich hatte endlich 
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Ich konnte endlich ein paar Informationen zu dem ehemaligen Soldaten finden. Die Spur ließ sich nicht einfach verfolgen, da genau dieser Familienstammbaum nicht vollständig dokumentiert war. Zumindest konnte ich jedoch einen Blutsverwandten ausmachen.$B$BHättet Ihr es Euch träumen lassen, dass Verwalter Alen bei der Kapelle des hoffnungsvollen Lichts in Wirklichkeit Christophs Sohn ist? Es wird ihn vielleicht beschwichtigen von seinem Vater zu hören. Solltet Ihr noch einmal im Dienste der Argentumdämmerung in den PestLändern unterwegs sein, dann bitte, sprecht mit ihm. Es wäre äußerst liebenswürdig von Euch.$B' WHERE `entry` =2890;
 
-UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>' || char(13) || '
-<BODY>' || char(13) || '
-<BR/>' || char(13) || '
-<BR/>' || char(13) || '
-<H1 align="center">DIE GRÜNEN HÜGEL DES SCHLINGENDORNTALS</H1>' || char(13) || '
-<BR/>' || char(13) || '
-<H3 align="center"von Hemet Nesingwary</H3>' || char(13) || '
-</BODY>' || char(13) || '
+UPDATE `locales_page_text` SET `Text_loc3` = '<HTML>
+<BODY>
+<BR/>
+<BR/>
+<H1 align="center">DIE GRÜNEN HÜGEL DES SCHLINGENDORNTALS</H1>
+<BR/>
+<H3 align="center"von Hemet Nesingwary</H3>
+</BODY>
 </HTML>' WHERE `entry` =2945;
 
 UPDATE `locales_page_text` SET `Text_loc3` = 'Dafür, dass es unser erster Tag war, lief es heute eigentlich erstaunlich gut. Wir verbrachten einen Großteil der Zeit mit den Vorbereitungen für den Bau eines Basislagers. Ich hatte den idealen Ort dafür am Frischwasserzulauf eines Flusses ausgemacht. Den alten verlassenen Docks nach zu urteilen, war dieser Ort sogar einmal bewohnt gewesen. Doch die einstigen Bewohner sind längst Vergangenheit.' WHERE `entry` =2946;
