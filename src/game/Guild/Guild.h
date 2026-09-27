@@ -143,15 +143,6 @@ enum GuildRosterPresenceFlags
     GRF_DND                         = 0x04
 };
 
-enum PetitionSigns
-{
-    PETITION_SIGN_OK                = 0,
-    PETITION_SIGN_ALREADY_SIGNED    = 1,
-    PETITION_SIGN_ALREADY_IN_GUILD  = 2,
-    PETITION_SIGN_CANT_SIGN_OWN     = 3,
-    PETITION_SIGN_NEED_MORE         = 4,
-    PETITION_SIGN_NOT_SERVER        = 5
-};
 
 enum GuildEventLogTypes
 {

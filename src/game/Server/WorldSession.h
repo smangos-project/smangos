@@ -66,7 +66,7 @@
 #include "Packets/Npc.h"
 #include "Packets/NpcMessages.h"
 #include "Packets/PetMessages.h"
-#include "Packets/Petition.h"
+#include "Packets/PetitionMessages.h"
 #include "Packets/Query.h"
 #include "Packets/QueryMessages.h"
 #include "Packets/QuestMessages.h"
@@ -689,14 +689,14 @@ class WorldSession
         void HandleChangeSubGroup(ChangeSubGroup const& packet);
         void HandleSwapSubGroups(SwapSubGroups const& packet);
 
-        void HandlePetitionBuyOpcode(WorldPackets::Petition::PetitionBuy const& packet);
-        void HandlePetitionShowSignOpcode(WorldPackets::Petition::PetitionShowSignatures const& packet);
-        void HandlePetitionQueryOpcode(WorldPackets::Petition::QueryPetition const& packet);
-        void HandlePetitionRenameOpcode(WorldPackets::Petition::PetitionRename const& packet);
-        void HandlePetitionSignOpcode(WorldPackets::Petition::PetitionSign const& packet);
-        void HandlePetitionDeclineOpcode(WorldPackets::Petition::PetitionDecline const& packet);
-        void HandleOfferPetitionOpcode(WorldPackets::Petition::OfferPetition const& packet);
-        void HandleTurnInPetitionOpcode(WorldPackets::Petition::TurnInPetition const& packet);
+        void HandlePetitionBuyOpcode(PetitionBuy const& packet);
+        void HandlePetitionShowSignOpcode(PetitionShowSignatures const& packet);
+        void HandlePetitionQueryOpcode(QueryPetition const& packet);
+        void HandlePetitionRenameOpcode(RenamePetition const& packet);
+        void HandlePetitionSignOpcode(SignPetition const& packet);
+        void HandlePetitionDeclineOpcode(DeclinePetition const& packet);
+        void HandleOfferPetitionOpcode(OfferPetition const& packet);
+        void HandleTurnInPetitionOpcode(TurnInPetition const& packet);
 
         void HandleGuildQueryOpcode(WorldPackets::Guild::GuildQuery const& packet);
         void HandleGuildCreateOpcode(WorldPackets::Guild::GuildCreate const& packet);
@@ -732,7 +732,7 @@ class WorldSession
         void HandleBuyBankSlotOpcode(BuyBankSlot const& packet);
         void HandleTrainerListOpcode(TrainerList const& packet);
         void HandleTrainerBuySpellOpcode(TrainerBuySpell const& packet);
-        void HandlePetitionShowListOpcode(WorldPackets::Petition::PetitionShow const& packet);
+        void HandlePetitionShowListOpcode(PetitionShow const& packet);
         void HandleGossipHelloOpcode(GossipHello const& packet);
         void HandleGossipSelectOptionOpcode(GossipSelectOption const& packet);
         void HandleCloseInteractionOpcode(CloseInteraction const& packet);
