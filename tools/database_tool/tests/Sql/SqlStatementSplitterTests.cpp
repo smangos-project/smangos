@@ -48,6 +48,24 @@ TEST_CASE("SplitMysqlStatements drops empty and whitespace-only statements", "[S
     CHECK(statements[1].text == "SELECT 2");
 }
 
+TEST_CASE("SplitMysqlStatements reports each statement's own starting line", "[SqlStatementSplitter]")
+{
+    // The second statement's real content starts on line 3, one line after
+    // the newline that follows the first statement's ";", both of which are
+    // scanned as part of the same lexer token (no string/identifier/comment
+    // token boundary separates them).
+    auto statements = SplitMysqlStatements("SELECT 1;\nSELECT 2;\n");
+    REQUIRE(statements.size() == 2);
+    CHECK(statements[0].line == 1);
+    CHECK(statements[1].line == 2);
+
+    // With a blank line and leading whitespace before the real content too.
+    auto spaced = SplitMysqlStatements("SELECT 1;\n\n   SELECT 2;\n");
+    REQUIRE(spaced.size() == 2);
+    CHECK(spaced[0].line == 1);
+    CHECK(spaced[1].line == 3);
+}
+
 TEST_CASE("SplitMysqlStatements honours a DELIMITER block", "[SqlStatementSplitter]")
 {
     auto statements = SplitMysqlStatements(
