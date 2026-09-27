@@ -1,15 +1,7 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20220522005419');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20220522005419');
+
 -- Add your query below.
-
-
-/*
+ /*
 Mortars should be instant cast according to comments.
 
 https://classic.wowhead.com/item=10577/goblin-mortar#comments
@@ -39,13 +31,7 @@ d07RiV[S] 1 point 2 years ago
 No, it's instant. It does have a travel time, though. And seems to share a (30 second) cooldown with some damage trinkets like TOEP.
 
 */
-
-UPDATE `item_template` SET `extra_flags` = `extra_flags` | 8 WHERE `entry` IN (10577, 4403);
-
+ UPDATE `item_template` SET `extra_flags` = `extra_flags` | 8 WHERE `entry` IN (10577, 4403);
 
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;
+;

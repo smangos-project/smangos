@@ -1,21 +1,148 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20220325125703');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20220325125703');
+
 -- Add your query below.
 
+-- Add breadcrumb support for quests. AFTER `ExclusiveGroup` needs a table
+-- rebuild in SQLite (world-sql.md).
+CREATE TABLE `quest_template__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `patch` INTEGER NOT NULL DEFAULT 0,
+  `Method` INTEGER NOT NULL DEFAULT 2,
+  `ZoneOrSort` INTEGER NOT NULL DEFAULT 0,
+  `MinLevel` INTEGER NOT NULL DEFAULT 0,
+  `MaxLevel` INTEGER NOT NULL DEFAULT 0,
+  `QuestLevel` INTEGER NOT NULL DEFAULT 0,
+  `Type` INTEGER NOT NULL DEFAULT 0,
+  `RequiredClasses` INTEGER NOT NULL DEFAULT 0,
+  `RequiredRaces` INTEGER NOT NULL DEFAULT 0,
+  `RequiredSkill` INTEGER NOT NULL DEFAULT 0,
+  `RequiredSkillValue` INTEGER NOT NULL DEFAULT 0,
+  `RequiredCondition` INTEGER NOT NULL DEFAULT 0,
+  `RepObjectiveFaction` INTEGER NOT NULL DEFAULT 0,
+  `RepObjectiveValue` INTEGER NOT NULL DEFAULT 0,
+  `RequiredMinRepFaction` INTEGER NOT NULL DEFAULT 0,
+  `RequiredMinRepValue` INTEGER NOT NULL DEFAULT 0,
+  `RequiredMaxRepFaction` INTEGER NOT NULL DEFAULT 0,
+  `RequiredMaxRepValue` INTEGER NOT NULL DEFAULT 0,
+  `SuggestedPlayers` INTEGER NOT NULL DEFAULT 0,
+  `LimitTime` INTEGER NOT NULL DEFAULT 0,
+  `QuestFlags` INTEGER NOT NULL DEFAULT 0,
+  `SpecialFlags` INTEGER NOT NULL DEFAULT 0,
+  `PrevQuestId` INTEGER NOT NULL DEFAULT 0,
+  `NextQuestId` INTEGER NOT NULL DEFAULT 0,
+  `ExclusiveGroup` INTEGER NOT NULL DEFAULT 0,
+  `BreadcrumbForQuestId` INTEGER NOT NULL DEFAULT 0,
+  `NextQuestInChain` INTEGER NOT NULL DEFAULT 0,
+  `SrcItemId` INTEGER NOT NULL DEFAULT 0,
+  `SrcItemCount` INTEGER NOT NULL DEFAULT 0,
+  `SrcSpell` INTEGER NOT NULL DEFAULT 0,
+  `Title` TEXT COLLATE NOCASE,
+  `Details` TEXT COLLATE NOCASE,
+  `Objectives` TEXT COLLATE NOCASE,
+  `OfferRewardText` TEXT COLLATE NOCASE,
+  `RequestItemsText` TEXT COLLATE NOCASE,
+  `EndText` TEXT COLLATE NOCASE,
+  `ObjectiveText1` TEXT COLLATE NOCASE,
+  `ObjectiveText2` TEXT COLLATE NOCASE,
+  `ObjectiveText3` TEXT COLLATE NOCASE,
+  `ObjectiveText4` TEXT COLLATE NOCASE,
+  `ReqItemId1` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemId2` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemId3` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemId4` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemCount1` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemCount2` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemCount3` INTEGER NOT NULL DEFAULT 0,
+  `ReqItemCount4` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceId1` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceId2` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceId3` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceId4` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceCount1` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceCount2` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceCount3` INTEGER NOT NULL DEFAULT 0,
+  `ReqSourceCount4` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOId1` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOId2` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOId3` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOId4` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOCount1` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOCount2` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOCount3` INTEGER NOT NULL DEFAULT 0,
+  `ReqCreatureOrGOCount4` INTEGER NOT NULL DEFAULT 0,
+  `ReqSpellCast1` INTEGER NOT NULL DEFAULT 0,
+  `ReqSpellCast2` INTEGER NOT NULL DEFAULT 0,
+  `ReqSpellCast3` INTEGER NOT NULL DEFAULT 0,
+  `ReqSpellCast4` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId1` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId2` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId3` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId4` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId5` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemId6` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount1` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount2` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount3` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount4` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount5` INTEGER NOT NULL DEFAULT 0,
+  `RewChoiceItemCount6` INTEGER NOT NULL DEFAULT 0,
+  `RewItemId1` INTEGER NOT NULL DEFAULT 0,
+  `RewItemId2` INTEGER NOT NULL DEFAULT 0,
+  `RewItemId3` INTEGER NOT NULL DEFAULT 0,
+  `RewItemId4` INTEGER NOT NULL DEFAULT 0,
+  `RewItemCount1` INTEGER NOT NULL DEFAULT 0,
+  `RewItemCount2` INTEGER NOT NULL DEFAULT 0,
+  `RewItemCount3` INTEGER NOT NULL DEFAULT 0,
+  `RewItemCount4` INTEGER NOT NULL DEFAULT 0,
+  `RewRepFaction1` INTEGER NOT NULL DEFAULT 0,
+  `RewRepFaction2` INTEGER NOT NULL DEFAULT 0,
+  `RewRepFaction3` INTEGER NOT NULL DEFAULT 0,
+  `RewRepFaction4` INTEGER NOT NULL DEFAULT 0,
+  `RewRepFaction5` INTEGER NOT NULL DEFAULT 0,
+  `RewRepValue1` INTEGER NOT NULL DEFAULT 0,
+  `RewRepValue2` INTEGER NOT NULL DEFAULT 0,
+  `RewRepValue3` INTEGER NOT NULL DEFAULT 0,
+  `RewRepValue4` INTEGER NOT NULL DEFAULT 0,
+  `RewRepValue5` INTEGER NOT NULL DEFAULT 0,
+  `RewXP` INTEGER NOT NULL DEFAULT 0,
+  `RewOrReqMoney` INTEGER NOT NULL DEFAULT 0,
+  `RewMoneyMaxLevel` INTEGER NOT NULL DEFAULT 0,
+  `RewSpell` INTEGER NOT NULL DEFAULT 0,
+  `RewSpellCast` INTEGER NOT NULL DEFAULT 0,
+  `RewMailTemplateId` INTEGER NOT NULL DEFAULT 0,
+  `RewMailDelaySecs` INTEGER NOT NULL DEFAULT 0,
+  `RewMailMoney` INTEGER NOT NULL DEFAULT 0,
+  `PointMapId` INTEGER NOT NULL DEFAULT 0,
+  `PointX` REAL NOT NULL DEFAULT 0,
+  `PointY` REAL NOT NULL DEFAULT 0,
+  `PointOpt` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmote1` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmote2` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmote3` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmote4` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmoteDelay1` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmoteDelay2` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmoteDelay3` INTEGER NOT NULL DEFAULT 0,
+  `DetailsEmoteDelay4` INTEGER NOT NULL DEFAULT 0,
+  `IncompleteEmote` INTEGER NOT NULL DEFAULT 0,
+  `CompleteEmote` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmote1` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmote2` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmote3` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmote4` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmoteDelay1` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmoteDelay2` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmoteDelay3` INTEGER NOT NULL DEFAULT 0,
+  `OfferRewardEmoteDelay4` INTEGER NOT NULL DEFAULT 0,
+  `StartScript` INTEGER NOT NULL DEFAULT 0,
+  `CompleteScript` INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (`entry`, `patch`)
+);
 
--- Add breadcrumb support for quests.
-ALTER TABLE `quest_template` ADD COLUMN `BreadcrumbForQuestId` MEDIUMINT(9) UNSIGNED DEFAULT 0 NOT NULL AFTER `ExclusiveGroup`;
+INSERT INTO `quest_template__new` (`entry`, `patch`, `Method`, `ZoneOrSort`, `MinLevel`, `MaxLevel`, `QuestLevel`, `Type`, `RequiredClasses`, `RequiredRaces`, `RequiredSkill`, `RequiredSkillValue`, `RequiredCondition`, `RepObjectiveFaction`, `RepObjectiveValue`, `RequiredMinRepFaction`, `RequiredMinRepValue`, `RequiredMaxRepFaction`, `RequiredMaxRepValue`, `SuggestedPlayers`, `LimitTime`, `QuestFlags`, `SpecialFlags`, `PrevQuestId`, `NextQuestId`, `ExclusiveGroup`, `BreadcrumbForQuestId`, `NextQuestInChain`, `SrcItemId`, `SrcItemCount`, `SrcSpell`, `Title`, `Details`, `Objectives`, `OfferRewardText`, `RequestItemsText`, `EndText`, `ObjectiveText1`, `ObjectiveText2`, `ObjectiveText3`, `ObjectiveText4`, `ReqItemId1`, `ReqItemId2`, `ReqItemId3`, `ReqItemId4`, `ReqItemCount1`, `ReqItemCount2`, `ReqItemCount3`, `ReqItemCount4`, `ReqSourceId1`, `ReqSourceId2`, `ReqSourceId3`, `ReqSourceId4`, `ReqSourceCount1`, `ReqSourceCount2`, `ReqSourceCount3`, `ReqSourceCount4`, `ReqCreatureOrGOId1`, `ReqCreatureOrGOId2`, `ReqCreatureOrGOId3`, `ReqCreatureOrGOId4`, `ReqCreatureOrGOCount1`, `ReqCreatureOrGOCount2`, `ReqCreatureOrGOCount3`, `ReqCreatureOrGOCount4`, `ReqSpellCast1`, `ReqSpellCast2`, `ReqSpellCast3`, `ReqSpellCast4`, `RewChoiceItemId1`, `RewChoiceItemId2`, `RewChoiceItemId3`, `RewChoiceItemId4`, `RewChoiceItemId5`, `RewChoiceItemId6`, `RewChoiceItemCount1`, `RewChoiceItemCount2`, `RewChoiceItemCount3`, `RewChoiceItemCount4`, `RewChoiceItemCount5`, `RewChoiceItemCount6`, `RewItemId1`, `RewItemId2`, `RewItemId3`, `RewItemId4`, `RewItemCount1`, `RewItemCount2`, `RewItemCount3`, `RewItemCount4`, `RewRepFaction1`, `RewRepFaction2`, `RewRepFaction3`, `RewRepFaction4`, `RewRepFaction5`, `RewRepValue1`, `RewRepValue2`, `RewRepValue3`, `RewRepValue4`, `RewRepValue5`, `RewXP`, `RewOrReqMoney`, `RewMoneyMaxLevel`, `RewSpell`, `RewSpellCast`, `RewMailTemplateId`, `RewMailDelaySecs`, `RewMailMoney`, `PointMapId`, `PointX`, `PointY`, `PointOpt`, `DetailsEmote1`, `DetailsEmote2`, `DetailsEmote3`, `DetailsEmote4`, `DetailsEmoteDelay1`, `DetailsEmoteDelay2`, `DetailsEmoteDelay3`, `DetailsEmoteDelay4`, `IncompleteEmote`, `CompleteEmote`, `OfferRewardEmote1`, `OfferRewardEmote2`, `OfferRewardEmote3`, `OfferRewardEmote4`, `OfferRewardEmoteDelay1`, `OfferRewardEmoteDelay2`, `OfferRewardEmoteDelay3`, `OfferRewardEmoteDelay4`, `StartScript`, `CompleteScript`)
+SELECT `entry`, `patch`, `Method`, `ZoneOrSort`, `MinLevel`, `MaxLevel`, `QuestLevel`, `Type`, `RequiredClasses`, `RequiredRaces`, `RequiredSkill`, `RequiredSkillValue`, `RequiredCondition`, `RepObjectiveFaction`, `RepObjectiveValue`, `RequiredMinRepFaction`, `RequiredMinRepValue`, `RequiredMaxRepFaction`, `RequiredMaxRepValue`, `SuggestedPlayers`, `LimitTime`, `QuestFlags`, `SpecialFlags`, `PrevQuestId`, `NextQuestId`, `ExclusiveGroup`, 0, `NextQuestInChain`, `SrcItemId`, `SrcItemCount`, `SrcSpell`, `Title`, `Details`, `Objectives`, `OfferRewardText`, `RequestItemsText`, `EndText`, `ObjectiveText1`, `ObjectiveText2`, `ObjectiveText3`, `ObjectiveText4`, `ReqItemId1`, `ReqItemId2`, `ReqItemId3`, `ReqItemId4`, `ReqItemCount1`, `ReqItemCount2`, `ReqItemCount3`, `ReqItemCount4`, `ReqSourceId1`, `ReqSourceId2`, `ReqSourceId3`, `ReqSourceId4`, `ReqSourceCount1`, `ReqSourceCount2`, `ReqSourceCount3`, `ReqSourceCount4`, `ReqCreatureOrGOId1`, `ReqCreatureOrGOId2`, `ReqCreatureOrGOId3`, `ReqCreatureOrGOId4`, `ReqCreatureOrGOCount1`, `ReqCreatureOrGOCount2`, `ReqCreatureOrGOCount3`, `ReqCreatureOrGOCount4`, `ReqSpellCast1`, `ReqSpellCast2`, `ReqSpellCast3`, `ReqSpellCast4`, `RewChoiceItemId1`, `RewChoiceItemId2`, `RewChoiceItemId3`, `RewChoiceItemId4`, `RewChoiceItemId5`, `RewChoiceItemId6`, `RewChoiceItemCount1`, `RewChoiceItemCount2`, `RewChoiceItemCount3`, `RewChoiceItemCount4`, `RewChoiceItemCount5`, `RewChoiceItemCount6`, `RewItemId1`, `RewItemId2`, `RewItemId3`, `RewItemId4`, `RewItemCount1`, `RewItemCount2`, `RewItemCount3`, `RewItemCount4`, `RewRepFaction1`, `RewRepFaction2`, `RewRepFaction3`, `RewRepFaction4`, `RewRepFaction5`, `RewRepValue1`, `RewRepValue2`, `RewRepValue3`, `RewRepValue4`, `RewRepValue5`, `RewXP`, `RewOrReqMoney`, `RewMoneyMaxLevel`, `RewSpell`, `RewSpellCast`, `RewMailTemplateId`, `RewMailDelaySecs`, `RewMailMoney`, `PointMapId`, `PointX`, `PointY`, `PointOpt`, `DetailsEmote1`, `DetailsEmote2`, `DetailsEmote3`, `DetailsEmote4`, `DetailsEmoteDelay1`, `DetailsEmoteDelay2`, `DetailsEmoteDelay3`, `DetailsEmoteDelay4`, `IncompleteEmote`, `CompleteEmote`, `OfferRewardEmote1`, `OfferRewardEmote2`, `OfferRewardEmote3`, `OfferRewardEmote4`, `OfferRewardEmoteDelay1`, `OfferRewardEmoteDelay2`, `OfferRewardEmoteDelay3`, `OfferRewardEmoteDelay4`, `StartScript`, `CompleteScript` FROM `quest_template`;
 
+DROP TABLE `quest_template`;
+ALTER TABLE `quest_template__new` RENAME TO `quest_template`;
 
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;
