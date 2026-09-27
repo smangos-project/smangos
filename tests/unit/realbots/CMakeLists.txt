@@ -58,6 +58,7 @@ add_executable(tests-realbots
   InspectMessagesTests.cpp
   MiscMessagesTests.cpp
   GuildMessagesTests.cpp
+  MailMessagesTests.cpp
   QueryMessagesTests.cpp
   ItemMessagesTests.cpp
   LootMessagesTests.cpp
