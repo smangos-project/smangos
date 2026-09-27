@@ -1,22 +1,104 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20211130215953');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20211130215953');
+
 -- Add your query below.
 
+-- Add support for spawn spells. AFTER `pet_spell_list_id` needs a table
+-- rebuild in SQLite (world-sql.md).
+CREATE TABLE `creature_template__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `patch` INTEGER NOT NULL DEFAULT 0,
+  `display_id1` INTEGER NOT NULL DEFAULT 0,
+  `display_id2` INTEGER NOT NULL DEFAULT 0,
+  `display_id3` INTEGER NOT NULL DEFAULT 0,
+  `display_id4` INTEGER NOT NULL DEFAULT 0,
+  `display_scale1` REAL NOT NULL DEFAULT 0,
+  `display_scale2` REAL NOT NULL DEFAULT 0,
+  `display_scale3` REAL NOT NULL DEFAULT 0,
+  `display_scale4` REAL NOT NULL DEFAULT 0,
+  `display_probability1` INTEGER NOT NULL DEFAULT 0,
+  `display_probability2` INTEGER NOT NULL DEFAULT 0,
+  `display_probability3` INTEGER NOT NULL DEFAULT 0,
+  `display_probability4` INTEGER NOT NULL DEFAULT 0,
+  `display_total_probability` INTEGER NOT NULL DEFAULT 0,
+  `mount_display_id` INTEGER NOT NULL DEFAULT 0,
+  `name` TEXT NOT NULL DEFAULT '0' COLLATE NOCASE,
+  `subname` TEXT COLLATE NOCASE,
+  `gossip_menu_id` INTEGER NOT NULL DEFAULT 0,
+  `level_min` INTEGER NOT NULL DEFAULT 1,
+  `level_max` INTEGER NOT NULL DEFAULT 1,
+  `health_min` INTEGER NOT NULL DEFAULT 0,
+  `health_max` INTEGER NOT NULL DEFAULT 0,
+  `mana_min` INTEGER NOT NULL DEFAULT 0,
+  `mana_max` INTEGER NOT NULL DEFAULT 0,
+  `armor` INTEGER NOT NULL DEFAULT 0,
+  `faction` INTEGER NOT NULL DEFAULT 0,
+  `npc_flags` INTEGER NOT NULL DEFAULT 0,
+  `speed_walk` REAL NOT NULL DEFAULT 1,
+  `speed_run` REAL NOT NULL DEFAULT 1.14286,
+  `detection_range` REAL NOT NULL DEFAULT 20,
+  `call_for_help_range` REAL NOT NULL DEFAULT 5,
+  `leash_range` REAL NOT NULL DEFAULT 0,
+  `rank` INTEGER NOT NULL DEFAULT 0,
+  `xp_multiplier` REAL NOT NULL DEFAULT 1,
+  `dmg_min` REAL NOT NULL DEFAULT 0,
+  `dmg_max` REAL NOT NULL DEFAULT 0,
+  `dmg_school` INTEGER NOT NULL DEFAULT 0,
+  `attack_power` INTEGER NOT NULL DEFAULT 0,
+  `dmg_multiplier` REAL NOT NULL DEFAULT 1,
+  `base_attack_time` INTEGER NOT NULL DEFAULT 0,
+  `ranged_attack_time` INTEGER NOT NULL DEFAULT 0,
+  `unit_class` INTEGER NOT NULL DEFAULT 0,
+  `unit_flags` INTEGER NOT NULL DEFAULT 0,
+  `dynamic_flags` INTEGER NOT NULL DEFAULT 0,
+  `pet_family` INTEGER NOT NULL DEFAULT 0,
+  `trainer_type` INTEGER NOT NULL DEFAULT 0,
+  `trainer_spell` INTEGER NOT NULL DEFAULT 0,
+  `trainer_class` INTEGER NOT NULL DEFAULT 0,
+  `trainer_race` INTEGER NOT NULL DEFAULT 0,
+  `ranged_dmg_min` REAL NOT NULL DEFAULT 0,
+  `ranged_dmg_max` REAL NOT NULL DEFAULT 0,
+  `ranged_attack_power` INTEGER NOT NULL DEFAULT 0,
+  `type` INTEGER NOT NULL DEFAULT 0,
+  `type_flags` INTEGER NOT NULL DEFAULT 0,
+  `loot_id` INTEGER NOT NULL DEFAULT 0,
+  `pickpocket_loot_id` INTEGER NOT NULL DEFAULT 0,
+  `skinning_loot_id` INTEGER NOT NULL DEFAULT 0,
+  `holy_res` INTEGER NOT NULL DEFAULT 0,
+  `fire_res` INTEGER NOT NULL DEFAULT 0,
+  `nature_res` INTEGER NOT NULL DEFAULT 0,
+  `frost_res` INTEGER NOT NULL DEFAULT 0,
+  `shadow_res` INTEGER NOT NULL DEFAULT 0,
+  `arcane_res` INTEGER NOT NULL DEFAULT 0,
+  `spell_id1` INTEGER NOT NULL DEFAULT 0,
+  `spell_id2` INTEGER NOT NULL DEFAULT 0,
+  `spell_id3` INTEGER NOT NULL DEFAULT 0,
+  `spell_id4` INTEGER NOT NULL DEFAULT 0,
+  `spell_list_id` INTEGER NOT NULL DEFAULT 0,
+  `pet_spell_list_id` INTEGER NOT NULL DEFAULT 0,
+  `spawn_spell_id` INTEGER NOT NULL DEFAULT 0,
+  `auras` TEXT COLLATE NOCASE,
+  `gold_min` INTEGER NOT NULL DEFAULT 0,
+  `gold_max` INTEGER NOT NULL DEFAULT 0,
+  `ai_name` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  `movement_type` INTEGER NOT NULL DEFAULT 0,
+  `inhabit_type` INTEGER NOT NULL DEFAULT 3,
+  `civilian` INTEGER NOT NULL DEFAULT 0,
+  `racial_leader` INTEGER NOT NULL DEFAULT 0,
+  `regeneration` INTEGER NOT NULL DEFAULT 3,
+  `equipment_id` INTEGER NOT NULL DEFAULT 0,
+  `trainer_id` INTEGER NOT NULL DEFAULT 0,
+  `vendor_id` INTEGER NOT NULL DEFAULT 0,
+  `mechanic_immune_mask` INTEGER NOT NULL DEFAULT 0,
+  `school_immune_mask` INTEGER NOT NULL DEFAULT 0,
+  `flags_extra` INTEGER NOT NULL DEFAULT 0,
+  `script_name` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  PRIMARY KEY (`entry`, `patch`)
+);
 
--- Add support for spawn spells.
-ALTER TABLE `creature_template`
-	ADD COLUMN `spawn_spell_id` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Spell with effect 46 that will be cast immediately upon spawning. Creature will remain unattackable until the cast finishes.' AFTER `pet_spell_list_id`;
+INSERT INTO `creature_template__new` (`entry`, `patch`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `name`, `subname`, `gossip_menu_id`, `level_min`, `level_max`, `health_min`, `health_max`, `mana_min`, `mana_max`, `armor`, `faction`, `npc_flags`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `rank`, `xp_multiplier`, `dmg_min`, `dmg_max`, `dmg_school`, `attack_power`, `dmg_multiplier`, `base_attack_time`, `ranged_attack_time`, `unit_class`, `unit_flags`, `dynamic_flags`, `pet_family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `ranged_dmg_min`, `ranged_dmg_max`, `ranged_attack_power`, `type`, `type_flags`, `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spell_id1`, `spell_id2`, `spell_id3`, `spell_id4`, `spell_list_id`, `pet_spell_list_id`, `spawn_spell_id`, `auras`, `gold_min`, `gold_max`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `regeneration`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `flags_extra`, `script_name`)
+SELECT `entry`, `patch`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `name`, `subname`, `gossip_menu_id`, `level_min`, `level_max`, `health_min`, `health_max`, `mana_min`, `mana_max`, `armor`, `faction`, `npc_flags`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `rank`, `xp_multiplier`, `dmg_min`, `dmg_max`, `dmg_school`, `attack_power`, `dmg_multiplier`, `base_attack_time`, `ranged_attack_time`, `unit_class`, `unit_flags`, `dynamic_flags`, `pet_family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `ranged_dmg_min`, `ranged_dmg_max`, `ranged_attack_power`, `type`, `type_flags`, `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spell_id1`, `spell_id2`, `spell_id3`, `spell_id4`, `spell_list_id`, `pet_spell_list_id`, 0, `auras`, `gold_min`, `gold_max`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `regeneration`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `flags_extra`, `script_name` FROM `creature_template`;
 
+DROP TABLE `creature_template`;
+ALTER TABLE `creature_template__new` RENAME TO `creature_template`;
 
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;

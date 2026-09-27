@@ -1,17 +1,148 @@
-DROP PROCEDURE IF EXISTS add_migration;
-delimiter ??
-CREATE PROCEDURE `add_migration`()
-BEGIN
-DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20211223173746');
-IF v=0 THEN
 INSERT INTO `migrations` VALUES ('20211223173746');
+
 -- Add your query below.
 
+-- Add field to store target item id of wrapping paper. AFTER `max_money_loot`
+-- needs a table rebuild in SQLite (world-sql.md).
+CREATE TABLE `item_template__new` (
+  `entry` INTEGER NOT NULL DEFAULT 0,
+  `patch` INTEGER NOT NULL DEFAULT 0,
+  `class` INTEGER NOT NULL DEFAULT 0,
+  `subclass` INTEGER NOT NULL DEFAULT 0,
+  `name` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  `description` TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+  `display_id` INTEGER NOT NULL DEFAULT 0,
+  `quality` INTEGER NOT NULL DEFAULT 0,
+  `flags` INTEGER NOT NULL DEFAULT 0,
+  `buy_count` INTEGER NOT NULL DEFAULT 1,
+  `buy_price` INTEGER NOT NULL DEFAULT 0,
+  `sell_price` INTEGER NOT NULL DEFAULT 0,
+  `inventory_type` INTEGER NOT NULL DEFAULT 0,
+  `allowable_class` INTEGER NOT NULL DEFAULT -1,
+  `allowable_race` INTEGER NOT NULL DEFAULT -1,
+  `item_level` INTEGER NOT NULL DEFAULT 0,
+  `required_level` INTEGER NOT NULL DEFAULT 0,
+  `required_skill` INTEGER NOT NULL DEFAULT 0,
+  `required_skill_rank` INTEGER NOT NULL DEFAULT 0,
+  `required_spell` INTEGER NOT NULL DEFAULT 0,
+  `required_honor_rank` INTEGER NOT NULL DEFAULT 0,
+  `required_city_rank` INTEGER NOT NULL DEFAULT 0,
+  `required_reputation_faction` INTEGER NOT NULL DEFAULT 0,
+  `required_reputation_rank` INTEGER NOT NULL DEFAULT 0,
+  `max_count` INTEGER NOT NULL DEFAULT 0,
+  `stackable` INTEGER NOT NULL DEFAULT 1,
+  `container_slots` INTEGER NOT NULL DEFAULT 0,
+  `stat_type1` INTEGER NOT NULL DEFAULT 0,
+  `stat_value1` INTEGER NOT NULL DEFAULT 0,
+  `stat_type2` INTEGER NOT NULL DEFAULT 0,
+  `stat_value2` INTEGER NOT NULL DEFAULT 0,
+  `stat_type3` INTEGER NOT NULL DEFAULT 0,
+  `stat_value3` INTEGER NOT NULL DEFAULT 0,
+  `stat_type4` INTEGER NOT NULL DEFAULT 0,
+  `stat_value4` INTEGER NOT NULL DEFAULT 0,
+  `stat_type5` INTEGER NOT NULL DEFAULT 0,
+  `stat_value5` INTEGER NOT NULL DEFAULT 0,
+  `stat_type6` INTEGER NOT NULL DEFAULT 0,
+  `stat_value6` INTEGER NOT NULL DEFAULT 0,
+  `stat_type7` INTEGER NOT NULL DEFAULT 0,
+  `stat_value7` INTEGER NOT NULL DEFAULT 0,
+  `stat_type8` INTEGER NOT NULL DEFAULT 0,
+  `stat_value8` INTEGER NOT NULL DEFAULT 0,
+  `stat_type9` INTEGER NOT NULL DEFAULT 0,
+  `stat_value9` INTEGER NOT NULL DEFAULT 0,
+  `stat_type10` INTEGER NOT NULL DEFAULT 0,
+  `stat_value10` INTEGER NOT NULL DEFAULT 0,
+  `delay` INTEGER NOT NULL DEFAULT 1000,
+  `range_mod` REAL NOT NULL DEFAULT 0,
+  `ammo_type` INTEGER NOT NULL DEFAULT 0,
+  `dmg_min1` REAL NOT NULL DEFAULT 0,
+  `dmg_max1` REAL NOT NULL DEFAULT 0,
+  `dmg_type1` INTEGER NOT NULL DEFAULT 0,
+  `dmg_min2` REAL NOT NULL DEFAULT 0,
+  `dmg_max2` REAL NOT NULL DEFAULT 0,
+  `dmg_type2` INTEGER NOT NULL DEFAULT 0,
+  `dmg_min3` REAL NOT NULL DEFAULT 0,
+  `dmg_max3` REAL NOT NULL DEFAULT 0,
+  `dmg_type3` INTEGER NOT NULL DEFAULT 0,
+  `dmg_min4` REAL NOT NULL DEFAULT 0,
+  `dmg_max4` REAL NOT NULL DEFAULT 0,
+  `dmg_type4` INTEGER NOT NULL DEFAULT 0,
+  `dmg_min5` REAL NOT NULL DEFAULT 0,
+  `dmg_max5` REAL NOT NULL DEFAULT 0,
+  `dmg_type5` INTEGER NOT NULL DEFAULT 0,
+  `block` INTEGER NOT NULL DEFAULT 0,
+  `armor` INTEGER NOT NULL DEFAULT 0,
+  `holy_res` INTEGER NOT NULL DEFAULT 0,
+  `fire_res` INTEGER NOT NULL DEFAULT 0,
+  `nature_res` INTEGER NOT NULL DEFAULT 0,
+  `frost_res` INTEGER NOT NULL DEFAULT 0,
+  `shadow_res` INTEGER NOT NULL DEFAULT 0,
+  `arcane_res` INTEGER NOT NULL DEFAULT 0,
+  `spellid_1` INTEGER NOT NULL DEFAULT 0,
+  `spelltrigger_1` INTEGER NOT NULL DEFAULT 0,
+  `spellcharges_1` INTEGER NOT NULL DEFAULT 0,
+  `spellppmrate_1` REAL NOT NULL DEFAULT 0,
+  `spellcooldown_1` INTEGER NOT NULL DEFAULT -1,
+  `spellcategory_1` INTEGER NOT NULL DEFAULT 0,
+  `spellcategorycooldown_1` INTEGER NOT NULL DEFAULT -1,
+  `spellid_2` INTEGER NOT NULL DEFAULT 0,
+  `spelltrigger_2` INTEGER NOT NULL DEFAULT 0,
+  `spellcharges_2` INTEGER NOT NULL DEFAULT 0,
+  `spellppmrate_2` REAL NOT NULL DEFAULT 0,
+  `spellcooldown_2` INTEGER NOT NULL DEFAULT -1,
+  `spellcategory_2` INTEGER NOT NULL DEFAULT 0,
+  `spellcategorycooldown_2` INTEGER NOT NULL DEFAULT -1,
+  `spellid_3` INTEGER NOT NULL DEFAULT 0,
+  `spelltrigger_3` INTEGER NOT NULL DEFAULT 0,
+  `spellcharges_3` INTEGER NOT NULL DEFAULT 0,
+  `spellppmrate_3` REAL NOT NULL DEFAULT 0,
+  `spellcooldown_3` INTEGER NOT NULL DEFAULT -1,
+  `spellcategory_3` INTEGER NOT NULL DEFAULT 0,
+  `spellcategorycooldown_3` INTEGER NOT NULL DEFAULT -1,
+  `spellid_4` INTEGER NOT NULL DEFAULT 0,
+  `spelltrigger_4` INTEGER NOT NULL DEFAULT 0,
+  `spellcharges_4` INTEGER NOT NULL DEFAULT 0,
+  `spellppmrate_4` REAL NOT NULL DEFAULT 0,
+  `spellcooldown_4` INTEGER NOT NULL DEFAULT -1,
+  `spellcategory_4` INTEGER NOT NULL DEFAULT 0,
+  `spellcategorycooldown_4` INTEGER NOT NULL DEFAULT -1,
+  `spellid_5` INTEGER NOT NULL DEFAULT 0,
+  `spelltrigger_5` INTEGER NOT NULL DEFAULT 0,
+  `spellcharges_5` INTEGER NOT NULL DEFAULT 0,
+  `spellppmrate_5` REAL NOT NULL DEFAULT 0,
+  `spellcooldown_5` INTEGER NOT NULL DEFAULT -1,
+  `spellcategory_5` INTEGER NOT NULL DEFAULT 0,
+  `spellcategorycooldown_5` INTEGER NOT NULL DEFAULT -1,
+  `bonding` INTEGER NOT NULL DEFAULT 0,
+  `page_text` INTEGER NOT NULL DEFAULT 0,
+  `page_language` INTEGER NOT NULL DEFAULT 0,
+  `page_material` INTEGER NOT NULL DEFAULT 0,
+  `start_quest` INTEGER NOT NULL DEFAULT 0,
+  `lock_id` INTEGER NOT NULL DEFAULT 0,
+  `material` INTEGER NOT NULL DEFAULT 0,
+  `sheath` INTEGER NOT NULL DEFAULT 0,
+  `random_property` INTEGER NOT NULL DEFAULT 0,
+  `set_id` INTEGER NOT NULL DEFAULT 0,
+  `max_durability` INTEGER NOT NULL DEFAULT 0,
+  `area_bound` INTEGER NOT NULL DEFAULT 0,
+  `map_bound` INTEGER NOT NULL DEFAULT 0,
+  `duration` INTEGER NOT NULL DEFAULT 0,
+  `bag_family` INTEGER NOT NULL DEFAULT 0,
+  `disenchant_id` INTEGER NOT NULL DEFAULT 0,
+  `food_type` INTEGER NOT NULL DEFAULT 0,
+  `min_money_loot` INTEGER NOT NULL DEFAULT 0,
+  `max_money_loot` INTEGER NOT NULL DEFAULT 0,
+  `wrapped_gift` INTEGER NOT NULL DEFAULT 0,
+  `extra_flags` INTEGER NOT NULL DEFAULT 0,
+  `other_team_entry` INTEGER DEFAULT 1,
+  PRIMARY KEY (`entry`, `patch`)
+);
 
--- Add field to store target item id of wrapping paper.
-ALTER TABLE `item_template`
-	ADD COLUMN `wrapped_gift` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0' AFTER `max_money_loot`;
+INSERT INTO `item_template__new` (`entry`, `patch`, `class`, `subclass`, `name`, `description`, `display_id`, `quality`, `flags`, `buy_count`, `buy_price`, `sell_price`, `inventory_type`, `allowable_class`, `allowable_race`, `item_level`, `required_level`, `required_skill`, `required_skill_rank`, `required_spell`, `required_honor_rank`, `required_city_rank`, `required_reputation_faction`, `required_reputation_rank`, `max_count`, `stackable`, `container_slots`, `stat_type1`, `stat_value1`, `stat_type2`, `stat_value2`, `stat_type3`, `stat_value3`, `stat_type4`, `stat_value4`, `stat_type5`, `stat_value5`, `stat_type6`, `stat_value6`, `stat_type7`, `stat_value7`, `stat_type8`, `stat_value8`, `stat_type9`, `stat_value9`, `stat_type10`, `stat_value10`, `delay`, `range_mod`, `ammo_type`, `dmg_min1`, `dmg_max1`, `dmg_type1`, `dmg_min2`, `dmg_max2`, `dmg_type2`, `dmg_min3`, `dmg_max3`, `dmg_type3`, `dmg_min4`, `dmg_max4`, `dmg_type4`, `dmg_min5`, `dmg_max5`, `dmg_type5`, `block`, `armor`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spellid_1`, `spelltrigger_1`, `spellcharges_1`, `spellppmrate_1`, `spellcooldown_1`, `spellcategory_1`, `spellcategorycooldown_1`, `spellid_2`, `spelltrigger_2`, `spellcharges_2`, `spellppmrate_2`, `spellcooldown_2`, `spellcategory_2`, `spellcategorycooldown_2`, `spellid_3`, `spelltrigger_3`, `spellcharges_3`, `spellppmrate_3`, `spellcooldown_3`, `spellcategory_3`, `spellcategorycooldown_3`, `spellid_4`, `spelltrigger_4`, `spellcharges_4`, `spellppmrate_4`, `spellcooldown_4`, `spellcategory_4`, `spellcategorycooldown_4`, `spellid_5`, `spelltrigger_5`, `spellcharges_5`, `spellppmrate_5`, `spellcooldown_5`, `spellcategory_5`, `spellcategorycooldown_5`, `bonding`, `page_text`, `page_language`, `page_material`, `start_quest`, `lock_id`, `material`, `sheath`, `random_property`, `set_id`, `max_durability`, `area_bound`, `map_bound`, `duration`, `bag_family`, `disenchant_id`, `food_type`, `min_money_loot`, `max_money_loot`, `wrapped_gift`, `extra_flags`, `other_team_entry`)
+SELECT `entry`, `patch`, `class`, `subclass`, `name`, `description`, `display_id`, `quality`, `flags`, `buy_count`, `buy_price`, `sell_price`, `inventory_type`, `allowable_class`, `allowable_race`, `item_level`, `required_level`, `required_skill`, `required_skill_rank`, `required_spell`, `required_honor_rank`, `required_city_rank`, `required_reputation_faction`, `required_reputation_rank`, `max_count`, `stackable`, `container_slots`, `stat_type1`, `stat_value1`, `stat_type2`, `stat_value2`, `stat_type3`, `stat_value3`, `stat_type4`, `stat_value4`, `stat_type5`, `stat_value5`, `stat_type6`, `stat_value6`, `stat_type7`, `stat_value7`, `stat_type8`, `stat_value8`, `stat_type9`, `stat_value9`, `stat_type10`, `stat_value10`, `delay`, `range_mod`, `ammo_type`, `dmg_min1`, `dmg_max1`, `dmg_type1`, `dmg_min2`, `dmg_max2`, `dmg_type2`, `dmg_min3`, `dmg_max3`, `dmg_type3`, `dmg_min4`, `dmg_max4`, `dmg_type4`, `dmg_min5`, `dmg_max5`, `dmg_type5`, `block`, `armor`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spellid_1`, `spelltrigger_1`, `spellcharges_1`, `spellppmrate_1`, `spellcooldown_1`, `spellcategory_1`, `spellcategorycooldown_1`, `spellid_2`, `spelltrigger_2`, `spellcharges_2`, `spellppmrate_2`, `spellcooldown_2`, `spellcategory_2`, `spellcategorycooldown_2`, `spellid_3`, `spelltrigger_3`, `spellcharges_3`, `spellppmrate_3`, `spellcooldown_3`, `spellcategory_3`, `spellcategorycooldown_3`, `spellid_4`, `spelltrigger_4`, `spellcharges_4`, `spellppmrate_4`, `spellcooldown_4`, `spellcategory_4`, `spellcategorycooldown_4`, `spellid_5`, `spelltrigger_5`, `spellcharges_5`, `spellppmrate_5`, `spellcooldown_5`, `spellcategory_5`, `spellcategorycooldown_5`, `bonding`, `page_text`, `page_language`, `page_material`, `start_quest`, `lock_id`, `material`, `sheath`, `random_property`, `set_id`, `max_durability`, `area_bound`, `map_bound`, `duration`, `bag_family`, `disenchant_id`, `food_type`, `min_money_loot`, `max_money_loot`, 0, `extra_flags`, `other_team_entry` FROM `item_template`;
+
+DROP TABLE `item_template`;
+ALTER TABLE `item_template__new` RENAME TO `item_template`;
 
 -- Assign gift item ids to wrapping paper.
 UPDATE `item_template` SET `wrapped_gift`=5015 WHERE `entry`=5014;
@@ -24,10 +155,4 @@ UPDATE `item_template` SET `wrapped_gift`=17305 WHERE `entry`=17304;
 UPDATE `item_template` SET `wrapped_gift`=17308 WHERE `entry`=17307;
 UPDATE `item_template` SET `wrapped_gift`=21831 WHERE `entry`=21830;
 
-
 -- End of migration.
-END IF;
-END??
-delimiter ; 
-CALL add_migration();
-DROP PROCEDURE IF EXISTS add_migration;
