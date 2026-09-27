@@ -20,6 +20,7 @@
 #include "Server/Packets/Classic/InventorySlots.h"
 #include "World.h"
 #include <algorithm>
+#include <array>
 
 namespace
 {
@@ -31,6 +32,11 @@ ClassicGuid ToClassic(ObjectGuid const& guid)
 // TrinityCore UnitDefines.h; 1.12 has no equivalent flag, so this stays a local literal rather
 // than pulling in a game-side enum this file doesn't otherwise need.
 constexpr uint32 MODERN_UNIT_FLAG2_REGENERATE_POWER = 0x00000800;
+
+// TrinityCore Player.h PlayerDataFlagConstants: which of ActivePlayerData::BitVectors's 13 slots
+// is the world-map explored-zones bitmap. The other slots (account-wide quest data, taxi nodes,
+// ...) have no 1.12 source and stay at their empty default.
+constexpr uint32 PLAYER_DATA_FLAG_EXPLORED_ZONES_INDEX = 1;
 
 // UNIT_FIELD_POWER/UNIT_FIELD_MAXPOWER are indexed by a per-class wire slot in the modern client
 // (ChrClassesXPowerTypes.db2), not by this engine's own vanilla Powers ordinal -- e.g. a Rogue's
@@ -338,6 +344,43 @@ void FillActivePlayerData(Player& player)
     FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::LastWeekContribution, player.GetUInt32Value(PLAYER_FIELD_LAST_WEEK_CONTRIBUTION));
     FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::LastWeekRank, player.GetUInt32Value(PLAYER_FIELD_LAST_WEEK_RANK));
     FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::WatchedFactionIndex, int32(player.GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX)));
+
+    // Quest completion, permanent (non-repeatable rewarded) quests only, one bit per quest id --
+    // matches GetQuestRewardStatus's own definition of "done" (a repeatable quest never sets this,
+    // so it can still be offered again). mQuestStatus already holds the character's whole quest
+    // history, not just the active log.
+    {
+        std::array<uint64, 1000> questCompletedBits{};
+        for (auto const& [questId, status] : player.GetQuestStatusMap())
+        {
+            uint32 const slot = questId / 64;
+            if (slot >= questCompletedBits.size())
+                continue;
+            if (player.GetQuestRewardStatus(questId))
+                questCompletedBits[slot] |= uint64(1) << (questId % 64);
+        }
+        for (uint32 slot = 0; slot < questCompletedBits.size(); ++slot)
+            FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::QuestCompleted, slot, questCompletedBits[slot]);
+    }
+
+    // World-map exploration (PLAYER_EXPLORED_ZONES_1..64, one bit per AreaTable.dbc AreaBit,
+    // same indexing 1.12 already uses) repacked two 32-bit legacy words per 64-bit wire word.
+    {
+        UFBitVector const& current = player.m_activePlayerData->BitVectors->Values[PLAYER_DATA_FLAG_EXPLORED_ZONES_INDEX];
+        for (uint32 word = 0; word < PLAYER_EXPLORED_ZONES_SIZE; word += 2)
+        {
+            uint64 const value = uint64(player.GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + word))
+                | (uint64(player.GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + word + 1)) << 32);
+            uint32 const slot = word / 2;
+            if (slot >= current.Values.size() || uint64(current.Values[slot]) != value)
+            {
+                SetUpdateFieldValue(player.m_values.ModifyValue(&Player::m_activePlayerData)
+                    .ModifyValue(&UFActivePlayerData::BitVectors)
+                    .ModifyValue(&UFBitVectors::Values, PLAYER_DATA_FLAG_EXPLORED_ZONES_INDEX)
+                    .ModifyValue(&UFBitVector::Values, slot), value);
+            }
+        }
+    }
 
     {
         auto getSkill = [&]() { return player.m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UFActivePlayerData::Skill); };
