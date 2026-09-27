@@ -1080,6 +1080,49 @@ None of these is proven against a real 1.15.6 client yet.
   (player appearance): it needs a real classic-era client capture to see what the three opcodes
   actually carry.
 
+- **Mirror timers and level-up info follow TrinityCore's field widths over vibemangos's.**
+  vibemangos's `StartMirrorTimer`/`PauseMirrorTimer`/`StopMirrorTimer` keep vanilla's `uint32`
+  timer-type field and write `Paused` as a full byte; TrinityCore's `MiscPackets.cpp` sends `Timer`
+  as a single byte and bit-packs `Paused`, followed here. `LevelUpInfo` similarly follows
+  TrinityCore's `MAX_POWERS_PER_CLASS` (10 power-gain slots) over vibemangos's own comment citing "7
+  powers for the 1.14.1+ client (HermesProxy)"; this engine only ever fills slot 0 (mana), so the
+  dispute costs no real gameplay data, but the wire shape itself is unverified against our specific
+  58797 build.
+
+- **`SMSG_SUMMON_REQUEST` drops the auto-decline timer.** vibemangos keeps vanilla's (summonerGuid,
+  zoneId, autoDeclineDelay) body; TrinityCore's `SummonRequest::Write()` (`MovementPackets.cpp`)
+  carries no delay field at all, adding instead a virtual-realm address (always 0, single-realm
+  server), a `Reason` byte (always Spell -- this engine has no scenario-summon source) and a
+  `SkipStartingArea` bit (always false). Followed TrinityCore; presumably the modern client's summon
+  dialog times out on its own rather than being told a duration.
+
+- **`PlaySpellVisual`'s travel/target fields are guessed.** TrinityCore's body is the full retail
+  projectile-visual shape (source, target, transport, target position, travel speed, hit/miss/
+  reflect reason, launch delay, min duration, speed-as-time) for spells that fly to a target. This
+  engine's only two callers (`Unit::SendPlaySpellVisualKit`: food/drink kits and a channeled spell's
+  beam refresh) have no target or travel data at all, so `Target` is set equal to `Source` and every
+  field past `SpellVisualId` is a zero "detonates instantly at the caster" default. Unverified
+  against a real client, same class of guess as S6's raw `SpellVisual.dbc` id.
+
+- **`SMSG_GAMEOBJECT_SPAWN_ANIM`/`DESPAWN_ANIM` have no modern opcode.** The 1.15.6 opcode table has
+  no replacement for either: a modern client animates a game object's appearance purely from its
+  `UPDATE_OBJECT` create block. `GAME_OBJECT_CUSTOM_ANIM` gained a `PlayAsDespawn` bit for exactly
+  this in retail, so `WorldObject::SendObjectSpawnAnim`/`SendObjectDeSpawnAnim` now delegate to
+  `GameObject::SendGameObjectCustomAnim(0, playAsDespawn)` -- matching vibemangos's own fix. Units
+  (e.g. `Totem`, which also calls these two) have no equivalent opcode at all, so the send is a
+  silent no-op for anything that isn't a game object.
+
+- **`SMSG_PLAY_SPELL_IMPACT`, `SMSG_SPELL_UPDATE_CHAIN_TARGETS` and `SMSG_SET_FORCED_REACTIONS` are
+  not ported.** None of the three has a `CLASSIC_SMSG_*` counterpart anywhere in the 1.15.6 opcode
+  table (checked against `ClassicOpcodes.h`'s own claim to be the full set the client can send or
+  receive). Spell-impact and chain-target visuals are presumably computed client-side from
+  `SpellXSpellVisual` data now; forced-reaction overrides, per vibemangos's own note, "ride player
+  object-data update fields instead" -- a real update-field feature this port doesn't have yet, not
+  a thin rebind. Left on their vanilla opcodes (silently dropped by the legacy lane) rather than
+  guessed: `SetForcedReactions`'s only call site (`ReputationMgr::SendForceReactions`, a
+  rep-forcing spell aura) and the debug-only `PlaySpellImpact`/channel chain-target sends are
+  untouched.
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
