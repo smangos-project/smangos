@@ -25,6 +25,7 @@ endif()
 
 if (BUILD_DATABASE_TOOL)
   add_subdirectory(doltlite)
+  add_subdirectory(lzmasdk)
 endif()
 
 if (ENABLE_CPPTRACE)
