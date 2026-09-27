@@ -16,6 +16,7 @@ add_library(database_tool_lib STATIC
   Commands/CreateMysqlDatabase.cpp
   Commands/CreateWorldDatabase.cpp
   Commands/PortMigrationFile.cpp
+  generated/DbcTables.g.cpp
 )
 
 target_include_directories(database_tool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
