@@ -33,7 +33,7 @@ namespace
     }
 
     // Returns the number of tables that failed to import.
-    uint32_t PrintDbcImportSummary(DbcImportResult const& result)
+    uint32_t PrintDbcImportSummary(char const* format, DbcImportResult const& result)
     {
         uint32_t imported = 0, missing = 0, failed = 0;
         for (DbcImportTableResult const& table : result.tables)
@@ -48,7 +48,7 @@ namespace
             else
                 ++imported;
         }
-        std::printf("import db2: %u tables imported, %u missing, %u failed\n", imported, missing, failed);
+        std::printf("import %s: %u tables imported, %u missing, %u failed\n", format, imported, missing, failed);
         return failed;
     }
 
@@ -110,11 +110,11 @@ namespace
             result.dumpImport.tablesCreated, static_cast<unsigned long long>(result.dumpImport.rowsInserted),
             result.update.appliedMigrationIds.size());
         if (importDbc)
-            PrintDbcImportSummary(result.dbcImport);
+            PrintDbcImportSummary("db2", result.dbcImport);
         return 0;
     }
 
-    // import --format db2 [--tables A,B]
+    // import --format db2|dbc [--tables A,B]
     int RunImport(std::vector<std::string> const& args)
     {
         std::string format;
@@ -127,9 +127,9 @@ namespace
                 onlyTables = SplitCsv(args[++i]);
         }
 
-        if (format != "db2")
+        if (format != "db2" && format != "dbc")
         {
-            std::printf("import: --format db2 is required (dbc isn't implemented yet)\n");
+            std::printf("import: --format db2|dbc is required\n");
             return 1;
         }
 
@@ -141,17 +141,19 @@ namespace
         }
 
         DoltLiteDatabase world(worldPath.string());
-        DbcImportResult result = ImportDb2Files(world, DbfilesclientDir(), onlyTables);
+        DbcImportResult result = format == "db2"
+            ? ImportDb2Files(world, DbfilesclientDir(), onlyTables)
+            : ImportDbcFiles(world, DbfilesclientDir(), onlyTables);
         if (!result.error.empty())
         {
             std::printf("import: %s\n", result.error.c_str());
             return 1;
         }
 
-        return PrintDbcImportSummary(result) ? 1 : 0;
+        return PrintDbcImportSummary(format.c_str(), result) ? 1 : 0;
     }
 
-    // export --format db2 [--tables A,B]
+    // export --format db2|dbc [--tables A,B]
     int RunExport(std::vector<std::string> const& args)
     {
         std::string format;
@@ -164,9 +166,9 @@ namespace
                 onlyTables = SplitCsv(args[++i]);
         }
 
-        if (format != "db2")
+        if (format != "db2" && format != "dbc")
         {
-            std::printf("export: --format db2 is required (dbc isn't implemented yet)\n");
+            std::printf("export: --format db2|dbc is required\n");
             return 1;
         }
 
@@ -178,7 +180,9 @@ namespace
         }
 
         DoltLiteDatabase world(worldPath.string());
-        DbcExportResult result = ExportDb2Files(world, DbfilesclientDir(), onlyTables);
+        DbcExportResult result = format == "db2"
+            ? ExportDb2Files(world, DbfilesclientDir(), onlyTables)
+            : ExportDbcFiles(world, DbfilesclientDir(), onlyTables);
         if (!result.error.empty())
         {
             std::printf("export: %s\n", result.error.c_str());
@@ -198,7 +202,8 @@ namespace
             else
                 ++exported;
         }
-        std::printf("export db2: %u tables exported, %u with no dbc_files row, %u failed\n", exported, missing, failed);
+        std::printf("export %s: %u tables exported, %u with no dbc_files row, %u failed\n",
+            format.c_str(), exported, missing, failed);
         return failed ? 1 : 0;
     }
 
