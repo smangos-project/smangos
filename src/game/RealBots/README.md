@@ -1123,6 +1123,29 @@ None of these is proven against a real 1.15.6 client yet.
   rep-forcing spell aura) and the debug-only `PlaySpellImpact`/channel chain-target sends are
   untouched.
 
+- **`SMSG_SPELL_ABSORB_LOG` is not ported.** It exists in TrinityCore's `CombatLogPackets.h`, but
+  vanilla 1.12 has no such opcode at all -- absorbed damage rides along inside the main damage log
+  (`SpellNonMeleeDamageLog::Absorbed`, already sent) instead of getting its own toast, and this
+  engine has no heal-absorb mechanic (a later-expansion shield type) to source `SpellHealLog::
+  Absorbed` from either, so that field stays at its default 0. A new client feature, not a parity
+  gap -- same class of decision as threat packets below, except that one had an owner (a real
+  vmangos source to fill it from) and this one doesn't. `SpellHealLog::OverHeal`, which does have a
+  source (`SpellCaster::DealHeal`'s own `ModifyHealth` clamp), is filled.
+
+- **`SMSG_THREAT_UPDATE`/`HIGHEST_THREAT_UPDATE`/`THREAT_REMOVE`/`THREAT_CLEAR` (nameplate aggro
+  coloring) are ported, own design throughout.** Vanilla 1.12 had no such feedback at all, so
+  there's no wire shape to port -- structs follow TrinityCore's `CombatPackets.cpp` field order,
+  but the send-site wiring is new: `ThreatManager` (`src/game/Threat`) has no periodic `Update`
+  tick the way TrinityCore's does, so one was added (`ThreatManager::clientUpdate`, ticked from
+  `Creature::Update` while `CSTATE_COMBAT` is set) using the same throttle TrinityCore's own
+  `THREAT_UPDATE_INTERVAL` uses (1s) so a busy threat list (every melee swing touches it) doesn't
+  spam a packet per hit -- unverified against a real client, since nothing pins this exact interval
+  to the 1.15.6 wire itself, only to TrinityCore's server-side choice. `ThreatRemove` and the full
+  list clear (`Unit::DeleteThreatList`) send immediately rather than waiting for the throttle,
+  matching TrinityCore's own `UpdateOffline`/list-clear call sites. `HighestThreatUpdate` (vs. the
+  plain list update) is sent when the current victim differs from the last one actually sent to
+  clients, not on every internal victim reselection.
+
 ## TrinityCore as a cross-check (spike outcome: not run)
 
 `bot-phase-2.md` planned TrinityCore `cata_classic` as a routine second target, starting with a spike:
