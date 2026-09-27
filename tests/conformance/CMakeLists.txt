@@ -51,6 +51,7 @@ add_executable(tests-conformance
   world_entry/DuelTests.cpp
   world_entry/TradeTests.cpp
   world_entry/GmTicketTests.cpp
+  world_entry/PetitionTests.cpp
   world_entry/GroupTests.cpp
   world_entry/QueryTests.cpp
   world_entry/ItemTests.cpp
