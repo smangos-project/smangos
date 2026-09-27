@@ -279,3 +279,38 @@ TEST_CASE("QueryTime and its response round-trip", "[packets]")
     });
     RejectsEveryTruncation(response);
 }
+
+TEST_CASE("QueryCorpseLocationFromClient round-trips", "[packets]")
+{
+    QueryCorpseLocationFromClient packet;
+    packet.Player = { 0x1234, 0 };
+    RoundTrip(packet, [](QueryCorpseLocationFromClient const& a, QueryCorpseLocationFromClient const& b) { CHECK(a.Player == b.Player); });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("CorpseLocation round-trips valid and not found", "[packets]")
+{
+    for (bool valid : { false, true })
+    {
+        CorpseLocation packet;
+        packet.Valid = valid;
+        packet.Player = { 0x1234, 0 };
+        packet.ActualMapId = 1;
+        packet.MapId = 0;
+        packet.PositionX = 100.0f;
+        packet.PositionY = -200.0f;
+        packet.PositionZ = 50.0f;
+        RoundTrip(packet, [](CorpseLocation const& a, CorpseLocation const& b)
+        {
+            CHECK(a.Valid == b.Valid);
+            CHECK(a.Player == b.Player);
+            CHECK(a.ActualMapId == b.ActualMapId);
+            CHECK(a.MapId == b.MapId);
+            CHECK(a.Transport == b.Transport);
+            CHECK(a.PositionX == b.PositionX);
+            CHECK(a.PositionY == b.PositionY);
+            CHECK(a.PositionZ == b.PositionZ);
+        });
+        RejectsEveryTruncation(packet);
+    }
+}

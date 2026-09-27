@@ -686,4 +686,65 @@ struct QueryTimeResponse
     }
 };
 
+// "Release corpse" screen's request for where the player's own corpse is. The legacy
+// MSG_CORPSE_QUERY had no body (implicit: the requester's own corpse); the modern client always
+// names a player guid, per TrinityCore's WorldPackets::Query::QueryCorpseLocationFromClient::Read.
+// This port keeps vmangos's own-corpse-only behavior, so the handler ignores anything but the
+// requester's own guid.
+struct QueryCorpseLocationFromClient
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_QUERY_CORPSE_LOCATION_FROM_CLIENT;
+
+    ClassicGuid Player;
+
+    void Write(ByteBuffer& data) const { Player.Write(data); }
+    bool Read(ByteBuffer& data) { return Player.Read(data); }
+};
+
+// Field order/set confirmed against TrinityCore's WorldPackets::Query::CorpseLocation::Write.
+// Transport is always empty: vmangos never places a corpse on a transport.
+struct CorpseLocation
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_CORPSE_LOCATION;
+
+    bool Valid = false;
+    ClassicGuid Player;
+    int32 ActualMapId = 0;
+    int32 MapId = 0;
+    ClassicGuid Transport;
+    float PositionX = 0.0f;
+    float PositionY = 0.0f;
+    float PositionZ = 0.0f;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(Valid);
+        data.FlushBits();
+        Player.Write(data);
+        data << ActualMapId;
+        data << MapId;
+        Transport.Write(data);
+        data << PositionX << PositionY << PositionZ;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        Valid = data.ReadBit();
+        data.ResetBitPos();
+        if (!Player.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 2 * sizeof(int32))
+            return false;
+        data >> ActualMapId >> MapId;
+        if (!Transport.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 3 * sizeof(float))
+            return false;
+        data >> PositionX >> PositionY >> PositionZ;
+        return true;
+    }
+};
+
 #endif

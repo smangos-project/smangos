@@ -38,6 +38,8 @@
 #include "MapPersistentStateMgr.h"
 #include "VMapFactory.h"
 #include "BattleGroundMgr.h"
+#include "Packets/QueryMessages.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "DynamicTree.h"
 #include "RegularGrid.h"
 #include "PathFinder.h"
@@ -3607,9 +3609,10 @@ void Map::RemoveCorpses(bool unload)
                 if (looterGuid)
                 {
                     // Notify the client that the corpse is gone
-                    WorldPacket cdata(MSG_CORPSE_QUERY, 1);
-                    cdata << uint8(0);
-                    owner->GetSession()->SendPacket(&cdata);
+                    CorpseLocation cdata;
+                    cdata.Valid = false;
+                    cdata.Player = ClassicGuidMapping::ToClassic(owner->GetObjectGuid(), realmID);
+                    owner->GetSession()->SendClassic(cdata);
                 }
             }
 

@@ -202,15 +202,16 @@ void WorldSession::HandleGameObjectQueryOpcode(QueryGameObject const& packet)
     SendClassic(response);
 }
 
-void WorldSession::HandleCorpseQueryOpcode(NullClientPacket const& /*packet*/)
+void WorldSession::HandleCorpseQueryOpcode(QueryCorpseLocationFromClient const& /*packet*/)
 {
-    Corpse* corpse = GetPlayer()->GetCorpse();
+    CorpseLocation response;
+    response.Player = ClassicGuidMapping::ToClassic(_player->GetObjectGuid(), realmID);
 
+    Corpse* corpse = GetPlayer()->GetCorpse();
     if (!corpse)
     {
-        WorldPacket data(MSG_CORPSE_QUERY, 1);
-        data << uint8(0);                                   // corpse not found
-        SendPacket(&data);
+        response.Valid = false;
+        SendClassic(response);
         return;
     }
 
@@ -240,14 +241,13 @@ void WorldSession::HandleCorpseQueryOpcode(NullClientPacket const& /*packet*/)
         }
     }
 
-    WorldPacket data(MSG_CORPSE_QUERY, 1 + (5 * 4));
-    data << uint8(1);                                       // corpse found
-    data << int32(mapid);
-    data << float(x);
-    data << float(y);
-    data << float(z);
-    data << uint32(corpsemapid);
-    SendPacket(&data);
+    response.Valid = true;
+    response.ActualMapId = mapid;
+    response.MapId = int32(corpsemapid);
+    response.PositionX = x;
+    response.PositionY = y;
+    response.PositionZ = z;
+    SendClassic(response);
 }
 
 void WorldSession::HandleNpcTextQueryOpcode(QueryNpcText const& packet)

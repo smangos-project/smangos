@@ -865,7 +865,7 @@ class WorldSession
         uint32 ChatCooldown();
 
         void HandleReclaimCorpseOpcode(ReclaimCorpse const& packet);
-        void HandleCorpseQueryOpcode(NullClientPacket const& packet);
+        void HandleCorpseQueryOpcode(QueryCorpseLocationFromClient const& packet);
         void HandleResurrectResponseOpcode(ResurrectResponse const& packet);
         void HandleSummonResponseOpcode(SummonResponse const& packet);
 

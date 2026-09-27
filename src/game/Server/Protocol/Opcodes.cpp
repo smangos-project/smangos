@@ -629,7 +629,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_UNLEARN_TALENTS,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GAMEOBJECT_SPAWN_ANIM,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_GAMEOBJECT_DESPAWN_ANIM,      UnhandleReason::SendByServer);
-    DEFINE_HANDLER(MSG_CORPSE_QUERY,                  STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleCorpseQueryOpcode);
+    INVALID_PACKET(MSG_CORPSE_QUERY,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GMTICKET_DELETETICKET,        UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GMTICKET_DELETETICKET,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAT_WRONG_FACTION,           UnhandleReason::SendByServer);
@@ -1273,6 +1273,7 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_AT_WAR, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionAtWarOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_NOT_AT_WAR, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionNotAtWarOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_FACTION_INACTIVE, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleSetFactionInactiveOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_QUERY_CORPSE_LOCATION_FROM_CLIENT, STATUS_LOGGEDIN, PACKET_PROCESS_MAP, &WorldSession::HandleCorpseQueryOpcode);
 
     return list;
 }
