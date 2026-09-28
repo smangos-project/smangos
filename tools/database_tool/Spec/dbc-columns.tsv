@@ -25,51 +25,51 @@ dbc_areapoi	UiWidgetSetID
 dbc_areapoi	Importance		
 dbc_areapoi	Icon		
 dbc_areatable	ID		
-dbc_areatable	ZoneName		
+dbc_areatable	ZoneName		client
 dbc_areatable	AreaName_lang		
 dbc_areatable	ContinentID		
 dbc_areatable	ParentAreaID		
 dbc_areatable	AreaBit		
-dbc_areatable	SoundProviderPref		
-dbc_areatable	SoundProviderPrefUnderwater		
-dbc_areatable	AmbienceID		
-dbc_areatable	UwAmbience		
-dbc_areatable	ZoneMusic		
-dbc_areatable	UwZoneMusic		
+dbc_areatable	SoundProviderPref		client
+dbc_areatable	SoundProviderPrefUnderwater		client
+dbc_areatable	AmbienceID		client
+dbc_areatable	UwAmbience		client
+dbc_areatable	ZoneMusic		client
+dbc_areatable	UwZoneMusic		client
 dbc_areatable	ExplorationLevel		
-dbc_areatable	IntroSound		
-dbc_areatable	UwIntroSound		
+dbc_areatable	IntroSound		client
+dbc_areatable	UwIntroSound		client
 dbc_areatable	FactionGroupMask		
-dbc_areatable	Ambient_multiplier		
-dbc_areatable	MountFlags		
-dbc_areatable	PvpCombatWorldStateID		
-dbc_areatable	WildBattlePetLevelMin		
-dbc_areatable	WildBattlePetLevelMax		
-dbc_areatable	WindSettingsID		
+dbc_areatable	Ambient_multiplier		client
+dbc_areatable	MountFlags		client
+dbc_areatable	PvpCombatWorldStateID		neutral
+dbc_areatable	WildBattlePetLevelMin		neutral
+dbc_areatable	WildBattlePetLevelMax		neutral
+dbc_areatable	WindSettingsID		neutral
 dbc_areatable	Flags1		
-dbc_areatable	Flags2		
+dbc_areatable	Flags2		client
 dbc_areatable	LiquidTypeID1		
-dbc_areatable	LiquidTypeID2		
-dbc_areatable	LiquidTypeID3		
-dbc_areatable	LiquidTypeID4		
+dbc_areatable	LiquidTypeID2		client
+dbc_areatable	LiquidTypeID3		client
+dbc_areatable	LiquidTypeID4		client
 dbc_areatrigger	Message_lang		
 dbc_areatrigger	Pos1		
 dbc_areatrigger	Pos2		
 dbc_areatrigger	Pos3		
 dbc_areatrigger	ID		
 dbc_areatrigger	ContinentID		
-dbc_areatrigger	PhaseUseFlags		
-dbc_areatrigger	PhaseID		
-dbc_areatrigger	PhaseGroupID		
+dbc_areatrigger	PhaseUseFlags		neutral
+dbc_areatrigger	PhaseID		neutral
+dbc_areatrigger	PhaseGroupID		neutral
 dbc_areatrigger	Radius		
 dbc_areatrigger	Box_length		
 dbc_areatrigger	Box_width		
 dbc_areatrigger	Box_height		
 dbc_areatrigger	Box_yaw		
-dbc_areatrigger	ShapeType		
-dbc_areatrigger	ShapeID		
-dbc_areatrigger	AreaTriggerActionSetID		
-dbc_areatrigger	Flags		
+dbc_areatrigger	ShapeType		client
+dbc_areatrigger	ShapeID		client
+dbc_areatrigger	AreaTriggerActionSetID		neutral
+dbc_areatrigger	Flags		client
 dbc_auctionhouse	ID		
 dbc_auctionhouse	Name_lang		
 dbc_auctionhouse	FactionID		
@@ -148,104 +148,104 @@ dbc_chatchannels	Shortcut_lang
 dbc_chatchannels	ID		
 dbc_chatchannels	Flags		
 dbc_chatchannels	FactionGroup		
-dbc_chatchannels	Ruleset		
+dbc_chatchannels	Ruleset		client
 dbc_chatprofanity	ID		
 dbc_chatprofanity	Text		
 dbc_chatprofanity	Language		
 dbc_chrclasses	Name_lang		
 dbc_chrclasses	Filename		
-dbc_chrclasses	Name_male_lang		
-dbc_chrclasses	Name_female_lang		
+dbc_chrclasses	Name_male_lang		client
+dbc_chrclasses	Name_female_lang		client
 dbc_chrclasses	PetNameToken		
 dbc_chrclasses	ID		
-dbc_chrclasses	CreateScreenFileDataID		
-dbc_chrclasses	SelectScreenFileDataID		
-dbc_chrclasses	IconFileDataID		
-dbc_chrclasses	LowResScreenFileDataID		
+dbc_chrclasses	CreateScreenFileDataID		client
+dbc_chrclasses	SelectScreenFileDataID		client
+dbc_chrclasses	IconFileDataID		client
+dbc_chrclasses	LowResScreenFileDataID		client
 dbc_chrclasses	Flags		
-dbc_chrclasses	StartingLevel		
-dbc_chrclasses	SpellTextureBlobFileDataID		
-dbc_chrclasses	ArmorTypeMask		
-dbc_chrclasses	CinematicSequenceID		
-dbc_chrclasses	DefaultSpec		
-dbc_chrclasses	HasStrengthAttackBonus		
-dbc_chrclasses	PrimaryStatPriority		
+dbc_chrclasses	StartingLevel		client
+dbc_chrclasses	SpellTextureBlobFileDataID		client
+dbc_chrclasses	ArmorTypeMask		client
+dbc_chrclasses	CinematicSequenceID		client
+dbc_chrclasses	DefaultSpec		neutral
+dbc_chrclasses	HasStrengthAttackBonus		client
+dbc_chrclasses	PrimaryStatPriority		client
 dbc_chrclasses	DisplayPower		
-dbc_chrclasses	RangedAttackPowerPerAgility		
-dbc_chrclasses	AttackPowerPerAgility		
-dbc_chrclasses	AttackPowerPerStrength		
+dbc_chrclasses	RangedAttackPowerPerAgility		client
+dbc_chrclasses	AttackPowerPerAgility		client
+dbc_chrclasses	AttackPowerPerStrength		client
 dbc_chrclasses	SpellClassSet		
-dbc_chrclasses	RolesMask		
+dbc_chrclasses	RolesMask		neutral
 dbc_chrclasses	DamageBonusStat		
-dbc_chrclasses	HasRelicSlot		
+dbc_chrclasses	HasRelicSlot		neutral
 dbc_chrraces	ID		
 dbc_chrraces	ClientPrefix		
 dbc_chrraces	ClientFileString		
 dbc_chrraces	Name_lang		
-dbc_chrraces	Name_female_lang		
-dbc_chrraces	Name_lowercase_lang		
-dbc_chrraces	Name_female_lowercase_lang		
-dbc_chrraces	Lore_name_lang		
-dbc_chrraces	Lore_name_female_lang		
-dbc_chrraces	Lore_name_lower_lang		
-dbc_chrraces	Lore_name_lower_female_lang		
-dbc_chrraces	LoreDescription_lang		
-dbc_chrraces	Short_name_lang		
-dbc_chrraces	Short_name_female_lang		
-dbc_chrraces	Short_name_lower_lang		
-dbc_chrraces	Short_name_lower_female_lang		
+dbc_chrraces	Name_female_lang		client
+dbc_chrraces	Name_lowercase_lang		client
+dbc_chrraces	Name_female_lowercase_lang		client
+dbc_chrraces	Lore_name_lang		client
+dbc_chrraces	Lore_name_female_lang		client
+dbc_chrraces	Lore_name_lower_lang		client
+dbc_chrraces	Lore_name_lower_female_lang		client
+dbc_chrraces	LoreDescription_lang		client
+dbc_chrraces	Short_name_lang		client
+dbc_chrraces	Short_name_female_lang		client
+dbc_chrraces	Short_name_lower_lang		client
+dbc_chrraces	Short_name_lower_female_lang		client
 dbc_chrraces	Flags		
 dbc_chrraces	MaleDisplayID		
 dbc_chrraces	FemaleDisplayID		
-dbc_chrraces	HighResMaleDisplayID		
-dbc_chrraces	HighResFemaleDisplayID		
+dbc_chrraces	HighResMaleDisplayID		client
+dbc_chrraces	HighResFemaleDisplayID		client
 dbc_chrraces	ResSicknessSpellID		
 dbc_chrraces	SplashSoundID		
-dbc_chrraces	CreateScreenFileDataID		
-dbc_chrraces	SelectScreenFileDataID		
-dbc_chrraces	LowResScreenFileDataID		
-dbc_chrraces	AlteredFormStartVisualKitID1		
-dbc_chrraces	AlteredFormStartVisualKitID2		
-dbc_chrraces	AlteredFormStartVisualKitID3		
-dbc_chrraces	AlteredFormFinishVisualKitID1		
-dbc_chrraces	AlteredFormFinishVisualKitID2		
-dbc_chrraces	AlteredFormFinishVisualKitID3		
-dbc_chrraces	HeritageArmorAchievementID		
-dbc_chrraces	StartingLevel		
-dbc_chrraces	UiDisplayOrder		
-dbc_chrraces	PlayableRaceBit		
-dbc_chrraces	FemaleSkeletonFileDataID		
-dbc_chrraces	MaleSkeletonFileDataID		
-dbc_chrraces	HelmetAnimScalingRaceID		
-dbc_chrraces	TransmogrifyDisabledSlotMask		
-dbc_chrraces	AlteredFormCustomizeOffsetFallback1		
-dbc_chrraces	AlteredFormCustomizeOffsetFallback2		
-dbc_chrraces	AlteredFormCustomizeOffsetFallback3		
-dbc_chrraces	AlteredFormCustomizeRotationFallback		
-dbc_chrraces	Field_9_0_1_35256_0331		
-dbc_chrraces	Field_9_0_1_35256_0332		
-dbc_chrraces	Field_9_0_1_35256_0333		
-dbc_chrraces	Field_9_0_1_35256_0341		
-dbc_chrraces	Field_9_0_1_35256_0342		
-dbc_chrraces	Field_9_0_1_35256_0343		
+dbc_chrraces	CreateScreenFileDataID		client
+dbc_chrraces	SelectScreenFileDataID		client
+dbc_chrraces	LowResScreenFileDataID		client
+dbc_chrraces	AlteredFormStartVisualKitID1		client
+dbc_chrraces	AlteredFormStartVisualKitID2		client
+dbc_chrraces	AlteredFormStartVisualKitID3		client
+dbc_chrraces	AlteredFormFinishVisualKitID1		client
+dbc_chrraces	AlteredFormFinishVisualKitID2		client
+dbc_chrraces	AlteredFormFinishVisualKitID3		client
+dbc_chrraces	HeritageArmorAchievementID		neutral
+dbc_chrraces	StartingLevel		client
+dbc_chrraces	UiDisplayOrder		client
+dbc_chrraces	PlayableRaceBit		client
+dbc_chrraces	FemaleSkeletonFileDataID		client
+dbc_chrraces	MaleSkeletonFileDataID		client
+dbc_chrraces	HelmetAnimScalingRaceID		client
+dbc_chrraces	TransmogrifyDisabledSlotMask		neutral
+dbc_chrraces	AlteredFormCustomizeOffsetFallback1		client
+dbc_chrraces	AlteredFormCustomizeOffsetFallback2		client
+dbc_chrraces	AlteredFormCustomizeOffsetFallback3		client
+dbc_chrraces	AlteredFormCustomizeRotationFallback		client
+dbc_chrraces	Field_9_0_1_35256_0331		client
+dbc_chrraces	Field_9_0_1_35256_0332		client
+dbc_chrraces	Field_9_0_1_35256_0333		client
+dbc_chrraces	Field_9_0_1_35256_0341		client
+dbc_chrraces	Field_9_0_1_35256_0342		client
+dbc_chrraces	Field_9_0_1_35256_0343		client
 dbc_chrraces	FactionID		
 dbc_chrraces	CinematicSequenceID		
 dbc_chrraces	BaseLanguage		
 dbc_chrraces	CreatureType		
-dbc_chrraces	Alliance		
-dbc_chrraces	Race_related		
-dbc_chrraces	UnalteredVisualRaceID		
-dbc_chrraces	DefaultClassID		
-dbc_chrraces	NeutralRaceID		
-dbc_chrraces	MaleModelFallbackRaceID		
-dbc_chrraces	MaleModelFallbackSex		
-dbc_chrraces	FemaleModelFallbackRaceID		
-dbc_chrraces	FemaleModelFallbackSex		
-dbc_chrraces	MaleTextureFallbackRaceID		
-dbc_chrraces	MaleTextureFallbackSex		
-dbc_chrraces	FemaleTextureFallbackRaceID		
-dbc_chrraces	FemaleTextureFallbackSex		
-dbc_chrraces	UnalteredVisualCustomizationRaceID		
+dbc_chrraces	Alliance		client
+dbc_chrraces	Race_related		client
+dbc_chrraces	UnalteredVisualRaceID		client
+dbc_chrraces	DefaultClassID		client
+dbc_chrraces	NeutralRaceID		client
+dbc_chrraces	MaleModelFallbackRaceID		client
+dbc_chrraces	MaleModelFallbackSex		client
+dbc_chrraces	FemaleModelFallbackRaceID		client
+dbc_chrraces	FemaleModelFallbackSex		client
+dbc_chrraces	MaleTextureFallbackRaceID		client
+dbc_chrraces	MaleTextureFallbackSex		client
+dbc_chrraces	FemaleTextureFallbackRaceID		client
+dbc_chrraces	FemaleTextureFallbackSex		client
+dbc_chrraces	UnalteredVisualCustomizationRaceID		client
 dbc_cinematiccamera	ID		
 dbc_cinematiccamera	Origin1		
 dbc_cinematiccamera	Origin2		
@@ -272,41 +272,41 @@ dbc_creaturedisplayinfo	CreatureModelAlpha
 dbc_creaturedisplayinfo	BloodID		
 dbc_creaturedisplayinfo	ExtendedDisplayInfoID		
 dbc_creaturedisplayinfo	NPCSoundID		
-dbc_creaturedisplayinfo	ParticleColorID		
-dbc_creaturedisplayinfo	PortraitCreatureDisplayInfoID		
-dbc_creaturedisplayinfo	PortraitTextureFileDataID		
-dbc_creaturedisplayinfo	ObjectEffectPackageID		
-dbc_creaturedisplayinfo	AnimReplacementSetID		
-dbc_creaturedisplayinfo	Flags		
-dbc_creaturedisplayinfo	StateSpellVisualKitID		
-dbc_creaturedisplayinfo	PlayerOverrideScale		
-dbc_creaturedisplayinfo	PetInstanceScale		
-dbc_creaturedisplayinfo	UnarmedWeaponType		
-dbc_creaturedisplayinfo	MountPoofSpellVisualKitID		
-dbc_creaturedisplayinfo	DissolveEffectID		
+dbc_creaturedisplayinfo	ParticleColorID		client
+dbc_creaturedisplayinfo	PortraitCreatureDisplayInfoID		client
+dbc_creaturedisplayinfo	PortraitTextureFileDataID		client
+dbc_creaturedisplayinfo	ObjectEffectPackageID		client
+dbc_creaturedisplayinfo	AnimReplacementSetID		client
+dbc_creaturedisplayinfo	Flags		client
+dbc_creaturedisplayinfo	StateSpellVisualKitID		client
+dbc_creaturedisplayinfo	PlayerOverrideScale		client
+dbc_creaturedisplayinfo	PetInstanceScale		client
+dbc_creaturedisplayinfo	UnarmedWeaponType		client
+dbc_creaturedisplayinfo	MountPoofSpellVisualKitID		client
+dbc_creaturedisplayinfo	DissolveEffectID		client
 dbc_creaturedisplayinfo	Gender		
-dbc_creaturedisplayinfo	DissolveOutEffectID		
-dbc_creaturedisplayinfo	CreatureModelMinLod		
-dbc_creaturedisplayinfo	Field_1_15_4_56400_024		
+dbc_creaturedisplayinfo	DissolveOutEffectID		client
+dbc_creaturedisplayinfo	CreatureModelMinLod		client
+dbc_creaturedisplayinfo	Field_1_15_4_56400_024		client
 dbc_creaturedisplayinfo	TextureVariationFileDataID1		
 dbc_creaturedisplayinfo	TextureVariationFileDataID2		
 dbc_creaturedisplayinfo	TextureVariationFileDataID3		
-dbc_creaturedisplayinfo	TextureVariationFileDataID4		
+dbc_creaturedisplayinfo	TextureVariationFileDataID4		client
 dbc_creaturedisplayinfoextra	ID		
 dbc_creaturedisplayinfoextra	DisplayRaceID		
 dbc_creaturedisplayinfoextra	DisplaySexID		
-dbc_creaturedisplayinfoextra	DisplayClassID		
+dbc_creaturedisplayinfoextra	DisplayClassID		client
 dbc_creaturedisplayinfoextra	SkinID		
 dbc_creaturedisplayinfoextra	FaceID		
 dbc_creaturedisplayinfoextra	HairStyleID		
 dbc_creaturedisplayinfoextra	HairColorID		
 dbc_creaturedisplayinfoextra	FacialHairID		
-dbc_creaturedisplayinfoextra	Flags		
-dbc_creaturedisplayinfoextra	BakeMaterialResourcesID		
-dbc_creaturedisplayinfoextra	HDBakeMaterialResourcesID		
-dbc_creaturedisplayinfoextra	CustomDisplayOption1		
-dbc_creaturedisplayinfoextra	CustomDisplayOption2		
-dbc_creaturedisplayinfoextra	CustomDisplayOption3		
+dbc_creaturedisplayinfoextra	Flags		client
+dbc_creaturedisplayinfoextra	BakeMaterialResourcesID		client
+dbc_creaturedisplayinfoextra	HDBakeMaterialResourcesID		client
+dbc_creaturedisplayinfoextra	CustomDisplayOption1		client
+dbc_creaturedisplayinfoextra	CustomDisplayOption2		client
+dbc_creaturedisplayinfoextra	CustomDisplayOption3		client
 dbc_creaturefamily	ID		
 dbc_creaturefamily	Name_lang		
 dbc_creaturefamily	MinScale		
@@ -314,46 +314,46 @@ dbc_creaturefamily	MinScaleLevel
 dbc_creaturefamily	MaxScale		
 dbc_creaturefamily	MaxScaleLevel		
 dbc_creaturefamily	PetFoodMask		
-dbc_creaturefamily	PetTalentType		
-dbc_creaturefamily	CategoryEnumID		
+dbc_creaturefamily	PetTalentType		client
+dbc_creaturefamily	CategoryEnumID		client
 dbc_creaturefamily	IconFileID		
 dbc_creaturefamily	SkillLine1		
 dbc_creaturefamily	SkillLine2		
 dbc_creaturemodeldata	ID		
-dbc_creaturemodeldata	GeoBox1		
-dbc_creaturemodeldata	GeoBox2		
-dbc_creaturemodeldata	GeoBox3		
-dbc_creaturemodeldata	GeoBox4		
-dbc_creaturemodeldata	GeoBox5		
-dbc_creaturemodeldata	GeoBox6		
+dbc_creaturemodeldata	GeoBox1		client
+dbc_creaturemodeldata	GeoBox2		client
+dbc_creaturemodeldata	GeoBox3		client
+dbc_creaturemodeldata	GeoBox4		client
+dbc_creaturemodeldata	GeoBox5		client
+dbc_creaturemodeldata	GeoBox6		client
 dbc_creaturemodeldata	Flags		
-dbc_creaturemodeldata	FileDataID		
+dbc_creaturemodeldata	FileDataID		client
 dbc_creaturemodeldata	BloodID		
 dbc_creaturemodeldata	FootprintTextureID		
 dbc_creaturemodeldata	FootprintTextureLength		
 dbc_creaturemodeldata	FootprintTextureWidth		
 dbc_creaturemodeldata	FootprintParticleScale		
 dbc_creaturemodeldata	FoleyMaterialID		
-dbc_creaturemodeldata	FootstepCameraEffectID		
-dbc_creaturemodeldata	DeathThudCameraEffectID		
+dbc_creaturemodeldata	FootstepCameraEffectID		client
+dbc_creaturemodeldata	DeathThudCameraEffectID		client
 dbc_creaturemodeldata	SoundID		
 dbc_creaturemodeldata	SizeClass		
 dbc_creaturemodeldata	CollisionWidth		
 dbc_creaturemodeldata	CollisionHeight		
-dbc_creaturemodeldata	WorldEffectScale		
-dbc_creaturemodeldata	CreatureGeosetDataID		
-dbc_creaturemodeldata	HoverHeight		
-dbc_creaturemodeldata	AttachedEffectScale		
+dbc_creaturemodeldata	WorldEffectScale		client
+dbc_creaturemodeldata	CreatureGeosetDataID		client
+dbc_creaturemodeldata	HoverHeight		client
+dbc_creaturemodeldata	AttachedEffectScale		client
 dbc_creaturemodeldata	ModelScale		
-dbc_creaturemodeldata	MissileCollisionRadius		
-dbc_creaturemodeldata	MissileCollisionPush		
-dbc_creaturemodeldata	MissileCollisionRaise		
-dbc_creaturemodeldata	MountHeight		
-dbc_creaturemodeldata	OverrideLootEffectScale		
-dbc_creaturemodeldata	OverrideNameScale		
-dbc_creaturemodeldata	OverrideSelectionRadius		
-dbc_creaturemodeldata	TamedPetBaseScale		
-dbc_creaturemodeldata	Field_11_0_0_54210_032		
+dbc_creaturemodeldata	MissileCollisionRadius		client
+dbc_creaturemodeldata	MissileCollisionPush		client
+dbc_creaturemodeldata	MissileCollisionRaise		client
+dbc_creaturemodeldata	MountHeight		client
+dbc_creaturemodeldata	OverrideLootEffectScale		client
+dbc_creaturemodeldata	OverrideNameScale		client
+dbc_creaturemodeldata	OverrideSelectionRadius		client
+dbc_creaturemodeldata	TamedPetBaseScale		client
+dbc_creaturemodeldata	Field_11_0_0_54210_032		client
 dbc_creaturesounddata	ID		
 dbc_creaturesounddata	SoundExertionID		
 dbc_creaturesounddata	SoundExertionCriticalID		
@@ -405,10 +405,10 @@ dbc_creaturespelldata	Spells1
 dbc_creaturespelldata	Spells2		
 dbc_creaturespelldata	Spells3		
 dbc_creaturespelldata	Spells4		
-dbc_creaturespelldata	Availability1		
-dbc_creaturespelldata	Availability2		
-dbc_creaturespelldata	Availability3		
-dbc_creaturespelldata	Availability4		
+dbc_creaturespelldata	Availability1		client
+dbc_creaturespelldata	Availability2		client
+dbc_creaturespelldata	Availability3		client
+dbc_creaturespelldata	Availability4		client
 dbc_creaturetype	ID		
 dbc_creaturetype	Name_lang		
 dbc_creaturetype	Flags		
@@ -450,15 +450,15 @@ dbc_durabilitycosts	ArmorSubClassCost8
 dbc_durabilityquality	ID		
 dbc_durabilityquality	Data		
 dbc_emotes	ID		
-dbc_emotes	RaceMask		
+dbc_emotes	RaceMask		client
 dbc_emotes	EmoteSlashCommand		
 dbc_emotes	AnimID		
 dbc_emotes	EmoteFlags		
 dbc_emotes	EmoteSpecProc		
 dbc_emotes	EmoteSpecProcParam		
 dbc_emotes	EventSoundID		
-dbc_emotes	SpellVisualKitID		
-dbc_emotes	ClassMask		
+dbc_emotes	SpellVisualKitID		client
+dbc_emotes	ClassMask		client
 dbc_emotestext	ID		
 dbc_emotestext	Name		
 dbc_emotestext	EmoteID		
@@ -492,12 +492,12 @@ dbc_faction	Description_lang
 dbc_faction	ID		
 dbc_faction	ReputationIndex		
 dbc_faction	ParentFactionID		
-dbc_faction	Expansion		
-dbc_faction	FriendshipRepID		
-dbc_faction	Flags		
-dbc_faction	ParagonFactionID		
-dbc_faction	RenownFactionID		
-dbc_faction	RenownCurrencyID		
+dbc_faction	Expansion		client
+dbc_faction	FriendshipRepID		neutral
+dbc_faction	Flags		client
+dbc_faction	ParagonFactionID		neutral
+dbc_faction	RenownFactionID		neutral
+dbc_faction	RenownCurrencyID		neutral
 dbc_faction	ReputationClassMask1		
 dbc_faction	ReputationClassMask2		
 dbc_faction	ReputationClassMask3		
@@ -510,14 +510,14 @@ dbc_faction	ReputationBase1
 dbc_faction	ReputationBase2		
 dbc_faction	ReputationBase3		
 dbc_faction	ReputationBase4		
-dbc_faction	ReputationMax1		
-dbc_faction	ReputationMax2		
-dbc_faction	ReputationMax3		
-dbc_faction	ReputationMax4		
-dbc_faction	ParentFactionMod1		
-dbc_faction	ParentFactionMod2		
-dbc_faction	ParentFactionCap1		
-dbc_faction	ParentFactionCap2		
+dbc_faction	ReputationMax1		client
+dbc_faction	ReputationMax2		client
+dbc_faction	ReputationMax3		client
+dbc_faction	ReputationMax4		client
+dbc_faction	ParentFactionMod1		client
+dbc_faction	ParentFactionMod2		client
+dbc_faction	ParentFactionCap1		client
+dbc_faction	ParentFactionCap2		client
 dbc_factiongroup	InternalName		
 dbc_factiongroup	Name_lang		
 dbc_factiongroup	ID		
@@ -534,18 +534,18 @@ dbc_factiontemplate	Enemies1
 dbc_factiontemplate	Enemies2		
 dbc_factiontemplate	Enemies3		
 dbc_factiontemplate	Enemies4		
-dbc_factiontemplate	Enemies5		
-dbc_factiontemplate	Enemies6		
-dbc_factiontemplate	Enemies7		
-dbc_factiontemplate	Enemies8		
+dbc_factiontemplate	Enemies5		client
+dbc_factiontemplate	Enemies6		client
+dbc_factiontemplate	Enemies7		client
+dbc_factiontemplate	Enemies8		client
 dbc_factiontemplate	Friend1		
 dbc_factiontemplate	Friend2		
 dbc_factiontemplate	Friend3		
 dbc_factiontemplate	Friend4		
-dbc_factiontemplate	Friend5		
-dbc_factiontemplate	Friend6		
-dbc_factiontemplate	Friend7		
-dbc_factiontemplate	Friend8		
+dbc_factiontemplate	Friend5		client
+dbc_factiontemplate	Friend6		client
+dbc_factiontemplate	Friend7		client
+dbc_factiontemplate	Friend8		client
 dbc_footprinttextures	ID		
 dbc_footprinttextures	FileDataID		
 dbc_footprinttextures	TextureBlendsetID		
@@ -568,11 +568,11 @@ dbc_gameobjectdisplayinfo	GeoBox3
 dbc_gameobjectdisplayinfo	GeoBox4		
 dbc_gameobjectdisplayinfo	GeoBox5		
 dbc_gameobjectdisplayinfo	GeoBox6		
-dbc_gameobjectdisplayinfo	FileDataID		
-dbc_gameobjectdisplayinfo	ObjectEffectPackageID		
-dbc_gameobjectdisplayinfo	OverrideLootEffectScale		
-dbc_gameobjectdisplayinfo	OverrideNameScale		
-dbc_gameobjectdisplayinfo	Field_1_15_4_56400_006		
+dbc_gameobjectdisplayinfo	FileDataID		client
+dbc_gameobjectdisplayinfo	ObjectEffectPackageID		client
+dbc_gameobjectdisplayinfo	OverrideLootEffectScale		client
+dbc_gameobjectdisplayinfo	OverrideNameScale		client
+dbc_gameobjectdisplayinfo	Field_1_15_4_56400_006		client
 dbc_gametips	ID		
 dbc_gametips	Text_lang		
 dbc_gametips	SortIndex		
@@ -622,36 +622,36 @@ dbc_itemclass	ClassID
 dbc_itemclass	PriceModifier		
 dbc_itemclass	Flags		
 dbc_itemdisplayinfo	ID		
-dbc_itemdisplayinfo	GeosetGroupOverride		
-dbc_itemdisplayinfo	ItemVisual		
-dbc_itemdisplayinfo	ParticleColorID		
-dbc_itemdisplayinfo	ItemRangedDisplayInfoID		
-dbc_itemdisplayinfo	OverrideSwooshSoundKitID		
-dbc_itemdisplayinfo	SheatheTransformMatrixID		
-dbc_itemdisplayinfo	StateSpellVisualKitID		
-dbc_itemdisplayinfo	SheathedSpellVisualKitID		
-dbc_itemdisplayinfo	UnsheathedSpellVisualKitID		
-dbc_itemdisplayinfo	Flags		
-dbc_itemdisplayinfo	ModelResourcesID1		
-dbc_itemdisplayinfo	ModelResourcesID2		
-dbc_itemdisplayinfo	ModelMaterialResourcesID1		
-dbc_itemdisplayinfo	ModelMaterialResourcesID2		
-dbc_itemdisplayinfo	ModelType1		
-dbc_itemdisplayinfo	ModelType2		
-dbc_itemdisplayinfo	GeosetGroup1		
-dbc_itemdisplayinfo	GeosetGroup2		
-dbc_itemdisplayinfo	GeosetGroup3		
-dbc_itemdisplayinfo	GeosetGroup4		
-dbc_itemdisplayinfo	GeosetGroup5		
-dbc_itemdisplayinfo	GeosetGroup6		
-dbc_itemdisplayinfo	AttachmentGeosetGroup1		
-dbc_itemdisplayinfo	AttachmentGeosetGroup2		
-dbc_itemdisplayinfo	AttachmentGeosetGroup3		
-dbc_itemdisplayinfo	AttachmentGeosetGroup4		
-dbc_itemdisplayinfo	AttachmentGeosetGroup5		
-dbc_itemdisplayinfo	AttachmentGeosetGroup6		
-dbc_itemdisplayinfo	HelmetGeosetVis1		
-dbc_itemdisplayinfo	HelmetGeosetVis2		
+dbc_itemdisplayinfo	GeosetGroupOverride		client
+dbc_itemdisplayinfo	ItemVisual		client
+dbc_itemdisplayinfo	ParticleColorID		client
+dbc_itemdisplayinfo	ItemRangedDisplayInfoID		client
+dbc_itemdisplayinfo	OverrideSwooshSoundKitID		client
+dbc_itemdisplayinfo	SheatheTransformMatrixID		client
+dbc_itemdisplayinfo	StateSpellVisualKitID		client
+dbc_itemdisplayinfo	SheathedSpellVisualKitID		client
+dbc_itemdisplayinfo	UnsheathedSpellVisualKitID		client
+dbc_itemdisplayinfo	Flags		client
+dbc_itemdisplayinfo	ModelResourcesID1		client
+dbc_itemdisplayinfo	ModelResourcesID2		client
+dbc_itemdisplayinfo	ModelMaterialResourcesID1		client
+dbc_itemdisplayinfo	ModelMaterialResourcesID2		client
+dbc_itemdisplayinfo	ModelType1		client
+dbc_itemdisplayinfo	ModelType2		client
+dbc_itemdisplayinfo	GeosetGroup1		client
+dbc_itemdisplayinfo	GeosetGroup2		client
+dbc_itemdisplayinfo	GeosetGroup3		client
+dbc_itemdisplayinfo	GeosetGroup4		client
+dbc_itemdisplayinfo	GeosetGroup5		client
+dbc_itemdisplayinfo	GeosetGroup6		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup1		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup2		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup3		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup4		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup5		client
+dbc_itemdisplayinfo	AttachmentGeosetGroup6		client
+dbc_itemdisplayinfo	HelmetGeosetVis1		client
+dbc_itemdisplayinfo	HelmetGeosetVis2		client
 dbc_itemgroupsounds	ID		
 dbc_itemgroupsounds	Sound1		
 dbc_itemgroupsounds	Sound2		
@@ -668,7 +668,7 @@ dbc_itemrandomproperties	Enchantment4
 dbc_itemrandomproperties	Enchantment5		
 dbc_itemset	ID		
 dbc_itemset	Name_lang		
-dbc_itemset	SetFlags		
+dbc_itemset	SetFlags		client
 dbc_itemset	RequiredSkill		
 dbc_itemset	RequiredSkillRank		
 dbc_itemset	ItemID1		
@@ -922,31 +922,31 @@ dbc_locktype	ID
 dbc_mailtemplate	ID		
 dbc_mailtemplate	Body_lang		
 dbc_map	ID		
-dbc_map	Directory		
+dbc_map	Directory		client
 dbc_map	MapName_lang		
-dbc_map	MapDescription0_lang		
-dbc_map	MapDescription1_lang		
-dbc_map	PvpShortDescription_lang		
-dbc_map	PvpLongDescription_lang		
-dbc_map	MapType		
+dbc_map	MapDescription0_lang		client
+dbc_map	MapDescription1_lang		client
+dbc_map	PvpShortDescription_lang		client
+dbc_map	PvpLongDescription_lang		client
+dbc_map	MapType		client
 dbc_map	InstanceType		
-dbc_map	ExpansionID		
-dbc_map	AreaTableID		
-dbc_map	LoadingScreenID		
-dbc_map	TimeOfDayOverride		
+dbc_map	ExpansionID		client
+dbc_map	AreaTableID		client
+dbc_map	LoadingScreenID		client
+dbc_map	TimeOfDayOverride		client
 dbc_map	ParentMapID		
-dbc_map	CosmeticParentMapID		
-dbc_map	TimeOffset		
-dbc_map	MinimapIconScale		
-dbc_map	RaidOffset		
+dbc_map	CosmeticParentMapID		neutral
+dbc_map	TimeOffset		client
+dbc_map	MinimapIconScale		client
+dbc_map	RaidOffset		client
 dbc_map	CorpseMapID		
 dbc_map	MaxPlayers		
-dbc_map	WindSettingsID		
-dbc_map	ZmpFileDataID		
-dbc_map	Field_1_15_4_56400_021		
-dbc_map	Flags1		
-dbc_map	Flags2		
-dbc_map	Flags3		
+dbc_map	WindSettingsID		neutral
+dbc_map	ZmpFileDataID		client
+dbc_map	Field_1_15_4_56400_021		client
+dbc_map	Flags1		client
+dbc_map	Flags2		client
+dbc_map	Flags3		client
 dbc_material	ID		
 dbc_material	Flags		
 dbc_material	FoleySoundID		
@@ -958,7 +958,7 @@ dbc_namegen	RaceID
 dbc_namegen	Sex		
 dbc_namesprofanity	ID		
 dbc_namesprofanity	Name		
-dbc_namesprofanity	Language		
+dbc_namesprofanity	Language		client
 dbc_namesreserved	ID		
 dbc_namesreserved	Name		
 dbc_npcsounds	ID		
@@ -999,7 +999,7 @@ dbc_questinfo	Modifiers
 dbc_questinfo	Profession		
 dbc_questsort	ID		
 dbc_questsort	SortName_lang		
-dbc_questsort	UiOrderIndex		
+dbc_questsort	UiOrderIndex		client
 dbc_resistances	ID		
 dbc_resistances	Name_lang		
 dbc_resistances	Flags		
@@ -1007,18 +1007,18 @@ dbc_resistances	FizzleSoundID
 dbc_servermessages	ID		
 dbc_servermessages	Text_lang		
 dbc_skillline	DisplayName_lang		
-dbc_skillline	AlternateVerb_lang		
+dbc_skillline	AlternateVerb_lang		client
 dbc_skillline	Description_lang		
-dbc_skillline	HordeDisplayName_lang		
-dbc_skillline	NeutralDisplayName		
+dbc_skillline	HordeDisplayName_lang		client
+dbc_skillline	NeutralDisplayName		client
 dbc_skillline	ID		
 dbc_skillline	CategoryID		
 dbc_skillline	SpellIconFileID		
-dbc_skillline	CanLink		
-dbc_skillline	ParentSkillLineID		
-dbc_skillline	ParentTierIndex		
-dbc_skillline	Flags		
-dbc_skillline	SpellBookSpellID		
+dbc_skillline	CanLink		client
+dbc_skillline	ParentSkillLineID		client
+dbc_skillline	ParentTierIndex		client
+dbc_skillline	Flags		client
+dbc_skillline	SpellBookSpellID		client
 dbc_skilllineability	RaceMask		
 dbc_skilllineability	ID		
 dbc_skilllineability	SkillLine		
@@ -1029,12 +1029,12 @@ dbc_skilllineability	SupercedesSpell
 dbc_skilllineability	AcquireMethod		
 dbc_skilllineability	TrivialSkillLineRankHigh		
 dbc_skilllineability	TrivialSkillLineRankLow		
-dbc_skilllineability	Flags		
-dbc_skilllineability	NumSkillUps		
-dbc_skilllineability	UniqueBit		
-dbc_skilllineability	TradeSkillCategoryID		
-dbc_skilllineability	SkillupSkillLineID		
-dbc_skilllineability	CharacterPoints1		
+dbc_skilllineability	Flags		client
+dbc_skilllineability	NumSkillUps		client
+dbc_skilllineability	UniqueBit		client
+dbc_skilllineability	TradeSkillCategoryID		client
+dbc_skilllineability	SkillupSkillLineID		client
+dbc_skilllineability	CharacterPoints1		client
 dbc_skilllineability	CharacterPoints2		
 dbc_skilllinecategory	ID		
 dbc_skilllinecategory	Name_lang		
@@ -1044,10 +1044,10 @@ dbc_skillraceclassinfo	RaceMask
 dbc_skillraceclassinfo	SkillID		
 dbc_skillraceclassinfo	ClassMask		
 dbc_skillraceclassinfo	Flags		
-dbc_skillraceclassinfo	Availability		
+dbc_skillraceclassinfo	Availability		client
 dbc_skillraceclassinfo	MinLevel		
 dbc_skillraceclassinfo	SkillTierID		
-dbc_skillraceclassinfo	Field_1_15_0_52124_007		
+dbc_skillraceclassinfo	Field_1_15_0_52124_007		client
 dbc_soundambience	ID		
 dbc_soundambience	Flags		
 dbc_soundambience	SoundFilterID		
@@ -1084,7 +1084,7 @@ dbc_soundproviderpreferences	EAX3LFReference
 dbc_soundproviderpreferences	Flags		
 dbc_spammessages	ID		
 dbc_spammessages	Text		
-dbc_spell	ID		
+dbc_spell	ID		client
 dbc_spell	NameSubtext_lang		
 dbc_spell	Description_lang		
 dbc_spell	AuraDescription_lang		
@@ -1093,12 +1093,12 @@ dbc_spellcasttimes	Base
 dbc_spellcasttimes	PerLevel		
 dbc_spellcasttimes	Minimum		
 dbc_spellcategory	ID		
-dbc_spellcategory	Name_lang		
+dbc_spellcategory	Name_lang		client
 dbc_spellcategory	Flags		
-dbc_spellcategory	UsesPerWeek		
-dbc_spellcategory	MaxCharges		
-dbc_spellcategory	ChargeRecoveryTime		
-dbc_spellcategory	TypeMask		
+dbc_spellcategory	UsesPerWeek		neutral
+dbc_spellcategory	MaxCharges		neutral
+dbc_spellcategory	ChargeRecoveryTime		neutral
+dbc_spellcategory	TypeMask		client
 dbc_spellchaineffects	ID		
 dbc_spellchaineffects	AvgSegLen		
 dbc_spellchaineffects	NoiseScale		
@@ -1230,38 +1230,38 @@ dbc_spellmechanic	StateName_lang
 dbc_spellradius	ID		
 dbc_spellradius	Radius		
 dbc_spellradius	RadiusPerLevel		
-dbc_spellradius	RadiusMin		
+dbc_spellradius	RadiusMin		client
 dbc_spellradius	RadiusMax		
 dbc_spellrange	ID		
 dbc_spellrange	DisplayName_lang		
 dbc_spellrange	DisplayNameShort_lang		
 dbc_spellrange	Flags		
 dbc_spellrange	RangeMin1		
-dbc_spellrange	RangeMin2		
+dbc_spellrange	RangeMin2		neutral
 dbc_spellrange	RangeMax1		
-dbc_spellrange	RangeMax2		
+dbc_spellrange	RangeMax2		neutral
 dbc_spellshapeshiftform	ID		
 dbc_spellshapeshiftform	Name_lang		
-dbc_spellshapeshiftform	Field_1_15_0_52124_002		
+dbc_spellshapeshiftform	Field_1_15_0_52124_002		client
 dbc_spellshapeshiftform	CreatureType		
 dbc_spellshapeshiftform	Flags		
 dbc_spellshapeshiftform	AttackIconFileID		
 dbc_spellshapeshiftform	BonusActionBar		
-dbc_spellshapeshiftform	CombatRoundTime		
-dbc_spellshapeshiftform	DamageVariance		
-dbc_spellshapeshiftform	MountTypeID		
-dbc_spellshapeshiftform	CreatureDisplayID1		
-dbc_spellshapeshiftform	CreatureDisplayID2		
-dbc_spellshapeshiftform	CreatureDisplayID3		
-dbc_spellshapeshiftform	CreatureDisplayID4		
-dbc_spellshapeshiftform	PresetSpellID1		
-dbc_spellshapeshiftform	PresetSpellID2		
-dbc_spellshapeshiftform	PresetSpellID3		
-dbc_spellshapeshiftform	PresetSpellID4		
-dbc_spellshapeshiftform	PresetSpellID5		
-dbc_spellshapeshiftform	PresetSpellID6		
-dbc_spellshapeshiftform	PresetSpellID7		
-dbc_spellshapeshiftform	PresetSpellID8		
+dbc_spellshapeshiftform	CombatRoundTime		client
+dbc_spellshapeshiftform	DamageVariance		client
+dbc_spellshapeshiftform	MountTypeID		neutral
+dbc_spellshapeshiftform	CreatureDisplayID1		client
+dbc_spellshapeshiftform	CreatureDisplayID2		client
+dbc_spellshapeshiftform	CreatureDisplayID3		client
+dbc_spellshapeshiftform	CreatureDisplayID4		client
+dbc_spellshapeshiftform	PresetSpellID1		neutral
+dbc_spellshapeshiftform	PresetSpellID2		neutral
+dbc_spellshapeshiftform	PresetSpellID3		neutral
+dbc_spellshapeshiftform	PresetSpellID4		neutral
+dbc_spellshapeshiftform	PresetSpellID5		neutral
+dbc_spellshapeshiftform	PresetSpellID6		neutral
+dbc_spellshapeshiftform	PresetSpellID7		neutral
+dbc_spellshapeshiftform	PresetSpellID8		neutral
 dbc_spellvisual	ID		
 dbc_spellvisual	MissileCastOffset1		
 dbc_spellvisual	MissileCastOffset2		
@@ -1319,18 +1319,18 @@ dbc_stationery	Flags
 dbc_stationery	TextureFileDataID1		
 dbc_stationery	TextureFileDataID2		
 dbc_talent	ID		
-dbc_talent	Description_lang		
+dbc_talent	Description_lang		client
 dbc_talent	TierID		
 dbc_talent	Flags		
 dbc_talent	ColumnIndex		
 dbc_talent	TabID		
-dbc_talent	ClassID		
-dbc_talent	SpecID		
-dbc_talent	SpellID		
-dbc_talent	OverridesSpellID		
+dbc_talent	ClassID		client
+dbc_talent	SpecID		client
+dbc_talent	SpellID		client
+dbc_talent	OverridesSpellID		neutral
 dbc_talent	RequiredSpellID		
-dbc_talent	CategoryMask1		
-dbc_talent	CategoryMask2		
+dbc_talent	CategoryMask1		client
+dbc_talent	CategoryMask2		client
 dbc_talent	SpellRank1		
 dbc_talent	SpellRank2		
 dbc_talent	SpellRank3		
@@ -1349,32 +1349,32 @@ dbc_talent	PrereqRank3
 dbc_talenttab	ID		
 dbc_talenttab	Name_lang		
 dbc_talenttab	BackgroundFile		
-dbc_talenttab	Description_lang		
+dbc_talenttab	Description_lang		client
 dbc_talenttab	OrderIndex		
-dbc_talenttab	Field_4_4_0_53627_004		
+dbc_talenttab	Field_4_4_0_53627_004		client
 dbc_talenttab	ClassMask		
-dbc_talenttab	CategoryEnumID		
+dbc_talenttab	CategoryEnumID		client
 dbc_talenttab	SpellIconID		
-dbc_talenttab	RoleMask		
-dbc_talenttab	MasterySpellID1		
-dbc_talenttab	MasterySpellID2		
+dbc_talenttab	RoleMask		neutral
+dbc_talenttab	MasterySpellID1		neutral
+dbc_talenttab	MasterySpellID2		neutral
 dbc_taxinodes	Name_lang		
 dbc_taxinodes	Pos1		
 dbc_taxinodes	Pos2		
 dbc_taxinodes	Pos3		
-dbc_taxinodes	MapOffset1		
-dbc_taxinodes	MapOffset2		
-dbc_taxinodes	FlightMapOffset1		
-dbc_taxinodes	FlightMapOffset2		
+dbc_taxinodes	MapOffset1		client
+dbc_taxinodes	MapOffset2		client
+dbc_taxinodes	FlightMapOffset1		client
+dbc_taxinodes	FlightMapOffset2		client
 dbc_taxinodes	ID		
 dbc_taxinodes	ContinentID		
-dbc_taxinodes	ConditionID		
-dbc_taxinodes	CharacterBitNumber		
-dbc_taxinodes	Flags		
-dbc_taxinodes	UiTextureKitID		
-dbc_taxinodes	Facing		
-dbc_taxinodes	SpecialIconConditionID		
-dbc_taxinodes	VisibilityConditionID		
+dbc_taxinodes	ConditionID		neutral
+dbc_taxinodes	CharacterBitNumber		client
+dbc_taxinodes	Flags		client
+dbc_taxinodes	UiTextureKitID		client
+dbc_taxinodes	Facing		client
+dbc_taxinodes	SpecialIconConditionID		neutral
+dbc_taxinodes	VisibilityConditionID		neutral
 dbc_taxinodes	MountCreatureID1		
 dbc_taxinodes	MountCreatureID2		
 dbc_taxipath	ID		
@@ -1390,8 +1390,8 @@ dbc_taxipathnode	NodeIndex
 dbc_taxipathnode	ContinentID		
 dbc_taxipathnode	Flags		
 dbc_taxipathnode	Delay		
-dbc_taxipathnode	ArrivalEventID		
-dbc_taxipathnode	DepartureEventID		
+dbc_taxipathnode	ArrivalEventID		client
+dbc_taxipathnode	DepartureEventID		client
 dbc_terraintype	ID		
 dbc_terraintype	TerrainDesc		
 dbc_terraintype	FootstepSprayRun		
@@ -1483,11 +1483,11 @@ dbc_wmoareatable	WMOGroupID
 dbc_wmoareatable	SoundProviderPref		
 dbc_wmoareatable	SoundProviderPrefUnderwater		
 dbc_wmoareatable	AmbienceID		
-dbc_wmoareatable	UwAmbience		
+dbc_wmoareatable	UwAmbience		client
 dbc_wmoareatable	ZoneMusic		
-dbc_wmoareatable	UwZoneMusic		
+dbc_wmoareatable	UwZoneMusic		client
 dbc_wmoareatable	IntroSound		
-dbc_wmoareatable	UwIntroSound		
+dbc_wmoareatable	UwIntroSound		client
 dbc_wmoareatable	AreaTableID		
 dbc_wmoareatable	Flags		
 dbc_worldmapoverlay	ID		
