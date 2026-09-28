@@ -3,6 +3,7 @@ add_executable(tests-database-tool
   World/DoltLiteDatabaseTests.cpp
   World/WorldArchiveTests.cpp
   World/WorldCompareTests.cpp
+  World/VersionCollapseTests.cpp
   Sql/MysqlLexerTests.cpp
   Sql/SqlStatementSplitterTests.cpp
   Sql/MysqlDdlTranslatorTests.cpp
