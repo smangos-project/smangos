@@ -5,6 +5,7 @@
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
 #include "Reference/ReferenceBuild.h"
+#include "Spec/SpecInventory.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
 
@@ -346,6 +347,92 @@ namespace
         return result.tableErrors.empty() ? 0 : 1;
     }
 
+    std::filesystem::path SpecDir()
+    {
+        return SourceRoot() / "tools" / "database_tool" / "Spec";
+    }
+
+    // spec init
+    int RunSpecInit(std::vector<std::string> const& args)
+    {
+        (void)args;
+
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        SpecInitResult result = UpdateSpecInventory(referencePath, SpecDir());
+        if (!result.error.empty())
+        {
+            std::printf("spec init: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        for (std::string const& missing : result.missingColumns)
+            std::printf("columns.tsv: %s is no longer in the reference database\n", missing.c_str());
+        for (std::string const& missing : result.missingDbcColumns)
+            std::printf("dbc-columns.tsv: %s is no longer in the reference database\n", missing.c_str());
+        std::printf("spec init: %u columns.tsv rows added, %u dbc-columns.tsv rows added\n",
+            result.columnsAdded, result.dbcColumnsAdded);
+        return 0;
+    }
+
+    // spec set --source S --table T [--column C] [--disposition D] [--target T] [--rule R]
+    //          [--reason "..."] [--reviewed yes|no] [--overwrite]
+    int RunSpecSet(std::vector<std::string> const& args)
+    {
+        SpecSetFilter filter;
+        SpecSetValues values;
+        bool overwrite = false;
+
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            auto takeValue = [&]() -> std::string { return i + 1 < args.size() ? args[++i] : std::string(); };
+            if (args[i] == "--source") filter.source = takeValue();
+            else if (args[i] == "--table") filter.table = takeValue();
+            else if (args[i] == "--column") filter.column = takeValue();
+            else if (args[i] == "--disposition") values.disposition = takeValue();
+            else if (args[i] == "--target") values.target = takeValue();
+            else if (args[i] == "--rule") values.rule = takeValue();
+            else if (args[i] == "--reason") values.reason = takeValue();
+            else if (args[i] == "--reviewed") values.reviewed = takeValue();
+            else if (args[i] == "--overwrite") overwrite = true;
+        }
+
+        if (filter.source.empty() || filter.table.empty())
+        {
+            std::printf("spec set: --source and --table are required\n");
+            return 1;
+        }
+
+        SpecSetResult result = SetSpecColumns(SpecDir(), filter, values, overwrite);
+        if (!result.error.empty())
+        {
+            std::printf("spec set: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        std::printf("spec set: %u rows matched, %u updated\n", result.matched, result.updated);
+        return 0;
+    }
+
+    int RunSpec(std::vector<std::string> const& args)
+    {
+        if (args.empty())
+        {
+            std::printf("spec: subcommand required (init, set)\n");
+            return 1;
+        }
+
+        std::string const subcommand = args[0];
+        std::vector<std::string> const rest(args.begin() + 1, args.end());
+
+        if (subcommand == "init")
+            return RunSpecInit(rest);
+        if (subcommand == "set")
+            return RunSpecSet(rest);
+
+        std::printf("spec: unknown subcommand: %s\n", subcommand.c_str());
+        return 1;
+    }
+
     int RunPortMigration(std::vector<std::string> const& args)
     {
         if (args.empty())
@@ -396,6 +483,8 @@ int main(int argc, char** argv)
         return RunCompareWorld(rest);
     if (command == "reference")
         return RunReference(rest);
+    if (command == "spec")
+        return RunSpec(rest);
     if (command == "import")
         return RunImport(rest);
     if (command == "export")

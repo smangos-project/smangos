@@ -26,6 +26,8 @@ add_executable(tests-database-tool
   Dbc/Wdc5ReaderTests.cpp
   Dbc/Wdc5WriterTests.cpp
   Dbc/Wdc5RealFilesTests.cpp
+  Spec/SpecFileTests.cpp
+  Spec/SpecInventoryTests.cpp
 )
 
 target_link_libraries(tests-database-tool PRIVATE database_tool_lib Catch2)
