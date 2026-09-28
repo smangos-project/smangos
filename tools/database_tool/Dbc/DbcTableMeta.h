@@ -32,9 +32,15 @@ struct DbcTableMeta
     uint32_t fieldCount;
 };
 
-// Defined in the generated generated/DbcTables.g.cpp.
+// Defined in the generated generated/DbcTables.g.cpp: the 1.15 client set, used for `.world`'s
+// dbc_* tables.
 std::span<DbcTableMeta const> GetDbcTables();
 DbcTableMeta const* FindDbcTable(std::string_view name); // case-insensitive
 char const* GetWowDbDefsCommit();
+
+// Defined in the generated generated/VanillaDbcTables.g.cpp: the 1.12.1.5875 set, used only for
+// the reference database's vdbc_* tables. Same structs, same WoWDBDefs commit as the client set.
+std::span<DbcTableMeta const> GetVanillaDbcTables();
+DbcTableMeta const* FindVanillaDbcTable(std::string_view name); // case-insensitive
 
 #endif

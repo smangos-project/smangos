@@ -64,7 +64,8 @@ namespace
     }
 }
 
-DbcGeneratorResult GenerateDbcTablesSource(std::vector<DbdTable> const& tables, std::string const& wowdbdefsCommit)
+DbcGeneratorResult GenerateDbcTablesSource(std::vector<DbdTable> const& tables, std::string const& wowdbdefsCommit,
+                                            DbcGeneratorNames const& names)
 {
     std::vector<DbdTable> sorted = tables;
     std::sort(sorted.begin(), sorted.end(),
@@ -128,18 +129,20 @@ DbcGeneratorResult GenerateDbcTablesSource(std::vector<DbdTable> const& tables, 
     for (DbdTable const& table : sorted)
     {
         std::string fileStem = ToLower(table.name);
-        out << "    { \"" << EscapeCString(table.name) << "\", \"" << fileStem << "\", \"dbc_" << fileStem << "\", "
+        out << "    { \"" << EscapeCString(table.name) << "\", \"" << fileStem << "\", \"" << names.sqlTablePrefix
+            << fileStem << "\", "
             << (table.layoutHashes.empty() ? "nullptr" : ("g_dbcLayoutHashes_" + table.name)) << ", "
             << table.layoutHashes.size() << "u, g_dbcFields_" << table.name << ", " << table.fields.size()
             << "u },\n";
     }
     out << "};\n\n";
 
-    out << "std::span<DbcTableMeta const> GetDbcTables()\n{\n    return g_dbcTables;\n}\n\n";
+    out << "std::span<DbcTableMeta const> " << names.getTablesFunction << "()\n{\n    return g_dbcTables;\n}\n\n";
 
-    out << "char const* GetWowDbDefsCommit()\n{\n    return \"" << EscapeCString(wowdbdefsCommit) << "\";\n}\n\n";
+    if (names.emitWowDbDefsCommitFunction)
+        out << "char const* GetWowDbDefsCommit()\n{\n    return \"" << EscapeCString(wowdbdefsCommit) << "\";\n}\n\n";
 
-    out << "DbcTableMeta const* FindDbcTable(std::string_view name)\n{\n"
+    out << "DbcTableMeta const* " << names.findTableFunction << "(std::string_view name)\n{\n"
            "    for (DbcTableMeta const& table : g_dbcTables)\n"
            "    {\n"
            "        if (name.size() == std::strlen(table.name) &&\n"

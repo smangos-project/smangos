@@ -88,6 +88,47 @@ TEST_CASE("GenerateDbcTablesSource flags an int field with no size", "[DbcGenera
     CHECK(result.source.empty());
 }
 
+TEST_CASE("GenerateDbcTablesSource takes the vanilla set's names and prefix", "[DbcGenerator]")
+{
+    DbdTable table = ResolveFixture("Grammar.dbd", "Grammar", "1.0.0.150");
+
+    DbcGeneratorNames names;
+    names.sqlTablePrefix = "vdbc_";
+    names.getTablesFunction = "GetVanillaDbcTables";
+    names.findTableFunction = "FindVanillaDbcTable";
+    names.emitWowDbDefsCommitFunction = false;
+
+    DbcGeneratorResult result = GenerateDbcTablesSource({ table }, "deadbeef", names);
+    REQUIRE(result.errors.empty());
+
+    CHECK(result.source.find("\"vdbc_grammar\"") != std::string::npos);
+    CHECK(result.source.find("std::span<DbcTableMeta const> GetVanillaDbcTables()") != std::string::npos);
+    CHECK(result.source.find("DbcTableMeta const* FindVanillaDbcTable(std::string_view name)") != std::string::npos);
+    CHECK(result.source.find("GetWowDbDefsCommit") == std::string::npos);
+    CHECK(result.source.find("\"dbc_grammar\"") == std::string::npos);
+}
+
+TEST_CASE("GenerateDbcTablesSource resolves a real fixture at the vanilla build", "[DbcGenerator]")
+{
+    DbdTable table = ResolveFixture("AreaTable.dbd", "AreaTable", "1.12.1.5875");
+
+    DbcGeneratorNames names;
+    names.sqlTablePrefix = "vdbc_";
+    names.getTablesFunction = "GetVanillaDbcTables";
+    names.findTableFunction = "FindVanillaDbcTable";
+    names.emitWowDbDefsCommitFunction = false;
+
+    DbcGeneratorResult result = GenerateDbcTablesSource({ table }, "deadbeef", names);
+    REQUIRE(result.errors.empty());
+
+    CHECK(result.source.find(
+              "{ \"AreaTable\", \"areatable\", \"vdbc_areatable\", nullptr, 0u, g_dbcFields_AreaTable, 14u },") !=
+          std::string::npos);
+    CHECK(result.source.find(
+              "{ \"LiquidTypeID\", DbcFieldType::Int, 32, true, 4, false, false, false, \"LiquidType\", \"ID\" },") !=
+          std::string::npos);
+}
+
 TEST_CASE("GenerateDbcTablesSource flags a flattened column collision", "[DbcGenerator]")
 {
     DbdTable table;
