@@ -1,13 +1,13 @@
 source	table	column	disposition	target	rule	reason	reviewed
-srv	area_template	entry					
-srv	area_template	map_id					
-srv	area_template	zone_id					
-srv	area_template	explore_flag					
-srv	area_template	flags					
-srv	area_template	area_level					
-srv	area_template	name					
-srv	area_template	team					
-srv	area_template	liquid_type					
+srv	area_template	entry	dbc	dbc_areatable.ID	identity	0 differences (data-plan.md 3.1)	yes
+srv	area_template	map_id	dbc	dbc_areatable.ContinentID	identity	1 difference (data-plan.md 3.1)	yes
+srv	area_template	zone_id	dbc	dbc_areatable.ParentAreaID	identity	0 differences (data-plan.md 3.1)	yes
+srv	area_template	explore_flag	dbc	dbc_areatable.AreaBit	identity	8 differences (data-plan.md 3.1)	yes
+srv	area_template	flags	dbc	dbc_areatable.Flags1	area_flag_added_bit	the client adds 0x40000000; 1.15.6 further splits the vanilla flags across Flags1/Flags2, so the rule alone only reaches 959/1081 (known gap, phase0-plan.md step 4.3 Progress note)	yes
+srv	area_template	area_level	dbc	dbc_areatable.ExplorationLevel	identity	0 differences (data-plan.md 3.1)	yes
+srv	area_template	name	dbc	dbc_areatable.AreaName_lang	identity	0 differences (data-plan.md 3.1)	yes
+srv	area_template	team	dbc	dbc_areatable.FactionGroupMask	identity	0 differences (data-plan.md 3.1)	yes
+srv	area_template	liquid_type	dbc	dbc_areatable.LiquidTypeID1	identity	1 difference (data-plan.md 3.1); DB2 splits liquid into 4 slots, vanilla's single value maps to the first	yes
 srv	areatrigger_bg_entrance	id					
 srv	areatrigger_bg_entrance	name					
 srv	areatrigger_bg_entrance	team					
@@ -55,22 +55,22 @@ srv	areatrigger_teleport	target_position_x
 srv	areatrigger_teleport	target_position_y					
 srv	areatrigger_teleport	target_position_z					
 srv	areatrigger_teleport	target_orientation					
-srv	areatrigger_template	id					
+srv	areatrigger_template	id	dbc	dbc_areatrigger.ID	identity	404/449 shared; 17 of the 449 are vmangos-only (not in the 1.12 DBC either), 45 aren't in DB2 (data-plan.md 3.1)	yes
 srv	areatrigger_template	build	drop			progression removed	yes
-srv	areatrigger_template	name					
-srv	areatrigger_template	map_id					
-srv	areatrigger_template	x					
-srv	areatrigger_template	y					
-srv	areatrigger_template	z					
-srv	areatrigger_template	radius					
-srv	areatrigger_template	box_x					
-srv	areatrigger_template	box_y					
-srv	areatrigger_template	box_z					
-srv	areatrigger_template	box_orientation					
-srv	areatrigger_template	cooldown					
-srv	areatrigger_template	condition_id					
-srv	areatrigger_template	script_id					
-srv	areatrigger_template	script_name					
+srv	areatrigger_template	name	server			admin label, not gameplay text; only matches Message_lang on 4/404 rows, overriding evidence.tsv's weak coincidence -- script_name is the real Message_lang counterpart	yes
+srv	areatrigger_template	map_id	dbc	dbc_areatrigger.ContinentID	identity	0-1 differences (data-plan.md 3.1)	yes
+srv	areatrigger_template	x	dbc	dbc_areatrigger.Pos1	identity	positions are one Pos[3] array (data-plan.md 3.1, data-plan.md 5), overriding evidence.tsv's spurious PhaseUseFlags coincidence	yes
+srv	areatrigger_template	y	dbc	dbc_areatrigger.Pos2	identity	positions are one Pos[3] array, same override as x	yes
+srv	areatrigger_template	z	dbc	dbc_areatrigger.Pos3	identity	positions are one Pos[3] array, same override as x	yes
+srv	areatrigger_template	radius	dbc	dbc_areatrigger.Radius	identity	0 differences (data-plan.md 3.1)	yes
+srv	areatrigger_template	box_x	dbc	dbc_areatrigger.Box_length	identity	box fields differ in 7 rows total (data-plan.md 3.1, data-plan.md 5: boxes are BoxLength/Width/Height/Yaw)	yes
+srv	areatrigger_template	box_y	dbc	dbc_areatrigger.Box_width	identity	box fields differ in 7 rows total, same source as box_x	yes
+srv	areatrigger_template	box_z	dbc	dbc_areatrigger.Box_height	identity	box fields differ in 7 rows total, same source as box_x	yes
+srv	areatrigger_template	box_orientation	dbc	dbc_areatrigger.Box_yaw	identity	box fields differ in 7 rows total, same source as box_x	yes
+srv	areatrigger_template	cooldown	server			server-only trigger cooldown, no DB2 field, overriding evidence.tsv's spurious PhaseUseFlags coincidence	yes
+srv	areatrigger_template	condition_id	server			server-side condition system reference, no DB2 field	yes
+srv	areatrigger_template	script_id	server			server-side C++ script binding id, no DB2 field	yes
+srv	areatrigger_template	script_name	dbc	dbc_areatrigger.Message_lang	identity	302/404 match; the real Message_lang counterpart (see name's note)	yes
 srv	auctionhousebot	item					
 srv	auctionhousebot	stack					
 srv	auctionhousebot	bid					
@@ -95,18 +95,18 @@ srv	battleground_template	horde_start_location
 srv	battleground_template	player_loot_id					
 srv	battlemaster_entry	entry					
 srv	battlemaster_entry	bg_template					
-srv	broadcast_text	entry					
-srv	broadcast_text	male_text					
-srv	broadcast_text	female_text					
-srv	broadcast_text	chat_type					
-srv	broadcast_text	sound_id					
-srv	broadcast_text	language_id					
-srv	broadcast_text	emote_id1					
-srv	broadcast_text	emote_id2					
-srv	broadcast_text	emote_id3					
-srv	broadcast_text	emote_delay1					
-srv	broadcast_text	emote_delay2					
-srv	broadcast_text	emote_delay3					
+srv	broadcast_text	entry	server			BroadcastText.db2 has 0 rows in 1.15.6; server must keep and serve via CMSG_DB_QUERY_BULK DB_REPLY (data-plan.md 4, gaps.tsv empty_client_table)	yes
+srv	broadcast_text	male_text	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	female_text	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	chat_type	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	sound_id	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	language_id	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_id1	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_id2	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_id3	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_delay1	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_delay2	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
+srv	broadcast_text	emote_delay3	server			client BroadcastText.db2 is empty (data-plan.md 4)	yes
 srv	cinematic_waypoints	cinematic					
 srv	cinematic_waypoints	timer					
 srv	cinematic_waypoints	position_x					
@@ -218,14 +218,14 @@ srv	creature_classlevelstats	stamina
 srv	creature_classlevelstats	intellect					
 srv	creature_classlevelstats	spirit					
 srv	creature_classlevelstats	armor					
-srv	creature_display_info_addon	display_id					
+srv	creature_display_info_addon	display_id	dbc	dbc_creaturedisplayinfo.ID	identity	0 differences (data-plan.md 3.1)	yes
 srv	creature_display_info_addon	build	drop			progression removed	yes
-srv	creature_display_info_addon	bounding_radius					
-srv	creature_display_info_addon	combat_reach					
-srv	creature_display_info_addon	speed_walk					
-srv	creature_display_info_addon	speed_run					
-srv	creature_display_info_addon	gender					
-srv	creature_display_info_addon	display_id_other_gender					
+srv	creature_display_info_addon	bounding_radius	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2), overriding evidence.tsv's spurious PetInstanceScale coincidence	yes
+srv	creature_display_info_addon	combat_reach	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
+srv	creature_display_info_addon	speed_walk	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
+srv	creature_display_info_addon	speed_run	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
+srv	creature_display_info_addon	gender	dbc	dbc_creaturedisplayinfo.Gender	creature_gender_none	546 differences; vmangos gender 2 (none) = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	creature_display_info_addon	display_id_other_gender	server			server-side cross-reference to the opposite-gender display row, no DB2 field, overriding evidence.tsv's spurious ParticleColorID coincidence	yes
 srv	creature_equip_template	entry					
 srv	creature_equip_template	probability					
 srv	creature_equip_template	item1					
@@ -566,43 +566,43 @@ srv	event_scripts	condition_id
 srv	event_scripts	comments					
 srv	exploration_basexp	level					
 srv	exploration_basexp	basexp					
-srv	faction	id					
+srv	faction	id	dbc	dbc_faction.ID	identity	0 differences (data-plan.md 3.1)	yes
 srv	faction	build	drop			progression removed	yes
-srv	faction	reputation_list_id					
-srv	faction	base_rep_race_mask1					
-srv	faction	base_rep_race_mask2					
-srv	faction	base_rep_race_mask3					
-srv	faction	base_rep_race_mask4					
-srv	faction	base_rep_class_mask1					
-srv	faction	base_rep_class_mask2					
-srv	faction	base_rep_class_mask3					
-srv	faction	base_rep_class_mask4					
-srv	faction	base_rep_value1					
-srv	faction	base_rep_value2					
-srv	faction	base_rep_value3					
-srv	faction	base_rep_value4					
-srv	faction	reputation_flags1					
-srv	faction	reputation_flags2					
-srv	faction	reputation_flags3					
-srv	faction	reputation_flags4					
-srv	faction	team					
-srv	faction	name					
-srv	faction	description					
-srv	faction_template	id					
+srv	faction	reputation_list_id	dbc	dbc_faction.ReputationIndex	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_race_mask1	dbc	dbc_faction.ReputationRaceMask1	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_race_mask2	dbc	dbc_faction.ReputationRaceMask2	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_race_mask3	dbc	dbc_faction.ReputationRaceMask3	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_race_mask4	dbc	dbc_faction.ReputationRaceMask4	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_class_mask1	dbc	dbc_faction.ReputationClassMask1	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_class_mask2	dbc	dbc_faction.ReputationClassMask2	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_class_mask3	dbc	dbc_faction.ReputationClassMask3	identity	0 differences (data-plan.md 3.1); both sides are constant 0, so evidence.tsv's automated search coincidentally preferred Expansion -- overridden by the ReputationClassMask1/2 naming pattern	yes
+srv	faction	base_rep_class_mask4	dbc	dbc_faction.ReputationClassMask4	identity	0 differences (data-plan.md 3.1); same coincidental-constant override as base_rep_class_mask3	yes
+srv	faction	base_rep_value1	dbc	dbc_faction.ReputationBase1	identity	0 differences (data-plan.md 3.1); evidence.tsv's automated search found a coincidental Expansion match instead -- overridden by the ReputationBase3/4 naming pattern	yes
+srv	faction	base_rep_value2	dbc	dbc_faction.ReputationBase2	identity	0 differences (data-plan.md 3.1); same coincidental-match override as base_rep_value1	yes
+srv	faction	base_rep_value3	dbc	dbc_faction.ReputationBase3	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	base_rep_value4	dbc	dbc_faction.ReputationBase4	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	reputation_flags1	dbc	dbc_faction.ReputationFlags1	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	reputation_flags2	dbc	dbc_faction.ReputationFlags2	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	reputation_flags3	dbc	dbc_faction.ReputationFlags3	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	reputation_flags4	dbc	dbc_faction.ReputationFlags4	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	team	dbc	dbc_faction.ParentFactionID	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	name	dbc	dbc_faction.Name_lang	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction	description	dbc	dbc_faction.Description_lang	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction_template	id	dbc	dbc_factiontemplate.ID	identity	0-2 per field, 8 cells total (data-plan.md 3.1)	yes
 srv	faction_template	build	drop			progression removed	yes
-srv	faction_template	faction_id					
-srv	faction_template	faction_flags					
-srv	faction_template	our_mask					
-srv	faction_template	friendly_mask					
-srv	faction_template	hostile_mask					
-srv	faction_template	enemy_faction1					
-srv	faction_template	enemy_faction2					
-srv	faction_template	enemy_faction3					
-srv	faction_template	enemy_faction4					
-srv	faction_template	friend_faction1					
-srv	faction_template	friend_faction2					
-srv	faction_template	friend_faction3					
-srv	faction_template	friend_faction4					
+srv	faction_template	faction_id	dbc	dbc_factiontemplate.Faction	identity	0 differences (data-plan.md 3.1)	yes
+srv	faction_template	faction_flags	dbc	dbc_factiontemplate.Flags	identity	0-2 per field (data-plan.md 3.1)	yes
+srv	faction_template	our_mask	dbc	dbc_factiontemplate.FactionGroup	identity	0-2 per field (data-plan.md 3.1)	yes
+srv	faction_template	friendly_mask	dbc	dbc_factiontemplate.FriendGroup	identity	vmangos ourMask/friendlyMask/hostileMask name the same three fields as FactionGroup/FriendGroup/EnemyGroup; evidence.tsv's search only found the weak EnemyGroup coincidence (188/314) because it never tried FriendGroup, overridden here	yes
+srv	faction_template	hostile_mask	dbc	dbc_factiontemplate.EnemyGroup	identity	0-2 per field (data-plan.md 3.1)	yes
+srv	faction_template	enemy_faction1	dbc	dbc_factiontemplate.Enemies1	identity	arrays 4 -> 8, 8 cells total differ (data-plan.md 3.1)	yes
+srv	faction_template	enemy_faction2	dbc	dbc_factiontemplate.Enemies2	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
+srv	faction_template	enemy_faction3	dbc	dbc_factiontemplate.Enemies3	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
+srv	faction_template	enemy_faction4	dbc	dbc_factiontemplate.Enemies4	identity	arrays 4 -> 8 (data-plan.md 3.1); evidence.tsv's search reused Enemies3 (also constant 0) instead of Enemies4, overridden to follow the enemy_faction1-3 pattern	yes
+srv	faction_template	friend_faction1	dbc	dbc_factiontemplate.Friend1	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
+srv	faction_template	friend_faction2	dbc	dbc_factiontemplate.Friend2	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
+srv	faction_template	friend_faction3	dbc	dbc_factiontemplate.Friend3	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
+srv	faction_template	friend_faction4	dbc	dbc_factiontemplate.Friend4	identity	arrays 4 -> 8 (data-plan.md 3.1)	yes
 srv	fishing_loot_template	entry					
 srv	fishing_loot_template	item					
 srv	fishing_loot_template	ChanceOrQuestChance					
@@ -693,13 +693,13 @@ srv	gameobject	patch_max	drop			progression removed	yes
 srv	gameobject_battleground	guid					
 srv	gameobject_battleground	event1					
 srv	gameobject_battleground	event2					
-srv	gameobject_display_info_addon	display_id					
-srv	gameobject_display_info_addon	min_x					
-srv	gameobject_display_info_addon	min_y					
-srv	gameobject_display_info_addon	min_z					
-srv	gameobject_display_info_addon	max_x					
-srv	gameobject_display_info_addon	max_y					
-srv	gameobject_display_info_addon	max_z					
+srv	gameobject_display_info_addon	display_id	dbc	dbc_gameobjectdisplayinfo.ID	identity	0 differences (data-plan.md 3.1)	yes
+srv	gameobject_display_info_addon	min_x	dbc	dbc_gameobjectdisplayinfo.GeoBox1	identity	geobox differs in 4 rows (data-plan.md 3.1); GeoBox1-6 is the min/max xyz bounding box, overriding evidence.tsv's spurious OverrideLootEffectScale coincidence	yes
+srv	gameobject_display_info_addon	min_y	dbc	dbc_gameobjectdisplayinfo.GeoBox2	identity	geobox differs in 4 rows, same override as min_x	yes
+srv	gameobject_display_info_addon	min_z	dbc	dbc_gameobjectdisplayinfo.GeoBox3	identity	geobox differs in 4 rows, same override as min_x	yes
+srv	gameobject_display_info_addon	max_x	dbc	dbc_gameobjectdisplayinfo.GeoBox4	identity	geobox differs in 4 rows, same override as min_x	yes
+srv	gameobject_display_info_addon	max_y	dbc	dbc_gameobjectdisplayinfo.GeoBox5	identity	geobox differs in 4 rows, same override as min_x	yes
+srv	gameobject_display_info_addon	max_z	dbc	dbc_gameobjectdisplayinfo.GeoBox6	identity	geobox differs in 4 rows, same override as min_x	yes
 srv	gameobject_involvedrelation	id					
 srv	gameobject_involvedrelation	quest					
 srv	gameobject_involvedrelation	patch_min	drop			progression removed	yes
@@ -846,8 +846,8 @@ srv	instance_buff_removal	spell_id
 srv	instance_buff_removal	enabled					
 srv	instance_buff_removal	flags					
 srv	instance_buff_removal	comment					
-srv	item_display_info	ID					
-srv	item_display_info	icon					
+srv	item_display_info	ID	dbc	dbc_itemdisplayinfo.ID	identity	29,602/29,604 shared; ids still exist but items point at different ids now (data-plan.md 3.1, data-plan.md 3.2)	yes
+srv	item_display_info	icon	drop			nothing reads it; ItemAppearance.DefaultIconFileDataID replaces it (stuff-plan.md 8.3)	yes
 srv	item_enchantment_template	entry					
 srv	item_enchantment_template	ench					
 srv	item_enchantment_template	chance					
@@ -1244,15 +1244,15 @@ srv	mail_loot_template	maxcount
 srv	mail_loot_template	condition_id					
 srv	mail_loot_template	patch_min	drop			progression removed	yes
 srv	mail_loot_template	patch_max	drop			progression removed	yes
-srv	mail_text_template	entry					
-srv	mail_text_template	content_default					
-srv	mail_text_template	content_loc1					
-srv	mail_text_template	content_loc2					
-srv	mail_text_template	content_loc3					
-srv	mail_text_template	content_loc4					
-srv	mail_text_template	content_loc5					
-srv	mail_text_template	content_loc6					
-srv	mail_text_template	content_loc7					
+srv	mail_text_template	entry	dbc	dbc_mailtemplate.ID	identity	95/96 shared, 1 vanilla-only row needs a manual insert (data-plan.md 3.1)	yes
+srv	mail_text_template	content_default	dbc	dbc_mailtemplate.Body_lang	mail_body_newline	body text differs only in \r\n (DB2) vs spaces (DB) line breaks, 7/95 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	mail_text_template	content_loc1	server			non-default-locale mail text; DB2 is enUS only, so server-side localization has no client counterpart (stuff-plan.md 8.2 locales_* note)	yes
+srv	mail_text_template	content_loc2	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
+srv	mail_text_template	content_loc3	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
+srv	mail_text_template	content_loc4	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
+srv	mail_text_template	content_loc5	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
+srv	mail_text_template	content_loc6	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
+srv	mail_text_template	content_loc7	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2), always empty in the reference data	yes
 srv	mangos_string	entry					
 srv	mangos_string	content_default					
 srv	mangos_string	content_loc1					
@@ -1265,18 +1265,18 @@ srv	mangos_string	content_loc7
 srv	mangos_string	content_loc8					
 srv	map_loot_disabled	map_id					
 srv	map_loot_disabled	comment					
-srv	map_template	entry					
+srv	map_template	entry	dbc	dbc_map.ID	identity	0 differences (data-plan.md 3.1)	yes
 srv	map_template	patch	drop			progression removed	yes
-srv	map_template	parent					
-srv	map_template	map_type					
-srv	map_template	linked_zone					
-srv	map_template	player_limit					
-srv	map_template	reset_delay					
-srv	map_template	ghost_entrance_map					
-srv	map_template	ghost_entrance_x					
-srv	map_template	ghost_entrance_y					
-srv	map_template	map_name					
-srv	map_template	script_name					
+srv	map_template	parent	dbc	dbc_map.ParentMapID	none_parent_zero	vmangos 0 = DB2 -1 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	map_template	map_type	dbc	dbc_map.InstanceType	identity	1 difference (data-plan.md 3.1)	yes
+srv	map_template	linked_zone	server			vmangos-specific; no InstanceType/ExpansionID-shaped DB2 field carries this, overriding evidence.tsv's spurious ExpansionID coincidence	yes
+srv	map_template	player_limit	dbc	dbc_map.MaxPlayers	identity	9 differences (data-plan.md 3.1); DB2's MaxPlayers differences are Classic-era changes (Onyxia and so on), overriding evidence.tsv's spurious MinimapIconScale coincidence	yes
+srv	map_template	reset_delay	server			instance reset timing is server-only logic, no DB2 field	yes
+srv	map_template	ghost_entrance_map	dbc	dbc_map.CorpseMapID	ghost_map_neg1	10 differences; vmangos -1 = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	map_template	ghost_entrance_x	server			DB2 Map has no corpse position fields, only CorpseMapID	yes
+srv	map_template	ghost_entrance_y	server			DB2 Map has no corpse position fields, only CorpseMapID	yes
+srv	map_template	map_name	dbc	dbc_map.MapName_lang	identity	4 differences (data-plan.md 3.1)	yes
+srv	map_template	script_name	server			server-side script hook name, no DB2 equivalent, overriding evidence.tsv's spurious PvpShortDescription_lang coincidence	yes
 srv	npc_gossip	npc_guid					
 srv	npc_gossip	textid					
 srv	npc_text	ID					
@@ -1355,12 +1355,12 @@ srv	pet_name_generation	id
 srv	pet_name_generation	word					
 srv	pet_name_generation	entry					
 srv	pet_name_generation	half					
-srv	pet_spell_data	entry					
+srv	pet_spell_data	entry	dbc	dbc_creaturespelldata.ID	identity	0 differences (data-plan.md 3.1)	yes
 srv	pet_spell_data	build	drop			progression removed	yes
-srv	pet_spell_data	spell_id1					
-srv	pet_spell_data	spell_id2					
-srv	pet_spell_data	spell_id3					
-srv	pet_spell_data	spell_id4					
+srv	pet_spell_data	spell_id1	dbc	dbc_creaturespelldata.Spells1	identity	0 differences (data-plan.md 3.1)	yes
+srv	pet_spell_data	spell_id2	dbc	dbc_creaturespelldata.Spells2	identity	0 differences (data-plan.md 3.1)	yes
+srv	pet_spell_data	spell_id3	dbc	dbc_creaturespelldata.Spells3	identity	0 differences (data-plan.md 3.1)	yes
+srv	pet_spell_data	spell_id4	dbc	dbc_creaturespelldata.Spells4	identity	0 differences (data-plan.md 3.1)	yes
 srv	petcreateinfo_spell	entry					
 srv	petcreateinfo_spell	spell1					
 srv	petcreateinfo_spell	spell2					
@@ -1743,18 +1743,18 @@ srv	scripted_event_id	id
 srv	scripted_event_id	script_name					
 srv	skill_fishing_base_level	entry					
 srv	skill_fishing_base_level	skill					
-srv	skill_line_ability	id					
+srv	skill_line_ability	id	dbc	dbc_skilllineability.ID	identity	5068/6164 shared; the rest are vmangos-only trainer/profession additions (data-plan.md 3.1)	yes
 srv	skill_line_ability	build	drop			progression removed	yes
-srv	skill_line_ability	skill_id					
-srv	skill_line_ability	spell_id					
-srv	skill_line_ability	race_mask					
-srv	skill_line_ability	class_mask					
-srv	skill_line_ability	req_skill_value					
-srv	skill_line_ability	superseded_by_spell					
-srv	skill_line_ability	learn_on_get_skill					
-srv	skill_line_ability	max_value					
-srv	skill_line_ability	min_value					
-srv	skill_line_ability	req_train_points					
+srv	skill_line_ability	skill_id	dbc	dbc_skilllineability.SkillLine	identity	0 differences (data-plan.md 3.1)	yes
+srv	skill_line_ability	spell_id	dbc	dbc_skilllineability.Spell	identity	0 differences (data-plan.md 3.1)	yes
+srv	skill_line_ability	race_mask	dbc	dbc_skilllineability.RaceMask	identity	0 differences (data-plan.md 3.1)	yes
+srv	skill_line_ability	class_mask	dbc	dbc_skilllineability.ClassMask	identity	1 difference (data-plan.md 3.1)	yes
+srv	skill_line_ability	req_skill_value	dbc	dbc_skilllineability.MinSkillLineRank	identity	3 differences (data-plan.md 3.1); overriding evidence.tsv's spurious NumSkillUps coincidence	yes
+srv	skill_line_ability	superseded_by_spell	dbc	dbc_skilllineability.SupercedesSpell	superseded_by_spell_inverse	inverse of the next rank's SupercedesSpell; 9 real differences, the other 664 are id-collision mapping errors (data-plan.md 3.1); not evaluated by spec evidence yet (rules.tsv known gap)	yes
+srv	skill_line_ability	learn_on_get_skill	dbc	dbc_skilllineability.AcquireMethod	identity	5 differences (data-plan.md 3.1)	yes
+srv	skill_line_ability	max_value	dbc	dbc_skilllineability.TrivialSkillLineRankHigh	identity	1 difference total between max/min (data-plan.md 3.1)	yes
+srv	skill_line_ability	min_value	dbc	dbc_skilllineability.TrivialSkillLineRankLow	identity	1 difference total between max/min (data-plan.md 3.1)	yes
+srv	skill_line_ability	req_train_points	dbc	dbc_skilllineability.CharacterPoints2	identity	0 differences; req_train_points = CharacterPoints[1] 0-based, i.e. CharacterPoints2 (data-plan.md 3.1, data-plan.md 5)	yes
 srv	skinning_loot_template	entry					
 srv	skinning_loot_template	item					
 srv	skinning_loot_template	ChanceOrQuestChance					
@@ -1764,8 +1764,8 @@ srv	skinning_loot_template	maxcount
 srv	skinning_loot_template	condition_id					
 srv	skinning_loot_template	patch_min	drop			progression removed	yes
 srv	skinning_loot_template	patch_max	drop			progression removed	yes
-srv	sound_entries	id					
-srv	sound_entries	name					
+srv	sound_entries	id	dbc	dbc_soundkit.ID	identity	ids are now SoundKit ids; 31 vanilla sounds are missing (data-plan.md 3.1)	yes
+srv	sound_entries	name	drop			only used by .lookup sound, which now searches by id; SoundKit has no name field (stuff-plan.md 8.3)	yes
 srv	spell_area	spell					
 srv	spell_area	area					
 srv	spell_area	quest_start					
@@ -2086,15 +2086,15 @@ srv	spell_threat	multiplier
 srv	spell_threat	inverse_effect_mask					
 srv	spell_threat	build_min					
 srv	spell_threat	build_max					
-srv	taxi_nodes	id					
+srv	taxi_nodes	id	dbc	dbc_taxinodes.ID	identity	84/85 shared, node 81 is gone (data-plan.md 3.1)	yes
 srv	taxi_nodes	build	drop			progression removed	yes
-srv	taxi_nodes	map_id					
-srv	taxi_nodes	x					
-srv	taxi_nodes	y					
-srv	taxi_nodes	z					
-srv	taxi_nodes	name					
-srv	taxi_nodes	mount_creature_id1					
-srv	taxi_nodes	mount_creature_id2					
+srv	taxi_nodes	map_id	dbc	dbc_taxinodes.ContinentID	identity	0 differences (data-plan.md 3.1)	yes
+srv	taxi_nodes	x	dbc	dbc_taxinodes.Pos1	identity	pos/name 0 differences (data-plan.md 3.1); positions are one Pos[3] array (data-plan.md 5), overriding evidence.tsv's spurious MapOffset1 coincidence	yes
+srv	taxi_nodes	y	dbc	dbc_taxinodes.Pos2	identity	positions are one Pos[3] array, same override as x	yes
+srv	taxi_nodes	z	dbc	dbc_taxinodes.Pos3	identity	positions are one Pos[3] array, same override as x	yes
+srv	taxi_nodes	name	dbc	dbc_taxinodes.Name_lang	identity	0 differences (data-plan.md 3.1)	yes
+srv	taxi_nodes	mount_creature_id1	dbc	dbc_taxinodes.MountCreatureID2	identity	5 differences; the Alliance/Horde mount order is swapped between vmangos [0]/[1] and DB2 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	taxi_nodes	mount_creature_id2	dbc	dbc_taxinodes.MountCreatureID1	identity	mount order swapped, same note as mount_creature_id1	yes
 srv	taxi_path_transitions	in_path					
 srv	taxi_path_transitions	out_path					
 srv	taxi_path_transitions	in_node					
@@ -2119,8 +2119,8 @@ srv	warden_scans	penalty
 srv	warden_scans	build_min					
 srv	warden_scans	build_max					
 srv	warden_scans	comment					
-srv	world_safe_locs_facing	id					
-srv	world_safe_locs_facing	orientation					
+srv	world_safe_locs_facing	id	server			merges into a new world_safe_locs server table with the vanilla WorldSafeLocs rows (F2); WorldSafeLocs.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+srv	world_safe_locs_facing	orientation	server			merges into world_safe_locs, same note as id	yes
 vdbc	animationdata	ID					
 vdbc	animationdata	Name					
 vdbc	animationdata	Weaponflags					
@@ -2157,18 +2157,18 @@ vdbc	areapoi	Description_lang_6	drop			non-enUS locale slot, vanilla client only
 vdbc	areapoi	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	areapoi	WorldStateID					
-vdbc	areatable	ID					
-vdbc	areatable	ContinentID					
-vdbc	areatable	ParentAreaID					
-vdbc	areatable	AreaBit					
-vdbc	areatable	Flags					
-vdbc	areatable	SoundProviderPref					
-vdbc	areatable	SoundProviderPrefUnderwater					
-vdbc	areatable	AmbienceID					
-vdbc	areatable	ZoneMusic					
-vdbc	areatable	IntroSound					
-vdbc	areatable	ExplorationLevel					
-vdbc	areatable	AreaName_lang					
+vdbc	areatable	ID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	ContinentID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	ParentAreaID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	AreaBit	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	Flags	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	SoundProviderPref	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	SoundProviderPrefUnderwater	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	AmbienceID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	ZoneMusic	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	IntroSound	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	ExplorationLevel	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	AreaName_lang	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
 vdbc	areatable	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areatable	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areatable	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2177,21 +2177,21 @@ vdbc	areatable	AreaName_lang_5	drop			non-enUS locale slot, vanilla client only 
 vdbc	areatable	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areatable	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areatable	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	areatable	FactionGroupMask					
-vdbc	areatable	LiquidTypeID1					
-vdbc	areatable	LiquidTypeID2					
-vdbc	areatable	LiquidTypeID3					
-vdbc	areatable	LiquidTypeID4					
-vdbc	areatrigger	ID					
-vdbc	areatrigger	ContinentID					
-vdbc	areatrigger	Pos1					
-vdbc	areatrigger	Pos2					
-vdbc	areatrigger	Pos3					
-vdbc	areatrigger	Radius					
-vdbc	areatrigger	Box_length					
-vdbc	areatrigger	Box_width					
-vdbc	areatrigger	Box_height					
-vdbc	areatrigger	Box_yaw					
+vdbc	areatable	FactionGroupMask	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	LiquidTypeID1	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	LiquidTypeID2	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	LiquidTypeID3	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatable	LiquidTypeID4	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
+vdbc	areatrigger	ID	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	ContinentID	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Pos1	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Pos2	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Pos3	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Radius	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Box_length	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Box_width	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Box_height	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
+vdbc	areatrigger	Box_yaw	drop			vanilla source; the matching srv_ column now sources from dbc_areatrigger instead (F1)	yes
 vdbc	attackanimkits	ID	drop			not imported	yes
 vdbc	attackanimkits	ItemSubclassID	drop			not imported	yes
 vdbc	attackanimkits	AnimTypeID	drop			not imported	yes
@@ -2405,18 +2405,18 @@ vdbc	cinematicsequences	Camera5
 vdbc	cinematicsequences	Camera6					
 vdbc	cinematicsequences	Camera7					
 vdbc	cinematicsequences	Camera8					
-vdbc	creaturedisplayinfo	ID					
-vdbc	creaturedisplayinfo	ModelID					
-vdbc	creaturedisplayinfo	SoundID					
-vdbc	creaturedisplayinfo	ExtendedDisplayInfoID					
-vdbc	creaturedisplayinfo	CreatureModelScale					
-vdbc	creaturedisplayinfo	CreatureModelAlpha					
-vdbc	creaturedisplayinfo	TextureVariation1					
-vdbc	creaturedisplayinfo	TextureVariation2					
-vdbc	creaturedisplayinfo	TextureVariation3					
-vdbc	creaturedisplayinfo	SizeClass					
-vdbc	creaturedisplayinfo	BloodID					
-vdbc	creaturedisplayinfo	NPCSoundID					
+vdbc	creaturedisplayinfo	ID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	ModelID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	SoundID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	ExtendedDisplayInfoID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	CreatureModelScale	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	CreatureModelAlpha	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	TextureVariation1	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	TextureVariation2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	TextureVariation3	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	SizeClass	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	BloodID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
+vdbc	creaturedisplayinfo	NPCSoundID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
 vdbc	creaturedisplayinfoextra	ID					
 vdbc	creaturedisplayinfoextra	DisplayRaceID					
 vdbc	creaturedisplayinfoextra	DisplaySexID					
@@ -2500,15 +2500,15 @@ vdbc	creaturesounddata	SoundJumpEndID
 vdbc	creaturesounddata	SoundPetAttackID					
 vdbc	creaturesounddata	SoundPetOrderID					
 vdbc	creaturesounddata	SoundPetDismissID					
-vdbc	creaturespelldata	ID					
-vdbc	creaturespelldata	Spells1					
-vdbc	creaturespelldata	Spells2					
-vdbc	creaturespelldata	Spells3					
-vdbc	creaturespelldata	Spells4					
-vdbc	creaturespelldata	Availability1					
-vdbc	creaturespelldata	Availability2					
-vdbc	creaturespelldata	Availability3					
-vdbc	creaturespelldata	Availability4					
+vdbc	creaturespelldata	ID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Spells1	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Spells2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Spells3	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Spells4	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Availability1	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Availability2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Availability3	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
+vdbc	creaturespelldata	Availability4	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
 vdbc	creaturetype	ID					
 vdbc	creaturetype	Name_lang					
 vdbc	creaturetype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2616,26 +2616,26 @@ vdbc	exhaustion	Name_lang_6	drop			non-enUS locale slot, vanilla client only shi
 vdbc	exhaustion	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	exhaustion	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	exhaustion	Threshold					
-vdbc	faction	ID					
-vdbc	faction	ReputationIndex					
-vdbc	faction	ReputationRaceMask1					
-vdbc	faction	ReputationRaceMask2					
-vdbc	faction	ReputationRaceMask3					
-vdbc	faction	ReputationRaceMask4					
-vdbc	faction	ReputationClassMask1					
-vdbc	faction	ReputationClassMask2					
-vdbc	faction	ReputationClassMask3					
-vdbc	faction	ReputationClassMask4					
-vdbc	faction	ReputationBase1					
-vdbc	faction	ReputationBase2					
-vdbc	faction	ReputationBase3					
-vdbc	faction	ReputationBase4					
-vdbc	faction	ReputationFlags1					
-vdbc	faction	ReputationFlags2					
-vdbc	faction	ReputationFlags3					
-vdbc	faction	ReputationFlags4					
-vdbc	faction	ParentFactionID					
-vdbc	faction	Name_lang					
+vdbc	faction	ID	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationIndex	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationRaceMask1	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationRaceMask2	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationRaceMask3	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationRaceMask4	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationClassMask1	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationClassMask2	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationClassMask3	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationClassMask4	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationBase1	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationBase2	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationBase3	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationBase4	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationFlags1	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationFlags2	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationFlags3	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ReputationFlags4	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	ParentFactionID	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
+vdbc	faction	Name_lang	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
 vdbc	faction	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2644,7 +2644,7 @@ vdbc	faction	Name_lang_5	drop			non-enUS locale slot, vanilla client only shippe
 vdbc	faction	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	faction	Description_lang					
+vdbc	faction	Description_lang	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
 vdbc	faction	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2665,20 +2665,20 @@ vdbc	factiongroup	Name_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	factiongroup	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	factiongroup	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	factiongroup	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	factiontemplate	ID					
-vdbc	factiontemplate	Faction					
-vdbc	factiontemplate	Flags					
-vdbc	factiontemplate	FactionGroup					
-vdbc	factiontemplate	FriendGroup					
-vdbc	factiontemplate	EnemyGroup					
-vdbc	factiontemplate	Enemies1					
-vdbc	factiontemplate	Enemies2					
-vdbc	factiontemplate	Enemies3					
-vdbc	factiontemplate	Enemies4					
-vdbc	factiontemplate	Friend1					
-vdbc	factiontemplate	Friend2					
-vdbc	factiontemplate	Friend3					
-vdbc	factiontemplate	Friend4					
+vdbc	factiontemplate	ID	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Faction	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Flags	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	FactionGroup	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	FriendGroup	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	EnemyGroup	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Enemies1	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Enemies2	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Enemies3	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Enemies4	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Friend1	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Friend2	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Friend3	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
+vdbc	factiontemplate	Friend4	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
 vdbc	footprinttextures	ID					
 vdbc	footprinttextures	FootstepFilename					
 vdbc	footstepterrainlookup	ID					
@@ -2694,18 +2694,18 @@ vdbc	gameobjectartkit	AttachModel1
 vdbc	gameobjectartkit	AttachModel2					
 vdbc	gameobjectartkit	AttachModel3					
 vdbc	gameobjectartkit	AttachModel4					
-vdbc	gameobjectdisplayinfo	ID					
-vdbc	gameobjectdisplayinfo	ModelName					
-vdbc	gameobjectdisplayinfo	Sound1					
-vdbc	gameobjectdisplayinfo	Sound2					
-vdbc	gameobjectdisplayinfo	Sound3					
-vdbc	gameobjectdisplayinfo	Sound4					
-vdbc	gameobjectdisplayinfo	Sound5					
-vdbc	gameobjectdisplayinfo	Sound6					
-vdbc	gameobjectdisplayinfo	Sound7					
-vdbc	gameobjectdisplayinfo	Sound8					
-vdbc	gameobjectdisplayinfo	Sound9					
-vdbc	gameobjectdisplayinfo	Sound10					
+vdbc	gameobjectdisplayinfo	ID	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	ModelName	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound1	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound2	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound3	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound4	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound5	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound6	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound7	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound8	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound9	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	Sound10	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
 vdbc	gametips	ID					
 vdbc	gametips	Text_lang					
 vdbc	gametips	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2787,29 +2787,29 @@ vdbc	itemclass	ClassName_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	itemclass	ClassName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemclass	ClassName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemclass	ClassName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemdisplayinfo	ID					
-vdbc	itemdisplayinfo	ModelName1					
-vdbc	itemdisplayinfo	ModelName2					
-vdbc	itemdisplayinfo	ModelTexture1					
-vdbc	itemdisplayinfo	ModelTexture2					
-vdbc	itemdisplayinfo	InventoryIcon					
-vdbc	itemdisplayinfo	GeosetGroup1					
-vdbc	itemdisplayinfo	GeosetGroup2					
-vdbc	itemdisplayinfo	GeosetGroup3					
-vdbc	itemdisplayinfo	Flags					
-vdbc	itemdisplayinfo	SpellVisualID					
-vdbc	itemdisplayinfo	GroupSoundIndex					
-vdbc	itemdisplayinfo	HelmetGeosetVisID1					
-vdbc	itemdisplayinfo	HelmetGeosetVisID2					
-vdbc	itemdisplayinfo	Texture1					
-vdbc	itemdisplayinfo	Texture2					
-vdbc	itemdisplayinfo	Texture3					
-vdbc	itemdisplayinfo	Texture4					
-vdbc	itemdisplayinfo	Texture5					
-vdbc	itemdisplayinfo	Texture6					
-vdbc	itemdisplayinfo	Texture7					
-vdbc	itemdisplayinfo	Texture8					
-vdbc	itemdisplayinfo	ItemVisual					
+vdbc	itemdisplayinfo	ID	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	ModelName1	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	ModelName2	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	ModelTexture1	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	ModelTexture2	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	InventoryIcon	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	GeosetGroup1	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	GeosetGroup2	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	GeosetGroup3	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Flags	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	SpellVisualID	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	GroupSoundIndex	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	HelmetGeosetVisID1	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	HelmetGeosetVisID2	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture1	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture2	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture3	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture4	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture5	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture6	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture7	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	Texture8	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
+vdbc	itemdisplayinfo	ItemVisual	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
 vdbc	itemgroupsounds	ID					
 vdbc	itemgroupsounds	Sound1					
 vdbc	itemgroupsounds	Sound2					
@@ -3139,8 +3139,8 @@ vdbc	locktype	Verb_lang_6	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	locktype	Verb_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Verb_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	locktype	CursorName					
-vdbc	mailtemplate	ID					
-vdbc	mailtemplate	Body_lang					
+vdbc	mailtemplate	ID	drop			vanilla source; the matching srv_ column now sources from dbc_mailtemplate instead (F1)	yes
+vdbc	mailtemplate	Body_lang	drop			vanilla source; the matching srv_ column now sources from dbc_mailtemplate instead (F1)	yes
 vdbc	mailtemplate	Body_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	mailtemplate	Body_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	mailtemplate	Body_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3149,11 +3149,11 @@ vdbc	mailtemplate	Body_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	mailtemplate	Body_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	mailtemplate	Body_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	mailtemplate	Body_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	map	ID					
-vdbc	map	Directory					
-vdbc	map	InstanceType					
-vdbc	map	MapType					
-vdbc	map	MapName_lang					
+vdbc	map	ID	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Directory	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	InstanceType	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	MapType	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	MapName_lang	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	map	MapName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3162,14 +3162,14 @@ vdbc	map	MapName_lang_5	drop			non-enUS locale slot, vanilla client only shipped
 vdbc	map	MapName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	map	MinLevel					
-vdbc	map	MaxLevel					
-vdbc	map	MaxPlayers					
-vdbc	map	Unk0					
-vdbc	map	Unk1					
-vdbc	map	Unk2					
-vdbc	map	ParentMapID					
-vdbc	map	MapDescription0_lang					
+vdbc	map	MinLevel	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	MaxLevel	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	MaxPlayers	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Unk0	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Unk1	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Unk2	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	ParentMapID	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	MapDescription0_lang	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	map	MapDescription0_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription0_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription0_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3178,7 +3178,7 @@ vdbc	map	MapDescription0_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	map	MapDescription0_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription0_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription0_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	map	MapDescription1_lang					
+vdbc	map	MapDescription1_lang	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	map	MapDescription1_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription1_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription1_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3187,10 +3187,10 @@ vdbc	map	MapDescription1_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	map	MapDescription1_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription1_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	map	MapDescription1_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	map	LoadingScreenID					
-vdbc	map	RaidOffset					
-vdbc	map	Continentname					
-vdbc	map	Unk4					
+vdbc	map	LoadingScreenID	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	RaidOffset	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Continentname	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
+vdbc	map	Unk4	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	material	MaterialID					
 vdbc	material	Flags					
 vdbc	material	FoleySoundID					
@@ -3329,21 +3329,21 @@ vdbc	skillline	Description_lang_6	drop			non-enUS locale slot, vanilla client on
 vdbc	skillline	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	skillline	SpellIconID					
-vdbc	skilllineability	ID					
-vdbc	skilllineability	SkillLine					
-vdbc	skilllineability	Spell					
-vdbc	skilllineability	RaceMask					
-vdbc	skilllineability	ClassMask					
-vdbc	skilllineability	ExcludeRace					
-vdbc	skilllineability	ExcludeClass					
-vdbc	skilllineability	MinSkillLineRank					
-vdbc	skilllineability	SupercededBySpell					
-vdbc	skilllineability	AcquireMethod					
-vdbc	skilllineability	TrivialSkillLineRankHigh					
-vdbc	skilllineability	TrivialSkillLineRankLow					
-vdbc	skilllineability	Abandonable					
-vdbc	skilllineability	CharacterPoints1					
-vdbc	skilllineability	CharacterPoints2					
+vdbc	skilllineability	ID	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	SkillLine	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	Spell	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	RaceMask	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	ClassMask	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	ExcludeRace	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	ExcludeClass	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	MinSkillLineRank	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	SupercededBySpell	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	AcquireMethod	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	TrivialSkillLineRankHigh	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	TrivialSkillLineRankLow	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	Abandonable	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	CharacterPoints1	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
+vdbc	skilllineability	CharacterPoints2	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
 vdbc	skilllinecategory	ID					
 vdbc	skilllinecategory	Name_lang					
 vdbc	skilllinecategory	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3399,35 +3399,35 @@ vdbc	skilltiers	Value16
 vdbc	soundambience	ID					
 vdbc	soundambience	AmbienceID1					
 vdbc	soundambience	AmbienceID2					
-vdbc	soundentries	ID					
-vdbc	soundentries	SoundType					
-vdbc	soundentries	Name					
-vdbc	soundentries	File1					
-vdbc	soundentries	File2					
-vdbc	soundentries	File3					
-vdbc	soundentries	File4					
-vdbc	soundentries	File5					
-vdbc	soundentries	File6					
-vdbc	soundentries	File7					
-vdbc	soundentries	File8					
-vdbc	soundentries	File9					
-vdbc	soundentries	File10					
-vdbc	soundentries	Freq1					
-vdbc	soundentries	Freq2					
-vdbc	soundentries	Freq3					
-vdbc	soundentries	Freq4					
-vdbc	soundentries	Freq5					
-vdbc	soundentries	Freq6					
-vdbc	soundentries	Freq7					
-vdbc	soundentries	Freq8					
-vdbc	soundentries	Freq9					
-vdbc	soundentries	Freq10					
-vdbc	soundentries	DirectoryBase					
-vdbc	soundentries	VolumeFloat					
-vdbc	soundentries	Flags					
-vdbc	soundentries	MinDistance					
-vdbc	soundentries	DistanceCutoff					
-vdbc	soundentries	EAXDef					
+vdbc	soundentries	ID	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	SoundType	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Name	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File1	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File2	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File3	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File4	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File5	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File6	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File7	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File8	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File9	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	File10	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq1	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq2	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq3	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq4	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq5	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq6	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq7	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq8	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq9	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Freq10	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	DirectoryBase	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	VolumeFloat	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	Flags	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	MinDistance	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	DistanceCutoff	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
+vdbc	soundentries	EAXDef	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
 vdbc	soundproviderpreferences	ID					
 vdbc	soundproviderpreferences	Description					
 vdbc	soundproviderpreferences	Flags					
@@ -3882,12 +3882,12 @@ vdbc	talenttab	RaceMask
 vdbc	talenttab	ClassMask					
 vdbc	talenttab	OrderIndex					
 vdbc	talenttab	BackgroundFile					
-vdbc	taxinodes	ID					
-vdbc	taxinodes	ContinentID					
-vdbc	taxinodes	Pos1					
-vdbc	taxinodes	Pos2					
-vdbc	taxinodes	Pos3					
-vdbc	taxinodes	Name_lang					
+vdbc	taxinodes	ID	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	ContinentID	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	Pos1	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	Pos2	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	Pos3	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	Name_lang	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
 vdbc	taxinodes	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	taxinodes	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	taxinodes	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3896,8 +3896,8 @@ vdbc	taxinodes	Name_lang_5	drop			non-enUS locale slot, vanilla client only ship
 vdbc	taxinodes	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	taxinodes	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	taxinodes	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	taxinodes	MountCreatureID1					
-vdbc	taxinodes	MountCreatureID2					
+vdbc	taxinodes	MountCreatureID1	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
+vdbc	taxinodes	MountCreatureID2	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
 vdbc	taxipath	ID					
 vdbc	taxipath	FromTaxiNode					
 vdbc	taxipath	ToTaxiNode					
