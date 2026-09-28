@@ -77,19 +77,19 @@ vdbc	wmoareatable	wmoareatable	id	ID	ID	data-plan.md 3.4
 vdbc	spellvisual	spellvisual	id	ID	ID	data-plan.md 3.4: different model in DB2 (SpellVisual/SpellXSpellVisual/SpellVisualKit), approximate id join only
 srv	spell_template	spellmisc	id	entry	SpellID	spell-plan.md 3.1: Attributes[16], CastingTimeIndex, DurationIndex, RangeIndex, SchoolMask, icon file ids; cdbc_spellmisc.ID is its own row id, not the spell id
 srv	spell_template	spellname	id	entry	ID	spell-plan.md 3.1: Name only
-srv	spell_template	spellauraoptions	id	entry	ID	spell-plan.md 3.1: StackAmount, ProcChance, ProcCharges, procFlags
-srv	spell_template	spellcategories	id	entry	ID	spell-plan.md 3.1: Category, DmgClass, DispelType, Mechanic
+srv	spell_template	spellauraoptions	id	entry	SpellID	spell-plan.md 3.1: StackAmount, ProcChance, ProcCharges, procFlags; cdbc_spellauraoptions.ID is its own row id, not the spell id
+srv	spell_template	spellcategories	id	entry	SpellID	spell-plan.md 3.1: Category, DmgClass, DispelType, Mechanic; cdbc_spellcategories.ID is its own row id, not the spell id
 srv	spell_template	spellclassoptions	id	entry	SpellID	spell-plan.md 3.1: SpellFamilyName, SpellFamilyFlags; cdbc_spellclassoptions.ID is its own row id, not the spell id
-srv	spell_template	spellcooldowns	id	entry	ID	spell-plan.md 3.1: RecoveryTime, CategoryRecoveryTime, GCD
+srv	spell_template	spellcooldowns	id	entry	SpellID	spell-plan.md 3.1: RecoveryTime, CategoryRecoveryTime, GCD; cdbc_spellcooldowns.ID is its own row id, not the spell id
 srv	spell_template	spellequippeditems	id	entry	SpellID	spell-plan.md 3.1: EquippedItemClass, Subclass, InvTypes; cdbc_spellequippeditems.ID is its own row id, not the spell id
-srv	spell_template	spellinterrupts	id	entry	ID	spell-plan.md 3.1: InterruptFlags, AuraInterruptFlags, ChannelInterruptFlags
-srv	spell_template	spelllevels	id	entry	ID	spell-plan.md 3.1: BaseLevel, MaxLevel, SpellLevel
+srv	spell_template	spellinterrupts	id	entry	SpellID	spell-plan.md 3.1: InterruptFlags, AuraInterruptFlags, ChannelInterruptFlags; cdbc_spellinterrupts.ID is its own row id, not the spell id
+srv	spell_template	spelllevels	id	entry	SpellID	spell-plan.md 3.1: BaseLevel, MaxLevel, SpellLevel; cdbc_spelllevels.ID is its own row id, not the spell id
 srv	spell_template	spellreagents	id	entry	SpellID	spell-plan.md 3.1: Reagent[8], ReagentCount[8]; cdbc_spellreagents.ID is its own row id, not the spell id
 srv	spell_template	spellshapeshift	id	entry	SpellID	spell-plan.md 3.1: ShapeshiftMask/Exclude, StanceBarOrder; cdbc_spellshapeshift.ID is its own row id, not the spell id
-srv	spell_template	spelltargetrestrictions	id	entry	ID	spell-plan.md 3.1: Targets, MaxTargets, ConeDegrees
+srv	spell_template	spelltargetrestrictions	id	entry	SpellID	spell-plan.md 3.1: Targets, MaxTargets, ConeDegrees; cdbc_spelltargetrestrictions.ID is its own row id, not the spell id
 srv	spell_template	spelltotems	id	entry	SpellID	spell-plan.md 3.1: Totem[2], RequiredTotemCategoryID[2]; cdbc_spelltotems.ID is its own row id, not the spell id
 srv	spell_template	spellxspellvisual	id	entry	SpellID	spell-plan.md 3.1 and 9: the wire visual id, S6
-srv	spell_template	spell	unpivot	entry	ID	spell-plan.md 3.1: sparse table (NameSubtext, Description, AuraDescription), not yet computed, see phase0-plan.md 4.3 known gaps
+srv	spell_template	spell	id	entry	ID	spell-plan.md 3.1: sparse table (NameSubtext, Description, AuraDescription), keyed 1:1 by ID like SpellName, not an unpivot
 srv	spell_template	spelleffect	unpivot	entry	SpellID	spell-plan.md 3: (SpellID, EffectIndex) slot unpivot against effect1..3, not yet computed, see phase0-plan.md 4.3 known gaps
 srv	spell_template	spellpower	unpivot	entry	SpellID	spell-plan.md 3.1: multiple rows by OrderIndex, not yet computed, see phase0-plan.md 4.3 known gaps
 srv	spell_template	spellaurarestrictions	unpivot	entry	SpellID	spell-plan.md 3.1: only 203 rows since most spells have none, not yet computed, see phase0-plan.md 4.3 known gaps
