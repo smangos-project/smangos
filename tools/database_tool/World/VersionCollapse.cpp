@@ -50,6 +50,16 @@ VersionColumnInfo DetectVersionColumn(std::vector<std::string> const& columns)
         return info;
     }
 
+    std::string buildMin = FindIgnoreCase(columns, "build_min");
+    std::string buildMax = FindIgnoreCase(columns, "build_max");
+    if (!buildMin.empty() && !buildMax.empty())
+    {
+        info.kind = VersionColumnKind::BuildRange;
+        info.minColumn = buildMin;
+        info.maxColumn = buildMax;
+        return info;
+    }
+
     if (std::string build = FindIgnoreCase(columns, "build"); !build.empty())
     {
         info.kind = VersionColumnKind::Build;
@@ -76,11 +86,11 @@ std::string BuildCollapseSelect(std::string const& table, std::vector<std::strin
     if (info.kind == VersionColumnKind::None)
         return "SELECT " + columnList + " FROM \"" + table + "\"";
 
-    if (info.kind == VersionColumnKind::PatchRange)
+    if (info.kind == VersionColumnKind::PatchRange || info.kind == VersionColumnKind::BuildRange)
     {
-        std::string patch = std::to_string(target.patch);
-        return "SELECT " + columnList + " FROM \"" + table + "\" WHERE \"" + info.minColumn + "\" <= " + patch +
-               " AND " + patch + " <= \"" + info.maxColumn + "\"";
+        std::string version = std::to_string(info.kind == VersionColumnKind::PatchRange ? target.patch : target.build);
+        return "SELECT " + columnList + " FROM \"" + table + "\" WHERE \"" + info.minColumn + "\" <= " + version +
+               " AND " + version + " <= \"" + info.maxColumn + "\"";
     }
 
     // Build/Patch: one row per logical key, the greatest qualifying version, ties broken by

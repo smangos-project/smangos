@@ -32,7 +32,7 @@ namespace
     }
 }
 
-TEST_CASE("DetectVersionColumn recognizes build, patch, a patch range, and none", "[VersionCollapse]")
+TEST_CASE("DetectVersionColumn recognizes build, patch, a patch range, a build range, and none", "[VersionCollapse]")
 {
     CHECK(DetectVersionColumn({ "entry", "build", "name" }).kind == VersionColumnKind::Build);
     CHECK(DetectVersionColumn({ "entry", "patch", "name" }).kind == VersionColumnKind::Patch);
@@ -41,6 +41,11 @@ TEST_CASE("DetectVersionColumn recognizes build, patch, a patch range, and none"
     CHECK(range.kind == VersionColumnKind::PatchRange);
     CHECK(range.minColumn == "patch_min");
     CHECK(range.maxColumn == "patch_max");
+
+    VersionColumnInfo buildRange = DetectVersionColumn({ "entry", "build_min", "build_max" });
+    CHECK(buildRange.kind == VersionColumnKind::BuildRange);
+    CHECK(buildRange.minColumn == "build_min");
+    CHECK(buildRange.maxColumn == "build_max");
 
     CHECK(DetectVersionColumn({ "entry", "name" }).kind == VersionColumnKind::None);
 }
@@ -119,6 +124,24 @@ TEST_CASE("CollapseTableInto filters a patch_min/patch_max table without dedupli
     CHECK(report.rowsBefore == 3);
     CHECK(report.rowsAfter == 2); // guid 2's range (0-6) excludes patch 10
     CHECK(report.keysWithNoRow == 1);
+}
+
+TEST_CASE("CollapseTableInto filters a build_min/build_max table without deduplicating", "[VersionCollapse]")
+{
+    TempDoltLiteFile file("build_range");
+    DoltLiteDatabase db(file.path.string());
+
+    db.Execute("CREATE TABLE \"src\" (\"entry\" INTEGER, \"build_min\" INTEGER, \"build_max\" INTEGER)");
+    db.Execute("INSERT INTO \"src\" VALUES (1, 0, 5875), (2, 0, 5000), (3, 6000, 9999)");
+    MakeDestTable(db, "dst", { "entry", "build_min", "build_max" });
+
+    VersionColumnInfo info = DetectVersionColumn({ "entry", "build_min", "build_max" });
+    CollapseReport report =
+        CollapseTableInto(db, "src", "dst", { "entry", "build_min", "build_max" }, { "entry" }, info);
+
+    CHECK(report.rowsBefore == 3);
+    CHECK(report.rowsAfter == 1); // only entry 1's range (0-5875) covers build 5875
+    CHECK(report.keysWithNoRow == 2);
 }
 
 TEST_CASE("CollapseTableInto copies a table with no version column as-is", "[VersionCollapse]")

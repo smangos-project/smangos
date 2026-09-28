@@ -22,18 +22,21 @@ enum class VersionColumnKind
     Build,      // "build": keep the greatest value <= target.build per logical key
     Patch,      // "patch": keep the greatest value <= target.patch per logical key
     PatchRange, // "patch_min"/"patch_max": keep rows where patch_min <= target.patch <= patch_max
+    BuildRange, // "build_min"/"build_max": keep rows where build_min <= target.build <= build_max
 };
 
 struct VersionColumnInfo
 {
     VersionColumnKind kind = VersionColumnKind::None;
-    std::string column;    // "build" or "patch"; empty for None/PatchRange
-    std::string minColumn; // "patch_min"; only for PatchRange
-    std::string maxColumn; // "patch_max"; only for PatchRange
+    std::string column;    // "build" or "patch"; empty for None/PatchRange/BuildRange
+    std::string minColumn; // "patch_min"/"build_min"; only for PatchRange/BuildRange
+    std::string maxColumn; // "patch_max"/"build_max"; only for PatchRange/BuildRange
 };
 
-// Looks for "build", "patch", or the "patch_min"/"patch_max" pair among `columns"
-// (case-insensitive). A table has at most one of these (stuff-plan.md's 77 versioned tables).
+// Looks for "build", "patch", or the "patch_min"/"patch_max" or "build_min"/"build_max" pair
+// among `columns` (case-insensitive). A table has at most one of these (stuff-plan.md's 77
+// versioned tables, plus the `build_min`/`build_max` tables SQLMgr-style loaders use the same
+// `x BETWEEN build_min AND build_max` rule for, e.g. `spell_proc_event`, `spell_chain`).
 VersionColumnInfo DetectVersionColumn(std::vector<std::string> const& columns);
 
 struct CollapseReport
