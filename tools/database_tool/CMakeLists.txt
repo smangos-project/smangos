@@ -29,6 +29,7 @@ add_library(database_tool_lib STATIC
   Spec/SourceScan.cpp
   Spec/WireHint.cpp
   Spec/Counterpart.cpp
+  Spec/Shape.cpp
   Spec/Evidence.cpp
   generated/DbcTables.g.cpp
   generated/VanillaDbcTables.g.cpp

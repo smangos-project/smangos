@@ -24,7 +24,8 @@ struct SpecEvidenceResult
 // column named by an "id"-kind row of `specDir`/pairs.tsv (step 4.3), `counterpart`,
 // `counterpart_rule` and `match_rate` record the best-matching cdbc_ column found by
 // Counterpart.cpp; `pairsJoined`/`pairsSkipped` count how many pairs.tsv rows that covered.
-// `shape` is left empty for step 4.4.
+// `shape` records row/distinct/null counts, the constant value if there is one, and a
+// candidate-formula hit, from Shape.cpp (step 4.4).
 SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std::filesystem::path const& repoRoot,
     std::filesystem::path const& specDir);
 

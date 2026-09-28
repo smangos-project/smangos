@@ -1,6 +1,7 @@
 #include "Evidence.h"
 
 #include "Spec/Counterpart.h"
+#include "Spec/Shape.h"
 #include "Spec/SourceScan.h"
 #include "Spec/SpecFile.h"
 #include "Spec/WireHint.h"
@@ -495,6 +496,14 @@ SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std
         row.counterpart = it->second.counterpart;
         row.counterpartRule = it->second.counterpartRule;
         row.matchRate = it->second.matchRate;
+    }
+
+    ComputeShapeResult shapes = ComputeShape(reference);
+    for (SpecEvidenceRow& row : rows)
+    {
+        auto it = shapes.shapes.find(row.source + "\t" + row.table + "\t" + row.column);
+        if (it != shapes.shapes.end())
+            row.shape = it->second;
     }
 
     WriteEvidenceTsv(specDir / "evidence.tsv", rows);

@@ -196,7 +196,9 @@ TEST_CASE("BuildEvidence resolves DBC, SQLStorage and hand-written-loader reader
         CHECK(row.counterpart.empty());
         CHECK(row.counterpartRule.empty());
         CHECK(row.matchRate.empty());
-        CHECK(row.shape.empty());
+        // 4.4: shape is filled for every row (row/distinct/null counts), unlike the pairs.tsv-gated
+        // counterpart fields above -- this fixture has no pairs.tsv at all.
+        CHECK(row.shape.rfind("rows=", 0) == 0);
     }
 }
 
@@ -225,6 +227,7 @@ TEST_CASE("BuildEvidence is deterministic on rerun", "[Evidence]")
         CHECK(first[i].column == second[i].column);
         CHECK(first[i].readers == second[i].readers);
         CHECK(first[i].wireHint == second[i].wireHint);
+        CHECK(first[i].shape == second[i].shape);
     }
 }
 
