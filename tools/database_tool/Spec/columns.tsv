@@ -442,82 +442,82 @@ srv	creature_spells_scripts	z
 srv	creature_spells_scripts	o					
 srv	creature_spells_scripts	condition_id					
 srv	creature_spells_scripts	comments					
-srv	creature_template	entry					
+srv	creature_template	entry	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
 srv	creature_template	patch	drop			progression removed	yes
-srv	creature_template	name					
-srv	creature_template	subname					
-srv	creature_template	level_min					
-srv	creature_template	level_max					
-srv	creature_template	faction					
-srv	creature_template	npc_flags					
-srv	creature_template	gossip_menu_id					
-srv	creature_template	display_id1					
-srv	creature_template	display_id2					
-srv	creature_template	display_id3					
-srv	creature_template	display_id4					
-srv	creature_template	display_scale1					
-srv	creature_template	display_scale2					
-srv	creature_template	display_scale3					
-srv	creature_template	display_scale4					
-srv	creature_template	display_probability1					
-srv	creature_template	display_probability2					
-srv	creature_template	display_probability3					
-srv	creature_template	display_probability4					
-srv	creature_template	display_total_probability					
-srv	creature_template	mount_display_id					
-srv	creature_template	speed_walk					
-srv	creature_template	speed_run					
-srv	creature_template	detection_range					
-srv	creature_template	call_for_help_range					
-srv	creature_template	leash_range					
-srv	creature_template	type					
-srv	creature_template	pet_family					
-srv	creature_template	rank					
-srv	creature_template	unit_class					
-srv	creature_template	xp_multiplier					
-srv	creature_template	health_multiplier					
-srv	creature_template	mana_multiplier					
-srv	creature_template	armor_multiplier					
-srv	creature_template	damage_multiplier					
-srv	creature_template	damage_variance					
-srv	creature_template	damage_school					
-srv	creature_template	base_attack_time					
-srv	creature_template	ranged_attack_time					
-srv	creature_template	holy_res					
-srv	creature_template	fire_res					
-srv	creature_template	nature_res					
-srv	creature_template	frost_res					
-srv	creature_template	shadow_res					
-srv	creature_template	arcane_res					
-srv	creature_template	trainer_type					
-srv	creature_template	trainer_spell					
-srv	creature_template	trainer_class					
-srv	creature_template	trainer_race					
-srv	creature_template	loot_id					
-srv	creature_template	pickpocket_loot_id					
-srv	creature_template	skinning_loot_id					
-srv	creature_template	gold_min					
-srv	creature_template	gold_max					
-srv	creature_template	spell_list_id					
-srv	creature_template	pet_spell_list_id					
-srv	creature_template	spawn_spell_id					
-srv	creature_template	totem_spell_id					
-srv	creature_template	auras					
-srv	creature_template	ai_name					
-srv	creature_template	movement_type					
-srv	creature_template	inhabit_type					
-srv	creature_template	civilian					
-srv	creature_template	racial_leader					
-srv	creature_template	equipment_id					
-srv	creature_template	trainer_id					
-srv	creature_template	vendor_id					
-srv	creature_template	mechanic_immune_mask					
-srv	creature_template	school_immune_mask					
-srv	creature_template	immunity_flags					
-srv	creature_template	static_flags1					
-srv	creature_template	static_flags2					
-srv	creature_template	flags_extra					
-srv	creature_template	script_name					
+srv	creature_template	name	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	subname	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	level_min	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	level_max	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	faction	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	npc_flags	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	gossip_menu_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_id1	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_id2	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_id3	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_id4	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_scale1	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_scale2	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_scale3	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_scale4	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_probability1	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_probability2	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_probability3	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_probability4	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	display_total_probability	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	mount_display_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	speed_walk	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	speed_run	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	detection_range	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	call_for_help_range	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	leash_range	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	type	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	pet_family	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	rank	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	unit_class	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	xp_multiplier	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	health_multiplier	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	mana_multiplier	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	armor_multiplier	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	damage_multiplier	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	damage_variance	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	damage_school	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	base_attack_time	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	ranged_attack_time	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	holy_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	fire_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	nature_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	frost_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	shadow_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	arcane_res	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	trainer_type	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	trainer_spell	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	trainer_class	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	trainer_race	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	loot_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	pickpocket_loot_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	skinning_loot_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	gold_min	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	gold_max	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	spell_list_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	pet_spell_list_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	spawn_spell_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	totem_spell_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	auras	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	ai_name	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	movement_type	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	inhabit_type	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	civilian	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	racial_leader	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	equipment_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	trainer_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	vendor_id	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	mechanic_immune_mask	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	school_immune_mask	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	immunity_flags	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	static_flags1	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	static_flags2	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	flags_extra	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	creature_template	script_name	server			creature query response field; Creature.db2 carries no vanilla row data (no cdbc counterpart found for creature_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
 srv	custom_texts	entry					
 srv	custom_texts	content_default					
 srv	custom_texts	content_loc1					
@@ -742,42 +742,42 @@ srv	gameobject_scripts	z
 srv	gameobject_scripts	o					
 srv	gameobject_scripts	condition_id					
 srv	gameobject_scripts	comments					
-srv	gameobject_template	entry					
+srv	gameobject_template	entry	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
 srv	gameobject_template	patch	drop			progression removed	yes
-srv	gameobject_template	type					
-srv	gameobject_template	displayId					
-srv	gameobject_template	name					
-srv	gameobject_template	icon					
-srv	gameobject_template	faction					
-srv	gameobject_template	flags					
-srv	gameobject_template	size					
-srv	gameobject_template	data0					
-srv	gameobject_template	data1					
-srv	gameobject_template	data2					
-srv	gameobject_template	data3					
-srv	gameobject_template	data4					
-srv	gameobject_template	data5					
-srv	gameobject_template	data6					
-srv	gameobject_template	data7					
-srv	gameobject_template	data8					
-srv	gameobject_template	data9					
-srv	gameobject_template	data10					
-srv	gameobject_template	data11					
-srv	gameobject_template	data12					
-srv	gameobject_template	data13					
-srv	gameobject_template	data14					
-srv	gameobject_template	data15					
-srv	gameobject_template	data16					
-srv	gameobject_template	data17					
-srv	gameobject_template	data18					
-srv	gameobject_template	data19					
-srv	gameobject_template	data20					
-srv	gameobject_template	data21					
-srv	gameobject_template	data22					
-srv	gameobject_template	data23					
-srv	gameobject_template	mingold					
-srv	gameobject_template	maxgold					
-srv	gameobject_template	script_name					
+srv	gameobject_template	type	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	displayId	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	name	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	icon	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	faction	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	flags	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	size	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data0	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data1	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data2	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data3	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data4	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data5	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data6	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data7	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data8	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data9	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data10	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data11	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data12	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data13	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data14	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data15	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data16	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data17	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data18	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data19	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data20	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data21	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data22	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	data23	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	mingold	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	maxgold	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	gameobject_template	script_name	server			game object query response field; GameObjects.db2 carries no vanilla row data (no cdbc counterpart found for gameobject_template, phase0-plan.md F6), the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
 srv	generic_scripts	id					
 srv	generic_scripts	delay					
 srv	generic_scripts	priority					
@@ -1279,23 +1279,23 @@ srv	map_template	map_name	dbc	dbc_map.MapName_lang	identity	4 differences (data-
 srv	map_template	script_name	server			server-side script hook name, no DB2 equivalent, overriding evidence.tsv's spurious PvpShortDescription_lang coincidence	yes
 srv	npc_gossip	npc_guid					
 srv	npc_gossip	textid					
-srv	npc_text	ID					
-srv	npc_text	BroadcastTextID0					
-srv	npc_text	Probability0					
-srv	npc_text	BroadcastTextID1					
-srv	npc_text	Probability1					
-srv	npc_text	BroadcastTextID2					
-srv	npc_text	Probability2					
-srv	npc_text	BroadcastTextID3					
-srv	npc_text	Probability3					
-srv	npc_text	BroadcastTextID4					
-srv	npc_text	Probability4					
-srv	npc_text	BroadcastTextID5					
-srv	npc_text	Probability5					
-srv	npc_text	BroadcastTextID6					
-srv	npc_text	Probability6					
-srv	npc_text	BroadcastTextID7					
-srv	npc_text	Probability7					
+srv	npc_text	ID	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID0	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability0	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID1	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability1	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID2	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability2	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID3	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability3	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID4	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability4	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID5	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability5	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID6	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability6	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	BroadcastTextID7	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
+srv	npc_text	Probability7	server			gossip text probabilities and broadcast text refs; no resolved evidence.tsv reader for the BroadcastTextID/Probability slots, hand-confirmed at ObjectMgr::LoadNPCText (src/game/ObjectMgr.cpp); BroadcastTextID indexes broadcast_text, already ported to dbc_broadcasttext (F1), as today (stuff-plan.md 8.4)	yes
 srv	npc_trainer	entry					
 srv	npc_trainer	spell					
 srv	npc_trainer	spellcost					
@@ -1336,9 +1336,9 @@ srv	npc_vendor_template	maxcount
 srv	npc_vendor_template	incrtime					
 srv	npc_vendor_template	itemflags					
 srv	npc_vendor_template	condition_id					
-srv	page_text	entry					
-srv	page_text	text					
-srv	page_text	next_page					
+srv	page_text	entry	server			page text query response field; PageText.db2 carries no vanilla row data, the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	page_text	text	server			page text query response field; PageText.db2 carries no vanilla row data, the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
+srv	page_text	next_page	server			page text query response field; PageText.db2 carries no vanilla row data, the server answers CMSG_DB_QUERY_BULK dynamically from this table, as today (stuff-plan.md 8.4)	yes
 srv	pet_levelstats	entry					
 srv	pet_levelstats	level					
 srv	pet_levelstats	health					
@@ -1555,138 +1555,138 @@ srv	quest_start_scripts	z
 srv	quest_start_scripts	o					
 srv	quest_start_scripts	condition_id					
 srv	quest_start_scripts	comments					
-srv	quest_template	entry					
+srv	quest_template	entry	server			server-authoritative id; cdbc_questv2 covers only a minority of quest_template's ids (774 vanilla-only, gaps.tsv row_coverage) and carries no comparable row data, same reasoning as spell_template.entry (phase0-plan.md F5)	yes
 srv	quest_template	patch	drop			progression removed	yes
-srv	quest_template	Method					
-srv	quest_template	ZoneOrSort					
-srv	quest_template	MinLevel					
-srv	quest_template	MaxLevel					
-srv	quest_template	QuestLevel					
-srv	quest_template	Type					
-srv	quest_template	RequiredClasses					
-srv	quest_template	RequiredRaces					
-srv	quest_template	RequiredSkill					
-srv	quest_template	RequiredSkillValue					
-srv	quest_template	RequiredCondition					
-srv	quest_template	RepObjectiveFaction					
-srv	quest_template	RepObjectiveValue					
-srv	quest_template	RequiredMinRepFaction					
-srv	quest_template	RequiredMinRepValue					
-srv	quest_template	RequiredMaxRepFaction					
-srv	quest_template	RequiredMaxRepValue					
-srv	quest_template	SuggestedPlayers					
-srv	quest_template	LimitTime					
-srv	quest_template	QuestFlags					
-srv	quest_template	SpecialFlags					
-srv	quest_template	PrevQuestId					
-srv	quest_template	NextQuestId					
-srv	quest_template	ExclusiveGroup					
-srv	quest_template	BreadcrumbForQuestId					
-srv	quest_template	NextQuestInChain					
-srv	quest_template	SrcItemId					
-srv	quest_template	SrcItemCount					
-srv	quest_template	SrcSpell					
-srv	quest_template	Title					
-srv	quest_template	Details					
-srv	quest_template	Objectives					
-srv	quest_template	OfferRewardText					
-srv	quest_template	RequestItemsText					
-srv	quest_template	EndText					
-srv	quest_template	ObjectiveText1					
-srv	quest_template	ObjectiveText2					
-srv	quest_template	ObjectiveText3					
-srv	quest_template	ObjectiveText4					
-srv	quest_template	ReqItemId1					
-srv	quest_template	ReqItemId2					
-srv	quest_template	ReqItemId3					
-srv	quest_template	ReqItemId4					
-srv	quest_template	ReqItemCount1					
-srv	quest_template	ReqItemCount2					
-srv	quest_template	ReqItemCount3					
-srv	quest_template	ReqItemCount4					
-srv	quest_template	ReqSourceId1					
-srv	quest_template	ReqSourceId2					
-srv	quest_template	ReqSourceId3					
-srv	quest_template	ReqSourceId4					
-srv	quest_template	ReqSourceCount1					
-srv	quest_template	ReqSourceCount2					
-srv	quest_template	ReqSourceCount3					
-srv	quest_template	ReqSourceCount4					
-srv	quest_template	ReqCreatureOrGOId1					
-srv	quest_template	ReqCreatureOrGOId2					
-srv	quest_template	ReqCreatureOrGOId3					
-srv	quest_template	ReqCreatureOrGOId4					
-srv	quest_template	ReqCreatureOrGOCount1					
-srv	quest_template	ReqCreatureOrGOCount2					
-srv	quest_template	ReqCreatureOrGOCount3					
-srv	quest_template	ReqCreatureOrGOCount4					
-srv	quest_template	ReqSpellCast1					
-srv	quest_template	ReqSpellCast2					
-srv	quest_template	ReqSpellCast3					
-srv	quest_template	ReqSpellCast4					
-srv	quest_template	RewChoiceItemId1					
-srv	quest_template	RewChoiceItemId2					
-srv	quest_template	RewChoiceItemId3					
-srv	quest_template	RewChoiceItemId4					
-srv	quest_template	RewChoiceItemId5					
-srv	quest_template	RewChoiceItemId6					
-srv	quest_template	RewChoiceItemCount1					
-srv	quest_template	RewChoiceItemCount2					
-srv	quest_template	RewChoiceItemCount3					
-srv	quest_template	RewChoiceItemCount4					
-srv	quest_template	RewChoiceItemCount5					
-srv	quest_template	RewChoiceItemCount6					
-srv	quest_template	RewItemId1					
-srv	quest_template	RewItemId2					
-srv	quest_template	RewItemId3					
-srv	quest_template	RewItemId4					
-srv	quest_template	RewItemCount1					
-srv	quest_template	RewItemCount2					
-srv	quest_template	RewItemCount3					
-srv	quest_template	RewItemCount4					
-srv	quest_template	RewRepFaction1					
-srv	quest_template	RewRepFaction2					
-srv	quest_template	RewRepFaction3					
-srv	quest_template	RewRepFaction4					
-srv	quest_template	RewRepFaction5					
-srv	quest_template	RewRepValue1					
-srv	quest_template	RewRepValue2					
-srv	quest_template	RewRepValue3					
-srv	quest_template	RewRepValue4					
-srv	quest_template	RewRepValue5					
-srv	quest_template	RewRepSpilloverMask					
-srv	quest_template	RewXP					
-srv	quest_template	RewOrReqMoney					
-srv	quest_template	RewMoneyMaxLevel					
-srv	quest_template	RewSpell					
-srv	quest_template	RewSpellCast					
-srv	quest_template	RewMailTemplateId					
-srv	quest_template	RewMailDelaySecs					
-srv	quest_template	RewMailMoney					
-srv	quest_template	PointMapId					
-srv	quest_template	PointX					
-srv	quest_template	PointY					
-srv	quest_template	PointOpt					
-srv	quest_template	DetailsEmote1					
-srv	quest_template	DetailsEmote2					
-srv	quest_template	DetailsEmote3					
-srv	quest_template	DetailsEmote4					
-srv	quest_template	DetailsEmoteDelay1					
-srv	quest_template	DetailsEmoteDelay2					
-srv	quest_template	DetailsEmoteDelay3					
-srv	quest_template	DetailsEmoteDelay4					
-srv	quest_template	IncompleteEmote					
-srv	quest_template	CompleteEmote					
-srv	quest_template	OfferRewardEmote1					
-srv	quest_template	OfferRewardEmote2					
-srv	quest_template	OfferRewardEmote3					
-srv	quest_template	OfferRewardEmote4					
-srv	quest_template	OfferRewardEmoteDelay1					
-srv	quest_template	OfferRewardEmoteDelay2					
-srv	quest_template	OfferRewardEmoteDelay3					
-srv	quest_template	OfferRewardEmoteDelay4					
-srv	quest_template	StartScript					
-srv	quest_template	CompleteScript					
+srv	quest_template	Method	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ZoneOrSort	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	MinLevel	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	MaxLevel	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	QuestLevel	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	Type	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4); also the source for the query response's QuestInfoID via a Type -> QuestInfo id mapping, stuff-plan.md 8.4	yes
+srv	quest_template	RequiredClasses	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredRaces	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4); also the source for the query response's AllowableRaces (0 -> all), stuff-plan.md 8.4	yes
+srv	quest_template	RequiredSkill	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredSkillValue	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredCondition	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RepObjectiveFaction	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RepObjectiveValue	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredMinRepFaction	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredMinRepValue	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredMaxRepFaction	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequiredMaxRepValue	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	SuggestedPlayers	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	LimitTime	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	QuestFlags	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	SpecialFlags	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	PrevQuestId	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	NextQuestId	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ExclusiveGroup	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	BreadcrumbForQuestId	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	NextQuestInChain	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	SrcItemId	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	SrcItemCount	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	SrcSpell	server			quest logic field; Quest.db2 ships no vanilla row data for this quest, sent live in the query response as today (stuff-plan.md 8.4)	yes
+srv	quest_template	Title	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	Details	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	Objectives	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	OfferRewardText	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RequestItemsText	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	EndText	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ObjectiveText1	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ObjectiveText2	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ObjectiveText3	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ObjectiveText4	server			quest text; the client has no offline copy of vanilla quest text, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemId1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemId2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemId3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemId4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemCount1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemCount2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemCount3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqItemCount4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqSourceId1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDrop, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceId2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDrop, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceId3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDrop, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceId4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDrop, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceCount1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDropQuantity, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceCount2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDropQuantity, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceCount3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDropQuantity, stuff-plan.md 8.4	yes
+srv	quest_template	ReqSourceCount4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the source for the query response's ItemDropQuantity, stuff-plan.md 8.4	yes
+srv	quest_template	ReqCreatureOrGOId1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOId2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOId3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOId4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOCount1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOCount2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOCount3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqCreatureOrGOCount4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqSpellCast1	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqSpellCast2	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqSpellCast3	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	ReqSpellCast4	server			quest objective; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId5	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemId6	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount5	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewChoiceItemCount6	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemId1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemId2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemId3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemId4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemCount1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemCount2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemCount3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewItemCount4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepFaction1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepFaction2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepFaction3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepFaction4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepFaction5	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepValue1	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepValue2	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepValue3	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepValue4	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepValue5	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewRepSpilloverMask	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewXP	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4); also the value the new RewardXPDifficulty/RewardXPMultiplier columns (this family, below) must reproduce through dbc_questxp, stuff-plan.md 8.4	yes
+srv	quest_template	RewOrReqMoney	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewMoneyMaxLevel	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewSpell	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewSpellCast	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewMailTemplateId	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewMailDelaySecs	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	RewMailMoney	server			quest reward; no client-side store, sent live in the query response, as today (stuff-plan.md 8.4)	yes
+srv	quest_template	PointMapId	server			single quest POI point; server-only until Q6 settles whether the Era client shows quest POIs at all (stuff-plan.md 8.4, section 6)	yes
+srv	quest_template	PointX	server			single quest POI point; server-only until Q6 settles whether the Era client shows quest POIs at all (stuff-plan.md 8.4, section 6)	yes
+srv	quest_template	PointY	server			single quest POI point; server-only until Q6 settles whether the Era client shows quest POIs at all (stuff-plan.md 8.4, section 6)	yes
+srv	quest_template	PointOpt	server			single quest POI point; server-only until Q6 settles whether the Era client shows quest POIs at all (stuff-plan.md 8.4, section 6)	yes
+srv	quest_template	DetailsEmote1	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmote2	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmote3	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmote4	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmoteDelay1	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmoteDelay2	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmoteDelay3	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	DetailsEmoteDelay4	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	IncompleteEmote	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	CompleteEmote	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmote1	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmote2	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmote3	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmote4	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmoteDelay1	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmoteDelay2	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmoteDelay3	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	OfferRewardEmoteDelay4	server			quest-giver emote, server-only gameplay data, as today	yes
+srv	quest_template	StartScript	server			vmangos DB script system (quest_start_scripts/quest_end_scripts); no client or DB2 concept	yes
+srv	quest_template	CompleteScript	server			vmangos DB script system (quest_start_scripts/quest_end_scripts); no client or DB2 concept	yes
 srv	reference_loot_template	entry					
 srv	reference_loot_template	item					
 srv	reference_loot_template	ChanceOrQuestChance					
@@ -4133,3 +4133,14 @@ vdbc	zonemusic	SilenceIntervalMax1	drop			unloaded, no mangosd reader; the 1.15 
 vdbc	zonemusic	SilenceIntervalMax2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	zonemusic	Sounds1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	zonemusic	Sounds2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+new	quest_template	RewardXPDifficulty	derived	quest_template.RewXP	quest_reward_xp_difficulty	new column (TC schema, RewardXPDifficulty int default 0): the dbc_questxp[QuestLevel].Difficulty[index] the query response must select so the client shows RewXP; derived, not evaluated by spec evidence (needs a reference-DB lookup, not a join), stuff-plan.md 8.4	yes
+new	quest_template	RewardXPMultiplier	constant	1		new column (TC schema, RewardXPMultiplier float default 1): vmangos has no separate multiplier, RewardXPDifficulty alone reproduces RewXP, stuff-plan.md 8.4	yes
+new	quest_template	RewardMoneyDifficulty	derived	quest_template.RewOrReqMoney,RewMoneyMaxLevel	quest_reward_money_difficulty	new column (TC schema, RewardMoneyDifficulty int default 0): the dbc_questmoneyreward[QuestLevel].Difficulty[index] the query response must select so the client shows the vanilla money reward; derived, not evaluated by spec evidence, stuff-plan.md 8.4	yes
+new	quest_template	RewardMoneyMultiplier	constant	1		new column (TC schema, RewardMoneyMultiplier float default 1): vmangos has no separate multiplier, RewardMoneyDifficulty alone reproduces the vanilla money reward, stuff-plan.md 8.4	yes
+new	creature_quest_item	CreatureEntry	derived	creature_template.entry	identity	new table (TC schema: creature_questitem, columns CreatureEntry/DifficultyID/Idx/ItemId); the creature side of the join key, stuff-plan.md 8.4	yes
+new	creature_quest_item	DifficultyID	constant	0		vmangos has one difficulty, no per-difficulty loot variant, stuff-plan.md 8.4	yes
+new	creature_quest_item	Idx	derived	quest_template.ReqItemId1-4,ReqSourceId1-4	quest_item_from_loot	0-based position among a creature's quest items; derived when the migration builds the table, stuff-plan.md 8.4	yes
+new	creature_quest_item	ItemId	derived	creature_loot_template.item	quest_item_from_loot	item ids a quest needs (ReqItemId/ReqSourceId) that also appear in the creature's loot (creature_loot_template); precomputed by a migration, one row per (creature, item), stuff-plan.md 8.4	yes
+new	gameobject_quest_item	GameObjectEntry	derived	gameobject_template.entry	identity	new table (TC schema: gameobject_questitem, columns GameObjectEntry/Idx/ItemId); the game object side of the join key, stuff-plan.md 8.4	yes
+new	gameobject_quest_item	Idx	derived	quest_template.ReqItemId1-4,ReqSourceId1-4	quest_item_from_loot	0-based position among a game object's quest items; derived when the migration builds the table, stuff-plan.md 8.4	yes
+new	gameobject_quest_item	ItemId	derived	gameobject_loot_template.item	quest_item_from_loot	item ids a quest needs that also appear in the game object's loot (gameobject_loot_template); precomputed by a migration, one row per (gameobject, item), stuff-plan.md 8.4	yes
