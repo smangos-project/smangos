@@ -39,6 +39,9 @@ database_tool import   --format db2|dbc [--tables A,B]
 database_tool export   --format db2|dbc [--tables A,B]
 database_tool port-migration <file>...
 database_tool compare-world --mysql "<host;port;user;pass;db>"
+database_tool reference
+database_tool spec init
+database_tool spec set --source <srv|vdbc|new> --table <t> [--column <c>] [--disposition D] [--target T] [--rule R] [--reason "..."] [--reviewed yes|no] [--overwrite]
 ```
 
 Exit codes: `0` success, `1` failure, `2` for `port-migration` when any file was flagged.
@@ -81,6 +84,31 @@ evaluate is left untouched and reported (exit `2`); those need a hand port (worl
 Diffs every table `.world` and a MySQL `mangos` database have in common: table sets, column
 names/order, row counts, and the first differing row per table (by primary key, or by every
 column if a table has none). Floats are compared as float32. Exit `0` only if identical.
+
+### reference
+
+Builds `.world/reference.doltlite` (`.local/plan/bot/phase0-plan.md` step 2) from three pinned,
+never-edited inputs: `.world/world.doltlite` (must exist; every non-`dbc_`/bookkeeping table
+renamed `srv_<table>`, collapsed to the vanilla build/patch), `.client/vanilla/dbc/*.dbc`
+(`vdbc_<table>`, read with the 1.12 WDBC layout) and `dbfilesclient/*.db2` (`cdbc_<table>`, the
+existing WDC5 import, untouched). Refuses if `reference.doltlite` already exists, like `create`. A
+table that fails to build is reported per-table rather than failing the whole run (exit `1` if any
+did).
+
+### spec
+
+`.local/plan/bot/phase0-plan.md` step 3: inventories the reference database's columns into
+`Spec/columns.tsv` and `Spec/dbc-columns.tsv` (checked into the repo and hand-reviewed over time,
+unlike everything else this tool writes), then helps fill them in bulk.
+
+- `spec init`: reads `.world/reference.doltlite` (run `reference` first) and appends any column not
+  already listed -- every `srv_*`/`vdbc_*` column to `columns.tsv`, and every `cdbc_*` column of a
+  table with a same-named `vdbc_*` table (i.e. one that can receive a vanilla value) to
+  `dbc-columns.tsv`. Idempotent: never rewrites a row that already has a value, and a row whose
+  column the reference database no longer has is reported, not deleted.
+- `spec set`: bulk-fills matching rows of `columns.tsv` (`--source`/`--table` required, `--column`
+  optional -- omitted means every column of that table). Skips a row whose `disposition` is already
+  set unless `--overwrite` is given.
 
 ## Testing
 
