@@ -2199,11 +2199,11 @@ vdbc	attackanimkits	AnimFrequency	drop			not imported	yes
 vdbc	attackanimkits	WhichHand	drop			not imported	yes
 vdbc	attackanimtypes	AnimID	drop			not imported	yes
 vdbc	attackanimtypes	AnimName	drop			not imported	yes
-vdbc	auctionhouse	ID					
-vdbc	auctionhouse	FactionID					
-vdbc	auctionhouse	DepositRate					
-vdbc	auctionhouse	ConsignmentRate					
-vdbc	auctionhouse	Name_lang					
+vdbc	auctionhouse	ID	dbc	dbc_auctionhouse.ID	identity	stuff-plan.md 6.3	yes
+vdbc	auctionhouse	FactionID	dbc	dbc_auctionhouse.FactionID	identity	stuff-plan.md 6.3	yes
+vdbc	auctionhouse	DepositRate	dbc	dbc_auctionhouse.DepositRate	identity	stuff-plan.md 6.3	yes
+vdbc	auctionhouse	ConsignmentRate	dbc	dbc_auctionhouse.ConsignmentRate	identity	stuff-plan.md 6.3	yes
+vdbc	auctionhouse	Name_lang	dbc	dbc_auctionhouse.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	auctionhouse	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	auctionhouse	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	auctionhouse	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2212,8 +2212,8 @@ vdbc	auctionhouse	Name_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	auctionhouse	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	auctionhouse	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	auctionhouse	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	bankbagslotprices	ID					
-vdbc	bankbagslotprices	Cost					
+vdbc	bankbagslotprices	ID	dbc	dbc_bankbagslotprices.ID	identity	stuff-plan.md 6.3	yes
+vdbc	bankbagslotprices	Cost	dbc	dbc_bankbagslotprices.Cost	identity	stuff-plan.md 6.3	yes
 vdbc	camerashakes	ID	drop			not imported	yes
 vdbc	camerashakes	ShakeType	drop			not imported	yes
 vdbc	camerashakes	Direction	drop			not imported	yes
@@ -2237,15 +2237,15 @@ vdbc	cfg_configs	ID
 vdbc	cfg_configs	RealmType					
 vdbc	cfg_configs	PlayerKillingAllowed					
 vdbc	cfg_configs	Roleplaying					
-vdbc	characterfacialhairstyles	RaceID					
-vdbc	characterfacialhairstyles	SexID					
-vdbc	characterfacialhairstyles	VariationID					
-vdbc	characterfacialhairstyles	Geoset1					
-vdbc	characterfacialhairstyles	Geoset2					
-vdbc	characterfacialhairstyles	Geoset3					
-vdbc	characterfacialhairstyles	Geoset4					
-vdbc	characterfacialhairstyles	Geoset5					
-vdbc	characterfacialhairstyles	Geoset6					
+vdbc	characterfacialhairstyles	RaceID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	SexID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	VariationID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset1	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset2	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset3	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset4	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset5	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
+vdbc	characterfacialhairstyles	Geoset6	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
 vdbc	charbaseinfo	RaceID					
 vdbc	charbaseinfo	ClassID					
 vdbc	charhairgeosets	ID					
@@ -2262,16 +2262,16 @@ vdbc	charhairtextures	Field_0_5_3_3368_004_mayberacemask	drop			not imported	yes
 vdbc	charhairtextures	Field_0_5_3_3368_005_the_x_in_hair_xy_blp	drop			not imported	yes
 vdbc	charhairtextures	Field_0_5_3_3368_006	drop			not imported	yes
 vdbc	charhairtextures	Field_0_5_3_3368_007	drop			not imported	yes
-vdbc	charsections	ID					
-vdbc	charsections	RaceID					
-vdbc	charsections	SexID					
-vdbc	charsections	BaseSection					
-vdbc	charsections	VariationIndex					
-vdbc	charsections	ColorIndex					
-vdbc	charsections	TextureName1					
-vdbc	charsections	TextureName2					
-vdbc	charsections	TextureName3					
-vdbc	charsections	Flags					
+vdbc	charsections	ID	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	RaceID	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	SexID	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	BaseSection	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	VariationIndex	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	ColorIndex	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	TextureName1	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	TextureName2	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	TextureName3	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	charsections	Flags	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
 vdbc	charstartoutfit	ID					
 vdbc	charstartoutfit	RaceID					
 vdbc	charstartoutfit	ClassID					
@@ -2319,10 +2319,10 @@ vdbc	charvariations	TextureHoldLayer1	drop			not imported	yes
 vdbc	charvariations	TextureHoldLayer2	drop			not imported	yes
 vdbc	charvariations	TextureHoldLayer3	drop			not imported	yes
 vdbc	charvariations	TextureHoldLayer4	drop			not imported	yes
-vdbc	chatchannels	ID					
-vdbc	chatchannels	Flags					
-vdbc	chatchannels	FactionGroup					
-vdbc	chatchannels	Name_lang					
+vdbc	chatchannels	ID	dbc	dbc_chatchannels.ID	identity	stuff-plan.md 6.3	yes
+vdbc	chatchannels	Flags	dbc	dbc_chatchannels.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	chatchannels	FactionGroup	dbc	dbc_chatchannels.FactionGroup	identity	stuff-plan.md 6.3	yes
+vdbc	chatchannels	Name_lang	dbc	dbc_chatchannels.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	chatchannels	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2331,7 +2331,7 @@ vdbc	chatchannels	Name_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	chatchannels	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	chatchannels	Shortcut_lang					
+vdbc	chatchannels	Shortcut_lang	dbc	dbc_chatchannels.Shortcut_lang	identity	stuff-plan.md 6.3	yes
 vdbc	chatchannels	Shortcut_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Shortcut_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Shortcut_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2342,12 +2342,12 @@ vdbc	chatchannels	Shortcut_lang_7	drop			non-enUS locale slot, vanilla client on
 vdbc	chatchannels	Shortcut_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	chatprofanity	ID					
 vdbc	chatprofanity	Text					
-vdbc	chrclasses	ID					
-vdbc	chrclasses	PlayerClass					
-vdbc	chrclasses	DamageBonusStat					
-vdbc	chrclasses	DisplayPower					
-vdbc	chrclasses	PetNameToken					
-vdbc	chrclasses	Name_lang					
+vdbc	chrclasses	ID	dbc	dbc_chrclasses.ID	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	PlayerClass	server			redundant with ID; no DB2 field	yes
+vdbc	chrclasses	DamageBonusStat	dbc	dbc_chrclasses.DamageBonusStat	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	DisplayPower	dbc	dbc_chrclasses.DisplayPower	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	PetNameToken	dbc	dbc_chrclasses.PetNameToken	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	Name_lang	dbc	dbc_chrclasses.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	chrclasses	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrclasses	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrclasses	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2356,27 +2356,27 @@ vdbc	chrclasses	Name_lang_5	drop			non-enUS locale slot, vanilla client only shi
 vdbc	chrclasses	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrclasses	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrclasses	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	chrclasses	Filename					
-vdbc	chrclasses	SpellClassSet					
-vdbc	chrclasses	Flags					
-vdbc	chrraces	ID					
-vdbc	chrraces	Flags					
-vdbc	chrraces	FactionID					
-vdbc	chrraces	ExplorationSoundID					
-vdbc	chrraces	MaleDisplayID					
-vdbc	chrraces	FemaleDisplayID					
-vdbc	chrraces	ClientPrefix					
-vdbc	chrraces	MountScale					
-vdbc	chrraces	BaseLanguage					
-vdbc	chrraces	CreatureType					
-vdbc	chrraces	LoginEffectSpellID					
-vdbc	chrraces	CombatStunSpellID					
-vdbc	chrraces	ResSicknessSpellID					
-vdbc	chrraces	SplashSoundID					
-vdbc	chrraces	StartingTaxiNodes					
-vdbc	chrraces	ClientFileString					
-vdbc	chrraces	CinematicSequenceID					
-vdbc	chrraces	Name_lang					
+vdbc	chrclasses	Filename	dbc	dbc_chrclasses.Filename	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	SpellClassSet	dbc	dbc_chrclasses.SpellClassSet	identity	stuff-plan.md 6.3	yes
+vdbc	chrclasses	Flags	dbc	dbc_chrclasses.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	ID	dbc	dbc_chrraces.ID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	Flags	dbc	dbc_chrraces.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	FactionID	dbc	dbc_chrraces.FactionID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	ExplorationSoundID	server			no DB2 field	yes
+vdbc	chrraces	MaleDisplayID	dbc	dbc_chrraces.MaleDisplayID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	FemaleDisplayID	dbc	dbc_chrraces.FemaleDisplayID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	ClientPrefix	dbc	dbc_chrraces.ClientPrefix	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	MountScale	server			no DB2 field	yes
+vdbc	chrraces	BaseLanguage	dbc	dbc_chrraces.BaseLanguage	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	CreatureType	dbc	dbc_chrraces.CreatureType	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	LoginEffectSpellID	constant	836		always 836 for every race; hardcoded instead of stored (stuff-plan.md 8.3, Player.cpp:19185)	yes
+vdbc	chrraces	CombatStunSpellID	constant	1604		always 1604 for every race (vanilla dazeSpellId); hardcoded instead of stored (stuff-plan.md 8.3, Unit.cpp:1652)	yes
+vdbc	chrraces	ResSicknessSpellID	dbc	dbc_chrraces.ResSicknessSpellID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	SplashSoundID	dbc	dbc_chrraces.SplashSoundID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	StartingTaxiNodes	server			no DB2 field; becomes a per-race server table (stuff-plan.md 8.3, PlayerTaxi.cpp:33)	yes
+vdbc	chrraces	ClientFileString	dbc	dbc_chrraces.ClientFileString	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	CinematicSequenceID	dbc	dbc_chrraces.CinematicSequenceID	identity	stuff-plan.md 6.3	yes
+vdbc	chrraces	Name_lang	dbc	dbc_chrraces.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2385,9 +2385,9 @@ vdbc	chrraces	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	chrraces	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	chrraces	FacialHairCustomization1					
-vdbc	chrraces	FacialHairCustomization2					
-vdbc	chrraces	HairCustomization					
+vdbc	chrraces	FacialHairCustomization1	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
+vdbc	chrraces	FacialHairCustomization2	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
+vdbc	chrraces	HairCustomization	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
 vdbc	cinematiccamera	ID					
 vdbc	cinematiccamera	Model					
 vdbc	cinematiccamera	SoundID					
@@ -2395,56 +2395,56 @@ vdbc	cinematiccamera	Origin1
 vdbc	cinematiccamera	Origin2					
 vdbc	cinematiccamera	Origin3					
 vdbc	cinematiccamera	OriginFacing					
-vdbc	cinematicsequences	ID					
-vdbc	cinematicsequences	SoundID					
-vdbc	cinematicsequences	Camera1					
-vdbc	cinematicsequences	Camera2					
-vdbc	cinematicsequences	Camera3					
-vdbc	cinematicsequences	Camera4					
-vdbc	cinematicsequences	Camera5					
-vdbc	cinematicsequences	Camera6					
-vdbc	cinematicsequences	Camera7					
-vdbc	cinematicsequences	Camera8					
-vdbc	creaturedisplayinfo	ID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	ModelID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	SoundID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	ExtendedDisplayInfoID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	CreatureModelScale	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	CreatureModelAlpha	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	TextureVariation1	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	TextureVariation2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	TextureVariation3	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	SizeClass	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	BloodID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfo	NPCSoundID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturedisplayinfo instead (F1)	yes
-vdbc	creaturedisplayinfoextra	ID					
-vdbc	creaturedisplayinfoextra	DisplayRaceID					
-vdbc	creaturedisplayinfoextra	DisplaySexID					
-vdbc	creaturedisplayinfoextra	SkinID					
-vdbc	creaturedisplayinfoextra	FaceID					
-vdbc	creaturedisplayinfoextra	HairStyleID					
-vdbc	creaturedisplayinfoextra	HairColorID					
-vdbc	creaturedisplayinfoextra	FacialHairID					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay1					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay2					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay3					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay4					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay5					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay6					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay7					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay8					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay9					
-vdbc	creaturedisplayinfoextra	NPCItemDisplay10					
-vdbc	creaturedisplayinfoextra	BakeName					
-vdbc	creaturefamily	ID					
-vdbc	creaturefamily	MinScale					
-vdbc	creaturefamily	MinScaleLevel					
-vdbc	creaturefamily	MaxScale					
-vdbc	creaturefamily	MaxScaleLevel					
-vdbc	creaturefamily	SkillLine1					
-vdbc	creaturefamily	SkillLine2					
-vdbc	creaturefamily	PetFoodMask					
-vdbc	creaturefamily	Name_lang					
+vdbc	cinematicsequences	ID	dbc	dbc_cinematicsequences.ID	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	SoundID	dbc	dbc_cinematicsequences.SoundID	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera1	dbc	dbc_cinematicsequences.Camera1	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera2	dbc	dbc_cinematicsequences.Camera2	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera3	dbc	dbc_cinematicsequences.Camera3	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera4	dbc	dbc_cinematicsequences.Camera4	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera5	dbc	dbc_cinematicsequences.Camera5	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera6	dbc	dbc_cinematicsequences.Camera6	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera7	dbc	dbc_cinematicsequences.Camera7	identity	stuff-plan.md 6.3	yes
+vdbc	cinematicsequences	Camera8	dbc	dbc_cinematicsequences.Camera8	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	ID	dbc	dbc_creaturedisplayinfo.ID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	ModelID	dbc	dbc_creaturedisplayinfo.ModelID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	SoundID	dbc	dbc_creaturedisplayinfo.SoundID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	ExtendedDisplayInfoID	dbc	dbc_creaturedisplayinfo.ExtendedDisplayInfoID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	CreatureModelScale	dbc	dbc_creaturedisplayinfo.CreatureModelScale	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	CreatureModelAlpha	dbc	dbc_creaturedisplayinfo.CreatureModelAlpha	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	TextureVariation1	dbc	dbc_creaturedisplayinfo.TextureVariationFileDataID1	identity	renamed to a file id in 1.15 (string path -> FileDataID); not a plain value match	yes
+vdbc	creaturedisplayinfo	TextureVariation2	dbc	dbc_creaturedisplayinfo.TextureVariationFileDataID2	identity	renamed to a file id in 1.15 (string path -> FileDataID); not a plain value match	yes
+vdbc	creaturedisplayinfo	TextureVariation3	dbc	dbc_creaturedisplayinfo.TextureVariationFileDataID3	identity	renamed to a file id in 1.15 (string path -> FileDataID); not a plain value match	yes
+vdbc	creaturedisplayinfo	SizeClass	dbc	dbc_creaturedisplayinfo.SizeClass	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	BloodID	dbc	dbc_creaturedisplayinfo.BloodID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfo	NPCSoundID	dbc	dbc_creaturedisplayinfo.NPCSoundID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	ID	dbc	dbc_creaturedisplayinfoextra.ID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	DisplayRaceID	dbc	dbc_creaturedisplayinfoextra.DisplayRaceID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	DisplaySexID	dbc	dbc_creaturedisplayinfoextra.DisplaySexID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	SkinID	dbc	dbc_creaturedisplayinfoextra.SkinID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	FaceID	dbc	dbc_creaturedisplayinfoextra.FaceID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	HairStyleID	dbc	dbc_creaturedisplayinfoextra.HairStyleID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	HairColorID	dbc	dbc_creaturedisplayinfoextra.HairColorID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	FacialHairID	dbc	dbc_creaturedisplayinfoextra.FacialHairID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay1	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay2	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay3	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay4	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay5	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay6	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay7	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay8	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay9	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay10	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
+vdbc	creaturedisplayinfoextra	BakeName	server			no DB2 field; replaced by BakeMaterialResourcesID's different resource system	yes
+vdbc	creaturefamily	ID	dbc	dbc_creaturefamily.ID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	MinScale	dbc	dbc_creaturefamily.MinScale	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	MinScaleLevel	dbc	dbc_creaturefamily.MinScaleLevel	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	MaxScale	dbc	dbc_creaturefamily.MaxScale	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	MaxScaleLevel	dbc	dbc_creaturefamily.MaxScaleLevel	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	SkillLine1	dbc	dbc_creaturefamily.SkillLine1	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	SkillLine2	dbc	dbc_creaturefamily.SkillLine2	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	PetFoodMask	dbc	dbc_creaturefamily.PetFoodMask	identity	stuff-plan.md 6.3	yes
+vdbc	creaturefamily	Name_lang	dbc	dbc_creaturefamily.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	creaturefamily	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturefamily	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturefamily	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2453,23 +2453,23 @@ vdbc	creaturefamily	Name_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	creaturefamily	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturefamily	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturefamily	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	creaturefamily	IconFile					
-vdbc	creaturemodeldata	ID					
-vdbc	creaturemodeldata	Flags					
-vdbc	creaturemodeldata	ModelName					
-vdbc	creaturemodeldata	SizeClass					
-vdbc	creaturemodeldata	ModelScale					
-vdbc	creaturemodeldata	BloodID					
-vdbc	creaturemodeldata	FootprintTextureID					
-vdbc	creaturemodeldata	FootprintTextureLength					
-vdbc	creaturemodeldata	FootprintTextureWidth					
-vdbc	creaturemodeldata	FootprintParticleScale					
-vdbc	creaturemodeldata	FoleyMaterialID					
-vdbc	creaturemodeldata	FootstepShakeSize					
-vdbc	creaturemodeldata	DeathThudShakeSize					
-vdbc	creaturemodeldata	SoundID					
-vdbc	creaturemodeldata	CollisionWidth					
-vdbc	creaturemodeldata	CollisionHeight					
+vdbc	creaturefamily	IconFile	dbc	dbc_creaturefamily.IconFileID	identity	renamed to a file id in 1.15 (string path -> FileDataID)	yes
+vdbc	creaturemodeldata	ID	dbc	dbc_creaturemodeldata.ID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	Flags	dbc	dbc_creaturemodeldata.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	ModelName	drop			only used by .lookup model, which now searches by id (stuff-plan.md 8.3)	yes
+vdbc	creaturemodeldata	SizeClass	dbc	dbc_creaturemodeldata.SizeClass	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	ModelScale	dbc	dbc_creaturemodeldata.ModelScale	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	BloodID	dbc	dbc_creaturemodeldata.BloodID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FootprintTextureID	dbc	dbc_creaturemodeldata.FootprintTextureID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FootprintTextureLength	dbc	dbc_creaturemodeldata.FootprintTextureLength	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FootprintTextureWidth	dbc	dbc_creaturemodeldata.FootprintTextureWidth	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FootprintParticleScale	dbc	dbc_creaturemodeldata.FootprintParticleScale	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FoleyMaterialID	dbc	dbc_creaturemodeldata.FoleyMaterialID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	FootstepShakeSize	server			no DB2 field; replaced by FootstepCameraEffectID's different camera-effect system	yes
+vdbc	creaturemodeldata	DeathThudShakeSize	server			no DB2 field; replaced by DeathThudCameraEffectID's different camera-effect system	yes
+vdbc	creaturemodeldata	SoundID	dbc	dbc_creaturemodeldata.SoundID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	CollisionWidth	dbc	dbc_creaturemodeldata.CollisionWidth	identity	stuff-plan.md 6.3	yes
+vdbc	creaturemodeldata	CollisionHeight	dbc	dbc_creaturemodeldata.CollisionHeight	identity	stuff-plan.md 6.3	yes
 vdbc	creaturesounddata	ID					
 vdbc	creaturesounddata	SoundExertionID					
 vdbc	creaturesounddata	SoundExertionCriticalID					
@@ -2509,8 +2509,8 @@ vdbc	creaturespelldata	Availability1	drop			vanilla source; the matching srv_ co
 vdbc	creaturespelldata	Availability2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
 vdbc	creaturespelldata	Availability3	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
 vdbc	creaturespelldata	Availability4	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
-vdbc	creaturetype	ID					
-vdbc	creaturetype	Name_lang					
+vdbc	creaturetype	ID	dbc	dbc_creaturetype.ID	identity	stuff-plan.md 6.3	yes
+vdbc	creaturetype	Name_lang	dbc	dbc_creaturetype.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	creaturetype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturetype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturetype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2519,70 +2519,70 @@ vdbc	creaturetype	Name_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	creaturetype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturetype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturetype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	creaturetype	Flags					
+vdbc	creaturetype	Flags	dbc	dbc_creaturetype.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	deaththudlookups	ID					
 vdbc	deaththudlookups	SizeClass					
 vdbc	deaththudlookups	TerrainTypeSoundID					
 vdbc	deaththudlookups	SoundEntryID					
 vdbc	deaththudlookups	SoundEntryIDWater					
-vdbc	durabilitycosts	ID					
-vdbc	durabilitycosts	WeaponSubClassCost1					
-vdbc	durabilitycosts	WeaponSubClassCost2					
-vdbc	durabilitycosts	WeaponSubClassCost3					
-vdbc	durabilitycosts	WeaponSubClassCost4					
-vdbc	durabilitycosts	WeaponSubClassCost5					
-vdbc	durabilitycosts	WeaponSubClassCost6					
-vdbc	durabilitycosts	WeaponSubClassCost7					
-vdbc	durabilitycosts	WeaponSubClassCost8					
-vdbc	durabilitycosts	WeaponSubClassCost9					
-vdbc	durabilitycosts	WeaponSubClassCost10					
-vdbc	durabilitycosts	WeaponSubClassCost11					
-vdbc	durabilitycosts	WeaponSubClassCost12					
-vdbc	durabilitycosts	WeaponSubClassCost13					
-vdbc	durabilitycosts	WeaponSubClassCost14					
-vdbc	durabilitycosts	WeaponSubClassCost15					
-vdbc	durabilitycosts	WeaponSubClassCost16					
-vdbc	durabilitycosts	WeaponSubClassCost17					
-vdbc	durabilitycosts	WeaponSubClassCost18					
-vdbc	durabilitycosts	WeaponSubClassCost19					
-vdbc	durabilitycosts	WeaponSubClassCost20					
-vdbc	durabilitycosts	WeaponSubClassCost21					
-vdbc	durabilitycosts	ArmorSubClassCost1					
-vdbc	durabilitycosts	ArmorSubClassCost2					
-vdbc	durabilitycosts	ArmorSubClassCost3					
-vdbc	durabilitycosts	ArmorSubClassCost4					
-vdbc	durabilitycosts	ArmorSubClassCost5					
-vdbc	durabilitycosts	ArmorSubClassCost6					
-vdbc	durabilitycosts	ArmorSubClassCost7					
-vdbc	durabilitycosts	ArmorSubClassCost8					
-vdbc	durabilityquality	ID					
-vdbc	durabilityquality	Data					
-vdbc	emotes	ID					
-vdbc	emotes	EmoteSlashCommand					
-vdbc	emotes	AnimID					
-vdbc	emotes	EmoteFlags					
-vdbc	emotes	EmoteSpecProc					
-vdbc	emotes	EmoteSpecProcParam					
-vdbc	emotes	EventSoundID					
-vdbc	emotestext	ID					
-vdbc	emotestext	Name					
-vdbc	emotestext	EmoteID					
-vdbc	emotestext	EmoteText1					
-vdbc	emotestext	EmoteText2					
-vdbc	emotestext	EmoteText3					
-vdbc	emotestext	EmoteText4					
-vdbc	emotestext	EmoteText5					
-vdbc	emotestext	EmoteText6					
-vdbc	emotestext	EmoteText7					
-vdbc	emotestext	EmoteText8					
-vdbc	emotestext	EmoteText9					
-vdbc	emotestext	EmoteText10					
-vdbc	emotestext	EmoteText11					
-vdbc	emotestext	EmoteText12					
-vdbc	emotestext	EmoteText13					
-vdbc	emotestext	EmoteText14					
-vdbc	emotestext	EmoteText15					
-vdbc	emotestext	EmoteText16					
+vdbc	durabilitycosts	ID	dbc	dbc_durabilitycosts.ID	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost1	dbc	dbc_durabilitycosts.WeaponSubClassCost1	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost2	dbc	dbc_durabilitycosts.WeaponSubClassCost2	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost3	dbc	dbc_durabilitycosts.WeaponSubClassCost3	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost4	dbc	dbc_durabilitycosts.WeaponSubClassCost4	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost5	dbc	dbc_durabilitycosts.WeaponSubClassCost5	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost6	dbc	dbc_durabilitycosts.WeaponSubClassCost6	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost7	dbc	dbc_durabilitycosts.WeaponSubClassCost7	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost8	dbc	dbc_durabilitycosts.WeaponSubClassCost8	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost9	dbc	dbc_durabilitycosts.WeaponSubClassCost9	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost10	dbc	dbc_durabilitycosts.WeaponSubClassCost10	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost11	dbc	dbc_durabilitycosts.WeaponSubClassCost11	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost12	dbc	dbc_durabilitycosts.WeaponSubClassCost12	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost13	dbc	dbc_durabilitycosts.WeaponSubClassCost13	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost14	dbc	dbc_durabilitycosts.WeaponSubClassCost14	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost15	dbc	dbc_durabilitycosts.WeaponSubClassCost15	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost16	dbc	dbc_durabilitycosts.WeaponSubClassCost16	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost17	dbc	dbc_durabilitycosts.WeaponSubClassCost17	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost18	dbc	dbc_durabilitycosts.WeaponSubClassCost18	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost19	dbc	dbc_durabilitycosts.WeaponSubClassCost19	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost20	dbc	dbc_durabilitycosts.WeaponSubClassCost20	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	WeaponSubClassCost21	dbc	dbc_durabilitycosts.WeaponSubClassCost21	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost1	dbc	dbc_durabilitycosts.ArmorSubClassCost1	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost2	dbc	dbc_durabilitycosts.ArmorSubClassCost2	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost3	dbc	dbc_durabilitycosts.ArmorSubClassCost3	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost4	dbc	dbc_durabilitycosts.ArmorSubClassCost4	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost5	dbc	dbc_durabilitycosts.ArmorSubClassCost5	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost6	dbc	dbc_durabilitycosts.ArmorSubClassCost6	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost7	dbc	dbc_durabilitycosts.ArmorSubClassCost7	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilitycosts	ArmorSubClassCost8	dbc	dbc_durabilitycosts.ArmorSubClassCost8	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
+vdbc	durabilityquality	ID	dbc	dbc_durabilityquality.ID	identity	stuff-plan.md 6.3	yes
+vdbc	durabilityquality	Data	dbc	dbc_durabilityquality.Data	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	ID	dbc	dbc_emotes.ID	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	EmoteSlashCommand	dbc	dbc_emotes.EmoteSlashCommand	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	AnimID	dbc	dbc_emotes.AnimID	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	EmoteFlags	dbc	dbc_emotes.EmoteFlags	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	EmoteSpecProc	dbc	dbc_emotes.EmoteSpecProc	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	EmoteSpecProcParam	dbc	dbc_emotes.EmoteSpecProcParam	identity	stuff-plan.md 6.3	yes
+vdbc	emotes	EventSoundID	dbc	dbc_emotes.EventSoundID	identity	stuff-plan.md 6.3	yes
+vdbc	emotestext	ID	dbc	dbc_emotestext.ID	identity	stuff-plan.md 6.3	yes
+vdbc	emotestext	Name	dbc	dbc_emotestext.Name	identity	stuff-plan.md 6.3	yes
+vdbc	emotestext	EmoteID	dbc	dbc_emotestext.EmoteID	identity	stuff-plan.md 6.3	yes
+vdbc	emotestext	EmoteText1	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText2	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText3	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText4	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText5	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText6	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText7	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText8	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText9	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText10	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText11	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText12	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText13	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText14	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText15	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
+vdbc	emotestext	EmoteText16	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
 vdbc	emotestextdata	ID					
 vdbc	emotestextdata	Text_lang					
 vdbc	emotestextdata	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2694,18 +2694,18 @@ vdbc	gameobjectartkit	AttachModel1
 vdbc	gameobjectartkit	AttachModel2					
 vdbc	gameobjectartkit	AttachModel3					
 vdbc	gameobjectartkit	AttachModel4					
-vdbc	gameobjectdisplayinfo	ID	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	ModelName	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound1	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound2	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound3	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound4	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound5	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound6	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound7	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound8	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound9	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
-vdbc	gameobjectdisplayinfo	Sound10	drop			vanilla source; the matching srv_ column now sources from dbc_gameobjectdisplayinfo instead (F1)	yes
+vdbc	gameobjectdisplayinfo	ID	dbc	dbc_gameobjectdisplayinfo.ID	identity	stuff-plan.md 6.3	yes
+vdbc	gameobjectdisplayinfo	ModelName	dbc	dbc_gameobjectdisplayinfo.ModelName	identity	stuff-plan.md 6.3	yes
+vdbc	gameobjectdisplayinfo	Sound1	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound2	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound3	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound4	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound5	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound6	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound7	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound8	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound9	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound10	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
 vdbc	gametips	ID					
 vdbc	gametips	Text_lang					
 vdbc	gametips	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2765,8 +2765,8 @@ vdbc	helmetgeosetvisdata	HideGeoset2	drop			not imported	yes
 vdbc	helmetgeosetvisdata	HideGeoset3	drop			not imported	yes
 vdbc	helmetgeosetvisdata	HideGeoset4	drop			not imported	yes
 vdbc	helmetgeosetvisdata	HideGeoset5	drop			not imported	yes
-vdbc	itembagfamily	ID					
-vdbc	itembagfamily	Name_lang					
+vdbc	itembagfamily	ID	dbc	dbc_itembagfamily.ID	identity	stuff-plan.md 6.3	yes
+vdbc	itembagfamily	Name_lang	dbc	dbc_itembagfamily.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	itembagfamily	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itembagfamily	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itembagfamily	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2825,14 +2825,14 @@ vdbc	itempetfood	Name_lang_5	drop			non-enUS locale slot, vanilla client only sh
 vdbc	itempetfood	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itempetfood	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itempetfood	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemrandomproperties	ID					
-vdbc	itemrandomproperties	Name					
-vdbc	itemrandomproperties	Enchantment1					
-vdbc	itemrandomproperties	Enchantment2					
-vdbc	itemrandomproperties	Enchantment3					
-vdbc	itemrandomproperties	Enchantment4					
-vdbc	itemrandomproperties	Enchantment5					
-vdbc	itemrandomproperties	Name_lang					
+vdbc	itemrandomproperties	ID	dbc	dbc_itemrandomproperties.ID	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Name	server			internal label; DB2 only has Name_lang	yes
+vdbc	itemrandomproperties	Enchantment1	dbc	dbc_itemrandomproperties.Enchantment1	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Enchantment2	dbc	dbc_itemrandomproperties.Enchantment2	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Enchantment3	dbc	dbc_itemrandomproperties.Enchantment3	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Enchantment4	dbc	dbc_itemrandomproperties.Enchantment4	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Enchantment5	dbc	dbc_itemrandomproperties.Enchantment5	identity	stuff-plan.md 6.3	yes
+vdbc	itemrandomproperties	Name_lang	dbc	dbc_itemrandomproperties.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	itemrandomproperties	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemrandomproperties	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemrandomproperties	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2841,8 +2841,8 @@ vdbc	itemrandomproperties	Name_lang_5	drop			non-enUS locale slot, vanilla clien
 vdbc	itemrandomproperties	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemrandomproperties	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemrandomproperties	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemset	ID					
-vdbc	itemset	Name_lang					
+vdbc	itemset	ID	dbc	dbc_itemset.ID	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	Name_lang	dbc	dbc_itemset.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	itemset	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemset	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemset	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2851,41 +2851,41 @@ vdbc	itemset	Name_lang_5	drop			non-enUS locale slot, vanilla client only shippe
 vdbc	itemset	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemset	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemset	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemset	ItemID1					
-vdbc	itemset	ItemID2					
-vdbc	itemset	ItemID3					
-vdbc	itemset	ItemID4					
-vdbc	itemset	ItemID5					
-vdbc	itemset	ItemID6					
-vdbc	itemset	ItemID7					
-vdbc	itemset	ItemID8					
-vdbc	itemset	ItemID9					
-vdbc	itemset	ItemID10					
-vdbc	itemset	ItemID11					
-vdbc	itemset	ItemID12					
-vdbc	itemset	ItemID13					
-vdbc	itemset	ItemID14					
-vdbc	itemset	ItemID15					
-vdbc	itemset	ItemID16					
-vdbc	itemset	ItemID17					
-vdbc	itemset	SetSpellID1					
-vdbc	itemset	SetSpellID2					
-vdbc	itemset	SetSpellID3					
-vdbc	itemset	SetSpellID4					
-vdbc	itemset	SetSpellID5					
-vdbc	itemset	SetSpellID6					
-vdbc	itemset	SetSpellID7					
-vdbc	itemset	SetSpellID8					
-vdbc	itemset	SetThreshold1					
-vdbc	itemset	SetThreshold2					
-vdbc	itemset	SetThreshold3					
-vdbc	itemset	SetThreshold4					
-vdbc	itemset	SetThreshold5					
-vdbc	itemset	SetThreshold6					
-vdbc	itemset	SetThreshold7					
-vdbc	itemset	SetThreshold8					
-vdbc	itemset	RequiredSkill					
-vdbc	itemset	RequiredSkillRank					
+vdbc	itemset	ItemID1	dbc	dbc_itemset.ItemID1	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID2	dbc	dbc_itemset.ItemID2	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID3	dbc	dbc_itemset.ItemID3	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID4	dbc	dbc_itemset.ItemID4	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID5	dbc	dbc_itemset.ItemID5	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID6	dbc	dbc_itemset.ItemID6	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID7	dbc	dbc_itemset.ItemID7	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID8	dbc	dbc_itemset.ItemID8	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID9	dbc	dbc_itemset.ItemID9	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID10	dbc	dbc_itemset.ItemID10	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID11	dbc	dbc_itemset.ItemID11	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID12	dbc	dbc_itemset.ItemID12	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID13	dbc	dbc_itemset.ItemID13	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID14	dbc	dbc_itemset.ItemID14	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID15	dbc	dbc_itemset.ItemID15	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID16	dbc	dbc_itemset.ItemID16	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	ItemID17	dbc	dbc_itemset.ItemID17	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	SetSpellID1	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID2	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID3	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID4	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID5	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID6	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID7	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetSpellID8	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold1	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold2	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold3	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold4	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold5	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold6	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold7	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	SetThreshold8	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
+vdbc	itemset	RequiredSkill	dbc	dbc_itemset.RequiredSkill	identity	stuff-plan.md 6.3	yes
+vdbc	itemset	RequiredSkillRank	dbc	dbc_itemset.RequiredSkillRank	identity	stuff-plan.md 6.3	yes
 vdbc	itemsubclass	ClassID					
 vdbc	itemsubclass	SubClassID					
 vdbc	itemsubclass	PrerequisiteProficiency					
@@ -3077,39 +3077,39 @@ vdbc	loadingscreentaxisplines	Locy6
 vdbc	loadingscreentaxisplines	Locy7					
 vdbc	loadingscreentaxisplines	Locy8					
 vdbc	loadingscreentaxisplines	LegIndex					
-vdbc	lock	ID					
-vdbc	lock	Type1					
-vdbc	lock	Type2					
-vdbc	lock	Type3					
-vdbc	lock	Type4					
-vdbc	lock	Type5					
-vdbc	lock	Type6					
-vdbc	lock	Type7					
-vdbc	lock	Type8					
-vdbc	lock	Index1					
-vdbc	lock	Index2					
-vdbc	lock	Index3					
-vdbc	lock	Index4					
-vdbc	lock	Index5					
-vdbc	lock	Index6					
-vdbc	lock	Index7					
-vdbc	lock	Index8					
-vdbc	lock	Skill1					
-vdbc	lock	Skill2					
-vdbc	lock	Skill3					
-vdbc	lock	Skill4					
-vdbc	lock	Skill5					
-vdbc	lock	Skill6					
-vdbc	lock	Skill7					
-vdbc	lock	Skill8					
-vdbc	lock	Action1					
-vdbc	lock	Action2					
-vdbc	lock	Action3					
-vdbc	lock	Action4					
-vdbc	lock	Action5					
-vdbc	lock	Action6					
-vdbc	lock	Action7					
-vdbc	lock	Action8					
+vdbc	lock	ID	dbc	dbc_lock.ID	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type1	dbc	dbc_lock.Type1	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type2	dbc	dbc_lock.Type2	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type3	dbc	dbc_lock.Type3	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type4	dbc	dbc_lock.Type4	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type5	dbc	dbc_lock.Type5	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type6	dbc	dbc_lock.Type6	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type7	dbc	dbc_lock.Type7	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Type8	dbc	dbc_lock.Type8	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index1	dbc	dbc_lock.Index1	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index2	dbc	dbc_lock.Index2	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index3	dbc	dbc_lock.Index3	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index4	dbc	dbc_lock.Index4	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index5	dbc	dbc_lock.Index5	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index6	dbc	dbc_lock.Index6	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index7	dbc	dbc_lock.Index7	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Index8	dbc	dbc_lock.Index8	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill1	dbc	dbc_lock.Skill1	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill2	dbc	dbc_lock.Skill2	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill3	dbc	dbc_lock.Skill3	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill4	dbc	dbc_lock.Skill4	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill5	dbc	dbc_lock.Skill5	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill6	dbc	dbc_lock.Skill6	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill7	dbc	dbc_lock.Skill7	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Skill8	dbc	dbc_lock.Skill8	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action1	dbc	dbc_lock.Action1	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action2	dbc	dbc_lock.Action2	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action3	dbc	dbc_lock.Action3	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action4	dbc	dbc_lock.Action4	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action5	dbc	dbc_lock.Action5	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action6	dbc	dbc_lock.Action6	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action7	dbc	dbc_lock.Action7	identity	stuff-plan.md 6.3	yes
+vdbc	lock	Action8	dbc	dbc_lock.Action8	identity	stuff-plan.md 6.3	yes
 vdbc	locktype	ID					
 vdbc	locktype	Name_lang					
 vdbc	locktype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3198,10 +3198,10 @@ vdbc	namegen	ID
 vdbc	namegen	Name					
 vdbc	namegen	RaceID					
 vdbc	namegen	Sex					
-vdbc	namesprofanity	ID					
-vdbc	namesprofanity	Name					
-vdbc	namesreserved	ID					
-vdbc	namesreserved	Name					
+vdbc	namesprofanity	ID	dbc	dbc_namesprofanity.ID	identity	stuff-plan.md 6.3	yes
+vdbc	namesprofanity	Name	dbc	dbc_namesprofanity.Name	identity	stuff-plan.md 6.3	yes
+vdbc	namesreserved	ID	dbc	dbc_namesreserved.ID	identity	stuff-plan.md 6.3	yes
+vdbc	namesreserved	Name	dbc	dbc_namesreserved.Name	identity	stuff-plan.md 6.3	yes
 vdbc	npcsounds	ID					
 vdbc	npcsounds	SoundID1					
 vdbc	npcsounds	SoundID2					
@@ -3263,8 +3263,8 @@ vdbc	questinfo	InfoName_lang_5	drop			non-enUS locale slot, vanilla client only 
 vdbc	questinfo	InfoName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questinfo	InfoName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questinfo	InfoName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	questsort	ID					
-vdbc	questsort	SortName_lang					
+vdbc	questsort	ID	dbc	dbc_questsort.ID	identity	stuff-plan.md 6.3	yes
+vdbc	questsort	SortName_lang	dbc	dbc_questsort.SortName_lang	identity	stuff-plan.md 6.3	yes
 vdbc	questsort	SortName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questsort	SortName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questsort	SortName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3307,10 +3307,10 @@ vdbc	skillcostsdata	SkillCostsID	drop			not imported	yes
 vdbc	skillcostsdata	Cost1	drop			not imported	yes
 vdbc	skillcostsdata	Cost2	drop			not imported	yes
 vdbc	skillcostsdata	Cost3	drop			not imported	yes
-vdbc	skillline	ID					
-vdbc	skillline	CategoryID					
-vdbc	skillline	SkillCostsID					
-vdbc	skillline	DisplayName_lang					
+vdbc	skillline	ID	dbc	dbc_skillline.ID	identity	stuff-plan.md 6.3	yes
+vdbc	skillline	CategoryID	dbc	dbc_skillline.CategoryID	identity	stuff-plan.md 6.3	yes
+vdbc	skillline	SkillCostsID	server			no DB2 field for a skill cost tier reference; skill_tiers stays server-side	yes
+vdbc	skillline	DisplayName_lang	dbc	dbc_skillline.DisplayName_lang	identity	stuff-plan.md 6.3	yes
 vdbc	skillline	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3319,7 +3319,7 @@ vdbc	skillline	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	skillline	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	skillline	Description_lang					
+vdbc	skillline	Description_lang	dbc	dbc_skillline.Description_lang	identity	stuff-plan.md 6.3	yes
 vdbc	skillline	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3328,7 +3328,7 @@ vdbc	skillline	Description_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	skillline	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	skillline	SpellIconID					
+vdbc	skillline	SpellIconID	dbc	dbc_skillline.SpellIconFileID	identity	icon id -> file id translation, same open question as spell_template's SpellIconID (Q2); not a plain value match	yes
 vdbc	skilllineability	ID	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
 vdbc	skilllineability	SkillLine	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
 vdbc	skilllineability	Spell	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
@@ -3355,47 +3355,47 @@ vdbc	skilllinecategory	Name_lang_6	drop			non-enUS locale slot, vanilla client o
 vdbc	skilllinecategory	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skilllinecategory	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	skilllinecategory	SortIndex					
-vdbc	skillraceclassinfo	ID					
-vdbc	skillraceclassinfo	SkillID					
-vdbc	skillraceclassinfo	RaceMask					
-vdbc	skillraceclassinfo	ClassMask					
-vdbc	skillraceclassinfo	Flags					
-vdbc	skillraceclassinfo	MinLevel					
-vdbc	skillraceclassinfo	SkillTierID					
-vdbc	skillraceclassinfo	SkillCostIndex					
-vdbc	skilltiers	ID					
-vdbc	skilltiers	Cost1					
-vdbc	skilltiers	Cost2					
-vdbc	skilltiers	Cost3					
-vdbc	skilltiers	Cost4					
-vdbc	skilltiers	Cost5					
-vdbc	skilltiers	Cost6					
-vdbc	skilltiers	Cost7					
-vdbc	skilltiers	Cost8					
-vdbc	skilltiers	Cost9					
-vdbc	skilltiers	Cost10					
-vdbc	skilltiers	Cost11					
-vdbc	skilltiers	Cost12					
-vdbc	skilltiers	Cost13					
-vdbc	skilltiers	Cost14					
-vdbc	skilltiers	Cost15					
-vdbc	skilltiers	Cost16					
-vdbc	skilltiers	Value1					
-vdbc	skilltiers	Value2					
-vdbc	skilltiers	Value3					
-vdbc	skilltiers	Value4					
-vdbc	skilltiers	Value5					
-vdbc	skilltiers	Value6					
-vdbc	skilltiers	Value7					
-vdbc	skilltiers	Value8					
-vdbc	skilltiers	Value9					
-vdbc	skilltiers	Value10					
-vdbc	skilltiers	Value11					
-vdbc	skilltiers	Value12					
-vdbc	skilltiers	Value13					
-vdbc	skilltiers	Value14					
-vdbc	skilltiers	Value15					
-vdbc	skilltiers	Value16					
+vdbc	skillraceclassinfo	ID	dbc	dbc_skillraceclassinfo.ID	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	SkillID	dbc	dbc_skillraceclassinfo.SkillID	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	RaceMask	dbc	dbc_skillraceclassinfo.RaceMask	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	ClassMask	dbc	dbc_skillraceclassinfo.ClassMask	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	Flags	dbc	dbc_skillraceclassinfo.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	MinLevel	dbc	dbc_skillraceclassinfo.MinLevel	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	SkillTierID	dbc	dbc_skillraceclassinfo.SkillTierID	identity	stuff-plan.md 6.3	yes
+vdbc	skillraceclassinfo	SkillCostIndex	server			no confirmed DB2 field; evidence.tsv's Field_1_15_0_52124_007 coincidence (185/200) needs hand verification before trusting it	yes
+vdbc	skilltiers	ID	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost1	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost2	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost3	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost4	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost5	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost6	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost7	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost8	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost9	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost10	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost11	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost12	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost13	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost14	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost15	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost16	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value1	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value2	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value3	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value4	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value5	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value6	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value7	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value8	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value9	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value10	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value11	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value12	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value13	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value14	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value15	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value16	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
 vdbc	soundambience	ID					
 vdbc	soundambience	AmbienceID1					
 vdbc	soundambience	AmbienceID2					
@@ -3648,12 +3648,12 @@ vdbc	spell	EffectChainAmplitude3
 vdbc	spell	MinFactionID					
 vdbc	spell	MinReputation					
 vdbc	spell	RequiredAuraVision					
-vdbc	spellcasttimes	ID					
-vdbc	spellcasttimes	Base					
-vdbc	spellcasttimes	PerLevel					
-vdbc	spellcasttimes	Minimum					
-vdbc	spellcategory	ID					
-vdbc	spellcategory	Flags					
+vdbc	spellcasttimes	ID	dbc	dbc_spellcasttimes.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellcasttimes	Base	dbc	dbc_spellcasttimes.Base	identity	stuff-plan.md 6.3	yes
+vdbc	spellcasttimes	PerLevel	dbc	dbc_spellcasttimes.PerLevel	identity	stuff-plan.md 6.3	yes
+vdbc	spellcasttimes	Minimum	dbc	dbc_spellcasttimes.Minimum	identity	stuff-plan.md 6.3	yes
+vdbc	spellcategory	ID	dbc	dbc_spellcategory.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellcategory	Flags	dbc	dbc_spellcategory.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	spellchaineffects	ID					
 vdbc	spellchaineffects	AvgSegLen					
 vdbc	spellchaineffects	Width					
@@ -3674,16 +3674,16 @@ vdbc	spelldispeltype	Name_lang_7	drop			non-enUS locale slot, vanilla client onl
 vdbc	spelldispeltype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spelldispeltype	Mask					
 vdbc	spelldispeltype	InternalName					
-vdbc	spellduration	ID					
-vdbc	spellduration	Duration					
-vdbc	spellduration	DurationPerLevel					
-vdbc	spellduration	MaxDuration					
+vdbc	spellduration	ID	dbc	dbc_spellduration.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellduration	Duration	dbc	dbc_spellduration.Duration	identity	stuff-plan.md 6.3	yes
+vdbc	spellduration	DurationPerLevel	dbc	dbc_spellduration.DurationPerLevel	identity	stuff-plan.md 6.3	yes
+vdbc	spellduration	MaxDuration	dbc	dbc_spellduration.MaxDuration	identity	stuff-plan.md 6.3	yes
 vdbc	spelleffectcamerashakes	ID	drop			not imported	yes
 vdbc	spelleffectcamerashakes	CameraShake1	drop			not imported	yes
 vdbc	spelleffectcamerashakes	CameraShake2	drop			not imported	yes
 vdbc	spelleffectcamerashakes	CameraShake3	drop			not imported	yes
-vdbc	spellfocusobject	ID					
-vdbc	spellfocusobject	Name_lang					
+vdbc	spellfocusobject	ID	dbc	dbc_spellfocusobject.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellfocusobject	Name_lang	dbc	dbc_spellfocusobject.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	spellfocusobject	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellfocusobject	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellfocusobject	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3694,20 +3694,20 @@ vdbc	spellfocusobject	Name_lang_7	drop			non-enUS locale slot, vanilla client on
 vdbc	spellfocusobject	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellicon	ID	drop			not imported	yes
 vdbc	spellicon	TextureFilename	drop			not imported	yes
-vdbc	spellitemenchantment	ID					
-vdbc	spellitemenchantment	Effect1					
-vdbc	spellitemenchantment	Effect2					
-vdbc	spellitemenchantment	Effect3					
-vdbc	spellitemenchantment	EffectPointsMin1					
-vdbc	spellitemenchantment	EffectPointsMin2					
-vdbc	spellitemenchantment	EffectPointsMin3					
-vdbc	spellitemenchantment	EffectPointsMax1					
-vdbc	spellitemenchantment	EffectPointsMax2					
-vdbc	spellitemenchantment	EffectPointsMax3					
-vdbc	spellitemenchantment	EffectArg1					
-vdbc	spellitemenchantment	EffectArg2					
-vdbc	spellitemenchantment	EffectArg3					
-vdbc	spellitemenchantment	Name_lang					
+vdbc	spellitemenchantment	ID	dbc	dbc_spellitemenchantment.ID	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	Effect1	dbc	dbc_spellitemenchantment.Effect1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	Effect2	dbc	dbc_spellitemenchantment.Effect2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	Effect3	dbc	dbc_spellitemenchantment.Effect3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMin1	dbc	dbc_spellitemenchantment.EffectPointsMin1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMin2	dbc	dbc_spellitemenchantment.EffectPointsMin2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMin3	dbc	dbc_spellitemenchantment.EffectPointsMin3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMax1	dbc	dbc_spellitemenchantment.EffectPointsMax1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMax2	dbc	dbc_spellitemenchantment.EffectPointsMax2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectPointsMax3	dbc	dbc_spellitemenchantment.EffectPointsMax3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectArg1	dbc	dbc_spellitemenchantment.EffectArg1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectArg2	dbc	dbc_spellitemenchantment.EffectArg2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	EffectArg3	dbc	dbc_spellitemenchantment.EffectArg3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	Name_lang	dbc	dbc_spellitemenchantment.Name_lang	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
 vdbc	spellitemenchantment	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3716,8 +3716,8 @@ vdbc	spellitemenchantment	Name_lang_5	drop			non-enUS locale slot, vanilla clien
 vdbc	spellitemenchantment	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellitemenchantment	ItemVisual					
-vdbc	spellitemenchantment	Flags					
+vdbc	spellitemenchantment	ItemVisual	dbc	dbc_spellitemenchantment.ItemVisual	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	Flags	dbc	dbc_spellitemenchantment.Flags	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
 vdbc	spellmechanic	ID					
 vdbc	spellmechanic	StateName_lang					
 vdbc	spellmechanic	StateName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3728,15 +3728,15 @@ vdbc	spellmechanic	StateName_lang_5	drop			non-enUS locale slot, vanilla client 
 vdbc	spellmechanic	StateName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellmechanic	StateName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellmechanic	StateName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellradius	ID					
-vdbc	spellradius	Radius					
-vdbc	spellradius	RadiusPerLevel					
-vdbc	spellradius	RadiusMax					
-vdbc	spellrange	ID					
-vdbc	spellrange	RangeMin					
-vdbc	spellrange	RangeMax					
-vdbc	spellrange	Flags					
-vdbc	spellrange	DisplayName_lang					
+vdbc	spellradius	ID	dbc	dbc_spellradius.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellradius	Radius	dbc	dbc_spellradius.Radius	identity	stuff-plan.md 6.3	yes
+vdbc	spellradius	RadiusPerLevel	dbc	dbc_spellradius.RadiusPerLevel	identity	stuff-plan.md 6.3	yes
+vdbc	spellradius	RadiusMax	dbc	dbc_spellradius.RadiusMax	identity	stuff-plan.md 6.3	yes
+vdbc	spellrange	ID	dbc	dbc_spellrange.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellrange	RangeMin	dbc	dbc_spellrange.RangeMin1	identity	DB2 splits into a friend/hostile pair (data-plan.md 3.4); vanilla's single value maps to the first (hostile) slot	yes
+vdbc	spellrange	RangeMax	dbc	dbc_spellrange.RangeMax1	identity	DB2 splits into a friend/hostile pair (data-plan.md 3.4); vanilla's single value maps to the first (hostile) slot	yes
+vdbc	spellrange	Flags	dbc	dbc_spellrange.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	spellrange	DisplayName_lang	dbc	dbc_spellrange.DisplayName_lang	identity	stuff-plan.md 6.3	yes
 vdbc	spellrange	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3745,7 +3745,7 @@ vdbc	spellrange	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client o
 vdbc	spellrange	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellrange	DisplayNameShort_lang					
+vdbc	spellrange	DisplayNameShort_lang	dbc	dbc_spellrange.DisplayNameShort_lang	identity	stuff-plan.md 6.3	yes
 vdbc	spellrange	DisplayNameShort_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayNameShort_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayNameShort_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3754,9 +3754,9 @@ vdbc	spellrange	DisplayNameShort_lang_5	drop			non-enUS locale slot, vanilla cli
 vdbc	spellrange	DisplayNameShort_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayNameShort_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellrange	DisplayNameShort_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellshapeshiftform	ID					
-vdbc	spellshapeshiftform	BonusActionBar					
-vdbc	spellshapeshiftform	Name_lang					
+vdbc	spellshapeshiftform	ID	dbc	dbc_spellshapeshiftform.ID	identity	stuff-plan.md 6.3	yes
+vdbc	spellshapeshiftform	BonusActionBar	dbc	dbc_spellshapeshiftform.BonusActionBar	identity	stuff-plan.md 6.3	yes
+vdbc	spellshapeshiftform	Name_lang	dbc	dbc_spellshapeshiftform.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	spellshapeshiftform	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellshapeshiftform	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellshapeshiftform	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3765,25 +3765,25 @@ vdbc	spellshapeshiftform	Name_lang_5	drop			non-enUS locale slot, vanilla client
 vdbc	spellshapeshiftform	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellshapeshiftform	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellshapeshiftform	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellshapeshiftform	Flags					
-vdbc	spellshapeshiftform	CreatureType					
-vdbc	spellshapeshiftform	AttackIconID					
-vdbc	spellvisual	ID					
-vdbc	spellvisual	PrecastKit					
-vdbc	spellvisual	CastKit					
-vdbc	spellvisual	ImpactKit					
-vdbc	spellvisual	StateKit					
-vdbc	spellvisual	ChannelKit					
-vdbc	spellvisual	HasMissile					
-vdbc	spellvisual	MissileModel					
-vdbc	spellvisual	MissilePathType					
-vdbc	spellvisual	MissileDestinationAttachment					
-vdbc	spellvisual	MissileSound					
-vdbc	spellvisual	HasAreaEffect					
-vdbc	spellvisual	AreaModel					
-vdbc	spellvisual	AreaKit					
-vdbc	spellvisual	AnimEventSoundID					
-vdbc	spellvisual	Flags					
+vdbc	spellshapeshiftform	Flags	dbc	dbc_spellshapeshiftform.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	spellshapeshiftform	CreatureType	dbc	dbc_spellshapeshiftform.CreatureType	identity	stuff-plan.md 6.3	yes
+vdbc	spellshapeshiftform	AttackIconID	dbc	dbc_spellshapeshiftform.AttackIconFileID	identity	icon id -> file id translation, same open question as spell_template's SpellIconID (Q2)	yes
+vdbc	spellvisual	ID	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	PrecastKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	CastKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	ImpactKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	StateKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	ChannelKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	HasMissile	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	MissileModel	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	MissilePathType	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	MissileDestinationAttachment	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	MissileSound	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	HasAreaEffect	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	AreaModel	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	AreaKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	AnimEventSoundID	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
+vdbc	spellvisual	Flags	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
 vdbc	spellvisualeffectname	ID					
 vdbc	spellvisualeffectname	Name					
 vdbc	spellvisualeffectname	FileName					
@@ -3827,8 +3827,8 @@ vdbc	spellvisualkit	CharParamThree4
 vdbc	spellvisualprecasttransitions	ID	drop			not imported	yes
 vdbc	spellvisualprecasttransitions	PrecastLoadAnimName	drop			not imported	yes
 vdbc	spellvisualprecasttransitions	PrecastHoldAnimName	drop			not imported	yes
-vdbc	stableslotprices	ID					
-vdbc	stableslotprices	Cost					
+vdbc	stableslotprices	ID	dbc	dbc_stableslotprices.ID	identity	stuff-plan.md 6.3	yes
+vdbc	stableslotprices	Cost	dbc	dbc_stableslotprices.Cost	identity	stuff-plan.md 6.3	yes
 vdbc	startup_strings	ID					
 vdbc	startup_strings	Name					
 vdbc	startup_strings	Message_lang					
@@ -3846,29 +3846,29 @@ vdbc	stationery	Texture
 vdbc	stationery	Flags					
 vdbc	stringlookups	ID	drop			not imported	yes
 vdbc	stringlookups	String	drop			not imported	yes
-vdbc	talent	ID					
-vdbc	talent	TabID					
-vdbc	talent	TierID					
-vdbc	talent	ColumnIndex					
-vdbc	talent	SpellRank1					
-vdbc	talent	SpellRank2					
-vdbc	talent	SpellRank3					
-vdbc	talent	SpellRank4					
-vdbc	talent	SpellRank5					
-vdbc	talent	SpellRank6					
-vdbc	talent	SpellRank7					
-vdbc	talent	SpellRank8					
-vdbc	talent	SpellRank9					
-vdbc	talent	PrereqTalent1					
-vdbc	talent	PrereqTalent2					
-vdbc	talent	PrereqTalent3					
-vdbc	talent	PrereqRank1					
-vdbc	talent	PrereqRank2					
-vdbc	talent	PrereqRank3					
-vdbc	talent	Flags					
-vdbc	talent	RequiredSpellID					
-vdbc	talenttab	ID					
-vdbc	talenttab	Name_lang					
+vdbc	talent	ID	dbc	dbc_talent.ID	identity	stuff-plan.md 6.3	yes
+vdbc	talent	TabID	dbc	dbc_talent.TabID	identity	stuff-plan.md 6.3	yes
+vdbc	talent	TierID	dbc	dbc_talent.TierID	identity	stuff-plan.md 6.3	yes
+vdbc	talent	ColumnIndex	dbc	dbc_talent.ColumnIndex	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank1	dbc	dbc_talent.SpellRank1	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank2	dbc	dbc_talent.SpellRank2	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank3	dbc	dbc_talent.SpellRank3	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank4	dbc	dbc_talent.SpellRank4	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank5	dbc	dbc_talent.SpellRank5	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank6	dbc	dbc_talent.SpellRank6	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank7	dbc	dbc_talent.SpellRank7	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank8	dbc	dbc_talent.SpellRank8	identity	stuff-plan.md 6.3	yes
+vdbc	talent	SpellRank9	dbc	dbc_talent.SpellRank9	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqTalent1	dbc	dbc_talent.PrereqTalent1	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqTalent2	dbc	dbc_talent.PrereqTalent2	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqTalent3	dbc	dbc_talent.PrereqTalent3	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqRank1	dbc	dbc_talent.PrereqRank1	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqRank2	dbc	dbc_talent.PrereqRank2	identity	stuff-plan.md 6.3	yes
+vdbc	talent	PrereqRank3	dbc	dbc_talent.PrereqRank3	identity	stuff-plan.md 6.3	yes
+vdbc	talent	Flags	dbc	dbc_talent.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	talent	RequiredSpellID	dbc	dbc_talent.RequiredSpellID	identity	stuff-plan.md 6.3	yes
+vdbc	talenttab	ID	dbc	dbc_talenttab.ID	identity	stuff-plan.md 6.3	yes
+vdbc	talenttab	Name_lang	dbc	dbc_talenttab.Name_lang	identity	stuff-plan.md 6.3	yes
 vdbc	talenttab	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	talenttab	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	talenttab	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3877,11 +3877,11 @@ vdbc	talenttab	Name_lang_5	drop			non-enUS locale slot, vanilla client only ship
 vdbc	talenttab	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	talenttab	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	talenttab	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	talenttab	SpellIconID					
-vdbc	talenttab	RaceMask					
-vdbc	talenttab	ClassMask					
-vdbc	talenttab	OrderIndex					
-vdbc	talenttab	BackgroundFile					
+vdbc	talenttab	SpellIconID	dbc	dbc_talenttab.SpellIconID	identity	stuff-plan.md 6.3	yes
+vdbc	talenttab	RaceMask	server			no DB2 field; talent tabs are no longer race-gated in 1.15	yes
+vdbc	talenttab	ClassMask	dbc	dbc_talenttab.ClassMask	identity	stuff-plan.md 6.3	yes
+vdbc	talenttab	OrderIndex	dbc	dbc_talenttab.OrderIndex	identity	stuff-plan.md 6.3	yes
+vdbc	talenttab	BackgroundFile	dbc	dbc_talenttab.BackgroundFile	identity	stuff-plan.md 6.3	yes
 vdbc	taxinodes	ID	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
 vdbc	taxinodes	ContinentID	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
 vdbc	taxinodes	Pos1	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
@@ -3898,19 +3898,19 @@ vdbc	taxinodes	Name_lang_7	drop			non-enUS locale slot, vanilla client only ship
 vdbc	taxinodes	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	taxinodes	MountCreatureID1	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
 vdbc	taxinodes	MountCreatureID2	drop			vanilla source; the matching srv_ column now sources from dbc_taxinodes instead (F1)	yes
-vdbc	taxipath	ID					
-vdbc	taxipath	FromTaxiNode					
-vdbc	taxipath	ToTaxiNode					
-vdbc	taxipath	Cost					
-vdbc	taxipathnode	ID					
-vdbc	taxipathnode	PathID					
-vdbc	taxipathnode	NodeIndex					
-vdbc	taxipathnode	ContinentID					
-vdbc	taxipathnode	Loc1					
-vdbc	taxipathnode	Loc2					
-vdbc	taxipathnode	Loc3					
-vdbc	taxipathnode	Flags					
-vdbc	taxipathnode	Delay					
+vdbc	taxipath	ID	dbc	dbc_taxipath.ID	identity	stuff-plan.md 6.3	yes
+vdbc	taxipath	FromTaxiNode	dbc	dbc_taxipath.FromTaxiNode	identity	stuff-plan.md 6.3	yes
+vdbc	taxipath	ToTaxiNode	dbc	dbc_taxipath.ToTaxiNode	identity	stuff-plan.md 6.3	yes
+vdbc	taxipath	Cost	dbc	dbc_taxipath.Cost	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	ID	dbc	dbc_taxipathnode.ID	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	PathID	dbc	dbc_taxipathnode.PathID	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	NodeIndex	dbc	dbc_taxipathnode.NodeIndex	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	ContinentID	dbc	dbc_taxipathnode.ContinentID	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	Loc1	dbc	dbc_taxipathnode.Loc1	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	Loc2	dbc	dbc_taxipathnode.Loc2	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	Loc3	dbc	dbc_taxipathnode.Loc3	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	Flags	dbc	dbc_taxipathnode.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	taxipathnode	Delay	dbc	dbc_taxipathnode.Delay	identity	stuff-plan.md 6.3	yes
 vdbc	terraintype	TerrainID					
 vdbc	terraintype	TerrainDesc					
 vdbc	terraintype	FootstepSprayRun					
@@ -3918,13 +3918,13 @@ vdbc	terraintype	FootstepSprayWalk
 vdbc	terraintype	SoundID					
 vdbc	terraintype	Flags					
 vdbc	terraintypesounds	ID					
-vdbc	transportanimation	ID					
-vdbc	transportanimation	TransportID					
-vdbc	transportanimation	TimeIndex					
-vdbc	transportanimation	Pos1					
-vdbc	transportanimation	Pos2					
-vdbc	transportanimation	Pos3					
-vdbc	transportanimation	SequenceID					
+vdbc	transportanimation	ID	dbc	dbc_transportanimation.ID	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	TransportID	dbc	dbc_transportanimation.TransportID	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	TimeIndex	dbc	dbc_transportanimation.TimeIndex	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	Pos1	dbc	dbc_transportanimation.Pos1	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	Pos2	dbc	dbc_transportanimation.Pos2	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	Pos3	dbc	dbc_transportanimation.Pos3	identity	stuff-plan.md 6.3	yes
+vdbc	transportanimation	SequenceID	dbc	dbc_transportanimation.SequenceID	identity	stuff-plan.md 6.3	yes
 vdbc	uisoundlookups	ID	drop			not imported	yes
 vdbc	uisoundlookups	SoundID	drop			not imported	yes
 vdbc	uisoundlookups	SoundName	drop			not imported	yes
@@ -3998,18 +3998,18 @@ vdbc	weaponswingsounds2	ID
 vdbc	weaponswingsounds2	SwingType					
 vdbc	weaponswingsounds2	Crit					
 vdbc	weaponswingsounds2	SoundID					
-vdbc	wmoareatable	ID					
-vdbc	wmoareatable	WMOID					
-vdbc	wmoareatable	NameSetID					
-vdbc	wmoareatable	WMOGroupID					
-vdbc	wmoareatable	SoundProviderPref					
-vdbc	wmoareatable	SoundProviderPrefUnderwater					
-vdbc	wmoareatable	AmbienceID					
-vdbc	wmoareatable	ZoneMusic					
-vdbc	wmoareatable	IntroSound					
-vdbc	wmoareatable	Flags					
-vdbc	wmoareatable	AreaTableID					
-vdbc	wmoareatable	AreaName_lang					
+vdbc	wmoareatable	ID	dbc	dbc_wmoareatable.ID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	WMOID	dbc	dbc_wmoareatable.WMOID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	NameSetID	dbc	dbc_wmoareatable.NameSetID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	WMOGroupID	dbc	dbc_wmoareatable.WMOGroupID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	SoundProviderPref	dbc	dbc_wmoareatable.SoundProviderPref	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	SoundProviderPrefUnderwater	dbc	dbc_wmoareatable.SoundProviderPrefUnderwater	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	AmbienceID	dbc	dbc_wmoareatable.AmbienceID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	ZoneMusic	dbc	dbc_wmoareatable.ZoneMusic	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	IntroSound	dbc	dbc_wmoareatable.IntroSound	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	Flags	dbc	dbc_wmoareatable.Flags	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	AreaTableID	dbc	dbc_wmoareatable.AreaTableID	identity	stuff-plan.md 6.3	yes
+vdbc	wmoareatable	AreaName_lang	dbc	dbc_wmoareatable.AreaName_lang	identity	stuff-plan.md 6.3	yes
 vdbc	wmoareatable	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	wmoareatable	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	wmoareatable	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -4018,14 +4018,14 @@ vdbc	wmoareatable	AreaName_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	wmoareatable	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	wmoareatable	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	wmoareatable	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	worldmaparea	ID					
-vdbc	worldmaparea	MapID					
-vdbc	worldmaparea	AreaID					
-vdbc	worldmaparea	AreaName					
-vdbc	worldmaparea	LocLeft					
-vdbc	worldmaparea	LocRight					
-vdbc	worldmaparea	LocTop					
-vdbc	worldmaparea	LocBottom					
+vdbc	worldmaparea	ID	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	MapID	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	AreaID	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	AreaName	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	LocLeft	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	LocRight	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	LocTop	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
+vdbc	worldmaparea	LocBottom	drop			replaced by UiMap/UiMapAssignment; Zone2MapCoordinates/Map2ZoneCoordinates get rewritten (stuff-plan.md 8.3); WorldMapArea.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
 vdbc	worldmapcontinent	ID	drop			not imported	yes
 vdbc	worldmapcontinent	MapID	drop			not imported	yes
 vdbc	worldmapcontinent	LeftBoundary	drop			not imported	yes
@@ -4056,12 +4056,12 @@ vdbc	worldmapoverlay	HitRectTop
 vdbc	worldmapoverlay	HitRectLeft					
 vdbc	worldmapoverlay	HitRectBottom					
 vdbc	worldmapoverlay	HitRectRight					
-vdbc	worldsafelocs	ID					
-vdbc	worldsafelocs	Continent					
-vdbc	worldsafelocs	Loc1					
-vdbc	worldsafelocs	Loc2					
-vdbc	worldsafelocs	Loc3					
-vdbc	worldsafelocs	AreaName_lang					
+vdbc	worldsafelocs	ID	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	Continent	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	Loc1	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	Loc2	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	Loc3	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	AreaName_lang	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
 vdbc	worldsafelocs	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
