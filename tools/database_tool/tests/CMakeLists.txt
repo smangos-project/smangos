@@ -29,6 +29,7 @@ add_executable(tests-database-tool
   Spec/SpecFileTests.cpp
   Spec/SpecInventoryTests.cpp
   Spec/SourceScanTests.cpp
+  Spec/WireHintTests.cpp
   Spec/EvidenceTests.cpp
 )
 

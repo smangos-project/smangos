@@ -11,13 +11,15 @@ struct SpecEvidenceResult
     std::string error;
 };
 
-// database_tool spec evidence (phase0-plan.md step 4.1): rewrites `specDir`/evidence.tsv from
-// scratch, one row per srv_*/vdbc_* column of `referencePath` (the same universe as
+// database_tool spec evidence (phase0-plan.md step 4.1-4.2): rewrites `specDir`/evidence.tsv
+// from scratch, one row per srv_*/vdbc_* column of `referencePath` (the same universe as
 // columns.tsv, sorted the same way). Fills `type` from the reference database and `readers`
 // from a source scan of `repoRoot`/src/game (DBCfmt.h, DBCStores.cpp, DBCStructure.h,
-// SQLStorages.cpp and hand-written `SELECT ... FROM` loaders) and `repoRoot`/src/scripts.
-// wire_hint/counterpart/counterpart_rule/match_rate/shape are left empty for later parts of
-// step 4.
+// SQLStorages.cpp and hand-written `SELECT ... FROM` loaders) and `repoRoot`/src/scripts. For
+// every row whose `readers` names a resolved struct field, `wire_hint` records whether that
+// field is also accessed in packet code (`wire=yes <file>:<line>, ...` or `wire=no`); `none`
+// and `manual:` readers leave it empty, since there is no field name to grep for.
+// counterpart/counterpart_rule/match_rate/shape are left empty for later parts of step 4.
 SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std::filesystem::path const& repoRoot,
     std::filesystem::path const& specDir);
 

@@ -90,6 +90,14 @@ namespace
             "    DoSomethingElse(a->value);\n"
             "}\n");
 
+        // A *Handler.cpp file (4.2's packet code) using AddonEntry::flags, so it gets a
+        // "wire=yes" hint; WidgetEntry::value has no such use anywhere, so it stays "wire=no".
+        WriteFile(root / "src" / "game" / "Handlers" / "SomeHandler.cpp",
+            "void SomeHandler::OnPacket(AddonEntry const* a)\n"
+            "{\n"
+            "    DoSomething(a->flags);\n"
+            "}\n");
+
         WriteFile(root / "src" / "game" / "ManualLoader.cpp",
             "void LoadManual()\n"
             "{\n"
@@ -155,9 +163,10 @@ TEST_CASE("BuildEvidence resolves DBC, SQLStorage and hand-written-loader reader
     CHECK(FindRow(rows, "vdbc", "unused", "ID").readers == "none");
     CHECK(FindRow(rows, "vdbc", "unused", "Value").readers == "none");
 
-    // addon is SQLStorage-loaded into AddonEntry; "flags" is read, "id" never is.
+    // addon is SQLStorage-loaded into AddonEntry; "flags" is read (from AddonUser.cpp and, for
+    // 4.2's wire hint below, Handlers/SomeHandler.cpp), "id" never is.
     CHECK(FindRow(rows, "srv", "addon", "id").readers == "none");
-    CHECK(FindRow(rows, "srv", "addon", "flags").readers == "AddonEntry::flags (1 uses in 1 files)");
+    CHECK(FindRow(rows, "srv", "addon", "flags").readers == "AddonEntry::flags (2 uses in 2 files)");
 
     // manual_table: a plain SELECT list, x is read via fields[0], y never is.
     std::string xReaders = FindRow(rows, "srv", "manual_table", "x").readers;
@@ -170,9 +179,20 @@ TEST_CASE("BuildEvidence resolves DBC, SQLStorage and hand-written-loader reader
     CHECK(starReaders.rfind("manual:", 0) == 0);
     CHECK(starReaders.find("ManualLoader.cpp:9") != std::string::npos);
 
+    // 4.2: AddonEntry::flags is also used from Handlers/SomeHandler.cpp (packet code, a
+    // *Handler.cpp file), so it gets a wire=yes hint; WidgetEntry::value has no such use.
+    std::string flagsWire = FindRow(rows, "srv", "addon", "flags").wireHint;
+    CHECK(flagsWire.rfind("wire=yes", 0) == 0);
+    CHECK(flagsWire.find("src/game/Handlers/SomeHandler.cpp:3") != std::string::npos);
+    CHECK(FindRow(rows, "vdbc", "widget", "Value").wireHint == "wire=no");
+
+    // "none" and "manual:" readers have no field to grep for, so wire_hint stays empty.
+    CHECK(FindRow(rows, "vdbc", "widget", "ID").wireHint.empty());
+    CHECK(FindRow(rows, "srv", "addon", "id").wireHint.empty());
+    CHECK(FindRow(rows, "srv", "manual_table", "x").wireHint.empty());
+
     for (SpecEvidenceRow const& row : rows)
     {
-        CHECK(row.wireHint.empty());
         CHECK(row.counterpart.empty());
         CHECK(row.counterpartRule.empty());
         CHECK(row.matchRate.empty());
@@ -204,6 +224,7 @@ TEST_CASE("BuildEvidence is deterministic on rerun", "[Evidence]")
         CHECK(first[i].table == second[i].table);
         CHECK(first[i].column == second[i].column);
         CHECK(first[i].readers == second[i].readers);
+        CHECK(first[i].wireHint == second[i].wireHint);
     }
 }
 

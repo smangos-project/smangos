@@ -2,6 +2,7 @@
 
 #include "Spec/SourceScan.h"
 #include "Spec/SpecFile.h"
+#include "Spec/WireHint.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <algorithm>
@@ -222,6 +223,57 @@ static ReaderResolution ResolveStructReaders(std::string const& structDefText, s
     return result;
 }
 
+static std::vector<std::filesystem::path> FindPacketCodeFiles(SourceTree const& tree)
+{
+    std::vector<std::filesystem::path> files;
+    for (std::filesystem::path const& file : tree.files)
+        if (IsPacketCodeFile(file, tree.textByFile.at(file)))
+            files.push_back(file);
+    return files;
+}
+
+// Pulls the field name back out of a resolved `readers` value ("Struct::field (N uses in M
+// files)"); empty for "none" and "manual:..." rows, which have no field to grep for.
+static std::string ExtractResolvedFieldName(std::string const& readers)
+{
+    static std::regex const pattern(R"(^\w+::(\w+) \(\d+ uses in \d+ files\)$)");
+    std::smatch m;
+    return std::regex_match(readers, m, pattern) ? m[1].str() : "";
+}
+
+static std::string ComputeWireHint(std::string const& readers, std::vector<std::filesystem::path> const& packetFiles,
+    SourceTree const& tree, std::filesystem::path const& repoRoot, std::map<std::string, std::string>& cache)
+{
+    std::string fieldName = ExtractResolvedFieldName(readers);
+    if (fieldName.empty())
+        return "";
+
+    auto cacheIt = cache.find(fieldName);
+    if (cacheIt != cache.end())
+        return cacheIt->second;
+
+    std::vector<WireHintUse> uses;
+    for (std::filesystem::path const& file : packetFiles)
+    {
+        std::vector<WireHintUse> fileUses = FindFieldUseLines(file, tree.textByFile.at(file), fieldName);
+        uses.insert(uses.end(), fileUses.begin(), fileUses.end());
+    }
+
+    std::string value = "wire=no";
+    if (!uses.empty())
+    {
+        std::ostringstream out;
+        out << "wire=yes";
+        for (WireHintUse const& use : uses)
+            out << " " << RelPath(use.file, repoRoot) << ":" << use.line << ",";
+        value = out.str();
+        value.pop_back(); // trailing comma
+    }
+
+    cache[fieldName] = value;
+    return value;
+}
+
 struct DbcTableEvidence
 {
     std::string structName;
@@ -423,6 +475,11 @@ SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std
             ++result.rowsWritten;
         }
     }
+
+    std::vector<std::filesystem::path> packetFiles = FindPacketCodeFiles(tree);
+    std::map<std::string, std::string> wireHintCache;
+    for (SpecEvidenceRow& row : rows)
+        row.wireHint = ComputeWireHint(row.readers, packetFiles, tree, repoRoot, wireHintCache);
 
     WriteEvidenceTsv(specDir / "evidence.tsv", rows);
     return result;
