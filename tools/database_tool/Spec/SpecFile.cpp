@@ -117,3 +117,26 @@ void WriteDbcColumnsTsv(std::filesystem::path const& path, std::vector<SpecDbcCo
         data.push_back({ row.table, row.column, SanitizeField(row.mangosdReads), SanitizeField(row.vanillaValue) });
     WriteRows(path, header, data);
 }
+
+std::vector<SpecEvidenceRow> ReadEvidenceTsv(std::filesystem::path const& path)
+{
+    static std::vector<std::string> const header = { "source", "table", "column", "type", "readers", "wire_hint",
+        "counterpart", "counterpart_rule", "match_rate", "shape" };
+    std::vector<SpecEvidenceRow> rows;
+    for (std::vector<std::string> const& fields : ReadDataRows(path, header, header.size()))
+        rows.push_back({ fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7], fields[8], fields[9] });
+    return rows;
+}
+
+void WriteEvidenceTsv(std::filesystem::path const& path, std::vector<SpecEvidenceRow> const& rows)
+{
+    static std::vector<std::string> const header = { "source", "table", "column", "type", "readers", "wire_hint",
+        "counterpart", "counterpart_rule", "match_rate", "shape" };
+    std::vector<std::vector<std::string>> data;
+    data.reserve(rows.size());
+    for (SpecEvidenceRow const& row : rows)
+        data.push_back({ row.source, row.table, row.column, SanitizeField(row.type), SanitizeField(row.readers),
+                          SanitizeField(row.wireHint), SanitizeField(row.counterpart), SanitizeField(row.counterpartRule),
+                          SanitizeField(row.matchRate), SanitizeField(row.shape) });
+    WriteRows(path, header, data);
+}

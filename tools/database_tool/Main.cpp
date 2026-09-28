@@ -5,6 +5,7 @@
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
 #include "Reference/ReferenceBuild.h"
+#include "Spec/Evidence.h"
 #include "Spec/SpecInventory.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
@@ -413,11 +414,28 @@ namespace
         return 0;
     }
 
+    // spec evidence
+    int RunSpecEvidence(std::vector<std::string> const& args)
+    {
+        (void)args;
+
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        SpecEvidenceResult result = BuildEvidence(referencePath, SourceRoot(), SpecDir());
+        if (!result.error.empty())
+        {
+            std::printf("spec evidence: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        std::printf("spec evidence: %u rows written\n", result.rowsWritten);
+        return 0;
+    }
+
     int RunSpec(std::vector<std::string> const& args)
     {
         if (args.empty())
         {
-            std::printf("spec: subcommand required (init, set)\n");
+            std::printf("spec: subcommand required (init, set, evidence)\n");
             return 1;
         }
 
@@ -428,6 +446,8 @@ namespace
             return RunSpecInit(rest);
         if (subcommand == "set")
             return RunSpecSet(rest);
+        if (subcommand == "evidence")
+            return RunSpecEvidence(rest);
 
         std::printf("spec: unknown subcommand: %s\n", subcommand.c_str());
         return 1;

@@ -26,6 +26,8 @@ add_library(database_tool_lib STATIC
   Dbc/Wdc5Writer.cpp
   Spec/SpecFile.cpp
   Spec/SpecInventory.cpp
+  Spec/SourceScan.cpp
+  Spec/Evidence.cpp
   generated/DbcTables.g.cpp
   generated/VanillaDbcTables.g.cpp
 )
