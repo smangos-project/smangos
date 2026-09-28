@@ -65,6 +65,21 @@ struct SpecPairRow
     std::string notes;
 };
 
+// One row of Spec/gaps.tsv: tool-owned, rewritten from scratch by `spec gaps` (phase0-plan.md
+// step 4.5) -- what vanilla has and the 1.15 client files don't cover, outside anything
+// pairs.tsv already joins. `kind` is one of "removed_table"/"removed_column"/"array_length"/
+// "type_change" (4.5.1, a WoWDBDefs schema diff), "row_coverage" (4.5.2, vanilla-only ids of a
+// joined pair), "counterpart_candidate" (4.5.3, a cdbc_ column found outside pairs.tsv),
+// "empty_client_table" (4.5.4) or "client_only_field" (4.5.5). `column` is empty for a
+// table-level row.
+struct SpecGapRow
+{
+    std::string kind;
+    std::string table;
+    std::string column;
+    std::string detail;
+};
+
 // One row of Spec/rules.tsv: a named conversion rule (phase0-plan.md 3.1), seeded from
 // data-plan.md section 5 and spell-plan.md section 4.4. `kind` "value" rules have `expr`, a SQL
 // scalar expression over the source column with `{v}` standing in for it, evaluated directly by
@@ -96,5 +111,8 @@ void WritePairsTsv(std::filesystem::path const& path, std::vector<SpecPairRow> c
 
 std::vector<SpecRuleRow> ReadRulesTsv(std::filesystem::path const& path);
 void WriteRulesTsv(std::filesystem::path const& path, std::vector<SpecRuleRow> const& rows);
+
+std::vector<SpecGapRow> ReadGapsTsv(std::filesystem::path const& path);
+void WriteGapsTsv(std::filesystem::path const& path, std::vector<SpecGapRow> const& rows);
 
 #endif

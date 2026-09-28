@@ -31,6 +31,6 @@ if (BUILD_REALBOT_RUNNER)
 add_subdirectory(realbotrunner)
 endif()
 
-if (BUILD_DB_SCHEMA_SETUP)
+if (BUILD_DB_SCHEMA_SETUP OR BUILD_DATABASE_TOOL)
 add_subdirectory(db_schema_setup)
 endif()

@@ -1,0 +1,681 @@
+kind	table	column	detail
+array_length	animationdata	Flags	1 -> 2
+array_length	areatable	Flags	1 -> 2
+array_length	spellrange	RangeMax	1 -> 2
+array_length	spellrange	RangeMin	1 -> 2
+client_only_field	dbc_chrcustomization		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationboneset		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationcategory		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationchoice		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationcondmodel		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationconversion		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationdisplayinfo		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationelement		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationgeoset		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationglyphpet		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationmaterial		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationoption		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationreq		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationreqchoice		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationskinnedmodel		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationvisreq		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrcustomizationvoice		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrmodel		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrmodelmaterial		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrmodeltexturelayer		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_chrracexchrmodel		character create/barber validation (data-plan.md section 4)
+client_only_field	dbc_itemmodifiedappearance		item -> display id, feeds ItemAppearance.DefaultIconFileDataID (data-plan.md section 4)
+client_only_field	dbc_itemmodifiedappearanceextra		item -> display id, feeds ItemAppearance.DefaultIconFileDataID (data-plan.md section 4)
+client_only_field	dbc_questv2	UniqueBitFlag	completed-quest bit (QuestCompleted update field) (data-plan.md section 4)
+client_only_field	dbc_questv2clitask	UniqueBitFlag	completed-quest bit (QuestCompleted update field) (data-plan.md section 4)
+client_only_field	dbc_soundkit		sound id space for PlaySound/PlayMusic (data-plan.md section 4)
+client_only_field	dbc_soundkitadvanced		sound id space for PlaySound/PlayMusic (data-plan.md section 4)
+client_only_field	dbc_soundkitchild		sound id space for PlaySound/PlayMusic (data-plan.md section 4)
+client_only_field	dbc_soundkitentry		sound id space for PlaySound/PlayMusic (data-plan.md section 4)
+client_only_field	dbc_soundkitfallback		sound id space for PlaySound/PlayMusic (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes1	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes10	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes11	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes12	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes13	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes14	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes15	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes16	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes2	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes3	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes4	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes5	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes6	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes7	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes8	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellmisc	Attributes9	aura flags such as points-on-client (indices 5-15) (data-plan.md section 4)
+client_only_field	dbc_spellxspellvisual		wire visual id (data-plan.md section 4)
+client_only_field	dbc_summonproperties		summon effect dispatch after the enum renumbering (data-plan.md section 4)
+client_only_field	dbc_uimap		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapart		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapartstylelayer		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimaparttile		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapassignment		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapfogofwar		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapfogofwarvisualization		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapgroup		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapgroupmember		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimaplink		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimappininfo		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+client_only_field	dbc_uimapxmapart		replaces WorldMapArea for zone lookups (data-plan.md section 4)
+counterpart_candidate	vdbc_creaturefamily	MinScaleLevel	cdbc_animkitsegment.Speed via identity 14/14 (not in pairs.tsv)
+empty_client_table	dbc_accountstorecategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_accountstoreitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_actionbargroup		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_actionbargroupentry		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_adventurejournal		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_adventurejournalitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_adventuremappoi		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_alliedrace		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_alliedraceracialability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_altminimap		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_altminimapfiledata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_altminimapwmo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_animacable		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_animacylinder		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_animamaterial		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_animkitbonesetalias		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_aoibox		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areaconditionaldata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areafarclipoverride		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areapoistate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areatriggerbox		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areatriggercreateproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areatriggercylinder		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_areatriggersphere		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_arenaccitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_arenatrackeditem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifact		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactappearance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactappearanceset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactcategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactpower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactpowerlink		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactpowerpicker		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactpowerrank		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactquestxp		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifacttier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_artifactunlock		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_auctionhousecategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteempowereditem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteessence		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteessencepower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteitemmilestonepower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeriteknowledgemultiplier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeritelevelinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeritepower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeritepowersetmember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeritetierunlock		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_azeritetierunlockset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_banktab		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_barbershopstyle		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetabilityeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetabilitystate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetabilityturn		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetbreedquality		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetbreedstate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepeteffectproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetnpcteammember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetspecies		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetspeciesstate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetspeciesxability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetstate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_battlepetvisual		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_bonewindmodifiermodel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_bonewindmodifiers		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_bonusroll		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_bounty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_bountyset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_broadcasttext		srv holds: srv_broadcast_text
+empty_client_table	dbc_campaign		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_campaignxcondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_campaignxquestline		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_castableraidbuffs		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_celestialbody		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_charsectioncondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_charshipment		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_charshipmentcontainer		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chartitles		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrclassracesex		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrclassuidisplay		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustclientchoiceconversion		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustgeocomponentlink		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustitemgeomodify		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationboneset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationcondmodel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationdisplayinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationglyphpet		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationreqchoice		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationskinnedmodel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationvisreq		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrcustomizationvoice		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrracesping		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrspecialization		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrupgradebucket		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrupgradebucketspell		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_chrupgradetier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_clientsceneeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_cloakdampening		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_cloneeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_commentatorindirectspell		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_communityicon		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_conditionalchrmodel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_conditionalcontenttuning		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_conditionalcreaturemodeldata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_conditionalitemappearance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_contentpush		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_contribution		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_contributionstyle		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_contributionstylecontainer		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_craftingorderxlabel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturedisplayinfocond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturedisplayinfocondxchoice		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturedisplayinfoevt		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturedisplayinfotrn		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturedispxuicamera		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_creaturexcontribution		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_criteriatreexeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_currencycategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_currencycontainer		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_currencytypes		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_declinedword		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_declinedwordcases		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_delvesseason		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_delvesseasonxspell		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_destructiblemodeldata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_deviceblacklist		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_displayseason		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_driverblacklist		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_expectedstat		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_expectedstatmod		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_flightcapability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_friendshiprepreaction		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_friendshipreputation		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gameclockdebug		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gameobjectanimgroupmember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gameobjectdiffanimmap		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gameobjectdisplaycondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrabilitycategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrabilityeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrbuilding		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrbuildingdoodadset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrbuildingplotinst		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrclassspec		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrclassspecplayercond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrfollowersetxfollower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrfollowertype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrfolloweruicreature		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrfollowerxability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garritemlevelupgradedata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmechanic		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmechanicsetxmechanic		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmechanictype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmission		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmissiontexture		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmissiontype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmissionxencounter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmissionxfollower		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrmssnbonusability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrplotbuilding		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrplotinstance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garrtype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garruianimclassinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_garruianimraceinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gemproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_glyphbindablespell		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_glyphexclusivecategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_glyphproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_glyphrequiredspec		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_gmsurveyanswers		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_groupfinderactivityxpvpbracket		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildcolorbackground		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildcolorborder		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildcoloremblem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildperkspells		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildshirtbackground		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_guildshirtborder		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_heirloom		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_helmetanimscaling		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_holidaydescriptions		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_holidaynames		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_hotfixes		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_invasionclientdata		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemappearancexuicamera		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itembonus		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itembonuslistleveldelta		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itembonustreenode		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemchildequipment		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemcontextpickerentry		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemcurrencycost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemlevelselector		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemlevelselectorquality		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemlevelselectorqualityset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemlimitcategorycondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemspec		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemspecoverride		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemupgrade		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_itemxbonustree		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalencounter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalencountercreature		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalencounteritem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalencountersection		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalencounterxdifficulty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalinstance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalinstanceentrance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalinstancequeueloc		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalitemxdifficulty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journalsectionxdifficulty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journaltier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_journaltierxinstance		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_keychain		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_keystoneaffix		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lfgdungeonexpansion		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lfgdungeongroup		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lfgdungeonsgroupingmap		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lfgrolerequirement		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lightning		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_liquidtypextexture		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_lookatcontroller		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_managedworldstate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_managedworldstatebuff		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_managedworldstateinput		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mapcelestialbody		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mapchallengemode		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_marketingpromotionsxlocale		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_minortalent		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_modelanimcloakdampening		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_modelribbonquality		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_modelsoundtagentry		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_modifiedcraftingspellslot		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mount		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mountcapability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mounttypexcapability		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mountxdisplay		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_multistateproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_multitransitionproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_musicoverride		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_mythicplusseason		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_npccraftingordersetxtreasure		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_objecteffectmodifier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_occluder		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_occludercurtain		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_occluderlocation		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_occludernode		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_outlineeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_paragonreputation		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_particulate		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_particulatesound		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pathnodeproperty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_phaseshiftzonesounds		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pingtype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playercompanioninfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playerdataelementaccount		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playerdataelementcharacter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playerdataflagaccount		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playerdataflagcharacter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_playerinteractioninfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pointlightconditionmap		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_prestigelevelinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_profession		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvpbrackettypes		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvpitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvprating		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvpscalingeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvpscalingeffecttype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvpseason		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvptalent		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvptalentcategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvptalentslotunlock		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_pvptier		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questdrivenscenario		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questlabel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questline		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questlinexquest		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questobjective		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questpackageitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questpoiblob		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questpoipoint		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questv2clitask		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_questxgroupactivity		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_rafactivity		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_renownrewards		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_renownrewardsplunderstorm		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_researchbranch		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_researchfield		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_researchproject		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_researchsite		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_rewardpack		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_rewardpackxcurrencytype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_rewardpackxitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_rulesetitemupgrade		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scalingstatdistribution		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenario		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenarioevententry		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenariostep		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenescript		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenescriptglobaltext		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenescriptpackage		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenescriptpackagemember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_scenescripttext		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_screeneffecttype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_screenlocation		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_sdreplacementmodel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_seamlesssite		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_shadowyeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_sharedstring		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_siegeableproperties		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_skyscenexplayercondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundbusoverride		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundemitterpillpoints		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundfilter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundfilterelem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundkitfallback		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_soundwaterfallemitter		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_sourceinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_specializationspells		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_specializationspellsdisplay		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_specsetmember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellactionbarpref		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellactivationoverlay		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellauravisxchrspec		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spelleffectautodescription		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spelleffectemission		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellflyout		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellflyoutitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellitemenchantmentcondition		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellkeyboundoverride		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spelllearnspell		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellmissile		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellpowerdifficulty		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellprocsperminutemod		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellreagentscurrency		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellscaling		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_spellvisualcoloreffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_ssaosettings		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_talenttreeprimaryspells		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_terrainmaterial		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_toy		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_tradeskillcategory		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitcond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitcondaccountelement		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitcost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitcurrency		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitcurrencysource		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitdefinitioneffectpoints		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitedge		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodeentryxtraitcond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodeentryxtraitcost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodegroupxtraitcond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodegroupxtraitcost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodextraitcond		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitnodextraitcost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitsubtree		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traitsystem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traittreeloadout		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traittreeloadoutentry		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traittreextraitcost		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_traittreextraitcurrency		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transmogdefaultlevel		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transmogholiday		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transmogset		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transmogsetgroup		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transmogsetitem		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transportphysics		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_transportrotation		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_trophy		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uiarrowcallout		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uibutton		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicamera		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicameratype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicamfbacktalkingheadchrrace		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicamfbacktransmogchrrace		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicamfbacktransmogweapon		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uicinematicintroinfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uieventtoast		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uiexpansiondisplayinfoicon		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uigenericwidgetdisplay		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimapfogofwar		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimapfogofwarvisualization		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimapgroup		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimapgroupmember		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimaplink		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uimappininfo		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uipartypose		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_uiscriptedanimationeffect		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_unitpowerbar		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_vehiclepoitype		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_vehicleuiindicator		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_vehicleuiindseat		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_vignette		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_warbandsceneplacement		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_weapontrail		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_weapontrailmodeldef		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_weapontrailparam		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_weeklyrewardchestthreshold		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_world_pvp_area		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_worldbosslockout		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_worldelapsedtimer		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_worldstatezonesounds		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_zonelight		no known srv/vdbc twin -- server-only data
+empty_client_table	dbc_zonelightpoint		no known srv/vdbc twin -- server-only data
+removed_column	animationdata	Bodyflags	removed in 1.15.6.58797
+removed_column	animationdata	Field_0_7_0_3694_004	removed in 1.15.6.58797
+removed_column	animationdata	Name	removed in 1.15.6.58797
+removed_column	animationdata	Weaponflags	removed in 1.15.6.58797
+removed_column	areapoi	FactionID	removed in 1.15.6.58797
+removed_column	cfg_categories	Field_0_10_0_3892_000	removed in 1.15.6.58797
+removed_column	cfg_categories	Region_ID	removed in 1.15.6.58797
+removed_column	cfg_configs	RealmType	removed in 1.15.6.58797
+removed_column	chrclasses	PlayerClass	removed in 1.15.6.58797
+removed_column	chrraces	CombatStunSpellID	removed in 1.15.6.58797
+removed_column	chrraces	ExplorationSoundID	removed in 1.15.6.58797
+removed_column	chrraces	HairCustomization	removed in 1.15.6.58797
+removed_column	chrraces	LoginEffectSpellID	removed in 1.15.6.58797
+removed_column	chrraces	MountScale	removed in 1.15.6.58797
+removed_column	chrraces	StartingTaxiNodes	removed in 1.15.6.58797
+removed_column	cinematiccamera	Model	removed in 1.15.6.58797
+removed_column	creaturedisplayinfoextra	BakeName	removed in 1.15.6.58797
+removed_column	creaturefamily	IconFile	removed in 1.15.6.58797
+removed_column	creaturemodeldata	DeathThudShakeSize	removed in 1.15.6.58797
+removed_column	creaturemodeldata	FootstepShakeSize	removed in 1.15.6.58797
+removed_column	creaturemodeldata	ModelName	removed in 1.15.6.58797
+removed_column	footprinttextures	FootstepFilename	removed in 1.15.6.58797
+removed_column	gmsurveycurrentsurvey	LANGID	removed in 1.15.6.58797
+removed_column	groundeffectdoodad	DoodadIdTag	removed in 1.15.6.58797
+removed_column	groundeffectdoodad	Doodadpath	removed in 1.15.6.58797
+removed_column	itemclass	SubclassMapID	removed in 1.15.6.58797
+removed_column	itemdisplayinfo	GroupSoundIndex	removed in 1.15.6.58797
+removed_column	itemdisplayinfo	InventoryIcon	removed in 1.15.6.58797
+removed_column	itemdisplayinfo	SpellVisualID	removed in 1.15.6.58797
+removed_column	itemrandomproperties	Name	removed in 1.15.6.58797
+removed_column	itemsubclass	WeaponAttackSeq	removed in 1.15.6.58797
+removed_column	itemsubclass	WeaponParrySeq	removed in 1.15.6.58797
+removed_column	itemsubclass	WeaponReadySeq	removed in 1.15.6.58797
+removed_column	loadingscreens	FileName	removed in 1.15.6.58797
+removed_column	loadingscreens	Name	removed in 1.15.6.58797
+removed_column	map	Continentname	removed in 1.15.6.58797
+removed_column	map	MaxLevel	removed in 1.15.6.58797
+removed_column	map	MinLevel	removed in 1.15.6.58797
+removed_column	map	Unk0	removed in 1.15.6.58797
+removed_column	map	Unk1	removed in 1.15.6.58797
+removed_column	map	Unk2	removed in 1.15.6.58797
+removed_column	map	Unk4	removed in 1.15.6.58797
+removed_column	material	MaterialID	removed in 1.15.6.58797
+removed_column	paperdollitemframe	SlotIcon	removed in 1.15.6.58797
+removed_column	petpersonality	Name_lang	removed in 1.15.6.58797
+removed_column	skillline	SkillCostsID	removed in 1.15.6.58797
+removed_column	skillline	SpellIconID	removed in 1.15.6.58797
+removed_column	skilllineability	Abandonable	removed in 1.15.6.58797
+removed_column	skilllineability	ExcludeClass	removed in 1.15.6.58797
+removed_column	skilllineability	ExcludeRace	removed in 1.15.6.58797
+removed_column	skilllineability	SupercededBySpell	removed in 1.15.6.58797
+removed_column	skillraceclassinfo	SkillCostIndex	removed in 1.15.6.58797
+removed_column	spell	ActiveIconID	removed in 1.15.6.58797
+removed_column	spell	Attributes	removed in 1.15.6.58797
+removed_column	spell	AttributesEx	removed in 1.15.6.58797
+removed_column	spell	AttributesExB	removed in 1.15.6.58797
+removed_column	spell	AttributesExC	removed in 1.15.6.58797
+removed_column	spell	AttributesExD	removed in 1.15.6.58797
+removed_column	spell	AuraInterruptFlags	removed in 1.15.6.58797
+removed_column	spell	BaseLevel	removed in 1.15.6.58797
+removed_column	spell	CastUI	removed in 1.15.6.58797
+removed_column	spell	CasterAuraState	removed in 1.15.6.58797
+removed_column	spell	CastingTimeIndex	removed in 1.15.6.58797
+removed_column	spell	Category	removed in 1.15.6.58797
+removed_column	spell	CategoryRecoveryTime	removed in 1.15.6.58797
+removed_column	spell	ChannelInterruptFlags	removed in 1.15.6.58797
+removed_column	spell	CumulativeAura	removed in 1.15.6.58797
+removed_column	spell	DefenseType	removed in 1.15.6.58797
+removed_column	spell	DispelType	removed in 1.15.6.58797
+removed_column	spell	DurationIndex	removed in 1.15.6.58797
+removed_column	spell	EquippedItemClass	removed in 1.15.6.58797
+removed_column	spell	EquippedItemInvTypes	removed in 1.15.6.58797
+removed_column	spell	EquippedItemSubclass	removed in 1.15.6.58797
+removed_column	spell	InterruptFlags	removed in 1.15.6.58797
+removed_column	spell	ManaCost	removed in 1.15.6.58797
+removed_column	spell	ManaCostPct	removed in 1.15.6.58797
+removed_column	spell	ManaCostPerLevel	removed in 1.15.6.58797
+removed_column	spell	ManaPerSecond	removed in 1.15.6.58797
+removed_column	spell	ManaPerSecondPerLevel	removed in 1.15.6.58797
+removed_column	spell	MaxLevel	removed in 1.15.6.58797
+removed_column	spell	MaxTargetLevel	removed in 1.15.6.58797
+removed_column	spell	MaxTargets	removed in 1.15.6.58797
+removed_column	spell	Mechanic	removed in 1.15.6.58797
+removed_column	spell	MinFactionID	removed in 1.15.6.58797
+removed_column	spell	MinReputation	removed in 1.15.6.58797
+removed_column	spell	ModalNextSpell	removed in 1.15.6.58797
+removed_column	spell	Name_lang	removed in 1.15.6.58797
+removed_column	spell	PowerType	removed in 1.15.6.58797
+removed_column	spell	PreventionType	removed in 1.15.6.58797
+removed_column	spell	ProcChance	removed in 1.15.6.58797
+removed_column	spell	ProcCharges	removed in 1.15.6.58797
+removed_column	spell	ProcFlags	removed in 1.15.6.58797
+removed_column	spell	RangeIndex	removed in 1.15.6.58797
+removed_column	spell	RecoveryTime	removed in 1.15.6.58797
+removed_column	spell	RequiredAuraVision	removed in 1.15.6.58797
+removed_column	spell	RequiresSpellFocus	removed in 1.15.6.58797
+removed_column	spell	School	removed in 1.15.6.58797
+removed_column	spell	ShapeshiftExclude	removed in 1.15.6.58797
+removed_column	spell	ShapeshiftMask	removed in 1.15.6.58797
+removed_column	spell	Speed	removed in 1.15.6.58797
+removed_column	spell	SpellClassSet	removed in 1.15.6.58797
+removed_column	spell	SpellIconID	removed in 1.15.6.58797
+removed_column	spell	SpellLevel	removed in 1.15.6.58797
+removed_column	spell	SpellPriority	removed in 1.15.6.58797
+removed_column	spell	StanceBarOrder	removed in 1.15.6.58797
+removed_column	spell	StartRecoveryCategory	removed in 1.15.6.58797
+removed_column	spell	StartRecoveryTime	removed in 1.15.6.58797
+removed_column	spell	TargetAuraState	removed in 1.15.6.58797
+removed_column	spell	TargetCreatureType	removed in 1.15.6.58797
+removed_column	spell	Targets	removed in 1.15.6.58797
+removed_column	spellchaineffects	Texture	removed in 1.15.6.58797
+removed_column	spellchaineffects	Width	removed in 1.15.6.58797
+removed_column	spellshapeshiftform	AttackIconID	removed in 1.15.6.58797
+removed_column	spellvisual	AreaKit	removed in 1.15.6.58797
+removed_column	spellvisual	CastKit	removed in 1.15.6.58797
+removed_column	spellvisual	ChannelKit	removed in 1.15.6.58797
+removed_column	spellvisual	HasAreaEffect	removed in 1.15.6.58797
+removed_column	spellvisual	ImpactKit	removed in 1.15.6.58797
+removed_column	spellvisual	MissileModel	removed in 1.15.6.58797
+removed_column	spellvisual	MissilePathType	removed in 1.15.6.58797
+removed_column	spellvisual	MissileSound	removed in 1.15.6.58797
+removed_column	spellvisual	PrecastKit	removed in 1.15.6.58797
+removed_column	spellvisual	StateKit	removed in 1.15.6.58797
+removed_column	spellvisualeffectname	AreaEffectSize	removed in 1.15.6.58797
+removed_column	spellvisualeffectname	FileName	removed in 1.15.6.58797
+removed_column	spellvisualeffectname	Name	removed in 1.15.6.58797
+removed_column	spellvisualeffectname	SpecialAttachPoint	removed in 1.15.6.58797
+removed_column	spellvisualkit	AnimID	removed in 1.15.6.58797
+removed_column	spellvisualkit	BaseEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	BreathEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	ChestEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	HeadEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	KitType	removed in 1.15.6.58797
+removed_column	spellvisualkit	LeftHandEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	RightHandEffect	removed in 1.15.6.58797
+removed_column	spellvisualkit	ShakeID	removed in 1.15.6.58797
+removed_column	spellvisualkit	SoundID	removed in 1.15.6.58797
+removed_column	spellvisualkit	WorldEffect	removed in 1.15.6.58797
+removed_column	stationery	Texture	removed in 1.15.6.58797
+removed_column	talenttab	RaceMask	removed in 1.15.6.58797
+removed_column	worldmapoverlay	MapAreaID	removed in 1.15.6.58797
+removed_column	worldmapoverlay	MapPointX	removed in 1.15.6.58797
+removed_column	worldmapoverlay	MapPointY	removed in 1.15.6.58797
+removed_column	worldmapoverlay	TextureName	removed in 1.15.6.58797
+removed_column	worldstateui	DynamicIcon	removed in 1.15.6.58797
+removed_column	worldstateui	FactionID	removed in 1.15.6.58797
+removed_table	attackanimkits		no 1.15.6.58797/58725 definition
+removed_table	attackanimtypes		no 1.15.6.58797/58725 definition
+removed_table	camerashakes		no 1.15.6.58797/58725 definition
+removed_table	charhairtextures		no 1.15.6.58797/58725 definition
+removed_table	charsections		no 1.15.6.58797/58725 definition
+removed_table	charvariations		no 1.15.6.58797/58725 definition
+removed_table	gmticketcategory		no 1.15.6.58797/58725 definition
+removed_table	helmetgeosetvisdata		no 1.15.6.58797/58725 definition
+removed_table	itemvisualeffects		no 1.15.6.58797/58725 definition
+removed_table	lightfloatband		no 1.15.6.58797/58725 definition
+removed_table	lightintband		no 1.15.6.58797/58725 definition
+removed_table	package		no 1.15.6.58797/58725 definition
+removed_table	sheathesoundlookups		no 1.15.6.58797/58725 definition
+removed_table	skillcostsdata		no 1.15.6.58797/58725 definition
+removed_table	skilltiers		no 1.15.6.58797/58725 definition
+removed_table	soundentries		no 1.15.6.58797/58725 definition
+removed_table	soundsamplepreferences		no 1.15.6.58797/58725 definition
+removed_table	soundwatertype		no 1.15.6.58797/58725 definition
+removed_table	spelleffectcamerashakes		no 1.15.6.58797/58725 definition
+removed_table	spellicon		no 1.15.6.58797/58725 definition
+removed_table	spellvisualprecasttransitions		no 1.15.6.58797/58725 definition
+removed_table	stringlookups		no 1.15.6.58797/58725 definition
+removed_table	uisoundlookups		no 1.15.6.58797/58725 definition
+removed_table	videohardware		no 1.15.6.58797/58725 definition
+removed_table	worldmaparea		no 1.15.6.58797/58725 definition
+removed_table	worldmapcontinent		no 1.15.6.58797/58725 definition
+removed_table	worldsafelocs		no 1.15.6.58797/58725 definition
+removed_table	wowerror_strings		no 1.15.6.58797/58725 definition
+row_coverage	srv_areatrigger_template		vanilla-only ids: 45 (1629, 1631, 1632, 2146, 2416, 2606, 2608, 2766, 2767, 3182, 3188, 3192, 3306, 3646, 3647, 3669, 3671, 3688, 3806, 3807, ...)
+row_coverage	srv_broadcast_text		vanilla-only ids: 11108 (1, 3, 4, 5, 7, 9, 10, 11, 13, 14, 15, 16, 17, 19, 22, 23, 24, 25, 26, 27, ...)
+row_coverage	srv_creature_display_info_addon		vanilla-only ids: 1 (3255)
+row_coverage	srv_item_display_info		vanilla-only ids: 2 (38283, 38284)
+row_coverage	srv_item_template		vanilla-only ids: 114 (17, 192, 905, 2248, 2301, 2543, 2952, 3038, 3043, 3104, 3105, 3106, 3359, 3398, 3479, 3579, 3896, 4081, 4574, 4642, ...)
+row_coverage	srv_mail_text_template		vanilla-only ids: 1 (181)
+row_coverage	srv_quest_template		vanilla-only ids: 774 (16, 108, 117, 236, 254, 308, 316, 349, 390, 403, 410, 431, 579, 593, 619, 774, 779, 795, 796, 797, ...)
+row_coverage	srv_skill_line_ability		vanilla-only ids: 1096 (2503, 2560, 2561, 2562, 2563, 2564, 2565, 2566, 2567, 2581, 2582, 2583, 2584, 2585, 2586, 2587, 2588, 2589, 2590, 2591, ...)
+row_coverage	srv_sound_entries		vanilla-only ids: 31 (7963, 7964, 7965, 7966, 7967, 7969, 7970, 7971, 7972, 7973, 7974, 7975, 7976, 7977, 7978, 9372, 9373, 9374, 9375, 9376, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 18453 (1, 3, 4, 5, 7, 11, 12, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26, 27, 31, 33, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 8163 (1, 3, 4, 5, 12, 15, 19, 22, 24, 26, 50, 58, 68, 75, 76, 77, 81, 84, 87, 94, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 21708 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22381 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 18432 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26, 27, 31, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22381 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22379 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 21238 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 24, 25, 26, 27, 31, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22381 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22381 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 22377 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 1341 (76, 87, 94, 103, 109, 114, 124, 179, 255, 278, 279, 308, 315, 344, 365, 424, 451, 466, 469, 480, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 1341 (76, 87, 94, 103, 109, 114, 124, 179, 255, 278, 279, 308, 315, 344, 365, 424, 451, 466, 469, 480, ...)
+row_coverage	srv_spell_template		vanilla-only ids: 20780 (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 26, 27, ...)
+row_coverage	srv_taxi_nodes		vanilla-only ids: 1 (81)
+row_coverage	vdbc_areatrigger		vanilla-only ids: 28 (1629, 1631, 1632, 2146, 2416, 2606, 2608, 3646, 3647, 3669, 3671, 3688, 3948, 3949, 4085, 4086, 4087, 4088, 4097, 4120, ...)
+row_coverage	vdbc_creaturedisplayinfo		vanilla-only ids: 1 (3255)
+row_coverage	vdbc_durabilitycosts		vanilla-only ids: 200 (101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, ...)
+row_coverage	vdbc_gameobjectdisplayinfo		vanilla-only ids: 20 (171, 172, 173, 176, 177, 179, 180, 233, 349, 350, 351, 380, 601, 622, 623, 626, 632, 751, 756, 6615)
+row_coverage	vdbc_itemdisplayinfo		vanilla-only ids: 2 (38283, 38284)
+row_coverage	vdbc_mailtemplate		vanilla-only ids: 1 (181)
+row_coverage	vdbc_namesprofanity		vanilla-only ids: 16 (3459, 4363, 4496, 4716, 5101, 5136, 5372, 5931, 5935, 5952, 5969, 5981, 6014, 6083, 6125, 6282)
+row_coverage	vdbc_namesreserved		vanilla-only ids: 232 (1692, 1695, 1699, 1701, 1712, 1717, 1719, 1722, 1723, 1724, 1728, 1733, 1735, 1737, 1742, 1748, 1756, 1757, 1768, 1770, ...)
+row_coverage	vdbc_skillline		vanilla-only ids: 1 (762)
+row_coverage	vdbc_skilllineability		vanilla-only ids: 4 (2503, 12576, 15029, 15030)
+row_coverage	vdbc_skillraceclassinfo		vanilla-only ids: 1 (890)
+row_coverage	vdbc_soundentries		vanilla-only ids: 31 (7963, 7964, 7965, 7966, 7967, 7969, 7970, 7971, 7972, 7973, 7974, 7975, 7976, 7977, 7978, 9372, 9373, 9374, 9375, 9376, ...)
+row_coverage	vdbc_spellduration		vanilla-only ids: 2 (507, 508)
+row_coverage	vdbc_taxinodes		vanilla-only ids: 1 (81)
+row_coverage	vdbc_wmoareatable		vanilla-only ids: 13 (20981, 20982, 20983, 20984, 20985, 20986, 20987, 32862, 32863, 32864, 34773, 34914, 34915)

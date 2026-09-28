@@ -160,6 +160,25 @@ void WritePairsTsv(std::filesystem::path const& path, std::vector<SpecPairRow> c
     WriteRows(path, header, data);
 }
 
+std::vector<SpecGapRow> ReadGapsTsv(std::filesystem::path const& path)
+{
+    static std::vector<std::string> const header = { "kind", "table", "column", "detail" };
+    std::vector<SpecGapRow> rows;
+    for (std::vector<std::string> const& fields : ReadDataRows(path, header, header.size()))
+        rows.push_back({ fields[0], fields[1], fields[2], fields[3] });
+    return rows;
+}
+
+void WriteGapsTsv(std::filesystem::path const& path, std::vector<SpecGapRow> const& rows)
+{
+    static std::vector<std::string> const header = { "kind", "table", "column", "detail" };
+    std::vector<std::vector<std::string>> data;
+    data.reserve(rows.size());
+    for (SpecGapRow const& row : rows)
+        data.push_back({ row.kind, row.table, row.column, SanitizeField(row.detail) });
+    WriteRows(path, header, data);
+}
+
 std::vector<SpecRuleRow> ReadRulesTsv(std::filesystem::path const& path)
 {
     static std::vector<std::string> const header = { "name", "kind", "expr", "inverse", "applies_to" };

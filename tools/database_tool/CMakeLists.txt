@@ -31,6 +31,7 @@ add_library(database_tool_lib STATIC
   Spec/Counterpart.cpp
   Spec/Shape.cpp
   Spec/Evidence.cpp
+  Spec/GapAnalysis.cpp
   generated/DbcTables.g.cpp
   generated/VanillaDbcTables.g.cpp
 )
@@ -40,7 +41,9 @@ target_compile_features(database_tool_lib PUBLIC cxx_std_20)
 # OPENSSL_LIBRARIES: shared's own SHA256/BigNumber need libcrypto, which
 # (like MYSQL_LIBRARY above) mangosd/bnetserver only pull in at their own
 # executable's link step, in a release/debug split this tool doesn't need.
-target_link_libraries(database_tool_lib PUBLIC doltlite lzmasdk shared framework ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES})
+# db_schema_setup: Spec/GapAnalysis.cpp (4.5.1) reuses its WoWDBDefs resolver to diff the
+# vanilla and client layouts -- see contrib/db_schema_setup/CMakeLists.txt's own pin.
+target_link_libraries(database_tool_lib PUBLIC doltlite lzmasdk shared framework db_schema_setup ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES})
 
 # mangosd/bnetserver only get these via `cmake --install` (see the root
 # CMakeLists.txt install() rules); a standalone tool needs its own copy next

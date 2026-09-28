@@ -6,6 +6,7 @@
 #include "Dbc/DbcImport.h"
 #include "Reference/ReferenceBuild.h"
 #include "Spec/Evidence.h"
+#include "Spec/GapAnalysis.h"
 #include "Spec/SpecInventory.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
@@ -432,11 +433,32 @@ namespace
         return 0;
     }
 
+#ifndef DB_SCHEMA_SETUP_DEFINITIONS_DIR
+#define DB_SCHEMA_SETUP_DEFINITIONS_DIR ""
+#endif
+
+    // spec gaps
+    int RunSpecGaps(std::vector<std::string> const& args)
+    {
+        (void)args;
+
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        SpecGapResult result = BuildGaps(referencePath, DB_SCHEMA_SETUP_DEFINITIONS_DIR, SpecDir());
+        if (!result.error.empty())
+        {
+            std::printf("spec gaps: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        std::printf("spec gaps: %u rows written\n", result.rowsWritten);
+        return 0;
+    }
+
     int RunSpec(std::vector<std::string> const& args)
     {
         if (args.empty())
         {
-            std::printf("spec: subcommand required (init, set, evidence)\n");
+            std::printf("spec: subcommand required (init, set, evidence, gaps)\n");
             return 1;
         }
 
@@ -449,6 +471,8 @@ namespace
             return RunSpecSet(rest);
         if (subcommand == "evidence")
             return RunSpecEvidence(rest);
+        if (subcommand == "gaps")
+            return RunSpecGaps(rest);
 
         std::printf("spec: unknown subcommand: %s\n", subcommand.c_str());
         return 1;
