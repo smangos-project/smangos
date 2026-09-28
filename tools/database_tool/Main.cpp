@@ -7,6 +7,7 @@
 #include "Reference/ReferenceBuild.h"
 #include "Spec/Evidence.h"
 #include "Spec/GapAnalysis.h"
+#include "Spec/SpecCheck.h"
 #include "Spec/SpecInventory.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
@@ -454,11 +455,41 @@ namespace
         return 0;
     }
 
+    // spec check [--final]
+    int RunSpecCheck(std::vector<std::string> const& args)
+    {
+        bool final = std::find(args.begin(), args.end(), "--final") != args.end();
+
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        SpecCheckResult result = CheckSpec(referencePath, SpecDir(), final);
+        if (!result.error.empty())
+        {
+            std::printf("spec check: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        constexpr uint32_t printedPerCheck = 25;
+        uint32_t perCheck[10] = {};
+        for (SpecCheckProblem const& problem : result.problems)
+        {
+            if (++perCheck[problem.check] <= printedPerCheck)
+                std::printf("[%u] %s\n", problem.check, problem.message.c_str());
+        }
+        for (uint32_t check = 1; check < 10; ++check)
+        {
+            if (perCheck[check] > printedPerCheck)
+                std::printf("[%u] ... and %u more\n", check, perCheck[check] - printedPerCheck);
+        }
+
+        std::printf("spec check: %u columns.tsv rows, %zu problems\n", result.columnsChecked, result.problems.size());
+        return result.problems.empty() ? 0 : 1;
+    }
+
     int RunSpec(std::vector<std::string> const& args)
     {
         if (args.empty())
         {
-            std::printf("spec: subcommand required (init, set, evidence, gaps)\n");
+            std::printf("spec: subcommand required (init, set, evidence, gaps, check)\n");
             return 1;
         }
 
@@ -473,6 +504,8 @@ namespace
             return RunSpecEvidence(rest);
         if (subcommand == "gaps")
             return RunSpecGaps(rest);
+        if (subcommand == "check")
+            return RunSpecCheck(rest);
 
         std::printf("spec: unknown subcommand: %s\n", subcommand.c_str());
         return 1;
