@@ -2121,24 +2121,24 @@ srv	warden_scans	build_max
 srv	warden_scans	comment					
 srv	world_safe_locs_facing	id	server			merges into a new world_safe_locs server table with the vanilla WorldSafeLocs rows (F2); WorldSafeLocs.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
 srv	world_safe_locs_facing	orientation	server			merges into world_safe_locs, same note as id	yes
-vdbc	animationdata	ID					
-vdbc	animationdata	Name					
-vdbc	animationdata	Weaponflags					
-vdbc	animationdata	Bodyflags					
-vdbc	animationdata	Field_0_7_0_3694_004					
-vdbc	animationdata	Flags					
-vdbc	animationdata	Fallback					
-vdbc	areapoi	ID					
-vdbc	areapoi	Importance					
-vdbc	areapoi	Icon					
-vdbc	areapoi	FactionID					
-vdbc	areapoi	Pos1					
-vdbc	areapoi	Pos2					
-vdbc	areapoi	Pos3					
-vdbc	areapoi	ContinentID					
-vdbc	areapoi	Flags					
-vdbc	areapoi	AreaID					
-vdbc	areapoi	Name_lang					
+vdbc	animationdata	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Weaponflags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Bodyflags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Field_0_7_0_3694_004	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	animationdata	Fallback	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Importance	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Icon	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	FactionID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Pos1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Pos2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Pos3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	ContinentID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	AreaID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	areapoi	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	areapoi	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2147,7 +2147,7 @@ vdbc	areapoi	Name_lang_5	drop			non-enUS locale slot, vanilla client only shippe
 vdbc	areapoi	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	areapoi	Description_lang					
+vdbc	areapoi	Description_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	areapoi	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2156,7 +2156,7 @@ vdbc	areapoi	Description_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	areapoi	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	areapoi	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	areapoi	WorldStateID					
+vdbc	areapoi	WorldStateID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	areatable	ID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
 vdbc	areatable	ContinentID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
 vdbc	areatable	ParentAreaID	drop			vanilla source; the matching srv_ column now sources from dbc_areatable instead (F1)	yes
@@ -2222,9 +2222,9 @@ vdbc	camerashakes	Frequency	drop			not imported	yes
 vdbc	camerashakes	Duration	drop			not imported	yes
 vdbc	camerashakes	Phase	drop			not imported	yes
 vdbc	camerashakes	Coefficient	drop			not imported	yes
-vdbc	cfg_categories	Field_0_10_0_3892_000					
-vdbc	cfg_categories	Region_ID					
-vdbc	cfg_categories	Name_lang					
+vdbc	cfg_categories	Field_0_10_0_3892_000	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cfg_categories	Region_ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cfg_categories	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	cfg_categories	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	cfg_categories	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	cfg_categories	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2233,10 +2233,10 @@ vdbc	cfg_categories	Name_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	cfg_categories	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	cfg_categories	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	cfg_categories	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	cfg_configs	ID					
-vdbc	cfg_configs	RealmType					
-vdbc	cfg_configs	PlayerKillingAllowed					
-vdbc	cfg_configs	Roleplaying					
+vdbc	cfg_configs	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cfg_configs	RealmType	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cfg_configs	PlayerKillingAllowed	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cfg_configs	Roleplaying	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	characterfacialhairstyles	RaceID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
 vdbc	characterfacialhairstyles	SexID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
 vdbc	characterfacialhairstyles	VariationID	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
@@ -2246,14 +2246,14 @@ vdbc	characterfacialhairstyles	Geoset3	drop			grouped with CharSections; validat
 vdbc	characterfacialhairstyles	Geoset4	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
 vdbc	characterfacialhairstyles	Geoset5	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
 vdbc	characterfacialhairstyles	Geoset6	drop			grouped with CharSections; validated against dbc_chrcustomization* instead (stuff-plan.md 8.3) -- dbc_characterfacialhairstyles exists with matching column names, but the plan replaces this validation path rather than reusing it	yes
-vdbc	charbaseinfo	RaceID					
-vdbc	charbaseinfo	ClassID					
-vdbc	charhairgeosets	ID					
-vdbc	charhairgeosets	RaceID					
-vdbc	charhairgeosets	SexID					
-vdbc	charhairgeosets	VariationID					
-vdbc	charhairgeosets	GeosetID					
-vdbc	charhairgeosets	Showscalp					
+vdbc	charbaseinfo	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charbaseinfo	ClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	SexID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	VariationID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	GeosetID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charhairgeosets	Showscalp	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	charhairtextures	ID	drop			not imported	yes
 vdbc	charhairtextures	Field_0_5_3_3368_001_race	drop			not imported	yes
 vdbc	charhairtextures	Field_0_5_3_3368_002_gender	drop			not imported	yes
@@ -2272,47 +2272,47 @@ vdbc	charsections	TextureName1	drop			validated against dbc_chrcustomization* in
 vdbc	charsections	TextureName2	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
 vdbc	charsections	TextureName3	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
 vdbc	charsections	Flags	drop			validated against dbc_chrcustomization* instead (stuff-plan.md 8.3); CharSections.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
-vdbc	charstartoutfit	ID					
-vdbc	charstartoutfit	RaceID					
-vdbc	charstartoutfit	ClassID					
-vdbc	charstartoutfit	SexID					
-vdbc	charstartoutfit	OutfitID					
-vdbc	charstartoutfit	ItemID1					
-vdbc	charstartoutfit	ItemID2					
-vdbc	charstartoutfit	ItemID3					
-vdbc	charstartoutfit	ItemID4					
-vdbc	charstartoutfit	ItemID5					
-vdbc	charstartoutfit	ItemID6					
-vdbc	charstartoutfit	ItemID7					
-vdbc	charstartoutfit	ItemID8					
-vdbc	charstartoutfit	ItemID9					
-vdbc	charstartoutfit	ItemID10					
-vdbc	charstartoutfit	ItemID11					
-vdbc	charstartoutfit	ItemID12					
-vdbc	charstartoutfit	DisplayItemID1					
-vdbc	charstartoutfit	DisplayItemID2					
-vdbc	charstartoutfit	DisplayItemID3					
-vdbc	charstartoutfit	DisplayItemID4					
-vdbc	charstartoutfit	DisplayItemID5					
-vdbc	charstartoutfit	DisplayItemID6					
-vdbc	charstartoutfit	DisplayItemID7					
-vdbc	charstartoutfit	DisplayItemID8					
-vdbc	charstartoutfit	DisplayItemID9					
-vdbc	charstartoutfit	DisplayItemID10					
-vdbc	charstartoutfit	DisplayItemID11					
-vdbc	charstartoutfit	DisplayItemID12					
-vdbc	charstartoutfit	InventoryType1					
-vdbc	charstartoutfit	InventoryType2					
-vdbc	charstartoutfit	InventoryType3					
-vdbc	charstartoutfit	InventoryType4					
-vdbc	charstartoutfit	InventoryType5					
-vdbc	charstartoutfit	InventoryType6					
-vdbc	charstartoutfit	InventoryType7					
-vdbc	charstartoutfit	InventoryType8					
-vdbc	charstartoutfit	InventoryType9					
-vdbc	charstartoutfit	InventoryType10					
-vdbc	charstartoutfit	InventoryType11					
-vdbc	charstartoutfit	InventoryType12					
+vdbc	charstartoutfit	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	SexID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	OutfitID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID11	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	ItemID12	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID11	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	DisplayItemID12	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType11	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	charstartoutfit	InventoryType12	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	charvariations	RaceID	drop			not imported	yes
 vdbc	charvariations	SexID	drop			not imported	yes
 vdbc	charvariations	TextureHoldLayer1	drop			not imported	yes
@@ -2340,8 +2340,8 @@ vdbc	chatchannels	Shortcut_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	chatchannels	Shortcut_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Shortcut_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chatchannels	Shortcut_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	chatprofanity	ID					
-vdbc	chatprofanity	Text					
+vdbc	chatprofanity	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	chatprofanity	Text	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	chrclasses	ID	dbc	dbc_chrclasses.ID	identity	stuff-plan.md 6.3	yes
 vdbc	chrclasses	PlayerClass	server			redundant with ID; no DB2 field	yes
 vdbc	chrclasses	DamageBonusStat	dbc	dbc_chrclasses.DamageBonusStat	identity	stuff-plan.md 6.3	yes
@@ -2388,13 +2388,13 @@ vdbc	chrraces	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, s
 vdbc	chrraces	FacialHairCustomization1	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
 vdbc	chrraces	FacialHairCustomization2	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
 vdbc	chrraces	HairCustomization	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
-vdbc	cinematiccamera	ID					
-vdbc	cinematiccamera	Model					
-vdbc	cinematiccamera	SoundID					
-vdbc	cinematiccamera	Origin1					
-vdbc	cinematiccamera	Origin2					
-vdbc	cinematiccamera	Origin3					
-vdbc	cinematiccamera	OriginFacing					
+vdbc	cinematiccamera	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	Model	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	Origin1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	Origin2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	Origin3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	cinematiccamera	OriginFacing	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	cinematicsequences	ID	dbc	dbc_cinematicsequences.ID	identity	stuff-plan.md 6.3	yes
 vdbc	cinematicsequences	SoundID	dbc	dbc_cinematicsequences.SoundID	identity	stuff-plan.md 6.3	yes
 vdbc	cinematicsequences	Camera1	dbc	dbc_cinematicsequences.Camera1	identity	stuff-plan.md 6.3	yes
@@ -2470,36 +2470,36 @@ vdbc	creaturemodeldata	DeathThudShakeSize	server			no DB2 field; replaced by Dea
 vdbc	creaturemodeldata	SoundID	dbc	dbc_creaturemodeldata.SoundID	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	CollisionWidth	dbc	dbc_creaturemodeldata.CollisionWidth	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	CollisionHeight	dbc	dbc_creaturemodeldata.CollisionHeight	identity	stuff-plan.md 6.3	yes
-vdbc	creaturesounddata	ID					
-vdbc	creaturesounddata	SoundExertionID					
-vdbc	creaturesounddata	SoundExertionCriticalID					
-vdbc	creaturesounddata	SoundInjuryID					
-vdbc	creaturesounddata	SoundInjuryCriticalID					
-vdbc	creaturesounddata	SoundInjuryCrushingBlowID					
-vdbc	creaturesounddata	SoundDeathID					
-vdbc	creaturesounddata	SoundStunID					
-vdbc	creaturesounddata	SoundStandID					
-vdbc	creaturesounddata	SoundFootstepID					
-vdbc	creaturesounddata	SoundAggroID					
-vdbc	creaturesounddata	SoundWingFlapID					
-vdbc	creaturesounddata	SoundWingGlideID					
-vdbc	creaturesounddata	SoundAlertID					
-vdbc	creaturesounddata	SoundFidget1					
-vdbc	creaturesounddata	SoundFidget2					
-vdbc	creaturesounddata	SoundFidget3					
-vdbc	creaturesounddata	SoundFidget4					
-vdbc	creaturesounddata	CustomAttack1					
-vdbc	creaturesounddata	CustomAttack2					
-vdbc	creaturesounddata	CustomAttack3					
-vdbc	creaturesounddata	CustomAttack4					
-vdbc	creaturesounddata	NPCSoundID					
-vdbc	creaturesounddata	LoopSoundID					
-vdbc	creaturesounddata	CreatureImpactType					
-vdbc	creaturesounddata	SoundJumpStartID					
-vdbc	creaturesounddata	SoundJumpEndID					
-vdbc	creaturesounddata	SoundPetAttackID					
-vdbc	creaturesounddata	SoundPetOrderID					
-vdbc	creaturesounddata	SoundPetDismissID					
+vdbc	creaturesounddata	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundExertionID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundExertionCriticalID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundInjuryID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundInjuryCriticalID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundInjuryCrushingBlowID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundDeathID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundStunID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundStandID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundFootstepID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundAggroID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundWingFlapID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundWingGlideID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundAlertID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundFidget1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundFidget2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundFidget3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundFidget4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	CustomAttack1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	CustomAttack2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	CustomAttack3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	CustomAttack4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	NPCSoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	LoopSoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	CreatureImpactType	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundJumpStartID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundJumpEndID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundPetAttackID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundPetOrderID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	creaturesounddata	SoundPetDismissID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	creaturespelldata	ID	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
 vdbc	creaturespelldata	Spells1	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
 vdbc	creaturespelldata	Spells2	drop			vanilla source; the matching srv_ column now sources from dbc_creaturespelldata instead (F1)	yes
@@ -2520,11 +2520,11 @@ vdbc	creaturetype	Name_lang_6	drop			non-enUS locale slot, vanilla client only s
 vdbc	creaturetype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	creaturetype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	creaturetype	Flags	dbc	dbc_creaturetype.Flags	identity	stuff-plan.md 6.3	yes
-vdbc	deaththudlookups	ID					
-vdbc	deaththudlookups	SizeClass					
-vdbc	deaththudlookups	TerrainTypeSoundID					
-vdbc	deaththudlookups	SoundEntryID					
-vdbc	deaththudlookups	SoundEntryIDWater					
+vdbc	deaththudlookups	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	deaththudlookups	SizeClass	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	deaththudlookups	TerrainTypeSoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	deaththudlookups	SoundEntryID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	deaththudlookups	SoundEntryIDWater	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	durabilitycosts	ID	dbc	dbc_durabilitycosts.ID	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
 vdbc	durabilitycosts	WeaponSubClassCost1	dbc	dbc_durabilitycosts.WeaponSubClassCost1	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
 vdbc	durabilitycosts	WeaponSubClassCost2	dbc	dbc_durabilitycosts.WeaponSubClassCost2	identity	vanilla rows run up to the highest vanilla item level, DB2 only covers 0-99 (data-plan.md 3.4, Q3)	yes
@@ -2583,8 +2583,8 @@ vdbc	emotestext	EmoteText13	server			no DB2 field; EmotesText.db2 only carries I
 vdbc	emotestext	EmoteText14	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
 vdbc	emotestext	EmoteText15	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
 vdbc	emotestext	EmoteText16	server			no DB2 field; EmotesText.db2 only carries ID/Name/EmoteID in 1.15, emote text variants stay server-side	yes
-vdbc	emotestextdata	ID					
-vdbc	emotestextdata	Text_lang					
+vdbc	emotestextdata	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	emotestextdata	Text_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	emotestextdata	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	emotestextdata	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	emotestextdata	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2593,20 +2593,20 @@ vdbc	emotestextdata	Text_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	emotestextdata	Text_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	emotestextdata	Text_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	emotestextdata	Text_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	emotestextsound	ID					
-vdbc	emotestextsound	EmotesTextID					
-vdbc	emotestextsound	RaceID					
-vdbc	emotestextsound	SexID					
-vdbc	emotestextsound	SoundID					
-vdbc	environmentaldamage	ID					
-vdbc	environmentaldamage	EnumID					
-vdbc	environmentaldamage	VisualkitID					
-vdbc	exhaustion	ID					
-vdbc	exhaustion	Xp					
-vdbc	exhaustion	Factor					
-vdbc	exhaustion	OutdoorHours					
-vdbc	exhaustion	InnHours					
-vdbc	exhaustion	Name_lang					
+vdbc	emotestextsound	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	emotestextsound	EmotesTextID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	emotestextsound	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	emotestextsound	SexID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	emotestextsound	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	environmentaldamage	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	environmentaldamage	EnumID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	environmentaldamage	VisualkitID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	Xp	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	Factor	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	OutdoorHours	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	InnHours	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	exhaustion	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	exhaustion	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	exhaustion	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	exhaustion	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2615,7 +2615,7 @@ vdbc	exhaustion	Name_lang_5	drop			non-enUS locale slot, vanilla client only shi
 vdbc	exhaustion	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	exhaustion	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	exhaustion	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	exhaustion	Threshold					
+vdbc	exhaustion	Threshold	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	faction	ID	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
 vdbc	faction	ReputationIndex	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
 vdbc	faction	ReputationRaceMask1	drop			vanilla source; the matching srv_ column now sources from dbc_faction instead (F1)	yes
@@ -2653,10 +2653,10 @@ vdbc	faction	Description_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	faction	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	faction	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	factiongroup	ID					
-vdbc	factiongroup	MaskID					
-vdbc	factiongroup	InternalName					
-vdbc	factiongroup	Name_lang					
+vdbc	factiongroup	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	factiongroup	MaskID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	factiongroup	InternalName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	factiongroup	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	factiongroup	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	factiongroup	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	factiongroup	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2679,21 +2679,21 @@ vdbc	factiontemplate	Friend1	drop			vanilla source; the matching srv_ column now
 vdbc	factiontemplate	Friend2	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
 vdbc	factiontemplate	Friend3	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
 vdbc	factiontemplate	Friend4	drop			vanilla source; the matching srv_ column now sources from dbc_factiontemplate instead (F1)	yes
-vdbc	footprinttextures	ID					
-vdbc	footprinttextures	FootstepFilename					
-vdbc	footstepterrainlookup	ID					
-vdbc	footstepterrainlookup	CreatureFootstepID					
-vdbc	footstepterrainlookup	TerrainSoundID					
-vdbc	footstepterrainlookup	SoundID					
-vdbc	footstepterrainlookup	SoundIDSplash					
-vdbc	gameobjectartkit	ID					
-vdbc	gameobjectartkit	TextureVariation1					
-vdbc	gameobjectartkit	TextureVariation2					
-vdbc	gameobjectartkit	TextureVariation3					
-vdbc	gameobjectartkit	AttachModel1					
-vdbc	gameobjectartkit	AttachModel2					
-vdbc	gameobjectartkit	AttachModel3					
-vdbc	gameobjectartkit	AttachModel4					
+vdbc	footprinttextures	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footprinttextures	FootstepFilename	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footstepterrainlookup	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footstepterrainlookup	CreatureFootstepID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footstepterrainlookup	TerrainSoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footstepterrainlookup	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	footstepterrainlookup	SoundIDSplash	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	TextureVariation1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	TextureVariation2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	TextureVariation3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	AttachModel1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	AttachModel2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	AttachModel3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gameobjectartkit	AttachModel4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gameobjectdisplayinfo	ID	dbc	dbc_gameobjectdisplayinfo.ID	identity	stuff-plan.md 6.3	yes
 vdbc	gameobjectdisplayinfo	ModelName	dbc	dbc_gameobjectdisplayinfo.ModelName	identity	stuff-plan.md 6.3	yes
 vdbc	gameobjectdisplayinfo	Sound1	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
@@ -2706,8 +2706,8 @@ vdbc	gameobjectdisplayinfo	Sound7	server			no DB2 field for GameObjectDisplayInf
 vdbc	gameobjectdisplayinfo	Sound8	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
 vdbc	gameobjectdisplayinfo	Sound9	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
 vdbc	gameobjectdisplayinfo	Sound10	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gametips	ID					
-vdbc	gametips	Text_lang					
+vdbc	gametips	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gametips	Text_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gametips	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gametips	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gametips	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2716,10 +2716,10 @@ vdbc	gametips	Text_lang_5	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	gametips	Text_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gametips	Text_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gametips	Text_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	gmsurveycurrentsurvey	LANGID					
-vdbc	gmsurveycurrentsurvey	GMSURVEY_ID					
-vdbc	gmsurveyquestions	ID					
-vdbc	gmsurveyquestions	Question_lang					
+vdbc	gmsurveycurrentsurvey	LANGID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveycurrentsurvey	GMSURVEY_ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveyquestions	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveyquestions	Question_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gmsurveyquestions	Question_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gmsurveyquestions	Question_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gmsurveyquestions	Question_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2728,17 +2728,17 @@ vdbc	gmsurveyquestions	Question_lang_5	drop			non-enUS locale slot, vanilla clie
 vdbc	gmsurveyquestions	Question_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gmsurveyquestions	Question_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	gmsurveyquestions	Question_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	gmsurveysurveys	ID					
-vdbc	gmsurveysurveys	Q1					
-vdbc	gmsurveysurveys	Q2					
-vdbc	gmsurveysurveys	Q3					
-vdbc	gmsurveysurveys	Q4					
-vdbc	gmsurveysurveys	Q5					
-vdbc	gmsurveysurveys	Q6					
-vdbc	gmsurveysurveys	Q7					
-vdbc	gmsurveysurveys	Q8					
-vdbc	gmsurveysurveys	Q9					
-vdbc	gmsurveysurveys	Q10					
+vdbc	gmsurveysurveys	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	gmsurveysurveys	Q10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gmticketcategory	ID	drop			not imported	yes
 vdbc	gmticketcategory	Category_lang	drop			not imported	yes
 vdbc	gmticketcategory	Category_lang_1	drop			not imported	yes
@@ -2749,16 +2749,16 @@ vdbc	gmticketcategory	Category_lang_5	drop			not imported	yes
 vdbc	gmticketcategory	Category_lang_6	drop			not imported	yes
 vdbc	gmticketcategory	Category_lang_7	drop			not imported	yes
 vdbc	gmticketcategory	Category_lang_mask	drop			not imported	yes
-vdbc	groundeffectdoodad	ID					
-vdbc	groundeffectdoodad	DoodadIdTag					
-vdbc	groundeffectdoodad	Doodadpath					
-vdbc	groundeffecttexture	ID					
-vdbc	groundeffecttexture	DoodadID1					
-vdbc	groundeffecttexture	DoodadID2					
-vdbc	groundeffecttexture	DoodadID3					
-vdbc	groundeffecttexture	DoodadID4					
-vdbc	groundeffecttexture	Density					
-vdbc	groundeffecttexture	Sound					
+vdbc	groundeffectdoodad	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffectdoodad	DoodadIdTag	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffectdoodad	Doodadpath	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	DoodadID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	DoodadID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	DoodadID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	DoodadID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	Density	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	groundeffecttexture	Sound	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	helmetgeosetvisdata	ID	drop			not imported	yes
 vdbc	helmetgeosetvisdata	HideGeoset1	drop			not imported	yes
 vdbc	helmetgeosetvisdata	HideGeoset2	drop			not imported	yes
@@ -2775,10 +2775,10 @@ vdbc	itembagfamily	Name_lang_5	drop			non-enUS locale slot, vanilla client only 
 vdbc	itembagfamily	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itembagfamily	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itembagfamily	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemclass	ClassID					
-vdbc	itemclass	SubclassMapID					
-vdbc	itemclass	Flags					
-vdbc	itemclass	ClassName_lang					
+vdbc	itemclass	ClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemclass	SubclassMapID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemclass	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemclass	ClassName_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	itemclass	ClassName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemclass	ClassName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemclass	ClassName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2810,13 +2810,13 @@ vdbc	itemdisplayinfo	Texture6	drop			vanilla source; the matching srv_ column no
 vdbc	itemdisplayinfo	Texture7	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
 vdbc	itemdisplayinfo	Texture8	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
 vdbc	itemdisplayinfo	ItemVisual	drop			vanilla source; the matching srv_ column now sources from dbc_itemdisplayinfo instead (F1)	yes
-vdbc	itemgroupsounds	ID					
-vdbc	itemgroupsounds	Sound1					
-vdbc	itemgroupsounds	Sound2					
-vdbc	itemgroupsounds	Sound3					
-vdbc	itemgroupsounds	Sound4					
-vdbc	itempetfood	ID					
-vdbc	itempetfood	Name_lang					
+vdbc	itemgroupsounds	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemgroupsounds	Sound1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemgroupsounds	Sound2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemgroupsounds	Sound3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemgroupsounds	Sound4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itempetfood	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itempetfood	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	itempetfood	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itempetfood	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itempetfood	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2886,17 +2886,17 @@ vdbc	itemset	SetThreshold7	server			no DB2 field; item set bonus data isn't in I
 vdbc	itemset	SetThreshold8	server			no DB2 field; item set bonus data isn't in ItemSet.db2 any more (SetFlags replaces the concept differently)	yes
 vdbc	itemset	RequiredSkill	dbc	dbc_itemset.RequiredSkill	identity	stuff-plan.md 6.3	yes
 vdbc	itemset	RequiredSkillRank	dbc	dbc_itemset.RequiredSkillRank	identity	stuff-plan.md 6.3	yes
-vdbc	itemsubclass	ClassID					
-vdbc	itemsubclass	SubClassID					
-vdbc	itemsubclass	PrerequisiteProficiency					
-vdbc	itemsubclass	PostrequisiteProficiency					
-vdbc	itemsubclass	Flags					
-vdbc	itemsubclass	DisplayFlags					
-vdbc	itemsubclass	WeaponParrySeq					
-vdbc	itemsubclass	WeaponReadySeq					
-vdbc	itemsubclass	WeaponAttackSeq					
-vdbc	itemsubclass	WeaponSwingSize					
-vdbc	itemsubclass	DisplayName_lang					
+vdbc	itemsubclass	ClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	SubClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	PrerequisiteProficiency	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	PostrequisiteProficiency	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	DisplayFlags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	WeaponParrySeq	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	WeaponReadySeq	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	WeaponAttackSeq	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	WeaponSwingSize	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclass	DisplayName_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	itemsubclass	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2905,7 +2905,7 @@ vdbc	itemsubclass	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client
 vdbc	itemsubclass	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemsubclass	VerboseName_lang					
+vdbc	itemsubclass	VerboseName_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	itemsubclass	VerboseName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	VerboseName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	VerboseName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2914,9 +2914,9 @@ vdbc	itemsubclass	VerboseName_lang_5	drop			non-enUS locale slot, vanilla client
 vdbc	itemsubclass	VerboseName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	VerboseName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclass	VerboseName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	itemsubclassmask	ClassID					
-vdbc	itemsubclassmask	Mask					
-vdbc	itemsubclassmask	Name_lang					
+vdbc	itemsubclassmask	ClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclassmask	Mask	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemsubclassmask	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	itemsubclassmask	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclassmask	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itemsubclassmask	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2927,14 +2927,14 @@ vdbc	itemsubclassmask	Name_lang_7	drop			non-enUS locale slot, vanilla client on
 vdbc	itemsubclassmask	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemvisualeffects	ID	drop			not imported	yes
 vdbc	itemvisualeffects	Model	drop			not imported	yes
-vdbc	itemvisuals	ID					
-vdbc	itemvisuals	Slot1					
-vdbc	itemvisuals	Slot2					
-vdbc	itemvisuals	Slot3					
-vdbc	itemvisuals	Slot4					
-vdbc	itemvisuals	Slot5					
-vdbc	languages	ID					
-vdbc	languages	Name_lang					
+vdbc	itemvisuals	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemvisuals	Slot1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemvisuals	Slot2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemvisuals	Slot3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemvisuals	Slot4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	itemvisuals	Slot5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	languages	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	languages	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	languages	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	languages	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	languages	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2943,11 +2943,11 @@ vdbc	languages	Name_lang_5	drop			non-enUS locale slot, vanilla client only ship
 vdbc	languages	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	languages	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	languages	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	languagewords	ID					
-vdbc	languagewords	LanguageID					
-vdbc	languagewords	Word					
-vdbc	lfgdungeons	ID					
-vdbc	lfgdungeons	Name_lang					
+vdbc	languagewords	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	languagewords	LanguageID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	languagewords	Word	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lfgdungeons	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lfgdungeons	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	lfgdungeons	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	lfgdungeons	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	lfgdungeons	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -2956,22 +2956,22 @@ vdbc	lfgdungeons	Name_lang_5	drop			non-enUS locale slot, vanilla client only sh
 vdbc	lfgdungeons	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	lfgdungeons	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	lfgdungeons	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	lfgdungeons	MinLevel					
-vdbc	lfgdungeons	MaxLevel					
-vdbc	lfgdungeons	TypeID					
-vdbc	lfgdungeons	Faction					
-vdbc	light	ID					
-vdbc	light	ContinentID					
-vdbc	light	GameCoords1					
-vdbc	light	GameCoords2					
-vdbc	light	GameCoords3					
-vdbc	light	GameFalloffStart					
-vdbc	light	GameFalloffEnd					
-vdbc	light	LightParamsID1					
-vdbc	light	LightParamsID2					
-vdbc	light	LightParamsID3					
-vdbc	light	LightParamsID4					
-vdbc	light	LightParamsID5					
+vdbc	lfgdungeons	MinLevel	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lfgdungeons	MaxLevel	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lfgdungeons	TypeID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lfgdungeons	Faction	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	ContinentID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	GameCoords1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	GameCoords2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	GameCoords3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	GameFalloffStart	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	GameFalloffEnd	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	LightParamsID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	LightParamsID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	LightParamsID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	LightParamsID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	light	LightParamsID5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	lightfloatband	ID	drop			not imported	yes
 vdbc	lightfloatband	Num	drop			not imported	yes
 vdbc	lightfloatband	Time1	drop			not imported	yes
@@ -3040,43 +3040,43 @@ vdbc	lightintband	Data13	drop			not imported	yes
 vdbc	lightintband	Data14	drop			not imported	yes
 vdbc	lightintband	Data15	drop			not imported	yes
 vdbc	lightintband	Data16	drop			not imported	yes
-vdbc	lightparams	ID					
-vdbc	lightparams	HighlightSky					
-vdbc	lightparams	LightSkyboxID					
-vdbc	lightparams	Glow					
-vdbc	lightparams	WaterShallowAlpha					
-vdbc	lightparams	WaterDeepAlpha					
-vdbc	lightparams	OceanShallowAlpha					
-vdbc	lightparams	OceanDeepAlpha					
-vdbc	lightparams	Flags					
-vdbc	lightskybox	ID					
-vdbc	lightskybox	Name					
-vdbc	liquidtype	ID					
-vdbc	liquidtype	Name					
-vdbc	liquidtype	Flags					
-vdbc	liquidtype	SpellID					
-vdbc	loadingscreens	ID					
-vdbc	loadingscreens	Name					
-vdbc	loadingscreens	FileName					
-vdbc	loadingscreentaxisplines	ID					
-vdbc	loadingscreentaxisplines	PathID					
-vdbc	loadingscreentaxisplines	Locx1					
-vdbc	loadingscreentaxisplines	Locx2					
-vdbc	loadingscreentaxisplines	Locx3					
-vdbc	loadingscreentaxisplines	Locx4					
-vdbc	loadingscreentaxisplines	Locx5					
-vdbc	loadingscreentaxisplines	Locx6					
-vdbc	loadingscreentaxisplines	Locx7					
-vdbc	loadingscreentaxisplines	Locx8					
-vdbc	loadingscreentaxisplines	Locy1					
-vdbc	loadingscreentaxisplines	Locy2					
-vdbc	loadingscreentaxisplines	Locy3					
-vdbc	loadingscreentaxisplines	Locy4					
-vdbc	loadingscreentaxisplines	Locy5					
-vdbc	loadingscreentaxisplines	Locy6					
-vdbc	loadingscreentaxisplines	Locy7					
-vdbc	loadingscreentaxisplines	Locy8					
-vdbc	loadingscreentaxisplines	LegIndex					
+vdbc	lightparams	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	HighlightSky	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	LightSkyboxID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	Glow	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	WaterShallowAlpha	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	WaterDeepAlpha	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	OceanShallowAlpha	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	OceanDeepAlpha	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightparams	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightskybox	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	lightskybox	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	liquidtype	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	liquidtype	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	liquidtype	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	liquidtype	SpellID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreens	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreens	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreens	FileName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	PathID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locx8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	Locy8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	loadingscreentaxisplines	LegIndex	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	lock	ID	dbc	dbc_lock.ID	identity	stuff-plan.md 6.3	yes
 vdbc	lock	Type1	dbc	dbc_lock.Type1	identity	stuff-plan.md 6.3	yes
 vdbc	lock	Type2	dbc	dbc_lock.Type2	identity	stuff-plan.md 6.3	yes
@@ -3110,8 +3110,8 @@ vdbc	lock	Action5	dbc	dbc_lock.Action5	identity	stuff-plan.md 6.3	yes
 vdbc	lock	Action6	dbc	dbc_lock.Action6	identity	stuff-plan.md 6.3	yes
 vdbc	lock	Action7	dbc	dbc_lock.Action7	identity	stuff-plan.md 6.3	yes
 vdbc	lock	Action8	dbc	dbc_lock.Action8	identity	stuff-plan.md 6.3	yes
-vdbc	locktype	ID					
-vdbc	locktype	Name_lang					
+vdbc	locktype	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	locktype	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	locktype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3120,7 +3120,7 @@ vdbc	locktype	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	locktype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	locktype	ResourceName_lang					
+vdbc	locktype	ResourceName_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	locktype	ResourceName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	ResourceName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	ResourceName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3129,7 +3129,7 @@ vdbc	locktype	ResourceName_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	locktype	ResourceName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	ResourceName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	ResourceName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	locktype	Verb_lang					
+vdbc	locktype	Verb_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	locktype	Verb_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Verb_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Verb_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3138,7 +3138,7 @@ vdbc	locktype	Verb_lang_5	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	locktype	Verb_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Verb_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	locktype	Verb_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	locktype	CursorName					
+vdbc	locktype	CursorName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	mailtemplate	ID	drop			vanilla source; the matching srv_ column now sources from dbc_mailtemplate instead (F1)	yes
 vdbc	mailtemplate	Body_lang	drop			vanilla source; the matching srv_ column now sources from dbc_mailtemplate instead (F1)	yes
 vdbc	mailtemplate	Body_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3191,22 +3191,22 @@ vdbc	map	LoadingScreenID	drop			vanilla source; the matching srv_ column now sou
 vdbc	map	RaidOffset	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	map	Continentname	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
 vdbc	map	Unk4	drop			vanilla source; the matching srv_ column now sources from dbc_map instead (F1)	yes
-vdbc	material	MaterialID					
-vdbc	material	Flags					
-vdbc	material	FoleySoundID					
-vdbc	namegen	ID					
-vdbc	namegen	Name					
-vdbc	namegen	RaceID					
-vdbc	namegen	Sex					
+vdbc	material	MaterialID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	material	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	material	FoleySoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	namegen	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	namegen	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	namegen	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	namegen	Sex	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	namesprofanity	ID	dbc	dbc_namesprofanity.ID	identity	stuff-plan.md 6.3	yes
 vdbc	namesprofanity	Name	dbc	dbc_namesprofanity.Name	identity	stuff-plan.md 6.3	yes
 vdbc	namesreserved	ID	dbc	dbc_namesreserved.ID	identity	stuff-plan.md 6.3	yes
 vdbc	namesreserved	Name	dbc	dbc_namesreserved.Name	identity	stuff-plan.md 6.3	yes
-vdbc	npcsounds	ID					
-vdbc	npcsounds	SoundID1					
-vdbc	npcsounds	SoundID2					
-vdbc	npcsounds	SoundID3					
-vdbc	npcsounds	SoundID4					
+vdbc	npcsounds	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	npcsounds	SoundID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	npcsounds	SoundID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	npcsounds	SoundID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	npcsounds	SoundID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	package	ID	drop			not imported	yes
 vdbc	package	Icon	drop			not imported	yes
 vdbc	package	Cost	drop			not imported	yes
@@ -3219,13 +3219,13 @@ vdbc	package	Name_lang_5	drop			not imported	yes
 vdbc	package	Name_lang_6	drop			not imported	yes
 vdbc	package	Name_lang_7	drop			not imported	yes
 vdbc	package	Name_lang_mask	drop			not imported	yes
-vdbc	pagetextmaterial	ID					
-vdbc	pagetextmaterial	Name					
-vdbc	paperdollitemframe	ItemButtonName					
-vdbc	paperdollitemframe	SlotIcon					
-vdbc	paperdollitemframe	SlotNumber					
-vdbc	petloyalty	ID					
-vdbc	petloyalty	Name_lang					
+vdbc	pagetextmaterial	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	pagetextmaterial	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	paperdollitemframe	ItemButtonName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	paperdollitemframe	SlotIcon	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	paperdollitemframe	SlotNumber	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petloyalty	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petloyalty	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	petloyalty	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petloyalty	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petloyalty	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3234,8 +3234,8 @@ vdbc	petloyalty	Name_lang_5	drop			non-enUS locale slot, vanilla client only shi
 vdbc	petloyalty	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petloyalty	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petloyalty	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	petpersonality	ID					
-vdbc	petpersonality	Name_lang					
+vdbc	petpersonality	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	petpersonality	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petpersonality	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petpersonality	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3244,17 +3244,17 @@ vdbc	petpersonality	Name_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	petpersonality	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petpersonality	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	petpersonality	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	petpersonality	HappinessThreshold1					
-vdbc	petpersonality	HappinessThreshold2					
-vdbc	petpersonality	HappinessThreshold3					
-vdbc	petpersonality	HappinessDamage1					
-vdbc	petpersonality	HappinessDamage2					
-vdbc	petpersonality	HappinessDamage3					
-vdbc	petpersonality	DamageModifier1					
-vdbc	petpersonality	DamageModifier2					
-vdbc	petpersonality	DamageModifier3					
-vdbc	questinfo	ID					
-vdbc	questinfo	InfoName_lang					
+vdbc	petpersonality	HappinessThreshold1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	HappinessThreshold2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	HappinessThreshold3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	HappinessDamage1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	HappinessDamage2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	HappinessDamage3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	DamageModifier1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	DamageModifier2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	petpersonality	DamageModifier3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	questinfo	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	questinfo	InfoName_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	questinfo	InfoName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questinfo	InfoName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questinfo	InfoName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3273,10 +3273,10 @@ vdbc	questsort	SortName_lang_5	drop			non-enUS locale slot, vanilla client only 
 vdbc	questsort	SortName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questsort	SortName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	questsort	SortName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	resistances	ID					
-vdbc	resistances	Flags					
-vdbc	resistances	FizzleSoundID					
-vdbc	resistances	Name_lang					
+vdbc	resistances	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	resistances	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	resistances	FizzleSoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	resistances	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	resistances	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	resistances	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	resistances	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3285,8 +3285,8 @@ vdbc	resistances	Name_lang_5	drop			non-enUS locale slot, vanilla client only sh
 vdbc	resistances	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	resistances	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	resistances	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	servermessages	ID					
-vdbc	servermessages	Text_lang					
+vdbc	servermessages	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	servermessages	Text_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	servermessages	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	servermessages	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	servermessages	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3344,8 +3344,8 @@ vdbc	skilllineability	TrivialSkillLineRankLow	drop			vanilla source; the matchin
 vdbc	skilllineability	Abandonable	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
 vdbc	skilllineability	CharacterPoints1	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
 vdbc	skilllineability	CharacterPoints2	drop			vanilla source; the matching srv_ column now sources from dbc_skilllineability instead (F1)	yes
-vdbc	skilllinecategory	ID					
-vdbc	skilllinecategory	Name_lang					
+vdbc	skilllinecategory	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	skilllinecategory	Name_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	skilllinecategory	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skilllinecategory	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skilllinecategory	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3354,7 +3354,7 @@ vdbc	skilllinecategory	Name_lang_5	drop			non-enUS locale slot, vanilla client o
 vdbc	skilllinecategory	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skilllinecategory	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skilllinecategory	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	skilllinecategory	SortIndex					
+vdbc	skilllinecategory	SortIndex	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	skillraceclassinfo	ID	dbc	dbc_skillraceclassinfo.ID	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	SkillID	dbc	dbc_skillraceclassinfo.SkillID	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	RaceMask	dbc	dbc_skillraceclassinfo.RaceMask	identity	stuff-plan.md 6.3	yes
@@ -3396,9 +3396,9 @@ vdbc	skilltiers	Value13	server			keep: feeds a new server table skill_tiers; Ski
 vdbc	skilltiers	Value14	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
 vdbc	skilltiers	Value15	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
 vdbc	skilltiers	Value16	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	soundambience	ID					
-vdbc	soundambience	AmbienceID1					
-vdbc	soundambience	AmbienceID2					
+vdbc	soundambience	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundambience	AmbienceID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundambience	AmbienceID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	soundentries	ID	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
 vdbc	soundentries	SoundType	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
 vdbc	soundentries	Name	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
@@ -3428,30 +3428,30 @@ vdbc	soundentries	Flags	drop			vanilla source; the matching srv_ column now sour
 vdbc	soundentries	MinDistance	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
 vdbc	soundentries	DistanceCutoff	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
 vdbc	soundentries	EAXDef	drop			vanilla source; the matching srv_ column now sources from dbc_soundkit instead (F1)	yes
-vdbc	soundproviderpreferences	ID					
-vdbc	soundproviderpreferences	Description					
-vdbc	soundproviderpreferences	Flags					
-vdbc	soundproviderpreferences	EAXEnvironmentSelection					
-vdbc	soundproviderpreferences	EAXDecayTime					
-vdbc	soundproviderpreferences	EAX2EnvironmentSize					
-vdbc	soundproviderpreferences	EAX2EnvironmentDiffusion					
-vdbc	soundproviderpreferences	EAX2Room					
-vdbc	soundproviderpreferences	EAX2RoomHF					
-vdbc	soundproviderpreferences	EAX2DecayHFRatio					
-vdbc	soundproviderpreferences	EAX2Reflections					
-vdbc	soundproviderpreferences	EAX2ReflectionsDelay					
-vdbc	soundproviderpreferences	EAX2Reverb					
-vdbc	soundproviderpreferences	EAX2ReverbDelay					
-vdbc	soundproviderpreferences	EAX2RoomRolloff					
-vdbc	soundproviderpreferences	EAX2AirAbsorption					
-vdbc	soundproviderpreferences	EAX3RoomLF					
-vdbc	soundproviderpreferences	EAX3DecayLFRatio					
-vdbc	soundproviderpreferences	EAX3EchoTime					
-vdbc	soundproviderpreferences	EAX3EchoDepth					
-vdbc	soundproviderpreferences	EAX3ModulationTime					
-vdbc	soundproviderpreferences	EAX3ModulationDepth					
-vdbc	soundproviderpreferences	EAX3HFReference					
-vdbc	soundproviderpreferences	EAX3LFReference					
+vdbc	soundproviderpreferences	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	Description	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAXEnvironmentSelection	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAXDecayTime	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2EnvironmentSize	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2EnvironmentDiffusion	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2Room	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2RoomHF	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2DecayHFRatio	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2Reflections	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2ReflectionsDelay	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2Reverb	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2ReverbDelay	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2RoomRolloff	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX2AirAbsorption	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3RoomLF	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3DecayLFRatio	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3EchoTime	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3EchoDepth	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3ModulationTime	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3ModulationDepth	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3HFReference	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	soundproviderpreferences	EAX3LFReference	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	soundsamplepreferences	ID	drop			not imported	yes
 vdbc	soundsamplepreferences	Field_0_6_0_3592_001	drop			not imported	yes
 vdbc	soundsamplepreferences	Field_0_6_0_3592_002	drop			not imported	yes
@@ -3473,8 +3473,8 @@ vdbc	soundwatertype	ID	drop			not imported	yes
 vdbc	soundwatertype	SoundType	drop			not imported	yes
 vdbc	soundwatertype	SoundSubtype	drop			not imported	yes
 vdbc	soundwatertype	SoundID	drop			not imported	yes
-vdbc	spammessages	ID					
-vdbc	spammessages	Text					
+vdbc	spammessages	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	spammessages	Text	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	spell	ID					
 vdbc	spell	School					
 vdbc	spell	Category					
@@ -3829,9 +3829,9 @@ vdbc	spellvisualprecasttransitions	PrecastLoadAnimName	drop			not imported	yes
 vdbc	spellvisualprecasttransitions	PrecastHoldAnimName	drop			not imported	yes
 vdbc	stableslotprices	ID	dbc	dbc_stableslotprices.ID	identity	stuff-plan.md 6.3	yes
 vdbc	stableslotprices	Cost	dbc	dbc_stableslotprices.Cost	identity	stuff-plan.md 6.3	yes
-vdbc	startup_strings	ID					
-vdbc	startup_strings	Name					
-vdbc	startup_strings	Message_lang					
+vdbc	startup_strings	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	startup_strings	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	startup_strings	Message_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	startup_strings	Message_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	startup_strings	Message_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	startup_strings	Message_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3840,10 +3840,10 @@ vdbc	startup_strings	Message_lang_5	drop			non-enUS locale slot, vanilla client 
 vdbc	startup_strings	Message_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	startup_strings	Message_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	startup_strings	Message_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	stationery	ID					
-vdbc	stationery	ItemID					
-vdbc	stationery	Texture					
-vdbc	stationery	Flags					
+vdbc	stationery	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	stationery	ItemID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	stationery	Texture	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	stationery	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	stringlookups	ID	drop			not imported	yes
 vdbc	stringlookups	String	drop			not imported	yes
 vdbc	talent	ID	dbc	dbc_talent.ID	identity	stuff-plan.md 6.3	yes
@@ -3911,13 +3911,13 @@ vdbc	taxipathnode	Loc2	dbc	dbc_taxipathnode.Loc2	identity	stuff-plan.md 6.3	yes
 vdbc	taxipathnode	Loc3	dbc	dbc_taxipathnode.Loc3	identity	stuff-plan.md 6.3	yes
 vdbc	taxipathnode	Flags	dbc	dbc_taxipathnode.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	taxipathnode	Delay	dbc	dbc_taxipathnode.Delay	identity	stuff-plan.md 6.3	yes
-vdbc	terraintype	TerrainID					
-vdbc	terraintype	TerrainDesc					
-vdbc	terraintype	FootstepSprayRun					
-vdbc	terraintype	FootstepSprayWalk					
-vdbc	terraintype	SoundID					
-vdbc	terraintype	Flags					
-vdbc	terraintypesounds	ID					
+vdbc	terraintype	TerrainID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintype	TerrainDesc	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintype	FootstepSprayRun	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintype	FootstepSprayWalk	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintype	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintype	Flags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	terraintypesounds	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	transportanimation	ID	dbc	dbc_transportanimation.ID	identity	stuff-plan.md 6.3	yes
 vdbc	transportanimation	TransportID	dbc	dbc_transportanimation.TransportID	identity	stuff-plan.md 6.3	yes
 vdbc	transportanimation	TimeIndex	dbc	dbc_transportanimation.TimeIndex	identity	stuff-plan.md 6.3	yes
@@ -3928,20 +3928,20 @@ vdbc	transportanimation	SequenceID	dbc	dbc_transportanimation.SequenceID	identit
 vdbc	uisoundlookups	ID	drop			not imported	yes
 vdbc	uisoundlookups	SoundID	drop			not imported	yes
 vdbc	uisoundlookups	SoundName	drop			not imported	yes
-vdbc	unitblood	ID					
-vdbc	unitblood	CombatBloodSpurtFront1					
-vdbc	unitblood	CombatBloodSpurtFront2					
-vdbc	unitblood	CombatBloodSpurtBack1					
-vdbc	unitblood	CombatBloodSpurtBack2					
-vdbc	unitblood	GroundBlood1					
-vdbc	unitblood	GroundBlood2					
-vdbc	unitblood	GroundBlood3					
-vdbc	unitblood	GroundBlood4					
-vdbc	unitblood	GroundBlood5					
-vdbc	unitbloodlevels	ID					
-vdbc	unitbloodlevels	Violencelevel1					
-vdbc	unitbloodlevels	Violencelevel2					
-vdbc	unitbloodlevels	Violencelevel3					
+vdbc	unitblood	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	CombatBloodSpurtFront1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	CombatBloodSpurtFront2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	CombatBloodSpurtBack1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	CombatBloodSpurtBack2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	GroundBlood1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	GroundBlood2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	GroundBlood3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	GroundBlood4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitblood	GroundBlood5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitbloodlevels	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitbloodlevels	Violencelevel1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitbloodlevels	Violencelevel2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	unitbloodlevels	Violencelevel3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	videohardware	ID	drop			not imported	yes
 vdbc	videohardware	VendorID	drop			not imported	yes
 vdbc	videohardware	DeviceID	drop			not imported	yes
@@ -3964,40 +3964,40 @@ vdbc	videohardware	OglOverrides	drop			not imported	yes
 vdbc	videohardware	D3dOverrides	drop			not imported	yes
 vdbc	videohardware	FixLag	drop			not imported	yes
 vdbc	videohardware	Multisample	drop			not imported	yes
-vdbc	vocaluisounds	ID					
-vdbc	vocaluisounds	VocalUIEnum					
-vdbc	vocaluisounds	RaceID					
-vdbc	vocaluisounds	NormalSoundID1					
-vdbc	vocaluisounds	NormalSoundID2					
-vdbc	vocaluisounds	PissedSoundID1					
-vdbc	vocaluisounds	PissedSoundID2					
-vdbc	weaponimpactsounds	ID					
-vdbc	weaponimpactsounds	WeaponSubClassID					
-vdbc	weaponimpactsounds	ParrySoundType					
-vdbc	weaponimpactsounds	ImpactSoundID1					
-vdbc	weaponimpactsounds	ImpactSoundID2					
-vdbc	weaponimpactsounds	ImpactSoundID3					
-vdbc	weaponimpactsounds	ImpactSoundID4					
-vdbc	weaponimpactsounds	ImpactSoundID5					
-vdbc	weaponimpactsounds	ImpactSoundID6					
-vdbc	weaponimpactsounds	ImpactSoundID7					
-vdbc	weaponimpactsounds	ImpactSoundID8					
-vdbc	weaponimpactsounds	ImpactSoundID9					
-vdbc	weaponimpactsounds	ImpactSoundID10					
-vdbc	weaponimpactsounds	CritImpactSoundID1					
-vdbc	weaponimpactsounds	CritImpactSoundID2					
-vdbc	weaponimpactsounds	CritImpactSoundID3					
-vdbc	weaponimpactsounds	CritImpactSoundID4					
-vdbc	weaponimpactsounds	CritImpactSoundID5					
-vdbc	weaponimpactsounds	CritImpactSoundID6					
-vdbc	weaponimpactsounds	CritImpactSoundID7					
-vdbc	weaponimpactsounds	CritImpactSoundID8					
-vdbc	weaponimpactsounds	CritImpactSoundID9					
-vdbc	weaponimpactsounds	CritImpactSoundID10					
-vdbc	weaponswingsounds2	ID					
-vdbc	weaponswingsounds2	SwingType					
-vdbc	weaponswingsounds2	Crit					
-vdbc	weaponswingsounds2	SoundID					
+vdbc	vocaluisounds	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	VocalUIEnum	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	RaceID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	NormalSoundID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	NormalSoundID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	PissedSoundID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	vocaluisounds	PissedSoundID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	WeaponSubClassID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ParrySoundType	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	ImpactSoundID10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID5	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID6	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID7	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID8	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID9	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponimpactsounds	CritImpactSoundID10	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponswingsounds2	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponswingsounds2	SwingType	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponswingsounds2	Crit	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	weaponswingsounds2	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	wmoareatable	ID	dbc	dbc_wmoareatable.ID	identity	stuff-plan.md 6.3	yes
 vdbc	wmoareatable	WMOID	dbc	dbc_wmoareatable.WMOID	identity	stuff-plan.md 6.3	yes
 vdbc	wmoareatable	NameSetID	dbc	dbc_wmoareatable.NameSetID	identity	stuff-plan.md 6.3	yes
@@ -4039,23 +4039,23 @@ vdbc	worldmapcontinent	TaxiMin1	drop			not imported	yes
 vdbc	worldmapcontinent	TaxiMin2	drop			not imported	yes
 vdbc	worldmapcontinent	TaxiMax1	drop			not imported	yes
 vdbc	worldmapcontinent	TaxiMax2	drop			not imported	yes
-vdbc	worldmapoverlay	ID					
-vdbc	worldmapoverlay	MapAreaID					
-vdbc	worldmapoverlay	AreaID1					
-vdbc	worldmapoverlay	AreaID2					
-vdbc	worldmapoverlay	AreaID3					
-vdbc	worldmapoverlay	AreaID4					
-vdbc	worldmapoverlay	MapPointX					
-vdbc	worldmapoverlay	MapPointY					
-vdbc	worldmapoverlay	TextureName					
-vdbc	worldmapoverlay	TextureWidth					
-vdbc	worldmapoverlay	TextureHeight					
-vdbc	worldmapoverlay	OffsetX					
-vdbc	worldmapoverlay	OffsetY					
-vdbc	worldmapoverlay	HitRectTop					
-vdbc	worldmapoverlay	HitRectLeft					
-vdbc	worldmapoverlay	HitRectBottom					
-vdbc	worldmapoverlay	HitRectRight					
+vdbc	worldmapoverlay	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	MapAreaID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	AreaID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	AreaID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	AreaID3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	AreaID4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	MapPointX	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	MapPointY	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	TextureName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	TextureWidth	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	TextureHeight	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	OffsetX	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	OffsetY	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	HitRectTop	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	HitRectLeft	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	HitRectBottom	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldmapoverlay	HitRectRight	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldsafelocs	ID	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
 vdbc	worldsafelocs	Continent	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
 vdbc	worldsafelocs	Loc1	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
@@ -4070,11 +4070,11 @@ vdbc	worldsafelocs	AreaName_lang_5	drop			non-enUS locale slot, vanilla client o
 vdbc	worldsafelocs	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	worldstateui	ID					
-vdbc	worldstateui	MapID					
-vdbc	worldstateui	AreaID					
-vdbc	worldstateui	Icon					
-vdbc	worldstateui	String_lang					
+vdbc	worldstateui	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	MapID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	AreaID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	Icon	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	String_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldstateui	String_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	String_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	String_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -4083,7 +4083,7 @@ vdbc	worldstateui	String_lang_5	drop			non-enUS locale slot, vanilla client only
 vdbc	worldstateui	String_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	String_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	String_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	worldstateui	Tooltip_lang					
+vdbc	worldstateui	Tooltip_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldstateui	Tooltip_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	Tooltip_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	Tooltip_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -4092,11 +4092,11 @@ vdbc	worldstateui	Tooltip_lang_5	drop			non-enUS locale slot, vanilla client onl
 vdbc	worldstateui	Tooltip_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	Tooltip_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	Tooltip_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	worldstateui	FactionID					
-vdbc	worldstateui	StateVariable					
-vdbc	worldstateui	Type					
-vdbc	worldstateui	DynamicIcon					
-vdbc	worldstateui	DynamicTooltip_lang					
+vdbc	worldstateui	FactionID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	StateVariable	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	Type	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	DynamicIcon	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	DynamicTooltip_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldstateui	DynamicTooltip_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	DynamicTooltip_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	DynamicTooltip_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -4105,10 +4105,10 @@ vdbc	worldstateui	DynamicTooltip_lang_5	drop			non-enUS locale slot, vanilla cli
 vdbc	worldstateui	DynamicTooltip_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	DynamicTooltip_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldstateui	DynamicTooltip_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	worldstateui	ExtendedUI					
-vdbc	worldstateui	ExtendedUIStateVariable1					
-vdbc	worldstateui	ExtendedUIStateVariable2					
-vdbc	worldstateui	ExtendedUIStateVariable3					
+vdbc	worldstateui	ExtendedUI	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	ExtendedUIStateVariable1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	ExtendedUIStateVariable2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	worldstateui	ExtendedUIStateVariable3	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	wowerror_strings	ID	drop			not imported	yes
 vdbc	wowerror_strings	Name	drop			not imported	yes
 vdbc	wowerror_strings	Description_lang	drop			not imported	yes
@@ -4120,16 +4120,16 @@ vdbc	wowerror_strings	Description_lang_5	drop			not imported	yes
 vdbc	wowerror_strings	Description_lang_6	drop			not imported	yes
 vdbc	wowerror_strings	Description_lang_7	drop			not imported	yes
 vdbc	wowerror_strings	Description_lang_mask	drop			not imported	yes
-vdbc	zoneintromusictable	ID					
-vdbc	zoneintromusictable	Name					
-vdbc	zoneintromusictable	SoundID					
-vdbc	zoneintromusictable	Priority					
-vdbc	zoneintromusictable	MinDelayMinutes					
-vdbc	zonemusic	ID					
-vdbc	zonemusic	SetName					
-vdbc	zonemusic	SilenceIntervalMin1					
-vdbc	zonemusic	SilenceIntervalMin2					
-vdbc	zonemusic	SilenceIntervalMax1					
-vdbc	zonemusic	SilenceIntervalMax2					
-vdbc	zonemusic	Sounds1					
-vdbc	zonemusic	Sounds2					
+vdbc	zoneintromusictable	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zoneintromusictable	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zoneintromusictable	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zoneintromusictable	Priority	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zoneintromusictable	MinDelayMinutes	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	SetName	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	SilenceIntervalMin1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	SilenceIntervalMin2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	SilenceIntervalMax1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	SilenceIntervalMax2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	Sounds1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
+vdbc	zonemusic	Sounds2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
