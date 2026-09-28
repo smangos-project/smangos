@@ -8,6 +8,7 @@
 #include "Spec/Evidence.h"
 #include "Spec/GapAnalysis.h"
 #include "Spec/SpecCheck.h"
+#include "Spec/SpecRender.h"
 #include "Spec/SpecInventory.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
@@ -485,11 +486,27 @@ namespace
         return result.problems.empty() ? 0 : 1;
     }
 
+    // spec render
+    int RunSpecRender(std::vector<std::string> const& args)
+    {
+        (void)args;
+
+        SpecRenderResult result = RenderSpec(SpecDir(), SourceRoot() / ".local" / "plan" / "bot" / "spec");
+        if (!result.error.empty())
+        {
+            std::printf("spec render: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        std::printf("spec render: %u pages written\n", result.pagesWritten);
+        return 0;
+    }
+
     int RunSpec(std::vector<std::string> const& args)
     {
         if (args.empty())
         {
-            std::printf("spec: subcommand required (init, set, evidence, gaps, check)\n");
+            std::printf("spec: subcommand required (init, set, evidence, gaps, check, render)\n");
             return 1;
         }
 
@@ -506,6 +523,8 @@ namespace
             return RunSpecGaps(rest);
         if (subcommand == "check")
             return RunSpecCheck(rest);
+        if (subcommand == "render")
+            return RunSpecRender(rest);
 
         std::printf("spec: unknown subcommand: %s\n", subcommand.c_str());
         return 1;

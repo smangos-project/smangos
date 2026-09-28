@@ -33,6 +33,7 @@ add_library(database_tool_lib STATIC
   Spec/Evidence.cpp
   Spec/GapAnalysis.cpp
   Spec/SpecCheck.cpp
+  Spec/SpecRender.cpp
   generated/DbcTables.g.cpp
   generated/VanillaDbcTables.g.cpp
 )
