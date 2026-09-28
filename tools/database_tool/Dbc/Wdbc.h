@@ -16,6 +16,15 @@ struct WdbcLayout
     uint32_t locStringSlots = 1;
 };
 
+// A locstring field occupies `layout.locStringSlots` row columns instead of one; every other
+// field keeps its plain array length. Shared with DbcSchema.cpp's BindDbcRow, which binds the
+// same flattened shape into SQL.
+uint32_t FieldSlotCount(DbcFieldMeta const& field, WdbcLayout const& layout);
+
+// Within a locstring field's slots, the last one is the flags mask once there is more than one
+// slot (1.12's 8 locale offsets + mask); otherwise every slot is a string offset.
+bool IsLocStringMaskSlot(DbcFieldMeta const& field, WdbcLayout const& layout, uint32_t slotInField);
+
 struct WdbcReadResult
 {
     std::vector<Wdc5Row> rows;

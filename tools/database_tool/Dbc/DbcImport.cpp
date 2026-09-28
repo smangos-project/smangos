@@ -41,36 +41,6 @@ namespace
         return sql.str();
     }
 
-    void BindRow(DoltLiteStatement& statement, DbcTableMeta const& table, Wdc5Row const& row)
-    {
-        size_t column = 0;
-        for (uint32_t i = 0; i < table.fieldCount; ++i)
-        {
-            DbcFieldMeta const& field = table.fields[i];
-            for (uint16_t a = 0; a < field.arrayLength; ++a, ++column)
-            {
-                int index = static_cast<int>(column) + 1;
-                Wdc5Value const& value = row[column];
-                switch (field.type)
-                {
-                    case DbcFieldType::Float:
-                        statement.BindDouble(index, value.floatValue);
-                        break;
-                    case DbcFieldType::String:
-                    case DbcFieldType::LocString:
-                        statement.BindText(index, value.stringValue);
-                        break;
-                    case DbcFieldType::Int:
-                    default:
-                        statement.BindInt64(index, value.intValue);
-                        break;
-                }
-            }
-        }
-        statement.Step();
-        statement.Reset();
-    }
-
     void UpsertDbcFilesRow(DoltLiteDatabase& world, DbcTableMeta const& table, char const* format,
                             Wdc5FileInfo const& info, uint32_t rowCount)
     {
@@ -139,7 +109,7 @@ DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
             {
                 DoltLiteStatement insert = world.Prepare(BuildInsertSql(table, columnNames));
                 for (Wdc5Row const& row : read.rows)
-                    BindRow(insert, table, row);
+                    BindDbcRow(insert, table, row);
             }
 
             UpsertDbcFilesRow(world, table, "db2", read.info, static_cast<uint32_t>(read.rows.size()));
@@ -224,7 +194,7 @@ DbcImportResult ImportDbcFiles(DoltLiteDatabase& world, std::filesystem::path co
             {
                 DoltLiteStatement insert = world.Prepare(BuildInsertSql(table, columnNames));
                 for (Wdc5Row const& row : read.rows)
-                    BindRow(insert, table, row);
+                    BindDbcRow(insert, table, row);
             }
 
             UpsertDbcFilesRow(world, table, "dbc", Wdc5FileInfo{}, static_cast<uint32_t>(read.rows.size()));

@@ -77,6 +77,21 @@ TEST_CASE("BuildDbcTableDdl maps field types and marks the id column as the prim
                  "\"Flags1\" INTEGER NOT NULL DEFAULT 0, \"Flags2\" INTEGER NOT NULL DEFAULT 0)");
 }
 
+TEST_CASE("BuildDbcTableDdl takes a table name and locstring slot override", "[DbcSchema]")
+{
+    DbcFieldMeta fields[] = {
+        { "ID", DbcFieldType::Int, 32, true, 1, true, false, false, nullptr, nullptr },
+        { "Name_lang", DbcFieldType::LocString, 0, true, 1, false, false, false, nullptr, nullptr },
+    };
+    DbcTableMeta table{ "Sample", "sample", "dbc_sample", nullptr, 0, fields, 2 };
+
+    std::string ddl = BuildDbcTableDdl(table, "vdbc_sample", /*locStringSlots*/ 9);
+
+    CHECK(ddl.find("CREATE TABLE \"vdbc_sample\"") == 0);
+    for (char const* column : { "\"Name_lang\"", "\"Name_lang_1\"", "\"Name_lang_7\"", "\"Name_lang_mask\"" })
+        CHECK(ddl.find(column) != std::string::npos);
+}
+
 TEST_CASE("BuildDbcTableIndexDdl indexes only foreign-key fields", "[DbcSchema]")
 {
     DbcFieldMeta fields[] = {

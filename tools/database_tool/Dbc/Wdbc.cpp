@@ -4,6 +4,18 @@
 #include <fstream>
 #include <stdexcept>
 
+uint32_t FieldSlotCount(DbcFieldMeta const& field, WdbcLayout const& layout)
+{
+    uint32_t slotsPerElement = field.type == DbcFieldType::LocString ? layout.locStringSlots : 1;
+    return static_cast<uint32_t>(field.arrayLength) * slotsPerElement;
+}
+
+bool IsLocStringMaskSlot(DbcFieldMeta const& field, WdbcLayout const& layout, uint32_t slotInField)
+{
+    return field.type == DbcFieldType::LocString && layout.locStringSlots > 1 &&
+           (slotInField % layout.locStringSlots) == layout.locStringSlots - 1;
+}
+
 namespace
 {
     class Cursor
@@ -48,14 +60,6 @@ namespace
         return field.bits ? field.bits / 8 : 4;
     }
 
-    // A locstring field occupies `layout.locStringSlots` row columns instead of one; every other
-    // field keeps its plain array length.
-    uint32_t FieldSlotCount(DbcFieldMeta const& field, WdbcLayout const& layout)
-    {
-        uint32_t slotsPerElement = field.type == DbcFieldType::LocString ? layout.locStringSlots : 1;
-        return static_cast<uint32_t>(field.arrayLength) * slotsPerElement;
-    }
-
     uint32_t TotalColumnCount(DbcTableMeta const& table, WdbcLayout const& layout)
     {
         uint32_t total = 0;
@@ -74,14 +78,6 @@ namespace
             offset += FieldSlotCount(table.fields[i], layout);
         }
         return starts;
-    }
-
-    // Within a locstring field's slots, the last one is the flags mask once there is more than
-    // one slot (1.12's 8 locale offsets + mask); otherwise every slot is a string offset.
-    bool IsLocStringMaskSlot(DbcFieldMeta const& field, WdbcLayout const& layout, uint32_t slotInField)
-    {
-        return field.type == DbcFieldType::LocString && layout.locStringSlots > 1 &&
-               (slotInField % layout.locStringSlots) == layout.locStringSlots - 1;
     }
 
     std::string ReadCString(uint8_t const* data, size_t size, size_t offset)

@@ -4,6 +4,7 @@
 #include "Commands/PortMigrationFile.h"
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
+#include "Reference/ReferenceBuild.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
 
@@ -309,6 +310,42 @@ namespace
         return 1;
     }
 
+    // reference
+    int RunReference(std::vector<std::string> const& args)
+    {
+        (void)args;
+
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const vanillaDbcDir = SourceRoot() / ".client" / "vanilla" / "dbc";
+
+        if (!std::filesystem::exists(worldPath))
+        {
+            std::printf("reference: %s does not exist (run create first)\n", worldPath.string().c_str());
+            return 1;
+        }
+
+        ReferenceBuildResult result = BuildReferenceDatabase(referencePath, worldPath, vanillaDbcDir, DbfilesclientDir());
+        for (std::string const& error : result.tableErrors)
+            std::printf("%s\n", error.c_str());
+        if (!result.error.empty())
+        {
+            std::printf("reference: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        uint32_t srv = 0, vdbc = 0, cdbc = 0;
+        for (ReferenceTableInfo const& table : result.tables)
+        {
+            if (table.source == "srv") ++srv;
+            else if (table.source == "vdbc") ++vdbc;
+            else if (table.source == "cdbc") ++cdbc;
+        }
+        std::printf("reference: %u srv_* tables, %u vdbc_* tables, %u cdbc_* tables, %zu errors\n", srv, vdbc, cdbc,
+            result.tableErrors.size());
+        return result.tableErrors.empty() ? 0 : 1;
+    }
+
     int RunPortMigration(std::vector<std::string> const& args)
     {
         if (args.empty())
@@ -357,6 +394,8 @@ int main(int argc, char** argv)
         return RunPortMigration(rest);
     if (command == "compare-world")
         return RunCompareWorld(rest);
+    if (command == "reference")
+        return RunReference(rest);
     if (command == "import")
         return RunImport(rest);
     if (command == "export")

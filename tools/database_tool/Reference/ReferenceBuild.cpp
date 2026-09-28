@@ -1,0 +1,442 @@
+#include "ReferenceBuild.h"
+
+#include "Dbc/DbcSchema.h"
+#include "Dbc/DbcTableMeta.h"
+#include "Dbc/Wdbc.h"
+#include "Dbc/Wdc5Reader.h"
+#include "World/DoltLiteDatabase.h"
+#include "World/VersionCollapse.h"
+
+#include <algorithm>
+#include <sstream>
+#include <string_view>
+
+namespace
+{
+    // One transaction per table is much faster than autocommit-per-row, but a single transaction
+    // spanning all ~800 cdbc_ tables' DDL and inserts has been observed to crash DoltLite; commit
+    // in batches instead, which keeps both properties.
+    constexpr size_t kCommitBatchSize = 40;
+
+    class BatchCommitter
+    {
+    public:
+        explicit BatchCommitter(DoltLiteDatabase& db) : m_db(db) { m_db.Begin(); }
+        ~BatchCommitter() { m_db.Commit(); }
+
+        BatchCommitter(BatchCommitter const&) = delete;
+        BatchCommitter& operator=(BatchCommitter const&) = delete;
+
+        // Call once per table, whether it succeeded or failed.
+        void Tick()
+        {
+            if (++m_count >= kCommitBatchSize)
+            {
+                m_db.Commit();
+                m_db.Begin();
+                m_count = 0;
+            }
+        }
+
+    private:
+        DoltLiteDatabase& m_db;
+        size_t m_count = 0;
+    };
+
+    struct SourceColumn
+    {
+        std::string name;
+        std::string type;
+        int primaryKeyIndex = 0; // 0 = not part of the primary key
+    };
+
+    std::vector<SourceColumn> ReadSourceColumns(DoltLiteDatabase& db, std::string const& qualifiedTable)
+    {
+        std::vector<SourceColumn> columns;
+        DoltLiteStatement info = db.Prepare("PRAGMA " + qualifiedTable);
+        while (info.Step())
+        {
+            SourceColumn column;
+            column.name = info.ColumnText(1);
+            column.type = info.ColumnText(2);
+            column.primaryKeyIndex = static_cast<int>(info.ColumnInt64(5));
+            columns.push_back(std::move(column));
+        }
+        return columns;
+    }
+
+    std::vector<std::string> PrimaryKeyColumns(std::vector<SourceColumn> const& columns)
+    {
+        std::vector<SourceColumn const*> pk;
+        for (SourceColumn const& column : columns)
+            if (column.primaryKeyIndex > 0)
+                pk.push_back(&column);
+        std::sort(pk.begin(), pk.end(),
+                  [](SourceColumn const* a, SourceColumn const* b) { return a->primaryKeyIndex < b->primaryKeyIndex; });
+
+        std::vector<std::string> names;
+        for (SourceColumn const* column : pk)
+            names.push_back(column->name);
+        return names;
+    }
+
+    std::string QuoteIdentifierList(std::vector<std::string> const& names)
+    {
+        std::string joined;
+        for (size_t i = 0; i < names.size(); ++i)
+            joined += (i ? ", \"" : "\"") + names[i] + "\"";
+        return joined;
+    }
+
+    // Mirrors a srv_* table's columns, types and primary key from its .world source.
+    std::string BuildMirrorDdl(std::string const& tableName, std::vector<SourceColumn> const& columns,
+                                std::vector<std::string> const& primaryKey)
+    {
+        std::ostringstream ddl;
+        ddl << "CREATE TABLE \"" << tableName << "\" (";
+        for (size_t i = 0; i < columns.size(); ++i)
+            ddl << (i ? ", \"" : "\"") << columns[i].name << "\" " << columns[i].type;
+        if (!primaryKey.empty())
+            ddl << ", PRIMARY KEY(" << QuoteIdentifierList(primaryKey) << ")";
+        ddl << ")";
+        return ddl.str();
+    }
+
+    std::vector<std::string> NonDbcWorldTables(DoltLiteDatabase& reference)
+    {
+        std::vector<std::string> names;
+        DoltLiteStatement stmt = reference.Prepare(
+            "SELECT name FROM src.sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'dbc\\_%' ESCAPE '\\' AND name NOT IN ('migrations', 'dbc_files') "
+            "AND name NOT LIKE 'dolt\\_%' ESCAPE '\\' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' "
+            "ORDER BY name");
+        while (stmt.Step())
+            names.push_back(stmt.ColumnText(0));
+        return names;
+    }
+
+    void BuildOneSrvTable(DoltLiteDatabase& reference, std::string const& source, ReferenceBuildResult& result)
+    {
+        std::vector<SourceColumn> columns = ReadSourceColumns(reference, "src.table_info(\"" + source + "\")");
+        std::vector<std::string> columnNames;
+        for (SourceColumn const& column : columns)
+            columnNames.push_back(column.name);
+        std::vector<std::string> primaryKey = PrimaryKeyColumns(columns);
+
+        std::string destTable = "srv_" + source;
+        reference.Execute("DROP TABLE IF EXISTS \"" + destTable + "\"");
+        reference.Execute(BuildMirrorDdl(destTable, columns, primaryKey));
+
+        VersionColumnInfo versionInfo = DetectVersionColumn(columnNames);
+        uint64_t rowCount = 0;
+
+        if (versionInfo.kind == VersionColumnKind::None)
+        {
+            reference.Execute("INSERT INTO \"" + destTable + "\" SELECT * FROM src.\"" + source + "\"");
+            DoltLiteStatement count = reference.Prepare("SELECT COUNT(*) FROM \"" + destTable + "\"");
+            count.Step();
+            rowCount = static_cast<uint64_t>(count.ColumnInt64(0));
+        }
+        else
+        {
+            // CollapseTableInto reads and writes within one connection; stage a local copy of
+            // the attached source table so it can filter it.
+            std::string stageTable = "__reference_stage_" + source;
+            reference.Execute("DROP TABLE IF EXISTS \"" + stageTable + "\"");
+            reference.Execute(BuildMirrorDdl(stageTable, columns, primaryKey));
+            reference.Execute("INSERT INTO \"" + stageTable + "\" SELECT * FROM src.\"" + source + "\"");
+
+            std::vector<std::string> keyColumns;
+            for (std::string const& column : primaryKey)
+                if (column != versionInfo.column && column != versionInfo.minColumn && column != versionInfo.maxColumn)
+                    keyColumns.push_back(column);
+
+            CollapseReport report =
+                CollapseTableInto(reference, stageTable, destTable, columnNames, keyColumns, versionInfo);
+            rowCount = report.rowsAfter;
+
+            reference.Execute("DROP TABLE \"" + stageTable + "\"");
+        }
+
+        result.tables.push_back({ destTable, "srv", rowCount });
+    }
+
+    void BuildSrvTables(DoltLiteDatabase& reference, std::filesystem::path const& worldPath,
+                         ReferenceBuildResult& result)
+    {
+        reference.Execute("ATTACH DATABASE '" + worldPath.string() + "' AS src");
+
+        {
+            BatchCommitter committer(reference);
+            for (std::string const& source : NonDbcWorldTables(reference))
+            {
+                try
+                {
+                    BuildOneSrvTable(reference, source, result);
+                }
+                catch (std::exception const& e)
+                {
+                    result.tableErrors.push_back(source + ": " + e.what());
+                }
+                committer.Tick();
+            }
+        }
+
+        reference.Execute("DETACH DATABASE src");
+    }
+
+    // Populates one already-DROPped table from `rows`, per `table`'s field metadata, with
+    // `locStringSlots` slots per locstring field (1 for client rows, 9 for vanilla WDBC rows).
+    void PopulateDbcTable(DoltLiteDatabase& reference, DbcTableMeta const& table, std::string const& sqlTableName,
+                           std::vector<Wdc5Row> const& rows, uint32_t locStringSlots)
+    {
+        reference.Execute("DROP TABLE IF EXISTS \"" + sqlTableName + "\"");
+        reference.Execute(BuildDbcTableDdl(table, sqlTableName, locStringSlots));
+        for (std::string const& indexSql : BuildDbcTableIndexDdl(table, sqlTableName, locStringSlots))
+            reference.Execute(indexSql);
+
+        if (rows.empty())
+            return;
+
+        std::vector<std::string> columnNames;
+        for (uint32_t i = 0; i < table.fieldCount; ++i)
+            for (std::string const& name : DbcColumnNames(table.fields[i], locStringSlots))
+                columnNames.push_back(name);
+
+        std::ostringstream sql;
+        sql << "INSERT INTO \"" << sqlTableName << "\" (" << QuoteIdentifierList(columnNames) << ") VALUES (";
+        for (size_t i = 0; i < columnNames.size(); ++i)
+            sql << (i ? ", ?" : "?");
+        sql << ")";
+
+        DoltLiteStatement insert = reference.Prepare(sql.str());
+        for (Wdc5Row const& row : rows)
+            BindDbcRow(insert, table, row, locStringSlots);
+    }
+
+    void BuildOneVdbcTable(DoltLiteDatabase& reference, DbcTableMeta const& table,
+                            std::filesystem::path const& vanillaDbcDir, WdbcLayout const& layout,
+                            ReferenceBuildResult& result)
+    {
+        std::filesystem::path filePath = vanillaDbcDir / (std::string(table.fileStem) + ".dbc");
+        if (!std::filesystem::exists(filePath))
+        {
+            result.tableErrors.push_back(std::string(table.name) + ": file not found");
+            return;
+        }
+
+        try
+        {
+            WdbcReadResult read = ReadWdbcFile(filePath, table, layout);
+            if (!read.error.empty())
+            {
+                result.tableErrors.push_back(std::string(table.name) + ": " + read.error);
+                return;
+            }
+
+            PopulateDbcTable(reference, table, table.sqlTable, read.rows, layout.locStringSlots);
+            result.tables.push_back({ table.sqlTable, "vdbc", static_cast<uint64_t>(read.rows.size()) });
+        }
+        catch (std::exception const& e)
+        {
+            result.tableErrors.push_back(std::string(table.name) + ": " + e.what());
+        }
+    }
+
+    void BuildVdbcTables(DoltLiteDatabase& reference, std::filesystem::path const& vanillaDbcDir,
+                         ReferenceBuildResult& result)
+    {
+        WdbcLayout const layout{ 9 };
+        BatchCommitter committer(reference);
+        for (DbcTableMeta const& table : GetVanillaDbcTables())
+        {
+            BuildOneVdbcTable(reference, table, vanillaDbcDir, layout, result);
+            committer.Tick();
+        }
+    }
+
+    // Attaches `partPath` (a self-contained DoltLite file that was populated via `result.tables`'
+    // entries for `source`) to `reference` and copies each table across with a plain bulk
+    // INSERT...SELECT, then detaches and deletes it. A table that fails to copy (see
+    // BuildReferenceDatabase's comment on the known DoltLite quirk this works around) is recorded
+    // in `result.tableErrors` and dropped from `result.tables`, rather than failing the whole
+    // command over one table.
+    void MergeIsolatedPart(DoltLiteDatabase& reference, std::filesystem::path const& partPath,
+                            char const* source, ReferenceBuildResult& result)
+    {
+        reference.Execute("ATTACH DATABASE '" + partPath.string() + "' AS part");
+        {
+            BatchCommitter committer(reference);
+            for (ReferenceTableInfo& info : result.tables)
+            {
+                if (info.source != source)
+                    continue;
+
+                try
+                {
+                    reference.Execute("DROP TABLE IF EXISTS \"" + info.table + "\"");
+                    reference.Execute("CREATE TABLE \"" + info.table + "\" AS SELECT * FROM part.\"" + info.table + "\"");
+                }
+                catch (std::exception const& e)
+                {
+                    result.tableErrors.push_back(info.table + ": merge: " + e.what());
+                    info.source.clear(); // filtered out below; never really landed in `reference`
+                }
+                committer.Tick();
+            }
+        }
+        reference.Execute("DETACH DATABASE part");
+        std::filesystem::remove(partPath);
+
+        std::erase_if(result.tables, [](ReferenceTableInfo const& info) { return info.source.empty(); });
+    }
+
+    // Returns false when there is no file to import (not an error: 431 of 844 client files are
+    // empty/absent), so the caller can skip ticking the commit batch for it.
+    bool BuildOneCdbcTable(DoltLiteDatabase& reference, DbcTableMeta const& table,
+                            std::filesystem::path const& clientDbfilesclientDir, ReferenceBuildResult& result)
+    {
+        std::filesystem::path filePath = clientDbfilesclientDir / (std::string(table.fileStem) + ".db2");
+        if (!std::filesystem::exists(filePath))
+            return false;
+
+        try
+        {
+            Wdc5ReadResult read = ReadWdc5File(filePath, table);
+            if (!read.error.empty())
+            {
+                result.tableErrors.push_back(std::string(table.name) + ": " + read.error);
+                return true;
+            }
+
+            std::string sqlTableName = "cdbc_" + std::string(table.fileStem);
+            PopulateDbcTable(reference, table, sqlTableName, read.rows, /*locStringSlots*/ 1);
+            result.tables.push_back({ sqlTableName, "cdbc", static_cast<uint64_t>(read.rows.size()) });
+        }
+        catch (std::exception const& e)
+        {
+            result.tableErrors.push_back(std::string(table.name) + ": " + e.what());
+        }
+        return true;
+    }
+
+    void BuildCdbcTables(DoltLiteDatabase& reference, std::filesystem::path const& clientDbfilesclientDir,
+                         ReferenceBuildResult& result)
+    {
+        BatchCommitter committer(reference);
+        for (DbcTableMeta const& table : GetDbcTables())
+            if (BuildOneCdbcTable(reference, table, clientDbfilesclientDir, result))
+                committer.Tick();
+    }
+
+    std::string BuildReferenceTablesDdl()
+    {
+        return "CREATE TABLE \"reference_tables\" ("
+               "\"sql_table\" TEXT PRIMARY KEY, "
+               "\"source\" TEXT NOT NULL, "
+               "\"row_count\" INTEGER NOT NULL)";
+    }
+
+    // Recreating byte-identical rows in a part (e.g. an unchanged rebuild) is a no-op as far as
+    // dolt's working tree is concerned; that's still a successful commit for our purposes.
+    void SafeDoltCommit(DoltLiteDatabase& db, std::string const& message)
+    {
+        try
+        {
+            db.DoltCommit(message);
+        }
+        catch (std::exception const& e)
+        {
+            std::string_view what = e.what();
+            if (what.find("nothing to commit") == std::string_view::npos)
+                throw;
+        }
+    }
+
+    void WriteReferenceTables(DoltLiteDatabase& reference, std::vector<ReferenceTableInfo> const& tables)
+    {
+        reference.Execute("DROP TABLE IF EXISTS \"reference_tables\"");
+        reference.Execute(BuildReferenceTablesDdl());
+
+        reference.Begin();
+        DoltLiteStatement insert =
+            reference.Prepare("INSERT INTO \"reference_tables\" (\"sql_table\", \"source\", \"row_count\") "
+                               "VALUES (?, ?, ?)");
+        for (ReferenceTableInfo const& info : tables)
+        {
+            insert.BindText(1, info.table);
+            insert.BindText(2, info.source);
+            insert.BindInt64(3, static_cast<int64_t>(info.rowCount));
+            insert.Step();
+            insert.Reset();
+        }
+        reference.Commit();
+    }
+}
+
+ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referencePath,
+                                             std::filesystem::path const& worldPath,
+                                             std::filesystem::path const& vanillaDbcDir,
+                                             std::filesystem::path const& clientDbfilesclientDir)
+{
+    ReferenceBuildResult result;
+
+    if (std::filesystem::exists(referencePath))
+    {
+        result.alreadyExisted = true;
+        result.error = "already exists: " + referencePath.string() + " (delete it to recreate)";
+        return result;
+    }
+
+    DoltLiteDatabase reference(referencePath.string());
+
+    try
+    {
+        BuildSrvTables(reference, worldPath, result);
+        SafeDoltCommit(reference, "reference: srv_* tables");
+
+        // KNOWN ISSUE, not yet resolved: vdbc_* and cdbc_* are each built in their own fresh,
+        // self-contained file first, then merged in with a plain bulk copy, because populating
+        // ~150-800 tables with real DBC/DB2 data directly alongside srv_*'s content has been
+        // observed to crash DoltLite partway through. Building each part in isolation avoids
+        // that specific crash, but does not fully solve the underlying problem: a real,
+        // full-scale run has also been observed to (a) lose a single table from an isolated
+        // part with no exception raised while building it (caught here as a "no such table"
+        // error during the merge and now skipped per-table, see MergeIsolatedPart), and
+        // separately (b) lose an entire part's tables from `reference` even though the merge
+        // reported no per-table errors. Every piece involved -- WDBC/WDC5 reading, the DDL/bind
+        // path, plain ATTACH+copy -- passes when exercised on its own; the failures only appear
+        // running the full command at real scale, which points at DoltLite (pinned 0.50.12)
+        // rather than this code, but that isn't proven. Treat `reference`'s vdbc_*/cdbc_* output
+        // as unreliable until this is root-caused; srv_* has been verified correct against the
+        // real .world database.
+        std::filesystem::path vdbcPartPath = referencePath.parent_path() / "reference.vdbc-part.doltlite";
+        std::filesystem::remove(vdbcPartPath);
+        {
+            DoltLiteDatabase vdbcPart(vdbcPartPath.string());
+            BuildVdbcTables(vdbcPart, vanillaDbcDir, result);
+            SafeDoltCommit(vdbcPart, "vdbc part: initial build");
+        }
+        MergeIsolatedPart(reference, vdbcPartPath, "vdbc", result);
+        SafeDoltCommit(reference, "reference: vdbc_* tables");
+
+        std::filesystem::path cdbcPartPath = referencePath.parent_path() / "reference.cdbc-part.doltlite";
+        std::filesystem::remove(cdbcPartPath);
+        {
+            DoltLiteDatabase cdbcPart(cdbcPartPath.string());
+            BuildCdbcTables(cdbcPart, clientDbfilesclientDir, result);
+            SafeDoltCommit(cdbcPart, "cdbc part: initial build");
+        }
+        MergeIsolatedPart(reference, cdbcPartPath, "cdbc", result);
+        SafeDoltCommit(reference, "reference: cdbc_* tables");
+
+        WriteReferenceTables(reference, result.tables);
+        SafeDoltCommit(reference, "reference: reference_tables bookkeeping");
+    }
+    catch (std::exception const& e)
+    {
+        result.error = e.what();
+    }
+
+    return result;
+}
