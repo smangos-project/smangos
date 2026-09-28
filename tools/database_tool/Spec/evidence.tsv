@@ -293,7 +293,7 @@ vdbc	creaturedisplayinfo	TextureVariation1	TEXT	none					rows=10534 distinct=982
 vdbc	creaturedisplayinfo	TextureVariation2	TEXT	none					rows=10534 distinct=268 null=9438 formula=equals_TextureVariation3:9453/10534
 vdbc	creaturedisplayinfo	TextureVariation3	TEXT	none					rows=10534 distinct=83 null=10316 formula=equals_TextureVariation2:9453/10534
 vdbc	creaturedisplayinfo	SizeClass	INT	none		cdbc_creaturedisplayinfo.PetInstanceScale	effect_base_dice_from_sides	7609/10533	rows=10534 distinct=6 null=0
-vdbc	creaturedisplayinfo	BloodID	INT	none		cdbc_creaturedisplayinfo.BloodID	identity	10497/10533	rows=10534 distinct=4 null=0
+vdbc	creaturedisplayinfo	BloodID	INT	none		cdbc_creaturedisplayinfo.ParticleColorID	creature_gender_none	10498/10533	rows=10534 distinct=4 null=0
 vdbc	creaturedisplayinfo	NPCSoundID	INT	none		cdbc_creaturedisplayinfo.ParticleColorID	bag_family_mask	7996/10533	rows=10534 distinct=148 null=0
 vdbc	creaturedisplayinfoextra	ID	INT	none		cdbc_creaturedisplayinfoextra.ID	identity	6939/6939	rows=6939 distinct=6939 null=0
 vdbc	creaturedisplayinfoextra	DisplayRaceID	INT	CreatureDisplayInfoExtraEntry::Race (25 uses in 14 files)	wire=yes src/game/Handlers/CharacterHandler.cpp:716, src/game/Handlers/CharacterHandler.cpp:754, src/game/Handlers/CharacterHandler.cpp:768, src/game/Handlers/CharacterHandler.cpp:779, src/game/Handlers/CharacterHandler.cpp:780, src/game/Handlers/CharacterHandler.cpp:829, src/game/Handlers/CharacterHandler.cpp:837, src/game/Handlers/MiscHandler.cpp:985, src/game/Handlers/QueryHandler.cpp:49, src/game/Objects/Unit.cpp:5928, src/game/Server/Packets/CharScreen.h:110, src/game/Server/Packets/QueryMessages.h:134	cdbc_creaturedisplayinfoextra.DisplaySexID	effect_base_dice_from_sides	2402/6939	rows=6939 distinct=9 null=0
@@ -343,7 +343,7 @@ vdbc	creaturemodeldata	FootprintTextureLength	REAL	none		cdbc_creaturemodeldata.
 vdbc	creaturemodeldata	FootprintTextureWidth	REAL	none		cdbc_creaturemodeldata.FootprintTextureWidth	identity	430/430	rows=430 distinct=14 null=0
 vdbc	creaturemodeldata	FootprintParticleScale	REAL	none		cdbc_creaturemodeldata.FootprintParticleScale	identity	430/430	rows=430 distinct=7 null=0
 vdbc	creaturemodeldata	FoleyMaterialID	INT	none		cdbc_creaturemodeldata.FoleyMaterialID	identity	430/430	rows=430 distinct=1 null=0 const=0
-vdbc	creaturemodeldata	FootstepShakeSize	INT	none		cdbc_creaturemodeldata.FoleyMaterialID	identity	405/430	rows=430 distinct=4 null=0
+vdbc	creaturemodeldata	FootstepShakeSize	INT	none		cdbc_creaturemodeldata.FoleyMaterialID	creature_gender_none	418/430	rows=430 distinct=4 null=0
 vdbc	creaturemodeldata	DeathThudShakeSize	INT	none		cdbc_creaturemodeldata.FoleyMaterialID	identity	381/430	rows=430 distinct=5 null=0
 vdbc	creaturemodeldata	SoundID	INT	none		cdbc_creaturemodeldata.SoundID	identity	430/430	rows=430 distinct=383 null=0
 vdbc	creaturemodeldata	CollisionWidth	REAL	none		cdbc_creaturemodeldata.FoleyMaterialID	skill_race_flag_dropped_bit	416/430	rows=430 distinct=35 null=0
@@ -547,7 +547,7 @@ vdbc	factiontemplate	ID	INT	none		cdbc_factiontemplate.ID	identity	314/314	rows=
 vdbc	factiontemplate	Faction	INT	none		cdbc_factiontemplate.Faction	identity	314/314	rows=314 distinct=157 null=0
 vdbc	factiontemplate	Flags	INT	none		cdbc_factiontemplate.Flags	identity	313/314	rows=314 distinct=28 null=0
 vdbc	factiontemplate	FactionGroup	INT	none		cdbc_factiontemplate.FactionGroup	identity	313/314	rows=314 distinct=7 null=0
-vdbc	factiontemplate	FriendGroup	INT	none		cdbc_factiontemplate.Enemies3	identity	188/314	rows=314 distinct=6 null=0
+vdbc	factiontemplate	FriendGroup	INT	none		cdbc_factiontemplate.Enemies3	creature_gender_none	247/314	rows=314 distinct=6 null=0
 vdbc	factiontemplate	EnemyGroup	INT	none		cdbc_factiontemplate.EnemyGroup	identity	314/314	rows=314 distinct=11 null=0
 vdbc	factiontemplate	Enemies1	INT	none		cdbc_factiontemplate.Enemies1	identity	312/314	rows=314 distinct=45 null=0 formula=equals_Enemies2:242/314
 vdbc	factiontemplate	Enemies2	INT	none		cdbc_factiontemplate.Enemies2	identity	314/314	rows=314 distinct=6 null=0 formula=equals_Enemies3:308/314
@@ -754,12 +754,12 @@ vdbc	itemset	SetSpellID5	INT	ItemSetEntry::spells (27 uses in 10 files)	wire=yes
 vdbc	itemset	SetSpellID6	INT	ItemSetEntry::spells (27 uses in 10 files)	wire=yes src/game/Objects/Item.cpp:61, src/game/Objects/Item.cpp:69, src/game/Objects/Item.cpp:76, src/game/Objects/Item.cpp:80, src/game/Objects/Item.cpp:83, src/game/Objects/Item.cpp:118, src/game/Objects/Item.cpp:125, src/game/Objects/Item.cpp:127, src/game/Objects/Pet.cpp:1625, src/game/Objects/Pet.cpp:1638, src/game/Objects/Pet.cpp:1656, src/game/Objects/Player.cpp:6152, src/game/Objects/Player.cpp:7258, src/game/PlayerBots/CombatBotBaseAI.cpp:131, src/game/PlayerBots/CombatBotBaseAI.cpp:1833, src/game/PlayerBots/CombatBotBaseAI.cpp:3204	cdbc_itemset.SetFlags	bag_family_mask	172/172	rows=172 distinct=10 null=0 formula=equals_SetSpellID7:160/172
 vdbc	itemset	SetSpellID7	INT	ItemSetEntry::spells (27 uses in 10 files)	wire=yes src/game/Objects/Item.cpp:61, src/game/Objects/Item.cpp:69, src/game/Objects/Item.cpp:76, src/game/Objects/Item.cpp:80, src/game/Objects/Item.cpp:83, src/game/Objects/Item.cpp:118, src/game/Objects/Item.cpp:125, src/game/Objects/Item.cpp:127, src/game/Objects/Pet.cpp:1625, src/game/Objects/Pet.cpp:1638, src/game/Objects/Pet.cpp:1656, src/game/Objects/Player.cpp:6152, src/game/Objects/Player.cpp:7258, src/game/PlayerBots/CombatBotBaseAI.cpp:131, src/game/PlayerBots/CombatBotBaseAI.cpp:1833, src/game/PlayerBots/CombatBotBaseAI.cpp:3204	cdbc_itemset.SetFlags	bag_family_mask	172/172	rows=172 distinct=6 null=0 formula=equals_SetSpellID8:166/172
 vdbc	itemset	SetSpellID8	INT	ItemSetEntry::spells (27 uses in 10 files)	wire=yes src/game/Objects/Item.cpp:61, src/game/Objects/Item.cpp:69, src/game/Objects/Item.cpp:76, src/game/Objects/Item.cpp:80, src/game/Objects/Item.cpp:83, src/game/Objects/Item.cpp:118, src/game/Objects/Item.cpp:125, src/game/Objects/Item.cpp:127, src/game/Objects/Pet.cpp:1625, src/game/Objects/Pet.cpp:1638, src/game/Objects/Pet.cpp:1656, src/game/Objects/Player.cpp:6152, src/game/Objects/Player.cpp:7258, src/game/PlayerBots/CombatBotBaseAI.cpp:131, src/game/PlayerBots/CombatBotBaseAI.cpp:1833, src/game/PlayerBots/CombatBotBaseAI.cpp:3204	cdbc_itemset.SetFlags	bag_family_mask	172/172	rows=172 distinct=4 null=0 formula=equals_SetSpellID7:166/172
-vdbc	itemset	SetThreshold1	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	16/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold8:13/172
-vdbc	itemset	SetThreshold2	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	38/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold3:37/172
-vdbc	itemset	SetThreshold3	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	67/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold8:64/172
-vdbc	itemset	SetThreshold4	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	137/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold5:134/172
-vdbc	itemset	SetThreshold5	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	152/172	rows=172 distinct=6 null=0 formula=equals_SetThreshold6:153/172
-vdbc	itemset	SetThreshold6	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	160/172	rows=172 distinct=6 null=0 formula=equals_SetThreshold7:160/172
+vdbc	itemset	SetThreshold1	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	86/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold8:13/172
+vdbc	itemset	SetThreshold2	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	61/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold3:37/172
+vdbc	itemset	SetThreshold3	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	91/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold8:64/172
+vdbc	itemset	SetThreshold4	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	141/172	rows=172 distinct=7 null=0 formula=equals_SetThreshold5:134/172
+vdbc	itemset	SetThreshold5	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	155/172	rows=172 distinct=6 null=0 formula=equals_SetThreshold6:153/172
+vdbc	itemset	SetThreshold6	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	creature_gender_none	162/172	rows=172 distinct=6 null=0 formula=equals_SetThreshold7:160/172
 vdbc	itemset	SetThreshold7	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	166/172	rows=172 distinct=4 null=0 formula=equals_SetThreshold8:166/172
 vdbc	itemset	SetThreshold8	INT	ItemSetEntry::items_to_triggerspell (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:64, src/game/Objects/Item.cpp:122	cdbc_itemset.SetFlags	identity	169/172	rows=172 distinct=3 null=0 formula=equals_SetThreshold7:166/172
 vdbc	itemset	RequiredSkill	INT	ItemSetEntry::required_skill_id (2 uses in 1 files)	wire=yes src/game/Objects/Item.cpp:48	cdbc_itemset.RequiredSkill	identity	172/172	rows=172 distinct=4 null=0
@@ -957,10 +957,10 @@ vdbc	loadingscreentaxisplines	Locy8	REAL	none					rows=12 distinct=1 null=0 cons
 vdbc	loadingscreentaxisplines	LegIndex	INT	none					rows=12 distinct=2 null=0
 vdbc	lock	ID	INT	LockEntry::ID (65 uses in 20 files)	wire=yes src/game/Battlegrounds/BattleGroundMgr.cpp:1499, src/game/Battlegrounds/BattleGroundMgr.cpp:1515, src/game/Commands/DebugCommands.cpp:1727, src/game/Handlers/NPCHandler.cpp:452, src/game/Objects/Item.cpp:815, src/game/Objects/Item.cpp:831, src/game/Objects/Item.cpp:833, src/game/Objects/Pet.cpp:2293, src/game/Objects/Player.cpp:5035, src/game/Objects/Player.cpp:7338, src/game/Objects/Player.cpp:14272, src/game/Objects/Player.cpp:18679, src/game/Objects/Player.cpp:21579, src/game/Objects/Player.cpp:21585, src/game/Objects/Player.cpp:21593, src/game/Objects/Player.cpp:21594, src/game/Objects/Player.cpp:21607, src/game/Objects/Player.cpp:21628, src/game/Spells/SpellAuras.cpp:1939	cdbc_lock.ID	identity	209/209	rows=209 distinct=209 null=0
 vdbc	lock	Type1	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index7	identity	145/209	rows=209 distinct=3 null=0 formula=equals_Type5:47/209
-vdbc	lock	Type2	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index2	identity	147/209	rows=209 distinct=3 null=0 formula=equals_Type3:183/209
-vdbc	lock	Type3	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index2	identity	171/209	rows=209 distinct=3 null=0 formula=equals_Type4:194/209
-vdbc	lock	Type4	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index3	identity	185/209	rows=209 distinct=2 null=0 formula=equals_Type3:194/209
-vdbc	lock	Type5	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index3	identity	202/209	rows=209 distinct=2 null=0 formula=equals_Type6:202/209
+vdbc	lock	Type2	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	creature_gender_none	203/209	rows=209 distinct=3 null=0 formula=equals_Type3:183/209
+vdbc	lock	Type3	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	creature_gender_none	207/209	rows=209 distinct=3 null=0 formula=equals_Type4:194/209
+vdbc	lock	Type4	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	creature_gender_none	209/209	rows=209 distinct=2 null=0 formula=equals_Type3:194/209
+vdbc	lock	Type5	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	creature_gender_none	209/209	rows=209 distinct=2 null=0 formula=equals_Type6:202/209
 vdbc	lock	Type6	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Type7:209/209
 vdbc	lock	Type7	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Type6:209/209
 vdbc	lock	Type8	INT	LockEntry::Type (58 uses in 21 files)	wire=yes src/game/Commands/DebugCommands.cpp:615, src/game/GossipDef.cpp:495, src/game/GossipDef.cpp:506, src/game/GossipDef.cpp:544, src/game/GossipDef.cpp:554, src/game/GossipDef.cpp:587, src/game/Handlers/ChannelHandler.cpp:33, src/game/Handlers/QueryHandler.cpp:183, src/game/Objects/GameObject.cpp:2212, src/game/Objects/GameObject.cpp:2626, src/game/Objects/GameObject.cpp:2629, src/game/Objects/GameObject.cpp:2670, src/game/Objects/SpellCaster.cpp:1083, src/game/Objects/Unit.cpp:5195, src/game/Server/Packets/QueryMessages.h:471, src/game/Spells/Spell.cpp:7997	cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Type6:209/209
@@ -981,9 +981,9 @@ vdbc	lock	Skill6	INT	LockEntry::Skill (7 uses in 6 files)	wire=yes src/game/Hand
 vdbc	lock	Skill7	INT	LockEntry::Skill (7 uses in 6 files)	wire=yes src/game/Handlers/LootHandler.cpp:488, src/game/Handlers/SpellHandler.cpp:198, src/game/Objects/GameObject.cpp:2636, src/game/Objects/Updates/UpdateFieldFill.cpp:387, src/game/Spells/Spell.cpp:8018	cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Skill6:209/209
 vdbc	lock	Skill8	INT	LockEntry::Skill (7 uses in 6 files)	wire=yes src/game/Handlers/LootHandler.cpp:488, src/game/Handlers/SpellHandler.cpp:198, src/game/Objects/GameObject.cpp:2636, src/game/Objects/Updates/UpdateFieldFill.cpp:387, src/game/Spells/Spell.cpp:8018	cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Skill6:209/209
 vdbc	lock	Action1	INT	none		cdbc_lock.Index3	identity	191/209	rows=209 distinct=2 null=0 formula=equals_Action5:198/209
-vdbc	lock	Action2	INT	none		cdbc_lock.Index3	identity	178/209	rows=209 distinct=4 null=0 formula=equals_Action5:185/209
-vdbc	lock	Action3	INT	none		cdbc_lock.Index4	identity	203/209	rows=209 distinct=3 null=0 formula=equals_Action6:203/209
-vdbc	lock	Action4	INT	none		cdbc_lock.Index3	identity	199/209	rows=209 distinct=3 null=0 formula=equals_Action5:199/209
+vdbc	lock	Action2	INT	none		cdbc_lock.Index3	creature_gender_none	179/209	rows=209 distinct=4 null=0 formula=equals_Action5:185/209
+vdbc	lock	Action3	INT	none		cdbc_lock.Index4	creature_gender_none	208/209	rows=209 distinct=3 null=0 formula=equals_Action6:203/209
+vdbc	lock	Action4	INT	none		cdbc_lock.Index4	creature_gender_none	208/209	rows=209 distinct=3 null=0 formula=equals_Action5:199/209
 vdbc	lock	Action5	INT	none		cdbc_lock.Index3	identity	202/209	rows=209 distinct=2 null=0 formula=equals_Action6:202/209
 vdbc	lock	Action6	INT	none		cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Action7:209/209
 vdbc	lock	Action7	INT	none		cdbc_lock.Index4	identity	209/209	rows=209 distinct=1 null=0 const=0 formula=equals_Action6:209/209
@@ -1240,7 +1240,7 @@ vdbc	skillraceclassinfo	ClassMask	INT	SkillRaceClassInfoEntry::classMask (5 uses
 vdbc	skillraceclassinfo	Flags	INT	SkillRaceClassInfoEntry::flags (101 uses in 29 files)	wire=yes src/game/Commands/DebugCommands.cpp:1712, src/game/Commands/DebugCommands.cpp:1717, src/game/Commands/DebugCommands.cpp:1722, src/game/Commands/DebugCommands.cpp:2830, src/game/GossipDef.cpp:274, src/game/Handlers/AddonHandler.cpp:125, src/game/Handlers/SkillHandler.cpp:61, src/game/Objects/GameObject.cpp:239, src/game/Objects/GameObject.cpp:664, src/game/Objects/GameObject.cpp:667, src/game/Objects/GameObject.cpp:868, src/game/Objects/Object.cpp:336, src/game/Objects/Player.cpp:5496, src/game/Objects/Player.cpp:5844, src/game/Objects/Player.cpp:5857, src/game/Objects/Player.cpp:17124, src/game/Objects/Player.cpp:19566, src/game/Server/Packets/QueryMessages.h:651	cdbc_skillraceclassinfo.Field_1_15_0_52124_007	bag_family_mask	200/200	rows=201 distinct=13 null=0
 vdbc	skillraceclassinfo	MinLevel	INT	SkillRaceClassInfoEntry::reqLevel (13 uses in 3 files)	wire=yes src/game/Handlers/NPCHandler.cpp:119, src/game/Handlers/NPCHandler.cpp:120, src/game/Objects/Player.cpp:4268, src/game/Objects/Player.cpp:19571, src/game/Objects/Player.cpp:19573, src/game/Objects/Player.cpp:19579	cdbc_skillraceclassinfo.MinLevel	identity	200/200	rows=201 distinct=6 null=0
 vdbc	skillraceclassinfo	SkillTierID	INT	SkillRaceClassInfoEntry::skillTierId (1 uses in 1 files)	wire=no	cdbc_skillraceclassinfo.SkillTierID	identity	200/200	rows=201 distinct=12 null=0
-vdbc	skillraceclassinfo	SkillCostIndex	INT	none		cdbc_skillraceclassinfo.Field_1_15_0_52124_007	identity	185/200	rows=201 distinct=3 null=0
+vdbc	skillraceclassinfo	SkillCostIndex	INT	none		cdbc_skillraceclassinfo.Field_1_15_0_52124_007	creature_gender_none	189/200	rows=201 distinct=3 null=0
 vdbc	skilltiers	ID	INT	SkillTiersEntry::id (487 uses in 50 files)	wire=yes src/game/Chat/Chat.cpp:3501, src/game/Handlers/MiscHandler.cpp:761, src/game/Handlers/MovementHandler.cpp:171, src/game/Handlers/MovementHandler.cpp:179, src/game/Handlers/NPCHandler.cpp:548, src/game/Handlers/NPCHandler.cpp:562, src/game/Handlers/NPCHandler.cpp:659, src/game/Handlers/NPCHandler.cpp:746, src/game/Handlers/NPCHandler.cpp:749, src/game/Handlers/NPCHandler.cpp:762, src/game/Handlers/NPCHandler.cpp:765, src/game/Handlers/NPCHandler.cpp:790, src/game/Handlers/NPCHandler.cpp:900, src/game/Handlers/NPCHandler.cpp:903, src/game/Handlers/NPCHandler.cpp:916, src/game/Handlers/NPCHandler.cpp:919, src/game/Handlers/NPCHandler.cpp:977, src/game/Handlers/QueryHandler.cpp:192, src/game/Maps/Map.cpp:579, src/game/Maps/Map.cpp:582, src/game/Maps/Map.cpp:2588, src/game/Maps/Map.cpp:2609, src/game/Maps/Map.cpp:2674, src/game/Maps/Map.cpp:3789, src/game/Maps/Map.cpp:3795, src/game/Objects/GameObject.cpp:212, src/game/Objects/GameObject.cpp:241, src/game/Objects/GameObject.cpp:495, src/game/Objects/GameObject.cpp:916, src/game/Objects/GameObject.cpp:974, src/game/Objects/GameObject.cpp:2297, src/game/Objects/GameObject.cpp:2311, src/game/Objects/GameObject.cpp:2319, src/game/Objects/Pet.cpp:218, src/game/Objects/Pet.cpp:520, src/game/Objects/Player.cpp:5835, src/game/Objects/Player.cpp:5838, src/game/Objects/Player.cpp:5846, src/game/Objects/Player.cpp:5848, src/game/Objects/Player.cpp:5853, src/game/Objects/Player.cpp:5867, src/game/Objects/Player.cpp:5874, src/game/Objects/Player.cpp:5878, src/game/Objects/Player.cpp:5890, src/game/Objects/Player.cpp:5894, src/game/Objects/Player.cpp:5903, src/game/Objects/Player.cpp:5904, src/game/Objects/Player.cpp:5907, src/game/Objects/Player.cpp:12131, src/game/PlayerBots/CombatBotBaseAI.cpp:3310, src/game/Server/Packets/QueryMessages.h:560, src/game/Spells/SpellEffects.cpp:5489				rows=26 distinct=26 null=0
 vdbc	skilltiers	Cost1	INT	SkillTiersEntry::skillValue (2 uses in 1 files)	wire=yes src/game/Spells/Spell.cpp:6069				rows=26 distinct=12 null=0 formula=equals_Cost2:8/26
 vdbc	skilltiers	Cost2	INT	SkillTiersEntry::skillValue (2 uses in 1 files)	wire=yes src/game/Spells/Spell.cpp:6069				rows=26 distinct=2 null=0 formula=equals_Cost3:25/26
@@ -1305,7 +1305,7 @@ vdbc	soundentries	VolumeFloat	REAL	none		cdbc_soundkit.VolumeFloat	identity	4584
 vdbc	soundentries	Flags	INT	none		cdbc_soundkit.VolumeVariationPlus	bag_family_mask	1929/4592	rows=4623 distinct=9 null=0
 vdbc	soundentries	MinDistance	REAL	none		cdbc_soundkit.MinDistance	identity	4588/4592	rows=4623 distinct=39 null=0
 vdbc	soundentries	DistanceCutoff	REAL	none		cdbc_soundkit.DistanceCutoff	identity	4587/4592	rows=4623 distinct=21 null=0
-vdbc	soundentries	EAXDef	INT	none		cdbc_soundkit.VolumeVariationPlus	identity	2041/4592	rows=4623 distinct=3 null=0
+vdbc	soundentries	EAXDef	INT	none		cdbc_soundkit.VolumeVariationPlus	creature_gender_none	4590/4592	rows=4623 distinct=3 null=0
 vdbc	soundproviderpreferences	ID	INT	none					rows=38 distinct=38 null=0
 vdbc	soundproviderpreferences	Description	TEXT	none					rows=38 distinct=37 null=0
 vdbc	soundproviderpreferences	Flags	INT	none					rows=38 distinct=6 null=0
@@ -1654,7 +1654,7 @@ vdbc	spellvisual	StateKit	INT	none		cdbc_spellvisual.MissileCastOffset1	bag_fami
 vdbc	spellvisual	ChannelKit	INT	SpellVisualEntry::channelKit (3 uses in 1 files)	wire=yes src/game/Spells/Spell.cpp:4999, src/game/Spells/Spell.cpp:5039, src/game/Spells/Spell.cpp:5042	cdbc_spellvisual.MissileCastOffset1	bag_family_mask	2164/2165	rows=2165 distinct=83 null=0
 vdbc	spellvisual	HasMissile	INT	none		cdbc_spellvisual.HasMissile	identity	2164/2165	rows=2165 distinct=2 null=0
 vdbc	spellvisual	MissileModel	INT	none		cdbc_spellvisual.MissileCastOffset1	bag_family_mask	2158/2165	rows=2165 distinct=74 null=0
-vdbc	spellvisual	MissilePathType	INT	none		cdbc_spellvisual.MissileCastOffset1	identity	2148/2165	rows=2165 distinct=2 null=0
+vdbc	spellvisual	MissilePathType	INT	none		cdbc_spellvisual.MissileCastOffset1	creature_gender_none	2165/2165	rows=2165 distinct=2 null=0
 vdbc	spellvisual	MissileDestinationAttachment	INT	none		cdbc_spellvisual.HasMissile	effect_base_dice_from_sides	915/2165	rows=2165 distinct=5 null=0
 vdbc	spellvisual	MissileSound	INT	none		cdbc_spellvisual.MissileCastOffset1	bag_family_mask	2165/2165	rows=2165 distinct=24 null=0
 vdbc	spellvisual	HasAreaEffect	INT	none		cdbc_spellvisual.MissileCastOffset1	identity	1948/2165	rows=2165 distinct=2 null=0
@@ -2605,7 +2605,7 @@ srv	faction_template	build	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_fact
 srv	faction_template	faction_id	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Faction	identity	314/314	rows=314 distinct=157 null=0
 srv	faction_template	faction_flags	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Flags	identity	313/314	rows=314 distinct=28 null=0
 srv	faction_template	our_mask	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.FactionGroup	identity	313/314	rows=314 distinct=7 null=0
-srv	faction_template	friendly_mask	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Enemies3	identity	188/314	rows=314 distinct=6 null=0
+srv	faction_template	friendly_mask	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Enemies3	creature_gender_none	247/314	rows=314 distinct=6 null=0
 srv	faction_template	hostile_mask	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.EnemyGroup	identity	314/314	rows=314 distinct=11 null=0
 srv	faction_template	enemy_faction1	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Enemies1	identity	312/314	rows=314 distinct=45 null=0 formula=equals_enemy_faction2:242/314
 srv	faction_template	enemy_faction2	INTEGER	manual:src/game/ObjectMgr.cpp:8767		cdbc_factiontemplate.Enemies2	identity	314/314	rows=314 distinct=6 null=0 formula=equals_enemy_faction3:308/314
@@ -2877,136 +2877,136 @@ srv	item_loot_template	patch_max	INTEGER	none					rows=2662 distinct=1 null=0 co
 srv	item_required_target	entry	INTEGER	manual:src/game/ObjectMgr.cpp:4328					rows=37 distinct=23 null=0
 srv	item_required_target	type	INTEGER	manual:src/game/ObjectMgr.cpp:4329					rows=37 distinct=2 null=0
 srv	item_required_target	target_entry	INTEGER	manual:src/game/ObjectMgr.cpp:4330					rows=37 distinct=37 null=0
-srv	item_template	entry	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.ID	identity	17593/17593	rows=17707 distinct=17707 null=0
-srv	item_template	patch	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinReputation	identity	11951/17593	rows=17707 distinct=11 null=0
-srv	item_template	class	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PriceVariance	effect_base_dice_from_sides	16607/17593	rows=17707 distinct=12 null=0
-srv	item_template	subclass	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PriceVariance	effect_base_dice_from_sides	9936/17593	rows=17707 distinct=20 null=0
+srv	item_template	entry	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=17707 null=0
+srv	item_template	patch	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=11 null=0
+srv	item_template	class	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=12 null=0
+srv	item_template	subclass	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=20 null=0
 srv	item_template	name	TEXT	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Display_lang	identity	17561/17593	rows=17707 distinct=17208 null=0
 srv	item_template	description	TEXT	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Description_lang	identity	17582/17593	rows=17707 distinct=563 null=16989
-srv	item_template	display_id	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=10979 null=0
-srv	item_template	quality	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.OverallQualityID	identity	17564/17593	rows=17707 distinct=7 null=0
-srv	item_template	flags	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Flags1	identity	17547/17593	rows=17707 distinct=46 null=0
-srv	item_template	buy_count	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.VendorStackCount	identity	17593/17593	rows=17707 distinct=7 null=0
-srv	item_template	buy_price	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.BuyPrice	identity	17490/17593	rows=17707 distinct=8360 null=0
-srv	item_template	sell_price	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.SellPrice	identity	17591/17593	rows=17707 distinct=6951 null=0
-srv	item_template	inventory_type	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.InventoryType	identity	17588/17593	rows=17707 distinct=28 null=0
-srv	item_template	allowable_class	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PriceVariance	effect_base_dice_from_sides	17591/17593	rows=17707 distinct=67 null=0
-srv	item_template	allowable_race	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17590/17593	rows=17707 distinct=17 null=0
-srv	item_template	item_level	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.ItemLevel	identity	17592/17593	rows=17707 distinct=91 null=0
-srv	item_template	required_level	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RequiredLevel	identity	17592/17593	rows=17707 distinct=69 null=0
-srv	item_template	required_skill	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17587/17593	rows=17707 distinct=19 null=0
-srv	item_template	required_skill_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17531/17593	rows=17707 distinct=59 null=0
-srv	item_template	required_spell	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RequiredAbility	identity	17593/17593	rows=17707 distinct=11 null=0
-srv	item_template	required_honor_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RequiredPVPRank	identity	17593/17593	rows=17707 distinct=15 null=0
-srv	item_template	required_city_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RequiredPVPMedal	identity	17593/17593	rows=17707 distinct=2 null=0
-srv	item_template	required_reputation_faction	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinFactionID	identity	17592/17593	rows=17707 distinct=11 null=0
-srv	item_template	required_reputation_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinReputation	identity	17592/17593	rows=17707 distinct=6 null=0
-srv	item_template	max_count	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MaxCount	identity	17592/17593	rows=17707 distinct=10 null=0
-srv	item_template	stackable	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PriceVariance	effect_base_dice_from_sides	17593/17593	rows=17707 distinct=17 null=0
-srv	item_template	container_slots	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.ContainerSlots	identity	17593/17593	rows=17707 distinct=15 null=0
-srv	item_template	stat_type1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat1	none_parent_zero	17592/17593	rows=17707 distinct=7 null=0 formula=equals_stat_type3:12414/17707
-srv	item_template	stat_value1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusAmount1	identity	17593/17593	rows=17707 distinct=53 null=0 formula=equals_stat_value2:13147/17707
-srv	item_template	stat_type2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat2	none_parent_zero	17592/17593	rows=17707 distinct=6 null=0 formula=equals_stat_type3:13573/17707
-srv	item_template	stat_value2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusAmount2	identity	17592/17593	rows=17707 distinct=43 null=0 formula=equals_stat_value3:13882/17707
-srv	item_template	stat_type3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat3	none_parent_zero	17592/17593	rows=17707 distinct=6 null=0 formula=equals_stat_type4:16149/17707
-srv	item_template	stat_value3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusAmount3	identity	17592/17593	rows=17707 distinct=39 null=0 formula=equals_stat_value4:16204/17707
-srv	item_template	stat_type4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat4	none_parent_zero	17593/17593	rows=17707 distinct=6 null=0 formula=equals_stat_type5:17459/17707
-srv	item_template	stat_value4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusAmount4	identity	17593/17593	rows=17707 distinct=24 null=0 formula=equals_stat_value5:17483/17707
-srv	item_template	stat_type5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat5	none_parent_zero	17593/17593	rows=17707 distinct=6 null=0 formula=equals_stat_type6:17622/17707
-srv	item_template	stat_value5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusAmount5	identity	17593/17593	rows=17707 distinct=18 null=0 formula=equals_stat_value6:17622/17707
-srv	item_template	stat_type6	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type7:17707/17707
-srv	item_template	stat_value6	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value7:17707/17707
-srv	item_template	stat_type7	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
-srv	item_template	stat_value7	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
-srv	item_template	stat_type8	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
-srv	item_template	stat_value8	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
-srv	item_template	stat_type9	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
-srv	item_template	stat_value9	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
-srv	item_template	stat_type10	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
-srv	item_template	stat_value10	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
-srv	item_template	delay	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=34 null=0
-srv	item_template	range_mod	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.ItemRange	identity	17593/17593	rows=17707 distinct=3 null=0
-srv	item_template	ammo_type	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.AmmunitionType	identity	17593/17593	rows=17707 distinct=4 null=0
-srv	item_template	dmg_min1	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage1	identity	17522/17593	rows=17707 distinct=228 null=0 formula=equals_dmg_min2:15242/17707
-srv	item_template	dmg_max1	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MaxDamage1	identity	17523/17593	rows=17707 distinct=307 null=0 formula=equals_dmg_max2:15260/17707
-srv	item_template	dmg_type1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.DamageType	identity	17593/17593	rows=17707 distinct=7 null=0 formula=equals_dmg_type4:17580/17707
-srv	item_template	dmg_min2	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage2	identity	17593/17593	rows=17707 distinct=9 null=0 formula=equals_dmg_min3:17686/17707
-srv	item_template	dmg_max2	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MaxDamage2	identity	17593/17593	rows=17707 distinct=13 null=0 formula=equals_dmg_max3:17686/17707
-srv	item_template	dmg_type2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage2	effect_base_dice_from_sides	17581/17593	rows=17707 distinct=7 null=0 formula=equals_dmg_type3:17685/17707
-srv	item_template	dmg_min3	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage3	identity	17593/17593	rows=17707 distinct=4 null=0 formula=equals_dmg_min4:17704/17707
-srv	item_template	dmg_max3	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MaxDamage3	identity	17593/17593	rows=17707 distinct=3 null=0 formula=equals_dmg_max4:17704/17707
-srv	item_template	dmg_type3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17591/17593	rows=17707 distinct=4 null=0 formula=equals_dmg_type4:17704/17707
-srv	item_template	dmg_min4	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage4	identity	17593/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_min5:17706/17707
-srv	item_template	dmg_max4	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage4	identity	17593/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_max5:17706/17707
-srv	item_template	dmg_type4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17592/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_type5:17706/17707
-srv	item_template	dmg_min5	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage5	identity	17593/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_min4:17706/17707
-srv	item_template	dmg_max5	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MinDamage5	identity	17593/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_max4:17706/17707
-srv	item_template	dmg_type5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17592/17593	rows=17707 distinct=2 null=0 formula=equals_dmg_type4:17706/17707
-srv	item_template	block	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	passive_duration_infinite	17229/17593	rows=17707 distinct=54 null=0
-srv	item_template	armor	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances1	identity	17281/17593	rows=17707 distinct=694 null=0
-srv	item_template	holy_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances2	identity	17593/17593	rows=17707 distinct=3 null=0
-srv	item_template	fire_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances3	identity	17593/17593	rows=17707 distinct=32 null=0
-srv	item_template	nature_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances4	identity	17593/17593	rows=17707 distinct=28 null=0
-srv	item_template	frost_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances5	identity	17593/17593	rows=17707 distinct=28 null=0
-srv	item_template	shadow_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances6	identity	17593/17593	rows=17707 distinct=24 null=0
-srv	item_template	arcane_res	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Resistances7	identity	17593/17593	rows=17707 distinct=22 null=0
-srv	item_template	spellid_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17587/17593	rows=17707 distinct=3462 null=0 formula=equals_spellid_4:11322/17707
-srv	item_template	spelltrigger_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	14789/17593	rows=17707 distinct=3 null=0 formula=equals_spelltrigger_2:15674/17707
-srv	item_template	spellcharges_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17572/17593	rows=17707 distinct=17 null=0 formula=equals_spellcharges_3:14800/17707
-srv	item_template	spellppmrate_1	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	skill_race_flag_dropped_bit	17568/17593	rows=17707 distinct=16 null=0 formula=equals_spellppmrate_2:17678/17707
-srv	item_template	spellcooldown_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17531/17593	rows=17707 distinct=31 null=0 formula=equals_spellcooldown_4:16240/17707
-srv	item_template	spellcategory_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17182/17593	rows=17707 distinct=33 null=0 formula=equals_spellcategory_4:16916/17707
-srv	item_template	spellcategorycooldown_1	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=24 null=0 formula=equals_spellcategorycooldown_4:16411/17707
-srv	item_template	spellid_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=232 null=0 formula=equals_spellid_4:16798/17707
-srv	item_template	spelltrigger_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	16710/17593	rows=17707 distinct=3 null=0 formula=equals_spelltrigger_3:16947/17707
-srv	item_template	spellcharges_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat6	none_parent_zero	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellcharges_3:17703/17707
-srv	item_template	spellppmrate_2	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_3:17707/17707
-srv	item_template	spellcooldown_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=7 null=0 formula=equals_spellcooldown_3:17584/17707
-srv	item_template	spellcategory_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=5 null=0 formula=equals_spellcategory_4:17697/17707
-srv	item_template	spellcategorycooldown_2	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=6 null=0 formula=equals_spellcategorycooldown_3:17586/17707
-srv	item_template	spellid_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=80 null=0 formula=equals_spellid_4:17561/17707
-srv	item_template	spelltrigger_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17461/17593	rows=17707 distinct=3 null=0 formula=equals_spelltrigger_4:17577/17707
-srv	item_template	spellcharges_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_4:17707/17707
-srv	item_template	spellppmrate_3	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
-srv	item_template	spellcooldown_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=6 null=0 formula=equals_spellcooldown_4:17664/17707
-srv	item_template	spellcategory_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=3 null=0 formula=equals_spellcategory_4:17698/17707
-srv	item_template	spellcategorycooldown_3	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=5 null=0 formula=equals_spellcategorycooldown_4:17665/17707
-srv	item_template	spellid_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=5 null=0 formula=equals_spellid_5:17701/17707
-srv	item_template	spelltrigger_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17590/17593	rows=17707 distinct=2 null=0 formula=equals_spelltrigger_5:17704/17707
-srv	item_template	spellcharges_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_3:17707/17707
-srv	item_template	spellppmrate_4	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
-srv	item_template	spellcooldown_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat6	none_parent_zero	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellcooldown_3:17664/17707
-srv	item_template	spellcategory_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_spellcategory_5:17707/17707
-srv	item_template	spellcategorycooldown_4	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat6	none_parent_zero	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellcategorycooldown_3:17665/17707
-srv	item_template	spellid_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellid_4:17701/17707
-srv	item_template	spelltrigger_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17592/17593	rows=17707 distinct=2 null=0 formula=equals_spelltrigger_4:17704/17707
-srv	item_template	spellcharges_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_3:17707/17707
-srv	item_template	spellppmrate_5	REAL	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
-srv	item_template	spellcooldown_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat6	none_parent_zero	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellcooldown_2:3747/17707
-srv	item_template	spellcategory_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17593/17593	rows=17707 distinct=1 null=0 const=0 formula=equals_spellcategory_4:17707/17707
-srv	item_template	spellcategorycooldown_5	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatModifier_bonusStat6	none_parent_zero	17593/17593	rows=17707 distinct=2 null=0 formula=equals_spellcategorycooldown_2:4069/17707
-srv	item_template	bonding	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Bonding	identity	17509/17593	rows=17707 distinct=6 null=0
-srv	item_template	page_text	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PageID	identity	17593/17593	rows=17707 distinct=304 null=0
-srv	item_template	page_language	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.LanguageID	identity	17593/17593	rows=17707 distinct=8 null=0
-srv	item_template	page_material	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PageMaterialID	identity	17593/17593	rows=17707 distinct=7 null=0
-srv	item_template	start_quest	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17589/17593	rows=17707 distinct=215 null=0
-srv	item_template	lock_id	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.LockID	identity	17592/17593	rows=17707 distinct=12 null=0
-srv	item_template	material	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.Material	ghost_map_neg1	17586/17593	rows=17707 distinct=10 null=0
-srv	item_template	sheath	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.SheatheType	identity	17593/17593	rows=17707 distinct=8 null=0
-srv	item_template	random_property	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RandomSelect	identity	17593/17593	rows=17707 distinct=781 null=0
-srv	item_template	set_id	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.ItemSet	identity	17593/17593	rows=17707 distinct=173 null=0
-srv	item_template	max_durability	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.MaxDurability	identity	17593/17593	rows=17707 distinct=31 null=0
-srv	item_template	area_bound	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=4 null=0
-srv	item_template	map_bound	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.InstanceBound	identity	17593/17593	rows=17707 distinct=2 null=0
-srv	item_template	duration	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=19 null=0
-srv	item_template	bag_family	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.BagFamily	bag_family_mask	17593/17593	rows=17707 distinct=7 null=0
-srv	item_template	disenchant_id	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	11829/17593	rows=17707 distinct=37 null=0
-srv	item_template	food_type	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	identity	17395/17593	rows=17707 distinct=7 null=0
-srv	item_template	min_money_loot	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17589/17593	rows=17707 distinct=20 null=0
-srv	item_template	max_money_loot	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17592/17593	rows=17707 distinct=20 null=0
-srv	item_template	wrapped_gift	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.StatPercentageOfSocket1	bag_family_mask	17593/17593	rows=17707 distinct=10 null=0
-srv	item_template	extra_flags	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.RequiredPVPMedal	effect_base_dice_from_sides	14306/17593	rows=17707 distinct=5 null=0
-srv	item_template	other_team_entry	INTEGER	manual:src/game/ObjectMgr.cpp:186		cdbc_itemsparse.PriceVariance	identity	17593/17593	rows=17707 distinct=1 null=0 const=1
+srv	item_template	display_id	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=10979 null=0
+srv	item_template	quality	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0
+srv	item_template	flags	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=46 null=0
+srv	item_template	buy_count	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0
+srv	item_template	buy_price	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=8360 null=0
+srv	item_template	sell_price	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6951 null=0
+srv	item_template	inventory_type	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=28 null=0
+srv	item_template	allowable_class	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=67 null=0
+srv	item_template	allowable_race	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=17 null=0
+srv	item_template	item_level	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=91 null=0
+srv	item_template	required_level	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=69 null=0
+srv	item_template	required_skill	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=19 null=0
+srv	item_template	required_skill_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=59 null=0
+srv	item_template	required_spell	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=11 null=0
+srv	item_template	required_honor_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=15 null=0
+srv	item_template	required_city_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0
+srv	item_template	required_reputation_faction	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=11 null=0
+srv	item_template	required_reputation_rank	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0
+srv	item_template	max_count	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=10 null=0
+srv	item_template	stackable	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=17 null=0
+srv	item_template	container_slots	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=15 null=0
+srv	item_template	stat_type1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0 formula=equals_stat_type3:12414/17707
+srv	item_template	stat_value1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=53 null=0 formula=equals_stat_value2:13147/17707
+srv	item_template	stat_type2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_stat_type3:13573/17707
+srv	item_template	stat_value2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=43 null=0 formula=equals_stat_value3:13882/17707
+srv	item_template	stat_type3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_stat_type4:16149/17707
+srv	item_template	stat_value3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=39 null=0 formula=equals_stat_value4:16204/17707
+srv	item_template	stat_type4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_stat_type5:17459/17707
+srv	item_template	stat_value4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=24 null=0 formula=equals_stat_value5:17483/17707
+srv	item_template	stat_type5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_stat_type6:17622/17707
+srv	item_template	stat_value5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=18 null=0 formula=equals_stat_value6:17622/17707
+srv	item_template	stat_type6	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type7:17707/17707
+srv	item_template	stat_value6	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value7:17707/17707
+srv	item_template	stat_type7	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
+srv	item_template	stat_value7	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
+srv	item_template	stat_type8	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
+srv	item_template	stat_value8	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
+srv	item_template	stat_type9	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
+srv	item_template	stat_value9	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
+srv	item_template	stat_type10	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_type6:17707/17707
+srv	item_template	stat_value10	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_stat_value6:17707/17707
+srv	item_template	delay	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=34 null=0
+srv	item_template	range_mod	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0
+srv	item_template	ammo_type	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=4 null=0
+srv	item_template	dmg_min1	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=228 null=0 formula=equals_dmg_min2:15242/17707
+srv	item_template	dmg_max1	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=307 null=0 formula=equals_dmg_max2:15260/17707
+srv	item_template	dmg_type1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0 formula=equals_dmg_type4:17580/17707
+srv	item_template	dmg_min2	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=9 null=0 formula=equals_dmg_min3:17686/17707
+srv	item_template	dmg_max2	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=13 null=0 formula=equals_dmg_max3:17686/17707
+srv	item_template	dmg_type2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0 formula=equals_dmg_type3:17685/17707
+srv	item_template	dmg_min3	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=4 null=0 formula=equals_dmg_min4:17704/17707
+srv	item_template	dmg_max3	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0 formula=equals_dmg_max4:17704/17707
+srv	item_template	dmg_type3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=4 null=0 formula=equals_dmg_type4:17704/17707
+srv	item_template	dmg_min4	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_min5:17706/17707
+srv	item_template	dmg_max4	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_max5:17706/17707
+srv	item_template	dmg_type4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_type5:17706/17707
+srv	item_template	dmg_min5	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_min4:17706/17707
+srv	item_template	dmg_max5	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_max4:17706/17707
+srv	item_template	dmg_type5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_dmg_type4:17706/17707
+srv	item_template	block	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=54 null=0
+srv	item_template	armor	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=694 null=0
+srv	item_template	holy_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0
+srv	item_template	fire_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=32 null=0
+srv	item_template	nature_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=28 null=0
+srv	item_template	frost_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=28 null=0
+srv	item_template	shadow_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=24 null=0
+srv	item_template	arcane_res	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=22 null=0
+srv	item_template	spellid_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3462 null=0 formula=equals_spellid_4:11322/17707
+srv	item_template	spelltrigger_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0 formula=equals_spelltrigger_2:15674/17707
+srv	item_template	spellcharges_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=17 null=0 formula=equals_spellcharges_3:14800/17707
+srv	item_template	spellppmrate_1	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=16 null=0 formula=equals_spellppmrate_2:17678/17707
+srv	item_template	spellcooldown_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=31 null=0 formula=equals_spellcooldown_4:16240/17707
+srv	item_template	spellcategory_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=33 null=0 formula=equals_spellcategory_4:16916/17707
+srv	item_template	spellcategorycooldown_1	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=24 null=0 formula=equals_spellcategorycooldown_4:16411/17707
+srv	item_template	spellid_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=232 null=0 formula=equals_spellid_4:16798/17707
+srv	item_template	spelltrigger_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0 formula=equals_spelltrigger_3:16947/17707
+srv	item_template	spellcharges_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellcharges_3:17703/17707
+srv	item_template	spellppmrate_2	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_3:17707/17707
+srv	item_template	spellcooldown_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0 formula=equals_spellcooldown_3:17584/17707
+srv	item_template	spellcategory_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=5 null=0 formula=equals_spellcategory_4:17697/17707
+srv	item_template	spellcategorycooldown_2	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_spellcategorycooldown_3:17586/17707
+srv	item_template	spellid_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=80 null=0 formula=equals_spellid_4:17561/17707
+srv	item_template	spelltrigger_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0 formula=equals_spelltrigger_4:17577/17707
+srv	item_template	spellcharges_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_4:17707/17707
+srv	item_template	spellppmrate_3	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
+srv	item_template	spellcooldown_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0 formula=equals_spellcooldown_4:17664/17707
+srv	item_template	spellcategory_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=3 null=0 formula=equals_spellcategory_4:17698/17707
+srv	item_template	spellcategorycooldown_3	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=5 null=0 formula=equals_spellcategorycooldown_4:17665/17707
+srv	item_template	spellid_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=5 null=0 formula=equals_spellid_5:17701/17707
+srv	item_template	spelltrigger_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spelltrigger_5:17704/17707
+srv	item_template	spellcharges_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_3:17707/17707
+srv	item_template	spellppmrate_4	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
+srv	item_template	spellcooldown_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellcooldown_3:17664/17707
+srv	item_template	spellcategory_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_spellcategory_5:17707/17707
+srv	item_template	spellcategorycooldown_4	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellcategorycooldown_3:17665/17707
+srv	item_template	spellid_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellid_4:17701/17707
+srv	item_template	spelltrigger_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spelltrigger_4:17704/17707
+srv	item_template	spellcharges_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_spellcharges_3:17707/17707
+srv	item_template	spellppmrate_5	REAL	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0.0 formula=equals_spellppmrate_2:17707/17707
+srv	item_template	spellcooldown_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellcooldown_2:3747/17707
+srv	item_template	spellcategory_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=0 formula=equals_spellcategory_4:17707/17707
+srv	item_template	spellcategorycooldown_5	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0 formula=equals_spellcategorycooldown_2:4069/17707
+srv	item_template	bonding	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=6 null=0
+srv	item_template	page_text	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=304 null=0
+srv	item_template	page_language	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=8 null=0
+srv	item_template	page_material	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0
+srv	item_template	start_quest	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=215 null=0
+srv	item_template	lock_id	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=12 null=0
+srv	item_template	material	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=10 null=0
+srv	item_template	sheath	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=8 null=0
+srv	item_template	random_property	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=781 null=0
+srv	item_template	set_id	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=173 null=0
+srv	item_template	max_durability	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=31 null=0
+srv	item_template	area_bound	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=4 null=0
+srv	item_template	map_bound	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=2 null=0
+srv	item_template	duration	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=19 null=0
+srv	item_template	bag_family	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0
+srv	item_template	disenchant_id	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=37 null=0
+srv	item_template	food_type	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=7 null=0
+srv	item_template	min_money_loot	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=20 null=0
+srv	item_template	max_money_loot	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=20 null=0
+srv	item_template	wrapped_gift	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=10 null=0
+srv	item_template	extra_flags	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=5 null=0
+srv	item_template	other_team_entry	INTEGER	manual:src/game/ObjectMgr.cpp:186					rows=17707 distinct=1 null=0 const=1
 srv	locales_area	Entry	INTEGER	manual:src/game/ObjectMgr.cpp:12080					rows=1081 distinct=1081 null=0
 srv	locales_area	NameLoc1	TEXT	manual:src/game/ObjectMgr.cpp:12148					rows=1081 distinct=889 null=81 formula=equals_NameLoc5:81/1081
 srv	locales_area	NameLoc2	TEXT	manual:src/game/ObjectMgr.cpp:12149					rows=1081 distinct=1005 null=0 formula=equals_NameLoc3:131/1081
@@ -3944,44 +3944,44 @@ srv	spell_target_position	build_max	INTEGER	none					rows=307 distinct=1 null=0 
 srv	spell_template	entry	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.SpellID	identity	21139/21139	rows=22381 distinct=22381 null=0
 srv	spell_template	build	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=11 null=0
 srv	spell_template	school	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.SchoolMask	school_index_to_mask	21135/21139	rows=22381 distinct=7 null=0
-srv	spell_template	category	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=137 null=0
-srv	spell_template	castUI	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0
+srv	spell_template	category	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcategories.Category	identity	7329/7354	rows=22381 distinct=137 null=0
+srv	spell_template	castUI	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=4 null=0
 srv	spell_template	dispel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1568/1601	rows=22381 distinct=9 null=0
-srv	spell_template	mechanic	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=24 null=0
-srv	spell_template	attributes	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=402 null=0
-srv	spell_template	attributesEx	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=135 null=0
-srv	spell_template	attributesEx2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=56 null=0 formula=equals_attributesEx4:20289/22381
-srv	spell_template	attributesEx3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=52 null=0 formula=equals_attributesEx4:21571/22381
-srv	spell_template	attributesEx4	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=9 null=0 formula=equals_attributesEx3:21571/22381
-srv	spell_template	stances	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=21 null=0
+srv	spell_template	mechanic	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcategories.Mechanic	identity	7350/7354	rows=22381 distinct=24 null=0
+srv	spell_template	attributes	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2822/2863	rows=22381 distinct=402 null=0
+srv	spell_template	attributesEx	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1590/1601	rows=22381 distinct=135 null=0
+srv	spell_template	attributesEx2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1584/1601	rows=22381 distinct=56 null=0 formula=equals_attributesEx4:20289/22381
+srv	spell_template	attributesEx3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.SpellProcsPerMinuteID	bag_family_mask	18889/18930	rows=22381 distinct=52 null=0 formula=equals_attributesEx4:21571/22381
+srv	spell_template	attributesEx4	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	bag_family_mask	3949/3949	rows=22381 distinct=9 null=0 formula=equals_attributesEx3:21571/22381
+srv	spell_template	stances	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	bag_family_mask	6454/6458	rows=22381 distinct=21 null=0
 srv	spell_template	stancesNot	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=6 null=0
-srv	spell_template	targets	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=12 null=0
-srv	spell_template	targetCreatureType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=15 null=0
-srv	spell_template	requiresSpellFocus	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=130 null=0
-srv	spell_template	casterAuraState	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=6 null=0
-srv	spell_template	targetAuraState	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=2 null=0
+srv	spell_template	targets	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelltargetrestrictions.Targets	identity	21011/21037	rows=22381 distinct=12 null=0
+srv	spell_template	targetCreatureType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelltargetrestrictions.TargetCreatureType	identity	21037/21037	rows=22381 distinct=15 null=0
+srv	spell_template	requiresSpellFocus	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=130 null=0
+srv	spell_template	casterAuraState	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	identity	6458/6458	rows=22381 distinct=6 null=0
+srv	spell_template	targetAuraState	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	creature_gender_none	21139/21139	rows=22381 distinct=2 null=0
 srv	spell_template	castingTimeIndex	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14220/14220	rows=22381 distinct=41 null=0
 srv	spell_template	recoveryTime	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=26 null=0
 srv	spell_template	categoryRecoveryTime	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=39 null=0
-srv	spell_template	interruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=15 null=0
-srv	spell_template	auraInterruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=62 null=0
-srv	spell_template	channelInterruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=41 null=0
-srv	spell_template	procFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=46 null=0
-srv	spell_template	procChance	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=32 null=0
-srv	spell_template	procCharges	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=10 null=0
-srv	spell_template	maxLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=73 null=0
-srv	spell_template	baseLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1476/1601	rows=22381 distinct=67 null=0
-srv	spell_template	spellLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1451/1601	rows=22381 distinct=68 null=0
+srv	spell_template	interruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.InterruptFlags	identity	6455/6458	rows=22381 distinct=15 null=0
+srv	spell_template	auraInterruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.AuraInterruptFlags1	identity	6450/6458	rows=22381 distinct=62 null=0
+srv	spell_template	channelInterruptFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags1	identity	6457/6458	rows=22381 distinct=41 null=0
+srv	spell_template	procFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1593/1601	rows=22381 distinct=46 null=0
+srv	spell_template	procChance	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1596/1601	rows=22381 distinct=32 null=0
+srv	spell_template	procCharges	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.ProcCharges	identity	18924/18930	rows=22381 distinct=10 null=0
+srv	spell_template	maxLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelllevels.MaxLevel	identity	7383/7408	rows=22381 distinct=73 null=0
+srv	spell_template	baseLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelllevels.BaseLevel	identity	7400/7408	rows=22381 distinct=67 null=0
+srv	spell_template	spellLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelllevels.SpellLevel	identity	7398/7408	rows=22381 distinct=68 null=0
 srv	spell_template	durationIndex	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.DurationIndex	identity	20585/21139	rows=22381 distinct=70 null=0
-srv	spell_template	powerType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=5 null=0
-srv	spell_template	manaCost	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=230 null=0
-srv	spell_template	manCostPerLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=12 null=0
-srv	spell_template	manaPerSecond	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=12 null=0
+srv	spell_template	powerType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	creature_gender_none	1592/1601	rows=22381 distinct=5 null=0
+srv	spell_template	manaCost	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1593/1601	rows=22381 distinct=230 null=0
+srv	spell_template	manCostPerLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3946/3949	rows=22381 distinct=12 null=0
+srv	spell_template	manaPerSecond	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3949/3949	rows=22381 distinct=12 null=0
 srv	spell_template	manaPerSecondPerLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=1 null=0 const=0
 srv	spell_template	rangeIndex	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14220/14220	rows=22381 distinct=26 null=0
-srv	spell_template	speed	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=30 null=0
-srv	spell_template	modelNextSpell	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0
-srv	spell_template	stackAmount	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=19 null=0
+srv	spell_template	speed	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.Speed	identity	21137/21139	rows=22381 distinct=30 null=0
+srv	spell_template	modelNextSpell	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellclassoptions.ModalNextSpell	identity	3928/3928	rows=22381 distinct=4 null=0
+srv	spell_template	stackAmount	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.CumulativeAura	identity	18928/18930	rows=22381 distinct=19 null=0
 srv	spell_template	totem1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=34 null=0 formula=equals_totem2:21697/22381
 srv	spell_template	totem2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=3 null=0 formula=equals_totem1:21697/22381
 srv	spell_template	reagent1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=409 null=0 formula=equals_reagent3:20771/22381
@@ -3992,106 +3992,106 @@ srv	spell_template	reagent5	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spe
 srv	spell_template	reagent6	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=40 null=0 formula=equals_reagent7:22321/22381
 srv	spell_template	reagent7	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=12 null=0 formula=equals_reagent8:22368/22381
 srv	spell_template	reagent8	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=6 null=0 formula=equals_reagent7:22368/22381
-srv	spell_template	reagentCount1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=32 null=0 formula=equals_reagentCount2:21149/22381
-srv	spell_template	reagentCount2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=25 null=0 formula=equals_reagentCount3:21501/22381
-srv	spell_template	reagentCount3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=19 null=0 formula=equals_reagentCount4:21679/22381
-srv	spell_template	reagentCount4	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=13 null=0 formula=equals_reagentCount5:22043/22381
-srv	spell_template	reagentCount5	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=10 null=0 formula=equals_reagentCount6:22211/22381
-srv	spell_template	reagentCount6	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=8 null=0 formula=equals_reagentCount7:22329/22381
-srv	spell_template	reagentCount7	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=6 null=0 formula=equals_reagentCount8:22373/22381
-srv	spell_template	reagentCount8	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=2 null=0 formula=equals_reagentCount7:22373/22381
-srv	spell_template	equippedItemClass	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	ghost_map_neg1	4/4	rows=22381 distinct=3 null=0
-srv	spell_template	equippedItemSubClassMask	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	ghost_map_neg1	4/4	rows=22381 distinct=54 null=0
-srv	spell_template	equippedItemInventoryTypeMask	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=13 null=0
+srv	spell_template	reagentCount1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.ReagentCount1	identity	1593/1601	rows=22381 distinct=32 null=0 formula=equals_reagentCount2:21149/22381
+srv	spell_template	reagentCount2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcategories.ChargeCategory	identity	7352/7354	rows=22381 distinct=25 null=0 formula=equals_reagentCount3:21501/22381
+srv	spell_template	reagentCount3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=19 null=0 formula=equals_reagentCount4:21679/22381
+srv	spell_template	reagentCount4	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=13 null=0 formula=equals_reagentCount5:22043/22381
+srv	spell_template	reagentCount5	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=10 null=0 formula=equals_reagentCount6:22211/22381
+srv	spell_template	reagentCount6	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=8 null=0 formula=equals_reagentCount7:22329/22381
+srv	spell_template	reagentCount7	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=6 null=0 formula=equals_reagentCount8:22373/22381
+srv	spell_template	reagentCount8	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=2 null=0 formula=equals_reagentCount7:22373/22381
+srv	spell_template	equippedItemClass	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14220/14220	rows=22381 distinct=3 null=0
+srv	spell_template	equippedItemSubClassMask	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	bag_family_mask	3936/3949	rows=22381 distinct=54 null=0
+srv	spell_template	equippedItemInventoryTypeMask	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=13 null=0
 srv	spell_template	effect1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14189/14220	rows=22381 distinct=112 null=0 formula=equals_effect2:1947/22381
 srv	spell_template	effect2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1536/1601	rows=22381 distinct=52 null=0 formula=equals_effect3:19018/22381
-srv	spell_template	effect3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=35 null=0 formula=equals_effect2:19018/22381
+srv	spell_template	effect3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1586/1601	rows=22381 distinct=35 null=0 formula=equals_effect2:19018/22381
 srv	spell_template	effectDieSides1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Priority	effect_base_dice_from_sides	9397/14220	rows=22381 distinct=178 null=0 formula=equals_effectDieSides2:7895/22381
 srv	spell_template	effectDieSides2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1564/1601	rows=22381 distinct=70 null=0 formula=equals_effectDieSides3:19914/22381
-srv	spell_template	effectDieSides3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=18 null=0 formula=equals_effectDieSides2:19914/22381
+srv	spell_template	effectDieSides3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1587/1601	rows=22381 distinct=18 null=0 formula=equals_effectDieSides2:19914/22381
 srv	spell_template	effectBaseDice1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Priority	effect_base_dice_from_sides	9422/14220	rows=22381 distinct=4 null=0 formula=effect_base_dice_from_die_sides:22265/22381
 srv	spell_template	effectBaseDice2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1563/1601	rows=22381 distinct=3 null=0 formula=effect_base_dice_from_die_sides:22379/22381
-srv	spell_template	effectBaseDice3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=2 null=0 formula=effect_base_dice_from_die_sides:22379/22381
+srv	spell_template	effectBaseDice3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1587/1601	rows=22381 distinct=2 null=0 formula=effect_base_dice_from_die_sides:22379/22381
 srv	spell_template	effectDicePerLevel1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=2 null=0 formula=equals_effectDicePerLevel2:22379/22381
 srv	spell_template	effectDicePerLevel2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=1 null=0 const=0.0 formula=equals_effectDicePerLevel3:22381/22381
 srv	spell_template	effectDicePerLevel3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=1 null=0 const=0.0 formula=equals_effectDicePerLevel2:22381/22381
 srv	spell_template	effectRealPointsPerLevel1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	skill_race_flag_dropped_bit	1586/1601	rows=22381 distinct=169 null=0 formula=equals_effectRealPointsPerLevel3:21198/22381
-srv	spell_template	effectRealPointsPerLevel2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=69 null=0 formula=equals_effectRealPointsPerLevel3:22188/22381
-srv	spell_template	effectRealPointsPerLevel3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=20 null=0 formula=equals_effectRealPointsPerLevel2:22188/22381
+srv	spell_template	effectRealPointsPerLevel2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.SpellProcsPerMinuteID	skill_race_flag_dropped_bit	18826/18930	rows=22381 distinct=69 null=0 formula=equals_effectRealPointsPerLevel3:22188/22381
+srv	spell_template	effectRealPointsPerLevel3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	bag_family_mask	6456/6458	rows=22381 distinct=20 null=0 formula=equals_effectRealPointsPerLevel2:22188/22381
 srv	spell_template	effectBasePoints1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1513/1601	rows=22381 distinct=786 null=0 formula=equals_effectBasePoints2:9718/22381
 srv	spell_template	effectBasePoints2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1586/1601	rows=22381 distinct=303 null=0 formula=equals_effectBasePoints3:19889/22381
-srv	spell_template	effectBasePoints3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=134 null=0 formula=equals_effectBasePoints2:19889/22381
-srv	spell_template	effectBonusCoefficient1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	skill_race_flag_dropped_bit	2/2	rows=22381 distinct=96 null=0 formula=equals_effectBonusCoefficient2:4370/22381
+srv	spell_template	effectBasePoints3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1593/1601	rows=22381 distinct=134 null=0 formula=equals_effectBasePoints2:19889/22381
+srv	spell_template	effectBonusCoefficient1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.ReagentCount8	ghost_map_neg1	1466/1601	rows=22381 distinct=96 null=0 formula=equals_effectBonusCoefficient2:4370/22381
 srv	spell_template	effectBonusCoefficient2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	ghost_map_neg1	1555/1601	rows=22381 distinct=34 null=0 formula=equals_effectBonusCoefficient3:19326/22381
-srv	spell_template	effectBonusCoefficient3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	ghost_map_neg1	4/4	rows=22381 distinct=8 null=0 formula=equals_effectBonusCoefficient2:19326/22381
-srv	spell_template	effectMechanic1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=6 null=0 formula=equals_effectMechanic3:22319/22381
-srv	spell_template	effectMechanic2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=11 null=0 formula=equals_effectMechanic3:22252/22381
-srv	spell_template	effectMechanic3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0 formula=equals_effectMechanic1:22319/22381
+srv	spell_template	effectBonusCoefficient3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	ghost_map_neg1	1596/1601	rows=22381 distinct=8 null=0 formula=equals_effectBonusCoefficient2:19326/22381
+srv	spell_template	effectMechanic1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3945/3949	rows=22381 distinct=6 null=0 formula=equals_effectMechanic3:22319/22381
+srv	spell_template	effectMechanic2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1596/1601	rows=22381 distinct=11 null=0 formula=equals_effectMechanic3:22252/22381
+srv	spell_template	effectMechanic3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=4 null=0 formula=equals_effectMechanic1:22319/22381
 srv	spell_template	effectImplicitTargetA1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	10419/14220	rows=22381 distinct=49 null=0 formula=equals_effectImplicitTargetA2:7179/22381
 srv	spell_template	effectImplicitTargetA2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1533/1601	rows=22381 distinct=35 null=0 formula=equals_effectImplicitTargetA3:19507/22381
-srv	spell_template	effectImplicitTargetA3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=22 null=0 formula=equals_effectImplicitTargetA2:19507/22381
-srv	spell_template	effectImplicitTargetB1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=35 null=0 formula=equals_effectImplicitTargetB2:21194/22381
-srv	spell_template	effectImplicitTargetB2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=16 null=0 formula=equals_effectImplicitTargetB3:22108/22381
-srv	spell_template	effectImplicitTargetB3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=11 null=0 formula=equals_effectImplicitTargetB2:22108/22381
-srv	spell_template	effectRadiusIndex1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=23 null=0 formula=equals_effectRadiusIndex2:20551/22381
-srv	spell_template	effectRadiusIndex2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=21 null=0 formula=equals_effectRadiusIndex3:21961/22381
-srv	spell_template	effectRadiusIndex3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=14 null=0 formula=equals_effectRadiusIndex2:21961/22381
+srv	spell_template	effectImplicitTargetA3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1583/1601	rows=22381 distinct=22 null=0 formula=equals_effectImplicitTargetA2:19507/22381
+srv	spell_template	effectImplicitTargetB1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1589/1601	rows=22381 distinct=35 null=0 formula=equals_effectImplicitTargetB2:21194/22381
+srv	spell_template	effectImplicitTargetB2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1596/1601	rows=22381 distinct=16 null=0 formula=equals_effectImplicitTargetB3:22108/22381
+srv	spell_template	effectImplicitTargetB3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1596/1601	rows=22381 distinct=11 null=0 formula=equals_effectImplicitTargetB2:22108/22381
+srv	spell_template	effectRadiusIndex1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1565/1601	rows=22381 distinct=23 null=0 formula=equals_effectRadiusIndex2:20551/22381
+srv	spell_template	effectRadiusIndex2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1592/1601	rows=22381 distinct=21 null=0 formula=equals_effectRadiusIndex3:21961/22381
+srv	spell_template	effectRadiusIndex3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1594/1601	rows=22381 distinct=14 null=0 formula=equals_effectRadiusIndex2:21961/22381
 srv	spell_template	effectApplyAuraName1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1560/1601	rows=22381 distinct=166 null=0 formula=equals_effectApplyAuraName3:12738/22381
-srv	spell_template	effectApplyAuraName2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=111 null=0 formula=equals_effectApplyAuraName3:19919/22381
-srv	spell_template	effectApplyAuraName3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=78 null=0 formula=equals_effectApplyAuraName2:19919/22381
+srv	spell_template	effectApplyAuraName2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1560/1601	rows=22381 distinct=111 null=0 formula=equals_effectApplyAuraName3:19919/22381
+srv	spell_template	effectApplyAuraName3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1594/1601	rows=22381 distinct=78 null=0 formula=equals_effectApplyAuraName2:19919/22381
 srv	spell_template	effectAmplitude1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=36 null=0 formula=equals_effectAmplitude3:21233/22381
 srv	spell_template	effectAmplitude2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=14 null=0 formula=equals_effectAmplitude3:22005/22381
 srv	spell_template	effectAmplitude3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=10 null=0 formula=equals_effectAmplitude2:22005/22381
-srv	spell_template	effectMultipleValue1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=44 null=0 formula=equals_effectMultipleValue3:21517/22381
-srv	spell_template	effectMultipleValue2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0 formula=equals_effectMultipleValue3:22305/22381
-srv	spell_template	effectMultipleValue3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0 formula=equals_effectMultipleValue2:22305/22381
-srv	spell_template	effectChainTarget1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=11 null=0 formula=equals_effectChainTarget2:22277/22381
-srv	spell_template	effectChainTarget2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0 formula=equals_effectChainTarget3:22372/22381
-srv	spell_template	effectChainTarget3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=2 null=0 formula=equals_effectChainTarget2:22372/22381
-srv	spell_template	effectItemType1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=1811 null=0 formula=equals_effectItemType3:19496/22381
-srv	spell_template	effectItemType2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=67 null=0 formula=equals_effectItemType3:22168/22381
-srv	spell_template	effectItemType3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=14 null=0 formula=equals_effectItemType2:22168/22381
+srv	spell_template	effectMultipleValue1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1588/1601	rows=22381 distinct=44 null=0 formula=equals_effectMultipleValue3:21517/22381
+srv	spell_template	effectMultipleValue2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	creature_gender_none	3944/3949	rows=22381 distinct=4 null=0 formula=equals_effectMultipleValue3:22305/22381
+srv	spell_template	effectMultipleValue3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	bag_family_mask	6455/6458	rows=22381 distinct=4 null=0 formula=equals_effectMultipleValue2:22305/22381
+srv	spell_template	effectChainTarget1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3940/3949	rows=22381 distinct=11 null=0 formula=equals_effectChainTarget2:22277/22381
+srv	spell_template	effectChainTarget2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3949/3949	rows=22381 distinct=4 null=0 formula=equals_effectChainTarget3:22372/22381
+srv	spell_template	effectChainTarget3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=2 null=0 formula=equals_effectChainTarget2:22372/22381
+srv	spell_template	effectItemType1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=1811 null=0 formula=equals_effectItemType3:19496/22381
+srv	spell_template	effectItemType2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=67 null=0 formula=equals_effectItemType3:22168/22381
+srv	spell_template	effectItemType3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=14 null=0 formula=equals_effectItemType2:22168/22381
 srv	spell_template	effectMiscValue1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1557/1601	rows=22381 distinct=1558 null=0 formula=equals_effectMiscValue3:15345/22381
-srv	spell_template	effectMiscValue2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=260 null=0 formula=equals_effectMiscValue3:20864/22381
-srv	spell_template	effectMiscValue3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=71 null=0 formula=equals_effectMiscValue2:20864/22381
-srv	spell_template	effectTriggerSpell1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=5000 null=0 formula=equals_effectTriggerSpell3:16459/22381
-srv	spell_template	effectTriggerSpell2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=297 null=0 formula=equals_effectTriggerSpell3:21902/22381
+srv	spell_template	effectMiscValue2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1586/1601	rows=22381 distinct=260 null=0 formula=equals_effectMiscValue3:20864/22381
+srv	spell_template	effectMiscValue3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1595/1601	rows=22381 distinct=71 null=0 formula=equals_effectMiscValue2:20864/22381
+srv	spell_template	effectTriggerSpell1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=5000 null=0 formula=equals_effectTriggerSpell3:16459/22381
+srv	spell_template	effectTriggerSpell2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=297 null=0 formula=equals_effectTriggerSpell3:21902/22381
 srv	spell_template	effectTriggerSpell3	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=54 null=0 formula=equals_effectTriggerSpell2:21902/22381
-srv	spell_template	effectPointsPerComboPoint1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=35 null=0 formula=equals_effectPointsPerComboPoint2:22341/22381
+srv	spell_template	effectPointsPerComboPoint1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	identity	6457/6458	rows=22381 distinct=35 null=0 formula=equals_effectPointsPerComboPoint2:22341/22381
 srv	spell_template	effectPointsPerComboPoint2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=1 null=0 const=0.0 formula=equals_effectPointsPerComboPoint3:22381/22381
 srv	spell_template	effectPointsPerComboPoint3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=1 null=0 const=0.0 formula=equals_effectPointsPerComboPoint2:22381/22381
-srv	spell_template	spellVisual1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	bag_family_mask	2/2	rows=22381 distinct=1980 null=0 formula=equals_spellVisual2:7469/22381
+srv	spell_template	spellVisual1	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Priority	effect_base_dice_from_sides	14219/14220	rows=22381 distinct=1980 null=0 formula=equals_spellVisual2:7469/22381
 srv	spell_template	spellVisual2	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=2 null=0 formula=equals_spellVisual1:7469/22381
-srv	spell_template	spellIconId	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	bag_family_mask	2/2	rows=22381 distinct=924 null=0
-srv	spell_template	activeIconId	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=26 null=0
-srv	spell_template	spellPriority	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=2 null=0
+srv	spell_template	spellIconId	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14219/14220	rows=22381 distinct=924 null=0
+srv	spell_template	activeIconId	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	bag_family_mask	3944/3949	rows=22381 distinct=26 null=0
+srv	spell_template	spellPriority	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1573/1601	rows=22381 distinct=2 null=0
 srv	spell_template	name	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellname.Name_lang	identity	20999/21040	rows=22381 distinct=11012 null=0
 srv	spell_template	nameFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=15 null=0
-srv	spell_template	nameSubtext	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellname.Name_lang	identity	0/21040	rows=22381 distinct=72 null=14421
+srv	spell_template	nameSubtext	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spell.NameSubtext_lang	identity	21036/21040	rows=22381 distinct=72 null=14421
 srv	spell_template	nameSubtextFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=31 null=0
-srv	spell_template	description	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellname.Name_lang	identity	1/21040	rows=22381 distinct=6667 null=9123
+srv	spell_template	description	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spell.Description_lang	identity	20768/21040	rows=22381 distinct=6667 null=9123
 srv	spell_template	descriptionFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=33 null=0
-srv	spell_template	auraDescription	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellname.Name_lang	identity	4/21040	rows=22381 distinct=1523 null=18156
+srv	spell_template	auraDescription	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spell.AuraDescription_lang	identity	20937/21040	rows=22381 distinct=1523 null=18156
 srv	spell_template	auraDescriptionFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=22 null=0
-srv	spell_template	manaCostPercentage	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=30 null=0
-srv	spell_template	startRecoveryCategory	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=5 null=0
+srv	spell_template	manaCostPercentage	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.SpellProcsPerMinuteID	bag_family_mask	18880/18930	rows=22381 distinct=30 null=0
+srv	spell_template	startRecoveryCategory	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	bag_family_mask	2863/2863	rows=22381 distinct=5 null=0
 srv	spell_template	startRecoveryTime	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	bag_family_mask	21139/21139	rows=22381 distinct=4 null=0
-srv	spell_template	minTargetLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=4 null=0
-srv	spell_template	maxTargetLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=11 null=0
-srv	spell_template	spellFamilyName	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.DifficultyID	identity	2/2	rows=22381 distinct=12 null=0
-srv	spell_template	spellFamilyFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	bag_family_mask	4/4	rows=22381 distinct=92 null=0
-srv	spell_template	maxAffectedTargets	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=9 null=0
-srv	spell_template	dmgClass	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1503/1601	rows=22381 distinct=4 null=0
-srv	spell_template	preventionType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	identity	1501/1601	rows=22381 distinct=3 null=0
-srv	spell_template	stanceBarOrder	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	ghost_map_neg1	4/4	rows=22381 distinct=9 null=0
+srv	spell_template	minTargetLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	identity	3949/3949	rows=22381 distinct=4 null=0
+srv	spell_template	maxTargetLevel	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spelltargetrestrictions.MaxTargetLevel	identity	21036/21037	rows=22381 distinct=11 null=0
+srv	spell_template	spellFamilyName	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellclassoptions.SpellClassSet	identity	3818/3928	rows=22381 distinct=12 null=0
+srv	spell_template	spellFamilyFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	bag_family_mask	1591/1601	rows=22381 distinct=92 null=0
+srv	spell_template	maxAffectedTargets	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.SpellProcsPerMinuteID	creature_gender_none	18886/18930	rows=22381 distinct=9 null=0
+srv	spell_template	dmgClass	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcategories.DefenseType	identity	7351/7354	rows=22381 distinct=4 null=0
+srv	spell_template	preventionType	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellreagents.Reagent8	creature_gender_none	1512/1601	rows=22381 distinct=3 null=0
+srv	spell_template	stanceBarOrder	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellinterrupts.ChannelInterruptFlags2	ghost_map_neg1	6451/6458	rows=22381 distinct=9 null=0
 srv	spell_template	dmgMultiplier1	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	14214/14220	rows=22381 distinct=16 null=0 formula=equals_dmgMultiplier2:18959/22381
 srv	spell_template	dmgMultiplier2	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	effect_base_dice_from_sides	13232/14220	rows=22381 distinct=3 null=0 formula=equals_dmgMultiplier3:21030/22381
 srv	spell_template	dmgMultiplier3	REAL	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellxspellvisual.Probability	identity	12548/14220	rows=22381 distinct=2 null=0 formula=equals_dmgMultiplier2:21030/22381
 srv	spell_template	minFactionId	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=2 null=0
 srv	spell_template	minReputation	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellmisc.LaunchDelay	identity	21139/21139	rows=22381 distinct=2 null=0
-srv	spell_template	requiredAuraVision	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=2 null=0
-srv	spell_template	customFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellauraoptions.DifficultyID	identity	4/4	rows=22381 distinct=16 null=0
-srv	spell_template	script_name	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellname.Name_lang	identity	0/21040	rows=22381 distinct=148 null=22097
+srv	spell_template	requiredAuraVision	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=2 null=0
+srv	spell_template	customFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	bag_family_mask	3946/3949	rows=22381 distinct=16 null=0
+srv	spell_template	script_name	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spell.AuraDescription_lang	identity	16780/21040	rows=22381 distinct=148 null=22097
 srv	spell_threat	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:859					rows=416 distinct=412 null=0
 srv	spell_threat	threat	REAL	manual:src/game/Spells/SpellMgr.cpp:862					rows=416 distinct=99 null=0
 srv	spell_threat	multiplier	REAL	manual:src/game/Spells/SpellMgr.cpp:863					rows=416 distinct=10 null=0

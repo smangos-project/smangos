@@ -1766,139 +1766,139 @@ srv	skinning_loot_template	patch_min	drop			progression removed	yes
 srv	skinning_loot_template	patch_max	drop			progression removed	yes
 srv	sound_entries	id	dbc	dbc_soundkit.ID	identity	ids are now SoundKit ids; 31 vanilla sounds are missing (data-plan.md 3.1)	yes
 srv	sound_entries	name	drop			only used by .lookup sound, which now searches by id; SoundKit has no name field (stuff-plan.md 8.3)	yes
-srv	spell_area	spell					
-srv	spell_area	area					
-srv	spell_area	quest_start					
-srv	spell_area	quest_start_active					
-srv	spell_area	quest_end					
-srv	spell_area	aura_spell					
-srv	spell_area	racemask					
-srv	spell_area	gender					
-srv	spell_area	autocast					
-srv	spell_chain	spell_id					
-srv	spell_chain	prev_spell					
-srv	spell_chain	first_spell					
-srv	spell_chain	rank					
-srv	spell_chain	req_spell					
-srv	spell_chain	build_min					
-srv	spell_chain	build_max					
-srv	spell_check	spellid					
-srv	spell_check	SpellFamilyName					
-srv	spell_check	SpellFamilyMask					
-srv	spell_check	SpellIcon					
-srv	spell_check	SpellVisual					
-srv	spell_check	SpellCategory					
-srv	spell_check	EffectType					
-srv	spell_check	EffectAura					
-srv	spell_check	EffectIdx					
-srv	spell_check	Name					
-srv	spell_check	Code					
-srv	spell_cone	entry					
-srv	spell_cone	cone_degrees					
-srv	spell_disabled	entry					
-srv	spell_effect_mod	Id					
-srv	spell_effect_mod	EffectIndex					
-srv	spell_effect_mod	Effect					
-srv	spell_effect_mod	EffectDieSides					
-srv	spell_effect_mod	EffectBaseDice					
-srv	spell_effect_mod	EffectDicePerLevel					
-srv	spell_effect_mod	EffectRealPointsPerLevel					
-srv	spell_effect_mod	EffectBasePoints					
-srv	spell_effect_mod	EffectAmplitude					
-srv	spell_effect_mod	EffectPointsPerComboPoint					
-srv	spell_effect_mod	EffectChainTarget					
-srv	spell_effect_mod	EffectMultipleValue					
-srv	spell_effect_mod	EffectMechanic					
-srv	spell_effect_mod	EffectImplicitTargetA					
-srv	spell_effect_mod	EffectImplicitTargetB					
-srv	spell_effect_mod	EffectRadiusIndex					
-srv	spell_effect_mod	EffectApplyAuraName					
-srv	spell_effect_mod	EffectItemType					
-srv	spell_effect_mod	EffectMiscValue					
-srv	spell_effect_mod	EffectTriggerSpell					
-srv	spell_effect_mod	Comment					
-srv	spell_elixir	entry					
-srv	spell_elixir	mask					
-srv	spell_elixir	build_min					
-srv	spell_elixir	build_max					
-srv	spell_enchant_charges	entry					
-srv	spell_enchant_charges	charges					
-srv	spell_group	group_id					
-srv	spell_group	group_spell_id					
-srv	spell_group	spell_id					
-srv	spell_group	build_min					
-srv	spell_group	build_max					
-srv	spell_group_stack_rules	group_id					
+srv	spell_area	spell	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	area	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	quest_start	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	quest_start_active	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	quest_end	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	aura_spell	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	racemask	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	gender	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_area	autocast	server			area/quest/race/gender cast-requirement gating (SpellMgr.cpp:2459); no DB2 counterpart	yes
+srv	spell_chain	spell_id	server			per-spell rank/prerequisite chain for arbitrary ability ranks (SpellMgr.cpp:1647); no DB2 equivalent outside Talent's own rank chain, already handled in F2	yes
+srv	spell_chain	prev_spell	server			per-spell rank/prerequisite chain for arbitrary ability ranks (SpellMgr.cpp:1647); no DB2 equivalent outside Talent's own rank chain, already handled in F2	yes
+srv	spell_chain	first_spell	server			per-spell rank/prerequisite chain for arbitrary ability ranks (SpellMgr.cpp:1647); no DB2 equivalent outside Talent's own rank chain, already handled in F2	yes
+srv	spell_chain	rank	server			per-spell rank/prerequisite chain for arbitrary ability ranks (SpellMgr.cpp:1647); no DB2 equivalent outside Talent's own rank chain, already handled in F2	yes
+srv	spell_chain	req_spell	server			per-spell rank/prerequisite chain for arbitrary ability ranks (SpellMgr.cpp:1647); no DB2 equivalent outside Talent's own rank chain, already handled in F2	yes
+srv	spell_chain	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_chain	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_check	spellid	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellFamilyName	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellFamilyMask	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellIcon	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellVisual	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellCategory	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	EffectType	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	EffectAura	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	EffectIdx	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	Name	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	Code	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_cone	entry	server			cone-shaped-AoE angle override (SpellMgr.cpp:2398); no DB2 counterpart	yes
+srv	spell_cone	cone_degrees	server			cone-shaped-AoE angle override (SpellMgr.cpp:2398); no DB2 counterpart	yes
+srv	spell_disabled	entry	server			GM-disabled spell id list (ObjectMgr.cpp:357); no DB2 counterpart	yes
+srv	spell_effect_mod	Id	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectIndex	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	Effect	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectDieSides	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectBaseDice	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectDicePerLevel	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectRealPointsPerLevel	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectBasePoints	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectAmplitude	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectPointsPerComboPoint	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectChainTarget	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectMultipleValue	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectMechanic	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectImplicitTargetA	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectImplicitTargetB	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectRadiusIndex	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectApplyAuraName	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectItemType	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectMiscValue	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	EffectTriggerSpell	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_effect_mod	Comment	server			per-effect field override table applied by SpellModMgr (SpellModMgr.cpp:202); mirrors spell_template's own effect fields, all server per spell-plan.md 10	yes
+srv	spell_elixir	entry	server			elixir-type mask for exclusive-buff stacking (SpellMgr.cpp:749); no DB2 counterpart	yes
+srv	spell_elixir	mask	server			elixir-type mask for exclusive-buff stacking (SpellMgr.cpp:749); no DB2 counterpart	yes
+srv	spell_elixir	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_elixir	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_enchant_charges	entry	server			consumable-enchant charge count (SpellMgr.cpp:1915); no DB2 counterpart	yes
+srv	spell_enchant_charges	charges	server			consumable-enchant charge count (SpellMgr.cpp:1915); no DB2 counterpart	yes
+srv	spell_group	group_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	group_spell_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	spell_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_group	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_group_stack_rules	group_id	server			stack-rule per spell group (SpellMgr.cpp:615); no DB2 counterpart	yes
 srv	spell_group_stack_rules	build	drop			progression removed	yes
-srv	spell_group_stack_rules	stack_rule					
-srv	spell_learn_spell	entry					
-srv	spell_learn_spell	SpellID					
-srv	spell_learn_spell	Active					
-srv	spell_learn_spell	build_min					
-srv	spell_learn_spell	build_max					
-srv	spell_mod	Id					
-srv	spell_mod	procChance					
-srv	spell_mod	procFlags					
-srv	spell_mod	procCharges					
-srv	spell_mod	DurationIndex					
-srv	spell_mod	Category					
-srv	spell_mod	CastingTimeIndex					
-srv	spell_mod	StackAmount					
-srv	spell_mod	SpellIconID					
-srv	spell_mod	activeIconID					
-srv	spell_mod	manaCost					
-srv	spell_mod	Attributes					
-srv	spell_mod	AttributesEx					
-srv	spell_mod	AttributesEx2					
-srv	spell_mod	AttributesEx3					
-srv	spell_mod	AttributesEx4					
-srv	spell_mod	Custom					
-srv	spell_mod	InterruptFlags					
-srv	spell_mod	AuraInterruptFlags					
-srv	spell_mod	ChannelInterruptFlags					
-srv	spell_mod	Dispel					
-srv	spell_mod	Stances					
-srv	spell_mod	StancesNot					
-srv	spell_mod	SpellVisual					
-srv	spell_mod	ManaCostPercentage					
-srv	spell_mod	StartRecoveryCategory					
-srv	spell_mod	StartRecoveryTime					
-srv	spell_mod	MaxAffectedTargets					
-srv	spell_mod	MaxTargetLevel					
-srv	spell_mod	DmgClass					
-srv	spell_mod	rangeIndex					
-srv	spell_mod	RecoveryTime					
-srv	spell_mod	CategoryRecoveryTime					
-srv	spell_mod	SpellFamilyName					
-srv	spell_mod	SpellFamilyFlags					
-srv	spell_mod	Mechanic					
-srv	spell_mod	EquippedItemClass					
-srv	spell_mod	Comment					
-srv	spell_pet_auras	spell					
-srv	spell_pet_auras	pet					
-srv	spell_pet_auras	aura					
-srv	spell_proc_event	entry					
-srv	spell_proc_event	SchoolMask					
-srv	spell_proc_event	SpellFamilyName					
-srv	spell_proc_event	SpellFamilyMask0					
-srv	spell_proc_event	SpellFamilyMask1					
-srv	spell_proc_event	SpellFamilyMask2					
-srv	spell_proc_event	procFlags					
-srv	spell_proc_event	procEx					
-srv	spell_proc_event	ppmRate					
-srv	spell_proc_event	CustomChance					
-srv	spell_proc_event	Cooldown					
-srv	spell_proc_event	build_min					
-srv	spell_proc_event	build_max					
-srv	spell_proc_item_enchant	entry					
-srv	spell_proc_item_enchant	ppmRate					
-srv	spell_script_target	entry					
-srv	spell_script_target	type					
-srv	spell_script_target	targetEntry					
-srv	spell_script_target	conditionId					
-srv	spell_script_target	inverseEffectMask					
-srv	spell_script_target	build_min					
-srv	spell_script_target	build_max					
+srv	spell_group_stack_rules	stack_rule	server			stack-rule per spell group (SpellMgr.cpp:615); no DB2 counterpart	yes
+srv	spell_learn_spell	entry	server			spell-teaches-spell relation (SpellMgr.cpp:1961); no DB2 counterpart	yes
+srv	spell_learn_spell	SpellID	server			spell-teaches-spell relation (SpellMgr.cpp:1961); no DB2 counterpart	yes
+srv	spell_learn_spell	Active	server			spell-teaches-spell relation (SpellMgr.cpp:1961); no DB2 counterpart	yes
+srv	spell_learn_spell	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_learn_spell	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_mod	Id	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	procChance	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	procFlags	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	procCharges	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	DurationIndex	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Category	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	CastingTimeIndex	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	StackAmount	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellIconID	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	activeIconID	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	manaCost	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Attributes	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	AttributesEx	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	AttributesEx2	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	AttributesEx3	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	AttributesEx4	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Custom	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	InterruptFlags	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	AuraInterruptFlags	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	ChannelInterruptFlags	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Dispel	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Stances	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	StancesNot	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellVisual	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	ManaCostPercentage	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	StartRecoveryCategory	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	StartRecoveryTime	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	MaxAffectedTargets	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	MaxTargetLevel	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	DmgClass	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	rangeIndex	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	RecoveryTime	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	CategoryRecoveryTime	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellFamilyName	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellFamilyFlags	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Mechanic	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	EquippedItemClass	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	Comment	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_pet_auras	spell	server			pet aura granted by a caster spell (SpellMgr.cpp:2250); no DB2 counterpart	yes
+srv	spell_pet_auras	pet	server			pet aura granted by a caster spell (SpellMgr.cpp:2250); no DB2 counterpart	yes
+srv	spell_pet_auras	aura	server			pet aura granted by a caster spell (SpellMgr.cpp:2250); no DB2 counterpart	yes
+srv	spell_proc_event	entry	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	SchoolMask	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	SpellFamilyName	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	SpellFamilyMask0	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	SpellFamilyMask1	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	SpellFamilyMask2	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	procFlags	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	procEx	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	ppmRate	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	CustomChance	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	Cooldown	server			proc-event override table (SpellMgr.cpp:340); no DB2 counterpart	yes
+srv	spell_proc_event	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_proc_event	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_proc_item_enchant	entry	server			proc-per-minute rate for a weapon-enchant proc (SpellMgr.cpp:407); no DB2 counterpart	yes
+srv	spell_proc_item_enchant	ppmRate	server			proc-per-minute rate for a weapon-enchant proc (SpellMgr.cpp:407); no DB2 counterpart	yes
+srv	spell_script_target	entry	server			script-selected effect target override (SpellMgr.cpp:2068); no DB2 counterpart	yes
+srv	spell_script_target	type	server			script-selected effect target override (SpellMgr.cpp:2068); no DB2 counterpart	yes
+srv	spell_script_target	targetEntry	server			script-selected effect target override (SpellMgr.cpp:2068); no DB2 counterpart	yes
+srv	spell_script_target	conditionId	server			script-selected effect target override (SpellMgr.cpp:2068); no DB2 counterpart	yes
+srv	spell_script_target	inverseEffectMask	server			script-selected effect target override (SpellMgr.cpp:2068); no DB2 counterpart	yes
+srv	spell_script_target	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_script_target	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	spell_scripts	id					
 srv	spell_scripts	delay					
 srv	spell_scripts	priority					
@@ -1921,171 +1921,171 @@ srv	spell_scripts	z
 srv	spell_scripts	o					
 srv	spell_scripts	condition_id					
 srv	spell_scripts	comments					
-srv	spell_target_position	id					
-srv	spell_target_position	target_map					
-srv	spell_target_position	target_position_x					
-srv	spell_target_position	target_position_y					
-srv	spell_target_position	target_position_z					
-srv	spell_target_position	target_orientation					
-srv	spell_target_position	build_min					
-srv	spell_target_position	build_max					
-srv	spell_template	entry					
+srv	spell_target_position	id	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	target_map	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	target_position_x	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	target_position_y	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	target_position_z	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	target_orientation	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
+srv	spell_target_position	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_target_position	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_template	entry	server			primary key of the server-authoritative spell_template; the id space overlaps the client for 21,040 of 22,381 spells, but srv keeps 78 real server-only spells beyond that share (spell-plan.md 1.2, 10)	yes
 srv	spell_template	build	drop			progression removed	yes
-srv	spell_template	school					
-srv	spell_template	category					
-srv	spell_template	castUI					
-srv	spell_template	dispel					
-srv	spell_template	mechanic					
-srv	spell_template	attributes					
-srv	spell_template	attributesEx					
-srv	spell_template	attributesEx2					
-srv	spell_template	attributesEx3					
-srv	spell_template	attributesEx4					
-srv	spell_template	stances					
-srv	spell_template	stancesNot					
-srv	spell_template	targets					
-srv	spell_template	targetCreatureType					
-srv	spell_template	requiresSpellFocus					
-srv	spell_template	casterAuraState					
-srv	spell_template	targetAuraState					
-srv	spell_template	castingTimeIndex					
-srv	spell_template	recoveryTime					
-srv	spell_template	categoryRecoveryTime					
-srv	spell_template	interruptFlags					
-srv	spell_template	auraInterruptFlags					
-srv	spell_template	channelInterruptFlags					
-srv	spell_template	procFlags					
-srv	spell_template	procChance					
-srv	spell_template	procCharges					
-srv	spell_template	maxLevel					
-srv	spell_template	baseLevel					
-srv	spell_template	spellLevel					
-srv	spell_template	durationIndex					
-srv	spell_template	powerType					
-srv	spell_template	manaCost					
-srv	spell_template	manCostPerLevel					
-srv	spell_template	manaPerSecond					
-srv	spell_template	manaPerSecondPerLevel					
-srv	spell_template	rangeIndex					
-srv	spell_template	speed					
-srv	spell_template	modelNextSpell					
-srv	spell_template	stackAmount					
-srv	spell_template	totem1					
-srv	spell_template	totem2					
-srv	spell_template	reagent1					
-srv	spell_template	reagent2					
-srv	spell_template	reagent3					
-srv	spell_template	reagent4					
-srv	spell_template	reagent5					
-srv	spell_template	reagent6					
-srv	spell_template	reagent7					
-srv	spell_template	reagent8					
-srv	spell_template	reagentCount1					
-srv	spell_template	reagentCount2					
-srv	spell_template	reagentCount3					
-srv	spell_template	reagentCount4					
-srv	spell_template	reagentCount5					
-srv	spell_template	reagentCount6					
-srv	spell_template	reagentCount7					
-srv	spell_template	reagentCount8					
-srv	spell_template	equippedItemClass					
-srv	spell_template	equippedItemSubClassMask					
-srv	spell_template	equippedItemInventoryTypeMask					
-srv	spell_template	effect1					
-srv	spell_template	effect2					
-srv	spell_template	effect3					
-srv	spell_template	effectDieSides1					
-srv	spell_template	effectDieSides2					
-srv	spell_template	effectDieSides3					
-srv	spell_template	effectBaseDice1					
-srv	spell_template	effectBaseDice2					
-srv	spell_template	effectBaseDice3					
-srv	spell_template	effectDicePerLevel1					
-srv	spell_template	effectDicePerLevel2					
-srv	spell_template	effectDicePerLevel3					
-srv	spell_template	effectRealPointsPerLevel1					
-srv	spell_template	effectRealPointsPerLevel2					
-srv	spell_template	effectRealPointsPerLevel3					
-srv	spell_template	effectBasePoints1					
-srv	spell_template	effectBasePoints2					
-srv	spell_template	effectBasePoints3					
-srv	spell_template	effectBonusCoefficient1					
-srv	spell_template	effectBonusCoefficient2					
-srv	spell_template	effectBonusCoefficient3					
-srv	spell_template	effectMechanic1					
-srv	spell_template	effectMechanic2					
-srv	spell_template	effectMechanic3					
-srv	spell_template	effectImplicitTargetA1					
-srv	spell_template	effectImplicitTargetA2					
-srv	spell_template	effectImplicitTargetA3					
-srv	spell_template	effectImplicitTargetB1					
-srv	spell_template	effectImplicitTargetB2					
-srv	spell_template	effectImplicitTargetB3					
-srv	spell_template	effectRadiusIndex1					
-srv	spell_template	effectRadiusIndex2					
-srv	spell_template	effectRadiusIndex3					
-srv	spell_template	effectApplyAuraName1					
-srv	spell_template	effectApplyAuraName2					
-srv	spell_template	effectApplyAuraName3					
-srv	spell_template	effectAmplitude1					
-srv	spell_template	effectAmplitude2					
-srv	spell_template	effectAmplitude3					
-srv	spell_template	effectMultipleValue1					
-srv	spell_template	effectMultipleValue2					
-srv	spell_template	effectMultipleValue3					
-srv	spell_template	effectChainTarget1					
-srv	spell_template	effectChainTarget2					
-srv	spell_template	effectChainTarget3					
-srv	spell_template	effectItemType1					
-srv	spell_template	effectItemType2					
-srv	spell_template	effectItemType3					
-srv	spell_template	effectMiscValue1					
-srv	spell_template	effectMiscValue2					
-srv	spell_template	effectMiscValue3					
-srv	spell_template	effectTriggerSpell1					
-srv	spell_template	effectTriggerSpell2					
-srv	spell_template	effectTriggerSpell3					
-srv	spell_template	effectPointsPerComboPoint1					
-srv	spell_template	effectPointsPerComboPoint2					
-srv	spell_template	effectPointsPerComboPoint3					
-srv	spell_template	spellVisual1					
-srv	spell_template	spellVisual2					
-srv	spell_template	spellIconId					
-srv	spell_template	activeIconId					
-srv	spell_template	spellPriority					
-srv	spell_template	name					
-srv	spell_template	nameFlags					
-srv	spell_template	nameSubtext					
-srv	spell_template	nameSubtextFlags					
-srv	spell_template	description					
-srv	spell_template	descriptionFlags					
-srv	spell_template	auraDescription					
-srv	spell_template	auraDescriptionFlags					
-srv	spell_template	manaCostPercentage					
-srv	spell_template	startRecoveryCategory					
-srv	spell_template	startRecoveryTime					
-srv	spell_template	minTargetLevel					
-srv	spell_template	maxTargetLevel					
-srv	spell_template	spellFamilyName					
-srv	spell_template	spellFamilyFlags					
-srv	spell_template	maxAffectedTargets					
-srv	spell_template	dmgClass					
-srv	spell_template	preventionType					
-srv	spell_template	stanceBarOrder					
-srv	spell_template	dmgMultiplier1					
-srv	spell_template	dmgMultiplier2					
-srv	spell_template	dmgMultiplier3					
-srv	spell_template	minFactionId					
-srv	spell_template	minReputation					
-srv	spell_template	requiredAuraVision					
-srv	spell_template	customFlags					
-srv	spell_template	script_name					
-srv	spell_threat	entry					
-srv	spell_threat	threat					
-srv	spell_threat	multiplier					
-srv	spell_threat	inverse_effect_mask					
-srv	spell_threat	build_min					
-srv	spell_threat	build_max					
+srv	spell_template	school	server			school index; DB2 SchoolMask agrees for all but 3 spells under school_index_to_mask (spell-plan.md 4.3), but the index representation and patch progression stay server-owned (spell-plan.md 10)	yes
+srv	spell_template	category	server			cooldown category id, part of SpellCategories (spell-plan.md 3.1, 10)	yes
+srv	spell_template	castUI	server			cast-bar UI flag; no DB2 field carries it (not in spell-plan.md 3.1's SpellMisc field list), vmangos/1.12-only	yes
+srv	spell_template	dispel	server			DispelType; the dispel enum is unchanged between vanilla and the client (spell-plan.md 4.3, 10)	yes
+srv	spell_template	mechanic	server			SpellCategories.Mechanic; the mechanic enum is unchanged (spell-plan.md 4.3, 10)	yes
+srv	spell_template	attributes	server			Attributes[0-4]; per-word diffs of 191/50/110/55/158 spells (spell-plan.md 4.3); DB2's Attributes[5..15] are new client-only words vmangos's SpellEntry has no slot for (spell-plan.md 10)	yes
+srv	spell_template	attributesEx	server			Attributes[0-4]; per-word diffs of 191/50/110/55/158 spells (spell-plan.md 4.3); DB2's Attributes[5..15] are new client-only words vmangos's SpellEntry has no slot for (spell-plan.md 10)	yes
+srv	spell_template	attributesEx2	server			Attributes[0-4]; per-word diffs of 191/50/110/55/158 spells (spell-plan.md 4.3); DB2's Attributes[5..15] are new client-only words vmangos's SpellEntry has no slot for (spell-plan.md 10)	yes
+srv	spell_template	attributesEx3	server			Attributes[0-4]; per-word diffs of 191/50/110/55/158 spells (spell-plan.md 4.3); DB2's Attributes[5..15] are new client-only words vmangos's SpellEntry has no slot for (spell-plan.md 10)	yes
+srv	spell_template	attributesEx4	server			Attributes[0-4]; per-word diffs of 191/50/110/55/158 spells (spell-plan.md 4.3); DB2's Attributes[5..15] are new client-only words vmangos's SpellEntry has no slot for (spell-plan.md 10)	yes
+srv	spell_template	stances	server			Stances/StancesNot; 72/45 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	stancesNot	server			Stances/StancesNot; 72/45 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	targets	server			Targets enum unchanged (spell-plan.md 4.3), 23 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	targetCreatureType	server			SpellTargetRestrictions.TargetCreatureType; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	requiresSpellFocus	server			SpellCastingRequirements.RequiresSpellFocus; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	casterAuraState	server			SpellAuraRestrictions Caster/TargetAuraState; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	targetAuraState	server			SpellAuraRestrictions Caster/TargetAuraState; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	castingTimeIndex	server			index into SpellCastTimes (now dbc-sourced, F2); 4 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	recoveryTime	server			SpellCooldowns RecoveryTime/CategoryRecoveryTime; 13/21 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	categoryRecoveryTime	server			SpellCooldowns RecoveryTime/CategoryRecoveryTime; 13/21 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	interruptFlags	server			InterruptFlags/AuraInterruptFlags[0]/ChannelInterruptFlags[0] differ in 4/7/1 spells; the bit meanings are vanilla's even though DB2 also carries them (spell-plan.md 4.3, 10)	yes
+srv	spell_template	auraInterruptFlags	server			InterruptFlags/AuraInterruptFlags[0]/ChannelInterruptFlags[0] differ in 4/7/1 spells; the bit meanings are vanilla's even though DB2 also carries them (spell-plan.md 4.3, 10)	yes
+srv	spell_template	channelInterruptFlags	server			InterruptFlags/AuraInterruptFlags[0]/ChannelInterruptFlags[0] differ in 4/7/1 spells; the bit meanings are vanilla's even though DB2 also carries them (spell-plan.md 4.3, 10)	yes
+srv	spell_template	procFlags	server			same proc-flag bit layout; the client sets new bit 31 (TAKE_HELPFUL_PERIODIC) on 115 spells (spell-plan.md 4.3, 10)	yes
+srv	spell_template	procChance	server			1,956 spells differ, 1,924 are the 101-default representation (client has no SpellAuraOptions row where vmangos defaults procChance to 101, spell-plan.md 4.4/5); vmangos's 101 sentinel has no DB2 counterpart	yes
+srv	spell_template	procCharges	server			SpellAuraOptions.ProcCharges (spell-plan.md 10)	yes
+srv	spell_template	maxLevel	server			SpellLevels BaseLevel/MaxLevel/SpellLevel; 9/25/11 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	baseLevel	server			SpellLevels BaseLevel/MaxLevel/SpellLevel; 9/25/11 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	spellLevel	server			SpellLevels BaseLevel/MaxLevel/SpellLevel; 9/25/11 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	durationIndex	server			index into SpellDuration (now dbc-sourced, F2); 539 differ, 509 are the passive-infinite representation (client drops the duration index on passives, passive_duration_infinite rule, spell-plan.md 4.4/5) (spell-plan.md 10)	yes
+srv	spell_template	powerType	server			SpellPower.PowerType; 25 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	manaCost	server			SpellPower.ManaCost; 12 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	manCostPerLevel	server			SpellPower.ManaCostPerLevel counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	manaPerSecond	server			SpellPower.ManaPerSecond counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	manaPerSecondPerLevel	constant	0		always 0 across all 22,381 rows (evidence.tsv shape); DB2's SpellPower has no such field at all (spell-plan.md 3.1)	yes
+srv	spell_template	rangeIndex	server			index into SpellRange (now dbc-sourced, F2); 36 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	speed	server			SpellMisc.Speed counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	modelNextSpell	server			SpellClassOptions.ModalNextSpell counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	stackAmount	server			SpellAuraOptions.CumulativeAura (StackAmount) counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	totem1	server			SpellTotems.Totem[2]; 6 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	totem2	server			SpellTotems.Totem[2]; 6 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent1	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent2	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent3	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent4	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent5	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent6	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent7	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagent8	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount1	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount2	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount3	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount4	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount5	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount6	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount7	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	reagentCount8	server			SpellReagents.Reagent[8]/ReagentCount[8]; 13 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	equippedItemClass	server			SpellEquippedItems fields; representation-only diff for the -1/no-row case (spell-plan.md 4.4, 10)	yes
+srv	spell_template	equippedItemSubClassMask	server			SpellEquippedItems fields; representation-only diff for the -1/no-row case (spell-plan.md 4.4, 10)	yes
+srv	spell_template	equippedItemInventoryTypeMask	server			SpellEquippedItems fields; representation-only diff for the -1/no-row case (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effect1	server			moved effect numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.1)	yes
+srv	spell_template	effect2	server			moved effect numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.1)	yes
+srv	spell_template	effect3	server			moved effect numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.1)	yes
+srv	spell_template	effectDieSides1	server			25 slots differ across all effects (spell-plan.md 5, 10)	yes
+srv	spell_template	effectDieSides2	server			25 slots differ across all effects (spell-plan.md 5, 10)	yes
+srv	spell_template	effectDieSides3	server			25 slots differ across all effects (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBaseDice1	derived	spell_template.effectDieSides1	effect_base_dice_from_sides	26,893 of 27,013 effects hold DieSides ? 1 : 0; the 120 exceptions are hand data fixes (spell-plan.md 4.4)	yes
+srv	spell_template	effectBaseDice2	derived	spell_template.effectDieSides2	effect_base_dice_from_sides	26,893 of 27,013 effects hold DieSides ? 1 : 0; the 120 exceptions are hand data fixes (spell-plan.md 4.4)	yes
+srv	spell_template	effectBaseDice3	derived	spell_template.effectDieSides3	effect_base_dice_from_sides	26,893 of 27,013 effects hold DieSides ? 1 : 0; the 120 exceptions are hand data fixes (spell-plan.md 4.4)	yes
+srv	spell_template	effectDicePerLevel1	server			absent from DB2; non-zero on 2 vanilla effects only (spell-plan.md 4.4)	yes
+srv	spell_template	effectDicePerLevel2	server			absent from DB2; non-zero on 2 vanilla effects only (spell-plan.md 4.4)	yes
+srv	spell_template	effectDicePerLevel3	server			absent from DB2; non-zero on 2 vanilla effects only (spell-plan.md 4.4)	yes
+srv	spell_template	effectRealPointsPerLevel1	server			31 differ (spell-plan.md 4.3/5) (spell-plan.md 10)	yes
+srv	spell_template	effectRealPointsPerLevel2	server			31 differ (spell-plan.md 4.3/5) (spell-plan.md 10)	yes
+srv	spell_template	effectRealPointsPerLevel3	server			31 differ (spell-plan.md 4.3/5) (spell-plan.md 10)	yes
+srv	spell_template	effectBasePoints1	server			31 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBasePoints2	server			31 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBasePoints3	server			31 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBonusCoefficient1	server			vmangos has 8,361 set, differing from the client in only 25 -- vmangos already carries the Classic coefficients (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBonusCoefficient2	server			vmangos has 8,361 set, differing from the client in only 25 -- vmangos already carries the Classic coefficients (spell-plan.md 5, 10)	yes
+srv	spell_template	effectBonusCoefficient3	server			vmangos has 8,361 set, differing from the client in only 25 -- vmangos already carries the Classic coefficients (spell-plan.md 5, 10)	yes
+srv	spell_template	effectMechanic1	server			0 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectMechanic2	server			0 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectMechanic3	server			0 slots differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectImplicitTargetA1	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectImplicitTargetA2	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectImplicitTargetA3	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectImplicitTargetB1	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectImplicitTargetB2	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectImplicitTargetB3	server			only 50 of 25,647 effect slots differ, all per-spell data fixes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectRadiusIndex1	server			index into SpellRadius (now dbc-sourced, F2); DB2 splits into a target-A/target-B slot pair, vanilla's value sits in whichever slot matches the area target (spell-plan.md 4.4, 27 mismatches) (spell-plan.md 10)	yes
+srv	spell_template	effectRadiusIndex2	server			index into SpellRadius (now dbc-sourced, F2); DB2 splits into a target-A/target-B slot pair, vanilla's value sits in whichever slot matches the area target (spell-plan.md 4.4, 27 mismatches) (spell-plan.md 10)	yes
+srv	spell_template	effectRadiusIndex3	server			index into SpellRadius (now dbc-sourced, F2); DB2 splits into a target-A/target-B slot pair, vanilla's value sits in whichever slot matches the area target (spell-plan.md 4.4, 27 mismatches) (spell-plan.md 10)	yes
+srv	spell_template	effectApplyAuraName1	server			moved aura numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.2)	yes
+srv	spell_template	effectApplyAuraName2	server			moved aura numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.2)	yes
+srv	spell_template	effectApplyAuraName3	server			moved aura numbers under the enum renumbering spell-plan.md 10 phase 2 will do in place; values stay server-sourced from spell_template (spell-plan.md 4.2)	yes
+srv	spell_template	effectAmplitude1	server			= DB2 EffectAuraPeriod, the two tick-period fields swapped names; 1 difference (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectAmplitude2	server			= DB2 EffectAuraPeriod, the two tick-period fields swapped names; 1 difference (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectAmplitude3	server			= DB2 EffectAuraPeriod, the two tick-period fields swapped names; 1 difference (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectMultipleValue1	server			= DB2 EffectAmplitude (float), the two fields swapped names; 31 differences (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectMultipleValue2	server			= DB2 EffectAmplitude (float), the two fields swapped names; 31 differences (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectMultipleValue3	server			= DB2 EffectAmplitude (float), the two fields swapped names; 31 differences (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectChainTarget1	server			22 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectChainTarget2	server			22 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectChainTarget3	server			22 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectItemType1	server			doubles as the spell-mod affect mask for auras 107/108/109/112, moved to EffectSpellClassMask in DB2 -- 743 of 1,112 EffectItemType diffs are exactly that move, the rest are Classic-era mask changes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectItemType2	server			doubles as the spell-mod affect mask for auras 107/108/109/112, moved to EffectSpellClassMask in DB2 -- 743 of 1,112 EffectItemType diffs are exactly that move, the rest are Classic-era mask changes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectItemType3	server			doubles as the spell-mod affect mask for auras 107/108/109/112, moved to EffectSpellClassMask in DB2 -- 743 of 1,112 EffectItemType diffs are exactly that move, the rest are Classic-era mask changes (spell-plan.md 4.3, 10)	yes
+srv	spell_template	effectMiscValue1	server			62 differences; DB2's second slot ([1], SummonProperties id etc.) is new (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectMiscValue2	server			62 differences; DB2's second slot ([1], SummonProperties id etc.) is new (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectMiscValue3	server			62 differences; DB2's second slot ([1], SummonProperties id etc.) is new (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectTriggerSpell1	server			16 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectTriggerSpell2	server			16 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectTriggerSpell3	server			16 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	effectPointsPerComboPoint1	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectPointsPerComboPoint2	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
+srv	spell_template	effectPointsPerComboPoint3	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
+srv	spell_template	spellVisual1	server			kept as the vanilla visual id (Q2, phase0-plan.md 6): server-internal once the wire uses SpellXSpellVisual instead of this column (spell-plan.md 8.2/9)	yes
+srv	spell_template	spellVisual2	server			kept as the vanilla visual id (Q2, phase0-plan.md 6): server-internal once the wire uses SpellXSpellVisual instead of this column (spell-plan.md 8.2/9)	yes
+srv	spell_template	spellIconId	server			kept as the vanilla icon id (Q2, phase0-plan.md 6): near 1:1 with SpellIconFileDataID but 7 icons map to more than one file id and 10 file ids map to more than one icon (spell-plan.md 4.4), and 111 gameplay checks compare against it directly	yes
+srv	spell_template	activeIconId	server			ActiveIconFileDataID counterpart exists; kept alongside spellIconId under the same Q2 decision	yes
+srv	spell_template	spellPriority	server			no DB2 field (not in spell-plan.md 3.1's field lists); vmangos/1.12-only	yes
+srv	spell_template	name	dbc	dbc_spellname.Name_lang	identity	presentational text, no patch-progression significance; 20999/21040 match the client (evidence.tsv), same policy as other display strings in this spec	yes
+srv	spell_template	nameFlags	server			vanilla locale-mask bookkeeping for vmangos's own multi-locale locstring storage; moot once the matching text column is dbc-sourced from the client's own single locstring	yes
+srv	spell_template	nameSubtext	dbc	dbc_spell.NameSubtext_lang	identity	presentational text, no patch-progression significance; 21036/21040 match the client (evidence.tsv), same policy as other display strings in this spec	yes
+srv	spell_template	nameSubtextFlags	server			vanilla locale-mask bookkeeping for vmangos's own multi-locale locstring storage; moot once the matching text column is dbc-sourced from the client's own single locstring	yes
+srv	spell_template	description	dbc	dbc_spell.Description_lang	identity	presentational text, no patch-progression significance; 20768/21040 match the client (evidence.tsv), same policy as other display strings in this spec	yes
+srv	spell_template	descriptionFlags	server			vanilla locale-mask bookkeeping for vmangos's own multi-locale locstring storage; moot once the matching text column is dbc-sourced from the client's own single locstring	yes
+srv	spell_template	auraDescription	dbc	dbc_spell.AuraDescription_lang	identity	presentational text, no patch-progression significance; 20937/21040 match the client (evidence.tsv), same policy as other display strings in this spec	yes
+srv	spell_template	auraDescriptionFlags	server			vanilla locale-mask bookkeeping for vmangos's own multi-locale locstring storage; moot once the matching text column is dbc-sourced from the client's own single locstring	yes
+srv	spell_template	manaCostPercentage	server			= DB2 SpellPower.PowerCostPct (float); 2 differences (spell-plan.md 4.4, 10)	yes
+srv	spell_template	startRecoveryCategory	server			62 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	startRecoveryTime	server			the GCD; 55 differ (spell-plan.md 5, 10)	yes
+srv	spell_template	minTargetLevel	server			no DB2 field: SpellTargetRestrictions has MaxTargetLevel but no minimum (spell-plan.md 3.1); vmangos-only	yes
+srv	spell_template	maxTargetLevel	server			SpellTargetRestrictions.MaxTargetLevel counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	spellFamilyName	server			= SpellClassOptions.SpellClassSet; 111 spells differ (spell-plan.md 4.3, 10)	yes
+srv	spell_template	spellFamilyFlags	server			= SpellClassMask[0..1]; 142 spells differ. SpellClassMask[2..3] is non-zero on 212 SoD/modern-only spells with no vanilla equivalent (spell-plan.md 4.3, 10)	yes
+srv	spell_template	maxAffectedTargets	server			= DB2 MaxTargets; 46 differ, the client sets 1 on Polymorph/Roots/Sleep/Banish (spell-plan.md 5, 10)	yes
+srv	spell_template	dmgClass	server			= SpellCategories.DefenseType (spell-plan.md 3.1, 10)	yes
+srv	spell_template	preventionType	server			SpellCategories.PreventionType counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	stanceBarOrder	server			SpellShapeshift.StanceBarOrder counterpart exists (spell-plan.md 3.1, 10)	yes
+srv	spell_template	dmgMultiplier1	server			= DB2 EffectChainAmplitude, per effect (spell-plan.md 3.1/4.4) (spell-plan.md 10)	yes
+srv	spell_template	dmgMultiplier2	server			= DB2 EffectChainAmplitude, per effect (spell-plan.md 3.1/4.4) (spell-plan.md 10)	yes
+srv	spell_template	dmgMultiplier3	server			= DB2 EffectChainAmplitude, per effect (spell-plan.md 3.1/4.4) (spell-plan.md 10)	yes
+srv	spell_template	minFactionId	server			SpellCastingRequirements MinFactionID/MinReputation; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	minReputation	server			SpellCastingRequirements MinFactionID/MinReputation; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	requiredAuraVision	server			SpellCastingRequirements.RequiredAuraVision; 0 spells differ (spell-plan.md 5, 10)	yes
+srv	spell_template	customFlags	server			vmangos-only Custom flags bitmask; no DB2 field	yes
+srv	spell_template	script_name	server			vmangos ScriptMgr hook name (script binding); no DB2 field, server/scripting-only	yes
+srv	spell_threat	entry	server			threat-generation override (SpellMgr.cpp:859); no DB2 counterpart	yes
+srv	spell_threat	threat	server			threat-generation override (SpellMgr.cpp:859); no DB2 counterpart	yes
+srv	spell_threat	multiplier	server			threat-generation override (SpellMgr.cpp:859); no DB2 counterpart	yes
+srv	spell_threat	inverse_effect_mask	server			threat-generation override (SpellMgr.cpp:859); no DB2 counterpart	yes
+srv	spell_threat	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
+srv	spell_threat	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	taxi_nodes	id	dbc	dbc_taxinodes.ID	identity	84/85 shared, node 81 is gone (data-plan.md 3.1)	yes
 srv	taxi_nodes	build	drop			progression removed	yes
 srv	taxi_nodes	map_id	dbc	dbc_taxinodes.ContinentID	identity	0 differences (data-plan.md 3.1)	yes
@@ -3475,127 +3475,127 @@ vdbc	soundwatertype	SoundSubtype	drop			not imported	yes
 vdbc	soundwatertype	SoundID	drop			not imported	yes
 vdbc	spammessages	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	spammessages	Text	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
-vdbc	spell	ID					
-vdbc	spell	School					
-vdbc	spell	Category					
-vdbc	spell	CastUI					
-vdbc	spell	DispelType					
-vdbc	spell	Mechanic					
-vdbc	spell	Attributes					
-vdbc	spell	AttributesEx					
-vdbc	spell	AttributesExB					
-vdbc	spell	AttributesExC					
-vdbc	spell	AttributesExD					
-vdbc	spell	ShapeshiftMask					
-vdbc	spell	ShapeshiftExclude					
-vdbc	spell	Targets					
-vdbc	spell	TargetCreatureType					
-vdbc	spell	RequiresSpellFocus					
-vdbc	spell	CasterAuraState					
-vdbc	spell	TargetAuraState					
-vdbc	spell	CastingTimeIndex					
-vdbc	spell	RecoveryTime					
-vdbc	spell	CategoryRecoveryTime					
-vdbc	spell	InterruptFlags					
-vdbc	spell	AuraInterruptFlags					
-vdbc	spell	ChannelInterruptFlags					
-vdbc	spell	ProcFlags					
-vdbc	spell	ProcChance					
-vdbc	spell	ProcCharges					
-vdbc	spell	MaxLevel					
-vdbc	spell	BaseLevel					
-vdbc	spell	SpellLevel					
-vdbc	spell	DurationIndex					
-vdbc	spell	PowerType					
-vdbc	spell	ManaCost					
-vdbc	spell	ManaCostPerLevel					
-vdbc	spell	ManaPerSecond					
-vdbc	spell	ManaPerSecondPerLevel					
-vdbc	spell	RangeIndex					
-vdbc	spell	Speed					
-vdbc	spell	ModalNextSpell					
-vdbc	spell	CumulativeAura					
-vdbc	spell	Totem1					
-vdbc	spell	Totem2					
-vdbc	spell	Reagent1					
-vdbc	spell	Reagent2					
-vdbc	spell	Reagent3					
-vdbc	spell	Reagent4					
-vdbc	spell	Reagent5					
-vdbc	spell	Reagent6					
-vdbc	spell	Reagent7					
-vdbc	spell	Reagent8					
-vdbc	spell	ReagentCount1					
-vdbc	spell	ReagentCount2					
-vdbc	spell	ReagentCount3					
-vdbc	spell	ReagentCount4					
-vdbc	spell	ReagentCount5					
-vdbc	spell	ReagentCount6					
-vdbc	spell	ReagentCount7					
-vdbc	spell	ReagentCount8					
-vdbc	spell	EquippedItemClass					
-vdbc	spell	EquippedItemSubclass					
-vdbc	spell	EquippedItemInvTypes					
-vdbc	spell	Effect1					
-vdbc	spell	Effect2					
-vdbc	spell	Effect3					
-vdbc	spell	EffectDieSides1					
-vdbc	spell	EffectDieSides2					
-vdbc	spell	EffectDieSides3					
-vdbc	spell	EffectBaseDice1					
-vdbc	spell	EffectBaseDice2					
-vdbc	spell	EffectBaseDice3					
-vdbc	spell	EffectDicePerLevel1					
-vdbc	spell	EffectDicePerLevel2					
-vdbc	spell	EffectDicePerLevel3					
-vdbc	spell	EffectRealPointsPerLevel1					
-vdbc	spell	EffectRealPointsPerLevel2					
-vdbc	spell	EffectRealPointsPerLevel3					
-vdbc	spell	EffectBasePoints1					
-vdbc	spell	EffectBasePoints2					
-vdbc	spell	EffectBasePoints3					
-vdbc	spell	EffectMechanic1					
-vdbc	spell	EffectMechanic2					
-vdbc	spell	EffectMechanic3					
-vdbc	spell	ImplicitTargetA1					
-vdbc	spell	ImplicitTargetA2					
-vdbc	spell	ImplicitTargetA3					
-vdbc	spell	ImplicitTargetB1					
-vdbc	spell	ImplicitTargetB2					
-vdbc	spell	ImplicitTargetB3					
-vdbc	spell	EffectRadiusIndex1					
-vdbc	spell	EffectRadiusIndex2					
-vdbc	spell	EffectRadiusIndex3					
-vdbc	spell	EffectAura1					
-vdbc	spell	EffectAura2					
-vdbc	spell	EffectAura3					
-vdbc	spell	EffectAuraPeriod1					
-vdbc	spell	EffectAuraPeriod2					
-vdbc	spell	EffectAuraPeriod3					
-vdbc	spell	EffectAmplitude1					
-vdbc	spell	EffectAmplitude2					
-vdbc	spell	EffectAmplitude3					
-vdbc	spell	EffectChainTargets1					
-vdbc	spell	EffectChainTargets2					
-vdbc	spell	EffectChainTargets3					
-vdbc	spell	EffectItemType1					
-vdbc	spell	EffectItemType2					
-vdbc	spell	EffectItemType3					
-vdbc	spell	EffectMiscValue1					
-vdbc	spell	EffectMiscValue2					
-vdbc	spell	EffectMiscValue3					
-vdbc	spell	EffectTriggerSpell1					
-vdbc	spell	EffectTriggerSpell2					
-vdbc	spell	EffectTriggerSpell3					
-vdbc	spell	EffectPointsPerCombo1					
-vdbc	spell	EffectPointsPerCombo2					
-vdbc	spell	EffectPointsPerCombo3					
-vdbc	spell	SpellVisualID1					
-vdbc	spell	SpellVisualID2					
-vdbc	spell	SpellIconID					
-vdbc	spell	ActiveIconID					
-vdbc	spell	SpellPriority					
-vdbc	spell	Name_lang					
+vdbc	spell	ID	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	School	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Category	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	CastUI	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	DispelType	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Mechanic	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Attributes	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	AttributesEx	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	AttributesExB	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	AttributesExC	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	AttributesExD	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ShapeshiftMask	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ShapeshiftExclude	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Targets	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	TargetCreatureType	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	RequiresSpellFocus	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	CasterAuraState	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	TargetAuraState	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	CastingTimeIndex	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	RecoveryTime	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	CategoryRecoveryTime	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	InterruptFlags	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	AuraInterruptFlags	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ChannelInterruptFlags	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ProcFlags	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ProcChance	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ProcCharges	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	MaxLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	BaseLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	DurationIndex	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	PowerType	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ManaCost	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ManaCostPerLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ManaPerSecond	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ManaPerSecondPerLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	RangeIndex	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Speed	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ModalNextSpell	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	CumulativeAura	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Totem1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Totem2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent4	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent5	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent6	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent7	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Reagent8	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount4	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount5	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount6	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount7	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ReagentCount8	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EquippedItemClass	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EquippedItemSubclass	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EquippedItemInvTypes	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Effect1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Effect2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Effect3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDieSides1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDieSides2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDieSides3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBaseDice1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBaseDice2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBaseDice3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDicePerLevel1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDicePerLevel2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectDicePerLevel3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRealPointsPerLevel1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRealPointsPerLevel2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRealPointsPerLevel3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBasePoints1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBasePoints2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectBasePoints3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMechanic1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMechanic2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMechanic3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetA1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetA2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetA3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetB1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetB2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ImplicitTargetB3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRadiusIndex1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRadiusIndex2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectRadiusIndex3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAura1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAura2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAura3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAuraPeriod1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAuraPeriod2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAuraPeriod3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAmplitude1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAmplitude2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectAmplitude3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainTargets1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainTargets2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainTargets3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectItemType1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectItemType2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectItemType3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMiscValue1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMiscValue2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectMiscValue3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectTriggerSpell1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectTriggerSpell2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectTriggerSpell3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectPointsPerCombo1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectPointsPerCombo2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectPointsPerCombo3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellVisualID1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellVisualID2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellIconID	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	ActiveIconID	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellPriority	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	Name_lang	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
 vdbc	spell	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3604,7 +3604,7 @@ vdbc	spell	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped 
 vdbc	spell	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spell	NameSubtext_lang					
+vdbc	spell	NameSubtext_lang	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
 vdbc	spell	NameSubtext_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	NameSubtext_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	NameSubtext_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3613,7 +3613,7 @@ vdbc	spell	NameSubtext_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	spell	NameSubtext_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	NameSubtext_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	NameSubtext_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spell	Description_lang					
+vdbc	spell	Description_lang	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
 vdbc	spell	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3622,7 +3622,7 @@ vdbc	spell	Description_lang_5	drop			non-enUS locale slot, vanilla client only s
 vdbc	spell	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spell	AuraDescription_lang					
+vdbc	spell	AuraDescription_lang	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
 vdbc	spell	AuraDescription_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	AuraDescription_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	AuraDescription_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3631,39 +3631,39 @@ vdbc	spell	AuraDescription_lang_5	drop			non-enUS locale slot, vanilla client on
 vdbc	spell	AuraDescription_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	AuraDescription_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spell	AuraDescription_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spell	ManaCostPct					
-vdbc	spell	StartRecoveryCategory					
-vdbc	spell	StartRecoveryTime					
-vdbc	spell	MaxTargetLevel					
-vdbc	spell	SpellClassSet					
-vdbc	spell	SpellClassMask1					
-vdbc	spell	SpellClassMask2					
-vdbc	spell	MaxTargets					
-vdbc	spell	DefenseType					
-vdbc	spell	PreventionType					
-vdbc	spell	StanceBarOrder					
-vdbc	spell	EffectChainAmplitude1					
-vdbc	spell	EffectChainAmplitude2					
-vdbc	spell	EffectChainAmplitude3					
-vdbc	spell	MinFactionID					
-vdbc	spell	MinReputation					
-vdbc	spell	RequiredAuraVision					
+vdbc	spell	ManaCostPct	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	StartRecoveryCategory	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	StartRecoveryTime	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	MaxTargetLevel	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellClassSet	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellClassMask1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	SpellClassMask2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	MaxTargets	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	DefenseType	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	PreventionType	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	StanceBarOrder	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainAmplitude1	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainAmplitude2	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	EffectChainAmplitude3	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	MinFactionID	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	MinReputation	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
+vdbc	spell	RequiredAuraVision	drop			Spell.dbc's own columns; not read by mangosd (spell_template supersedes it, spell-plan.md 2.1/10 -- spell_template stays the gameplay authority)	yes
 vdbc	spellcasttimes	ID	dbc	dbc_spellcasttimes.ID	identity	stuff-plan.md 6.3	yes
 vdbc	spellcasttimes	Base	dbc	dbc_spellcasttimes.Base	identity	stuff-plan.md 6.3	yes
 vdbc	spellcasttimes	PerLevel	dbc	dbc_spellcasttimes.PerLevel	identity	stuff-plan.md 6.3	yes
 vdbc	spellcasttimes	Minimum	dbc	dbc_spellcasttimes.Minimum	identity	stuff-plan.md 6.3	yes
 vdbc	spellcategory	ID	dbc	dbc_spellcategory.ID	identity	stuff-plan.md 6.3	yes
 vdbc	spellcategory	Flags	dbc	dbc_spellcategory.Flags	identity	stuff-plan.md 6.3	yes
-vdbc	spellchaineffects	ID					
-vdbc	spellchaineffects	AvgSegLen					
-vdbc	spellchaineffects	Width					
-vdbc	spellchaineffects	NoiseScale					
-vdbc	spellchaineffects	TexCoordScale					
-vdbc	spellchaineffects	SegDuration					
-vdbc	spellchaineffects	SegDelay					
-vdbc	spellchaineffects	Texture					
-vdbc	spelldispeltype	ID					
-vdbc	spelldispeltype	Name_lang					
+vdbc	spellchaineffects	ID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	AvgSegLen	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	Width	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	NoiseScale	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	TexCoordScale	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	SegDuration	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	SegDelay	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellchaineffects	Texture	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spelldispeltype	ID	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
+vdbc	spelldispeltype	Name_lang	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
 vdbc	spelldispeltype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spelldispeltype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spelldispeltype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3672,8 +3672,8 @@ vdbc	spelldispeltype	Name_lang_5	drop			non-enUS locale slot, vanilla client onl
 vdbc	spelldispeltype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spelldispeltype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spelldispeltype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spelldispeltype	Mask					
-vdbc	spelldispeltype	InternalName					
+vdbc	spelldispeltype	Mask	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
+vdbc	spelldispeltype	InternalName	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
 vdbc	spellduration	ID	dbc	dbc_spellduration.ID	identity	stuff-plan.md 6.3	yes
 vdbc	spellduration	Duration	dbc	dbc_spellduration.Duration	identity	stuff-plan.md 6.3	yes
 vdbc	spellduration	DurationPerLevel	dbc	dbc_spellduration.DurationPerLevel	identity	stuff-plan.md 6.3	yes
@@ -3694,20 +3694,20 @@ vdbc	spellfocusobject	Name_lang_7	drop			non-enUS locale slot, vanilla client on
 vdbc	spellfocusobject	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellicon	ID	drop			not imported	yes
 vdbc	spellicon	TextureFilename	drop			not imported	yes
-vdbc	spellitemenchantment	ID	dbc	dbc_spellitemenchantment.ID	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	Effect1	dbc	dbc_spellitemenchantment.Effect1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	Effect2	dbc	dbc_spellitemenchantment.Effect2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	Effect3	dbc	dbc_spellitemenchantment.Effect3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMin1	dbc	dbc_spellitemenchantment.EffectPointsMin1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMin2	dbc	dbc_spellitemenchantment.EffectPointsMin2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMin3	dbc	dbc_spellitemenchantment.EffectPointsMin3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMax1	dbc	dbc_spellitemenchantment.EffectPointsMax1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMax2	dbc	dbc_spellitemenchantment.EffectPointsMax2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectPointsMax3	dbc	dbc_spellitemenchantment.EffectPointsMax3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectArg1	dbc	dbc_spellitemenchantment.EffectArg1	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectArg2	dbc	dbc_spellitemenchantment.EffectArg2	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	EffectArg3	dbc	dbc_spellitemenchantment.EffectArg3	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	Name_lang	dbc	dbc_spellitemenchantment.Name_lang	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
+vdbc	spellitemenchantment	ID	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	Effect1	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	Effect2	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	Effect3	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMin1	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMin2	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMin3	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMax1	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMax2	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectPointsMax3	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectArg1	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectArg2	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	EffectArg3	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	Name_lang	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
 vdbc	spellitemenchantment	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3716,10 +3716,10 @@ vdbc	spellitemenchantment	Name_lang_5	drop			non-enUS locale slot, vanilla clien
 vdbc	spellitemenchantment	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellitemenchantment	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	spellitemenchantment	ItemVisual	dbc	dbc_spellitemenchantment.ItemVisual	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellitemenchantment	Flags	dbc	dbc_spellitemenchantment.Flags	identity	702 of 2149 rows are reworked back to vanilla, spell-plan.md 6	yes
-vdbc	spellmechanic	ID					
-vdbc	spellmechanic	StateName_lang					
+vdbc	spellitemenchantment	ItemVisual	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellitemenchantment	Flags	server			already loaded directly from the vanilla DBC by mangosd's existing DBCStores.cpp reader (SpellItemEnchantmentEntry, up to 203 uses in 45 files); spell-plan.md 6: the client's DB2 is reworked (702 of 2149 rows), pointing at Classic-era proc spells not in spell_template, so it cannot replace this reader (F2 wrongly matched it to the live client table by row count alone)	yes
+vdbc	spellmechanic	ID	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
+vdbc	spellmechanic	StateName_lang	drop			label-only lookup DBC; the id space it labels (dispel/mechanic) is unchanged between vanilla and the client (spell-plan.md 4.3), so the client's own copy of the table already labels the shared ids correctly -- same reasoning as F3's Q7 answer (phase0-plan.md 12)	yes
 vdbc	spellmechanic	StateName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellmechanic	StateName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	spellmechanic	StateName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3784,46 +3784,46 @@ vdbc	spellvisual	AreaModel	drop			channelKit was for an opcode that no longer ex
 vdbc	spellvisual	AreaKit	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
 vdbc	spellvisual	AnimEventSoundID	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
 vdbc	spellvisual	Flags	drop			channelKit was for an opcode that no longer exists; replaced by SpellXSpellVisual/SpellVisualKit, spell visual work belongs to F5 (stuff-plan.md 8.3, spell-plan.md 8.3) -- dbc_spellvisual exists with matching column names, but nothing in this port reads them	yes
-vdbc	spellvisualeffectname	ID					
-vdbc	spellvisualeffectname	Name					
-vdbc	spellvisualeffectname	FileName					
-vdbc	spellvisualeffectname	SpecialAttachPoint					
-vdbc	spellvisualeffectname	AreaEffectSize					
-vdbc	spellvisualkit	ID					
-vdbc	spellvisualkit	KitType					
-vdbc	spellvisualkit	AnimID					
-vdbc	spellvisualkit	HeadEffect					
-vdbc	spellvisualkit	ChestEffect					
-vdbc	spellvisualkit	BaseEffect					
-vdbc	spellvisualkit	LeftHandEffect					
-vdbc	spellvisualkit	RightHandEffect					
-vdbc	spellvisualkit	BreathEffect					
-vdbc	spellvisualkit	SpecialEffect1					
-vdbc	spellvisualkit	SpecialEffect2					
-vdbc	spellvisualkit	SpecialEffect3					
-vdbc	spellvisualkit	WorldEffect					
-vdbc	spellvisualkit	SoundID					
-vdbc	spellvisualkit	ShakeID					
-vdbc	spellvisualkit	CharProc1					
-vdbc	spellvisualkit	CharProc2					
-vdbc	spellvisualkit	CharProc3					
-vdbc	spellvisualkit	CharProc4					
-vdbc	spellvisualkit	CharParamZero1					
-vdbc	spellvisualkit	CharParamZero2					
-vdbc	spellvisualkit	CharParamZero3					
-vdbc	spellvisualkit	CharParamZero4					
-vdbc	spellvisualkit	CharParamOne1					
-vdbc	spellvisualkit	CharParamOne2					
-vdbc	spellvisualkit	CharParamOne3					
-vdbc	spellvisualkit	CharParamOne4					
-vdbc	spellvisualkit	CharParamTwo1					
-vdbc	spellvisualkit	CharParamTwo2					
-vdbc	spellvisualkit	CharParamTwo3					
-vdbc	spellvisualkit	CharParamTwo4					
-vdbc	spellvisualkit	CharParamThree1					
-vdbc	spellvisualkit	CharParamThree2					
-vdbc	spellvisualkit	CharParamThree3					
-vdbc	spellvisualkit	CharParamThree4					
+vdbc	spellvisualeffectname	ID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualeffectname	Name	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualeffectname	FileName	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualeffectname	SpecialAttachPoint	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualeffectname	AreaEffectSize	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	ID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	KitType	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	AnimID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	HeadEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	ChestEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	BaseEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	LeftHandEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	RightHandEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	BreathEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	SpecialEffect1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	SpecialEffect2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	SpecialEffect3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	WorldEffect	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	SoundID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	ShakeID	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharProc1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharProc2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharProc3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharProc4	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamZero1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamZero2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamZero3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamZero4	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamOne1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamOne2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamOne3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamOne4	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamTwo1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamTwo2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamTwo3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamTwo4	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamThree1	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamThree2	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamThree3	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
+vdbc	spellvisualkit	CharParamThree4	drop			client asset/visual data, no mangosd reader (Q7, phase0-plan.md 6 -- same reasoning as SpellVisualKit's own listing there)	yes
 vdbc	spellvisualprecasttransitions	ID	drop			not imported	yes
 vdbc	spellvisualprecasttransitions	PrecastLoadAnimName	drop			not imported	yes
 vdbc	spellvisualprecasttransitions	PrecastHoldAnimName	drop			not imported	yes
