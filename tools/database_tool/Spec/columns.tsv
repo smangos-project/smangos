@@ -848,9 +848,9 @@ srv	instance_buff_removal	flags
 srv	instance_buff_removal	comment					
 srv	item_display_info	ID	dbc	dbc_itemdisplayinfo.ID	identity	29,602/29,604 shared; ids still exist but items point at different ids now (data-plan.md 3.1, data-plan.md 3.2)	yes
 srv	item_display_info	icon	drop			nothing reads it; ItemAppearance.DefaultIconFileDataID replaces it (stuff-plan.md 8.3)	yes
-srv	item_enchantment_template	entry					
-srv	item_enchantment_template	ench					
-srv	item_enchantment_template	chance					
+srv	item_enchantment_template	entry	server			the chance table is server-only; the enchant ids already line up with dbc_itemrandomproperties.Enchantment1-5 (F2), 0 of 2,012 vanilla rows changed (data-plan.md 3.2)	yes
+srv	item_enchantment_template	ench	server			the chance table is server-only; the enchant ids already line up with dbc_itemrandomproperties.Enchantment1-5 (F2), 0 of 2,012 vanilla rows changed (data-plan.md 3.2)	yes
+srv	item_enchantment_template	chance	server			the chance table is server-only; the enchant ids already line up with dbc_itemrandomproperties.Enchantment1-5 (F2), 0 of 2,012 vanilla rows changed (data-plan.md 3.2)	yes
 srv	item_enchantment_template	patch_min	drop			progression removed	yes
 srv	item_enchantment_template	patch_max	drop			progression removed	yes
 srv	item_loot_template	entry					
@@ -865,136 +865,136 @@ srv	item_loot_template	patch_max	drop			progression removed	yes
 srv	item_required_target	entry					
 srv	item_required_target	type					
 srv	item_required_target	target_entry					
-srv	item_template	entry					
+srv	item_template	entry	dbc	dbc_itemsparse.ID	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	patch	drop			progression removed	yes
-srv	item_template	class					
-srv	item_template	subclass					
-srv	item_template	name					
-srv	item_template	description					
-srv	item_template	display_id					
-srv	item_template	quality					
-srv	item_template	flags					
-srv	item_template	buy_count					
-srv	item_template	buy_price					
-srv	item_template	sell_price					
-srv	item_template	inventory_type					
-srv	item_template	allowable_class					
-srv	item_template	allowable_race					
-srv	item_template	item_level					
-srv	item_template	required_level					
-srv	item_template	required_skill					
-srv	item_template	required_skill_rank					
-srv	item_template	required_spell					
-srv	item_template	required_honor_rank					
-srv	item_template	required_city_rank					
-srv	item_template	required_reputation_faction					
-srv	item_template	required_reputation_rank					
-srv	item_template	max_count					
-srv	item_template	stackable					
-srv	item_template	container_slots					
-srv	item_template	stat_type1					
-srv	item_template	stat_value1					
-srv	item_template	stat_type2					
-srv	item_template	stat_value2					
-srv	item_template	stat_type3					
-srv	item_template	stat_value3					
-srv	item_template	stat_type4					
-srv	item_template	stat_value4					
-srv	item_template	stat_type5					
-srv	item_template	stat_value5					
-srv	item_template	stat_type6					
-srv	item_template	stat_value6					
-srv	item_template	stat_type7					
-srv	item_template	stat_value7					
-srv	item_template	stat_type8					
-srv	item_template	stat_value8					
-srv	item_template	stat_type9					
-srv	item_template	stat_value9					
-srv	item_template	stat_type10					
-srv	item_template	stat_value10					
-srv	item_template	delay					
-srv	item_template	range_mod					
-srv	item_template	ammo_type					
-srv	item_template	dmg_min1					
-srv	item_template	dmg_max1					
-srv	item_template	dmg_type1					
-srv	item_template	dmg_min2					
-srv	item_template	dmg_max2					
-srv	item_template	dmg_type2					
-srv	item_template	dmg_min3					
-srv	item_template	dmg_max3					
-srv	item_template	dmg_type3					
-srv	item_template	dmg_min4					
-srv	item_template	dmg_max4					
-srv	item_template	dmg_type4					
-srv	item_template	dmg_min5					
-srv	item_template	dmg_max5					
-srv	item_template	dmg_type5					
-srv	item_template	block					
-srv	item_template	armor					
-srv	item_template	holy_res					
-srv	item_template	fire_res					
-srv	item_template	nature_res					
-srv	item_template	frost_res					
-srv	item_template	shadow_res					
-srv	item_template	arcane_res					
-srv	item_template	spellid_1					
-srv	item_template	spelltrigger_1					
-srv	item_template	spellcharges_1					
-srv	item_template	spellppmrate_1					
-srv	item_template	spellcooldown_1					
-srv	item_template	spellcategory_1					
-srv	item_template	spellcategorycooldown_1					
-srv	item_template	spellid_2					
-srv	item_template	spelltrigger_2					
-srv	item_template	spellcharges_2					
-srv	item_template	spellppmrate_2					
-srv	item_template	spellcooldown_2					
-srv	item_template	spellcategory_2					
-srv	item_template	spellcategorycooldown_2					
-srv	item_template	spellid_3					
-srv	item_template	spelltrigger_3					
-srv	item_template	spellcharges_3					
-srv	item_template	spellppmrate_3					
-srv	item_template	spellcooldown_3					
-srv	item_template	spellcategory_3					
-srv	item_template	spellcategorycooldown_3					
-srv	item_template	spellid_4					
-srv	item_template	spelltrigger_4					
-srv	item_template	spellcharges_4					
-srv	item_template	spellppmrate_4					
-srv	item_template	spellcooldown_4					
-srv	item_template	spellcategory_4					
-srv	item_template	spellcategorycooldown_4					
-srv	item_template	spellid_5					
-srv	item_template	spelltrigger_5					
-srv	item_template	spellcharges_5					
-srv	item_template	spellppmrate_5					
-srv	item_template	spellcooldown_5					
-srv	item_template	spellcategory_5					
-srv	item_template	spellcategorycooldown_5					
-srv	item_template	bonding					
-srv	item_template	page_text					
-srv	item_template	page_language					
-srv	item_template	page_material					
-srv	item_template	start_quest					
-srv	item_template	lock_id					
-srv	item_template	material					
-srv	item_template	sheath					
-srv	item_template	random_property					
-srv	item_template	set_id					
-srv	item_template	max_durability					
-srv	item_template	area_bound					
-srv	item_template	map_bound					
-srv	item_template	duration					
-srv	item_template	bag_family					
-srv	item_template	disenchant_id					
-srv	item_template	food_type					
-srv	item_template	min_money_loot					
-srv	item_template	max_money_loot					
-srv	item_template	wrapped_gift					
-srv	item_template	extra_flags					
-srv	item_template	other_team_entry					
+srv	item_template	class	dbc	dbc_item.ClassID	identity	class/subclass: 7 differences total (data-plan.md 3.2.1); from Item, not ItemSparse -- pairs.tsv's item row is still `skip` (needs a second join), so this isn't evaluated by spec evidence yet, overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
+srv	item_template	subclass	dbc	dbc_item.SubclassID	identity	class/subclass: 7 differences total (data-plan.md 3.2.1); from Item, same known gap as class	yes
+srv	item_template	name	dbc	dbc_itemsparse.Display_lang	identity	31 differences (data-plan.md 3.2.1)	yes
+srv	item_template	description	dbc	dbc_itemsparse.Description_lang	identity	11 differences (data-plan.md 3.2.1)	yes
+srv	item_template	display_id	derived	dbc_itemmodifiedappearance.ItemAppearanceID -> dbc_itemappearance.ItemDisplayInfoID		13,257 differ, Classic re-pointed item appearances (data-plan.md 3.2.1); the client resolves display only through ItemModifiedAppearance (entry=ItemID), a 2-hop join no single rule expresses	yes
+srv	item_template	quality	dbc	dbc_itemsparse.OverallQualityID	identity	29 differences (data-plan.md 3.2.1)	yes
+srv	item_template	flags	dbc	dbc_itemsparse.Flags1	identity	46 differences (data-plan.md 3.2.1); 1.15 expands a single flags word to Flags1-5, vanilla's value maps to the first	yes
+srv	item_template	buy_count	dbc	dbc_itemsparse.VendorStackCount	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	buy_price	dbc	dbc_itemsparse.BuyPrice	identity	103 differences, e.g. recipe prices (data-plan.md 3.2.1)	yes
+srv	item_template	sell_price	dbc	dbc_itemsparse.SellPrice	identity	2 differences (data-plan.md 3.2.1)	yes
+srv	item_template	inventory_type	dbc	dbc_itemsparse.InventoryType	identity	5 differences (data-plan.md 3.2.1)	yes
+srv	item_template	allowable_class	dbc	dbc_itemsparse.AllowableClass	mask_all_2047	1243 raw differences, representation only (data-plan.md 3.2.1/5)	yes
+srv	item_template	allowable_race	dbc	dbc_itemsparse.AllowableRace	mask_all_255	1473 raw differences, representation only (data-plan.md 3.2.1/5)	yes
+srv	item_template	item_level	dbc	dbc_itemsparse.ItemLevel	identity	1 difference (data-plan.md 3.2.1)	yes
+srv	item_template	required_level	dbc	dbc_itemsparse.RequiredLevel	identity	1 difference (data-plan.md 3.2.1)	yes
+srv	item_template	required_skill	dbc	dbc_itemsparse.RequiredSkill	identity	104 differences, shared with required_skill_rank (data-plan.md 3.2.1)	yes
+srv	item_template	required_skill_rank	dbc	dbc_itemsparse.RequiredSkillRank	identity	104 differences, shared with required_skill (data-plan.md 3.2.1)	yes
+srv	item_template	required_spell	dbc	dbc_itemsparse.RequiredAbility	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	required_honor_rank	dbc	dbc_itemsparse.RequiredPVPRank	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	required_city_rank	dbc	dbc_itemsparse.RequiredPVPMedal	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	required_reputation_faction	dbc	dbc_itemsparse.MinFactionID	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	required_reputation_rank	dbc	dbc_itemsparse.MinReputation	identity	1 difference, the reputation pair (data-plan.md 3.2.1)	yes
+srv	item_template	max_count	dbc	dbc_itemsparse.MaxCount	identity	1 difference (data-plan.md 3.2.1)	yes
+srv	item_template	stackable	dbc	dbc_itemsparse.Stackable	identity	23 differences (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
+srv	item_template	container_slots	dbc	dbc_itemsparse.ContainerSlots	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	stat_type1	dbc	dbc_itemsparse.StatModifier_bonusStat1	identity	stat types: 3 differences total (data-plan.md 3.2.1)	yes
+srv	item_template	stat_value1	dbc	dbc_itemsparse.StatModifier_bonusAmount1	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	stat_type2	dbc	dbc_itemsparse.StatModifier_bonusStat2	identity	stat types: 3 differences total (data-plan.md 3.2.1)	yes
+srv	item_template	stat_value2	dbc	dbc_itemsparse.StatModifier_bonusAmount2	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	stat_type3	dbc	dbc_itemsparse.StatModifier_bonusStat3	identity	stat types: 3 differences total (data-plan.md 3.2.1)	yes
+srv	item_template	stat_value3	dbc	dbc_itemsparse.StatModifier_bonusAmount3	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	stat_type4	dbc	dbc_itemsparse.StatModifier_bonusStat4	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value4	dbc	dbc_itemsparse.StatModifier_bonusAmount4	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type5	dbc	dbc_itemsparse.StatModifier_bonusStat5	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value5	dbc	dbc_itemsparse.StatModifier_bonusAmount5	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type6	dbc	dbc_itemsparse.StatModifier_bonusStat6	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value6	dbc	dbc_itemsparse.StatModifier_bonusAmount6	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type7	dbc	dbc_itemsparse.StatModifier_bonusStat7	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value7	dbc	dbc_itemsparse.StatModifier_bonusAmount7	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type8	dbc	dbc_itemsparse.StatModifier_bonusStat8	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value8	dbc	dbc_itemsparse.StatModifier_bonusAmount8	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type9	dbc	dbc_itemsparse.StatModifier_bonusStat9	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value9	dbc	dbc_itemsparse.StatModifier_bonusAmount9	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_type10	dbc	dbc_itemsparse.StatModifier_bonusStat10	identity	0 differences on types 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	stat_value10	dbc	dbc_itemsparse.StatModifier_bonusAmount10	identity	0 differences on values 4-10 (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence for 6-10	yes
+srv	item_template	delay	dbc	dbc_itemsparse.ItemDelay	identity	1 difference (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
+srv	item_template	range_mod	dbc	dbc_itemsparse.ItemRange	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	ammo_type	dbc	dbc_itemsparse.AmmunitionType	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_min1	dbc	dbc_itemsparse.MinDamage1	identity	70 differences; vmangos keeps fractional pre-1.12 values (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_max1	dbc	dbc_itemsparse.MaxDamage1	identity	70 differences; vmangos keeps fractional pre-1.12 values (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_type1	dbc	dbc_item.DamageType1	identity	0 differences (data-plan.md 3.2.1); pairs.tsv's item row calls out damage type as one of the fields Item (not ItemSparse) supplies, still `skip`/not evaluated by spec evidence	yes
+srv	item_template	dmg_min2	dbc	dbc_itemsparse.MinDamage2	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_max2	dbc	dbc_itemsparse.MaxDamage2	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_type2	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_min3	dbc	dbc_itemsparse.MinDamage3	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_max3	dbc	dbc_itemsparse.MaxDamage3	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_type3	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_min4	dbc	dbc_itemsparse.MinDamage4	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_max4	dbc	dbc_itemsparse.MaxDamage4	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_type4	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_min5	dbc	dbc_itemsparse.MinDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_max5	dbc	dbc_itemsparse.MaxDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	dmg_type5	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	block	server			no ItemSparse field; the modern client computes it from ItemArmorShield (data-plan.md 3.2.1)	yes
+srv	item_template	armor	dbc	dbc_itemsparse.Resistances1	identity	312 differences (data-plan.md 3.2.1)	yes
+srv	item_template	holy_res	dbc	dbc_itemsparse.Resistances2	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	fire_res	dbc	dbc_itemsparse.Resistances3	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	nature_res	dbc	dbc_itemsparse.Resistances4	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	frost_res	dbc	dbc_itemsparse.Resistances5	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	shadow_res	dbc	dbc_itemsparse.Resistances6	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	arcane_res	dbc	dbc_itemsparse.Resistances7	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	spellid_1	dbc	dbc_itemeffect.SpellID	identity	slot 1: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spelltrigger_1	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcharges_1	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellppmrate_1	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellcooldown_1	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategory_1	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategorycooldown_1	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellid_2	dbc	dbc_itemeffect.SpellID	identity	slot 2: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spelltrigger_2	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcharges_2	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellppmrate_2	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellcooldown_2	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategory_2	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategorycooldown_2	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellid_3	dbc	dbc_itemeffect.SpellID	identity	slot 3: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spelltrigger_3	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcharges_3	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellppmrate_3	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellcooldown_3	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategory_3	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategorycooldown_3	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellid_4	dbc	dbc_itemeffect.SpellID	identity	slot 4: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spelltrigger_4	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcharges_4	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellppmrate_4	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellcooldown_4	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategory_4	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategorycooldown_4	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellid_5	dbc	dbc_itemeffect.SpellID	identity	slot 5: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spelltrigger_5	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcharges_5	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellppmrate_5	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellcooldown_5	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategory_5	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	spellcategorycooldown_5	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
+srv	item_template	bonding	dbc	dbc_itemsparse.Bonding	identity	84 differences (data-plan.md 3.2.1)	yes
+srv	item_template	page_text	dbc	dbc_itemsparse.PageID	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	page_language	dbc	dbc_itemsparse.LanguageID	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	page_material	dbc	dbc_itemsparse.PageMaterialID	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	start_quest	dbc	dbc_itemsparse.StartQuestID	identity	7 differences (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
+srv	item_template	lock_id	dbc	dbc_itemsparse.LockID	identity	1 difference (data-plan.md 3.2.1)	yes
+srv	item_template	material	dbc	dbc_itemsparse.Material	material_neg1	1074 raw differences, representation only (data-plan.md 3.2.1/5)	yes
+srv	item_template	sheath	dbc	dbc_itemsparse.SheatheType	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	random_property	dbc	dbc_itemsparse.RandomSelect	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	set_id	dbc	dbc_itemsparse.ItemSet	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	max_durability	dbc	dbc_itemsparse.MaxDurability	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	area_bound	dbc	dbc_itemsparse.ZoneBound1	identity	1 difference (data-plan.md 3.2.1); DB2 widens to a 2-slot ZoneBound array, vanilla's value maps to the first -- overriding evidence.tsv's spurious InstanceBound coincidence (that's map_bound's real target)	yes
+srv	item_template	map_bound	dbc	dbc_itemsparse.InstanceBound	identity	0 differences (data-plan.md 3.2.1)	yes
+srv	item_template	duration	dbc	dbc_itemsparse.DurationInInventory	identity	1 difference (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
+srv	item_template	bag_family	dbc	dbc_itemsparse.BagFamily	bag_family_mask	198 raw differences, representation only (data-plan.md 3.2.1/5)	yes
+srv	item_template	disenchant_id	server			no DB2 field; disenchanting stays server-side loot logic	yes
+srv	item_template	food_type	server			no DB2 field; pet feeding stays server-side logic	yes
+srv	item_template	min_money_loot	server			no DB2 field; money loot randomization stays server-side	yes
+srv	item_template	max_money_loot	server			no DB2 field; money loot randomization stays server-side	yes
+srv	item_template	wrapped_gift	server			no DB2 field; gift wrapping stays a server-side spell effect	yes
+srv	item_template	extra_flags	dbc	dbc_itemsparse.Flags2	identity	the second vanilla flags word; 1.15 expands to a 5-slot Flags array, overriding evidence.tsv's spurious RequiredPVPMedal coincidence	yes
+srv	item_template	other_team_entry	dbc	dbc_itemsparse.OppositeFactionItemID	identity	overriding evidence.tsv's spurious PriceVariance coincidence	yes
 srv	locales_area	Entry					
 srv	locales_area	NameLoc1					
 srv	locales_area	NameLoc2					
