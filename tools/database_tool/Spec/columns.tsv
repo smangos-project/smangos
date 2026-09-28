@@ -43,9 +43,9 @@ srv	areatrigger_scripts	condition_id
 srv	areatrigger_scripts	comments					
 srv	areatrigger_tavern	id					
 srv	areatrigger_tavern	name					
-srv	areatrigger_tavern	patch_min					
+srv	areatrigger_tavern	patch_min	drop			progression removed	yes
 srv	areatrigger_teleport	id					
-srv	areatrigger_teleport	patch					
+srv	areatrigger_teleport	patch	drop			progression removed	yes
 srv	areatrigger_teleport	name					
 srv	areatrigger_teleport	message					
 srv	areatrigger_teleport	required_level					
@@ -56,7 +56,7 @@ srv	areatrigger_teleport	target_position_y
 srv	areatrigger_teleport	target_position_z					
 srv	areatrigger_teleport	target_orientation					
 srv	areatrigger_template	id					
-srv	areatrigger_template	build					
+srv	areatrigger_template	build	drop			progression removed	yes
 srv	areatrigger_template	name					
 srv	areatrigger_template	map_id					
 srv	areatrigger_template	x					
@@ -81,7 +81,7 @@ srv	battleground_events	event1
 srv	battleground_events	event2					
 srv	battleground_events	description					
 srv	battleground_template	id					
-srv	battleground_template	patch					
+srv	battleground_template	patch	drop			progression removed	yes
 srv	battleground_template	min_players_per_team					
 srv	battleground_template	max_players_per_team					
 srv	battleground_template	min_level					
@@ -143,10 +143,10 @@ srv	creature	mana_percent
 srv	creature	movement_type					
 srv	creature	spawn_flags					
 srv	creature	visibility_mod					
-srv	creature	patch_min					
-srv	creature	patch_max					
+srv	creature	patch_min	drop			progression removed	yes
+srv	creature	patch_max	drop			progression removed	yes
 srv	creature_addon	guid					
-srv	creature_addon	patch					
+srv	creature_addon	patch	drop			progression removed	yes
 srv	creature_addon	display_id					
 srv	creature_addon	mount_display_id					
 srv	creature_addon	equipment_id					
@@ -200,8 +200,8 @@ srv	creature_charm_spells	availability
 srv	creature_charm_spells	spell_id					
 srv	creature_charm_spells	cooldown_min					
 srv	creature_charm_spells	cooldown_max					
-srv	creature_charm_spells	patch_min					
-srv	creature_charm_spells	patch_max					
+srv	creature_charm_spells	patch_min	drop			progression removed	yes
+srv	creature_charm_spells	patch_max	drop			progression removed	yes
 srv	creature_classlevelstats	class					
 srv	creature_classlevelstats	level					
 srv	creature_classlevelstats	melee_damage					
@@ -219,7 +219,7 @@ srv	creature_classlevelstats	intellect
 srv	creature_classlevelstats	spirit					
 srv	creature_classlevelstats	armor					
 srv	creature_display_info_addon	display_id					
-srv	creature_display_info_addon	build					
+srv	creature_display_info_addon	build	drop			progression removed	yes
 srv	creature_display_info_addon	bounding_radius					
 srv	creature_display_info_addon	combat_reach					
 srv	creature_display_info_addon	speed_walk					
@@ -231,8 +231,8 @@ srv	creature_equip_template	probability
 srv	creature_equip_template	item1					
 srv	creature_equip_template	item2					
 srv	creature_equip_template	item3					
-srv	creature_equip_template	patch_min					
-srv	creature_equip_template	patch_max					
+srv	creature_equip_template	patch_min	drop			progression removed	yes
+srv	creature_equip_template	patch_max	drop			progression removed	yes
 srv	creature_groups	leader_guid					
 srv	creature_groups	member_guid					
 srv	creature_groups	dist					
@@ -244,8 +244,8 @@ srv	creature_groups_entry_limit	min_count
 srv	creature_groups_entry_limit	max_count					
 srv	creature_involvedrelation	id					
 srv	creature_involvedrelation	quest					
-srv	creature_involvedrelation	patch_min					
-srv	creature_involvedrelation	patch_max					
+srv	creature_involvedrelation	patch_min	drop			progression removed	yes
+srv	creature_involvedrelation	patch_max	drop			progression removed	yes
 srv	creature_linking	guid					
 srv	creature_linking	master_guid					
 srv	creature_linking	flag					
@@ -261,8 +261,8 @@ srv	creature_loot_template	groupid
 srv	creature_loot_template	mincountOrRef					
 srv	creature_loot_template	maxcount					
 srv	creature_loot_template	condition_id					
-srv	creature_loot_template	patch_min					
-srv	creature_loot_template	patch_max					
+srv	creature_loot_template	patch_min	drop			progression removed	yes
+srv	creature_loot_template	patch_max	drop			progression removed	yes
 srv	creature_movement	id					
 srv	creature_movement	point					
 srv	creature_movement	position_x					
@@ -316,7 +316,7 @@ srv	creature_movement_template	wander_distance
 srv	creature_movement_template	script_id					
 srv	creature_movement_template	path_id					
 srv	creature_onkill_reputation	creature_id					
-srv	creature_onkill_reputation	patch					
+srv	creature_onkill_reputation	patch	drop			progression removed	yes
 srv	creature_onkill_reputation	RewOnKillRepFaction1					
 srv	creature_onkill_reputation	RewOnKillRepFaction2					
 srv	creature_onkill_reputation	MaxStanding1					
@@ -328,8 +328,8 @@ srv	creature_onkill_reputation	RewOnKillRepValue2
 srv	creature_onkill_reputation	TeamDependent					
 srv	creature_questrelation	id					
 srv	creature_questrelation	quest					
-srv	creature_questrelation	patch_min					
-srv	creature_questrelation	patch_max					
+srv	creature_questrelation	patch_min	drop			progression removed	yes
+srv	creature_questrelation	patch_max	drop			progression removed	yes
 srv	creature_spells	entry					
 srv	creature_spells	name					
 srv	creature_spells	spellId_1					
@@ -443,7 +443,7 @@ srv	creature_spells_scripts	o
 srv	creature_spells_scripts	condition_id					
 srv	creature_spells_scripts	comments					
 srv	creature_template	entry					
-srv	creature_template	patch					
+srv	creature_template	patch	drop			progression removed	yes
 srv	creature_template	name					
 srv	creature_template	subname					
 srv	creature_template	level_min					
@@ -540,8 +540,8 @@ srv	disenchant_loot_template	groupid
 srv	disenchant_loot_template	mincountOrRef					
 srv	disenchant_loot_template	maxcount					
 srv	disenchant_loot_template	condition_id					
-srv	disenchant_loot_template	patch_min					
-srv	disenchant_loot_template	patch_max					
+srv	disenchant_loot_template	patch_min	drop			progression removed	yes
+srv	disenchant_loot_template	patch_max	drop			progression removed	yes
 srv	event_scripts	id					
 srv	event_scripts	delay					
 srv	event_scripts	priority					
@@ -567,7 +567,7 @@ srv	event_scripts	comments
 srv	exploration_basexp	level					
 srv	exploration_basexp	basexp					
 srv	faction	id					
-srv	faction	build					
+srv	faction	build	drop			progression removed	yes
 srv	faction	reputation_list_id					
 srv	faction	base_rep_race_mask1					
 srv	faction	base_rep_race_mask2					
@@ -589,7 +589,7 @@ srv	faction	team
 srv	faction	name					
 srv	faction	description					
 srv	faction_template	id					
-srv	faction_template	build					
+srv	faction_template	build	drop			progression removed	yes
 srv	faction_template	faction_id					
 srv	faction_template	faction_flags					
 srv	faction_template	our_mask					
@@ -610,10 +610,10 @@ srv	fishing_loot_template	groupid
 srv	fishing_loot_template	mincountOrRef					
 srv	fishing_loot_template	maxcount					
 srv	fishing_loot_template	condition_id					
-srv	fishing_loot_template	patch_min					
-srv	fishing_loot_template	patch_max					
+srv	fishing_loot_template	patch_min	drop			progression removed	yes
+srv	fishing_loot_template	patch_max	drop			progression removed	yes
 srv	forbidden_items	entry					
-srv	forbidden_items	patch					
+srv	forbidden_items	patch	drop			progression removed	yes
 srv	forbidden_items	after_or_before					
 srv	game_event	entry					
 srv	game_event	start_time					
@@ -624,12 +624,12 @@ srv	game_event	holiday
 srv	game_event	description					
 srv	game_event	hardcoded					
 srv	game_event	disabled					
-srv	game_event	patch_min					
-srv	game_event	patch_max					
+srv	game_event	patch_min	drop			progression removed	yes
+srv	game_event	patch_max	drop			progression removed	yes
 srv	game_event_creature	guid					
 srv	game_event_creature	event					
 srv	game_event_creature_data	guid					
-srv	game_event_creature_data	patch					
+srv	game_event_creature_data	patch	drop			progression removed	yes
 srv	game_event_creature_data	entry_id					
 srv	game_event_creature_data	display_id					
 srv	game_event_creature_data	equipment_id					
@@ -645,12 +645,12 @@ srv	game_event_mail	mailTemplateId
 srv	game_event_mail	senderEntry					
 srv	game_event_quest	quest					
 srv	game_event_quest	event					
-srv	game_event_quest	patch_min					
+srv	game_event_quest	patch_min	drop			progression removed	yes
 srv	game_graveyard_zone	id					
 srv	game_graveyard_zone	ghost_zone					
 srv	game_graveyard_zone	faction					
-srv	game_graveyard_zone	patch_min					
-srv	game_graveyard_zone	patch_max					
+srv	game_graveyard_zone	patch_min	drop			progression removed	yes
+srv	game_graveyard_zone	patch_max	drop			progression removed	yes
 srv	game_tele	id					
 srv	game_tele	position_x					
 srv	game_tele	position_y					
@@ -688,8 +688,8 @@ srv	gameobject	animprogress
 srv	gameobject	state					
 srv	gameobject	spawn_flags					
 srv	gameobject	visibility_mod					
-srv	gameobject	patch_min					
-srv	gameobject	patch_max					
+srv	gameobject	patch_min	drop			progression removed	yes
+srv	gameobject	patch_max	drop			progression removed	yes
 srv	gameobject_battleground	guid					
 srv	gameobject_battleground	event1					
 srv	gameobject_battleground	event2					
@@ -702,8 +702,8 @@ srv	gameobject_display_info_addon	max_y
 srv	gameobject_display_info_addon	max_z					
 srv	gameobject_involvedrelation	id					
 srv	gameobject_involvedrelation	quest					
-srv	gameobject_involvedrelation	patch_min					
-srv	gameobject_involvedrelation	patch_max					
+srv	gameobject_involvedrelation	patch_min	drop			progression removed	yes
+srv	gameobject_involvedrelation	patch_max	drop			progression removed	yes
 srv	gameobject_loot_template	entry					
 srv	gameobject_loot_template	item					
 srv	gameobject_loot_template	ChanceOrQuestChance					
@@ -711,12 +711,12 @@ srv	gameobject_loot_template	groupid
 srv	gameobject_loot_template	mincountOrRef					
 srv	gameobject_loot_template	maxcount					
 srv	gameobject_loot_template	condition_id					
-srv	gameobject_loot_template	patch_min					
-srv	gameobject_loot_template	patch_max					
+srv	gameobject_loot_template	patch_min	drop			progression removed	yes
+srv	gameobject_loot_template	patch_max	drop			progression removed	yes
 srv	gameobject_questrelation	id					
 srv	gameobject_questrelation	quest					
-srv	gameobject_questrelation	patch_min					
-srv	gameobject_questrelation	patch_max					
+srv	gameobject_questrelation	patch_min	drop			progression removed	yes
+srv	gameobject_questrelation	patch_max	drop			progression removed	yes
 srv	gameobject_requirement	guid					
 srv	gameobject_requirement	reqType					
 srv	gameobject_requirement	reqGuid					
@@ -743,7 +743,7 @@ srv	gameobject_scripts	o
 srv	gameobject_scripts	condition_id					
 srv	gameobject_scripts	comments					
 srv	gameobject_template	entry					
-srv	gameobject_template	patch					
+srv	gameobject_template	patch	drop			progression removed	yes
 srv	gameobject_template	type					
 srv	gameobject_template	displayId					
 srv	gameobject_template	name					
@@ -851,8 +851,8 @@ srv	item_display_info	icon
 srv	item_enchantment_template	entry					
 srv	item_enchantment_template	ench					
 srv	item_enchantment_template	chance					
-srv	item_enchantment_template	patch_min					
-srv	item_enchantment_template	patch_max					
+srv	item_enchantment_template	patch_min	drop			progression removed	yes
+srv	item_enchantment_template	patch_max	drop			progression removed	yes
 srv	item_loot_template	entry					
 srv	item_loot_template	item					
 srv	item_loot_template	ChanceOrQuestChance					
@@ -860,13 +860,13 @@ srv	item_loot_template	groupid
 srv	item_loot_template	mincountOrRef					
 srv	item_loot_template	maxcount					
 srv	item_loot_template	condition_id					
-srv	item_loot_template	patch_min					
-srv	item_loot_template	patch_max					
+srv	item_loot_template	patch_min	drop			progression removed	yes
+srv	item_loot_template	patch_max	drop			progression removed	yes
 srv	item_required_target	entry					
 srv	item_required_target	type					
 srv	item_required_target	target_entry					
 srv	item_template	entry					
-srv	item_template	patch					
+srv	item_template	patch	drop			progression removed	yes
 srv	item_template	class					
 srv	item_template	subclass					
 srv	item_template	name					
@@ -1242,8 +1242,8 @@ srv	mail_loot_template	groupid
 srv	mail_loot_template	mincountOrRef					
 srv	mail_loot_template	maxcount					
 srv	mail_loot_template	condition_id					
-srv	mail_loot_template	patch_min					
-srv	mail_loot_template	patch_max					
+srv	mail_loot_template	patch_min	drop			progression removed	yes
+srv	mail_loot_template	patch_max	drop			progression removed	yes
 srv	mail_text_template	entry					
 srv	mail_text_template	content_default					
 srv	mail_text_template	content_loc1					
@@ -1266,7 +1266,7 @@ srv	mangos_string	content_loc8
 srv	map_loot_disabled	map_id					
 srv	map_loot_disabled	comment					
 srv	map_template	entry					
-srv	map_template	patch					
+srv	map_template	patch	drop			progression removed	yes
 srv	map_template	parent					
 srv	map_template	map_type					
 srv	map_template	linked_zone					
@@ -1356,7 +1356,7 @@ srv	pet_name_generation	word
 srv	pet_name_generation	entry					
 srv	pet_name_generation	half					
 srv	pet_spell_data	entry					
-srv	pet_spell_data	build					
+srv	pet_spell_data	build	drop			progression removed	yes
 srv	pet_spell_data	spell_id1					
 srv	pet_spell_data	spell_id2					
 srv	pet_spell_data	spell_id3					
@@ -1366,8 +1366,8 @@ srv	petcreateinfo_spell	spell1
 srv	petcreateinfo_spell	spell2					
 srv	petcreateinfo_spell	spell3					
 srv	petcreateinfo_spell	spell4					
-srv	petcreateinfo_spell	patch_min					
-srv	petcreateinfo_spell	patch_max					
+srv	petcreateinfo_spell	patch_min	drop			progression removed	yes
+srv	petcreateinfo_spell	patch_max	drop			progression removed	yes
 srv	pickpocketing_loot_template	entry					
 srv	pickpocketing_loot_template	item					
 srv	pickpocketing_loot_template	ChanceOrQuestChance					
@@ -1375,8 +1375,8 @@ srv	pickpocketing_loot_template	groupid
 srv	pickpocketing_loot_template	mincountOrRef					
 srv	pickpocketing_loot_template	maxcount					
 srv	pickpocketing_loot_template	condition_id					
-srv	pickpocketing_loot_template	patch_min					
-srv	pickpocketing_loot_template	patch_max					
+srv	pickpocketing_loot_template	patch_min	drop			progression removed	yes
+srv	pickpocketing_loot_template	patch_max	drop			progression removed	yes
 srv	player_classlevelstats	class					
 srv	player_classlevelstats	level					
 srv	player_classlevelstats	basehp					
@@ -1463,29 +1463,29 @@ srv	pool_creature	pool_entry
 srv	pool_creature	chance					
 srv	pool_creature	description					
 srv	pool_creature	flags					
-srv	pool_creature	patch_min					
-srv	pool_creature	patch_max					
+srv	pool_creature	patch_min	drop			progression removed	yes
+srv	pool_creature	patch_max	drop			progression removed	yes
 srv	pool_creature_template	id					
 srv	pool_creature_template	pool_entry					
 srv	pool_creature_template	chance					
 srv	pool_creature_template	description					
 srv	pool_creature_template	flags					
-srv	pool_creature_template	patch_min					
-srv	pool_creature_template	patch_max					
+srv	pool_creature_template	patch_min	drop			progression removed	yes
+srv	pool_creature_template	patch_max	drop			progression removed	yes
 srv	pool_gameobject	guid					
 srv	pool_gameobject	pool_entry					
 srv	pool_gameobject	chance					
 srv	pool_gameobject	description					
 srv	pool_gameobject	flags					
-srv	pool_gameobject	patch_min					
-srv	pool_gameobject	patch_max					
+srv	pool_gameobject	patch_min	drop			progression removed	yes
+srv	pool_gameobject	patch_max	drop			progression removed	yes
 srv	pool_gameobject_template	id					
 srv	pool_gameobject_template	pool_entry					
 srv	pool_gameobject_template	chance					
 srv	pool_gameobject_template	description					
 srv	pool_gameobject_template	flags					
-srv	pool_gameobject_template	patch_min					
-srv	pool_gameobject_template	patch_max					
+srv	pool_gameobject_template	patch_min	drop			progression removed	yes
+srv	pool_gameobject_template	patch_max	drop			progression removed	yes
 srv	pool_pool	pool_id					
 srv	pool_pool	mother_pool					
 srv	pool_pool	chance					
@@ -1496,8 +1496,8 @@ srv	pool_template	max_limit
 srv	pool_template	description					
 srv	pool_template	flags					
 srv	pool_template	instance					
-srv	pool_template	patch_min					
-srv	pool_template	patch_max					
+srv	pool_template	patch_min	drop			progression removed	yes
+srv	pool_template	patch_max	drop			progression removed	yes
 srv	quest_end_scripts	id					
 srv	quest_end_scripts	delay					
 srv	quest_end_scripts	priority					
@@ -1556,7 +1556,7 @@ srv	quest_start_scripts	o
 srv	quest_start_scripts	condition_id					
 srv	quest_start_scripts	comments					
 srv	quest_template	entry					
-srv	quest_template	patch					
+srv	quest_template	patch	drop			progression removed	yes
 srv	quest_template	Method					
 srv	quest_template	ZoneOrSort					
 srv	quest_template	MinLevel					
@@ -1694,8 +1694,8 @@ srv	reference_loot_template	groupid
 srv	reference_loot_template	mincountOrRef					
 srv	reference_loot_template	maxcount					
 srv	reference_loot_template	condition_id					
-srv	reference_loot_template	patch_min					
-srv	reference_loot_template	patch_max					
+srv	reference_loot_template	patch_min	drop			progression removed	yes
+srv	reference_loot_template	patch_max	drop			progression removed	yes
 srv	reputation_reward_rate	faction					
 srv	reputation_reward_rate	quest_rate					
 srv	reputation_reward_rate	creature_rate					
@@ -1744,7 +1744,7 @@ srv	scripted_event_id	script_name
 srv	skill_fishing_base_level	entry					
 srv	skill_fishing_base_level	skill					
 srv	skill_line_ability	id					
-srv	skill_line_ability	build					
+srv	skill_line_ability	build	drop			progression removed	yes
 srv	skill_line_ability	skill_id					
 srv	skill_line_ability	spell_id					
 srv	skill_line_ability	race_mask					
@@ -1762,8 +1762,8 @@ srv	skinning_loot_template	groupid
 srv	skinning_loot_template	mincountOrRef					
 srv	skinning_loot_template	maxcount					
 srv	skinning_loot_template	condition_id					
-srv	skinning_loot_template	patch_min					
-srv	skinning_loot_template	patch_max					
+srv	skinning_loot_template	patch_min	drop			progression removed	yes
+srv	skinning_loot_template	patch_max	drop			progression removed	yes
 srv	sound_entries	id					
 srv	sound_entries	name					
 srv	spell_area	spell					
@@ -1829,7 +1829,7 @@ srv	spell_group	spell_id
 srv	spell_group	build_min					
 srv	spell_group	build_max					
 srv	spell_group_stack_rules	group_id					
-srv	spell_group_stack_rules	build					
+srv	spell_group_stack_rules	build	drop			progression removed	yes
 srv	spell_group_stack_rules	stack_rule					
 srv	spell_learn_spell	entry					
 srv	spell_learn_spell	SpellID					
@@ -1930,7 +1930,7 @@ srv	spell_target_position	target_orientation
 srv	spell_target_position	build_min					
 srv	spell_target_position	build_max					
 srv	spell_template	entry					
-srv	spell_template	build					
+srv	spell_template	build	drop			progression removed	yes
 srv	spell_template	school					
 srv	spell_template	category					
 srv	spell_template	castUI					
@@ -2087,7 +2087,7 @@ srv	spell_threat	inverse_effect_mask
 srv	spell_threat	build_min					
 srv	spell_threat	build_max					
 srv	taxi_nodes	id					
-srv	taxi_nodes	build					
+srv	taxi_nodes	build	drop			progression removed	yes
 srv	taxi_nodes	map_id					
 srv	taxi_nodes	x					
 srv	taxi_nodes	y					
@@ -2102,7 +2102,7 @@ srv	taxi_path_transitions	out_node
 srv	taxi_path_transitions	comment					
 srv	taxi_path_transitions	build_min					
 srv	transports	entry					
-srv	transports	build					
+srv	transports	build	drop			progression removed	yes
 srv	transports	name					
 srv	transports	period					
 srv	variables	index					
@@ -2139,23 +2139,23 @@ vdbc	areapoi	ContinentID
 vdbc	areapoi	Flags					
 vdbc	areapoi	AreaID					
 vdbc	areapoi	Name_lang					
-vdbc	areapoi	Name_lang_1					
-vdbc	areapoi	Name_lang_2					
-vdbc	areapoi	Name_lang_3					
-vdbc	areapoi	Name_lang_4					
-vdbc	areapoi	Name_lang_5					
-vdbc	areapoi	Name_lang_6					
-vdbc	areapoi	Name_lang_7					
-vdbc	areapoi	Name_lang_mask					
+vdbc	areapoi	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	areapoi	Description_lang					
-vdbc	areapoi	Description_lang_1					
-vdbc	areapoi	Description_lang_2					
-vdbc	areapoi	Description_lang_3					
-vdbc	areapoi	Description_lang_4					
-vdbc	areapoi	Description_lang_5					
-vdbc	areapoi	Description_lang_6					
-vdbc	areapoi	Description_lang_7					
-vdbc	areapoi	Description_lang_mask					
+vdbc	areapoi	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areapoi	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	areapoi	WorldStateID					
 vdbc	areatable	ID					
 vdbc	areatable	ContinentID					
@@ -2169,14 +2169,14 @@ vdbc	areatable	ZoneMusic
 vdbc	areatable	IntroSound					
 vdbc	areatable	ExplorationLevel					
 vdbc	areatable	AreaName_lang					
-vdbc	areatable	AreaName_lang_1					
-vdbc	areatable	AreaName_lang_2					
-vdbc	areatable	AreaName_lang_3					
-vdbc	areatable	AreaName_lang_4					
-vdbc	areatable	AreaName_lang_5					
-vdbc	areatable	AreaName_lang_6					
-vdbc	areatable	AreaName_lang_7					
-vdbc	areatable	AreaName_lang_mask					
+vdbc	areatable	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	areatable	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	areatable	FactionGroupMask					
 vdbc	areatable	LiquidTypeID1					
 vdbc	areatable	LiquidTypeID2					
@@ -2192,47 +2192,47 @@ vdbc	areatrigger	Box_length
 vdbc	areatrigger	Box_width					
 vdbc	areatrigger	Box_height					
 vdbc	areatrigger	Box_yaw					
-vdbc	attackanimkits	ID					
-vdbc	attackanimkits	ItemSubclassID					
-vdbc	attackanimkits	AnimTypeID					
-vdbc	attackanimkits	AnimFrequency					
-vdbc	attackanimkits	WhichHand					
-vdbc	attackanimtypes	AnimID					
-vdbc	attackanimtypes	AnimName					
+vdbc	attackanimkits	ID	drop			not imported	yes
+vdbc	attackanimkits	ItemSubclassID	drop			not imported	yes
+vdbc	attackanimkits	AnimTypeID	drop			not imported	yes
+vdbc	attackanimkits	AnimFrequency	drop			not imported	yes
+vdbc	attackanimkits	WhichHand	drop			not imported	yes
+vdbc	attackanimtypes	AnimID	drop			not imported	yes
+vdbc	attackanimtypes	AnimName	drop			not imported	yes
 vdbc	auctionhouse	ID					
 vdbc	auctionhouse	FactionID					
 vdbc	auctionhouse	DepositRate					
 vdbc	auctionhouse	ConsignmentRate					
 vdbc	auctionhouse	Name_lang					
-vdbc	auctionhouse	Name_lang_1					
-vdbc	auctionhouse	Name_lang_2					
-vdbc	auctionhouse	Name_lang_3					
-vdbc	auctionhouse	Name_lang_4					
-vdbc	auctionhouse	Name_lang_5					
-vdbc	auctionhouse	Name_lang_6					
-vdbc	auctionhouse	Name_lang_7					
-vdbc	auctionhouse	Name_lang_mask					
+vdbc	auctionhouse	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	auctionhouse	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	bankbagslotprices	ID					
 vdbc	bankbagslotprices	Cost					
-vdbc	camerashakes	ID					
-vdbc	camerashakes	ShakeType					
-vdbc	camerashakes	Direction					
-vdbc	camerashakes	Amplitude					
-vdbc	camerashakes	Frequency					
-vdbc	camerashakes	Duration					
-vdbc	camerashakes	Phase					
-vdbc	camerashakes	Coefficient					
+vdbc	camerashakes	ID	drop			not imported	yes
+vdbc	camerashakes	ShakeType	drop			not imported	yes
+vdbc	camerashakes	Direction	drop			not imported	yes
+vdbc	camerashakes	Amplitude	drop			not imported	yes
+vdbc	camerashakes	Frequency	drop			not imported	yes
+vdbc	camerashakes	Duration	drop			not imported	yes
+vdbc	camerashakes	Phase	drop			not imported	yes
+vdbc	camerashakes	Coefficient	drop			not imported	yes
 vdbc	cfg_categories	Field_0_10_0_3892_000					
 vdbc	cfg_categories	Region_ID					
 vdbc	cfg_categories	Name_lang					
-vdbc	cfg_categories	Name_lang_1					
-vdbc	cfg_categories	Name_lang_2					
-vdbc	cfg_categories	Name_lang_3					
-vdbc	cfg_categories	Name_lang_4					
-vdbc	cfg_categories	Name_lang_5					
-vdbc	cfg_categories	Name_lang_6					
-vdbc	cfg_categories	Name_lang_7					
-vdbc	cfg_categories	Name_lang_mask					
+vdbc	cfg_categories	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	cfg_categories	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	cfg_configs	ID					
 vdbc	cfg_configs	RealmType					
 vdbc	cfg_configs	PlayerKillingAllowed					
@@ -2254,14 +2254,14 @@ vdbc	charhairgeosets	SexID
 vdbc	charhairgeosets	VariationID					
 vdbc	charhairgeosets	GeosetID					
 vdbc	charhairgeosets	Showscalp					
-vdbc	charhairtextures	ID					
-vdbc	charhairtextures	Field_0_5_3_3368_001_race					
-vdbc	charhairtextures	Field_0_5_3_3368_002_gender					
-vdbc	charhairtextures	Field_0_5_3_3368_003					
-vdbc	charhairtextures	Field_0_5_3_3368_004_mayberacemask					
-vdbc	charhairtextures	Field_0_5_3_3368_005_the_x_in_hair_xy_blp					
-vdbc	charhairtextures	Field_0_5_3_3368_006					
-vdbc	charhairtextures	Field_0_5_3_3368_007					
+vdbc	charhairtextures	ID	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_001_race	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_002_gender	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_003	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_004_mayberacemask	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_005_the_x_in_hair_xy_blp	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_006	drop			not imported	yes
+vdbc	charhairtextures	Field_0_5_3_3368_007	drop			not imported	yes
 vdbc	charsections	ID					
 vdbc	charsections	RaceID					
 vdbc	charsections	SexID					
@@ -2313,33 +2313,33 @@ vdbc	charstartoutfit	InventoryType9
 vdbc	charstartoutfit	InventoryType10					
 vdbc	charstartoutfit	InventoryType11					
 vdbc	charstartoutfit	InventoryType12					
-vdbc	charvariations	RaceID					
-vdbc	charvariations	SexID					
-vdbc	charvariations	TextureHoldLayer1					
-vdbc	charvariations	TextureHoldLayer2					
-vdbc	charvariations	TextureHoldLayer3					
-vdbc	charvariations	TextureHoldLayer4					
+vdbc	charvariations	RaceID	drop			not imported	yes
+vdbc	charvariations	SexID	drop			not imported	yes
+vdbc	charvariations	TextureHoldLayer1	drop			not imported	yes
+vdbc	charvariations	TextureHoldLayer2	drop			not imported	yes
+vdbc	charvariations	TextureHoldLayer3	drop			not imported	yes
+vdbc	charvariations	TextureHoldLayer4	drop			not imported	yes
 vdbc	chatchannels	ID					
 vdbc	chatchannels	Flags					
 vdbc	chatchannels	FactionGroup					
 vdbc	chatchannels	Name_lang					
-vdbc	chatchannels	Name_lang_1					
-vdbc	chatchannels	Name_lang_2					
-vdbc	chatchannels	Name_lang_3					
-vdbc	chatchannels	Name_lang_4					
-vdbc	chatchannels	Name_lang_5					
-vdbc	chatchannels	Name_lang_6					
-vdbc	chatchannels	Name_lang_7					
-vdbc	chatchannels	Name_lang_mask					
+vdbc	chatchannels	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	chatchannels	Shortcut_lang					
-vdbc	chatchannels	Shortcut_lang_1					
-vdbc	chatchannels	Shortcut_lang_2					
-vdbc	chatchannels	Shortcut_lang_3					
-vdbc	chatchannels	Shortcut_lang_4					
-vdbc	chatchannels	Shortcut_lang_5					
-vdbc	chatchannels	Shortcut_lang_6					
-vdbc	chatchannels	Shortcut_lang_7					
-vdbc	chatchannels	Shortcut_lang_mask					
+vdbc	chatchannels	Shortcut_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chatchannels	Shortcut_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	chatprofanity	ID					
 vdbc	chatprofanity	Text					
 vdbc	chrclasses	ID					
@@ -2348,14 +2348,14 @@ vdbc	chrclasses	DamageBonusStat
 vdbc	chrclasses	DisplayPower					
 vdbc	chrclasses	PetNameToken					
 vdbc	chrclasses	Name_lang					
-vdbc	chrclasses	Name_lang_1					
-vdbc	chrclasses	Name_lang_2					
-vdbc	chrclasses	Name_lang_3					
-vdbc	chrclasses	Name_lang_4					
-vdbc	chrclasses	Name_lang_5					
-vdbc	chrclasses	Name_lang_6					
-vdbc	chrclasses	Name_lang_7					
-vdbc	chrclasses	Name_lang_mask					
+vdbc	chrclasses	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrclasses	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	chrclasses	Filename					
 vdbc	chrclasses	SpellClassSet					
 vdbc	chrclasses	Flags					
@@ -2377,14 +2377,14 @@ vdbc	chrraces	StartingTaxiNodes
 vdbc	chrraces	ClientFileString					
 vdbc	chrraces	CinematicSequenceID					
 vdbc	chrraces	Name_lang					
-vdbc	chrraces	Name_lang_1					
-vdbc	chrraces	Name_lang_2					
-vdbc	chrraces	Name_lang_3					
-vdbc	chrraces	Name_lang_4					
-vdbc	chrraces	Name_lang_5					
-vdbc	chrraces	Name_lang_6					
-vdbc	chrraces	Name_lang_7					
-vdbc	chrraces	Name_lang_mask					
+vdbc	chrraces	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	chrraces	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	chrraces	FacialHairCustomization1					
 vdbc	chrraces	FacialHairCustomization2					
 vdbc	chrraces	HairCustomization					
@@ -2445,14 +2445,14 @@ vdbc	creaturefamily	SkillLine1
 vdbc	creaturefamily	SkillLine2					
 vdbc	creaturefamily	PetFoodMask					
 vdbc	creaturefamily	Name_lang					
-vdbc	creaturefamily	Name_lang_1					
-vdbc	creaturefamily	Name_lang_2					
-vdbc	creaturefamily	Name_lang_3					
-vdbc	creaturefamily	Name_lang_4					
-vdbc	creaturefamily	Name_lang_5					
-vdbc	creaturefamily	Name_lang_6					
-vdbc	creaturefamily	Name_lang_7					
-vdbc	creaturefamily	Name_lang_mask					
+vdbc	creaturefamily	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturefamily	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	creaturefamily	IconFile					
 vdbc	creaturemodeldata	ID					
 vdbc	creaturemodeldata	Flags					
@@ -2511,14 +2511,14 @@ vdbc	creaturespelldata	Availability3
 vdbc	creaturespelldata	Availability4					
 vdbc	creaturetype	ID					
 vdbc	creaturetype	Name_lang					
-vdbc	creaturetype	Name_lang_1					
-vdbc	creaturetype	Name_lang_2					
-vdbc	creaturetype	Name_lang_3					
-vdbc	creaturetype	Name_lang_4					
-vdbc	creaturetype	Name_lang_5					
-vdbc	creaturetype	Name_lang_6					
-vdbc	creaturetype	Name_lang_7					
-vdbc	creaturetype	Name_lang_mask					
+vdbc	creaturetype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	creaturetype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	creaturetype	Flags					
 vdbc	deaththudlookups	ID					
 vdbc	deaththudlookups	SizeClass					
@@ -2585,14 +2585,14 @@ vdbc	emotestext	EmoteText15
 vdbc	emotestext	EmoteText16					
 vdbc	emotestextdata	ID					
 vdbc	emotestextdata	Text_lang					
-vdbc	emotestextdata	Text_lang_1					
-vdbc	emotestextdata	Text_lang_2					
-vdbc	emotestextdata	Text_lang_3					
-vdbc	emotestextdata	Text_lang_4					
-vdbc	emotestextdata	Text_lang_5					
-vdbc	emotestextdata	Text_lang_6					
-vdbc	emotestextdata	Text_lang_7					
-vdbc	emotestextdata	Text_lang_mask					
+vdbc	emotestextdata	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	emotestextdata	Text_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	emotestextsound	ID					
 vdbc	emotestextsound	EmotesTextID					
 vdbc	emotestextsound	RaceID					
@@ -2607,14 +2607,14 @@ vdbc	exhaustion	Factor
 vdbc	exhaustion	OutdoorHours					
 vdbc	exhaustion	InnHours					
 vdbc	exhaustion	Name_lang					
-vdbc	exhaustion	Name_lang_1					
-vdbc	exhaustion	Name_lang_2					
-vdbc	exhaustion	Name_lang_3					
-vdbc	exhaustion	Name_lang_4					
-vdbc	exhaustion	Name_lang_5					
-vdbc	exhaustion	Name_lang_6					
-vdbc	exhaustion	Name_lang_7					
-vdbc	exhaustion	Name_lang_mask					
+vdbc	exhaustion	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	exhaustion	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	exhaustion	Threshold					
 vdbc	faction	ID					
 vdbc	faction	ReputationIndex					
@@ -2636,35 +2636,35 @@ vdbc	faction	ReputationFlags3
 vdbc	faction	ReputationFlags4					
 vdbc	faction	ParentFactionID					
 vdbc	faction	Name_lang					
-vdbc	faction	Name_lang_1					
-vdbc	faction	Name_lang_2					
-vdbc	faction	Name_lang_3					
-vdbc	faction	Name_lang_4					
-vdbc	faction	Name_lang_5					
-vdbc	faction	Name_lang_6					
-vdbc	faction	Name_lang_7					
-vdbc	faction	Name_lang_mask					
+vdbc	faction	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	faction	Description_lang					
-vdbc	faction	Description_lang_1					
-vdbc	faction	Description_lang_2					
-vdbc	faction	Description_lang_3					
-vdbc	faction	Description_lang_4					
-vdbc	faction	Description_lang_5					
-vdbc	faction	Description_lang_6					
-vdbc	faction	Description_lang_7					
-vdbc	faction	Description_lang_mask					
+vdbc	faction	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	faction	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	factiongroup	ID					
 vdbc	factiongroup	MaskID					
 vdbc	factiongroup	InternalName					
 vdbc	factiongroup	Name_lang					
-vdbc	factiongroup	Name_lang_1					
-vdbc	factiongroup	Name_lang_2					
-vdbc	factiongroup	Name_lang_3					
-vdbc	factiongroup	Name_lang_4					
-vdbc	factiongroup	Name_lang_5					
-vdbc	factiongroup	Name_lang_6					
-vdbc	factiongroup	Name_lang_7					
-vdbc	factiongroup	Name_lang_mask					
+vdbc	factiongroup	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	factiongroup	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	factiontemplate	ID					
 vdbc	factiontemplate	Faction					
 vdbc	factiontemplate	Flags					
@@ -2708,26 +2708,26 @@ vdbc	gameobjectdisplayinfo	Sound9
 vdbc	gameobjectdisplayinfo	Sound10					
 vdbc	gametips	ID					
 vdbc	gametips	Text_lang					
-vdbc	gametips	Text_lang_1					
-vdbc	gametips	Text_lang_2					
-vdbc	gametips	Text_lang_3					
-vdbc	gametips	Text_lang_4					
-vdbc	gametips	Text_lang_5					
-vdbc	gametips	Text_lang_6					
-vdbc	gametips	Text_lang_7					
-vdbc	gametips	Text_lang_mask					
+vdbc	gametips	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gametips	Text_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	gmsurveycurrentsurvey	LANGID					
 vdbc	gmsurveycurrentsurvey	GMSURVEY_ID					
 vdbc	gmsurveyquestions	ID					
 vdbc	gmsurveyquestions	Question_lang					
-vdbc	gmsurveyquestions	Question_lang_1					
-vdbc	gmsurveyquestions	Question_lang_2					
-vdbc	gmsurveyquestions	Question_lang_3					
-vdbc	gmsurveyquestions	Question_lang_4					
-vdbc	gmsurveyquestions	Question_lang_5					
-vdbc	gmsurveyquestions	Question_lang_6					
-vdbc	gmsurveyquestions	Question_lang_7					
-vdbc	gmsurveyquestions	Question_lang_mask					
+vdbc	gmsurveyquestions	Question_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	gmsurveyquestions	Question_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	gmsurveysurveys	ID					
 vdbc	gmsurveysurveys	Q1					
 vdbc	gmsurveysurveys	Q2					
@@ -2739,16 +2739,16 @@ vdbc	gmsurveysurveys	Q7
 vdbc	gmsurveysurveys	Q8					
 vdbc	gmsurveysurveys	Q9					
 vdbc	gmsurveysurveys	Q10					
-vdbc	gmticketcategory	ID					
-vdbc	gmticketcategory	Category_lang					
-vdbc	gmticketcategory	Category_lang_1					
-vdbc	gmticketcategory	Category_lang_2					
-vdbc	gmticketcategory	Category_lang_3					
-vdbc	gmticketcategory	Category_lang_4					
-vdbc	gmticketcategory	Category_lang_5					
-vdbc	gmticketcategory	Category_lang_6					
-vdbc	gmticketcategory	Category_lang_7					
-vdbc	gmticketcategory	Category_lang_mask					
+vdbc	gmticketcategory	ID	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_1	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_2	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_3	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_4	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_5	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_6	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_7	drop			not imported	yes
+vdbc	gmticketcategory	Category_lang_mask	drop			not imported	yes
 vdbc	groundeffectdoodad	ID					
 vdbc	groundeffectdoodad	DoodadIdTag					
 vdbc	groundeffectdoodad	Doodadpath					
@@ -2759,34 +2759,34 @@ vdbc	groundeffecttexture	DoodadID3
 vdbc	groundeffecttexture	DoodadID4					
 vdbc	groundeffecttexture	Density					
 vdbc	groundeffecttexture	Sound					
-vdbc	helmetgeosetvisdata	ID					
-vdbc	helmetgeosetvisdata	HideGeoset1					
-vdbc	helmetgeosetvisdata	HideGeoset2					
-vdbc	helmetgeosetvisdata	HideGeoset3					
-vdbc	helmetgeosetvisdata	HideGeoset4					
-vdbc	helmetgeosetvisdata	HideGeoset5					
+vdbc	helmetgeosetvisdata	ID	drop			not imported	yes
+vdbc	helmetgeosetvisdata	HideGeoset1	drop			not imported	yes
+vdbc	helmetgeosetvisdata	HideGeoset2	drop			not imported	yes
+vdbc	helmetgeosetvisdata	HideGeoset3	drop			not imported	yes
+vdbc	helmetgeosetvisdata	HideGeoset4	drop			not imported	yes
+vdbc	helmetgeosetvisdata	HideGeoset5	drop			not imported	yes
 vdbc	itembagfamily	ID					
 vdbc	itembagfamily	Name_lang					
-vdbc	itembagfamily	Name_lang_1					
-vdbc	itembagfamily	Name_lang_2					
-vdbc	itembagfamily	Name_lang_3					
-vdbc	itembagfamily	Name_lang_4					
-vdbc	itembagfamily	Name_lang_5					
-vdbc	itembagfamily	Name_lang_6					
-vdbc	itembagfamily	Name_lang_7					
-vdbc	itembagfamily	Name_lang_mask					
+vdbc	itembagfamily	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itembagfamily	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemclass	ClassID					
 vdbc	itemclass	SubclassMapID					
 vdbc	itemclass	Flags					
 vdbc	itemclass	ClassName_lang					
-vdbc	itemclass	ClassName_lang_1					
-vdbc	itemclass	ClassName_lang_2					
-vdbc	itemclass	ClassName_lang_3					
-vdbc	itemclass	ClassName_lang_4					
-vdbc	itemclass	ClassName_lang_5					
-vdbc	itemclass	ClassName_lang_6					
-vdbc	itemclass	ClassName_lang_7					
-vdbc	itemclass	ClassName_lang_mask					
+vdbc	itemclass	ClassName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemclass	ClassName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemdisplayinfo	ID					
 vdbc	itemdisplayinfo	ModelName1					
 vdbc	itemdisplayinfo	ModelName2					
@@ -2817,14 +2817,14 @@ vdbc	itemgroupsounds	Sound3
 vdbc	itemgroupsounds	Sound4					
 vdbc	itempetfood	ID					
 vdbc	itempetfood	Name_lang					
-vdbc	itempetfood	Name_lang_1					
-vdbc	itempetfood	Name_lang_2					
-vdbc	itempetfood	Name_lang_3					
-vdbc	itempetfood	Name_lang_4					
-vdbc	itempetfood	Name_lang_5					
-vdbc	itempetfood	Name_lang_6					
-vdbc	itempetfood	Name_lang_7					
-vdbc	itempetfood	Name_lang_mask					
+vdbc	itempetfood	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itempetfood	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemrandomproperties	ID					
 vdbc	itemrandomproperties	Name					
 vdbc	itemrandomproperties	Enchantment1					
@@ -2833,24 +2833,24 @@ vdbc	itemrandomproperties	Enchantment3
 vdbc	itemrandomproperties	Enchantment4					
 vdbc	itemrandomproperties	Enchantment5					
 vdbc	itemrandomproperties	Name_lang					
-vdbc	itemrandomproperties	Name_lang_1					
-vdbc	itemrandomproperties	Name_lang_2					
-vdbc	itemrandomproperties	Name_lang_3					
-vdbc	itemrandomproperties	Name_lang_4					
-vdbc	itemrandomproperties	Name_lang_5					
-vdbc	itemrandomproperties	Name_lang_6					
-vdbc	itemrandomproperties	Name_lang_7					
-vdbc	itemrandomproperties	Name_lang_mask					
+vdbc	itemrandomproperties	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemrandomproperties	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemset	ID					
 vdbc	itemset	Name_lang					
-vdbc	itemset	Name_lang_1					
-vdbc	itemset	Name_lang_2					
-vdbc	itemset	Name_lang_3					
-vdbc	itemset	Name_lang_4					
-vdbc	itemset	Name_lang_5					
-vdbc	itemset	Name_lang_6					
-vdbc	itemset	Name_lang_7					
-vdbc	itemset	Name_lang_mask					
+vdbc	itemset	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemset	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemset	ItemID1					
 vdbc	itemset	ItemID2					
 vdbc	itemset	ItemID3					
@@ -2897,36 +2897,36 @@ vdbc	itemsubclass	WeaponReadySeq
 vdbc	itemsubclass	WeaponAttackSeq					
 vdbc	itemsubclass	WeaponSwingSize					
 vdbc	itemsubclass	DisplayName_lang					
-vdbc	itemsubclass	DisplayName_lang_1					
-vdbc	itemsubclass	DisplayName_lang_2					
-vdbc	itemsubclass	DisplayName_lang_3					
-vdbc	itemsubclass	DisplayName_lang_4					
-vdbc	itemsubclass	DisplayName_lang_5					
-vdbc	itemsubclass	DisplayName_lang_6					
-vdbc	itemsubclass	DisplayName_lang_7					
-vdbc	itemsubclass	DisplayName_lang_mask					
+vdbc	itemsubclass	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemsubclass	VerboseName_lang					
-vdbc	itemsubclass	VerboseName_lang_1					
-vdbc	itemsubclass	VerboseName_lang_2					
-vdbc	itemsubclass	VerboseName_lang_3					
-vdbc	itemsubclass	VerboseName_lang_4					
-vdbc	itemsubclass	VerboseName_lang_5					
-vdbc	itemsubclass	VerboseName_lang_6					
-vdbc	itemsubclass	VerboseName_lang_7					
-vdbc	itemsubclass	VerboseName_lang_mask					
+vdbc	itemsubclass	VerboseName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclass	VerboseName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemsubclassmask	ClassID					
 vdbc	itemsubclassmask	Mask					
 vdbc	itemsubclassmask	Name_lang					
-vdbc	itemsubclassmask	Name_lang_1					
-vdbc	itemsubclassmask	Name_lang_2					
-vdbc	itemsubclassmask	Name_lang_3					
-vdbc	itemsubclassmask	Name_lang_4					
-vdbc	itemsubclassmask	Name_lang_5					
-vdbc	itemsubclassmask	Name_lang_6					
-vdbc	itemsubclassmask	Name_lang_7					
-vdbc	itemsubclassmask	Name_lang_mask					
-vdbc	itemvisualeffects	ID					
-vdbc	itemvisualeffects	Model					
+vdbc	itemsubclassmask	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	itemsubclassmask	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
+vdbc	itemvisualeffects	ID	drop			not imported	yes
+vdbc	itemvisualeffects	Model	drop			not imported	yes
 vdbc	itemvisuals	ID					
 vdbc	itemvisuals	Slot1					
 vdbc	itemvisuals	Slot2					
@@ -2935,27 +2935,27 @@ vdbc	itemvisuals	Slot4
 vdbc	itemvisuals	Slot5					
 vdbc	languages	ID					
 vdbc	languages	Name_lang					
-vdbc	languages	Name_lang_1					
-vdbc	languages	Name_lang_2					
-vdbc	languages	Name_lang_3					
-vdbc	languages	Name_lang_4					
-vdbc	languages	Name_lang_5					
-vdbc	languages	Name_lang_6					
-vdbc	languages	Name_lang_7					
-vdbc	languages	Name_lang_mask					
+vdbc	languages	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	languages	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	languagewords	ID					
 vdbc	languagewords	LanguageID					
 vdbc	languagewords	Word					
 vdbc	lfgdungeons	ID					
 vdbc	lfgdungeons	Name_lang					
-vdbc	lfgdungeons	Name_lang_1					
-vdbc	lfgdungeons	Name_lang_2					
-vdbc	lfgdungeons	Name_lang_3					
-vdbc	lfgdungeons	Name_lang_4					
-vdbc	lfgdungeons	Name_lang_5					
-vdbc	lfgdungeons	Name_lang_6					
-vdbc	lfgdungeons	Name_lang_7					
-vdbc	lfgdungeons	Name_lang_mask					
+vdbc	lfgdungeons	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	lfgdungeons	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	lfgdungeons	MinLevel					
 vdbc	lfgdungeons	MaxLevel					
 vdbc	lfgdungeons	TypeID					
@@ -2972,74 +2972,74 @@ vdbc	light	LightParamsID2
 vdbc	light	LightParamsID3					
 vdbc	light	LightParamsID4					
 vdbc	light	LightParamsID5					
-vdbc	lightfloatband	ID					
-vdbc	lightfloatband	Num					
-vdbc	lightfloatband	Time1					
-vdbc	lightfloatband	Time2					
-vdbc	lightfloatband	Time3					
-vdbc	lightfloatband	Time4					
-vdbc	lightfloatband	Time5					
-vdbc	lightfloatband	Time6					
-vdbc	lightfloatband	Time7					
-vdbc	lightfloatband	Time8					
-vdbc	lightfloatband	Time9					
-vdbc	lightfloatband	Time10					
-vdbc	lightfloatband	Time11					
-vdbc	lightfloatband	Time12					
-vdbc	lightfloatband	Time13					
-vdbc	lightfloatband	Time14					
-vdbc	lightfloatband	Time15					
-vdbc	lightfloatband	Time16					
-vdbc	lightfloatband	Data1					
-vdbc	lightfloatband	Data2					
-vdbc	lightfloatband	Data3					
-vdbc	lightfloatband	Data4					
-vdbc	lightfloatband	Data5					
-vdbc	lightfloatband	Data6					
-vdbc	lightfloatband	Data7					
-vdbc	lightfloatband	Data8					
-vdbc	lightfloatband	Data9					
-vdbc	lightfloatband	Data10					
-vdbc	lightfloatband	Data11					
-vdbc	lightfloatband	Data12					
-vdbc	lightfloatband	Data13					
-vdbc	lightfloatband	Data14					
-vdbc	lightfloatband	Data15					
-vdbc	lightfloatband	Data16					
-vdbc	lightintband	ID					
-vdbc	lightintband	Num					
-vdbc	lightintband	Time1					
-vdbc	lightintband	Time2					
-vdbc	lightintband	Time3					
-vdbc	lightintband	Time4					
-vdbc	lightintband	Time5					
-vdbc	lightintband	Time6					
-vdbc	lightintband	Time7					
-vdbc	lightintband	Time8					
-vdbc	lightintband	Time9					
-vdbc	lightintband	Time10					
-vdbc	lightintband	Time11					
-vdbc	lightintband	Time12					
-vdbc	lightintband	Time13					
-vdbc	lightintband	Time14					
-vdbc	lightintband	Time15					
-vdbc	lightintband	Time16					
-vdbc	lightintband	Data1					
-vdbc	lightintband	Data2					
-vdbc	lightintband	Data3					
-vdbc	lightintband	Data4					
-vdbc	lightintband	Data5					
-vdbc	lightintband	Data6					
-vdbc	lightintband	Data7					
-vdbc	lightintband	Data8					
-vdbc	lightintband	Data9					
-vdbc	lightintband	Data10					
-vdbc	lightintband	Data11					
-vdbc	lightintband	Data12					
-vdbc	lightintband	Data13					
-vdbc	lightintband	Data14					
-vdbc	lightintband	Data15					
-vdbc	lightintband	Data16					
+vdbc	lightfloatband	ID	drop			not imported	yes
+vdbc	lightfloatband	Num	drop			not imported	yes
+vdbc	lightfloatband	Time1	drop			not imported	yes
+vdbc	lightfloatband	Time2	drop			not imported	yes
+vdbc	lightfloatband	Time3	drop			not imported	yes
+vdbc	lightfloatband	Time4	drop			not imported	yes
+vdbc	lightfloatband	Time5	drop			not imported	yes
+vdbc	lightfloatband	Time6	drop			not imported	yes
+vdbc	lightfloatband	Time7	drop			not imported	yes
+vdbc	lightfloatband	Time8	drop			not imported	yes
+vdbc	lightfloatband	Time9	drop			not imported	yes
+vdbc	lightfloatband	Time10	drop			not imported	yes
+vdbc	lightfloatband	Time11	drop			not imported	yes
+vdbc	lightfloatband	Time12	drop			not imported	yes
+vdbc	lightfloatband	Time13	drop			not imported	yes
+vdbc	lightfloatband	Time14	drop			not imported	yes
+vdbc	lightfloatband	Time15	drop			not imported	yes
+vdbc	lightfloatband	Time16	drop			not imported	yes
+vdbc	lightfloatband	Data1	drop			not imported	yes
+vdbc	lightfloatband	Data2	drop			not imported	yes
+vdbc	lightfloatband	Data3	drop			not imported	yes
+vdbc	lightfloatband	Data4	drop			not imported	yes
+vdbc	lightfloatband	Data5	drop			not imported	yes
+vdbc	lightfloatband	Data6	drop			not imported	yes
+vdbc	lightfloatband	Data7	drop			not imported	yes
+vdbc	lightfloatband	Data8	drop			not imported	yes
+vdbc	lightfloatband	Data9	drop			not imported	yes
+vdbc	lightfloatband	Data10	drop			not imported	yes
+vdbc	lightfloatband	Data11	drop			not imported	yes
+vdbc	lightfloatband	Data12	drop			not imported	yes
+vdbc	lightfloatband	Data13	drop			not imported	yes
+vdbc	lightfloatband	Data14	drop			not imported	yes
+vdbc	lightfloatband	Data15	drop			not imported	yes
+vdbc	lightfloatband	Data16	drop			not imported	yes
+vdbc	lightintband	ID	drop			not imported	yes
+vdbc	lightintband	Num	drop			not imported	yes
+vdbc	lightintband	Time1	drop			not imported	yes
+vdbc	lightintband	Time2	drop			not imported	yes
+vdbc	lightintband	Time3	drop			not imported	yes
+vdbc	lightintband	Time4	drop			not imported	yes
+vdbc	lightintband	Time5	drop			not imported	yes
+vdbc	lightintband	Time6	drop			not imported	yes
+vdbc	lightintband	Time7	drop			not imported	yes
+vdbc	lightintband	Time8	drop			not imported	yes
+vdbc	lightintband	Time9	drop			not imported	yes
+vdbc	lightintband	Time10	drop			not imported	yes
+vdbc	lightintband	Time11	drop			not imported	yes
+vdbc	lightintband	Time12	drop			not imported	yes
+vdbc	lightintband	Time13	drop			not imported	yes
+vdbc	lightintband	Time14	drop			not imported	yes
+vdbc	lightintband	Time15	drop			not imported	yes
+vdbc	lightintband	Time16	drop			not imported	yes
+vdbc	lightintband	Data1	drop			not imported	yes
+vdbc	lightintband	Data2	drop			not imported	yes
+vdbc	lightintband	Data3	drop			not imported	yes
+vdbc	lightintband	Data4	drop			not imported	yes
+vdbc	lightintband	Data5	drop			not imported	yes
+vdbc	lightintband	Data6	drop			not imported	yes
+vdbc	lightintband	Data7	drop			not imported	yes
+vdbc	lightintband	Data8	drop			not imported	yes
+vdbc	lightintband	Data9	drop			not imported	yes
+vdbc	lightintband	Data10	drop			not imported	yes
+vdbc	lightintband	Data11	drop			not imported	yes
+vdbc	lightintband	Data12	drop			not imported	yes
+vdbc	lightintband	Data13	drop			not imported	yes
+vdbc	lightintband	Data14	drop			not imported	yes
+vdbc	lightintband	Data15	drop			not imported	yes
+vdbc	lightintband	Data16	drop			not imported	yes
 vdbc	lightparams	ID					
 vdbc	lightparams	HighlightSky					
 vdbc	lightparams	LightSkyboxID					
@@ -3112,56 +3112,56 @@ vdbc	lock	Action7
 vdbc	lock	Action8					
 vdbc	locktype	ID					
 vdbc	locktype	Name_lang					
-vdbc	locktype	Name_lang_1					
-vdbc	locktype	Name_lang_2					
-vdbc	locktype	Name_lang_3					
-vdbc	locktype	Name_lang_4					
-vdbc	locktype	Name_lang_5					
-vdbc	locktype	Name_lang_6					
-vdbc	locktype	Name_lang_7					
-vdbc	locktype	Name_lang_mask					
+vdbc	locktype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	locktype	ResourceName_lang					
-vdbc	locktype	ResourceName_lang_1					
-vdbc	locktype	ResourceName_lang_2					
-vdbc	locktype	ResourceName_lang_3					
-vdbc	locktype	ResourceName_lang_4					
-vdbc	locktype	ResourceName_lang_5					
-vdbc	locktype	ResourceName_lang_6					
-vdbc	locktype	ResourceName_lang_7					
-vdbc	locktype	ResourceName_lang_mask					
+vdbc	locktype	ResourceName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	ResourceName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	locktype	Verb_lang					
-vdbc	locktype	Verb_lang_1					
-vdbc	locktype	Verb_lang_2					
-vdbc	locktype	Verb_lang_3					
-vdbc	locktype	Verb_lang_4					
-vdbc	locktype	Verb_lang_5					
-vdbc	locktype	Verb_lang_6					
-vdbc	locktype	Verb_lang_7					
-vdbc	locktype	Verb_lang_mask					
+vdbc	locktype	Verb_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	locktype	Verb_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	locktype	CursorName					
 vdbc	mailtemplate	ID					
 vdbc	mailtemplate	Body_lang					
-vdbc	mailtemplate	Body_lang_1					
-vdbc	mailtemplate	Body_lang_2					
-vdbc	mailtemplate	Body_lang_3					
-vdbc	mailtemplate	Body_lang_4					
-vdbc	mailtemplate	Body_lang_5					
-vdbc	mailtemplate	Body_lang_6					
-vdbc	mailtemplate	Body_lang_7					
-vdbc	mailtemplate	Body_lang_mask					
+vdbc	mailtemplate	Body_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	mailtemplate	Body_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	map	ID					
 vdbc	map	Directory					
 vdbc	map	InstanceType					
 vdbc	map	MapType					
 vdbc	map	MapName_lang					
-vdbc	map	MapName_lang_1					
-vdbc	map	MapName_lang_2					
-vdbc	map	MapName_lang_3					
-vdbc	map	MapName_lang_4					
-vdbc	map	MapName_lang_5					
-vdbc	map	MapName_lang_6					
-vdbc	map	MapName_lang_7					
-vdbc	map	MapName_lang_mask					
+vdbc	map	MapName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	map	MinLevel					
 vdbc	map	MaxLevel					
 vdbc	map	MaxPlayers					
@@ -3170,23 +3170,23 @@ vdbc	map	Unk1
 vdbc	map	Unk2					
 vdbc	map	ParentMapID					
 vdbc	map	MapDescription0_lang					
-vdbc	map	MapDescription0_lang_1					
-vdbc	map	MapDescription0_lang_2					
-vdbc	map	MapDescription0_lang_3					
-vdbc	map	MapDescription0_lang_4					
-vdbc	map	MapDescription0_lang_5					
-vdbc	map	MapDescription0_lang_6					
-vdbc	map	MapDescription0_lang_7					
-vdbc	map	MapDescription0_lang_mask					
+vdbc	map	MapDescription0_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription0_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	map	MapDescription1_lang					
-vdbc	map	MapDescription1_lang_1					
-vdbc	map	MapDescription1_lang_2					
-vdbc	map	MapDescription1_lang_3					
-vdbc	map	MapDescription1_lang_4					
-vdbc	map	MapDescription1_lang_5					
-vdbc	map	MapDescription1_lang_6					
-vdbc	map	MapDescription1_lang_7					
-vdbc	map	MapDescription1_lang_mask					
+vdbc	map	MapDescription1_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	map	MapDescription1_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	map	LoadingScreenID					
 vdbc	map	RaidOffset					
 vdbc	map	Continentname					
@@ -3207,18 +3207,18 @@ vdbc	npcsounds	SoundID1
 vdbc	npcsounds	SoundID2					
 vdbc	npcsounds	SoundID3					
 vdbc	npcsounds	SoundID4					
-vdbc	package	ID					
-vdbc	package	Icon					
-vdbc	package	Cost					
-vdbc	package	Name_lang					
-vdbc	package	Name_lang_1					
-vdbc	package	Name_lang_2					
-vdbc	package	Name_lang_3					
-vdbc	package	Name_lang_4					
-vdbc	package	Name_lang_5					
-vdbc	package	Name_lang_6					
-vdbc	package	Name_lang_7					
-vdbc	package	Name_lang_mask					
+vdbc	package	ID	drop			not imported	yes
+vdbc	package	Icon	drop			not imported	yes
+vdbc	package	Cost	drop			not imported	yes
+vdbc	package	Name_lang	drop			not imported	yes
+vdbc	package	Name_lang_1	drop			not imported	yes
+vdbc	package	Name_lang_2	drop			not imported	yes
+vdbc	package	Name_lang_3	drop			not imported	yes
+vdbc	package	Name_lang_4	drop			not imported	yes
+vdbc	package	Name_lang_5	drop			not imported	yes
+vdbc	package	Name_lang_6	drop			not imported	yes
+vdbc	package	Name_lang_7	drop			not imported	yes
+vdbc	package	Name_lang_mask	drop			not imported	yes
 vdbc	pagetextmaterial	ID					
 vdbc	pagetextmaterial	Name					
 vdbc	paperdollitemframe	ItemButtonName					
@@ -3226,24 +3226,24 @@ vdbc	paperdollitemframe	SlotIcon
 vdbc	paperdollitemframe	SlotNumber					
 vdbc	petloyalty	ID					
 vdbc	petloyalty	Name_lang					
-vdbc	petloyalty	Name_lang_1					
-vdbc	petloyalty	Name_lang_2					
-vdbc	petloyalty	Name_lang_3					
-vdbc	petloyalty	Name_lang_4					
-vdbc	petloyalty	Name_lang_5					
-vdbc	petloyalty	Name_lang_6					
-vdbc	petloyalty	Name_lang_7					
-vdbc	petloyalty	Name_lang_mask					
+vdbc	petloyalty	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petloyalty	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	petpersonality	ID					
 vdbc	petpersonality	Name_lang					
-vdbc	petpersonality	Name_lang_1					
-vdbc	petpersonality	Name_lang_2					
-vdbc	petpersonality	Name_lang_3					
-vdbc	petpersonality	Name_lang_4					
-vdbc	petpersonality	Name_lang_5					
-vdbc	petpersonality	Name_lang_6					
-vdbc	petpersonality	Name_lang_7					
-vdbc	petpersonality	Name_lang_mask					
+vdbc	petpersonality	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	petpersonality	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	petpersonality	HappinessThreshold1					
 vdbc	petpersonality	HappinessThreshold2					
 vdbc	petpersonality	HappinessThreshold3					
@@ -3255,79 +3255,79 @@ vdbc	petpersonality	DamageModifier2
 vdbc	petpersonality	DamageModifier3					
 vdbc	questinfo	ID					
 vdbc	questinfo	InfoName_lang					
-vdbc	questinfo	InfoName_lang_1					
-vdbc	questinfo	InfoName_lang_2					
-vdbc	questinfo	InfoName_lang_3					
-vdbc	questinfo	InfoName_lang_4					
-vdbc	questinfo	InfoName_lang_5					
-vdbc	questinfo	InfoName_lang_6					
-vdbc	questinfo	InfoName_lang_7					
-vdbc	questinfo	InfoName_lang_mask					
+vdbc	questinfo	InfoName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questinfo	InfoName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	questsort	ID					
 vdbc	questsort	SortName_lang					
-vdbc	questsort	SortName_lang_1					
-vdbc	questsort	SortName_lang_2					
-vdbc	questsort	SortName_lang_3					
-vdbc	questsort	SortName_lang_4					
-vdbc	questsort	SortName_lang_5					
-vdbc	questsort	SortName_lang_6					
-vdbc	questsort	SortName_lang_7					
-vdbc	questsort	SortName_lang_mask					
+vdbc	questsort	SortName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	questsort	SortName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	resistances	ID					
 vdbc	resistances	Flags					
 vdbc	resistances	FizzleSoundID					
 vdbc	resistances	Name_lang					
-vdbc	resistances	Name_lang_1					
-vdbc	resistances	Name_lang_2					
-vdbc	resistances	Name_lang_3					
-vdbc	resistances	Name_lang_4					
-vdbc	resistances	Name_lang_5					
-vdbc	resistances	Name_lang_6					
-vdbc	resistances	Name_lang_7					
-vdbc	resistances	Name_lang_mask					
+vdbc	resistances	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	resistances	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	servermessages	ID					
 vdbc	servermessages	Text_lang					
-vdbc	servermessages	Text_lang_1					
-vdbc	servermessages	Text_lang_2					
-vdbc	servermessages	Text_lang_3					
-vdbc	servermessages	Text_lang_4					
-vdbc	servermessages	Text_lang_5					
-vdbc	servermessages	Text_lang_6					
-vdbc	servermessages	Text_lang_7					
-vdbc	servermessages	Text_lang_mask					
-vdbc	sheathesoundlookups	ID					
-vdbc	sheathesoundlookups	ClassID					
-vdbc	sheathesoundlookups	SubclassID					
-vdbc	sheathesoundlookups	Material					
-vdbc	sheathesoundlookups	CheckMaterial					
-vdbc	sheathesoundlookups	SheatheSound					
-vdbc	sheathesoundlookups	UnsheatheSound					
-vdbc	skillcostsdata	ID					
-vdbc	skillcostsdata	SkillCostsID					
-vdbc	skillcostsdata	Cost1					
-vdbc	skillcostsdata	Cost2					
-vdbc	skillcostsdata	Cost3					
+vdbc	servermessages	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	servermessages	Text_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
+vdbc	sheathesoundlookups	ID	drop			not imported	yes
+vdbc	sheathesoundlookups	ClassID	drop			not imported	yes
+vdbc	sheathesoundlookups	SubclassID	drop			not imported	yes
+vdbc	sheathesoundlookups	Material	drop			not imported	yes
+vdbc	sheathesoundlookups	CheckMaterial	drop			not imported	yes
+vdbc	sheathesoundlookups	SheatheSound	drop			not imported	yes
+vdbc	sheathesoundlookups	UnsheatheSound	drop			not imported	yes
+vdbc	skillcostsdata	ID	drop			not imported	yes
+vdbc	skillcostsdata	SkillCostsID	drop			not imported	yes
+vdbc	skillcostsdata	Cost1	drop			not imported	yes
+vdbc	skillcostsdata	Cost2	drop			not imported	yes
+vdbc	skillcostsdata	Cost3	drop			not imported	yes
 vdbc	skillline	ID					
 vdbc	skillline	CategoryID					
 vdbc	skillline	SkillCostsID					
 vdbc	skillline	DisplayName_lang					
-vdbc	skillline	DisplayName_lang_1					
-vdbc	skillline	DisplayName_lang_2					
-vdbc	skillline	DisplayName_lang_3					
-vdbc	skillline	DisplayName_lang_4					
-vdbc	skillline	DisplayName_lang_5					
-vdbc	skillline	DisplayName_lang_6					
-vdbc	skillline	DisplayName_lang_7					
-vdbc	skillline	DisplayName_lang_mask					
+vdbc	skillline	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	skillline	Description_lang					
-vdbc	skillline	Description_lang_1					
-vdbc	skillline	Description_lang_2					
-vdbc	skillline	Description_lang_3					
-vdbc	skillline	Description_lang_4					
-vdbc	skillline	Description_lang_5					
-vdbc	skillline	Description_lang_6					
-vdbc	skillline	Description_lang_7					
-vdbc	skillline	Description_lang_mask					
+vdbc	skillline	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skillline	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	skillline	SpellIconID					
 vdbc	skilllineability	ID					
 vdbc	skilllineability	SkillLine					
@@ -3346,14 +3346,14 @@ vdbc	skilllineability	CharacterPoints1
 vdbc	skilllineability	CharacterPoints2					
 vdbc	skilllinecategory	ID					
 vdbc	skilllinecategory	Name_lang					
-vdbc	skilllinecategory	Name_lang_1					
-vdbc	skilllinecategory	Name_lang_2					
-vdbc	skilllinecategory	Name_lang_3					
-vdbc	skilllinecategory	Name_lang_4					
-vdbc	skilllinecategory	Name_lang_5					
-vdbc	skilllinecategory	Name_lang_6					
-vdbc	skilllinecategory	Name_lang_7					
-vdbc	skilllinecategory	Name_lang_mask					
+vdbc	skilllinecategory	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	skilllinecategory	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	skilllinecategory	SortIndex					
 vdbc	skillraceclassinfo	ID					
 vdbc	skillraceclassinfo	SkillID					
@@ -3452,27 +3452,27 @@ vdbc	soundproviderpreferences	EAX3ModulationTime
 vdbc	soundproviderpreferences	EAX3ModulationDepth					
 vdbc	soundproviderpreferences	EAX3HFReference					
 vdbc	soundproviderpreferences	EAX3LFReference					
-vdbc	soundsamplepreferences	ID					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_001					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_002					
-vdbc	soundsamplepreferences	EAX2SampleRoom					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_004					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_005					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_006					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_007					
-vdbc	soundsamplepreferences	EAX2SampleOcclusionLFRatio					
-vdbc	soundsamplepreferences	EAX2SampleOcclusionRoomRatio					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_010					
-vdbc	soundsamplepreferences	EAX1EffectLevel					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_012					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_013					
-vdbc	soundsamplepreferences	EAX3SampleExclusion					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_015					
-vdbc	soundsamplepreferences	Field_0_6_0_3592_016					
-vdbc	soundwatertype	ID					
-vdbc	soundwatertype	SoundType					
-vdbc	soundwatertype	SoundSubtype					
-vdbc	soundwatertype	SoundID					
+vdbc	soundsamplepreferences	ID	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_001	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_002	drop			not imported	yes
+vdbc	soundsamplepreferences	EAX2SampleRoom	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_004	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_005	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_006	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_007	drop			not imported	yes
+vdbc	soundsamplepreferences	EAX2SampleOcclusionLFRatio	drop			not imported	yes
+vdbc	soundsamplepreferences	EAX2SampleOcclusionRoomRatio	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_010	drop			not imported	yes
+vdbc	soundsamplepreferences	EAX1EffectLevel	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_012	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_013	drop			not imported	yes
+vdbc	soundsamplepreferences	EAX3SampleExclusion	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_015	drop			not imported	yes
+vdbc	soundsamplepreferences	Field_0_6_0_3592_016	drop			not imported	yes
+vdbc	soundwatertype	ID	drop			not imported	yes
+vdbc	soundwatertype	SoundType	drop			not imported	yes
+vdbc	soundwatertype	SoundSubtype	drop			not imported	yes
+vdbc	soundwatertype	SoundID	drop			not imported	yes
 vdbc	spammessages	ID					
 vdbc	spammessages	Text					
 vdbc	spell	ID					
@@ -3596,41 +3596,41 @@ vdbc	spell	SpellIconID
 vdbc	spell	ActiveIconID					
 vdbc	spell	SpellPriority					
 vdbc	spell	Name_lang					
-vdbc	spell	Name_lang_1					
-vdbc	spell	Name_lang_2					
-vdbc	spell	Name_lang_3					
-vdbc	spell	Name_lang_4					
-vdbc	spell	Name_lang_5					
-vdbc	spell	Name_lang_6					
-vdbc	spell	Name_lang_7					
-vdbc	spell	Name_lang_mask					
+vdbc	spell	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spell	NameSubtext_lang					
-vdbc	spell	NameSubtext_lang_1					
-vdbc	spell	NameSubtext_lang_2					
-vdbc	spell	NameSubtext_lang_3					
-vdbc	spell	NameSubtext_lang_4					
-vdbc	spell	NameSubtext_lang_5					
-vdbc	spell	NameSubtext_lang_6					
-vdbc	spell	NameSubtext_lang_7					
-vdbc	spell	NameSubtext_lang_mask					
+vdbc	spell	NameSubtext_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	NameSubtext_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spell	Description_lang					
-vdbc	spell	Description_lang_1					
-vdbc	spell	Description_lang_2					
-vdbc	spell	Description_lang_3					
-vdbc	spell	Description_lang_4					
-vdbc	spell	Description_lang_5					
-vdbc	spell	Description_lang_6					
-vdbc	spell	Description_lang_7					
-vdbc	spell	Description_lang_mask					
+vdbc	spell	Description_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	Description_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spell	AuraDescription_lang					
-vdbc	spell	AuraDescription_lang_1					
-vdbc	spell	AuraDescription_lang_2					
-vdbc	spell	AuraDescription_lang_3					
-vdbc	spell	AuraDescription_lang_4					
-vdbc	spell	AuraDescription_lang_5					
-vdbc	spell	AuraDescription_lang_6					
-vdbc	spell	AuraDescription_lang_7					
-vdbc	spell	AuraDescription_lang_mask					
+vdbc	spell	AuraDescription_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spell	AuraDescription_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spell	ManaCostPct					
 vdbc	spell	StartRecoveryCategory					
 vdbc	spell	StartRecoveryTime					
@@ -3664,36 +3664,36 @@ vdbc	spellchaineffects	SegDelay
 vdbc	spellchaineffects	Texture					
 vdbc	spelldispeltype	ID					
 vdbc	spelldispeltype	Name_lang					
-vdbc	spelldispeltype	Name_lang_1					
-vdbc	spelldispeltype	Name_lang_2					
-vdbc	spelldispeltype	Name_lang_3					
-vdbc	spelldispeltype	Name_lang_4					
-vdbc	spelldispeltype	Name_lang_5					
-vdbc	spelldispeltype	Name_lang_6					
-vdbc	spelldispeltype	Name_lang_7					
-vdbc	spelldispeltype	Name_lang_mask					
+vdbc	spelldispeltype	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spelldispeltype	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spelldispeltype	Mask					
 vdbc	spelldispeltype	InternalName					
 vdbc	spellduration	ID					
 vdbc	spellduration	Duration					
 vdbc	spellduration	DurationPerLevel					
 vdbc	spellduration	MaxDuration					
-vdbc	spelleffectcamerashakes	ID					
-vdbc	spelleffectcamerashakes	CameraShake1					
-vdbc	spelleffectcamerashakes	CameraShake2					
-vdbc	spelleffectcamerashakes	CameraShake3					
+vdbc	spelleffectcamerashakes	ID	drop			not imported	yes
+vdbc	spelleffectcamerashakes	CameraShake1	drop			not imported	yes
+vdbc	spelleffectcamerashakes	CameraShake2	drop			not imported	yes
+vdbc	spelleffectcamerashakes	CameraShake3	drop			not imported	yes
 vdbc	spellfocusobject	ID					
 vdbc	spellfocusobject	Name_lang					
-vdbc	spellfocusobject	Name_lang_1					
-vdbc	spellfocusobject	Name_lang_2					
-vdbc	spellfocusobject	Name_lang_3					
-vdbc	spellfocusobject	Name_lang_4					
-vdbc	spellfocusobject	Name_lang_5					
-vdbc	spellfocusobject	Name_lang_6					
-vdbc	spellfocusobject	Name_lang_7					
-vdbc	spellfocusobject	Name_lang_mask					
-vdbc	spellicon	ID					
-vdbc	spellicon	TextureFilename					
+vdbc	spellfocusobject	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellfocusobject	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
+vdbc	spellicon	ID	drop			not imported	yes
+vdbc	spellicon	TextureFilename	drop			not imported	yes
 vdbc	spellitemenchantment	ID					
 vdbc	spellitemenchantment	Effect1					
 vdbc	spellitemenchantment	Effect2					
@@ -3708,26 +3708,26 @@ vdbc	spellitemenchantment	EffectArg1
 vdbc	spellitemenchantment	EffectArg2					
 vdbc	spellitemenchantment	EffectArg3					
 vdbc	spellitemenchantment	Name_lang					
-vdbc	spellitemenchantment	Name_lang_1					
-vdbc	spellitemenchantment	Name_lang_2					
-vdbc	spellitemenchantment	Name_lang_3					
-vdbc	spellitemenchantment	Name_lang_4					
-vdbc	spellitemenchantment	Name_lang_5					
-vdbc	spellitemenchantment	Name_lang_6					
-vdbc	spellitemenchantment	Name_lang_7					
-vdbc	spellitemenchantment	Name_lang_mask					
+vdbc	spellitemenchantment	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellitemenchantment	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellitemenchantment	ItemVisual					
 vdbc	spellitemenchantment	Flags					
 vdbc	spellmechanic	ID					
 vdbc	spellmechanic	StateName_lang					
-vdbc	spellmechanic	StateName_lang_1					
-vdbc	spellmechanic	StateName_lang_2					
-vdbc	spellmechanic	StateName_lang_3					
-vdbc	spellmechanic	StateName_lang_4					
-vdbc	spellmechanic	StateName_lang_5					
-vdbc	spellmechanic	StateName_lang_6					
-vdbc	spellmechanic	StateName_lang_7					
-vdbc	spellmechanic	StateName_lang_mask					
+vdbc	spellmechanic	StateName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellmechanic	StateName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellradius	ID					
 vdbc	spellradius	Radius					
 vdbc	spellradius	RadiusPerLevel					
@@ -3737,34 +3737,34 @@ vdbc	spellrange	RangeMin
 vdbc	spellrange	RangeMax					
 vdbc	spellrange	Flags					
 vdbc	spellrange	DisplayName_lang					
-vdbc	spellrange	DisplayName_lang_1					
-vdbc	spellrange	DisplayName_lang_2					
-vdbc	spellrange	DisplayName_lang_3					
-vdbc	spellrange	DisplayName_lang_4					
-vdbc	spellrange	DisplayName_lang_5					
-vdbc	spellrange	DisplayName_lang_6					
-vdbc	spellrange	DisplayName_lang_7					
-vdbc	spellrange	DisplayName_lang_mask					
+vdbc	spellrange	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellrange	DisplayNameShort_lang					
-vdbc	spellrange	DisplayNameShort_lang_1					
-vdbc	spellrange	DisplayNameShort_lang_2					
-vdbc	spellrange	DisplayNameShort_lang_3					
-vdbc	spellrange	DisplayNameShort_lang_4					
-vdbc	spellrange	DisplayNameShort_lang_5					
-vdbc	spellrange	DisplayNameShort_lang_6					
-vdbc	spellrange	DisplayNameShort_lang_7					
-vdbc	spellrange	DisplayNameShort_lang_mask					
+vdbc	spellrange	DisplayNameShort_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellrange	DisplayNameShort_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellshapeshiftform	ID					
 vdbc	spellshapeshiftform	BonusActionBar					
 vdbc	spellshapeshiftform	Name_lang					
-vdbc	spellshapeshiftform	Name_lang_1					
-vdbc	spellshapeshiftform	Name_lang_2					
-vdbc	spellshapeshiftform	Name_lang_3					
-vdbc	spellshapeshiftform	Name_lang_4					
-vdbc	spellshapeshiftform	Name_lang_5					
-vdbc	spellshapeshiftform	Name_lang_6					
-vdbc	spellshapeshiftform	Name_lang_7					
-vdbc	spellshapeshiftform	Name_lang_mask					
+vdbc	spellshapeshiftform	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	spellshapeshiftform	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	spellshapeshiftform	Flags					
 vdbc	spellshapeshiftform	CreatureType					
 vdbc	spellshapeshiftform	AttackIconID					
@@ -3824,28 +3824,28 @@ vdbc	spellvisualkit	CharParamThree1
 vdbc	spellvisualkit	CharParamThree2					
 vdbc	spellvisualkit	CharParamThree3					
 vdbc	spellvisualkit	CharParamThree4					
-vdbc	spellvisualprecasttransitions	ID					
-vdbc	spellvisualprecasttransitions	PrecastLoadAnimName					
-vdbc	spellvisualprecasttransitions	PrecastHoldAnimName					
+vdbc	spellvisualprecasttransitions	ID	drop			not imported	yes
+vdbc	spellvisualprecasttransitions	PrecastLoadAnimName	drop			not imported	yes
+vdbc	spellvisualprecasttransitions	PrecastHoldAnimName	drop			not imported	yes
 vdbc	stableslotprices	ID					
 vdbc	stableslotprices	Cost					
 vdbc	startup_strings	ID					
 vdbc	startup_strings	Name					
 vdbc	startup_strings	Message_lang					
-vdbc	startup_strings	Message_lang_1					
-vdbc	startup_strings	Message_lang_2					
-vdbc	startup_strings	Message_lang_3					
-vdbc	startup_strings	Message_lang_4					
-vdbc	startup_strings	Message_lang_5					
-vdbc	startup_strings	Message_lang_6					
-vdbc	startup_strings	Message_lang_7					
-vdbc	startup_strings	Message_lang_mask					
+vdbc	startup_strings	Message_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	startup_strings	Message_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	stationery	ID					
 vdbc	stationery	ItemID					
 vdbc	stationery	Texture					
 vdbc	stationery	Flags					
-vdbc	stringlookups	ID					
-vdbc	stringlookups	String					
+vdbc	stringlookups	ID	drop			not imported	yes
+vdbc	stringlookups	String	drop			not imported	yes
 vdbc	talent	ID					
 vdbc	talent	TabID					
 vdbc	talent	TierID					
@@ -3869,14 +3869,14 @@ vdbc	talent	Flags
 vdbc	talent	RequiredSpellID					
 vdbc	talenttab	ID					
 vdbc	talenttab	Name_lang					
-vdbc	talenttab	Name_lang_1					
-vdbc	talenttab	Name_lang_2					
-vdbc	talenttab	Name_lang_3					
-vdbc	talenttab	Name_lang_4					
-vdbc	talenttab	Name_lang_5					
-vdbc	talenttab	Name_lang_6					
-vdbc	talenttab	Name_lang_7					
-vdbc	talenttab	Name_lang_mask					
+vdbc	talenttab	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	talenttab	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	talenttab	SpellIconID					
 vdbc	talenttab	RaceMask					
 vdbc	talenttab	ClassMask					
@@ -3888,14 +3888,14 @@ vdbc	taxinodes	Pos1
 vdbc	taxinodes	Pos2					
 vdbc	taxinodes	Pos3					
 vdbc	taxinodes	Name_lang					
-vdbc	taxinodes	Name_lang_1					
-vdbc	taxinodes	Name_lang_2					
-vdbc	taxinodes	Name_lang_3					
-vdbc	taxinodes	Name_lang_4					
-vdbc	taxinodes	Name_lang_5					
-vdbc	taxinodes	Name_lang_6					
-vdbc	taxinodes	Name_lang_7					
-vdbc	taxinodes	Name_lang_mask					
+vdbc	taxinodes	Name_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	taxinodes	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	taxinodes	MountCreatureID1					
 vdbc	taxinodes	MountCreatureID2					
 vdbc	taxipath	ID					
@@ -3925,9 +3925,9 @@ vdbc	transportanimation	Pos1
 vdbc	transportanimation	Pos2					
 vdbc	transportanimation	Pos3					
 vdbc	transportanimation	SequenceID					
-vdbc	uisoundlookups	ID					
-vdbc	uisoundlookups	SoundID					
-vdbc	uisoundlookups	SoundName					
+vdbc	uisoundlookups	ID	drop			not imported	yes
+vdbc	uisoundlookups	SoundID	drop			not imported	yes
+vdbc	uisoundlookups	SoundName	drop			not imported	yes
 vdbc	unitblood	ID					
 vdbc	unitblood	CombatBloodSpurtFront1					
 vdbc	unitblood	CombatBloodSpurtFront2					
@@ -3942,28 +3942,28 @@ vdbc	unitbloodlevels	ID
 vdbc	unitbloodlevels	Violencelevel1					
 vdbc	unitbloodlevels	Violencelevel2					
 vdbc	unitbloodlevels	Violencelevel3					
-vdbc	videohardware	ID					
-vdbc	videohardware	VendorID					
-vdbc	videohardware	DeviceID					
-vdbc	videohardware	FarclipIdx					
-vdbc	videohardware	TerrainLODDistIdx					
-vdbc	videohardware	TerrainShadowLOD					
-vdbc	videohardware	DetailDoodadDensityIdx					
-vdbc	videohardware	DetailDoodadAlpha					
-vdbc	videohardware	AnimatingDoodadIdx					
-vdbc	videohardware	Trilinear					
-vdbc	videohardware	NumLights					
-vdbc	videohardware	Specularity					
-vdbc	videohardware	WaterLODIdx					
-vdbc	videohardware	ParticleDensityIdx					
-vdbc	videohardware	UnitDrawDistIdx					
-vdbc	videohardware	SmallCullDistIdx					
-vdbc	videohardware	ResolutionIdx					
-vdbc	videohardware	BaseMipLevel					
-vdbc	videohardware	OglOverrides					
-vdbc	videohardware	D3dOverrides					
-vdbc	videohardware	FixLag					
-vdbc	videohardware	Multisample					
+vdbc	videohardware	ID	drop			not imported	yes
+vdbc	videohardware	VendorID	drop			not imported	yes
+vdbc	videohardware	DeviceID	drop			not imported	yes
+vdbc	videohardware	FarclipIdx	drop			not imported	yes
+vdbc	videohardware	TerrainLODDistIdx	drop			not imported	yes
+vdbc	videohardware	TerrainShadowLOD	drop			not imported	yes
+vdbc	videohardware	DetailDoodadDensityIdx	drop			not imported	yes
+vdbc	videohardware	DetailDoodadAlpha	drop			not imported	yes
+vdbc	videohardware	AnimatingDoodadIdx	drop			not imported	yes
+vdbc	videohardware	Trilinear	drop			not imported	yes
+vdbc	videohardware	NumLights	drop			not imported	yes
+vdbc	videohardware	Specularity	drop			not imported	yes
+vdbc	videohardware	WaterLODIdx	drop			not imported	yes
+vdbc	videohardware	ParticleDensityIdx	drop			not imported	yes
+vdbc	videohardware	UnitDrawDistIdx	drop			not imported	yes
+vdbc	videohardware	SmallCullDistIdx	drop			not imported	yes
+vdbc	videohardware	ResolutionIdx	drop			not imported	yes
+vdbc	videohardware	BaseMipLevel	drop			not imported	yes
+vdbc	videohardware	OglOverrides	drop			not imported	yes
+vdbc	videohardware	D3dOverrides	drop			not imported	yes
+vdbc	videohardware	FixLag	drop			not imported	yes
+vdbc	videohardware	Multisample	drop			not imported	yes
 vdbc	vocaluisounds	ID					
 vdbc	vocaluisounds	VocalUIEnum					
 vdbc	vocaluisounds	RaceID					
@@ -4010,14 +4010,14 @@ vdbc	wmoareatable	IntroSound
 vdbc	wmoareatable	Flags					
 vdbc	wmoareatable	AreaTableID					
 vdbc	wmoareatable	AreaName_lang					
-vdbc	wmoareatable	AreaName_lang_1					
-vdbc	wmoareatable	AreaName_lang_2					
-vdbc	wmoareatable	AreaName_lang_3					
-vdbc	wmoareatable	AreaName_lang_4					
-vdbc	wmoareatable	AreaName_lang_5					
-vdbc	wmoareatable	AreaName_lang_6					
-vdbc	wmoareatable	AreaName_lang_7					
-vdbc	wmoareatable	AreaName_lang_mask					
+vdbc	wmoareatable	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	wmoareatable	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	worldmaparea	ID					
 vdbc	worldmaparea	MapID					
 vdbc	worldmaparea	AreaID					
@@ -4026,19 +4026,19 @@ vdbc	worldmaparea	LocLeft
 vdbc	worldmaparea	LocRight					
 vdbc	worldmaparea	LocTop					
 vdbc	worldmaparea	LocBottom					
-vdbc	worldmapcontinent	ID					
-vdbc	worldmapcontinent	MapID					
-vdbc	worldmapcontinent	LeftBoundary					
-vdbc	worldmapcontinent	RightBoundary					
-vdbc	worldmapcontinent	TopBoundary					
-vdbc	worldmapcontinent	BottomBoundary					
-vdbc	worldmapcontinent	ContinentOffset1					
-vdbc	worldmapcontinent	ContinentOffset2					
-vdbc	worldmapcontinent	Scale					
-vdbc	worldmapcontinent	TaxiMin1					
-vdbc	worldmapcontinent	TaxiMin2					
-vdbc	worldmapcontinent	TaxiMax1					
-vdbc	worldmapcontinent	TaxiMax2					
+vdbc	worldmapcontinent	ID	drop			not imported	yes
+vdbc	worldmapcontinent	MapID	drop			not imported	yes
+vdbc	worldmapcontinent	LeftBoundary	drop			not imported	yes
+vdbc	worldmapcontinent	RightBoundary	drop			not imported	yes
+vdbc	worldmapcontinent	TopBoundary	drop			not imported	yes
+vdbc	worldmapcontinent	BottomBoundary	drop			not imported	yes
+vdbc	worldmapcontinent	ContinentOffset1	drop			not imported	yes
+vdbc	worldmapcontinent	ContinentOffset2	drop			not imported	yes
+vdbc	worldmapcontinent	Scale	drop			not imported	yes
+vdbc	worldmapcontinent	TaxiMin1	drop			not imported	yes
+vdbc	worldmapcontinent	TaxiMin2	drop			not imported	yes
+vdbc	worldmapcontinent	TaxiMax1	drop			not imported	yes
+vdbc	worldmapcontinent	TaxiMax2	drop			not imported	yes
 vdbc	worldmapoverlay	ID					
 vdbc	worldmapoverlay	MapAreaID					
 vdbc	worldmapoverlay	AreaID1					
@@ -4062,64 +4062,64 @@ vdbc	worldsafelocs	Loc1
 vdbc	worldsafelocs	Loc2					
 vdbc	worldsafelocs	Loc3					
 vdbc	worldsafelocs	AreaName_lang					
-vdbc	worldsafelocs	AreaName_lang_1					
-vdbc	worldsafelocs	AreaName_lang_2					
-vdbc	worldsafelocs	AreaName_lang_3					
-vdbc	worldsafelocs	AreaName_lang_4					
-vdbc	worldsafelocs	AreaName_lang_5					
-vdbc	worldsafelocs	AreaName_lang_6					
-vdbc	worldsafelocs	AreaName_lang_7					
-vdbc	worldsafelocs	AreaName_lang_mask					
+vdbc	worldsafelocs	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldsafelocs	AreaName_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	worldstateui	ID					
 vdbc	worldstateui	MapID					
 vdbc	worldstateui	AreaID					
 vdbc	worldstateui	Icon					
 vdbc	worldstateui	String_lang					
-vdbc	worldstateui	String_lang_1					
-vdbc	worldstateui	String_lang_2					
-vdbc	worldstateui	String_lang_3					
-vdbc	worldstateui	String_lang_4					
-vdbc	worldstateui	String_lang_5					
-vdbc	worldstateui	String_lang_6					
-vdbc	worldstateui	String_lang_7					
-vdbc	worldstateui	String_lang_mask					
+vdbc	worldstateui	String_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	String_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	worldstateui	Tooltip_lang					
-vdbc	worldstateui	Tooltip_lang_1					
-vdbc	worldstateui	Tooltip_lang_2					
-vdbc	worldstateui	Tooltip_lang_3					
-vdbc	worldstateui	Tooltip_lang_4					
-vdbc	worldstateui	Tooltip_lang_5					
-vdbc	worldstateui	Tooltip_lang_6					
-vdbc	worldstateui	Tooltip_lang_7					
-vdbc	worldstateui	Tooltip_lang_mask					
+vdbc	worldstateui	Tooltip_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	Tooltip_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	worldstateui	FactionID					
 vdbc	worldstateui	StateVariable					
 vdbc	worldstateui	Type					
 vdbc	worldstateui	DynamicIcon					
 vdbc	worldstateui	DynamicTooltip_lang					
-vdbc	worldstateui	DynamicTooltip_lang_1					
-vdbc	worldstateui	DynamicTooltip_lang_2					
-vdbc	worldstateui	DynamicTooltip_lang_3					
-vdbc	worldstateui	DynamicTooltip_lang_4					
-vdbc	worldstateui	DynamicTooltip_lang_5					
-vdbc	worldstateui	DynamicTooltip_lang_6					
-vdbc	worldstateui	DynamicTooltip_lang_7					
-vdbc	worldstateui	DynamicTooltip_lang_mask					
+vdbc	worldstateui	DynamicTooltip_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_4	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_5	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
+vdbc	worldstateui	DynamicTooltip_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	worldstateui	ExtendedUI					
 vdbc	worldstateui	ExtendedUIStateVariable1					
 vdbc	worldstateui	ExtendedUIStateVariable2					
 vdbc	worldstateui	ExtendedUIStateVariable3					
-vdbc	wowerror_strings	ID					
-vdbc	wowerror_strings	Name					
-vdbc	wowerror_strings	Description_lang					
-vdbc	wowerror_strings	Description_lang_1					
-vdbc	wowerror_strings	Description_lang_2					
-vdbc	wowerror_strings	Description_lang_3					
-vdbc	wowerror_strings	Description_lang_4					
-vdbc	wowerror_strings	Description_lang_5					
-vdbc	wowerror_strings	Description_lang_6					
-vdbc	wowerror_strings	Description_lang_7					
-vdbc	wowerror_strings	Description_lang_mask					
+vdbc	wowerror_strings	ID	drop			not imported	yes
+vdbc	wowerror_strings	Name	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_1	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_2	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_3	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_4	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_5	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_6	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_7	drop			not imported	yes
+vdbc	wowerror_strings	Description_lang_mask	drop			not imported	yes
 vdbc	zoneintromusictable	ID					
 vdbc	zoneintromusictable	Name					
 vdbc	zoneintromusictable	SoundID					
