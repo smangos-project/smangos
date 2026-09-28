@@ -140,3 +140,41 @@ void WriteEvidenceTsv(std::filesystem::path const& path, std::vector<SpecEvidenc
                           SanitizeField(row.matchRate), SanitizeField(row.shape) });
     WriteRows(path, header, data);
 }
+
+std::vector<SpecPairRow> ReadPairsTsv(std::filesystem::path const& path)
+{
+    static std::vector<std::string> const header = { "source", "table", "cdbc_table", "join_kind", "source_key", "cdbc_key", "notes" };
+    std::vector<SpecPairRow> rows;
+    for (std::vector<std::string> const& fields : ReadDataRows(path, header, header.size()))
+        rows.push_back({ fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6] });
+    return rows;
+}
+
+void WritePairsTsv(std::filesystem::path const& path, std::vector<SpecPairRow> const& rows)
+{
+    static std::vector<std::string> const header = { "source", "table", "cdbc_table", "join_kind", "source_key", "cdbc_key", "notes" };
+    std::vector<std::vector<std::string>> data;
+    data.reserve(rows.size());
+    for (SpecPairRow const& row : rows)
+        data.push_back({ row.source, row.table, row.cdbcTable, row.joinKind, row.sourceKey, row.cdbcKey, SanitizeField(row.notes) });
+    WriteRows(path, header, data);
+}
+
+std::vector<SpecRuleRow> ReadRulesTsv(std::filesystem::path const& path)
+{
+    static std::vector<std::string> const header = { "name", "kind", "expr", "inverse", "applies_to" };
+    std::vector<SpecRuleRow> rows;
+    for (std::vector<std::string> const& fields : ReadDataRows(path, header, header.size()))
+        rows.push_back({ fields[0], fields[1], fields[2], fields[3], fields[4] });
+    return rows;
+}
+
+void WriteRulesTsv(std::filesystem::path const& path, std::vector<SpecRuleRow> const& rows)
+{
+    static std::vector<std::string> const header = { "name", "kind", "expr", "inverse", "applies_to" };
+    std::vector<std::vector<std::string>> data;
+    data.reserve(rows.size());
+    for (SpecRuleRow const& row : rows)
+        data.push_back({ row.name, row.kind, row.expr, row.inverse, SanitizeField(row.appliesTo) });
+    WriteRows(path, header, data);
+}

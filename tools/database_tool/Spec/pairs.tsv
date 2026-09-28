@@ -1,0 +1,96 @@
+source	table	cdbc_table	join_kind	source_key	cdbc_key	notes
+vdbc	areatable	areatable	id	ID	ID	data-plan.md 3.1
+srv	area_template	areatable	id	entry	ID	data-plan.md 3.1
+vdbc	map	map	id	ID	ID	data-plan.md 3.1
+srv	map_template	map	id	entry	ID	data-plan.md 3.1
+vdbc	faction	faction	id	ID	ID	data-plan.md 3.1
+srv	faction	faction	id	id	ID	data-plan.md 3.1
+vdbc	factiontemplate	factiontemplate	id	ID	ID	data-plan.md 3.1
+srv	faction_template	factiontemplate	id	id	ID	data-plan.md 3.1
+vdbc	areatrigger	areatrigger	id	ID	ID	data-plan.md 3.1
+srv	areatrigger_template	areatrigger	id	id	ID	data-plan.md 3.1
+vdbc	taxinodes	taxinodes	id	ID	ID	data-plan.md 3.1
+srv	taxi_nodes	taxinodes	id	id	ID	data-plan.md 3.1
+vdbc	skilllineability	skilllineability	id	ID	ID	data-plan.md 3.1
+srv	skill_line_ability	skilllineability	id	id	ID	data-plan.md 3.1
+vdbc	soundentries	soundkit	id	ID	ID	data-plan.md 3.1: SoundEntries.dbc becomes SoundKit.db2, ids only, SoundKit has no name
+srv	sound_entries	soundkit	id	id	ID	data-plan.md 3.1
+vdbc	mailtemplate	mailtemplate	id	ID	ID	data-plan.md 3.1
+srv	mail_text_template	mailtemplate	id	entry	ID	data-plan.md 3.1
+vdbc	creaturespelldata	creaturespelldata	id	ID	ID	data-plan.md 3.1
+srv	pet_spell_data	creaturespelldata	id	entry	ID	data-plan.md 3.1
+vdbc	creaturedisplayinfo	creaturedisplayinfo	id	ID	ID	data-plan.md 3.1 and 3.4
+srv	creature_display_info_addon	creaturedisplayinfo	id	display_id	ID	data-plan.md 3.1
+vdbc	gameobjectdisplayinfo	gameobjectdisplayinfo	id	ID	ID	data-plan.md 3.1 and 3.4
+srv	gameobject_display_info_addon	gameobjectdisplayinfo	id	display_id	ID	data-plan.md 3.1
+vdbc	itemdisplayinfo	itemdisplayinfo	id	ID	ID	data-plan.md 3.1
+srv	item_display_info	itemdisplayinfo	id	ID	ID	data-plan.md 3.1: ids still exist, but items point at different ids now, see 3.2
+srv	world_safe_locs_facing	worldsafelocs	skip			data-plan.md 3.1: WorldSafeLocs.dbc has no 1.15 DB2 counterpart, absent per 3.4
+srv	item_template	item	skip			data-plan.md 3.2.1: class/subclass/icon/damage type only, needs a second cdbc_item join alongside cdbc_itemsparse
+srv	item_template	itemsparse	id	entry	ID	data-plan.md 3.2.1: everything but class/subclass/icon/damage type
+srv	item_template	itemeffect	unpivot	entry	SpellID	data-plan.md 3.2.1: spellid_N vs LegacySlotIndex N-1, not yet computed, see phase0-plan.md 4.3 known gaps
+srv	quest_template	questv2	id	entry	ID	data-plan.md 3.2: UniqueBitFlag is the completed-quest bit; other quest fields split across QuestSort/QuestInfo/QuestXP/QuestMoneyReward/QuestFactionReward, not yet paired
+srv	broadcast_text	broadcasttext	id	entry	ID	data-plan.md 3.2: BroadcastText.db2 has 0 rows in 1.15.6, so this pair always joins 0 rows
+srv	battleground_template	battlemasterlist	id	id	ID	data-plan.md 3.2
+srv	playercreateinfo_item	charstartoutfit	skip			data-plan.md 3.2: composite key of race, class and sex, not a single column each side
+srv	item_enchantment_template	itemrandomproperties	skip			data-plan.md 3.2: item_enchantment_template is a chance table with many rows per enchant id, not 1:1
+srv	transports	taxipath	skip			data-plan.md 3.2: boats and zeppelins vs TaxiPath plus TaxiPathNode, elevators vs TransportAnimation, mixed shapes
+vdbc	auctionhouse	auctionhouse	id	ID	ID	data-plan.md 3.4
+vdbc	bankbagslotprices	bankbagslotprices	id	ID	ID	data-plan.md 3.4
+vdbc	characterfacialhairstyles	characterfacialhairstyles	skip			data-plan.md 3.4: composite key (RaceID, SexID, VariationID), no single ID column on either side
+vdbc	chatchannels	chatchannels	id	ID	ID	data-plan.md 3.4
+vdbc	chrclasses	chrclasses	id	ID	ID	data-plan.md 3.4
+vdbc	chrraces	chrraces	id	ID	ID	data-plan.md 3.4
+vdbc	cinematicsequences	cinematicsequences	id	ID	ID	data-plan.md 3.4
+vdbc	creaturedisplayinfoextra	creaturedisplayinfoextra	id	ID	ID	data-plan.md 3.4
+vdbc	creaturefamily	creaturefamily	id	ID	ID	data-plan.md 3.4
+vdbc	creaturemodeldata	creaturemodeldata	id	ID	ID	data-plan.md 3.4
+vdbc	creaturetype	creaturetype	id	ID	ID	data-plan.md 3.4
+vdbc	durabilitycosts	durabilitycosts	id	ID	ID	data-plan.md 3.4: DB2 only covers item level 0-99, vanilla has 300 rows
+vdbc	durabilityquality	durabilityquality	id	ID	ID	data-plan.md 3.4
+vdbc	emotes	emotes	id	ID	ID	data-plan.md 3.4
+vdbc	emotestext	emotestext	id	ID	ID	data-plan.md 3.4
+vdbc	itembagfamily	itembagfamily	id	ID	ID	data-plan.md 3.4
+vdbc	itemrandomproperties	itemrandomproperties	id	ID	ID	data-plan.md 3.4
+vdbc	itemset	itemset	id	ID	ID	data-plan.md 3.4
+vdbc	lock	lock	id	ID	ID	data-plan.md 3.4
+vdbc	namesprofanity	namesprofanity	id	ID	ID	data-plan.md 3.4
+vdbc	namesreserved	namesreserved	id	ID	ID	data-plan.md 3.4
+vdbc	questsort	questsort	id	ID	ID	data-plan.md 3.4
+vdbc	skillline	skillline	id	ID	ID	data-plan.md 3.4
+vdbc	skillraceclassinfo	skillraceclassinfo	id	ID	ID	data-plan.md 3.4
+vdbc	spellcasttimes	spellcasttimes	id	ID	ID	data-plan.md 3.4
+vdbc	spellcategory	spellcategory	id	ID	ID	data-plan.md 3.4
+vdbc	spellduration	spellduration	id	ID	ID	data-plan.md 3.4: DB2 dropped unused ids 507/508
+vdbc	spellfocusobject	spellfocusobject	id	ID	ID	data-plan.md 3.4
+vdbc	spellitemenchantment	spellitemenchantment	id	ID	ID	data-plan.md 3.4: 702 of 2149 rows changed (reworked), spell-plan.md 6
+vdbc	spellradius	spellradius	id	ID	ID	data-plan.md 3.4
+vdbc	spellrange	spellrange	id	ID	ID	data-plan.md 3.4: DB2 splits into a friend/hostile pair, approximate id join only
+vdbc	spellshapeshiftform	spellshapeshiftform	id	ID	ID	data-plan.md 3.4
+vdbc	stableslotprices	stableslotprices	id	ID	ID	data-plan.md 3.4
+vdbc	talent	talent	id	ID	ID	data-plan.md 3.4
+vdbc	talenttab	talenttab	id	ID	ID	data-plan.md 3.4
+vdbc	taxipath	taxipath	id	ID	ID	data-plan.md 3.4
+vdbc	taxipathnode	taxipathnode	id	ID	ID	data-plan.md 3.4
+vdbc	transportanimation	transportanimation	id	ID	ID	data-plan.md 3.4
+vdbc	wmoareatable	wmoareatable	id	ID	ID	data-plan.md 3.4
+vdbc	spellvisual	spellvisual	id	ID	ID	data-plan.md 3.4: different model in DB2 (SpellVisual/SpellXSpellVisual/SpellVisualKit), approximate id join only
+srv	spell_template	spellmisc	id	entry	SpellID	spell-plan.md 3.1: Attributes[16], CastingTimeIndex, DurationIndex, RangeIndex, SchoolMask, icon file ids; cdbc_spellmisc.ID is its own row id, not the spell id
+srv	spell_template	spellname	id	entry	ID	spell-plan.md 3.1: Name only
+srv	spell_template	spellauraoptions	id	entry	ID	spell-plan.md 3.1: StackAmount, ProcChance, ProcCharges, procFlags
+srv	spell_template	spellcategories	id	entry	ID	spell-plan.md 3.1: Category, DmgClass, DispelType, Mechanic
+srv	spell_template	spellclassoptions	id	entry	SpellID	spell-plan.md 3.1: SpellFamilyName, SpellFamilyFlags; cdbc_spellclassoptions.ID is its own row id, not the spell id
+srv	spell_template	spellcooldowns	id	entry	ID	spell-plan.md 3.1: RecoveryTime, CategoryRecoveryTime, GCD
+srv	spell_template	spellequippeditems	id	entry	SpellID	spell-plan.md 3.1: EquippedItemClass, Subclass, InvTypes; cdbc_spellequippeditems.ID is its own row id, not the spell id
+srv	spell_template	spellinterrupts	id	entry	ID	spell-plan.md 3.1: InterruptFlags, AuraInterruptFlags, ChannelInterruptFlags
+srv	spell_template	spelllevels	id	entry	ID	spell-plan.md 3.1: BaseLevel, MaxLevel, SpellLevel
+srv	spell_template	spellreagents	id	entry	SpellID	spell-plan.md 3.1: Reagent[8], ReagentCount[8]; cdbc_spellreagents.ID is its own row id, not the spell id
+srv	spell_template	spellshapeshift	id	entry	SpellID	spell-plan.md 3.1: ShapeshiftMask/Exclude, StanceBarOrder; cdbc_spellshapeshift.ID is its own row id, not the spell id
+srv	spell_template	spelltargetrestrictions	id	entry	ID	spell-plan.md 3.1: Targets, MaxTargets, ConeDegrees
+srv	spell_template	spelltotems	id	entry	SpellID	spell-plan.md 3.1: Totem[2], RequiredTotemCategoryID[2]; cdbc_spelltotems.ID is its own row id, not the spell id
+srv	spell_template	spellxspellvisual	id	entry	SpellID	spell-plan.md 3.1 and 9: the wire visual id, S6
+srv	spell_template	spell	unpivot	entry	ID	spell-plan.md 3.1: sparse table (NameSubtext, Description, AuraDescription), not yet computed, see phase0-plan.md 4.3 known gaps
+srv	spell_template	spelleffect	unpivot	entry	SpellID	spell-plan.md 3: (SpellID, EffectIndex) slot unpivot against effect1..3, not yet computed, see phase0-plan.md 4.3 known gaps
+srv	spell_template	spellpower	unpivot	entry	SpellID	spell-plan.md 3.1: multiple rows by OrderIndex, not yet computed, see phase0-plan.md 4.3 known gaps
+srv	spell_template	spellaurarestrictions	unpivot	entry	SpellID	spell-plan.md 3.1: only 203 rows since most spells have none, not yet computed, see phase0-plan.md 4.3 known gaps
+srv	spell_template	spellcastingrequirements	unpivot	entry	SpellID	spell-plan.md 3.1: only 2262 rows since most spells have none, not yet computed, see phase0-plan.md 4.3 known gaps

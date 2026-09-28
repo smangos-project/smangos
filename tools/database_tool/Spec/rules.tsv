@@ -1,0 +1,15 @@
+name	kind	expr	inverse	applies_to
+identity	value	{v}	{v}	default, tried first for every column pair
+mask_all_2047	value	CASE WHEN {v} = 2047 THEN -1 ELSE {v} END	CASE WHEN {v} = -1 THEN 2047 ELSE {v} END	"all classes" masks (vmangos 2047 = DB2 -1), data-plan.md 5
+mask_all_255	value	CASE WHEN {v} = 255 THEN -1 ELSE {v} END	CASE WHEN {v} = -1 THEN 255 ELSE {v} END	"all races" masks (vmangos 255 = DB2 -1), data-plan.md 5
+none_parent_zero	value	CASE WHEN {v} = 0 THEN -1 ELSE {v} END	CASE WHEN {v} = -1 THEN 0 ELSE {v} END	map_template.parent (vmangos 0 = DB2 -1), data-plan.md 5
+ghost_map_neg1	value	CASE WHEN {v} = -1 THEN 0 ELSE {v} END	CASE WHEN {v} = 0 THEN -1 ELSE {v} END	map_template.ghost_entrance_map (vmangos -1 = DB2 0), data-plan.md 5
+material_neg1	value	CASE WHEN {v} = -1 THEN 0 ELSE {v} END	CASE WHEN {v} = 0 THEN -1 ELSE {v} END	item_template.material (vmangos -1 = DB2 0), data-plan.md 5
+bag_family_mask	value	CASE WHEN {v} = 0 THEN 0 ELSE (1 << ({v} - 1)) END	CASE WHEN {v} = 0 THEN 0 ELSE (CAST(ROUND(LOG({v}) / LOG(2)) AS INTEGER) + 1) END	item_template.bag_family (vmangos id N = DB2 mask 1 << (N-1)), data-plan.md 5
+cooldown_default	value	CASE WHEN {v} = 0 THEN -1 WHEN {v} = -1 THEN 0 ELSE {v} END	CASE WHEN {v} = 0 THEN -1 WHEN {v} = -1 THEN 0 ELSE {v} END	item spell cooldowns (vmangos 0/-1 = DB2 -1/0), data-plan.md 5
+area_flag_added_bit	value	({v} | 1073741824)	({v} & ~1073741824)	area_template.flags / vdbc_areatable.Flags (client adds 0x40000000), data-plan.md 5
+skill_race_flag_dropped_bit	value	({v} & ~1024)	({v} | 1024)	SkillRaceClassInfo flags (client dropped bit 0x400), data-plan.md 5
+school_index_to_mask	value	((1 << {v}) | 512)	CAST(ROUND(LOG({v} & ~512) / LOG(2)) AS INTEGER)	spell_template.school vs SpellMisc.SchoolMask (vanilla index, DB2 mask; DB2 also always sets bit 0x200, confirmed against the reference database -- 21135/21139 vs data-plan.md's "agree for all but 3 spells"), spell-plan.md 4.4
+passive_duration_infinite	value	CASE WHEN {v} = 21 THEN 0 ELSE {v} END	CASE WHEN {v} = 0 THEN 21 ELSE {v} END	spell_template.DurationIndex on passives (client drops the index), spell-plan.md 4.4
+effect_base_dice_from_sides	value	CASE WHEN {v} = 0 THEN 0 ELSE 1 END		spell_template.effectBaseDiceN, derived from DieSides (no DB2 counterpart; for step 5's `derived` disposition, not evaluated by `spec evidence` since there is nothing to join it against), spell-plan.md 4.4
+superseded_by_spell_inverse	inverse			skill_line_ability.superseded_by_spell vs SkillLineAbility.SupercedesSpell on the *next* rank's row (next/previous rank inverted); needs a second lookup against the counterpart table, not a value transform -- not evaluated by `spec evidence` yet, see phase0-plan.md 4.3's known gaps, data-plan.md 5

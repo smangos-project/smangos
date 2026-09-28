@@ -1,5 +1,6 @@
 #include "Evidence.h"
 
+#include "Spec/Counterpart.h"
 #include "Spec/SourceScan.h"
 #include "Spec/SpecFile.h"
 #include "Spec/WireHint.h"
@@ -480,6 +481,21 @@ SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std
     std::map<std::string, std::string> wireHintCache;
     for (SpecEvidenceRow& row : rows)
         row.wireHint = ComputeWireHint(row.readers, packetFiles, tree, repoRoot, wireHintCache);
+
+    std::vector<SpecPairRow> pairs = ReadPairsTsv(specDir / "pairs.tsv");
+    std::vector<SpecRuleRow> rules = ReadRulesTsv(specDir / "rules.tsv");
+    ComputeCounterpartsResult counterparts = ComputeCounterparts(reference, pairs, rules);
+    result.pairsJoined = counterparts.pairsJoined;
+    result.pairsSkipped = counterparts.pairsSkipped;
+    for (SpecEvidenceRow& row : rows)
+    {
+        auto it = counterparts.matches.find(row.source + "\t" + row.table + "\t" + row.column);
+        if (it == counterparts.matches.end())
+            continue;
+        row.counterpart = it->second.counterpart;
+        row.counterpartRule = it->second.counterpartRule;
+        row.matchRate = it->second.matchRate;
+    }
 
     WriteEvidenceTsv(specDir / "evidence.tsv", rows);
     return result;

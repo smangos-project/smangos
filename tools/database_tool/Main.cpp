@@ -427,7 +427,8 @@ namespace
             return 1;
         }
 
-        std::printf("spec evidence: %u rows written\n", result.rowsWritten);
+        std::printf("spec evidence: %u rows written, %u pairs joined, %u pairs skipped\n", result.rowsWritten,
+            result.pairsJoined, result.pairsSkipped);
         return 0;
     }
 

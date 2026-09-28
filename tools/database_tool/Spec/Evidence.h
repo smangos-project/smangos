@@ -8,6 +8,8 @@
 struct SpecEvidenceResult
 {
     uint32_t rowsWritten = 0;
+    uint32_t pairsJoined = 0;
+    uint32_t pairsSkipped = 0;
     std::string error;
 };
 
@@ -18,8 +20,11 @@ struct SpecEvidenceResult
 // SQLStorages.cpp and hand-written `SELECT ... FROM` loaders) and `repoRoot`/src/scripts. For
 // every row whose `readers` names a resolved struct field, `wire_hint` records whether that
 // field is also accessed in packet code (`wire=yes <file>:<line>, ...` or `wire=no`); `none`
-// and `manual:` readers leave it empty, since there is no field name to grep for.
-// counterpart/counterpart_rule/match_rate/shape are left empty for later parts of step 4.
+// and `manual:` readers leave it empty, since there is no field name to grep for. For every
+// column named by an "id"-kind row of `specDir`/pairs.tsv (step 4.3), `counterpart`,
+// `counterpart_rule` and `match_rate` record the best-matching cdbc_ column found by
+// Counterpart.cpp; `pairsJoined`/`pairsSkipped` count how many pairs.tsv rows that covered.
+// `shape` is left empty for step 4.4.
 SpecEvidenceResult BuildEvidence(std::filesystem::path const& referencePath, std::filesystem::path const& repoRoot,
     std::filesystem::path const& specDir);
 

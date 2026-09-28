@@ -87,3 +87,38 @@ TEST_CASE("dbc-columns.tsv round-trips every field", "[SpecFile]")
     CHECK(read[0].mangosdReads == "AreaTableEntry::flags");
     CHECK(read[0].vanillaValue == "client");
 }
+
+TEST_CASE("pairs.tsv round-trips every field", "[SpecFile]")
+{
+    TempDir dir("pairsroundtrip");
+    std::filesystem::path path = dir.path / "pairs.tsv";
+
+    WritePairsTsv(path, { { "srv", "area_template", "areatable", "id", "entry", "ID", "data-plan.md 3.1" } });
+
+    std::vector<SpecPairRow> read = ReadPairsTsv(path);
+    REQUIRE(read.size() == 1);
+    CHECK(read[0].source == "srv");
+    CHECK(read[0].table == "area_template");
+    CHECK(read[0].cdbcTable == "areatable");
+    CHECK(read[0].joinKind == "id");
+    CHECK(read[0].sourceKey == "entry");
+    CHECK(read[0].cdbcKey == "ID");
+    CHECK(read[0].notes == "data-plan.md 3.1");
+}
+
+TEST_CASE("rules.tsv round-trips every field", "[SpecFile]")
+{
+    TempDir dir("rulesroundtrip");
+    std::filesystem::path path = dir.path / "rules.tsv";
+
+    WriteRulesTsv(path, { { "mask_all_2047", "value", "CASE WHEN {v} = 2047 THEN -1 ELSE {v} END",
+        "CASE WHEN {v} = -1 THEN 2047 ELSE {v} END", "item class masks" } });
+
+    std::vector<SpecRuleRow> read = ReadRulesTsv(path);
+    REQUIRE(read.size() == 1);
+    CHECK(read[0].name == "mask_all_2047");
+    CHECK(read[0].kind == "value");
+    CHECK(read[0].expr == "CASE WHEN {v} = 2047 THEN -1 ELSE {v} END");
+    CHECK(read[0].inverse == "CASE WHEN {v} = -1 THEN 2047 ELSE {v} END");
+    CHECK(read[0].appliesTo == "item class masks");
+}
