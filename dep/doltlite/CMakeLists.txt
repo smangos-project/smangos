@@ -85,23 +85,44 @@ set_target_properties(doltlite PROPERTIES
 
 set(DOLTLITE_RUNTIME_DLLS)
 if (WIN32)
-  if (MSVC)
-    # MSVC can't link a MinGW-built DLL without an import library, and
-    # DoltLite doesn't ship one for win-x64: generate it from the DLL's own
-    # export table.
+  # An MSVC-ABI linker -- MSVC's own, clang-cl, or plain clang++ targeting
+  # the MSVC ABI and linked with lld-link -- can't link a MinGW-built DLL
+  # without an import library, and DoltLite doesn't ship one for win-x64:
+  # generate it from the DLL's own export table. `MSVC` alone misses the
+  # clang++/lld-link case (compiler frontend GNU, linker frontend MSVC), so
+  # both are checked.
+  if (MSVC OR CMAKE_CXX_COMPILER_LINKER_FRONTEND_VARIANT STREQUAL "MSVC")
     get_filename_component(_msvc_tools_dir "${CMAKE_LINKER}" DIRECTORY)
+
+    # Real MSVC (or clang-cl next to a Visual Studio install) gives us
+    # dumpbin/lib; an LLVM-only toolchain has no Visual Studio tools next to
+    # its linker, so fall back to llvm-readobj/llvm-lib, which read/write
+    # the same export table and COFF import library format.
     find_program(DOLTLITE_DUMPBIN dumpbin HINTS "${_msvc_tools_dir}")
     find_program(DOLTLITE_LIB_TOOL lib    HINTS "${_msvc_tools_dir}")
+    set(DOLTLITE_EXPORTS_TOOL_KIND "dumpbin")
+    set(DOLTLITE_LIB_TOOL_KIND "lib")
+
     if (NOT DOLTLITE_DUMPBIN OR NOT DOLTLITE_LIB_TOOL)
-      message(FATAL_ERROR "doltlite: dumpbin/lib not found next to the MSVC linker (${_msvc_tools_dir})")
+      find_program(DOLTLITE_DUMPBIN llvm-readobj HINTS "${_msvc_tools_dir}")
+      find_program(DOLTLITE_LIB_TOOL llvm-lib    HINTS "${_msvc_tools_dir}")
+      set(DOLTLITE_EXPORTS_TOOL_KIND "llvm-readobj")
+      set(DOLTLITE_LIB_TOOL_KIND "llvm-lib")
+    endif()
+
+    if (NOT DOLTLITE_DUMPBIN OR NOT DOLTLITE_LIB_TOOL)
+      message(FATAL_ERROR
+        "doltlite: neither dumpbin/lib nor llvm-readobj/llvm-lib found next to the linker (${_msvc_tools_dir})")
     endif()
 
     set(DOLTLITE_IMPORT_LIB "${CMAKE_CURRENT_BINARY_DIR}/doltlite.lib")
     if (NOT EXISTS "${DOLTLITE_IMPORT_LIB}")
       execute_process(
         COMMAND ${CMAKE_COMMAND}
-          -DDUMPBIN=${DOLTLITE_DUMPBIN}
+          -DEXPORTS_TOOL=${DOLTLITE_DUMPBIN}
+          -DEXPORTS_TOOL_KIND=${DOLTLITE_EXPORTS_TOOL_KIND}
           -DLIBTOOL=${DOLTLITE_LIB_TOOL}
+          -DLIBTOOL_KIND=${DOLTLITE_LIB_TOOL_KIND}
           -DDLL=${DOLTLITE_LIBRARY_FILE}
           -DDLL_NAME=doltlite.dll
           -DOUT_DEF=${CMAKE_CURRENT_BINARY_DIR}/doltlite.def
