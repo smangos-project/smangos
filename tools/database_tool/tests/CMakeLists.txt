@@ -21,6 +21,7 @@ add_executable(tests-database-tool
   Dbc/DbcImportTests.cpp
   Dbc/DbcSchemaTests.cpp
   Dbc/WdbcTests.cpp
+  Dbc/WdbcRealFilesTests.cpp
   Dbc/Wdc5ReaderTests.cpp
   Dbc/Wdc5WriterTests.cpp
   Dbc/Wdc5RealFilesTests.cpp

@@ -48,24 +48,40 @@ namespace
         return field.bits ? field.bits / 8 : 4;
     }
 
-    uint32_t TotalColumnCount(DbcTableMeta const& table)
+    // A locstring field occupies `layout.locStringSlots` row columns instead of one; every other
+    // field keeps its plain array length.
+    uint32_t FieldSlotCount(DbcFieldMeta const& field, WdbcLayout const& layout)
+    {
+        uint32_t slotsPerElement = field.type == DbcFieldType::LocString ? layout.locStringSlots : 1;
+        return static_cast<uint32_t>(field.arrayLength) * slotsPerElement;
+    }
+
+    uint32_t TotalColumnCount(DbcTableMeta const& table, WdbcLayout const& layout)
     {
         uint32_t total = 0;
         for (uint32_t i = 0; i < table.fieldCount; ++i)
-            total += table.fields[i].arrayLength;
+            total += FieldSlotCount(table.fields[i], layout);
         return total;
     }
 
-    std::vector<uint32_t> FieldFlattenedStart(DbcTableMeta const& table)
+    std::vector<uint32_t> FieldFlattenedStart(DbcTableMeta const& table, WdbcLayout const& layout)
     {
         std::vector<uint32_t> starts(table.fieldCount);
         uint32_t offset = 0;
         for (uint32_t i = 0; i < table.fieldCount; ++i)
         {
             starts[i] = offset;
-            offset += table.fields[i].arrayLength;
+            offset += FieldSlotCount(table.fields[i], layout);
         }
         return starts;
+    }
+
+    // Within a locstring field's slots, the last one is the flags mask once there is more than
+    // one slot (1.12's 8 locale offsets + mask); otherwise every slot is a string offset.
+    bool IsLocStringMaskSlot(DbcFieldMeta const& field, WdbcLayout const& layout, uint32_t slotInField)
+    {
+        return field.type == DbcFieldType::LocString && layout.locStringSlots > 1 &&
+               (slotInField % layout.locStringSlots) == layout.locStringSlots - 1;
     }
 
     std::string ReadCString(uint8_t const* data, size_t size, size_t offset)
@@ -92,7 +108,7 @@ namespace
     }
 }
 
-WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta const& table)
+WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta const& table, WdbcLayout const& layout)
 {
     WdbcReadResult result;
 
@@ -117,16 +133,17 @@ WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta cons
         uint32_t recordSize = cursor.Read<uint32_t>();
         uint32_t stringBlockSize = cursor.Read<uint32_t>();
 
-        uint32_t totalColumns = TotalColumnCount(table);
+        uint32_t totalColumns = TotalColumnCount(table, layout);
         if (fieldCount != totalColumns)
             throw std::runtime_error("field count mismatch: file has " + std::to_string(fieldCount) +
                                       ", metadata expects " + std::to_string(totalColumns) + " fields");
 
-        std::vector<uint32_t> flattenedStart = FieldFlattenedStart(table);
+        std::vector<uint32_t> flattenedStart = FieldFlattenedStart(table, layout);
 
         uint32_t expectedRecordSize = 0;
         for (uint32_t i = 0; i < table.fieldCount; ++i)
-            expectedRecordSize += static_cast<uint32_t>(FieldWidthBytes(table.fields[i])) * table.fields[i].arrayLength;
+            expectedRecordSize +=
+                static_cast<uint32_t>(FieldWidthBytes(table.fields[i])) * FieldSlotCount(table.fields[i], layout);
         if (recordSize != expectedRecordSize)
             throw std::runtime_error("record size mismatch: file has " + std::to_string(recordSize) +
                                       ", metadata expects " + std::to_string(expectedRecordSize));
@@ -149,11 +166,18 @@ WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta cons
             {
                 DbcFieldMeta const& field = table.fields[fieldIndex];
                 int width = FieldWidthBytes(field);
+                uint32_t slotCount = FieldSlotCount(field, layout);
 
-                for (uint16_t a = 0; a < field.arrayLength; ++a)
+                for (uint32_t a = 0; a < slotCount; ++a)
                 {
                     Wdc5Value value;
-                    if (field.type == DbcFieldType::Float)
+                    if (IsLocStringMaskSlot(field, layout, a))
+                    {
+                        uint32_t mask;
+                        std::memcpy(&mask, record + offset, sizeof(uint32_t));
+                        value.intValue = static_cast<int64_t>(mask);
+                    }
+                    else if (field.type == DbcFieldType::Float)
                     {
                         float f;
                         std::memcpy(&f, record + offset, sizeof(float));
@@ -187,16 +211,16 @@ WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta cons
     return result;
 }
 
-WdbcWriteResult WriteWdbcFile(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows)
+WdbcWriteResult WriteWdbcFile(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows, WdbcLayout const& layout)
 {
     WdbcWriteResult result;
 
-    std::vector<uint32_t> flattenedStart = FieldFlattenedStart(table);
-    uint32_t totalColumns = TotalColumnCount(table);
+    std::vector<uint32_t> flattenedStart = FieldFlattenedStart(table, layout);
+    uint32_t totalColumns = TotalColumnCount(table, layout);
 
     uint32_t recordSize = 0;
     for (uint32_t i = 0; i < table.fieldCount; ++i)
-        recordSize += static_cast<uint32_t>(FieldWidthBytes(table.fields[i])) * table.fields[i].arrayLength;
+        recordSize += static_cast<uint32_t>(FieldWidthBytes(table.fields[i])) * FieldSlotCount(table.fields[i], layout);
 
     std::vector<uint8_t> recordArea(static_cast<size_t>(recordSize) * rows.size(), 0);
     std::string stringBlock;
@@ -212,11 +236,17 @@ WdbcWriteResult WriteWdbcFile(DbcTableMeta const& table, std::vector<Wdc5Row> co
         {
             DbcFieldMeta const& field = table.fields[fieldIndex];
             int width = FieldWidthBytes(field);
+            uint32_t slotCount = FieldSlotCount(field, layout);
 
-            for (uint16_t a = 0; a < field.arrayLength; ++a)
+            for (uint32_t a = 0; a < slotCount; ++a)
             {
                 Wdc5Value const& value = row[flattenedStart[fieldIndex] + a];
-                if (field.type == DbcFieldType::Float)
+                if (IsLocStringMaskSlot(field, layout, a))
+                {
+                    uint32_t mask = static_cast<uint32_t>(value.intValue);
+                    std::memcpy(record + offset, &mask, sizeof(uint32_t));
+                }
+                else if (field.type == DbcFieldType::Float)
                 {
                     float f = static_cast<float>(value.floatValue);
                     std::memcpy(record + offset, &f, sizeof(float));

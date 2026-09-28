@@ -11,7 +11,9 @@ class DoltLiteDatabase;
 
 // The SQL column name(s) one metadata field maps to: the field name itself for a scalar field,
 // or "Name1".."NameN" for an array. Shared with the WDC5/WDBC import/export path.
-std::vector<std::string> DbcColumnNames(DbcFieldMeta const& field);
+// `locStringSlots` mirrors WdbcLayout: a locstring field with more than one slot expands to
+// "Name_lang" (slot 0), "Name_lang_1".."_N-2" and "Name_lang_mask", matching ReadWdbcFile.
+std::vector<std::string> DbcColumnNames(DbcFieldMeta const& field, uint32_t locStringSlots = 1);
 
 // CREATE TABLE for one metadata table (e.g. "dbc_areatable"), per dbc-formats.md's type mapping.
 // Doesn't include its secondary indexes.

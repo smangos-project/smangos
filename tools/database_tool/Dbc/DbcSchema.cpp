@@ -23,8 +23,19 @@ namespace
     }
 }
 
-std::vector<std::string> DbcColumnNames(DbcFieldMeta const& field)
+std::vector<std::string> DbcColumnNames(DbcFieldMeta const& field, uint32_t locStringSlots)
 {
+    if (field.type == DbcFieldType::LocString && locStringSlots > 1)
+    {
+        // field.name is already "<Name>_lang" (WoWDBDefs convention); slot 0 keeps it as-is.
+        std::vector<std::string> names;
+        names.push_back(field.name);
+        for (uint32_t i = 1; i <= locStringSlots - 2; ++i)
+            names.push_back(std::string(field.name) + "_" + std::to_string(i));
+        names.push_back(std::string(field.name) + "_mask");
+        return names;
+    }
+
     if (field.arrayLength <= 1)
         return { field.name };
 

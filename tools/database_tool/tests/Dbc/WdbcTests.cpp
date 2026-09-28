@@ -29,9 +29,10 @@ namespace
         return { name, type, bits, isSigned, arrayLength, isId, false, false, nullptr, nullptr };
     }
 
-    WdbcReadResult RoundTrip(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows, std::string const& name)
+    WdbcReadResult RoundTrip(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows, std::string const& name,
+                             WdbcLayout const& layout = {})
     {
-        WdbcWriteResult written = WriteWdbcFile(table, rows);
+        WdbcWriteResult written = WriteWdbcFile(table, rows, layout);
         REQUIRE(written.error.empty());
 
         TempFile file(name);
@@ -39,7 +40,7 @@ namespace
         out.write(reinterpret_cast<char const*>(written.bytes.data()), static_cast<std::streamsize>(written.bytes.size()));
         out.close();
 
-        return ReadWdbcFile(file.path, table);
+        return ReadWdbcFile(file.path, table, layout);
     }
 }
 
@@ -105,6 +106,44 @@ TEST_CASE("WriteWdbcFile round-trips an empty table", "[Wdbc]")
     INFO(result.error);
     CHECK(result.error.empty());
     CHECK(result.rows.empty());
+}
+
+TEST_CASE("WriteWdbcFile round-trips a 9-slot locstring", "[Wdbc]")
+{
+    DbcFieldMeta fields[] = {
+        MakeField("ID", DbcFieldType::Int, 32, false, 1, /*isId*/ true),
+        MakeField("Name_lang", DbcFieldType::LocString, 0, true, 1),
+    };
+    uint32_t layoutHashes[] = { 0 };
+    DbcTableMeta table{ "Test", "test", "vdbc_test", layoutHashes, 0, fields, 2 };
+    WdbcLayout layout{ /*locStringSlots*/ 9 };
+
+    // 9 slots for the locstring: enUS, 7 more locales, then the flags mask.
+    Wdc5Row row(10);
+    row[0].intValue = 1;
+    row[1].stringValue = "enUS";
+    row[2].stringValue = "koKR";
+    row[3].stringValue = "";
+    row[4].stringValue = "frFR";
+    row[5].stringValue = "";
+    row[6].stringValue = "";
+    row[7].stringValue = "";
+    row[8].stringValue = "";
+    row[9].intValue = 0x3; // flags mask: enUS | koKR present
+
+    WdbcReadResult result = RoundTrip(table, { row }, "locstring9", layout);
+
+    INFO(result.error);
+    CHECK(result.error.empty());
+    REQUIRE(result.rows.size() == 1);
+    Wdc5Row const& read = result.rows[0];
+    REQUIRE(read.size() == 10);
+    CHECK(read[0].intValue == 1);
+    CHECK(read[1].stringValue == "enUS");
+    CHECK(read[2].stringValue == "koKR");
+    CHECK(read[3].stringValue.empty());
+    CHECK(read[4].stringValue == "frFR");
+    CHECK(read[9].intValue == 0x3);
 }
 
 TEST_CASE("ReadWdbcFile rejects a bad signature", "[Wdbc]")

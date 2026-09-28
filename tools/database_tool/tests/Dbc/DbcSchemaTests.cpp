@@ -45,6 +45,21 @@ TEST_CASE("DbcColumnNames flattens an array field into Name1..NameN", "[DbcSchem
     CHECK(DbcColumnNames(field) == std::vector<std::string>{ "Flags1", "Flags2", "Flags3" });
 }
 
+TEST_CASE("DbcColumnNames expands a 9-slot locstring into enUS, locales 1-7 and a mask", "[DbcSchema]")
+{
+    DbcFieldMeta field{ "Name_lang", DbcFieldType::LocString, 0, true, 1, false, false, false, nullptr, nullptr };
+    CHECK(DbcColumnNames(field, /*locStringSlots*/ 9) ==
+          std::vector<std::string>{ "Name_lang", "Name_lang_1", "Name_lang_2", "Name_lang_3", "Name_lang_4",
+                                     "Name_lang_5", "Name_lang_6", "Name_lang_7", "Name_lang_mask" });
+}
+
+TEST_CASE("DbcColumnNames keeps a single-slot locstring as one column", "[DbcSchema]")
+{
+    DbcFieldMeta field{ "Name_lang", DbcFieldType::LocString, 0, true, 1, false, false, false, nullptr, nullptr };
+    CHECK(DbcColumnNames(field) == std::vector<std::string>{ "Name_lang" });
+    CHECK(DbcColumnNames(field, 1) == std::vector<std::string>{ "Name_lang" });
+}
+
 TEST_CASE("BuildDbcTableDdl maps field types and marks the id column as the primary key", "[DbcSchema]")
 {
     DbcFieldMeta fields[] = {

@@ -9,6 +9,13 @@
 #include <string>
 #include <vector>
 
+// How a locstring field is laid out on disk: the modern client writes one 4-byte offset; 1.12
+// writes 9 (8 locale offsets + a flags mask, 36 bytes). Every other field type is unaffected.
+struct WdbcLayout
+{
+    uint32_t locStringSlots = 1;
+};
+
 struct WdbcReadResult
 {
     std::vector<Wdc5Row> rows;
@@ -19,8 +26,11 @@ struct WdbcReadResult
 // a plain header (record count, flattened field count, record size, string block size), every
 // field written inline at its natural width in metadata order (there's no non-inline concept in
 // this format), and a string block starting with '\0' holding one NUL-terminated string per
-// string/locstring value, addressed by absolute offset.
-WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta const& table);
+// string/locstring value, addressed by absolute offset. A locstring field expands to
+// `layout.locStringSlots` row columns (DbcColumnNames agrees); the last one is the flags mask,
+// a plain integer, when there is more than one slot.
+WdbcReadResult ReadWdbcFile(std::filesystem::path const& path, DbcTableMeta const& table,
+                            WdbcLayout const& layout = {});
 
 struct WdbcWriteResult
 {
@@ -30,6 +40,7 @@ struct WdbcWriteResult
 
 // Builds a WDBC (.dbc) file for `table` from `rows` (the same flattened-column shape
 // ReadWdbcFile produces).
-WdbcWriteResult WriteWdbcFile(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows);
+WdbcWriteResult WriteWdbcFile(DbcTableMeta const& table, std::vector<Wdc5Row> const& rows,
+                               WdbcLayout const& layout = {});
 
 #endif
