@@ -3,6 +3,7 @@ add_executable(tests-db-schema-setup
   DbdFileTests.cpp
   DbdResolveTests.cpp
   DbdDefinitionsTests.cpp
+  DbdDiffTests.cpp
   DbcGeneratorTests.cpp
 )
 

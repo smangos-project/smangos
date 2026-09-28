@@ -3,6 +3,7 @@ add_library(db_schema_setup STATIC
   DbdFile.cpp
   DbdResolve.cpp
   DbdDefinitions.cpp
+  DbdDiff.cpp
   DbcGenerator.cpp
 )
 

@@ -17,10 +17,10 @@ TEST_CASE("LoadDbdDefinitions parses every table and collects per-file errors", 
 {
     DbdDefinitions definitions = LoadDbdDefinitions(DB_SCHEMA_SETUP_TEST_FIXTURES_DIR);
 
-    // 17 .dbd fixtures live alongside this test: 7 are deliberately malformed (see DbdFileTests),
+    // 18 .dbd fixtures live alongside this test: 7 are deliberately malformed (see DbdFileTests),
     // the rest (including ErrorAmbiguousBuild.dbd, which parses fine -- its ambiguity is a
     // resolve-time concern) parse successfully.
-    CHECK(definitions.tables.size() == 10);
+    CHECK(definitions.tables.size() == 11);
     CHECK(definitions.errors.size() == 7);
 
     CHECK(definitions.tables.contains("Map"));
@@ -30,6 +30,7 @@ TEST_CASE("LoadDbdDefinitions parses every table and collects per-file errors", 
     CHECK(definitions.tables.contains("ChrRaces"));
     CHECK(definitions.tables.contains("Grammar"));
     CHECK(definitions.tables.contains("ResolveSample"));
+    CHECK(definitions.tables.contains("DiffSample"));
     CHECK(definitions.tables.contains("ErrorAmbiguousBuild"));
 
     CHECK(HasError(definitions, "ErrorMissingSpace"));

@@ -1,4 +1,5 @@
 #include "DbdDefinitions.h"
+#include "DbdDiff.h"
 #include "DbdResolve.h"
 
 #include <algorithm>
@@ -13,7 +14,8 @@ namespace
         return { DbdBuild::Parse("1.15.6.58797"), DbdBuild::Parse("1.15.6.58725") };
     }
 
-    bool ParseArgs(int argc, char** argv, std::string& definitionsDir, std::vector<DbdBuild>& builds)
+    bool ParseArgs(int argc, char** argv, std::string& definitionsDir, std::vector<DbdBuild>& builds,
+        std::string& diffFrom, std::string& diffTo)
     {
         for (int i = 1; i < argc; ++i)
         {
@@ -32,6 +34,11 @@ namespace
                 }
                 builds.push_back(build);
             }
+            else if (arg == "--diff" && i + 2 < argc)
+            {
+                diffFrom = argv[++i];
+                diffTo = argv[++i];
+            }
             else
             {
                 std::cerr << "unrecognized argument: " << arg << "\n";
@@ -39,6 +46,34 @@ namespace
             }
         }
         return true;
+    }
+
+    // phase0-plan.md step 4.5.1: reports, per table resolved at `diffFrom`, what a resolution at
+    // `diffTo` no longer has -- fields removed, array lengths changed, types changed, or the
+    // whole table gone. Informational; always exits 0.
+    int RunDiff(DbdDefinitions const& definitions, std::string const& diffFrom, std::string const& diffTo)
+    {
+        DbdBuild from, to;
+        if (!DbdBuild::TryParse(diffFrom, from) || !DbdBuild::TryParse(diffTo, to))
+        {
+            std::cerr << "invalid --diff build\n";
+            return 1;
+        }
+
+        std::vector<DbdTableDiff> diffs = DiffDbdTables(definitions, { from }, { to });
+        for (DbdTableDiff const& diff : diffs)
+        {
+            if (diff.removedEntirely)
+            {
+                std::cout << diff.table << ": removed entirely (no definition for " << to.ToString() << ")\n";
+                continue;
+            }
+            for (DbdFieldDiff const& field : diff.fields)
+                std::cout << diff.table << "." << field.field << ": " << field.kind
+                           << (field.detail.empty() ? "" : " (" + field.detail + ")") << "\n";
+        }
+        std::cout << diffs.size() << " tables differ from " << from.ToString() << " to " << to.ToString() << "\n";
+        return 0;
     }
 }
 
@@ -50,8 +85,9 @@ int main(int argc, char** argv)
 {
     std::string definitionsDir = DB_SCHEMA_SETUP_DEFINITIONS_DIR;
     std::vector<DbdBuild> builds;
+    std::string diffFrom, diffTo;
 
-    if (!ParseArgs(argc, argv, definitionsDir, builds))
+    if (!ParseArgs(argc, argv, definitionsDir, builds, diffFrom, diffTo))
         return 1;
 
     if (builds.empty())
@@ -67,6 +103,9 @@ int main(int argc, char** argv)
         std::cerr << error.what() << "\n";
         return 1;
     }
+
+    if (!diffFrom.empty())
+        return RunDiff(definitions, diffFrom, diffTo);
 
     bool hadErrors = !definitions.errors.empty();
     for (DbdDefinitionsLoadError const& error : definitions.errors)

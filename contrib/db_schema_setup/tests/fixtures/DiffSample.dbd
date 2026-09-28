@@ -1,0 +1,13 @@
+COLUMNS
+int ID
+int Value
+string Name
+
+BUILD 1.0.0.1
+$id$ID<32>
+Value<32>
+Name
+
+BUILD 2.0.0.1
+$id$ID<32>
+Value<32>[2]
