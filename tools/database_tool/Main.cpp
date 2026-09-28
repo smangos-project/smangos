@@ -502,11 +502,49 @@ namespace
         return 0;
     }
 
+    // spec query "<select>"
+    int RunSpecQuery(std::vector<std::string> const& args)
+    {
+        if (args.empty())
+        {
+            std::printf("spec query: a SELECT statement is required\n");
+            return 1;
+        }
+
+        std::string const& sql = args[0];
+        size_t first = sql.find_first_not_of(" \t\n");
+        if (first == std::string::npos || (sql.compare(first, 6, "SELECT") != 0 && sql.compare(first, 6, "select") != 0 &&
+            sql.compare(first, 4, "WITH") != 0 && sql.compare(first, 4, "with") != 0))
+        {
+            std::printf("spec query: only SELECT statements are allowed\n");
+            return 1;
+        }
+
+        try
+        {
+            DoltLiteDatabase db((SourceRoot() / ".world" / "reference.doltlite").string());
+            DoltLiteStatement stmt = db.Prepare(sql);
+            int const count = stmt.ColumnCount();
+            while (stmt.Step())
+            {
+                for (int i = 0; i < count; ++i)
+                    std::printf("%s%s", i ? "\t" : "", stmt.ColumnIsNull(i) ? "NULL" : stmt.ColumnText(i).c_str());
+                std::printf("\n");
+            }
+        }
+        catch (std::exception const& e)
+        {
+            std::printf("spec query: %s\n", e.what());
+            return 1;
+        }
+        return 0;
+    }
+
     int RunSpec(std::vector<std::string> const& args)
     {
         if (args.empty())
         {
-            std::printf("spec: subcommand required (init, set, evidence, gaps, check, render)\n");
+            std::printf("spec: subcommand required (init, set, evidence, gaps, check, render, query)\n");
             return 1;
         }
 
@@ -523,6 +561,8 @@ namespace
             return RunSpecGaps(rest);
         if (subcommand == "check")
             return RunSpecCheck(rest);
+        if (subcommand == "query")
+            return RunSpecQuery(rest);
         if (subcommand == "render")
             return RunSpecRender(rest);
 

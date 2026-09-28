@@ -83,6 +83,11 @@ void DoltLiteStatement::Reset()
     sqlite3_reset(m_stmt);
 }
 
+int DoltLiteStatement::ColumnCount() const
+{
+    return sqlite3_column_count(m_stmt);
+}
+
 bool DoltLiteStatement::ColumnIsNull(int index) const
 {
     return sqlite3_column_type(m_stmt, index) == SQLITE_NULL;

@@ -35,6 +35,7 @@ public:
     bool Step();
     void Reset();
 
+    int ColumnCount() const;
     bool ColumnIsNull(int index) const;
     int64_t ColumnInt64(int index) const;
     double ColumnDouble(int index) const;
