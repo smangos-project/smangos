@@ -305,10 +305,12 @@ namespace
         DbcFieldMeta const& field = *ctx.field;
         // For None compression this is the file's own declared width, which is authoritative --
         // it can legitimately be wider than the field's nominal metadata width (e.g. a writer
-        // that widened a field whose real values didn't fit that nominal width).
+        // that widened a field whose real values didn't fit that nominal width). Clamped to 8:
+        // no integer column needs more, and `raw` below is a uint64_t -- an unclamped width from
+        // a stray/oversized bitSize would memcpy past it.
         int elementBytes = field.type == DbcFieldType::Float ? 4
             : field.type == DbcFieldType::String || field.type == DbcFieldType::LocString ? 4
-            : ctx.columnMeta.bitSize ? ctx.columnMeta.bitSize / 8
+            : ctx.columnMeta.bitSize ? std::min<int>(ctx.columnMeta.bitSize / 8, 8)
             : (field.bits ? field.bits / 8 : 4);
         size_t recordOffset = static_cast<size_t>(record - buffer);
 
@@ -332,9 +334,16 @@ namespace
                 }
                 else
                 {
+                    // Bounds-checked against the buffer too: a tiny file's last field can still
+                    // have fewer bytes left than even a clamped elementBytes calls for (seen on
+                    // a real file: OverrideSpellData.db2's last column, 46-byte section).
+                    size_t absoluteOffset = recordOffset + fieldOffset;
+                    size_t available = absoluteOffset < bufferSize ? bufferSize - absoluteOffset : 0;
+                    size_t copyBytes = std::min({ static_cast<size_t>(elementBytes), sizeof(uint64_t), available });
                     uint64_t raw = 0;
-                    std::memcpy(&raw, p, static_cast<size_t>(elementBytes));
-                    value.intValue = field.isSigned ? NarrowSigned(raw, elementBytes * 8) : static_cast<int64_t>(raw);
+                    std::memcpy(&raw, p, copyBytes);
+                    value.intValue = field.isSigned ? NarrowSigned(raw, static_cast<int>(copyBytes) * 8)
+                                                     : static_cast<int64_t>(raw);
                 }
                 break;
             }

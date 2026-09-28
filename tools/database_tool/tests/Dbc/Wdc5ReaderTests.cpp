@@ -581,3 +581,100 @@ TEST_CASE("ReadWdc5File rejects a field count mismatch", "[Wdc5Reader]")
 
     CHECK(result.error.find("field count") != std::string::npos);
 }
+
+TEST_CASE("ReadWdc5File clamps a None column's declared width to 8 bytes", "[Wdc5Reader]")
+{
+    // A stray/oversized columnMeta.bitSize (here 512 bits = 64 bytes, larger than any real
+    // integer column) must not blow up the elementBytes used both for the memcpy width and for
+    // striding across array elements.
+    DbcFieldMeta fields[] = {
+        MakeField("ID", DbcFieldType::Int, 32, false, 1, /*isId*/ true),
+        MakeField("Oversized", DbcFieldType::Int, 64, false, 2),
+    };
+    uint32_t layoutHashes[] = { 0xABCDu };
+    DbcTableMeta table{ "Test", "test", "dbc_test", layoutHashes, 1, fields, 2 };
+
+    uint32_t recordSize = 4 + 8 + 8; // ID + two clamped-to-8-byte elements
+    HeaderSpec h;
+    h.recordCount = 1;
+    h.fieldCount = 2;
+    h.totalFieldCount = 2;
+    h.recordSize = recordSize;
+    h.layoutHash = 0xABCD;
+    h.columnMetaSize = 2 * 24;
+
+    std::vector<uint8_t> record;
+    PutU32(record, 99);                    // ID
+    PutU64(record, 0x0102030405060708ULL); // Oversized[0]
+    PutU64(record, 0x1112131415161718ULL); // Oversized[1]
+
+    std::vector<uint8_t> file;
+    PutHeader(file, h);
+    size_t sectionPos = file.size();
+    PutSection(file, 0, 0, h.recordCount, 0, 0, 0, 0, 0, 0);
+    PutPad(file, static_cast<size_t>(h.fieldCount) * 4);
+    PutColumnMeta(file, 0, 32, 0, Compression::None, 0, 0, 0);
+    PutColumnMeta(file, 32, 512, 0, Compression::None, 0, 0, 0); // bitSize way past any real width
+
+    uint32_t fileOffset = static_cast<uint32_t>(file.size());
+    PatchU32(file, sectionPos + 8, fileOffset);
+    file.insert(file.end(), record.begin(), record.end());
+
+    TempFile temp("oversized_width");
+    Wdc5ReadResult result = ReadFromBytes(temp, file, table);
+
+    INFO(result.error);
+    CHECK(result.error.empty());
+    REQUIRE(result.rows.size() == 1);
+    CHECK(result.rows[0][0].intValue == 99);
+    CHECK(result.rows[0][1].intValue == static_cast<int64_t>(0x0102030405060708ULL));
+    CHECK(result.rows[0][2].intValue == static_cast<int64_t>(0x1112131415161718ULL));
+}
+
+TEST_CASE("ReadWdc5File bounds-checks a None field against a truncated buffer", "[Wdc5Reader]")
+{
+    // Seen on a real file (OverrideSpellData.db2): the last column of the last record in a
+    // small section can have fewer bytes left in the buffer than even a clamped elementBytes
+    // calls for. The reader must read only what's actually there instead of running past it.
+    DbcFieldMeta fields[] = {
+        MakeField("ID", DbcFieldType::Int, 32, false, 1, /*isId*/ true),
+        MakeField("Trailing", DbcFieldType::Int, 64, false, 1),
+    };
+    uint32_t layoutHashes[] = { 0xABCDu };
+    DbcTableMeta table{ "Test", "test", "dbc_test", layoutHashes, 1, fields, 2 };
+
+    // Declares an 8-byte-wide Trailing column but the file only actually has 1 byte for it.
+    uint32_t recordSize = 5;
+    HeaderSpec h;
+    h.recordCount = 1;
+    h.fieldCount = 2;
+    h.totalFieldCount = 2;
+    h.recordSize = recordSize;
+    h.layoutHash = 0xABCD;
+    h.columnMetaSize = 2 * 24;
+
+    std::vector<uint8_t> record;
+    PutU32(record, 55);            // ID
+    record.push_back(0xEE);        // Trailing: only 1 byte actually present
+
+    std::vector<uint8_t> file;
+    PutHeader(file, h);
+    size_t sectionPos = file.size();
+    PutSection(file, 0, 0, h.recordCount, 0, 0, 0, 0, 0, 0);
+    PutPad(file, static_cast<size_t>(h.fieldCount) * 4);
+    PutColumnMeta(file, 0, 32, 0, Compression::None, 0, 0, 0);
+    PutColumnMeta(file, 32, 64, 0, Compression::None, 0, 0, 0);
+
+    uint32_t fileOffset = static_cast<uint32_t>(file.size());
+    PatchU32(file, sectionPos + 8, fileOffset);
+    file.insert(file.end(), record.begin(), record.end());
+
+    TempFile temp("truncated_buffer");
+    Wdc5ReadResult result = ReadFromBytes(temp, file, table);
+
+    INFO(result.error);
+    CHECK(result.error.empty());
+    REQUIRE(result.rows.size() == 1);
+    CHECK(result.rows[0][0].intValue == 55);
+    CHECK(result.rows[0][1].intValue == 0xEE);
+}
