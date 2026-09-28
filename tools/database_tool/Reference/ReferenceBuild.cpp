@@ -257,14 +257,17 @@ namespace
 
     // Attaches `partPath` (a self-contained DoltLite file that was populated via `result.tables`'
     // entries for `source`) to `reference` and copies each table across with a plain bulk
-    // INSERT...SELECT, then detaches and deletes it. A table that fails to copy (see
-    // BuildReferenceDatabase's comment on the known DoltLite quirk this works around) is recorded
-    // in `result.tableErrors` and dropped from `result.tables`, rather than failing the whole
-    // command over one table.
+    // CREATE TABLE ... AS SELECT, then detaches and deletes it. `reference` is always a freshly
+    // created file (BuildReferenceDatabase refuses to overwrite one that exists), so a table
+    // under this name can never already be there -- no DROP is needed, and (found by testing)
+    // issuing one anyway, even as a no-op "IF EXISTS" against a name that isn't present, made
+    // DoltLite (pinned 0.50.12) stop seeing every table in the attached database for the rest of
+    // this transaction. A table that still fails to copy is recorded in `result.tableErrors` and
+    // dropped from `result.tables`, rather than failing the whole command over one table.
     void MergeIsolatedPart(DoltLiteDatabase& reference, std::filesystem::path const& partPath,
                             char const* source, ReferenceBuildResult& result)
     {
-        reference.Execute("ATTACH DATABASE '" + partPath.string() + "' AS part");
+        reference.Execute("ATTACH DATABASE '" + partPath.string() + "' AS mergesrc");
         {
             BatchCommitter committer(reference);
             for (ReferenceTableInfo& info : result.tables)
@@ -274,8 +277,7 @@ namespace
 
                 try
                 {
-                    reference.Execute("DROP TABLE IF EXISTS \"" + info.table + "\"");
-                    reference.Execute("CREATE TABLE \"" + info.table + "\" AS SELECT * FROM part.\"" + info.table + "\"");
+                    reference.Execute("CREATE TABLE \"" + info.table + "\" AS SELECT * FROM mergesrc.\"" + info.table + "\"");
                 }
                 catch (std::exception const& e)
                 {
@@ -285,7 +287,7 @@ namespace
                 committer.Tick();
             }
         }
-        reference.Execute("DETACH DATABASE part");
+        reference.Execute("DETACH DATABASE mergesrc");
         std::filesystem::remove(partPath);
 
         std::erase_if(result.tables, [](ReferenceTableInfo const& info) { return info.source.empty(); });
@@ -395,21 +397,10 @@ ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referen
         BuildSrvTables(reference, worldPath, result);
         SafeDoltCommit(reference, "reference: srv_* tables");
 
-        // KNOWN ISSUE, not yet resolved: vdbc_* and cdbc_* are each built in their own fresh,
-        // self-contained file first, then merged in with a plain bulk copy, because populating
-        // ~150-800 tables with real DBC/DB2 data directly alongside srv_*'s content has been
-        // observed to crash DoltLite partway through. Building each part in isolation avoids
-        // that specific crash, but does not fully solve the underlying problem: a real,
-        // full-scale run has also been observed to (a) lose a single table from an isolated
-        // part with no exception raised while building it (caught here as a "no such table"
-        // error during the merge and now skipped per-table, see MergeIsolatedPart), and
-        // separately (b) lose an entire part's tables from `reference` even though the merge
-        // reported no per-table errors. Every piece involved -- WDBC/WDC5 reading, the DDL/bind
-        // path, plain ATTACH+copy -- passes when exercised on its own; the failures only appear
-        // running the full command at real scale, which points at DoltLite (pinned 0.50.12)
-        // rather than this code, but that isn't proven. Treat `reference`'s vdbc_*/cdbc_* output
-        // as unreliable until this is root-caused; srv_* has been verified correct against the
-        // real .world database.
+        // vdbc_* and cdbc_* are each built in their own fresh, self-contained file first, then
+        // merged in with CREATE TABLE ... AS SELECT (see MergeIsolatedPart), rather than being
+        // populated directly alongside srv_*'s content: doing that crashed DoltLite (pinned
+        // 0.50.12) partway through a full real-data run.
         std::filesystem::path vdbcPartPath = referencePath.parent_path() / "reference.vdbc-part.doltlite";
         std::filesystem::remove(vdbcPartPath);
         {
