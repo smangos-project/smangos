@@ -188,7 +188,8 @@ bool DatabaseDoltLite::Initialize(char const* infoString, int nConns, int nWorke
         return false;
     }
 
-    return Database::Initialize(infoString, nConns, nWorkers);
+    // One shared handle: a single async worker keeps writes and transactions in order.
+    return Database::Initialize(infoString, nConns, 1);
 }
 
 SqlConnection* DatabaseDoltLite::CreateConnection()
