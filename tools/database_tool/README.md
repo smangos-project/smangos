@@ -42,6 +42,8 @@ database_tool compare-world --mysql "<host;port;user;pass;db>"
 database_tool reference
 database_tool spec init
 database_tool spec set --source <srv|vdbc|new> --table <t> [--column <c>] [--disposition D] [--target T] [--rule R] [--reason "..."] [--reviewed yes|no] [--overwrite]
+database_tool verify   [--final] [--update] [--checks V0,V1,...] [--tables a,b]
+database_tool verify init [--vdbc Name,Name|all]
 ```
 
 Exit codes: `0` success, `1` failure, `2` for `port-migration` when any file was flagged.
@@ -109,6 +111,31 @@ unlike everything else this tool writes), then helps fill them in bulk.
 - `spec set`: bulk-fills matching rows of `columns.tsv` (`--source`/`--table` required, `--column`
   optional -- omitted means every column of that table). Skips a row whose `disposition` is already
   set unless `--overwrite` is given.
+
+### verify
+
+Checks `.world/world.doltlite` against `.world/reference.doltlite` and the spec (plan.md 6.2). Exit
+`0` only when no check reports a problem.
+
+- V0: the world's tables and server columns against `Spec/tables.tsv`/`columns.tsv`.
+- V1: `Verify/srv/<table>.sql` rebuilds each `srv_` table exactly (columns `drop` in
+  `columns.tsv` may be left out).
+- V2: `Verify/vdbc/<Name>.sql` rebuilds each `vdbc_` table, up to the exact differing-row counts in
+  `Verify/vdbc/allow.tsv` (`(missing)` for missing rows). Rows only the world has are fine. A table
+  whose columns are all `drop` needs no mapping; one without a mapping yet is a note.
+- V3: every `dbc_` row that differs from the stock client (`cdbc_`) is counted in
+  `Verify/client-delta.tsv`.
+- V4: every client-metadata foreign key and every server reference declared in
+  `Verify/references.tsv` resolves, up to the dangling counts listed there.
+- V5: no server column equals a `dbc_` column in every row of a `pairs.tsv` id join.
+
+V0 and V5 describe the finished database: without `--final` they only print a count. `--update`
+rewrites the measured lists (`client-delta.tsv`, `references.tsv`) instead of checking them.
+
+A mapping file is one SELECT with a `-- key: a, b` line (absent: rows match on every column).
+`verify init` writes an identity mapping (collapsed to 5875/patch 10) for every `srv_` table without
+one, and with `--vdbc` the mapping `columns.tsv` implies for the named vanilla tables: each kept
+column read back from its `dbc_` target through the rule's inverse.
 
 ## Testing
 
