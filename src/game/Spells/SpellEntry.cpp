@@ -93,8 +93,7 @@ SpellSpecific Spells::GetSpellSpecific(uint32 spellId)
         {
             // "Well Fed" buff from Blessed Sunfruit, Blessed Sunfruit Juice, Alterac Spring Water
             if ((spellInfo->Attributes & SPELL_ATTR_ALLOW_WHILE_SITTING) &&
-                 spellInfo->HasSpellInterruptFlag(SPELL_INTERRUPT_FLAG_COMBAT) &&
-                (spellInfo->SpellIconID == 52 || spellInfo->SpellIconID == 79))
+                 spellInfo->HasSpellInterruptFlag(SPELL_INTERRUPT_FLAG_COMBAT))
                 return SPELL_WELL_FED;
             break;
         }
