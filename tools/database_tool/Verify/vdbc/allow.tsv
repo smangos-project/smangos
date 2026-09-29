@@ -1,0 +1,2 @@
+table	column	rows	reason
+ChrRaces	ClientPrefix	1	race 9 is Gb in 1.12 and Go in the client; the ChrRaces phase 4 step decides

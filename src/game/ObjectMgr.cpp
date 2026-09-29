@@ -10505,6 +10505,27 @@ void ObjectMgr::LoadSkillTiers()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u skill tiers", uint32(m_skillTierIds.size()));
 }
 
+void ObjectMgr::LoadRaceTaxiMasks()
+{
+    m_raceTaxiMasks.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `race`, `taxi_mask` FROM `race_taxi_mask`"));
+    if (!result)
+    {
+        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, ">> Loaded `race_taxi_mask`, table is empty!");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+        m_raceTaxiMasks[fields[0].GetUInt32()] = fields[1].GetUInt32();
+    }
+    while (result->NextRow());
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u race taxi masks", uint32(m_raceTaxiMasks.size()));
+}
+
 SkillRangeType GetSkillRangeType(SkillLineEntry const* skill, SkillRaceClassInfoEntry const* rcEntry)
 {
     if (sObjectMgr.IsSkillTier(rcEntry->skillTierId))

@@ -1653,6 +1653,9 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Skill Tiers...");
     sObjectMgr.LoadSkillTiers();
 
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Race Taxi Masks...");
+    sObjectMgr.LoadRaceTaxiMasks();
+
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Npc Text Id...");
     sObjectMgr.LoadNpcGossips();                            // must be after load Creature and LoadNPCText
 

@@ -156,7 +156,7 @@ struct ChrRacesEntry
     uint32      dazeSpellId;                                // 11       all 1604
     uint32      resSicknessSpellId;                         // 12       m_ResSicknessSpellId (blizzlike always 15007)
                                                             // 13       m_SplashSoundID
-    uint32      startingTaxiMask;                           // 14
+                                                            // 14       m_startingTaxiNodes
                                                             // 15       m_clientFileString
     uint32      CinematicSequence;                          // 16       m_cinematicSequenceId
     char*       name[8];                                    // 17-24    m_name_lang used for DBC language detection/selection

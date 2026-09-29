@@ -964,6 +964,8 @@ class ObjectMgr
         void LoadCorpses();
         void LoadFishingBaseSkillLevel();
         void LoadSkillTiers();
+        void LoadRaceTaxiMasks();
+        uint32 GetRaceTaxiMask(uint32 race) const { auto itr = m_raceTaxiMasks.find(race); return itr != m_raceTaxiMasks.end() ? itr->second : 0; }
         bool IsSkillTier(uint32 id) const { return m_skillTierIds.find(id) != m_skillTierIds.end(); }
 
         void LoadReputationRewardRate();
@@ -1612,6 +1614,7 @@ class ObjectMgr
         typedef std::map<uint32,int32> FishingBaseSkillMap; // [areaId][base skill level]
         FishingBaseSkillMap m_FishingBaseSkillMap;
         std::unordered_set<uint32> m_skillTierIds;
+        std::unordered_map<uint32, uint32> m_raceTaxiMasks;
 
         typedef std::map<uint32,std::vector<std::string> > HalfNameMap;
 
