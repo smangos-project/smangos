@@ -463,9 +463,9 @@ dbc_emotestext	ID
 dbc_emotestext	Name		
 dbc_emotestext	EmoteID		
 dbc_emotestextdata	ID		
-dbc_emotestextdata	Text_lang		
-dbc_emotestextdata	RelationshipFlags		
-dbc_emotestextdata	EmotesTextID		
+dbc_emotestextdata	Text_lang		client
+dbc_emotestextdata	RelationshipFlags		rule
+dbc_emotestextdata	EmotesTextID		rule
 dbc_emotestextsound	ID		
 dbc_emotestextsound	RaceID		
 dbc_emotestextsound	ClassID		
