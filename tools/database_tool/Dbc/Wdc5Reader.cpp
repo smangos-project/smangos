@@ -126,7 +126,7 @@ namespace
         size_t rowIndex;
         uint32_t columnIndex;
         uint32_t inlineFieldIndex;
-        DbcFieldType fieldType;
+        DbcFieldMeta const* field;
     };
 
     RawHeader ReadHeader(Cursor& cursor)
@@ -238,16 +238,34 @@ namespace
         return (buffer >> bitOffsetInByte) & mask;
     }
 
-    // Sets exactly one of value.intValue/floatValue, matching the None-compression path: a Float
-    // field's raw bits are reinterpreted, never left as a stray integer.
-    void SetDecodedValue(Wdc5Value& value, DbcFieldType type, uint64_t raw)
+    int64_t NarrowSigned(uint64_t raw, int bits)
     {
-        if (type == DbcFieldType::Float)
+        switch (bits)
+        {
+            case 8: return static_cast<int64_t>(static_cast<int8_t>(static_cast<uint8_t>(raw)));
+            case 16: return static_cast<int64_t>(static_cast<int16_t>(static_cast<uint16_t>(raw)));
+            case 32: return static_cast<int64_t>(static_cast<int32_t>(static_cast<uint32_t>(raw)));
+            default: return static_cast<int64_t>(raw);
+        }
+    }
+
+    // Sets exactly one of value.intValue/floatValue, matching the None-compression path: a Float
+    // field's raw bits are reinterpreted, never left as a stray integer. Pallet and common values
+    // are stored as 32 bits whatever the field's width; an 8/16-bit field keeps only its own bits,
+    // as the client reads it.
+    void SetDecodedValue(Wdc5Value& value, DbcFieldMeta const& field, uint64_t raw)
+    {
+        if (field.type == DbcFieldType::Float)
         {
             uint32_t bits = static_cast<uint32_t>(raw);
             float f;
             std::memcpy(&f, &bits, sizeof(float));
             value.floatValue = f;
+        }
+        else if (field.bits == 8 || field.bits == 16)
+        {
+            value.intValue = field.isSigned ? NarrowSigned(raw, field.bits)
+                                            : static_cast<int64_t>(raw & ((uint64_t(1) << field.bits) - 1));
         }
         else
         {
@@ -261,17 +279,6 @@ namespace
             return static_cast<int64_t>(value);
         uint64_t mask = uint64_t(1) << (bitWidth - 1);
         return static_cast<int64_t>((value ^ mask) - mask);
-    }
-
-    int64_t NarrowSigned(uint64_t raw, int bits)
-    {
-        switch (bits)
-        {
-            case 8: return static_cast<int64_t>(static_cast<int8_t>(static_cast<uint8_t>(raw)));
-            case 16: return static_cast<int64_t>(static_cast<int16_t>(static_cast<uint16_t>(raw)));
-            case 32: return static_cast<int64_t>(static_cast<int32_t>(static_cast<uint32_t>(raw)));
-            default: return static_cast<int64_t>(raw);
-        }
     }
 
     // Everything needed to decode one inline field's value out of a regular-layout record.
@@ -356,7 +363,7 @@ namespace
                 uint64_t decoded = ctx.columnMeta.compressionType == ColumnCompression::SignedImmediate
                     ? static_cast<uint64_t>(SignExtend(raw, ctx.columnMeta.packed1))
                     : raw;
-                SetDecodedValue(value, field.type, decoded);
+                SetDecodedValue(value, field, decoded);
                 break;
             }
             case ColumnCompression::CommonData:
@@ -364,7 +371,7 @@ namespace
                 // non-inline id is only known once the whole section's id list is read). This
                 // returns the column's default; ResolveCommonData patches in any override once
                 // every row's id is final.
-                SetDecodedValue(value, field.type, ctx.columnMeta.packed0);
+                SetDecodedValue(value, field, ctx.columnMeta.packed0);
                 break;
             case ColumnCompression::Pallet:
             {
@@ -372,7 +379,7 @@ namespace
                 uint32_t bitOffsetInByte = ctx.columnMeta.packed0 & 7;
                 uint64_t index = ReadPackedBits(buffer, bufferSize, byteOffset, bitOffsetInByte, ctx.columnMeta.packed1);
                 uint32_t raw = ctx.palletValues && index < ctx.palletValues->size() ? (*ctx.palletValues)[index] : 0;
-                SetDecodedValue(value, field.type, raw);
+                SetDecodedValue(value, field, raw);
                 break;
             }
             case ColumnCompression::PalletArray:
@@ -382,7 +389,7 @@ namespace
                 uint64_t index = ReadPackedBits(buffer, bufferSize, byteOffset, bitOffsetInByte, ctx.columnMeta.packed1);
                 size_t flatIndex = static_cast<size_t>(index) * ctx.columnMeta.packed2 + arrayIndex;
                 uint32_t raw = ctx.palletArrayValues && flatIndex < ctx.palletArrayValues->size() ? (*ctx.palletArrayValues)[flatIndex] : 0;
-                SetDecodedValue(value, field.type, raw);
+                SetDecodedValue(value, field, raw);
                 break;
             }
         }
@@ -616,7 +623,7 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
                             Wdc5Value value = DecodeRegularElement(ctx, combinedData.data(), combinedData.size(), record, a, header.packedDataOffset);
                             uint32_t columnIndex = flattenedStart[fieldIndex] + a;
                             if (ctx.columnMeta.compressionType == ColumnCompression::CommonData)
-                                pendingCommonData.push_back({ rowsById.size(), columnIndex, inlineIndex, field.type });
+                                pendingCommonData.push_back({ rowsById.size(), columnIndex, inlineIndex, &field });
                             row[columnIndex] = value;
                         }
 
@@ -762,7 +769,7 @@ Wdc5ReadResult ReadWdc5File(std::filesystem::path const& path, DbcTableMeta cons
             uint32_t id = rowIds[pending.rowIndex];
             auto it = commonValues[pending.inlineFieldIndex].find(id);
             if (it != commonValues[pending.inlineFieldIndex].end())
-                SetDecodedValue(rowsById[pending.rowIndex][pending.columnIndex], pending.fieldType, it->second);
+                SetDecodedValue(rowsById[pending.rowIndex][pending.columnIndex], *pending.field, it->second);
         }
 
         // Patch in the non-inline relation from the parent lookup, per section, using the

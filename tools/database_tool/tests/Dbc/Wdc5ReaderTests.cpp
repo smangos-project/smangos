@@ -303,6 +303,63 @@ TEST_CASE("ReadWdc5File decodes Immediate, SignedImmediate, Pallet, PalletArray 
     CHECK(result.rows[1][6].intValue == 42); // default, no override for id 20
 }
 
+TEST_CASE("ReadWdc5File narrows pallet and common values to the field width", "[Wdc5Reader]")
+{
+    DbcFieldMeta fields[] = {
+        MakeField("ID", DbcFieldType::Int, 32, false, 1, /*isId*/ true),
+        MakeField("Byte", DbcFieldType::Int, 8, true, 1),
+        MakeField("Short", DbcFieldType::Int, 16, false, 1),
+        MakeField("Common", DbcFieldType::Int, 8, false, 1),
+    };
+    uint32_t layoutHashes[] = { 0xABCDu };
+    DbcTableMeta table{ "Test", "test", "dbc_test", layoutHashes, 1, fields, 4 };
+
+    uint32_t packedDataOffset = 4;
+    uint32_t recordSize = packedDataOffset + 4;
+
+    HeaderSpec h;
+    h.recordCount = 1;
+    h.fieldCount = 4;
+    h.totalFieldCount = 4;
+    h.recordSize = recordSize;
+    h.packedDataOffset = packedDataOffset;
+    h.columnMetaSize = 4 * 24;
+    h.palletDataSize = 2 * 4;
+
+    std::vector<uint8_t> record(recordSize, 0);
+    PutU32At(record, 0, 10);
+    OrPackedBits(record, packedDataOffset, 0, 1, 0); // Byte pallet index 0
+    OrPackedBits(record, packedDataOffset, 1, 1, 0); // Short pallet index 0
+
+    std::vector<uint8_t> file;
+    PutHeader(file, h);
+    size_t sectionPos = file.size();
+    PutSection(file, 0, 0, h.recordCount, 0, 0, 0, 0, 0, 0);
+    PutPad(file, static_cast<size_t>(h.fieldCount) * 4);
+
+    PutColumnMeta(file, 0, 32, 0, Compression::None, 0, 0, 0);
+    PutColumnMeta(file, 0, 1, 4, Compression::Pallet, 0, 1, 0);
+    PutColumnMeta(file, 0, 1, 4, Compression::Pallet, 1, 1, 0);
+    PutColumnMeta(file, 0, 0, 0, Compression::CommonData, 0x1205, 0, 0);
+
+    PutU32(file, 0x12A0FFu); // Byte: -1 with neighbouring bytes above it
+    PutU32(file, 0x42200005u); // Short: 5
+
+    uint32_t fileOffset = static_cast<uint32_t>(file.size());
+    PatchU32(file, sectionPos + 8, fileOffset);
+    file.insert(file.end(), record.begin(), record.end());
+
+    TempFile temp("narrow");
+    Wdc5ReadResult result = ReadFromBytes(temp, file, table);
+
+    INFO(result.error);
+    CHECK(result.error.empty());
+    REQUIRE(result.rows.size() == 1);
+    CHECK(result.rows[0][1].intValue == -1);
+    CHECK(result.rows[0][2].intValue == 5);
+    CHECK(result.rows[0][3].intValue == 5);
+}
+
 TEST_CASE("ReadWdc5File resolves a non-inline id list and the copy table", "[Wdc5Reader]")
 {
     DbcFieldMeta fields[] = {
