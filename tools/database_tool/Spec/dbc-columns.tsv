@@ -737,6 +737,11 @@ dbc_itemset	ItemID14
 dbc_itemset	ItemID15		
 dbc_itemset	ItemID16		
 dbc_itemset	ItemID17		
+dbc_itemsetspell	ID		client
+dbc_itemsetspell	ChrSpecID		neutral
+dbc_itemsetspell	SpellID		
+dbc_itemsetspell	Threshold		
+dbc_itemsetspell	ItemSetID		rule
 dbc_itemsparse	ID		
 dbc_itemsparse	AllowableRace		
 dbc_itemsparse	Description_lang		
