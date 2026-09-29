@@ -385,6 +385,35 @@ enum SpellEffects
     TOTAL_SPELL_EFFECTS                    = 134
 };
 
+// The effect number the 1.15 client uses for a spell effect number of ours
+inline uint32 GetClientSpellEffect(uint32 effect)
+{
+    switch (effect)
+    {
+        case SPELL_EFFECT_TELEPORT_UNITS:       return 252;
+        case SPELL_EFFECT_ADD_HONOR:            return 325;
+        case SPELL_EFFECT_OPEN_LOCK_ITEM:       return 326;
+        case SPELL_EFFECT_PULL:                 return 327;
+        case SPELL_EFFECT_ADD_COMBO_POINTS:     return 328;
+        case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:  return 320;
+        case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:  return 321;
+        case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:  return 322;
+        case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:  return 323;
+        case SPELL_EFFECT_RESURRECT_NEW:        return 329;
+        case SPELL_EFFECT_SUMMON_WILD:
+        case SPELL_EFFECT_SUMMON_GUARDIAN:
+        case SPELL_EFFECT_SUMMON_POSSESSED:
+        case SPELL_EFFECT_SUMMON_TOTEM:
+        case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
+        case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
+        case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
+        case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
+        case SPELL_EFFECT_SUMMON_CRITTER:
+        case SPELL_EFFECT_SUMMON_DEMON:         return 28;
+        default:                                return effect;
+    }
+}
+
 enum SpellCastResult
 {
     SPELL_FAILED_AFFECTING_COMBAT               = 0x00, // You are in combat

@@ -4693,7 +4693,7 @@ void Spell::SendLogExecute()
             continue;
 
         SpellLogEffect effect;
-        effect.Effect = int32(m_spellInfo->Effect[i]);
+        effect.Effect = int32(GetClientSpellEffect(m_spellInfo->Effect[i]));
         for (ExecuteLogInfo const& info : m_executeLogInfo[i])
         {
             ClassicGuid const victim = ToClassicGuid(info.targetGuid);

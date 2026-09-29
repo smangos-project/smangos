@@ -11,6 +11,7 @@ add_executable(tests-game
   UpdateFieldTests.cpp
   MovementFlagsTests.cpp
   MonsterMovePackingTests.cpp
+  SpellEffectNumberTests.cpp
   TestMain.cpp
 )
 
