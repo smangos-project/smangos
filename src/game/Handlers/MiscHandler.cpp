@@ -984,6 +984,7 @@ void WorldSession::HandleInspectOpcode(Inspect const& packet)
     displayInfo.Gender = pTarget->GetGender();
     displayInfo.Race = pTarget->GetRace();
     displayInfo.ClassId = pTarget->GetClass();
+    displayInfo.Customizations = pTarget->GetCustomizations();
 
     for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {

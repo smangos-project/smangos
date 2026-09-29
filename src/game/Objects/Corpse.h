@@ -73,7 +73,7 @@ class Corpse : public WorldObject
         void DeleteFromDB();
 
         ChrCustomizationList const& GetCustomizations() const { return m_customizations; }
-        void SetCustomizations(ChrCustomizationList const& customizations) { m_customizations = customizations; }
+        void SetCustomizations(ChrCustomizationList const& customizations) { m_customizations = customizations; MarkForClientUpdate(); }
 
         ObjectGuid const& GetOwnerGuid() const { return GetGuidValue(CORPSE_FIELD_OWNER); }
 

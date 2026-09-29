@@ -253,3 +253,27 @@ TEST_CASE("An item's owner-only fields drop out of another viewer's create block
     // ArtifactXP(8) + ItemAppearanceModID(1) + ZoneFlags(4) + DEBUGItemLevel(2) = 51 owner-only bytes.
     CHECK(ownerView.size() - otherView.size() == 51);
 }
+
+TEST_CASE("A customization list can be rewritten in a corpse's update field", "[updatefields]")
+{
+    UFCorpseData corpseData;
+    auto setter = MutableFieldReference<UFCorpseData, false>(corpseData).ModifyValue(&UFCorpseData::Customizations);
+    for (uint32 i = 1; i <= 2; ++i)
+    {
+        UFChrCustomizationChoice& choice = AddDynamicUpdateFieldValue(setter);
+        choice.ChrCustomizationOptionID = i;
+        choice.ChrCustomizationChoiceID = i * 100;
+    }
+    REQUIRE(corpseData.Customizations.size() == 2);
+    CHECK(corpseData.Customizations[1].ChrCustomizationChoiceID == 200);
+
+    ByteBuffer data;
+    corpseData.Customizations[1].WriteCreate(data, nullptr, nullptr);
+    uint32 option, choice;
+    data >> option >> choice;
+    CHECK(option == 2);
+    CHECK(choice == 200);
+
+    ClearDynamicUpdateFieldValues(setter);
+    CHECK(corpseData.Customizations.size() == 0);
+}

@@ -3,6 +3,7 @@
 
 #include "ByteBuffer.h"
 #include "Guid.h"
+#include "ChrCustomizationChoice.h"
 #include "ClassicOpcodes.h"
 #include <string>
 #include <vector>
@@ -57,6 +58,7 @@ struct ClassicCharacterInfo
     uint32 CharFlags = 0;
     bool FirstLogin = false;
     std::string Name;
+    std::vector<ChrCustomizationChoice> Customizations;
 };
 
 // Read parses every character's fixed-layout block into Characters when the body matches it exactly
@@ -153,7 +155,7 @@ struct ClassicEnumCharactersResult
             data << uint32(0);                 // VirtualRealmAddress
             data << c.ListPosition << c.Race << c.Gender << c.Class;
             data << int16(0);                  // SpecID
-            data << uint32(0);                 // customization count
+            data << uint32(c.Customizations.size());
             data << c.Level;
             data << c.Map << c.Zone << c.X << c.Y << c.Z;
             data << uint64(0);                 // GuildClubMemberID
@@ -173,6 +175,8 @@ struct ClassicEnumCharactersResult
             data << uint32(0) << uint32(0);    // ProfessionIds
             data << int32(0);                  // TimerunningSeasonID
             data << uint32(0);                 // OverrideSelectScreenFileDataID
+            for (ChrCustomizationChoice const& choice : c.Customizations)
+                data << choice.OptionID << choice.ChoiceID;
             data.WriteBits(uint32(c.Name.size()), 6);
             data.WriteBit(c.FirstLogin);
             data.FlushBits();
@@ -225,7 +229,12 @@ struct ClassicEnumCharactersResult
 
                 if (customizationCount > 1024 || !need(size_t(customizationCount) * 8 + 1))
                     return false;
-                data.rpos(data.rpos() + size_t(customizationCount) * 8);
+                for (uint32 n = 0; n < customizationCount; ++n)
+                {
+                    ChrCustomizationChoice choice;
+                    data >> choice.OptionID >> choice.ChoiceID;
+                    c.Customizations.push_back(choice);
+                }
 
                 uint32 nameLength = data.ReadBits(6);
                 c.FirstLogin = data.ReadBit();

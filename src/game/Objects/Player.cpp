@@ -340,6 +340,7 @@ void Player::SetCustomizations(ChrCustomizationList const& customizations)
 {
     m_customizations = customizations;
     m_customizationsChanged = true;
+    MarkForClientUpdate();
     if (PlayerCacheData* data = sObjectMgr.GetPlayerDataByGUID(GetGUIDLow()))
         data->customizations = customizations;
 }

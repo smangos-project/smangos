@@ -85,6 +85,19 @@ TEST_CASE("InspectResult round-trips with no items and with an enchanted item", 
     RejectsEveryTruncation(bare);
 }
 
+TEST_CASE("InspectResult round-trips customization choices", "[packets]")
+{
+    InspectResult result;
+    result.DisplayInfo.PlayerGuid = { 0x6666, 0 };
+    result.DisplayInfo.Name = "Looks";
+    result.DisplayInfo.Customizations = { { 1, 10 }, { 2, 20 }, { 5, 50 } };
+    RoundTrip(result, [](InspectResult const& a, InspectResult const& b)
+    {
+        CHECK(a.DisplayInfo.Customizations == b.DisplayInfo.Customizations);
+    });
+    RejectsEveryTruncation(result);
+}
+
 TEST_CASE("InspectPvpResult round-trips with empty and populated tail arrays", "[packets]")
 {
     InspectPvpResult empty;

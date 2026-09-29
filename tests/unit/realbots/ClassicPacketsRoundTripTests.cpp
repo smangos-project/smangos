@@ -204,6 +204,30 @@ TEST_CASE("ClassicEnumCharactersResult round-trips its parsed subset", "[packets
     });
 }
 
+TEST_CASE("ClassicEnumCharactersResult round-trips character customizations", "[packets]")
+{
+    ClassicCharacterInfo first;
+    first.Guid = ClassicGuid{ 0x11ull, 0x9900ull };
+    first.Name = "Alpha";
+    first.Level = 5;
+    first.Customizations = { { 1, 100 }, { 2, 200 } };
+    ClassicCharacterInfo second;
+    second.Guid = ClassicGuid{ 0x22ull, 0x9900ull };
+    second.Name = "Beta";
+
+    ClassicEnumCharactersResult out;
+    out.Characters = { first, second };
+
+    RoundTrip(out, [](ClassicEnumCharactersResult const& a, ClassicEnumCharactersResult const& b)
+    {
+        REQUIRE(b.Characters.size() == 2);
+        CHECK(b.Characters[0].Name == a.Characters[0].Name);
+        CHECK(b.Characters[0].Customizations == a.Characters[0].Customizations);
+        CHECK(b.Characters[1].Name == "Beta");
+        CHECK(b.Characters[1].Customizations.empty());
+    });
+}
+
 TEST_CASE("CharCreate round-trips", "[packets]")
 {
     CharCreate out;

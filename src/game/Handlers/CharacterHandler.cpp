@@ -668,6 +668,7 @@ void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*pa
         info.X = cacheData->fPosX;
         info.Y = cacheData->fPosY;
         info.Z = cacheData->fPosZ;
+        info.Customizations = cacheData->customizations;
         info.ListPosition = listPosition++;
 
         if (info.Level > m_characterMaxLevel)

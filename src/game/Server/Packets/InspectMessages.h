@@ -8,6 +8,7 @@
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/Classic/ChrCustomizationChoice.h"
 #include "Packets/ItemMessages.h"
 #include <array>
 #include <string>
@@ -129,8 +130,8 @@ struct InspectItemEntry
     }
 };
 
-// The inspected character's model, name and gear. No specs, glyphs, talents or character
-// customizations in vanilla -- those fields are always the empty/zero default.
+// The inspected character's model, name, look and gear. No specs, glyphs or talents in vanilla --
+// those fields are always the empty/zero default.
 struct InspectDisplayInfo
 {
     ClassicGuid PlayerGuid;
@@ -138,6 +139,7 @@ struct InspectDisplayInfo
     uint8 Gender = 0;
     uint8 Race = 0;
     uint8 ClassId = 0;
+    std::vector<ChrCustomizationChoice> Customizations;
     std::vector<InspectItemEntry> Items;
 
     void Write(ByteBuffer& data) const
@@ -147,8 +149,10 @@ struct InspectDisplayInfo
         data << uint32(Items.size());
         data.WriteBits(uint32(Name.length()), 6);
         data << Gender << Race << ClassId;
-        data << uint32(0); // Customizations count -- no character customizations in vanilla
+        data << uint32(Customizations.size());
         data.WriteString(Name);
+        for (ChrCustomizationChoice const& choice : Customizations)
+            data << choice.OptionID << choice.ChoiceID;
         for (InspectItemEntry const& item : Items)
             item.Write(data);
     }
@@ -173,11 +177,20 @@ struct InspectDisplayInfo
         data >> Gender >> Race >> ClassId;
         uint32 customizationsCount;
         data >> customizationsCount;
-        if (customizationsCount != 0)
+        if (customizationsCount > 250)
             return false;
         if (data.size() - data.rpos() < nameLength)
             return false;
         Name = data.ReadString(nameLength);
+        if (data.size() - data.rpos() < size_t(customizationsCount) * 2 * sizeof(uint32))
+            return false;
+        Customizations.clear();
+        for (uint32 i = 0; i < customizationsCount; ++i)
+        {
+            ChrCustomizationChoice choice;
+            data >> choice.OptionID >> choice.ChoiceID;
+            Customizations.push_back(choice);
+        }
         Items.clear();
         for (uint32 i = 0; i < itemCount; ++i)
         {

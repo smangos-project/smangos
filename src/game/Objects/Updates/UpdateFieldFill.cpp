@@ -278,8 +278,31 @@ void FillUnitData(Unit& unit)
     }
 }
 
+// Rewrites the whole list when it differs from what the update field already holds.
+template<typename Owner, typename StructT, int32 SBlockBit, uint32 SBit, int32 FBlockBit, uint32 FBit>
+void FillCustomizations(Owner& owner, UpdateField<StructT, SBlockBit, SBit> Owner::* structField,
+    DynamicUpdateField<UFChrCustomizationChoice, FBlockBit, FBit> StructT::* leafField, ChrCustomizationList const& list)
+{
+    auto const& current = (*(owner.*structField)).*leafField;
+    bool same = current.size() == list.size();
+    for (uint32 i = 0; same && i < list.size(); ++i)
+        same = current[i].ChrCustomizationOptionID == list[i].OptionID && current[i].ChrCustomizationChoiceID == list[i].ChoiceID;
+    if (same)
+        return;
+
+    auto setter = owner.m_values.ModifyValue(structField).ModifyValue(leafField);
+    ClearDynamicUpdateFieldValues(setter);
+    for (ChrCustomizationChoice const& choice : list)
+    {
+        UFChrCustomizationChoice& value = AddDynamicUpdateFieldValue(setter);
+        value.ChrCustomizationOptionID = choice.OptionID;
+        value.ChrCustomizationChoiceID = choice.ChoiceID;
+    }
+}
+
 void FillPlayerData(Player& player)
 {
+    FillCustomizations(player, &Player::m_playerData, &UFPlayerData::Customizations, player.GetCustomizations());
     FillField(player, &Player::m_playerData, &UFPlayerData::DuelArbiter, ToClassic(player.GetGuidValue(PLAYER_DUEL_ARBITER)));
     FillField(player, &Player::m_playerData, &UFPlayerData::PlayerFlags, player.GetUInt32Value(PLAYER_FLAGS));
     FillField(player, &Player::m_playerData, &UFPlayerData::GuildRankID, player.GetUInt32Value(PLAYER_GUILDRANK));
@@ -523,6 +546,7 @@ void FillCorpseData(Corpse& corpse)
 {
     FillObjectData(corpse, 0);
 
+    FillCustomizations(corpse, &Corpse::m_corpseData, &UFCorpseData::Customizations, corpse.GetCustomizations());
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::Owner, ToClassic(corpse.GetOwnerGuid()));
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::DisplayID, corpse.GetUInt32Value(CORPSE_FIELD_DISPLAY_ID));
     FillField(corpse, &Corpse::m_corpseData, &UFCorpseData::RaceID, corpse.GetByteValue(CORPSE_FIELD_BYTES_1, 1));
