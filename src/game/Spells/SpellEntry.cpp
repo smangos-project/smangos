@@ -104,7 +104,7 @@ SpellSpecific Spells::GetSpellSpecific(uint32 spellId)
                 return SPELL_STING;
 
             // only hunter aspects have this (one have generic family), if exclude Auto Shot
-            if (spellInfo->activeIconID == 122 && spellInfo->Id != 75)
+            if (spellInfo->HasTag(SPELL_TAG_ASPECT))
                 return SPELL_ASPECT;
 
             break;
@@ -121,7 +121,7 @@ SpellSpecific Spells::GetSpellSpecific(uint32 spellId)
                 return SPELL_JUDGEMENT;
 
             // Old Judgement of Command
-            if (spellInfo->SpellIconID == 561 && spellInfo->SpellVisual == 5652)
+            if (spellInfo->HasTag(SPELL_TAG_OLD_JUDGEMENT_OF_COMMAND))
                 return SPELL_JUDGEMENT;
 
             for (uint32 i : spellInfo->Effect)
@@ -145,7 +145,7 @@ SpellSpecific Spells::GetSpellSpecific(uint32 spellId)
     }
 
     // only warlock armor/skin have this (in additional to family cases)
-    if (spellInfo->SpellVisual == 130 && spellInfo->SpellIconID == 89)
+    if (spellInfo->HasTag(SPELL_TAG_WARLOCK_ARMOR))
         return SPELL_WARLOCK_ARMOR;
 
     // Tracking spells (exclude Well Fed, some other always allowed cases)
@@ -344,7 +344,7 @@ DiminishingGroup SpellEntry::GetDiminishingReturnsGroup(bool triggered) const
         case SPELLFAMILY_MAGE:
         {
             // Ice Block
-            if (SpellVisual == 4325)
+            if (HasTag(SPELL_TAG_ICE_BLOCK))
                 return DIMINISHING_NONE;
             break;
         }
@@ -644,7 +644,7 @@ float SpellEntry::CalculateCustomCoefficient(WorldObject const* caster, DamageEf
         case SPELLFAMILY_PALADIN:
         {
             // Seal of Righteousness
-            if (IsFitToFamilyMask(uint64(0x0000000008000000)) && SpellIconID == 25)
+            if (IsFitToFamilyMask(uint64(0x0000000008000000)) && HasTag(SPELL_TAG_SEAL_OF_RIGHTEOUSNESS))
             {
                 coeff = 0.10f;
                 float speed = BASE_ATTACK_TIME;
@@ -813,7 +813,7 @@ bool SpellEntry::IsPositiveEffect(SpellEffectIndex effIndex, WorldObject const* 
 
     // Hellfire. Damages the caster, but is still positive !
     // (Has same SpellFamilyFlags as Soul Fire oO)
-    if (IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_HELLFIRE>() && SpellIconID == 937 && SpellVisual == 5423)
+    if (IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_HELLFIRE>() && HasTag(SPELL_TAG_HELLFIRE_CHANNEL))
         return true;
 
     switch (Effect[effIndex])
