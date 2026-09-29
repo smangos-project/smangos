@@ -38,9 +38,6 @@ TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
 
 WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid, int32 groupid);
 
-CharacterFacialHairStylesEntry const* GetCharFacialHairEntry(uint8 race, uint8 gender, uint8 facialHairId);
-CharSectionsEntry const* GetCharSectionEntry(uint8 race, CharSectionType genType, uint8 gender, uint8 type, uint8 color);
-void GetAllValidCharSectionVariationAndColorPairs(uint8 race, CharSectionType genType, uint8 gender, std::vector<std::pair<uint8, uint8>>& validVariations);
 
 ChatChannelsEntry const* GetChannelEntryFor(uint32 channel_id);
 ChatChannelsEntry const* GetChannelEntryFor(std::string const& name);
@@ -57,8 +54,6 @@ uint8 ValidateName(std::wstring const& name);
 extern DBCStorage <AuctionHouseEntry>            sAuctionHouseStore;
 extern DBCStorage <BankBagSlotPricesEntry>       sBankBagSlotPricesStore;
 //extern DBCStorage <ChatChannelsEntry>           sChatChannelsStore; -- accessed using function, no usable index
-extern DBCStorage <CharacterFacialHairStylesEntry>  sCharacterFacialHairStylesStore;
-extern DBCStorage <CharSectionsEntry>            sCharSectionsStore;
 extern DBCStorage <ChrClassesEntry>              sChrClassesStore;
 extern DBCStorage <ChrRacesEntry>                sChrRacesStore;
 extern DBCStorage <CinematicSequencesEntry>      sCinematicSequencesStore;

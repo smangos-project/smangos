@@ -50,10 +50,6 @@ struct WMOAreaTableTripple
 DBCStorage <AuctionHouseEntry> sAuctionHouseStore(AuctionHouseEntryfmt);
 DBCStorage <BankBagSlotPricesEntry> sBankBagSlotPricesStore(BankBagSlotPricesEntryfmt);
 DBCStorage <ChatChannelsEntry> sChatChannelsStore(ChatChannelsEntryfmt);
-DBCStorage <CharacterFacialHairStylesEntry> sCharacterFacialHairStylesStore(CharacterFacialHairStylesfmt);
-std::unordered_map<uint32, CharacterFacialHairStylesEntry const*> sCharFacialHairMap;
-DBCStorage <CharSectionsEntry> sCharSectionsStore(CharSectionsEntryfmt);
-std::multimap<uint32, CharSectionsEntry const*> sCharSectionMap;
 DBCStorage <ChrClassesEntry> sChrClassesStore(ChrClassesEntryfmt);
 DBCStorage <ChrRacesEntry> sChrRacesStore(ChrRacesEntryfmt);
 DBCStorage <CinematicSequencesEntry> sCinematicSequencesStore(CinematicSequencesEntryfmt);
@@ -196,18 +192,6 @@ void LoadDBCStores(std::string const& dataPath)
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sBankBagSlotPricesStore,   dbcPath, "BankBagSlotPrices.dbc");
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChatChannelsStore,        dbcPath, "ChatChannels.dbc");
-
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCharacterFacialHairStylesStore, dbcPath, "CharacterFacialHairStyles.dbc");
-    for (uint32 i = 0; i < sCharacterFacialHairStylesStore.GetNumRows(); ++i)
-        if (CharacterFacialHairStylesEntry const* entry = sCharacterFacialHairStylesStore.LookupEntry(i))
-            if (entry->RaceID && ((1 << (entry->RaceID - 1)) & RACEMASK_ALL_PLAYABLE) != 0) // ignore nonplayable races
-                sCharFacialHairMap.insert({ entry->RaceID | (entry->SexID << 8) | (entry->VariationID << 16), entry });
-
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCharSectionsStore,        dbcPath, "CharSections.dbc");
-    for (uint32 i = 0; i < sCharSectionsStore.GetNumRows(); ++i)
-        if (CharSectionsEntry const* entry = sCharSectionsStore.LookupEntry(i))
-            if (entry->Race && ((1 << (entry->Race - 1)) & RACEMASK_ALL_PLAYABLE) != 0) //ignore Nonplayable races
-                sCharSectionMap.emplace(uint8(entry->BaseSection) | (uint8(entry->Gender) << 8) | (uint8(entry->Race) << 16), entry);
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrClassesStore,          dbcPath, "ChrClasses.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrRacesStore,            dbcPath, "ChrRaces.dbc");
@@ -477,37 +461,6 @@ WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid
         return nullptr;
     return i->second;
 
-}
-
-CharacterFacialHairStylesEntry const* GetCharFacialHairEntry(uint8 race, uint8 gender, uint8 facialHairId)
-{
-    auto itr = sCharFacialHairMap.find(uint32(race) | uint32(gender << 8) | uint32(facialHairId << 16));
-    if (itr == sCharFacialHairMap.end())
-        return nullptr;
-
-    return itr->second;
-}
-
-CharSectionsEntry const* GetCharSectionEntry(uint8 race, CharSectionType genType, uint8 gender, uint8 type, uint8 color)
-{
-    auto eqr = sCharSectionMap.equal_range(uint32(genType) | uint32(gender << 8) | uint32(race << 16));
-    for (auto itr = eqr.first; itr != eqr.second; ++itr)
-    {
-        if (itr->second->VariationIndex == type && itr->second->ColorIndex == color && !itr->second->HasFlag(SECTION_FLAG_UNAVAILABLE))
-            return itr->second;
-    }
-
-    return nullptr;
-}
-
-void GetAllValidCharSectionVariationAndColorPairs(uint8 race, CharSectionType genType, uint8 gender, std::vector<std::pair<uint8, uint8>>& validVariations)
-{
-    auto eqr = sCharSectionMap.equal_range(uint32(genType) | uint32(gender << 8) | uint32(race << 16));
-    for (auto itr = eqr.first; itr != eqr.second; ++itr)
-    {
-        if (!itr->second->HasFlag(SECTION_FLAG_UNAVAILABLE))
-            validVariations.push_back({ itr->second->VariationIndex, itr->second->ColorIndex });
-    }
 }
 
 ChatChannelsEntry const* GetChannelEntryFor(uint32 channel_id)

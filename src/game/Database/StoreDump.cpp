@@ -690,8 +690,6 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "AuctionHouse", sAuctionHouseStore);
     ok &= DumpDBCStore(dir, "BankBagSlotPrices", sBankBagSlotPricesStore);
     ok &= DumpDBCStore(dir, "ChatChannels", sChatChannelsStore);
-    ok &= DumpDBCStore(dir, "CharacterFacialHairStyles", sCharacterFacialHairStylesStore);
-    ok &= DumpDBCStore(dir, "CharSections", sCharSectionsStore);
     ok &= DumpDBCStore(dir, "ChrClasses", sChrClassesStore);
     ok &= DumpDBCStore(dir, "ChrRaces", sChrRacesStore);
     ok &= DumpDBCStore(dir, "CinematicSequences", sCinematicSequencesStore);
