@@ -361,7 +361,7 @@ void SQLStorageLoaderBase<DerivedLoader, StorageClass>::LoadProgressive(StorageC
 {
     // To be used on tables that need to support patch progression. Second column must be the `patch` column.
     Field* fields = nullptr;
-    std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s && %s <= %u)", store.EntryFieldName(), store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
+    std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s AND %s <= %u)", store.EntryFieldName(), store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
     if (!result)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Error loading %s table (not exist?)\n", store.GetTableName());
@@ -373,14 +373,14 @@ void SQLStorageLoaderBase<DerivedLoader, StorageClass>::LoadProgressive(StorageC
     uint32 recordCount = 0;
     uint32 recordsize = 0;
 
-    result = WorldDatabase.PQuery("SELECT COUNT(*) FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s && %s <= %u)", store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
+    result = WorldDatabase.PQuery("SELECT COUNT(*) FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s AND %s <= %u)", store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
     if (result)
     {
         fields = result->Fetch();
         recordCount = fields[0].GetUInt32();
     }
 
-    result = WorldDatabase.PQuery("SELECT * FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s && %s <= %u)", store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
+    result = WorldDatabase.PQuery("SELECT * FROM %s t1 WHERE %s=(SELECT max(%s) FROM %s t2 WHERE t1.%s=t2.%s AND %s <= %u)", store.GetTableName(), column_name.c_str(), column_name.c_str(), store.GetTableName(), store.EntryFieldName(), store.EntryFieldName(), column_name.c_str(), wow_patch);
 
     if (!result)
     {

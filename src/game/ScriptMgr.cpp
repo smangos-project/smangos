@@ -2426,7 +2426,7 @@ void ScriptMgr::CollectPossibleGenericIds(std::set<uint32>& genericIds)
         }
 
         // From SCRIPT_COMMAND_TEMP_SUMMON_CREATURE.
-        result = WorldDatabase.PQuery("SELECT `dataint2` FROM `%s` WHERE `command`=10 && `dataint2`!=0", script_table);
+        result = WorldDatabase.PQuery("SELECT `dataint2` FROM `%s` WHERE `command`=10 AND `dataint2`!=0", script_table);
 
         if (result)
         {
@@ -2440,7 +2440,7 @@ void ScriptMgr::CollectPossibleGenericIds(std::set<uint32>& genericIds)
         }
 
         // From SCRIPT_COMMAND_START_SCRIPT_FOR_ALL and SCRIPT_COMMAND_START_SCRIPT_ON_ZONE.
-        result = WorldDatabase.PQuery("SELECT `datalong` FROM `%s` WHERE `command` IN (68, 92) && `datalong`!=0", script_table);
+        result = WorldDatabase.PQuery("SELECT `datalong` FROM `%s` WHERE `command` IN (68, 92) AND `datalong`!=0", script_table);
 
         if (result)
         {
@@ -2475,7 +2475,7 @@ void ScriptMgr::CollectPossibleGenericIds(std::set<uint32>& genericIds)
 void ScriptMgr::CollectPossibleEventIds(std::set<uint32>& eventIds)
 {
     // Load all possible script entries from gameobjects.
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `data2` FROM `gameobject_template` WHERE `type`=10 && `data2` > 0"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `data2` FROM `gameobject_template` WHERE `type`=10 AND `data2` > 0"));
     Field* fields;
     if (result)
     {
@@ -2487,7 +2487,7 @@ void ScriptMgr::CollectPossibleEventIds(std::set<uint32>& eventIds)
                 eventIds.insert(eventId);
         } while (result->NextRow());
     }
-    result = WorldDatabase.Query("SELECT `data6` FROM `gameobject_template` WHERE `type`=3 && `data6` > 0");
+    result = WorldDatabase.Query("SELECT `data6` FROM `gameobject_template` WHERE `type`=3 AND `data6` > 0");
     if (result)
     {
         do
@@ -2498,7 +2498,7 @@ void ScriptMgr::CollectPossibleEventIds(std::set<uint32>& eventIds)
                 eventIds.insert(eventId);
         } while (result->NextRow());
     }
-    result = WorldDatabase.Query("SELECT `data2` FROM `gameobject_template` WHERE `type`=13 && `data2` > 0");
+    result = WorldDatabase.Query("SELECT `data2` FROM `gameobject_template` WHERE `type`=13 AND `data2` > 0");
     if (result)
     {
         do

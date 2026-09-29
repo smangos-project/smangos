@@ -180,7 +180,7 @@ void GameEventMgr::LoadFromDB()
         mGameEvent.resize(max_event_id + 1);
     }
 
-    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT entry,UNIX_TIMESTAMP(start_time),UNIX_TIMESTAMP(end_time),occurence,length,holiday,description,hardcoded,disabled,patch_min,patch_max FROM game_event");
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT entry,CAST(strftime('%s',start_time,'utc') AS INTEGER),CAST(strftime('%s',end_time,'utc') AS INTEGER),occurence,length,holiday,description,hardcoded,disabled,patch_min,patch_max FROM game_event");
     if (!result)
     {
         mGameEvent.clear();
@@ -442,7 +442,7 @@ void GameEventMgr::LoadFromDB()
     mGameEventCreatureData.resize(mGameEvent.size());
     //                                     0       1        2             3               4           5              6
     result = WorldDatabase.PQuery("SELECT `guid`, `event`, `display_id`, `equipment_id`, `entry_id`, `spell_start`, `spell_end` "
-                                  "FROM `game_event_creature_data` t1 WHERE `patch`=(SELECT max(`patch`) FROM `game_event_creature_data` t2 WHERE t1.`guid`=t2.`guid` && t1.`event`=t2.`event` && `patch` <= %u)", sWorld.GetWowPatch());
+                                  "FROM `game_event_creature_data` t1 WHERE `patch`=(SELECT max(`patch`) FROM `game_event_creature_data` t2 WHERE t1.`guid`=t2.`guid` AND t1.`event`=t2.`event` AND `patch` <= %u)", sWorld.GetWowPatch());
 
     count = 0;
     if (!result)

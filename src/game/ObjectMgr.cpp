@@ -1082,7 +1082,7 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
         if (!found)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_ERROR, "Table `locales_gossip_menu_option` has data for nonexistent gossip menu %u item %u, skipped.", menuId, id);
-            sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "DELETE FROM `locales_gossip_menu_option` WHERE `menu_id`=%u && `id`=%u;", menuId, id);
+            sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "DELETE FROM `locales_gossip_menu_option` WHERE `menu_id`=%u AND `id`=%u;", menuId, id);
             continue;
         }
 
@@ -1189,7 +1189,7 @@ struct SQLCreatureLoader : public SQLStorageLoaderBase<SQLCreatureLoader, SQLSto
 void ObjectMgr::LoadCreatureTemplates()
 {
     //                                                                0        1       2          3            4            5          6            7                 8              9              10             11             12                13                14                15                16                      17                       18                     19                      20                           21                  22            23           24                 25                     26             27      28            29      30            31               32                   33                 34                  35                   36                 37               38                  39                    40          41          42            43           44            45            46              47               48               49               50         51                    52                  53          54          55               56                   57                58                59       60         61               62              63          64               65              66            67           68                      69                    70                71               72               73             74
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `name`, `subname`, `level_min`, `level_max`, `faction`, `npc_flags`, `gossip_menu_id`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `type`, `pet_family`, `rank`, `unit_class`, `xp_multiplier`, `health_multiplier`, `mana_multiplier`, `armor_multiplier`, `damage_multiplier`, `damage_variance`, `damage_school`, `base_attack_time`, `ranged_attack_time`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`,  `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `gold_min`, `gold_max`, `spell_list_id`, `pet_spell_list_id`, `spawn_spell_id`, `totem_spell_id`, `auras`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `immunity_flags`, `static_flags1`, `static_flags2`, `flags_extra`, `script_name` FROM `creature_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `creature_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `name`, `subname`, `level_min`, `level_max`, `faction`, `npc_flags`, `gossip_menu_id`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `type`, `pet_family`, `rank`, `unit_class`, `xp_multiplier`, `health_multiplier`, `mana_multiplier`, `armor_multiplier`, `damage_multiplier`, `damage_variance`, `damage_school`, `base_attack_time`, `ranged_attack_time`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`,  `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `gold_min`, `gold_max`, `spell_list_id`, `pet_spell_list_id`, `spawn_spell_id`, `totem_spell_id`, `auras`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `immunity_flags`, `static_flags1`, `static_flags2`, `flags_extra`, `script_name` FROM `creature_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `creature_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", sWorld.GetWowPatch()));
 
     if (!result)
         return;
@@ -1208,7 +1208,7 @@ void ObjectMgr::LoadCreatureTemplates()
 void ObjectMgr::LoadCreatureTemplate(uint32 entry)
 {
     //                                                                0        1       2          3            4            5          6            7                 8              9              10             11             12                13                14                15                16                      17                       18                     19                      20                           21                  22            23           24                 25                     26             27      28            29      30            31               32                   33                 34                  35                   36                 37               38                  39                    40          41          42            43           44            45            46              47               48               49               50         51                    52                  53          54          55               56                   57                58                59       60         61               62              63          64               65              66            67           68                      69                    70                71               72               73             74
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `name`, `subname`, `level_min`, `level_max`, `faction`, `npc_flags`, `gossip_menu_id`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `type`, `pet_family`, `rank`, `unit_class`, `xp_multiplier`, `health_multiplier`, `mana_multiplier`, `armor_multiplier`, `damage_multiplier`, `damage_variance`, `damage_school`, `base_attack_time`, `ranged_attack_time`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`,  `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `gold_min`, `gold_max`, `spell_list_id`, `pet_spell_list_id`, `spawn_spell_id`, `totem_spell_id`, `auras`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `immunity_flags`, `static_flags1`, `static_flags2`, `flags_extra`, `script_name` FROM `creature_template` t1 WHERE `entry`=%u && `patch`=(SELECT max(`patch`) FROM `creature_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", entry, sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `name`, `subname`, `level_min`, `level_max`, `faction`, `npc_flags`, `gossip_menu_id`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `display_scale1`, `display_scale2`, `display_scale3`, `display_scale4`, `display_probability1`, `display_probability2`, `display_probability3`, `display_probability4`, `display_total_probability`, `mount_display_id`, `speed_walk`, `speed_run`, `detection_range`, `call_for_help_range`, `leash_range`, `type`, `pet_family`, `rank`, `unit_class`, `xp_multiplier`, `health_multiplier`, `mana_multiplier`, `armor_multiplier`, `damage_multiplier`, `damage_variance`, `damage_school`, `base_attack_time`, `ranged_attack_time`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`,  `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `gold_min`, `gold_max`, `spell_list_id`, `pet_spell_list_id`, `spawn_spell_id`, `totem_spell_id`, `auras`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `immunity_flags`, `static_flags1`, `static_flags2`, `flags_extra`, `script_name` FROM `creature_template` t1 WHERE `entry`=%u AND `patch`=(SELECT max(`patch`) FROM `creature_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", entry, sWorld.GetWowPatch()));
 
     if (!result)
         return;
@@ -3817,7 +3817,7 @@ void ObjectMgr::LoadItemPrototypes()
 
     //                                                                0        1        2           3       4              5                6          7        8            9            10            11                12                 13                14            15                16                17                     18                19                     20                    21                             22                          23           24           25                 26            27             28            29             30            31             32            33             34            35             36            37             38            39             40            41             42            43             44             45              46       47           48           49          50          51           52          53          54           55          56          57           58          59          60           61          62          63           64       65       66          67          68            69           70            71            72           73                74                75                76                 77                 78                         79           80                81                82                83                 84                 85                         86           87                88                89                90                 91                 92                         93           94                95                96                97                 98                 99                         100          101               102               103               104                105                106                        107        108          109              110              111            112        113         114       115                116       117               118           119          120         121           122              123          124               125               126            127                 128
     std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `class`, `subclass`, `name`, `description`, `display_id`, `quality`, `flags`, `buy_count`, `buy_price`, `sell_price`, `inventory_type`, `allowable_class`, `allowable_race`, `item_level`, `required_level`, `required_skill`, `required_skill_rank`, `required_spell`, `required_honor_rank`, `required_city_rank`, `required_reputation_faction`, `required_reputation_rank`, `max_count`, `stackable`, `container_slots`, `stat_type1`, `stat_value1`, `stat_type2`, `stat_value2`, `stat_type3`, `stat_value3`, `stat_type4`, `stat_value4`, `stat_type5`, `stat_value5`, `stat_type6`, `stat_value6`, `stat_type7`, `stat_value7`, `stat_type8`, `stat_value8`, `stat_type9`, `stat_value9`, `stat_type10`, `stat_value10`, `delay`, `range_mod`, `ammo_type`, `dmg_min1`, `dmg_max1`, `dmg_type1`, `dmg_min2`, `dmg_max2`, `dmg_type2`, `dmg_min3`, `dmg_max3`, `dmg_type3`, `dmg_min4`, `dmg_max4`, `dmg_type4`, `dmg_min5`, `dmg_max5`, `dmg_type5`, `block`, `armor`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spellid_1`, `spelltrigger_1`, `spellcharges_1`, `spellppmrate_1`, `spellcooldown_1`, `spellcategory_1`, `spellcategorycooldown_1`, `spellid_2`, `spelltrigger_2`, `spellcharges_2`, `spellppmrate_2`, `spellcooldown_2`, `spellcategory_2`, `spellcategorycooldown_2`, `spellid_3`, `spelltrigger_3`, `spellcharges_3`, `spellppmrate_3`, `spellcooldown_3`, `spellcategory_3`, `spellcategorycooldown_3`, `spellid_4`, `spelltrigger_4`, `spellcharges_4`, `spellppmrate_4`, `spellcooldown_4`, `spellcategory_4`, `spellcategorycooldown_4`, `spellid_5`, `spelltrigger_5`, `spellcharges_5`, `spellppmrate_5`, `spellcooldown_5`, `spellcategory_5`, `spellcategorycooldown_5`, `bonding`, `page_text`, `page_language`, `page_material`, `start_quest`, `lock_id`, `material`, `sheath`, `random_property`, `set_id`, `max_durability`, `area_bound`, `map_bound`, `duration`, `bag_family`, `disenchant_id`, `food_type`, `min_money_loot`, `max_money_loot`, `wrapped_gift`, `extra_flags`, `other_team_entry` "
-                          " FROM `item_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `item_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", sWorld.GetWowPatch()));
+                          " FROM `item_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `item_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", sWorld.GetWowPatch()));
     if (!result)
     {
         BarGoLink bar(1);
@@ -5563,7 +5563,7 @@ void ObjectMgr::LoadQuests()
                           "`OfferRewardEmoteDelay1`, `OfferRewardEmoteDelay2`, `OfferRewardEmoteDelay3`, `OfferRewardEmoteDelay4`,"
     //                      123            124               125         126             127      128                  129                     130
                           "`StartScript`, `CompleteScript`, `MaxLevel`, `RewMailMoney`, `RewXP`, `RequiredCondition`, `BreadcrumbForQuestId`, `RewRepSpilloverMask`"
-                          " FROM `quest_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `quest_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", sWorld.GetWowPatch()));
+                          " FROM `quest_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `quest_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", sWorld.GetWowPatch()));
     if (!result)
     {
         BarGoLink bar(1);
@@ -7086,7 +7086,7 @@ bool IsPointInAreaTriggerZone(AreaTriggerEntry const* atEntry, uint32 mapid, flo
 
 void ObjectMgr::LoadAreaTriggers()
 {
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `areatrigger_template` t1 WHERE `build`=(SELECT max(`build`) FROM `areatrigger_template` t2 WHERE t1.`id`=t2.`id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `areatrigger_template` t1 WHERE `build`=(SELECT max(`build`) FROM `areatrigger_template` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
 
     if (!result)
     {
@@ -7713,7 +7713,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
         "SELECT `id`, `required_level`, `required_condition`, `message`, "
     //    4             5                    6                    7                    8
         "`target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation` "
-        "FROM `areatrigger_teleport` t1 WHERE `patch`=(SELECT max(`patch`) FROM `areatrigger_teleport` t2 WHERE t1.`id`=t2.`id` && `patch` <= %u)", sWorld.GetWowPatch()));
+        "FROM `areatrigger_teleport` t1 WHERE `patch`=(SELECT max(`patch`) FROM `areatrigger_teleport` t2 WHERE t1.`id`=t2.`id` AND `patch` <= %u)", sWorld.GetWowPatch()));
 
     if (!result)
     {
@@ -8139,7 +8139,7 @@ inline void CheckGOConsumable(GameObjectInfo const* goInfo, uint32 dataN, uint32
 void ObjectMgr::LoadGameObjectTemplates()
 {
     //                                                                0        1       2            3       4       5          6        7       8        9        10       11       12       13       14       15       16       17       18        19        20        21        22        23        24        25        26        27        28        29        30        31        32         33         34
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `type`, `displayId`, `name`, `icon`, `faction`, `flags`, `size`, `data0`, `data1`, `data2`, `data3`, `data4`, `data5`, `data6`, `data7`, `data8`, `data9`, `data10`, `data11`, `data12`, `data13`, `data14`, `data15`, `data16`, `data17`, `data18`, `data19`, `data20`, `data21`, `data22`, `data23`, `mingold`, `maxgold`, `script_name` FROM `gameobject_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `gameobject_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `type`, `displayId`, `name`, `icon`, `faction`, `flags`, `size`, `data0`, `data1`, `data2`, `data3`, `data4`, `data5`, `data6`, `data7`, `data8`, `data9`, `data10`, `data11`, `data12`, `data13`, `data14`, `data15`, `data16`, `data17`, `data18`, `data19`, `data20`, `data21`, `data22`, `data23`, `mingold`, `maxgold`, `script_name` FROM `gameobject_template` t1 WHERE `patch`=(SELECT max(`patch`) FROM `gameobject_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", sWorld.GetWowPatch()));
 
     if (!result)
         return;
@@ -8162,7 +8162,7 @@ void ObjectMgr::LoadGameObjectTemplates()
 void ObjectMgr::LoadGameObjectTemplate(uint32 entry)
 {
     //                                                                0        1       2            3       4       5          6        7       8        9        10       11       12       13       14       15       16       17       18        19        20        21        22        23        24        25        26        27        28        29        30        31        32         33         34
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `type`, `displayId`, `name`, `icon`, `faction`, `flags`, `size`, `data0`, `data1`, `data2`, `data3`, `data4`, `data5`, `data6`, `data7`, `data8`, `data9`, `data10`, `data11`, `data12`, `data13`, `data14`, `data15`, `data16`, `data17`, `data18`, `data19`, `data20`, `data21`, `data22`, `data23`, `mingold`, `maxgold`, `script_name` FROM `gameobject_template` t1 WHERE `entry`=%u && `patch`=(SELECT max(`patch`) FROM `gameobject_template` t2 WHERE t1.`entry`=t2.`entry` && `patch` <= %u)", entry, sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `type`, `displayId`, `name`, `icon`, `faction`, `flags`, `size`, `data0`, `data1`, `data2`, `data3`, `data4`, `data5`, `data6`, `data7`, `data8`, `data9`, `data10`, `data11`, `data12`, `data13`, `data14`, `data15`, `data16`, `data17`, `data18`, `data19`, `data20`, `data21`, `data22`, `data23`, `mingold`, `maxgold`, `script_name` FROM `gameobject_template` t1 WHERE `entry`=%u AND `patch`=(SELECT max(`patch`) FROM `gameobject_template` t2 WHERE t1.`entry`=t2.`entry` AND `patch` <= %u)", entry, sWorld.GetWowPatch()));
 
     if (!result)
         return;
@@ -8671,7 +8671,7 @@ void ObjectMgr::LoadFactions()
     {
         m_FactionsMap.clear();
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading factions ...");
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction` t1 WHERE `build`=(SELECT max(`build`) FROM `faction` t2 WHERE t1.`id`=t2.`id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction` t1 WHERE `build`=(SELECT max(`build`) FROM `faction` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
 
         if (!result)
         {
@@ -8764,7 +8764,7 @@ void ObjectMgr::LoadFactions()
     {
         m_FactionTemplatesMap.clear();
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading faction tamplates ...");
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction_template` t1 WHERE `build`=(SELECT max(`build`) FROM `faction_template` t2 WHERE t1.`id`=t2.`id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction_template` t1 WHERE `build`=(SELECT max(`build`) FROM `faction_template` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
 
         if (!result)
         {
@@ -8898,7 +8898,7 @@ void ObjectMgr::LoadReputationOnKill()
     std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `creature_id`, `RewOnKillRepFaction1`, `RewOnKillRepFaction2`,"
     //                      3               4               5                     6               7               8                     9
                           "`IsTeamAward1`, `MaxStanding1`, `RewOnKillRepValue1`, `IsTeamAward2`, `MaxStanding2`, `RewOnKillRepValue2`, `TeamDependent` "
-                          "FROM `creature_onkill_reputation` t1 WHERE `patch`=(SELECT max(`patch`) FROM `creature_onkill_reputation` t2 WHERE t1.`creature_id`=t2.`creature_id` && `patch` <= %u)", sWorld.GetWowPatch()));
+                          "FROM `creature_onkill_reputation` t1 WHERE `patch`=(SELECT max(`patch`) FROM `creature_onkill_reputation` t2 WHERE t1.`creature_id`=t2.`creature_id` AND `patch` <= %u)", sWorld.GetWowPatch()));
 
     if (!result)
     {
@@ -9276,7 +9276,7 @@ void ObjectMgr::LoadCreatureInvolvedRelations()
 void ObjectMgr::LoadTaxiNodes()
 {
     // Getting the maximum ID.
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT MAX(`id`) FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT MAX(`id`) FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
 
     if (!result)
     {
@@ -9292,7 +9292,7 @@ void ObjectMgr::LoadTaxiNodes()
     uint32 maxTaxiNodeEntry = fields[0].GetUInt32() + 1;
 
     // Actually loading the taxi nodes.
-    result = WorldDatabase.PQuery("SELECT * FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD);
+    result = WorldDatabase.PQuery("SELECT * FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD);
 
     if (!result)
     {
@@ -10074,7 +10074,7 @@ char const* ObjectMgr::GetBroadcastText(uint32 id, int locale_index, uint8 gende
     return "<error>";
 }
 
-bool ObjectMgr::LoadMangosStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value, bool extra_content)
+bool ObjectMgr::LoadMangosStrings(Database& db, char const* table, int32 min_value, int32 max_value, bool extra_content)
 {
     int32 start_value = min_value;
     int32 end_value   = max_value;
@@ -10785,7 +10785,7 @@ void ObjectMgr::LoadVendors(char const* tableName, bool isTemplates)
         itr.second.Clear();
     vendorList.clear();
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `item`, `maxcount`, `incrtime`, `itemflags`, `condition_id` FROM %s WHERE (`item` NOT IN (SELECT `entry` FROM `forbidden_items` WHERE (`after_or_before` = 0 && `patch` <= %u) || (`after_or_before` = 1 && `patch` >= %u))) ORDER BY `entry`, `slot`", tableName, sWorld.GetWowPatch(), sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `item`, `maxcount`, `incrtime`, `itemflags`, `condition_id` FROM %s WHERE (`item` NOT IN (SELECT `entry` FROM `forbidden_items` WHERE (`after_or_before` = 0 AND `patch` <= %u) || (`after_or_before` = 1 AND `patch` >= %u))) ORDER BY `entry`, `slot`", tableName, sWorld.GetWowPatch(), sWorld.GetWowPatch()));
     if (!result)
     {
         BarGoLink bar(1);

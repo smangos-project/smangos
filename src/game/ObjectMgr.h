@@ -877,7 +877,7 @@ class ObjectMgr
         void LoadCreatureQuestRelations();
         void LoadCreatureInvolvedRelations();
 
-        bool LoadMangosStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value, bool extra_content);
+        bool LoadMangosStrings(Database& db, char const* table, int32 min_value, int32 max_value, bool extra_content);
         bool LoadMangosStrings() { return LoadMangosStrings(WorldDatabase,"mangos_string",MIN_MANGOS_STRING_ID,MAX_MANGOS_STRING_ID, false); }
         void LoadBroadcastTexts();
         void LoadBroadcastTextLocales();

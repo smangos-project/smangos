@@ -49,7 +49,7 @@ void SpellMgr::LoadSpellTargetPositions()
     uint32 count = 0;
 
     //                                                                0     1             2                    3                    4                    5
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation` FROM `spell_target_position` WHERE (`build_min` <= %u) && (`build_max` >= %u)", SUPPORTED_CLIENT_BUILD, SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation` FROM `spell_target_position` WHERE (`build_min` <= %u) AND (`build_max` >= %u)", SUPPORTED_CLIENT_BUILD, SUPPORTED_CLIENT_BUILD));
     if (!result)
     {
         BarGoLink bar(1);
@@ -594,7 +594,7 @@ void SpellMgr::LoadSpellGroupStackRules()
     uint32 count = 0;
 
     //                                                                0           1
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `group_id`, `stack_rule` FROM `spell_group_stack_rules` t1 WHERE `build`=(SELECT max(`build`) FROM `spell_group_stack_rules` t2 WHERE t1.`group_id`=t2.`group_id` && `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `group_id`, `stack_rule` FROM `spell_group_stack_rules` t1 WHERE `build`=(SELECT max(`build`) FROM `spell_group_stack_rules` t2 WHERE t1.`group_id`=t2.`group_id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
     if (!result)
     {
         BarGoLink bar(1);
@@ -1982,7 +1982,7 @@ void SpellMgr::LoadSpellLearnSpells()
     mSpellLearnSpells.clear();                              // need for reload case
 
     //                                                                0        1          2
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `SpellID`, `Active` FROM `spell_learn_spell` WHERE (`build_min` <= %u) && (`build_max` >= %u)", SUPPORTED_CLIENT_BUILD, SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `SpellID`, `Active` FROM `spell_learn_spell` WHERE (`build_min` <= %u) AND (`build_max` >= %u)", SUPPORTED_CLIENT_BUILD, SUPPORTED_CLIENT_BUILD));
     if (!result)
     {
         BarGoLink bar(1);
@@ -3763,7 +3763,7 @@ void SpellMgr::LoadSpells()
     uint32 maxEntry = fields[0].GetUInt32() + 1;
 
     // Actually loading the spells.
-    result = WorldDatabase.PQuery("SELECT * FROM `spell_template` t1 WHERE `build`=(SELECT max(`build`) FROM `spell_template` t2 WHERE t1.`entry`=t2.`entry` && `build` <= %u)", SUPPORTED_CLIENT_BUILD);
+    result = WorldDatabase.PQuery("SELECT * FROM `spell_template` t1 WHERE `build`=(SELECT max(`build`) FROM `spell_template` t2 WHERE t1.`entry`=t2.`entry` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD);
 
     if (!result)
     {

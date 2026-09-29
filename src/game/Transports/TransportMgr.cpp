@@ -61,7 +61,7 @@ void TransportMgr::LoadTransportTemplates()
     }
 
     // load period override from db since our algorithm is not perfect
-    if (std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT `entry`, `period` FROM `transports` t1 WHERE `build`=(SELECT max(`build`) FROM `transports` t2 WHERE t1.`entry`=t2.`entry` && `build` <= %u)", SUPPORTED_CLIENT_BUILD))
+    if (std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT `entry`, `period` FROM `transports` t1 WHERE `build`=(SELECT max(`build`) FROM `transports` t2 WHERE t1.`entry`=t2.`entry` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD))
     {
         do
         {

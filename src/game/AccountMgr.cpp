@@ -462,7 +462,7 @@ bool AccountMgr::IsAccountBanned(uint32 acc) const
 
 void AccountMgr::LoadAccountWarnings()
 {
-    std::unique_ptr<QueryResult> result(LoginDatabase.Query("SELECT `id`, `banreason` FROM `account_banned` WHERE `active` = 0 && (`banreason` LIKE \"WARN:%\") ORDER BY `bandate`"));
+    std::unique_ptr<QueryResult> result(LoginDatabase.Query("SELECT `id`, `banreason` FROM `account_banned` WHERE `active` = 0 AND (`banreason` LIKE \"WARN:%\") ORDER BY `bandate`"));
 
     if (!result)
         return;

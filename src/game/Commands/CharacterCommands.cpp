@@ -2199,7 +2199,7 @@ bool ChatHandler::HandleCharacterPremadeSaveSpecCommand(char* args)
     if (!pInfo)
         return false;
 
-    result = CharacterDatabase.PQuery("SELECT DISTINCT `spell` FROM `character_spell` WHERE `disabled`=0 && `active`=1 && `guid`=%u", pPlayer->GetGUIDLow());
+    result = CharacterDatabase.PQuery("SELECT DISTINCT `spell` FROM `character_spell` WHERE `disabled`=0 AND `active`=1 AND `guid`=%u", pPlayer->GetGUIDLow());
 
     if (result)
     {
