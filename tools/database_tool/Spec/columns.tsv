@@ -2119,8 +2119,8 @@ srv	warden_scans	penalty	drop			no Warden anti-cheat implementation exists anywh
 srv	warden_scans	build_min	drop			no Warden anti-cheat implementation exists anywhere in this codebase; the table has no reader	yes
 srv	warden_scans	build_max	drop			no Warden anti-cheat implementation exists anywhere in this codebase; the table has no reader	yes
 srv	warden_scans	comment	drop			no Warden anti-cheat implementation exists anywhere in this codebase; the table has no reader	yes
-srv	world_safe_locs_facing	id	server			merges into a new world_safe_locs server table with the vanilla WorldSafeLocs rows (F2); WorldSafeLocs.dbc has no 1.15 twin (gaps.tsv removed_table)	yes
-srv	world_safe_locs_facing	orientation	server			merges into world_safe_locs, same note as id	yes
+srv	world_safe_locs_facing	id	server	world_safe_locs.id		merges into world_safe_locs with the vanilla WorldSafeLocs rows (ObjectMgr::GetWorldSafeLocFacing)	yes
+srv	world_safe_locs_facing	orientation	server	world_safe_locs.orientation		merges into world_safe_locs with the vanilla WorldSafeLocs rows (ObjectMgr::GetWorldSafeLocFacing)	yes
 vdbc	animationdata	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	animationdata	Name	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	animationdata	Weaponflags	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
@@ -2373,7 +2373,7 @@ vdbc	chrraces	LoginEffectSpellID	constant	836		always 836 for every race; hardco
 vdbc	chrraces	CombatStunSpellID	constant	1604		always 1604 for every race (vanilla dazeSpellId); hardcoded instead of stored (stuff-plan.md 8.3, Unit.cpp:1652)	yes
 vdbc	chrraces	ResSicknessSpellID	dbc	dbc_chrraces.ResSicknessSpellID	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	SplashSoundID	dbc	dbc_chrraces.SplashSoundID	identity	stuff-plan.md 6.3	yes
-vdbc	chrraces	StartingTaxiNodes	server			no DB2 field; becomes a per-race server table (stuff-plan.md 8.3, PlayerTaxi.cpp:33)	yes
+vdbc	chrraces	StartingTaxiNodes	server	race_taxi_mask.taxi_mask		keep: server table race_taxi_mask, the starting taxi mask per race (PlayerTaxi.cpp:33); no DB2 field	yes
 vdbc	chrraces	ClientFileString	dbc	dbc_chrraces.ClientFileString	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	CinematicSequenceID	dbc	dbc_chrraces.CinematicSequenceID	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	Name_lang	dbc	dbc_chrraces.Name_lang	identity	stuff-plan.md 6.3	yes
@@ -2826,7 +2826,7 @@ vdbc	itempetfood	Name_lang_6	drop			non-enUS locale slot, vanilla client only sh
 vdbc	itempetfood	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	itempetfood	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	itemrandomproperties	ID	dbc	dbc_itemrandomproperties.ID	identity	stuff-plan.md 6.3	yes
-vdbc	itemrandomproperties	Name	server			internal label; DB2 only has Name_lang	yes
+vdbc	itemrandomproperties	Name	drop			read only as a fallback suffix when Name_lang is empty (Item::GetLocalizedNameWithSuffix), which no client row is (0/2,012), and by a debug item list; 88 differ from Name_lang, which is what the client shows	yes
 vdbc	itemrandomproperties	Enchantment1	dbc	dbc_itemrandomproperties.Enchantment1	identity	stuff-plan.md 6.3	yes
 vdbc	itemrandomproperties	Enchantment2	dbc	dbc_itemrandomproperties.Enchantment2	identity	stuff-plan.md 6.3	yes
 vdbc	itemrandomproperties	Enchantment3	dbc	dbc_itemrandomproperties.Enchantment3	identity	stuff-plan.md 6.3	yes
@@ -3363,39 +3363,39 @@ vdbc	skillraceclassinfo	Flags	dbc	dbc_skillraceclassinfo.Flags	identity	stuff-pl
 vdbc	skillraceclassinfo	MinLevel	dbc	dbc_skillraceclassinfo.MinLevel	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	SkillTierID	dbc	dbc_skillraceclassinfo.SkillTierID	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	SkillCostIndex	drop			no mangosd reader (SkillRaceClassInfofmt); no confirmed DB2 field	yes
-vdbc	skilltiers	ID	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost1	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost2	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost3	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost4	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost5	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost6	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost7	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost8	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost9	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost10	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost11	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost12	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost13	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost14	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost15	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Cost16	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value1	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value2	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value3	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value4	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value5	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value6	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value7	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value8	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value9	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value10	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value11	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value12	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value13	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value14	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value15	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
-vdbc	skilltiers	Value16	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
+vdbc	skilltiers	ID	server	skill_tiers.id		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost1	server	skill_tiers.cost1		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost2	server	skill_tiers.cost2		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost3	server	skill_tiers.cost3		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost4	server	skill_tiers.cost4		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost5	server	skill_tiers.cost5		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost6	server	skill_tiers.cost6		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost7	server	skill_tiers.cost7		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost8	server	skill_tiers.cost8		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost9	server	skill_tiers.cost9		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost10	server	skill_tiers.cost10		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost11	server	skill_tiers.cost11		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost12	server	skill_tiers.cost12		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost13	server	skill_tiers.cost13		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost14	server	skill_tiers.cost14		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost15	server	skill_tiers.cost15		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Cost16	server	skill_tiers.cost16		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value1	server	skill_tiers.value1		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value2	server	skill_tiers.value2		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value3	server	skill_tiers.value3		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value4	server	skill_tiers.value4		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value5	server	skill_tiers.value5		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value6	server	skill_tiers.value6		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value7	server	skill_tiers.value7		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value8	server	skill_tiers.value8		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value9	server	skill_tiers.value9		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value10	server	skill_tiers.value10		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value11	server	skill_tiers.value11		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value12	server	skill_tiers.value12		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value13	server	skill_tiers.value13		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value14	server	skill_tiers.value14		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value15	server	skill_tiers.value15		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
+vdbc	skilltiers	Value16	server	skill_tiers.value16		keep: server table skill_tiers; SkillTiers.dbc has no 1.15 twin and SkillRaceClassInfo.SkillTierID still points at tiers (plan.md 10.3; ObjectMgr skill costs, gaps.tsv removed_table)	yes
 vdbc	soundambience	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	soundambience	AmbienceID1	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	soundambience	AmbienceID2	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
@@ -4056,11 +4056,11 @@ vdbc	worldmapoverlay	HitRectTop	drop			unloaded, no mangosd reader; the 1.15 cli
 vdbc	worldmapoverlay	HitRectLeft	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldmapoverlay	HitRectBottom	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	worldmapoverlay	HitRectRight	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
-vdbc	worldsafelocs	ID	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
-vdbc	worldsafelocs	Continent	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
-vdbc	worldsafelocs	Loc1	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
-vdbc	worldsafelocs	Loc2	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
-vdbc	worldsafelocs	Loc3	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	ID	server	world_safe_locs.id		keep: server table world_safe_locs (graveyards, WorldSafeLocsEntryfmt), merged with world_safe_locs_facing; WorldSafeLocs.dbc has no 1.15 twin	yes
+vdbc	worldsafelocs	Continent	server	world_safe_locs.map_id		keep: server table world_safe_locs (graveyards, WorldSafeLocsEntryfmt), merged with world_safe_locs_facing; WorldSafeLocs.dbc has no 1.15 twin	yes
+vdbc	worldsafelocs	Loc1	server	world_safe_locs.x		keep: server table world_safe_locs (graveyards, WorldSafeLocsEntryfmt), merged with world_safe_locs_facing; WorldSafeLocs.dbc has no 1.15 twin	yes
+vdbc	worldsafelocs	Loc2	server	world_safe_locs.y		keep: server table world_safe_locs (graveyards, WorldSafeLocsEntryfmt), merged with world_safe_locs_facing; WorldSafeLocs.dbc has no 1.15 twin	yes
+vdbc	worldsafelocs	Loc3	server	world_safe_locs.z		keep: server table world_safe_locs (graveyards, WorldSafeLocsEntryfmt), merged with world_safe_locs_facing; WorldSafeLocs.dbc has no 1.15 twin	yes
 vdbc	worldsafelocs	AreaName_lang	drop			no mangosd reader (WorldSafeLocsEntryfmt); a label only, the world_safe_locs server table keeps position, map and facing	yes
 vdbc	worldsafelocs	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -4152,3 +4152,4 @@ new	spell_stack_key	stack_key	server			new table (plan.md 11.4): replaces the ic
 new	spell_stack_key	rank_key	server			new table (plan.md 11.4): replaces the icon/visual part of IsRankSpellDueToSpell (SpellMgr.cpp:883)	yes
 new	spell_tag	spell_id	server			new table (plan.md 11.4): spell id a tag applies to; loaded into SpellEntry tags by SpellMgr	yes
 new	spell_tag	tag	server			new table (plan.md 11.4): SpellTag enum name; replaces SpellIconID/SpellVisual set checks	yes
+new	race_taxi_mask	race	server		key: the vanilla ChrRaces.ID (dbc_chrraces.ID)	yes
