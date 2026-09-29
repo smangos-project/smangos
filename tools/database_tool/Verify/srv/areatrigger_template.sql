@@ -1,0 +1,2 @@
+-- key: id
+SELECT "id", "build", "name", "map_id", "x", "y", "z", "radius", "box_x", "box_y", "box_z", "box_orientation", "cooldown", "condition_id", "script_id", "script_name" FROM (SELECT "id", "build", "name", "map_id", "x", "y", "z", "radius", "box_x", "box_y", "box_z", "box_orientation", "cooldown", "condition_id", "script_id", "script_name", ROW_NUMBER() OVER (PARTITION BY "id" ORDER BY "build" DESC, rowid DESC) AS __rn FROM "areatrigger_template" WHERE "build" <= 5875) WHERE __rn = 1

@@ -1,0 +1,2 @@
+-- key: guid
+SELECT "guid", "patch", "display_id", "mount_display_id", "equipment_id", "stand_state", "sheath_state", "emote_state", "auras" FROM (SELECT "guid", "patch", "display_id", "mount_display_id", "equipment_id", "stand_state", "sheath_state", "emote_state", "auras", ROW_NUMBER() OVER (PARTITION BY "guid" ORDER BY "patch" DESC, rowid DESC) AS __rn FROM "creature_addon" WHERE "patch" <= 10) WHERE __rn = 1

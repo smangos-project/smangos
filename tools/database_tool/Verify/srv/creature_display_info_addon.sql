@@ -1,0 +1,2 @@
+-- key: display_id
+SELECT "display_id", "build", "bounding_radius", "combat_reach", "speed_walk", "speed_run", "gender", "display_id_other_gender" FROM (SELECT "display_id", "build", "bounding_radius", "combat_reach", "speed_walk", "speed_run", "gender", "display_id_other_gender", ROW_NUMBER() OVER (PARTITION BY "display_id" ORDER BY "build" DESC, rowid DESC) AS __rn FROM "creature_display_info_addon" WHERE "build" <= 5875) WHERE __rn = 1

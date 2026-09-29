@@ -1,0 +1,2 @@
+-- key: id
+SELECT "id", "build", "skill_id", "spell_id", "race_mask", "class_mask", "req_skill_value", "superseded_by_spell", "learn_on_get_skill", "max_value", "min_value", "req_train_points" FROM (SELECT "id", "build", "skill_id", "spell_id", "race_mask", "class_mask", "req_skill_value", "superseded_by_spell", "learn_on_get_skill", "max_value", "min_value", "req_train_points", ROW_NUMBER() OVER (PARTITION BY "id" ORDER BY "build" DESC, rowid DESC) AS __rn FROM "skill_line_ability" WHERE "build" <= 5875) WHERE __rn = 1

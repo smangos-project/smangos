@@ -1,0 +1,23 @@
+-- key: Id, EffectIndex
+SELECT "Id",
+       "EffectIndex",
+       "Effect",
+       "EffectDieSides",
+       "EffectBaseDice",
+       "EffectDicePerLevel",
+       "EffectRealPointsPerLevel",
+       "EffectBasePoints",
+       "EffectAmplitude",
+       "EffectPointsPerComboPoint",
+       "EffectChainTarget",
+       "EffectMultipleValue",
+       "EffectMechanic",
+       "EffectImplicitTargetA",
+       "EffectImplicitTargetB",
+       "EffectRadiusIndex",
+       "EffectApplyAuraName",
+       "EffectItemType",
+       "EffectMiscValue",
+       "EffectTriggerSpell",
+       "Comment"
+FROM "spell_effect_mod"

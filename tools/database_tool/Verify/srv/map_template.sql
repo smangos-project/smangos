@@ -1,0 +1,2 @@
+-- key: entry
+SELECT "entry", "patch", "parent", "map_type", "linked_zone", "player_limit", "reset_delay", "ghost_entrance_map", "ghost_entrance_x", "ghost_entrance_y", "map_name", "script_name" FROM (SELECT "entry", "patch", "parent", "map_type", "linked_zone", "player_limit", "reset_delay", "ghost_entrance_map", "ghost_entrance_x", "ghost_entrance_y", "map_name", "script_name", ROW_NUMBER() OVER (PARTITION BY "entry" ORDER BY "patch" DESC, rowid DESC) AS __rn FROM "map_template" WHERE "patch" <= 10) WHERE __rn = 1

@@ -1,0 +1,2 @@
+-- key: id
+SELECT "id", "patch", "name", "message", "required_level", "required_condition", "target_map", "target_position_x", "target_position_y", "target_position_z", "target_orientation" FROM (SELECT "id", "patch", "name", "message", "required_level", "required_condition", "target_map", "target_position_x", "target_position_y", "target_position_z", "target_orientation", ROW_NUMBER() OVER (PARTITION BY "id" ORDER BY "patch" DESC, rowid DESC) AS __rn FROM "areatrigger_teleport" WHERE "patch" <= 10) WHERE __rn = 1
