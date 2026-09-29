@@ -658,7 +658,6 @@ class SpellEntry
         int32     EffectMiscValue[MAX_EFFECT_INDEX] = {};          // 109-111
         uint32    EffectTriggerSpell[MAX_EFFECT_INDEX] = {};       // 112-114
         float     EffectPointsPerComboPoint[MAX_EFFECT_INDEX] = {};// 115-117
-        uint32    SpellVisual = 0;                                 // 118
       //uint32    SpellVisual2;                                    // 119 not used
         uint32    spellPriority = 0;                               // 122
         std::array<std::string, MAX_DBC_LOCALE> SpellName{};       // 123-130

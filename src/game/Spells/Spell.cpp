@@ -56,7 +56,6 @@
 
 using namespace Spells;
 
-#define SPELL_CHANNEL_VISUAL_TIMER 800
 
 namespace
 {
@@ -3845,7 +3844,6 @@ void Spell::handle_immediate()
         SendChannelStart(m_duration);
         if (m_caster->IsPlayer())
             m_caster->ToPlayer()->RemoveSpellMods(this);
-        InitializeChanneledVisualTimer();
     }
 
     m_targetNum = 0;
@@ -4260,18 +4258,6 @@ void Spell::update(uint32 difftime)
                 }
 
                 finish();
-            }
-            // Periodically send the spell visual kit for some channeled spells
-            // This fixes Tranquility and Starshards visuals
-            else if (m_channeledVisualKit && m_casterUnit)
-            {
-                if (difftime >= m_channeledVisualTimer)
-                {
-                    m_casterUnit->SendPlaySpellVisualKit(m_channeledVisualKit);
-                    m_channeledVisualTimer = SPELL_CHANNEL_VISUAL_TIMER;
-                }
-                else
-                    m_channeledVisualTimer -= difftime;
             }
         }
         break;
@@ -4989,58 +4975,12 @@ void Spell::SendChannelStart(uint32 duration)
 
     m_timer = duration;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-    // TODO: Investigate when exactly this packet should be sent.
-    // It breaks Eyes of the Beast visual on pet if sent for it.
-    if (m_spellInfo->HasAttribute(SPELL_ATTR_EX_IS_CHANNELED))
-    {
-        if (SpellVisualEntry const* pVisual = sSpellVisualStore.LookupEntry(m_spellInfo->SpellVisual))
-        {
-            if (pVisual->channelKit)
-            {
-                auto packet = std::make_unique<WorldPackets::Spell::SpellUpdateChainTargets>();
-                packet->casterGuid = m_caster->GetObjectGuid();
-                packet->spellId = m_spellInfo->Id;
-                for (TargetList::const_iterator itr = m_UniqueTargetInfo.begin(); itr != m_UniqueTargetInfo.end(); ++itr)
-                {
-                    if (((itr->effectMask & (1 << EFFECT_INDEX_0)) && itr->reflectResult == SPELL_MISS_NONE &&
-                        m_CastItem) || itr->targetGUID != m_caster->GetObjectGuid())
-                    {
-                        if (Unit* target = ObjectAccessor::GetUnit(*m_caster, itr->targetGUID))
-                        {
-                            packet->targets.push_back(target->GetObjectGuid());
-                        }
-                    }
-                }
-                if (!packet->targets.empty())
-                    m_caster->SendMessageToSet(std::move(packet), true);
-            }
-        }
-    }
-#endif
-
     if (m_casterUnit)
     {
         if (WorldObject* target = GetChannelTarget())
             m_casterUnit->SetChannelObjectGuid(target->GetObjectGuid());
         m_casterUnit->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
     }
-}
-
-void Spell::InitializeChanneledVisualTimer()
-{
-    if (!(m_spellInfo->Custom & SPELL_CUSTOM_SEND_CHANNEL_VISUAL))
-        return;
-
-    if (!m_spellInfo->SpellVisual)
-        return;
-
-    SpellVisualEntry const* pSpellVisual = sSpellVisualStore.LookupEntry(m_spellInfo->SpellVisual);
-    if (!pSpellVisual || !pSpellVisual->channelKit)
-        return;
-
-    m_channeledVisualKit = pSpellVisual->channelKit;
-    m_channeledVisualTimer = SPELL_CHANNEL_VISUAL_TIMER;
 }
 
 void Spell::SendResurrectRequest(Player* target, bool sickness)

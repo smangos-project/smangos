@@ -39,20 +39,6 @@ namespace WorldPackets { namespace Spell
 #endif
 
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-    class SpellUpdateChainTargets final : public ServerPacket
-    {
-    public:
-        ObjectGuid casterGuid;
-        uint32 spellId = 0;
-        std::vector<ObjectGuid> targets;
-
-        explicit SpellUpdateChainTargets() : ServerPacket(SMSG_SPELL_UPDATE_CHAIN_TARGETS) {}
-        size_t EstimateFinalSize() const override;
-        void AppendBodyTo(ByteBuffer& buffer) const override;
-    };
-#endif
-
 }} // namespace WorldPackets::Spell
 
 #endif // MANGOS_PACKETS_SPELL_H

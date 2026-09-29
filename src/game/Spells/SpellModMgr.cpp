@@ -158,7 +158,6 @@ void SpellModMgr::LoadSpellMods()
             // Stances, StancesNot, SpellVisual, ManaCostPercentage, StartRecoveryCategory, StartRecoveryTime, MaxTargetLevel, MaxAffectedTargets, DmgClass
             ModUInt32ValueIfExplicit(fields[20], spell->Stances);
             ModUInt32ValueIfExplicit(fields[21], spell->StancesNot);
-            ModUInt32ValueIfExplicit(fields[22], spell->SpellVisual);
             ModUInt32ValueIfExplicit(fields[23], spell->ManaCostPercentage);
             ModUInt32ValueIfExplicit(fields[24], spell->StartRecoveryCategory);
             ModUInt32ValueIfExplicit(fields[25], spell->StartRecoveryTime);

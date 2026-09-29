@@ -22,22 +22,3 @@ void WorldPackets::Spell::PlaySpellImpact::AppendBodyTo(ByteBuffer& buffer) cons
 }
 #endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
-size_t WorldPackets::Spell::SpellUpdateChainTargets::EstimateFinalSize() const
-{
-    return sizeof(casterGuid) +
-           sizeof(spellId) +
-           sizeof(uint32) + /*targets count*/
-           targets.size() * sizeof(ObjectGuid);
-}
-
-void WorldPackets::Spell::SpellUpdateChainTargets::AppendBodyTo(ByteBuffer& buffer) const
-{
-    buffer << casterGuid;
-    buffer << spellId;
-    buffer << uint32(targets.size());
-    for (auto const& target : targets)
-        buffer << target;
-}
-#endif
-

@@ -2874,7 +2874,6 @@ void SpellMgr::CheckUsedSpells(char const* table)
             continue;
         }
 
-        // TODO: spellVisual check need dbc loading
         if (spellVisual < -1)
         {
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Table '%s' for spell %u have wrong SpellVisual value(%u), skipped.", table, spell, spellVisual);
@@ -2948,12 +2947,6 @@ void SpellMgr::CheckUsedSpells(char const* table)
                 }
             }
 
-            if (spellVisual >= 0 && spellEntry->SpellVisual != uint32(spellVisual))
-            {
-                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u '%s' visual(%u) <> %u but used in %s.", spell, name.c_str(), spellEntry->SpellVisual, spellVisual, code.c_str());
-                continue;
-            }
-
             if (category >= 0 && spellEntry->Category != uint32(category))
             {
                 sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u '%s' category(%u) <> %u but used in %s.", spell, name.c_str(), spellEntry->Category, category, code.c_str());
@@ -3017,9 +3010,6 @@ void SpellMgr::CheckUsedSpells(char const* table)
                             continue;
                     }
                 }
-
-                if (spellVisual >= 0 && spellEntry->SpellVisual != uint32(spellVisual))
-                    continue;
 
                 if (category >= 0 && spellEntry->Category != uint32(category))
                     continue;
@@ -3926,7 +3916,6 @@ void SpellMgr::LoadSpell(Field* fields)
     spell->EffectPointsPerComboPoint[0] = fields[116].GetFloat();
     spell->EffectPointsPerComboPoint[1] = fields[117].GetFloat();
     spell->EffectPointsPerComboPoint[2] = fields[118].GetFloat();
-    spell->SpellVisual = fields[119].GetUInt32();
     //spell->SpellVisual2 = fields[120].GetUInt32(); not used
     spell->spellPriority = fields[123].GetUInt32();
     spell->SpellName[0] = fields[124].GetCppString();

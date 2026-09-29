@@ -314,7 +314,7 @@ static bool DumpSpells(std::string const& dir)
         {"EffectAmplitude", MAX_EFFECT_INDEX}, {"EffectMultipleValue", MAX_EFFECT_INDEX},
         {"EffectChainTarget", MAX_EFFECT_INDEX}, {"EffectItemType", MAX_EFFECT_INDEX},
         {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
-        {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX}, {"SpellVisual"},
+        {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX},
         {"spellPriority"}, {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
         {"StartRecoveryCategory"}, {"StartRecoveryTime"}, {"MaxTargetLevel"}, {"SpellFamilyName"},
         {"SpellFamilyFlags"}, {"MaxAffectedTargets"}, {"DmgClass"}, {"PreventionType"},
@@ -347,7 +347,7 @@ static bool DumpSpells(std::string const& dir)
             << s->EffectAmplitude << s->EffectMultipleValue
             << s->EffectChainTarget << s->EffectItemType
             << s->EffectMiscValue << s->EffectTriggerSpell
-            << s->EffectPointsPerComboPoint << s->SpellVisual
+            << s->EffectPointsPerComboPoint
             << s->spellPriority << s->SpellName << s->Rank << s->ManaCostPercentage
             << s->StartRecoveryCategory << s->StartRecoveryTime << s->MaxTargetLevel << s->SpellFamilyName
             << s->SpellFamilyFlags << s->MaxAffectedTargets << s->DmgClass << s->PreventionType
@@ -720,7 +720,6 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "SpellRadius", sSpellRadiusStore);
     ok &= DumpDBCStore(dir, "SpellRange", sSpellRangeStore);
     ok &= DumpDBCStore(dir, "SpellShapeshiftForm", sSpellShapeshiftFormStore);
-    ok &= DumpDBCStore(dir, "SpellVisual", sSpellVisualStore);
     ok &= DumpDBCStore(dir, "StableSlotPrices", sStableSlotPricesStore);
     ok &= DumpDBCStore(dir, "Talent", sTalentStore);
     ok &= DumpDBCStore(dir, "TalentTab", sTalentTabStore);
