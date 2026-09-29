@@ -1,0 +1,23 @@
+-- key: ID
+SELECT d."ID" AS "ID",
+       d."TabID" AS "TabID",
+       d."TierID" AS "TierID",
+       d."ColumnIndex" AS "ColumnIndex",
+       d."SpellRank1" AS "SpellRank1",
+       d."SpellRank2" AS "SpellRank2",
+       d."SpellRank3" AS "SpellRank3",
+       d."SpellRank4" AS "SpellRank4",
+       d."SpellRank5" AS "SpellRank5",
+       d."SpellRank6" AS "SpellRank6",
+       d."SpellRank7" AS "SpellRank7",
+       d."SpellRank8" AS "SpellRank8",
+       d."SpellRank9" AS "SpellRank9",
+       d."PrereqTalent1" AS "PrereqTalent1",
+       d."PrereqTalent2" AS "PrereqTalent2",
+       d."PrereqTalent3" AS "PrereqTalent3",
+       d."PrereqRank1" AS "PrereqRank1",
+       d."PrereqRank2" AS "PrereqRank2",
+       d."PrereqRank3" AS "PrereqRank3",
+       d."Flags" AS "Flags",
+       d."RequiredSpellID" AS "RequiredSpellID"
+FROM "dbc_talent" d
