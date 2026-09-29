@@ -1793,8 +1793,8 @@ srv	spell_check	EffectAura	server			GM debug consistency-check table (.debug spe
 srv	spell_check	EffectIdx	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	Name	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	Code	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
-srv	spell_cone	entry	server			cone-shaped-AoE angle override (SpellMgr.cpp:2398); no DB2 counterpart	yes
-srv	spell_cone	cone_degrees	server			cone-shaped-AoE angle override (SpellMgr.cpp:2398); no DB2 counterpart	yes
+srv	spell_cone	entry	drop			row key, not a value: the SpellID of the dbc_spelltargetrestrictions row; the table is gone (tables.tsv)	yes
+srv	spell_cone	cone_degrees	dbc	dbc_spelltargetrestrictions.ConeDegrees	cone_default_60	101/102 equal the client's ConeDegrees (Impale 28783: 30, client 29); the client has vmangos's default 60 (SpellMgr.h:428) on 20,931 of the other 20,932 vanilla spells with a row; decision 12 (plan.md 3)	yes
 srv	spell_disabled	entry	server			GM-disabled spell id list (ObjectMgr.cpp:357); no DB2 counterpart	yes
 srv	spell_effect_mod	Id	drop			row key, not a value: the override applies to dbc_spelleffect (SpellID, EffectIndex); every id spell_template lacks (25) is one of spell_mod's created spells, whose effect rows create inserts	yes
 srv	spell_effect_mod	EffectIndex	drop			row key, not a value: dbc_spelleffect.EffectIndex of the overridden slot (0-2, SpellModMgr.cpp:231)	yes

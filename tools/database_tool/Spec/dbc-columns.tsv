@@ -1655,7 +1655,7 @@ dbc_spellshapeshiftform	PresetSpellID7		neutral
 dbc_spellshapeshiftform	PresetSpellID8		neutral
 dbc_spelltargetrestrictions	ID		client
 dbc_spelltargetrestrictions	DifficultyID		client
-dbc_spelltargetrestrictions	ConeDegrees		neutral
+dbc_spelltargetrestrictions	ConeDegrees		rule
 dbc_spelltargetrestrictions	MaxTargets		
 dbc_spelltargetrestrictions	MaxTargetLevel		
 dbc_spelltargetrestrictions	TargetCreatureType		
