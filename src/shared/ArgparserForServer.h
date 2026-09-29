@@ -20,6 +20,7 @@ struct ServerStartupArguments
 {
     ServiceDaemonAction inputServiceMode; // will be empty when no mode was set
     std::string configFilePath;
+    std::string dumpStoresDir; // mangosd: write the loaded world stores here, then exit
 };
 
 /// Returns a parsed ServerStartupArguments or exit value

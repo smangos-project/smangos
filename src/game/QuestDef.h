@@ -204,6 +204,7 @@ struct QuestLocale
 class Quest
 {
     friend class ObjectMgr;
+    friend class StoreDumper;
     public:
         Quest() = default;
         void LoadFromDB(Field* questRecord);

@@ -8,6 +8,7 @@ void printUsage(char const* thisExecutableName)
     printf(R"END(Usage: %s [<options>]
     -v, --version               print version and exist
     -c, --config <config_file>  use config_file as configuration file
+    --dump-stores <dir>         write the loaded world stores to dir and exit
   Running as service functions:
     -s run                      run as service
     -s install                  install service
@@ -17,6 +18,7 @@ void printUsage(char const* thisExecutableName)
     printf(R"END(Usage: %s [<options>]
     -v, --version               print version and exist
     -c, --config <config_file>  use config_file as configuration file
+    --dump-stores <dir>         write the loaded world stores to dir and exit
   Running as daemon functions:
     -s run                      run as daemon
     -s stop                     stop daemon
@@ -33,6 +35,7 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
     ServerStartupArguments args
     {
         ServiceDaemonAction::NotSet,
+        "",
         ""
     };
 
@@ -66,6 +69,19 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
             argc--;
 
             args.configFilePath = nextPart;
+        }
+        else if (part == "--dump-stores")
+        {
+            if (argc == 0)
+            {
+                printf("Error: Dump directory required\n");
+                printUsage(thisExecutableName);
+                return nonstd::make_unexpected(EXIT_FAILURE);
+            }
+
+            args.dumpStoresDir = std::string(*argv);
+            argv++;
+            argc--;
         }
         else if (part == "-s")
         {

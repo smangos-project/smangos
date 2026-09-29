@@ -139,7 +139,7 @@ extern int main(int argc, char **argv)
 
     // and run the 'Master'
     // TODO: Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
-    return sMaster.Run();
+    return sMaster.Run(args.dumpStoresDir);
 
     // at sMaster return function exist with codes
     // 0 - normal shutdown

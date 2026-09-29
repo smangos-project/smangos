@@ -42,6 +42,7 @@
 #include "Util.h"
 #include "MassMailMgr.h"
 #include "DBCStores.h"
+#include "StoreDump.h"
 #include "WorldSocketMgr.h"
 #include "Bnet/BnetRealmList.h"
 #include "IO/Context/IoContext.h"
@@ -132,7 +133,7 @@ Master::~Master()
 }
 
 // Main function
-int Master::Run()
+int Master::Run(std::string const& dumpStoresDir)
 {
     // worldd PID file creation
     std::string pidFilePath = sConfig.GetStringDefault("PidFile", "");
@@ -194,6 +195,20 @@ int Master::Run()
 
     // Initialize the World
     sWorld.SetInitialWorldSettings();
+
+    if (!dumpStoresDir.empty())
+    {
+        bool dumped = DumpStores(dumpStoresDir);
+        sAsyncSystemTimer.RemoveAllTimersAndStopThread();
+        ioCtx->Shutdown();
+        for (std::thread& thread : ioCtxRunners)
+            thread.join();
+        CharacterDatabase.StopServer();
+        WorldDatabase.StopServer();
+        LoginDatabase.StopServer();
+        LogsDatabase.StopServer();
+        return dumped ? 0 : 1;
+    }
 
 #ifndef WIN32
     detachDaemon();
