@@ -248,7 +248,7 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
             procFlag, procExtra, spellProto->Id, spellProto->SpellIconID);*/
 
     // Flurry can't proc on additional windfury attacks
-    if (spellProto->SpellIconID == 108 && spellProto->SpellVisual == 2759 && m_extraAttacks)
+    if (spellProto->HasTag(SPELL_TAG_FLURRY) && m_extraAttacks)
         return SPELL_PROC_TRIGGER_FAILED;
 
     // Don't proc weapons on Sap
@@ -315,7 +315,7 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
         }
         // PRIEST
         // Inspiration
-        if (spellProto->SpellIconID == 79 && spellProto->SpellFamilyName == SPELLFAMILY_PRIEST)
+        if (spellProto->HasTag(SPELL_TAG_INSPIRATION) && spellProto->SpellFamilyName == SPELLFAMILY_PRIEST)
         {
             if (procSpell->IsFitToFamily<SPELLFAMILY_PRIEST, CF_PRIEST_PRAYER_OF_HEALING, CF_PRIEST_HEAL,
                 CF_PRIEST_FLASH_HEAL, CF_PRIEST_FLASH_HEAL2, CF_PRIEST_GREATER_HEAL>() &&
@@ -358,11 +358,11 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
         if (spellProto->Id == 12292 || spellProto->Id == 18765)
         {
             // Never proc for Execute.
-            if (procSpell->SpellIconID == 1648)
+            if (procSpell->HasTag(SPELL_TAG_EXECUTE))
                 return SPELL_PROC_TRIGGER_FAILED;
 
             // Proc for every Whirlwind hit.
-            if (procSpell->SpellIconID == 83)
+            if (procSpell->HasTag(SPELL_TAG_WHIRLWIND))
                 return SPELL_PROC_TRIGGER_OK;
 
             if (procSpell->IsDirectDamageSpell() && (procFlag & (PROC_FLAG_DEAL_MELEE_SWING | PROC_FLAG_DEAL_MELEE_ABILITY)))
@@ -532,8 +532,7 @@ SpellAuraProcResult Unit::TriggerProccedSpell(Unit* target, int32* basepoints, S
 SpellAuraProcResult Unit::HandleHasteAuraProc(Unit* pVictim, uint32 amount, uint32 originalAmount, Aura* triggeredByAura, SpellEntry const* /*procSpell*/, uint32 /*procFlag*/, uint32 procEx, uint32 cooldown)
 {
     // Flurry: last charge crit will reapply the buff, don't remove any charges
-    if (triggeredByAura->GetSpellProto()->SpellIconID == 108 &&
-        triggeredByAura->GetSpellProto()->SpellVisual == 2759 &&
+    if (triggeredByAura->GetSpellProto()->HasTag(SPELL_TAG_FLURRY) &&
         triggeredByAura->GetHolder()->GetAuraCharges() <= 1 &&
         (procEx & PROC_EX_CRITICAL_HIT))
         return SPELL_AURA_PROC_FAILED;
@@ -1225,7 +1224,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
                 // Calculate spell tick count for spells
                 uint32 tick = 1; // Default tick = 1
 
-                if (procSpell->SpellIconID == 184 && procSpell->SpellVisual == 2253)
+                if (procSpell->HasTag(SPELL_TAG_SOUL_FIRE))
                     tick = 1; // Feu de l'ame
                 // Hellfire have 15 tick
                 else if (procSpell->IsFitToFamilyMask<CF_WARLOCK_HELLFIRE>())
@@ -1693,21 +1692,21 @@ SpellAuraProcResult Unit::HandleOverrideClassScriptAuraProc(Unit* pVictim, uint3
         }
         case 836:                                           // Improved Blizzard (Rank 1)
         {
-            if (!procSpell || procSpell->SpellVisual != 259)
+            if (!procSpell || !procSpell->HasTag(SPELL_TAG_BLIZZARD))
                 return SPELL_AURA_PROC_FAILED;
             triggered_spell_id = 12484;
             break;
         }
         case 988:                                           // Improved Blizzard (Rank 2)
         {
-            if (!procSpell || procSpell->SpellVisual != 259)
+            if (!procSpell || !procSpell->HasTag(SPELL_TAG_BLIZZARD))
                 return SPELL_AURA_PROC_FAILED;
             triggered_spell_id = 12485;
             break;
         }
         case 989:                                           // Improved Blizzard (Rank 3)
         {
-            if (!procSpell || procSpell->SpellVisual != 259)
+            if (!procSpell || !procSpell->HasTag(SPELL_TAG_BLIZZARD))
                 return SPELL_AURA_PROC_FAILED;
             triggered_spell_id = 12486;
             break;
@@ -1901,11 +1900,7 @@ SpellAuraProcResult Unit::HandleModDamageAuraProc(Unit* /*pVictim*/, uint32 /*am
                 !procSpell->HasAura(SPELL_AURA_PERIODIC_DAMAGE) &&
                 !procSpell->HasAura(SPELL_AURA_PERIODIC_LEECH) &&
                 !procSpell->HasAura(SPELL_AURA_PERIODIC_HEALTH_FUNNEL) &&
-                !(procSpell->SpellVisual == 319 && procSpell->SpellIconID == 1647) && // Healing Stream Totem
-                !(procSpell->SpellVisual == 221 && procSpell->SpellIconID == 680) &&  // Searing Totem
-                !(procSpell->SpellVisual == 369 && procSpell->SpellIconID == 37) &&   // Magma Totem
-                !(procSpell->SpellVisual == 221 && procSpell->SpellIconID == 33)      // Fire Nova Totem
-                )
+                !procSpell->HasTag(SPELL_TAG_DAMAGE_TOTEM))
                 return SPELL_AURA_PROC_FAILED;
 
             RemoveAuraHolderFromStack(24659);
