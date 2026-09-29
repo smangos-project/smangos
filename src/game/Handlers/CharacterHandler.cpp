@@ -719,9 +719,18 @@ void WorldSession::HandleCharCreateOpcode(CharCreate const& packet)
         return;
     }
 
-    // The client's own customization choices are not read yet; every character gets a random valid look.
-    ChrCustomizationList customizations;
-    Player::SelectRandomAppearance(packet.Race, packet.Class, packet.Gender, customizations);
+    // No pairs (the bots) gets a random valid look; the client's own pairs are validated and any
+    // option it left out is filled in.
+    ChrCustomizationList customizations = packet.Customizations;
+    if (customizations.empty())
+        Player::SelectRandomAppearance(packet.Race, packet.Class, packet.Gender, customizations);
+    else if (Player::ValidateAppearance(packet.Race, packet.Class, packet.Gender, customizations))
+        sObjectMgr.GetChrCustomizations().Complete(packet.Race, packet.Class, packet.Gender, customizations);
+    else
+    {
+        sendResponse(CLASSIC_CHAR_CREATE_FAILED);
+        return;
+    }
     if (!Player::ValidateAppearance(packet.Race, packet.Class, packet.Gender, customizations))
     {
         sendResponse(CLASSIC_CHAR_CREATE_FAILED);

@@ -9,6 +9,9 @@
 #include "ByteBuffer.h"
 #include "ClassicOpcodes.h"
 #include "Packets/Classic/Guid.h"
+#include "Packets/Classic/ChrCustomizationChoice.h"
+#include <algorithm>
+#include <vector>
 #include <string>
 
 // A packed guid and nothing else.
@@ -66,6 +69,9 @@ struct CharCreate
     uint8 Race = 0;
     uint8 Class = 0;
     uint8 Gender = 0;
+    std::vector<ChrCustomizationChoice> Customizations; // sorted by option on Read
+
+    static constexpr uint32 MAX_CUSTOMIZATIONS = 250;
 
     void Write(ByteBuffer& data) const
     {
@@ -79,15 +85,17 @@ struct CharCreate
         data << Race;
         data << Class;
         data << Gender;
-        data << uint32(0); // customizationCount
+        data << uint32(Customizations.size());
         data << int32(0);  // timerunningSeasonId
 
         data.append(reinterpret_cast<uint8 const*>(Name.data()), Name.size());
-        // No templateSetId (hasTemplateSet is false) and no customization pairs (count is 0).
+        // No templateSetId (hasTemplateSet is false).
+        for (ChrCustomizationChoice const& choice : Customizations)
+            data << choice.OptionID << choice.ChoiceID;
     }
 
-    // Reads what Write produces; a body with a template set or customization pairs is rejected
-    // rather than skipped, since this side never produces one.
+    // Reads what Write produces; a body with a template set is rejected rather than skipped, since
+    // this side never produces one.
     bool Read(ByteBuffer& data)
     {
         if (data.size() - data.rpos() < 2) // 6 + 4 bits, flushed to two bytes
@@ -108,10 +116,20 @@ struct CharCreate
         uint32 customizationCount = 0;
         int32 timerunningSeasonId = 0;
         data >> Race >> Class >> Gender >> customizationCount >> timerunningSeasonId;
-        if (customizationCount != 0)
+        if (customizationCount > MAX_CUSTOMIZATIONS)
             return false;
 
         Name = data.ReadString(nameLength);
+        if (data.size() - data.rpos() < size_t(customizationCount) * 2 * sizeof(uint32))
+            return false;
+        Customizations.clear();
+        for (uint32 i = 0; i < customizationCount; ++i)
+        {
+            ChrCustomizationChoice choice;
+            data >> choice.OptionID >> choice.ChoiceID;
+            Customizations.push_back(choice);
+        }
+        std::stable_sort(Customizations.begin(), Customizations.end());
         return true;
     }
 };

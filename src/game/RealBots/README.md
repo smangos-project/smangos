@@ -1050,9 +1050,8 @@ None of these is proven against a real 1.15.6 client yet.
   the live cache instead, needing no prior enum.
 
 - **A zero-customization create gets a random valid look, not a fixed one.** The bots
-  never send `ChrCustomization` choices (`CharCreate::Read` rejects a nonzero count
-  outright), so `Player::SelectRandomAppearance` picks one valid choice per option. A real client's
-  actual choices are not read yet.
+  never send `ChrCustomization` choices, so `Player::SelectRandomAppearance` picks one valid choice
+  per option. A create with pairs is validated and completed instead.
 
 - **A handful of `ResponseCodes` have no confirmed modern wire value.** `Packets/Classic/Character.h`
   defines the classic-numbered codes the bots and this tree's checks actually exercise

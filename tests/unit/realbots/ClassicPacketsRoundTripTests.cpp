@@ -246,7 +246,40 @@ TEST_CASE("CharCreate round-trips", "[packets]")
     RejectsEveryTruncation(out);
 }
 
-TEST_CASE("CharCreate::Read rejects a template set and customization pairs", "[packets]")
+TEST_CASE("CharCreate round-trips customization pairs and sorts them", "[packets]")
+{
+    CharCreate out;
+    out.Name = "Looks";
+    out.Race = 1;
+    out.Class = 4;
+    out.Customizations = { { 1, 10 }, { 2, 20 }, { 5, 50 } };
+    RoundTrip(out, [](CharCreate const& a, CharCreate const& b)
+    {
+        CHECK(b.Customizations == a.Customizations);
+    });
+    RejectsEveryTruncation(out);
+
+    CharCreate unsorted = out;
+    unsorted.Customizations = { { 5, 50 }, { 1, 10 }, { 2, 20 } };
+    ByteBuffer data;
+    unsorted.Write(data);
+    CharCreate in;
+    REQUIRE(in.Read(data));
+    CHECK(in.Customizations == std::vector<ChrCustomizationChoice>{ { 1, 10 }, { 2, 20 }, { 5, 50 } });
+
+    ByteBuffer tooMany;
+    tooMany.WriteBits(1, 6);
+    for (int i = 0; i < 4; ++i)
+        tooMany.WriteBit(false);
+    tooMany.FlushBits();
+    tooMany << uint8(1) << uint8(1) << uint8(0) << uint32(251) << int32(0) << uint8('A');
+    for (uint32 i = 0; i < 251; ++i)
+        tooMany << i << i;
+    CharCreate rejected;
+    CHECK_FALSE(rejected.Read(tooMany));
+}
+
+TEST_CASE("CharCreate::Read rejects a template set", "[packets]")
 {
     ByteBuffer withTemplate;
     withTemplate.WriteBits(1, 6);
@@ -258,17 +291,6 @@ TEST_CASE("CharCreate::Read rejects a template set and customization pairs", "[p
     withTemplate << uint8(1) << uint8(1) << uint8(0) << uint32(0) << int32(0) << uint8('A');
     CharCreate in;
     CHECK_FALSE(in.Read(withTemplate));
-
-    ByteBuffer withCustomization;
-    withCustomization.WriteBits(1, 6);
-    withCustomization.WriteBit(false);
-    withCustomization.WriteBit(false);
-    withCustomization.WriteBit(false);
-    withCustomization.WriteBit(false);
-    withCustomization.FlushBits();
-    withCustomization << uint8(1) << uint8(1) << uint8(0) << uint32(1) << int32(0) << uint8('A');
-    CharCreate in2;
-    CHECK_FALSE(in2.Read(withCustomization));
 }
 
 TEST_CASE("CharCreateResponse round-trips", "[packets]")
