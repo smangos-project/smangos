@@ -1551,9 +1551,9 @@ dbc_spellmisc	Attributes3
 dbc_spellmisc	Attributes4		
 dbc_spellmisc	Attributes5		
 dbc_spellmisc	Attributes6		neutral
-dbc_spellmisc	Attributes7		neutral
+dbc_spellmisc	Attributes7		rule
 dbc_spellmisc	Attributes8		neutral
-dbc_spellmisc	Attributes9		neutral
+dbc_spellmisc	Attributes9		rule
 dbc_spellmisc	Attributes10		neutral
 dbc_spellmisc	Attributes11		neutral
 dbc_spellmisc	Attributes12		neutral
