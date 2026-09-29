@@ -45,7 +45,7 @@ Unit* SpellCaster::SelectMagnetTarget(Unit* victim, Spell* spell, SpellEffectInd
     if (pProto->AttributesEx3 & SPELL_ATTR_EX3_SUPPRESS_TARGET_PROCS)
         return victim;
 
-    if ((pProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || pProto->SpellVisual == 7250) && pProto->Dispel != DISPEL_POISON && !(pProto->Attributes & SPELL_ATTR_IS_ABILITY))
+    if ((pProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || pProto->HasAttribute(SPELL_CUSTOM_MAGNET_REDIRECT)) && pProto->Dispel != DISPEL_POISON && !(pProto->Attributes & SPELL_ATTR_IS_ABILITY))
     {
         Unit::AuraList const& magnetAuras = victim->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
         for (const auto magnetAura : magnetAuras)

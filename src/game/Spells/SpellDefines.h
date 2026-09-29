@@ -1013,6 +1013,7 @@ enum SpellAttributesCustom
     SPELL_CUSTOM_SEND_CHANNEL_VISUAL        = 0x800,     // Will periodically send the channeling spell visual kit
     SPELL_CUSTOM_SEPARATE_AURA_PER_CASTER   = 0x1000,    // Each caster has his own aura slot, instead of replacing others
     SPELL_CUSTOM_TRIGGER_WEAPON_PROCS       = 0x2000,    // Can trigger weapon enchants and on hit effects
+    SPELL_CUSTOM_MAGNET_REDIRECT            = 0x4000,    // Non-magic spell that spell magnets redirect
 };
 
 // Spell sets that server logic checks for, assigned by name in `spell_tag`
