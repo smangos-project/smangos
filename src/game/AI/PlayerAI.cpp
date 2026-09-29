@@ -138,7 +138,7 @@ PlayerControlledAI::PlayerControlledAI(Player* pPlayer, Unit* caster) : PlayerAI
         for (const auto& usableSpell : usableSpells)
         {
             SpellEntry const* pCurrSpell_2 = sSpellMgr.GetSpellEntry(usableSpell);
-            if (pCurrSpell_2->SpellFamilyName == pCurrSpell_1->SpellFamilyName && pCurrSpell_2->SpellIconID == pCurrSpell_1->SpellIconID && pCurrSpell_2->SpellVisual == pCurrSpell_1->SpellVisual) // Meme sort, rangs differents
+            if (sSpellMgr.IsRankSpellDueToSpell(pCurrSpell_1, pCurrSpell_2->Id)) // Meme sort, rangs differents
             {
                 if (Spells::CompareAuraRanks(pCurrSpell_1->Id, pCurrSpell_2->Id) < 0) // pCurrSpell_1 < pCurrSpell_2
                 {
