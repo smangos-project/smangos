@@ -3308,14 +3308,14 @@ srv	npc_text	BroadcastTextID6	INTEGER	none					rows=3036 distinct=10 null=0 form
 srv	npc_text	Probability6	REAL	none					rows=3036 distinct=2 null=0 formula=equals_Probability5:3034/3036
 srv	npc_text	BroadcastTextID7	INTEGER	none					rows=3036 distinct=10 null=0 formula=equals_BroadcastTextID6:3027/3036
 srv	npc_text	Probability7	REAL	none					rows=3036 distinct=3 null=0 formula=equals_Probability5:3034/3036
-srv	npc_trainer	entry	INTEGER	none					rows=4676 distinct=263 null=0
-srv	npc_trainer	spell	INTEGER	none					rows=4676 distinct=486 null=0
-srv	npc_trainer	spellcost	INTEGER	none					rows=4676 distinct=100 null=0
-srv	npc_trainer	reqskill	INTEGER	none					rows=4676 distinct=13 null=0
-srv	npc_trainer	reqskillvalue	INTEGER	none					rows=4676 distinct=56 null=0
-srv	npc_trainer	reqlevel	INTEGER	none					rows=4676 distinct=6 null=0
-srv	npc_trainer	build_min	INTEGER	none					rows=4676 distinct=2 null=0
-srv	npc_trainer	build_max	INTEGER	none					rows=4676 distinct=2 null=0
+srv	npc_trainer	entry	INTEGER	none					rows=4671 distinct=263 null=0
+srv	npc_trainer	spell	INTEGER	none					rows=4671 distinct=486 null=0
+srv	npc_trainer	spellcost	INTEGER	none					rows=4671 distinct=100 null=0
+srv	npc_trainer	reqskill	INTEGER	none					rows=4671 distinct=13 null=0
+srv	npc_trainer	reqskillvalue	INTEGER	none					rows=4671 distinct=56 null=0
+srv	npc_trainer	reqlevel	INTEGER	none					rows=4671 distinct=6 null=0
+srv	npc_trainer	build_min	INTEGER	none					rows=4671 distinct=2 null=0
+srv	npc_trainer	build_max	INTEGER	none					rows=4671 distinct=1 null=0 const=5875
 srv	npc_trainer_greeting	entry	INTEGER	manual:src/game/ObjectMgr.cpp:10364					rows=491 distinct=491 null=0
 srv	npc_trainer_greeting	content_default	TEXT	manual:src/game/ObjectMgr.cpp:10379					rows=491 distinct=27 null=28
 srv	npc_trainer_greeting	content_loc1	TEXT	none					rows=491 distinct=1 null=491 const= formula=equals_content_loc2:491/491
@@ -3326,14 +3326,14 @@ srv	npc_trainer_greeting	content_loc5	TEXT	none					rows=491 distinct=1 null=491
 srv	npc_trainer_greeting	content_loc6	TEXT	none					rows=491 distinct=42 null=28 formula=equals_content_loc7:49/491
 srv	npc_trainer_greeting	content_loc7	TEXT	none					rows=491 distinct=17 null=468 formula=equals_content_loc1:468/491
 srv	npc_trainer_greeting	content_loc8	TEXT	none					rows=491 distinct=24 null=55 formula=equals_content_loc1:55/491
-srv	npc_trainer_template	entry	INTEGER	none					rows=2404 distinct=34 null=0
-srv	npc_trainer_template	spell	INTEGER	none					rows=2404 distinct=1340 null=0
-srv	npc_trainer_template	spellcost	INTEGER	none					rows=2404 distinct=132 null=0
-srv	npc_trainer_template	reqskill	INTEGER	none					rows=2404 distinct=3 null=0
-srv	npc_trainer_template	reqskillvalue	INTEGER	none					rows=2404 distinct=18 null=0
-srv	npc_trainer_template	reqlevel	INTEGER	none					rows=2404 distinct=30 null=0
-srv	npc_trainer_template	build_min	INTEGER	none					rows=2404 distinct=9 null=0
-srv	npc_trainer_template	build_max	INTEGER	none					rows=2404 distinct=8 null=0
+srv	npc_trainer_template	entry	INTEGER	none					rows=1382 distinct=34 null=0
+srv	npc_trainer_template	spell	INTEGER	none					rows=1382 distinct=1329 null=0
+srv	npc_trainer_template	spellcost	INTEGER	none					rows=1382 distinct=94 null=0
+srv	npc_trainer_template	reqskill	INTEGER	none					rows=1382 distinct=3 null=0
+srv	npc_trainer_template	reqskillvalue	INTEGER	none					rows=1382 distinct=18 null=0
+srv	npc_trainer_template	reqlevel	INTEGER	none					rows=1382 distinct=30 null=0
+srv	npc_trainer_template	build_min	INTEGER	none					rows=1382 distinct=9 null=0
+srv	npc_trainer_template	build_max	INTEGER	none					rows=1382 distinct=1 null=0 const=5875
 srv	npc_vendor	entry	INTEGER	none					rows=13269 distinct=945 null=0
 srv	npc_vendor	slot	INTEGER	none					rows=13269 distinct=663 null=0
 srv	npc_vendor	item	INTEGER	none					rows=13269 distinct=1588 null=0
@@ -3457,12 +3457,12 @@ srv	playercreateinfo_item	race	INTEGER	manual:src/game/ObjectMgr.cpp:4627					ro
 srv	playercreateinfo_item	class	INTEGER	manual:src/game/ObjectMgr.cpp:4628					rows=302 distinct=9 null=0
 srv	playercreateinfo_item	itemid	INTEGER	manual:src/game/ObjectMgr.cpp:4646					rows=302 distinct=77 null=0
 srv	playercreateinfo_item	amount	INTEGER	manual:src/game/ObjectMgr.cpp:4656					rows=302 distinct=5 null=0
-srv	playercreateinfo_spell	race	INTEGER	manual:src/game/ObjectMgr.cpp:4700					rows=1499 distinct=8 null=0
-srv	playercreateinfo_spell	class	INTEGER	manual:src/game/ObjectMgr.cpp:4701					rows=1499 distinct=9 null=0
-srv	playercreateinfo_spell	spell	INTEGER	manual:src/game/ObjectMgr.cpp:4717					rows=1499 distinct=115 null=0
-srv	playercreateinfo_spell	build_min	INTEGER	none					rows=1499 distinct=4 null=0
-srv	playercreateinfo_spell	build_max	INTEGER	none					rows=1499 distinct=2 null=0
-srv	playercreateinfo_spell	note	TEXT	none					rows=1499 distinct=103 null=0
+srv	playercreateinfo_spell	race	INTEGER	manual:src/game/ObjectMgr.cpp:4700					rows=1497 distinct=8 null=0
+srv	playercreateinfo_spell	class	INTEGER	manual:src/game/ObjectMgr.cpp:4701					rows=1497 distinct=9 null=0
+srv	playercreateinfo_spell	spell	INTEGER	manual:src/game/ObjectMgr.cpp:4717					rows=1497 distinct=115 null=0
+srv	playercreateinfo_spell	build_min	INTEGER	none					rows=1497 distinct=4 null=0
+srv	playercreateinfo_spell	build_max	INTEGER	none					rows=1497 distinct=1 null=0 const=5875
+srv	playercreateinfo_spell	note	TEXT	none					rows=1497 distinct=102 null=0
 srv	points_of_interest	entry	INTEGER	manual:src/game/ObjectMgr.cpp:9106					rows=250 distinct=250 null=0
 srv	points_of_interest	x	REAL	manual:src/game/ObjectMgr.cpp:9109					rows=250 distinct=250 null=0
 srv	points_of_interest	y	REAL	manual:src/game/ObjectMgr.cpp:9110					rows=250 distinct=250 null=0
@@ -3787,13 +3787,13 @@ srv	spell_area	aura_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2466					r
 srv	spell_area	racemask	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2467					rows=71 distinct=1 null=0 const=0
 srv	spell_area	gender	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2468					rows=71 distinct=1 null=0 const=2
 srv	spell_area	autocast	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2469					rows=71 distinct=2 null=0
-srv	spell_chain	spell_id	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1647					rows=1094 distinct=1082 null=0
-srv	spell_chain	prev_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1650					rows=1094 distinct=855 null=0
-srv	spell_chain	first_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1651					rows=1094 distinct=227 null=0
-srv	spell_chain	rank	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1652					rows=1094 distinct=12 null=0
-srv	spell_chain	req_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1653					rows=1094 distinct=15 null=0
-srv	spell_chain	build_min	INTEGER	none					rows=1094 distinct=7 null=0
-srv	spell_chain	build_max	INTEGER	none					rows=1094 distinct=4 null=0
+srv	spell_chain	spell_id	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1647					rows=1069 distinct=1069 null=0
+srv	spell_chain	prev_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1650					rows=1069 distinct=845 null=0
+srv	spell_chain	first_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1651					rows=1069 distinct=222 null=0
+srv	spell_chain	rank	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1652					rows=1069 distinct=12 null=0
+srv	spell_chain	req_spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:1653					rows=1069 distinct=15 null=0
+srv	spell_chain	build_min	INTEGER	none					rows=1069 distinct=7 null=0
+srv	spell_chain	build_max	INTEGER	none					rows=1069 distinct=1 null=0 const=5875
 srv	spell_check	spellid	INTEGER	none					rows=5 distinct=5 null=0
 srv	spell_check	SpellFamilyName	INTEGER	none					rows=5 distinct=1 null=0 const=-1
 srv	spell_check	SpellFamilyMask	INTEGER	none					rows=5 distinct=1 null=0 const=-1
@@ -3889,19 +3889,19 @@ srv	spell_mod	Comment	TEXT	none					rows=523 distinct=375 null=26
 srv	spell_pet_auras	spell	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2250					rows=23 distinct=8 null=0
 srv	spell_pet_auras	pet	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2251					rows=23 distinct=5 null=0
 srv	spell_pet_auras	aura	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2252					rows=23 distinct=23 null=0
-srv	spell_proc_event	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:340					rows=201 distinct=200 null=0
-srv	spell_proc_event	SchoolMask	INTEGER	manual:src/game/Spells/SpellMgr.cpp:344					rows=201 distinct=9 null=0
-srv	spell_proc_event	SpellFamilyName	INTEGER	manual:src/game/Spells/SpellMgr.cpp:345					rows=201 distinct=10 null=0
-srv	spell_proc_event	SpellFamilyMask0	INTEGER	none					rows=201 distinct=36 null=0 formula=equals_SpellFamilyMask1:196/201
-srv	spell_proc_event	SpellFamilyMask1	INTEGER	none					rows=201 distinct=32 null=0 formula=equals_SpellFamilyMask2:201/201
-srv	spell_proc_event	SpellFamilyMask2	INTEGER	none					rows=201 distinct=32 null=0 formula=equals_SpellFamilyMask1:201/201
-srv	spell_proc_event	procFlags	INTEGER	manual:src/game/Spells/SpellMgr.cpp:350					rows=201 distinct=17 null=0
-srv	spell_proc_event	procEx	INTEGER	manual:src/game/Spells/SpellMgr.cpp:351					rows=201 distinct=18 null=0
-srv	spell_proc_event	ppmRate	REAL	manual:src/game/Spells/SpellMgr.cpp:352					rows=201 distinct=10 null=0
-srv	spell_proc_event	CustomChance	REAL	manual:src/game/Spells/SpellMgr.cpp:353					rows=201 distinct=4 null=0
-srv	spell_proc_event	Cooldown	INTEGER	manual:src/game/Spells/SpellMgr.cpp:354					rows=201 distinct=18 null=0
-srv	spell_proc_event	build_min	INTEGER	none					rows=201 distinct=8 null=0
-srv	spell_proc_event	build_max	INTEGER	none					rows=201 distinct=3 null=0
+srv	spell_proc_event	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:340					rows=199 distinct=199 null=0
+srv	spell_proc_event	SchoolMask	INTEGER	manual:src/game/Spells/SpellMgr.cpp:344					rows=199 distinct=9 null=0
+srv	spell_proc_event	SpellFamilyName	INTEGER	manual:src/game/Spells/SpellMgr.cpp:345					rows=199 distinct=10 null=0
+srv	spell_proc_event	SpellFamilyMask0	INTEGER	none					rows=199 distinct=36 null=0 formula=equals_SpellFamilyMask1:194/199
+srv	spell_proc_event	SpellFamilyMask1	INTEGER	none					rows=199 distinct=32 null=0 formula=equals_SpellFamilyMask2:199/199
+srv	spell_proc_event	SpellFamilyMask2	INTEGER	none					rows=199 distinct=32 null=0 formula=equals_SpellFamilyMask1:199/199
+srv	spell_proc_event	procFlags	INTEGER	manual:src/game/Spells/SpellMgr.cpp:350					rows=199 distinct=16 null=0
+srv	spell_proc_event	procEx	INTEGER	manual:src/game/Spells/SpellMgr.cpp:351					rows=199 distinct=17 null=0
+srv	spell_proc_event	ppmRate	REAL	manual:src/game/Spells/SpellMgr.cpp:352					rows=199 distinct=10 null=0
+srv	spell_proc_event	CustomChance	REAL	manual:src/game/Spells/SpellMgr.cpp:353					rows=199 distinct=4 null=0
+srv	spell_proc_event	Cooldown	INTEGER	manual:src/game/Spells/SpellMgr.cpp:354					rows=199 distinct=18 null=0
+srv	spell_proc_event	build_min	INTEGER	none					rows=199 distinct=8 null=0
+srv	spell_proc_event	build_max	INTEGER	none					rows=199 distinct=1 null=0 const=5875
 srv	spell_proc_item_enchant	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:407					rows=4 distinct=4 null=0
 srv	spell_proc_item_enchant	ppmRate	REAL	manual:src/game/Spells/SpellMgr.cpp:408					rows=4 distinct=3 null=0
 srv	spell_script_target	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:2088					rows=1008 distinct=353 null=0
@@ -4092,12 +4092,12 @@ srv	spell_template	minReputation	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdb
 srv	spell_template	requiredAuraVision	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellcooldowns.AuraSpellID	identity	2863/2863	rows=22381 distinct=2 null=0
 srv	spell_template	customFlags	INTEGER	manual:src/game/ScriptMgr.cpp:2548		cdbc_spellshapeshift.ShapeshiftExclude2	bag_family_mask	3946/3949	rows=22381 distinct=16 null=0
 srv	spell_template	script_name	TEXT	manual:src/game/ScriptMgr.cpp:2548		cdbc_spell.AuraDescription_lang	identity	16780/21040	rows=22381 distinct=148 null=22097
-srv	spell_threat	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:859					rows=416 distinct=412 null=0
-srv	spell_threat	threat	REAL	manual:src/game/Spells/SpellMgr.cpp:862					rows=416 distinct=99 null=0
-srv	spell_threat	multiplier	REAL	manual:src/game/Spells/SpellMgr.cpp:863					rows=416 distinct=10 null=0
-srv	spell_threat	inverse_effect_mask	INTEGER	manual:src/game/Spells/SpellMgr.cpp:864					rows=416 distinct=3 null=0
-srv	spell_threat	build_min	INTEGER	none					rows=416 distinct=9 null=0
-srv	spell_threat	build_max	INTEGER	none					rows=416 distinct=3 null=0
+srv	spell_threat	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:859					rows=411 distinct=411 null=0
+srv	spell_threat	threat	REAL	manual:src/game/Spells/SpellMgr.cpp:862					rows=411 distinct=96 null=0
+srv	spell_threat	multiplier	REAL	manual:src/game/Spells/SpellMgr.cpp:863					rows=411 distinct=10 null=0
+srv	spell_threat	inverse_effect_mask	INTEGER	manual:src/game/Spells/SpellMgr.cpp:864					rows=411 distinct=3 null=0
+srv	spell_threat	build_min	INTEGER	none					rows=411 distinct=8 null=0
+srv	spell_threat	build_max	INTEGER	none					rows=411 distinct=1 null=0 const=5875
 srv	taxi_nodes	id	INTEGER	manual:src/game/ObjectMgr.cpp:9279		cdbc_taxinodes.ID	identity	84/84	rows=85 distinct=85 null=0
 srv	taxi_nodes	build	INTEGER	manual:src/game/ObjectMgr.cpp:9279		cdbc_taxinodes.MapOffset1	bag_family_mask	84/84	rows=85 distinct=8 null=0
 srv	taxi_nodes	map_id	INTEGER	manual:src/game/ObjectMgr.cpp:9279		cdbc_taxinodes.ContinentID	identity	84/84	rows=85 distinct=4 null=0
@@ -4119,17 +4119,17 @@ srv	transports	name	TEXT	none					rows=9 distinct=9 null=0
 srv	transports	period	INTEGER	manual:src/game/Transports/TransportMgr.cpp:70					rows=9 distinct=9 null=0
 srv	variables	index	INTEGER	manual:src/game/ObjectMgr.cpp:666					rows=0 distinct=0 null=0
 srv	variables	value	INTEGER	manual:src/game/ObjectMgr.cpp:666					rows=0 distinct=0 null=0
-srv	warden_scans	id	INTEGER	none					rows=97 distinct=97 null=0
-srv	warden_scans	type	INTEGER	none					rows=97 distinct=4 null=0
-srv	warden_scans	str	TEXT	none					rows=97 distinct=10 null=87
-srv	warden_scans	data	TEXT	none					rows=97 distinct=4 null=93
-srv	warden_scans	address	INTEGER	none					rows=97 distinct=88 null=0
-srv	warden_scans	length	INTEGER	none					rows=97 distinct=11 null=4
-srv	warden_scans	result	TEXT	none					rows=97 distinct=77 null=0
-srv	warden_scans	flags	INTEGER	none					rows=97 distinct=1 null=0 const=0
-srv	warden_scans	penalty	INTEGER	none					rows=97 distinct=1 null=0 const=-1
-srv	warden_scans	build_min	INTEGER	none					rows=97 distinct=5 null=0
-srv	warden_scans	build_max	INTEGER	none					rows=97 distinct=3 null=0
-srv	warden_scans	comment	TEXT	none					rows=97 distinct=71 null=0
+srv	warden_scans	id	INTEGER	none					rows=94 distinct=94 null=0
+srv	warden_scans	type	INTEGER	none					rows=94 distinct=4 null=0
+srv	warden_scans	str	TEXT	none					rows=94 distinct=10 null=84
+srv	warden_scans	data	TEXT	none					rows=94 distinct=4 null=90
+srv	warden_scans	address	INTEGER	none					rows=94 distinct=85 null=0
+srv	warden_scans	length	INTEGER	none					rows=94 distinct=11 null=4
+srv	warden_scans	result	TEXT	none					rows=94 distinct=76 null=0
+srv	warden_scans	flags	INTEGER	none					rows=94 distinct=1 null=0 const=0
+srv	warden_scans	penalty	INTEGER	none					rows=94 distinct=1 null=0 const=-1
+srv	warden_scans	build_min	INTEGER	none					rows=94 distinct=4 null=0
+srv	warden_scans	build_max	INTEGER	none					rows=94 distinct=3 null=0
+srv	warden_scans	comment	TEXT	none					rows=94 distinct=71 null=0
 srv	world_safe_locs_facing	id	INTEGER	manual:src/game/ObjectMgr.cpp:7687					rows=94 distinct=94 null=0
 srv	world_safe_locs_facing	orientation	REAL	manual:src/game/ObjectMgr.cpp:7688					rows=94 distinct=80 null=0
