@@ -261,7 +261,7 @@ TEST_CASE("ThreatUpdate round-trips", "[packets]")
 TEST_CASE("ThreatUpdate rejects an oversized list", "[packets]")
 {
     ByteBuffer data;
-    data << ClassicGuid{ 0x1111, 0 };
+    ClassicGuid{ 0x1111, 0 }.Write(data);
     data << int32(CLASSIC_MAX_THREAT_LIST_SIZE + 1);
 
     ThreatUpdate in;

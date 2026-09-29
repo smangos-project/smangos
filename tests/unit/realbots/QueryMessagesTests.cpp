@@ -234,6 +234,36 @@ TEST_CASE("QueryNpcTextResponse round-trips an allowed and a missing text", "[pa
     RejectsEveryTruncation(missing);
 }
 
+TEST_CASE("DbQueryBulk and DbReply round-trip", "[packets]")
+{
+    DbQueryBulk query;
+    query.TableHash = 0x021826BB;
+    query.RecordIds = { 3, 4000, 90000 };
+    RoundTrip(query, [](DbQueryBulk const& a, DbQueryBulk const& b)
+    {
+        CHECK(a.TableHash == b.TableHash);
+        CHECK(a.RecordIds == b.RecordIds);
+    });
+    RejectsEveryTruncation(query);
+
+    DbReply reply;
+    reply.TableHash = 0x021826BB;
+    reply.RecordId = 4000;
+    reply.Timestamp = 1700000000;
+    reply.Status = CLASSIC_DB_REPLY_VALID;
+    reply.Row << std::string("Hello") << uint32(4000);
+    RoundTrip(reply, [](DbReply const& a, DbReply const& b)
+    {
+        CHECK(a.TableHash == b.TableHash);
+        CHECK(a.RecordId == b.RecordId);
+        CHECK(a.Timestamp == b.Timestamp);
+        CHECK(a.Status == b.Status);
+        CHECK(a.Row.size() == b.Row.size());
+        CHECK(std::equal(a.Row.contents(), a.Row.contents() + a.Row.size(), b.Row.contents()));
+    });
+    RejectsEveryTruncation(reply);
+}
+
 TEST_CASE("QueryPageText round-trips", "[packets]")
 {
     QueryPageText query;

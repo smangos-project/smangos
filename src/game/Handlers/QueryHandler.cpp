@@ -268,6 +268,44 @@ void WorldSession::HandleNpcTextQueryOpcode(QueryNpcText const& packet)
     SendClassic(response);
 }
 
+void WorldSession::HandleDbQueryBulkOpcode(DbQueryBulk const& packet)
+{
+    // The client resolves the broadcast text ids of gossip and creature texts by asking for the
+    // rows it lacks; any other table is answered as invalid so the client uses its local data.
+    // One reply per requested record, in order.
+    constexpr uint32 broadcastTextHash = 0x021826BB;
+
+    for (uint32 recordId : packet.RecordIds)
+    {
+        DbReply reply;
+        reply.TableHash = packet.TableHash;
+        reply.RecordId = recordId;
+        reply.Timestamp = uint32(time(nullptr));
+
+        if (packet.TableHash == broadcastTextHash)
+        {
+            if (BroadcastText const* text = sObjectMgr.GetBroadcastTextLocale(recordId))
+            {
+                int const locIdx = GetSessionDbLocaleIndex();
+                reply.Row << text->GetText(locIdx, GENDER_MALE, true);
+                reply.Row << text->GetText(locIdx, GENDER_FEMALE, true);
+                reply.Row << uint32(text->entry) << uint32(text->languageId);
+                reply.Row << uint32(0);                     // ConditionID
+                reply.Row << uint16(0);                     // EmotesID
+                reply.Row << uint8(0);                      // Flags
+                reply.Row << uint32(0);                     // ChatBubbleDurationMs
+                reply.Row << int32(0);                      // VoiceOverPriorityID
+                reply.Row << uint32(text->soundId) << uint32(0);
+                reply.Row << uint16(text->emoteId1) << uint16(text->emoteId2) << uint16(text->emoteId3);
+                reply.Row << uint16(text->emoteDelay1) << uint16(text->emoteDelay2) << uint16(text->emoteDelay3);
+                reply.Status = CLASSIC_DB_REPLY_VALID;
+            }
+        }
+
+        SendClassic(reply);
+    }
+}
+
 void WorldSession::HandlePageTextQueryOpcode(QueryPageText const& packet)
 {
     // A book is a chain of pages; one response carries all of it.

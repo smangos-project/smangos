@@ -747,4 +747,87 @@ struct CorpseLocation
     }
 };
 
+// The client asks for rows of a table it lacks locally, by record id.
+struct DbQueryBulk
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_DB_QUERY_BULK;
+    static constexpr uint32 MaxRecords = (1u << 13) - 1;
+
+    uint32 TableHash = 0;
+    std::vector<uint32> RecordIds;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << TableHash;
+        data.WriteBits(uint32(RecordIds.size()), 13);
+        data.FlushBits();
+        for (uint32 id : RecordIds)
+            data << id;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + 2)
+            return false;
+        data >> TableHash;
+        uint32 const count = data.ReadBits(13);
+        data.ResetBitPos();
+        if (data.size() - data.rpos() < count * sizeof(uint32))
+            return false;
+        RecordIds.resize(count);
+        for (uint32& id : RecordIds)
+            data >> id;
+        return true;
+    }
+};
+
+enum ClassicDbReplyStatus : uint8
+{
+    CLASSIC_DB_REPLY_VALID = 1,
+    CLASSIC_DB_REPLY_RECORD_REMOVED = 2,
+    CLASSIC_DB_REPLY_INVALID = 3,
+    CLASSIC_DB_REPLY_NOT_PUBLIC = 4,
+};
+
+// One reply per requested record; the row is in the table's DB2 field layout.
+struct DbReply
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_DB_REPLY;
+
+    uint32 TableHash = 0;
+    uint32 RecordId = 0;
+    uint32 Timestamp = 0;
+    uint8 Status = CLASSIC_DB_REPLY_INVALID;
+    ByteBuffer Row;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << TableHash << RecordId << Timestamp;
+        data.WriteBits(Status, 3);
+        data.FlushBits();
+        data << uint32(Row.size());
+        data.append(Row.contents(), Row.size());
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 3 * sizeof(uint32) + 1 + sizeof(uint32))
+            return false;
+        data >> TableHash >> RecordId >> Timestamp;
+        Status = uint8(data.ReadBits(3));
+        data.ResetBitPos();
+        uint32 size;
+        data >> size;
+        if (data.size() - data.rpos() < size)
+            return false;
+        Row.clear();
+        if (size)
+        {
+            Row.append(data.contents() + data.rpos(), size);
+            data.read_skip(size);
+        }
+        return true;
+    }
+};
+
 #endif

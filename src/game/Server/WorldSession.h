@@ -741,6 +741,7 @@ class WorldSession
         void HandleCloseInteractionOpcode(CloseInteraction const& packet);
         void HandleSpiritHealerActivateOpcode(SpiritHealerActivate const& packet);
         void HandleNpcTextQueryOpcode(QueryNpcText const& packet);
+        void HandleDbQueryBulkOpcode(DbQueryBulk const& packet);
         void HandleBinderActivateOpcode(BinderActivate const& packet);
         void HandleListStabledPetsOpcode(WorldPackets::Npc::ListStabledPets const& packet);
         void HandleStablePet(WorldPackets::Npc::StablePet const& packet);
