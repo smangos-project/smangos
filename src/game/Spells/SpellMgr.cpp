@@ -835,7 +835,7 @@ void SpellMgr::LoadSpellClientVisuals()
 {
     for (auto const& spell : mSpellEntryMap)
         if (spell)
-            spell->ClientVisualId = 0;
+            spell->ClientVisualId = 0, spell->HasClientActiveIcon = false;
 
     uint32 count = 0;
     std::unique_ptr<QueryResult> result(WorldDatabase.Query(
@@ -857,6 +857,19 @@ void SpellMgr::LoadSpellClientVisuals()
                 spell.ClientVisualId = fields[1].GetUInt32();
                 ++count;
             }
+        }
+        while (result->NextRow());
+    }
+
+    result = std::unique_ptr<QueryResult>(WorldDatabase.Query(
+        "SELECT DISTINCT `SpellID` FROM `dbc_spellxspellvisual` WHERE `DifficultyID` = 0 AND `ActiveIconFileID` <> 0"));
+    if (result)
+    {
+        do
+        {
+            uint32 const spellId = result->Fetch()[0].GetUInt32();
+            if (spellId < mSpellEntryMap.size() && mSpellEntryMap[spellId])
+                mSpellEntryMap[spellId]->HasClientActiveIcon = true;
         }
         while (result->NextRow());
     }

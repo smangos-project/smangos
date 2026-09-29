@@ -364,7 +364,7 @@ void WorldSession::HandleCancelAuraOpcode(CancelAura const& packet)
     if (spellInfo->HasAttribute(SPELL_ATTR_DO_NOT_DISPLAY))
         return;
 
-    if (spellInfo->HasAttribute(SPELL_ATTR_EX_NO_AURA_ICON) && !spellInfo->activeIconID)
+    if (spellInfo->HasAttribute(SPELL_ATTR_EX_NO_AURA_ICON) && !spellInfo->HasClientActiveIcon)
         return;
 
     if (spellInfo->IsPassiveSpell())

@@ -697,6 +697,7 @@ class SpellEntry
         uint32 RankKey = 0;
         uint32 SingleTargetKey = 0;
         uint32 ClientVisualId = 0;                                 // SpellXSpellVisual row id the client expects on the wire
+        bool HasClientActiveIcon = false;                          // a SpellXSpellVisual row has an active icon
 
         // HELPERS:
         DiminishingGroup GetDiminishingReturnsGroup(bool triggered) const;
