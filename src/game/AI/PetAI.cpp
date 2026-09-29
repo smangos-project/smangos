@@ -239,11 +239,11 @@ void PetAI::UpdateAI(uint32 const diff)
                             castOnlyInCombat = true;
                     }
                     // 19478 - Tainted Blood, rank 1 enUS
-                    if (spellInfo->SpellIconID == 153)
+                    if (sSpellMgr.GetFirstSpellInChain(spellInfo->Id) == 19478)
                         castOnlyInCombat = true;
                     // 2947 - Fire Shield, rank 1 enUS
                     // When set to auto-cast, the Imp will cast this on any party members within 30 yds if they receive a melee attack.
-                    if (spellInfo->IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_IMP_BUFFS>() && spellInfo->SpellVisual == 289)
+                    if (sSpellMgr.GetFirstSpellInChain(spellInfo->Id) == 2947)
                         castOnlyInCombat = false;
                     // Furious Howl: in combat only
                     if (spellInfo->HasAura(SPELL_AURA_MOD_DAMAGE_DONE))
