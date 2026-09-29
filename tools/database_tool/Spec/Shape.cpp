@@ -1,17 +1,13 @@
 #include "Shape.h"
 
+#include "Spec/ColumnMatch.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <algorithm>
 #include <cctype>
 #include <sstream>
+#include <unordered_set>
 #include <vector>
-
-struct ShapeColumnInfo
-{
-    std::string name;
-    std::string type;
-};
 
 static std::vector<std::string> TablesWithPrefix(DoltLiteDatabase& db, std::string const& prefix)
 {
@@ -21,24 +17,6 @@ static std::vector<std::string> TablesWithPrefix(DoltLiteDatabase& db, std::stri
     while (stmt.Step())
         names.push_back(stmt.ColumnText(0));
     return names;
-}
-
-static std::vector<ShapeColumnInfo> TableColumns(DoltLiteDatabase& db, std::string const& table)
-{
-    std::vector<ShapeColumnInfo> columns;
-    DoltLiteStatement stmt = db.Prepare("PRAGMA table_info(\"" + table + "\")");
-    while (stmt.Step())
-        columns.push_back({ stmt.ColumnText(1), stmt.ColumnText(2) });
-    return columns;
-}
-
-// Matches Counterpart.cpp's TypeCategory: only text needs to be kept apart from everything else.
-static std::string TypeCategory(std::string type)
-{
-    std::transform(type.begin(), type.end(), type.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-    if (type.find("CHAR") != std::string::npos || type.find("TEXT") != std::string::npos || type.find("CLOB") != std::string::npos)
-        return "text";
-    return "numeric";
 }
 
 struct ArraySlot
@@ -67,46 +45,59 @@ struct ColumnStats
     std::string constantValue;
 };
 
-// One batched query per table: COUNT(*) once, then COUNT(DISTINCT ...)/null-or-empty count/MIN(...)
-// per column -- MIN() doubles as "the value if constant" for free when distinct == 1, without a
-// second pass over the table.
-static std::map<std::string, ColumnStats> ComputeBasicStats(DoltLiteDatabase& db, std::string const& table, std::vector<ShapeColumnInfo> const& columns)
+struct EncodedValueKeyHash
 {
-    std::map<std::string, ColumnStats> stats;
-    if (columns.empty())
-        return stats;
+    size_t operator()(EncodedValue v) const { return std::hash<int64_t>()(v.value) * 31 + v.kind; }
+};
 
-    std::string sql = "SELECT COUNT(*)";
-    for (ShapeColumnInfo const& column : columns)
+struct EncodedValueKeySame
+{
+    bool operator()(EncodedValue a, EncodedValue b) const { return a.kind == b.kind && a.value == b.value; }
+};
+
+// COUNT(*), COUNT(DISTINCT), NULL-or-'' count and the constant value (as SQLite prints it) per column.
+static std::vector<ColumnStats> ComputeBasicStats(DoltLiteDatabase& db, std::string const& table, LoadedTable const& data,
+    ValueEncoder& encoder)
+{
+    EncodedValue const empty = encoder.Text("");
+    std::vector<ColumnStats> stats(data.columns.size());
+    std::string constantsSql;
+    std::vector<size_t> constantColumns;
+    for (size_t i = 0; i < data.columns.size(); ++i)
     {
-        std::string ref = "\"" + column.name + "\"";
-        sql += ", COUNT(DISTINCT " + ref + ")";
-        sql += ", SUM(CASE WHEN " + ref + " IS NULL OR CAST(" + ref + " AS TEXT) = '' THEN 1 ELSE 0 END)";
-        sql += ", MIN(" + ref + ")";
-    }
-    sql += " FROM \"" + table + "\"";
-
-    DoltLiteStatement stmt = db.Prepare(sql);
-    if (!stmt.Step())
-        return stats;
-
-    int64_t rows = stmt.ColumnInt64(0);
-    int col = 1;
-    for (ShapeColumnInfo const& column : columns)
-    {
-        ColumnStats s;
-        s.rows = rows;
-        s.distinct = stmt.ColumnIsNull(col) ? 0 : stmt.ColumnInt64(col);
-        ++col;
-        s.nullOrEmpty = stmt.ColumnIsNull(col) ? 0 : stmt.ColumnInt64(col);
-        ++col;
-        if (s.distinct == 1 && !stmt.ColumnIsNull(col))
+        std::unordered_set<EncodedValue, EncodedValueKeyHash, EncodedValueKeySame> distinct;
+        ColumnStats& s = stats[i];
+        s.rows = static_cast<int64_t>(data.rowCount);
+        for (EncodedValue value : data.values[i])
         {
-            s.hasConstant = true;
-            s.constantValue = stmt.ColumnText(col);
+            if (value.kind == EncodedValue::Null)
+            {
+                ++s.nullOrEmpty;
+                continue;
+            }
+            if (value.kind == empty.kind && value.value == empty.value)
+                ++s.nullOrEmpty;
+            distinct.insert(value);
         }
-        ++col;
-        stats[column.name] = std::move(s);
+        s.distinct = static_cast<int64_t>(distinct.size());
+        if (s.distinct == 1)
+        {
+            constantsSql += (constantsSql.empty() ? "SELECT " : ", ") + std::string("MIN(\"") + data.columns[i].name + "\")";
+            constantColumns.push_back(i);
+        }
+    }
+
+    if (!constantColumns.empty())
+    {
+        DoltLiteStatement stmt = db.Prepare(constantsSql + " FROM \"" + table + "\"");
+        if (stmt.Step())
+        {
+            for (size_t k = 0; k < constantColumns.size(); ++k)
+            {
+                stats[constantColumns[k]].hasConstant = true;
+                stats[constantColumns[k]].constantValue = stmt.ColumnText(static_cast<int>(k));
+            }
+        }
     }
     return stats;
 }
@@ -118,83 +109,52 @@ struct FormulaHit
     int64_t total = 0;
 };
 
-// spell-plan.md's damage-formula rule: `baseDice = DieSides ? 1 : 0` agrees with DB2's dropped
-// EffectBaseDice/EffectDicePerLevel for 26,893 of 27,013 vanilla effects. Applies wherever a
-// same-table `effectDieSides<N>` sibling exists, not just spell_template by name.
-static bool TryEffectBaseDiceFormula(DoltLiteDatabase& db, std::string const& table, ArraySlot const& slot,
-    std::vector<ShapeColumnInfo> const& columns, FormulaHit& hit)
+// effectBaseDiceN = (effectDieSidesN != 0 ? 1 : 0).
+static bool TryEffectBaseDiceFormula(LoadedTable const& data, size_t column, ArraySlot const& slot, FormulaHit& hit)
 {
-    if (slot.stem != "effectBaseDice")
+    if (slot.stem != "effectBaseDice" || data.rowCount == 0)
+        return false;
+    int sides = data.ColumnIndex("effectDieSides" + slot.index);
+    if (sides < 0)
         return false;
 
-    std::string diceSidesColumn = "effectDieSides" + slot.index;
-    bool hasDiceSides = std::any_of(columns.begin(), columns.end(), [&](ShapeColumnInfo const& c) { return c.name == diceSidesColumn; });
-    if (!hasDiceSides)
-        return false;
-
-    std::string diceRef = "\"effectBaseDice" + slot.index + "\"";
-    std::string sidesRef = "\"" + diceSidesColumn + "\"";
-    DoltLiteStatement stmt = db.Prepare("SELECT COUNT(*), SUM(CASE WHEN " + diceRef + " = (CASE WHEN " + sidesRef +
-                                         " != 0 THEN 1 ELSE 0 END) THEN 1 ELSE 0 END) FROM \"" + table + "\"");
-    if (!stmt.Step())
-        return false;
-
-    int64_t total = stmt.ColumnInt64(0);
-    if (total == 0)
-        return false;
-    hit = { "effect_base_dice_from_die_sides", stmt.ColumnIsNull(1) ? 0 : stmt.ColumnInt64(1), total };
+    int64_t matched = 0;
+    for (size_t row = 0; row < data.rowCount; ++row)
+    {
+        EncodedValue side = data.values[sides][row];
+        bool nonZero = side.kind != EncodedValue::Null && !(side.kind == EncodedValue::Integer && side.value == 0);
+        matched += SqlEqual(data.values[column][row], { nonZero ? 1 : 0, EncodedValue::Integer });
+    }
+    hit = { "effect_base_dice_from_die_sides", matched, static_cast<int64_t>(data.rowCount) };
     return true;
 }
 
-// The generic candidate from phase0-plan.md 4.4: an array slot equal to another column -- here,
-// the sibling slot of the same stem (`effectRadiusIndex2` against `effectRadiusIndex1`,
-// `effectRadiusIndex3`, ...) with the highest equality rate, all compatible siblings batched into
-// one query like Counterpart.cpp's rule search.
-static bool TrySiblingArraySlotFormula(DoltLiteDatabase& db, std::string const& table, ShapeColumnInfo const& column,
-    ArraySlot const& slot, std::vector<ShapeColumnInfo> const& columns, FormulaHit& hit)
+// The same-stem, same-category column this one equals most often.
+static bool TrySiblingArraySlotFormula(LoadedTable const& data, size_t column, ArraySlot const& slot, FormulaHit& hit)
 {
-    std::string category = TypeCategory(column.type);
-    std::vector<ShapeColumnInfo> siblings;
-    for (ShapeColumnInfo const& other : columns)
-    {
-        if (other.name == column.name || TypeCategory(other.type) != category)
-            continue;
-        if (SplitArraySlot(other.name).stem == slot.stem)
-            siblings.push_back(other);
-    }
-    if (siblings.empty())
+    if (data.rowCount == 0)
         return false;
-
-    std::string sql = "SELECT COUNT(*)";
-    std::string colRef = "\"" + column.name + "\"";
-    for (ShapeColumnInfo const& sibling : siblings)
-        sql += ", SUM(CASE WHEN " + colRef + " = \"" + sibling.name + "\" THEN 1 ELSE 0 END)";
-    sql += " FROM \"" + table + "\"";
-
-    DoltLiteStatement stmt = db.Prepare(sql);
-    if (!stmt.Step())
-        return false;
-
-    int64_t total = stmt.ColumnInt64(0);
-    if (total == 0)
-        return false;
+    std::string const category = TypeCategory(data.columns[column].type);
 
     int64_t bestMatched = -1;
     std::string bestName;
-    for (size_t i = 0; i < siblings.size(); ++i)
+    for (size_t other = 0; other < data.columns.size(); ++other)
     {
-        if (stmt.ColumnIsNull(static_cast<int>(i) + 1))
+        if (other == column || TypeCategory(data.columns[other].type) != category ||
+            SplitArraySlot(data.columns[other].name).stem != slot.stem)
             continue;
-        int64_t matched = stmt.ColumnInt64(static_cast<int>(i) + 1);
+        int64_t matched = 0;
+        for (size_t row = 0; row < data.rowCount; ++row)
+            matched += SqlEqual(data.values[column][row], data.values[other][row]);
         if (matched > bestMatched)
         {
             bestMatched = matched;
-            bestName = siblings[i].name;
+            bestName = data.columns[other].name;
         }
     }
     if (bestMatched < 0)
         return false;
-    hit = { "equals_" + bestName, bestMatched, total };
+    hit = { "equals_" + bestName, bestMatched, static_cast<int64_t>(data.rowCount) };
     return true;
 }
 
@@ -215,31 +175,24 @@ static void ComputeShapeForPrefix(DoltLiteDatabase& reference, std::string const
     for (std::string const& qualified : TablesWithPrefix(reference, prefix))
     {
         std::string table = qualified.substr(tableNameOffset);
-        std::vector<ShapeColumnInfo> columns = TableColumns(reference, qualified);
-        std::map<std::string, ColumnStats> stats = ComputeBasicStats(reference, qualified, columns);
+        ValueEncoder encoder;
+        LoadedTable data = LoadTable(reference, qualified, encoder);
+        std::vector<ColumnStats> stats = ComputeBasicStats(reference, qualified, data, encoder);
 
-        for (ShapeColumnInfo const& column : columns)
+        for (size_t column = 0; column < data.columns.size(); ++column)
         {
             FormulaHit hit;
             bool found = false;
-            ArraySlot slot = SplitArraySlot(column.name);
+            ArraySlot slot = SplitArraySlot(data.columns[column].name);
             if (!slot.stem.empty())
             {
-                try
-                {
-                    found = TryEffectBaseDiceFormula(reference, qualified, slot, columns, hit);
-                    if (!found)
-                        found = TrySiblingArraySlotFormula(reference, qualified, column, slot, columns, hit);
-                }
-                catch (DoltLiteError const&)
-                {
-                    // A comparison that doesn't type-check between two columns SQLite affinities
-                    // disagree about -- no formula hit, not an error for the whole column.
-                    found = false;
-                }
+                found = TryEffectBaseDiceFormula(data, column, slot, hit);
+                if (!found)
+                    found = TrySiblingArraySlotFormula(data, column, slot, hit);
             }
 
-            result.shapes[source + "\t" + table + "\t" + column.name] = FormatShape(stats.at(column.name), found ? &hit : nullptr);
+            result.shapes[source + "	" + table + "	" + data.columns[column].name] =
+                FormatShape(stats[column], found ? &hit : nullptr);
         }
     }
 }

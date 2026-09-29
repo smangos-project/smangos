@@ -33,10 +33,13 @@ bool IsPacketCodeFile(std::filesystem::path const& file, std::string const& text
 std::vector<WireHintUse> FindFieldUseLines(std::filesystem::path const& file, std::string const& text, std::string const& fieldName)
 {
     std::vector<WireHintUse> uses;
+    if (text.find(fieldName) == std::string::npos)
+        return uses; // the pattern needs the name itself; most files never mention it
+
     std::regex const pattern(R"([.>]\s*)" + fieldName + R"(\b)");
     std::vector<std::string> lines = SplitLines(text);
     for (size_t i = 0; i < lines.size(); ++i)
-        if (std::regex_search(lines[i], pattern))
+        if (lines[i].find(fieldName) != std::string::npos && std::regex_search(lines[i], pattern))
             uses.push_back({ file, static_cast<uint32_t>(i + 1) });
     return uses;
 }
