@@ -77,6 +77,25 @@ dbc_auctionhouse	DepositRate
 dbc_auctionhouse	ConsignmentRate		
 dbc_bankbagslotprices	ID		
 dbc_bankbagslotprices	Cost		
+dbc_battlemasterlist	ID		
+dbc_battlemasterlist	Name_lang		client
+dbc_battlemasterlist	GameType_lang		client
+dbc_battlemasterlist	ShortDescription_lang		client
+dbc_battlemasterlist	LongDescription_lang		client
+dbc_battlemasterlist	InstanceType		client
+dbc_battlemasterlist	MinLevel		
+dbc_battlemasterlist	MaxLevel		
+dbc_battlemasterlist	RatedPlayers		neutral
+dbc_battlemasterlist	MinPlayers		
+dbc_battlemasterlist	MaxPlayers		
+dbc_battlemasterlist	GroupsAllowed		client
+dbc_battlemasterlist	MaxGroupSize		client
+dbc_battlemasterlist	HolidayWorldState		client
+dbc_battlemasterlist	Flags		neutral
+dbc_battlemasterlist	IconFileDataID		client
+dbc_battlemasterlist	Required_Player_Condition_ID		neutral
+dbc_battlemasterlist	Field_1_15_3_55112_016		client
+dbc_battlemasterlist	Field_1_15_3_55112_017		client
 dbc_cfg_categories	ID		
 dbc_cfg_categories	Name_lang		
 dbc_cfg_categories	LocaleMask		

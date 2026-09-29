@@ -80,12 +80,12 @@ srv	battleground_events	map	server			fully read by BattleGroundMgr::LoadBattleEv
 srv	battleground_events	event1	server			fully read by BattleGroundMgr::LoadBattleEventIndexes (BattleGroundMgr.cpp:1762)	yes
 srv	battleground_events	event2	server			fully read by BattleGroundMgr::LoadBattleEventIndexes (BattleGroundMgr.cpp:1762)	yes
 srv	battleground_events	description	server			fully read by BattleGroundMgr::LoadBattleEventIndexes (BattleGroundMgr.cpp:1762)	yes
-srv	battleground_template	id	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
+srv	battleground_template	id	dbc	dbc_battlemasterlist.ID	identity	3/3 battlegrounds are BattlemasterList rows under the same id; the slim battleground_template keeps it as its key (reference DB)	yes
 srv	battleground_template	patch	drop			progression removed	yes
-srv	battleground_template	min_players_per_team	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
-srv	battleground_template	max_players_per_team	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
-srv	battleground_template	min_level	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
-srv	battleground_template	max_level	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
+srv	battleground_template	min_players_per_team	dbc	dbc_battlemasterlist.MinPlayers	identity	0/3 equal: vanilla 20/4/6 per team, client 10/5/8 (Classic-era values); vanilla wins (reference DB)	yes
+srv	battleground_template	max_players_per_team	dbc	dbc_battlemasterlist.MaxPlayers	identity	3/3 equal (40, 10, 15 per team; reference DB)	yes
+srv	battleground_template	min_level	dbc	dbc_battlemasterlist.MinLevel	identity	3/3 equal (51, 10, 20; reference DB)	yes
+srv	battleground_template	max_level	dbc	dbc_battlemasterlist.MaxLevel	identity	3/3 equal (60; reference DB)	yes
 srv	battleground_template	alliance_win_spell	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
 srv	battleground_template	alliance_lose_spell	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
 srv	battleground_template	horde_win_spell	server			fully read by BattleGroundMgr's battleground_template loader (BattleGroundMgr.cpp:1456)	yes
