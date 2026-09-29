@@ -23,6 +23,11 @@
 #define DBCSTORE_H
 
 #include "DBCFileLoader.h"
+#include <algorithm>
+#include <deque>
+#include <string>
+#include <utility>
+#include <vector>
 
 template<class T>
 class DBCStorage
@@ -75,6 +80,35 @@ class DBCStorage
             return true;
         }
 
+        // Takes rows already mapped from another source; strings must outlive the store (see InternString).
+        bool LoadRows(std::vector<std::pair<uint32, T>> const& rows)
+        {
+            Clear();
+            if (rows.empty())
+                return false;
+
+            uint32 maxId = 0;
+            for (auto const& row : rows)
+                maxId = std::max(maxId, row.first);
+
+            nCount = maxId + 1;
+            m_dataTable = reinterpret_cast<T*>(new char[sizeof(T) * rows.size()]);
+            indexTable = reinterpret_cast<T**>(new char[sizeof(T*) * nCount]());
+            T* out = m_dataTable;
+            for (auto const& row : rows)
+            {
+                *out = row.second;
+                indexTable[row.first] = out++;
+            }
+            return true;
+        }
+
+        char const* InternString(std::string const& value)
+        {
+            m_strings.push_back(value);
+            return m_strings.back().c_str();
+        }
+
         void Clear()
         {
             if (!indexTable)
@@ -90,6 +124,7 @@ class DBCStorage
                 delete[] m_stringPoolList.front();
                 m_stringPoolList.pop_front();
             }
+            m_strings.clear();
             nCount = 0;
         }
 
@@ -102,6 +137,7 @@ class DBCStorage
         T** indexTable;
         T* m_dataTable;
         StringPoolList m_stringPoolList;
+        std::deque<std::string> m_strings;
 };
 
 #endif

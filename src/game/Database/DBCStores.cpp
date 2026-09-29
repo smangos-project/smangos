@@ -174,11 +174,33 @@ inline void LoadDBC(uint32& availableDbcLocales, BarGoLink& bar, StoreProblemLis
     }
 }
 
+template<class T, class Fill>
+static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, char const* table, char const* columns, Fill fill)
+{
+    std::vector<std::pair<uint32, T>> rows;
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT %s FROM `%s`", columns, table));
+    if (result)
+    {
+        do
+        {
+            T entry{};
+            uint32 const id = fill(result->Fetch(), entry);
+            rows.emplace_back(id, entry);
+        }
+        while (result->NextRow());
+    }
+
+    if (storage.LoadRows(rows))
+        bar.step();
+    else
+        errlist.push_back(table);
+}
+
 void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 45;
+    uint32 const DBCFilesCount = 43;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -187,8 +209,20 @@ void LoadDBCStores(std::string const& dataPath)
     // bitmask for index of fullLocaleNameList
     uint32 availableDbcLocales = 0xFFFFFFFF;
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sAuctionHouseStore,        dbcPath, "AuctionHouse.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sBankBagSlotPricesStore,   dbcPath, "BankBagSlotPrices.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sAuctionHouseStore, "dbc_auctionhouse", "`ID`, `FactionID`, `DepositRate`, `ConsignmentRate`", [](Field* f, AuctionHouseEntry& e)
+    {
+        e.houseId = f[0].GetUInt32();
+        e.faction = f[1].GetUInt32();
+        e.depositPercent = f[2].GetUInt32();
+        e.cutPercent = f[3].GetUInt32();
+        return e.houseId;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sBankBagSlotPricesStore, "dbc_bankbagslotprices", "`ID`, `Cost`", [](Field* f, BankBagSlotPricesEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.price = f[1].GetUInt32();
+        return e.ID;
+    });
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChatChannelsStore,        dbcPath, "ChatChannels.dbc");
 
