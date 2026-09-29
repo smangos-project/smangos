@@ -165,7 +165,7 @@ spell_proc_item_enchant	server	entry	srv:spell_proc_item_enchant
 spell_script_target	server	entry, type, targetEntry	srv:spell_script_target			
 spell_scripts	server	id	srv:spell_scripts			
 spell_target_position	server	id, target_map	srv:spell_target_position			
-spell_template	gone			dbc_spell*, spell_extra		its spells overwrite the fields they cover in the client spell tables; the rest renamed spell_extra (plan.md 11.5, decisions 12, 13)
+spell_template	gone			dbc_spell*, spell_extra		at create its spells overwrite the fields they cover in the client spell tables, which are then the one source for every spell; the rest renamed spell_extra (plan.md 11.5, decisions 12, 13)
 spell_threat	server	entry	srv:spell_threat			
 taxi_nodes	gone			dbc_taxinodes		every column is a TaxiNodes column; mount slots swapped (plan.md 10.2)
 taxi_path_transitions	server	in_path, out_path	srv:taxi_path_transitions			
@@ -253,7 +253,7 @@ dbc_wmoareatable	dbc	ID	vdbc:wmoareatable
 gameobject_quest_item	server	GameObjectEntry, Idx				quest items a game object holds, for the game object query reply (plan.md 10.4)
 race_taxi_mask	server	race	vdbc:chrraces			vanilla ChrRaces.StartingTaxiNodes, which the client's ChrRaces lacks (plan.md 10.3)
 skill_tiers	server	id	vdbc:skilltiers			vanilla SkillTiers (no 1.15 twin); SkillRaceClassInfo.SkillTierID points at it (plan.md 10.3)
-spell_extra	server	spell_id	srv:spell_effect_mod, srv:spell_mod, srv:spell_template			the server's spell set, one row per server spell (spell_template and the spell_mod-only ids), plus per-spell server data no client table holds (plan.md 11.5)
+spell_extra	server	spell_id	srv:spell_effect_mod, srv:spell_mod, srv:spell_template			per-spell server data no client table holds, rows only for spells that have some: the slim spell_template (plan.md 11.5)
 spell_stack_key	server	spell_id				stacking and rank keys replacing the icon/visual conjuncts (plan.md 11.4)
 spell_tag	server	spell_id, tag				explicit spell sets replacing SpellIconID/SpellVisual checks (plan.md 11.4)
 world_safe_locs	server	id	srv:world_safe_locs_facing, vdbc:worldsafelocs			graveyards: the vanilla WorldSafeLocs rows (no 1.15 twin) plus vmangos's facing (plan.md 10.3)
