@@ -322,6 +322,8 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
         VerifyTableRules rules;
         if (auto it = spec.dropped.find("srv:" + table); it != spec.dropped.end())
             rules.dropped = it->second;
+        // mangosd saves its runtime state here.
+        rules.allowExtraRows = table == "variables";
         VerifyMappedTable(db, result, "V1", originalTable, mappingPath, rules);
     }
 }
