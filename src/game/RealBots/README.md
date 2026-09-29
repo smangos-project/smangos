@@ -414,14 +414,15 @@ elsewhere, even with the DLL correctly copied there by `mangos_copy_openssl_dlls
 
 The root server (`bnetserver` + `mangosd`) runs beside the live vibemangos on its own database
 instance, ports and data links; it never touches the live server or its databases. `contrib/vmport/`
-holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server available:
+holds the steps. From a fresh checkout, with a scratch MariaDB/MySQL server available for the login,
+character and log databases (the world database is a DoltLite file):
 
-1. Create the four schemas (`vmport_realmd`, `vmport_world`, `vmport_characters`, `vmport_logs`) and a
+1. Create the three schemas (`vmport_realmd`, `vmport_characters`, `vmport_logs`) and a
    user with all privileges on them. This setup used a second `mariadbd` on `127.0.0.1:3309` started
    from the installed binaries with its own data directory under `.local/vmport`.
-2. `contrib/vmport/setup-databases.ps1 -WorldDump <a world database dump>` loads `sql/logon.sql`,
-   `characters.sql`, `logs.sql`, the world dump, then every migration in `sql/migrations` (the world
-   ones take a while). `CheckRequiredMigrations` at startup is the check that the dump was current.
+2. `contrib/vmport/setup-databases.ps1` loads `sql/logon.sql`, `characters.sql`, `logs.sql`, then their
+   migrations in `sql/migrations`. Build the world database with `database_tool create`, which writes
+   `.world/world.doltlite`; `CheckRequiredMigrations` at startup checks it is current.
 3. `contrib/vmport/setup-run-dir.ps1 -ClientData <the 5875 folder holding dbc\>` links the client
    data (never copies or writes it), writes `mangosd.conf` and `bnetserver.conf` from the `.dist`
    files with this setup's databases and ports (REST 8091, RPC 1129, world 8095, instance 8096),

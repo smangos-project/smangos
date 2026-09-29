@@ -1,12 +1,11 @@
-# Loads the four databases of a runnable server: the base dumps in sql/, then every migration in
-# sql/migrations, in name order. The world database comes from a dump you supply, because sql/ holds
-# only its migrations. Safe to run again: migrations skip themselves once recorded.
+# Loads the three MySQL databases of a runnable server: the base dumps in sql/, then every migration in
+# sql/migrations, in name order. The world database is not MySQL: build .world/world.doltlite with
+# `database_tool create`. Safe to run again: migrations skip themselves once recorded.
 #
 # The schemas must already exist and $User must have all privileges on them, e.g. on a scratch
 # MariaDB/MySQL instance:
-#   CREATE DATABASE vmport_realmd; CREATE DATABASE vmport_world;
-#   CREATE DATABASE vmport_characters; CREATE DATABASE vmport_logs;
-#   GRANT ALL ON vmport_realmd.* TO 'vmport'@'127.0.0.1' IDENTIFIED BY 'vmport';   (and the other three)
+#   CREATE DATABASE vmport_realmd; CREATE DATABASE vmport_characters; CREATE DATABASE vmport_logs;
+#   GRANT ALL ON vmport_realmd.* TO 'vmport'@'127.0.0.1' IDENTIFIED BY 'vmport';   (and the other two)
 param(
     [string]$Client = "C:\Program Files\MariaDB 13.0\bin\mariadb.exe",
     [string]$DbHost = "127.0.0.1",
@@ -14,7 +13,6 @@ param(
     [string]$User = "vmport",
     [string]$Password = "vmport",
     [string]$Prefix = "vmport",
-    [string]$WorldDump = "",
     [string]$SqlDir = (Join-Path $PSScriptRoot "..\..\sql")
 )
 
@@ -32,7 +30,7 @@ function Invoke-SqlFile([string]$Database, [string]$File)
     Remove-Item $errors
 }
 
-$schemas = @{ logon = "${Prefix}_realmd"; characters = "${Prefix}_characters"; logs = "${Prefix}_logs"; world = "${Prefix}_world" }
+$schemas = @{ logon = "${Prefix}_realmd"; characters = "${Prefix}_characters"; logs = "${Prefix}_logs" }
 
 foreach ($name in @("logon", "characters", "logs"))
 {
@@ -40,13 +38,7 @@ foreach ($name in @("logon", "characters", "logs"))
     Invoke-SqlFile $schemas[$name] (Join-Path $SqlDir "$name.sql")
 }
 
-if ($WorldDump)
-{
-    Write-Host "$WorldDump -> $($schemas.world)"
-    Invoke-SqlFile $schemas.world $WorldDump
-}
-
-foreach ($name in @("logon", "characters", "logs", "world"))
+foreach ($name in @("logon", "characters", "logs"))
 {
     $migrations = Get-ChildItem (Join-Path $SqlDir "migrations") -Filter "*_$name.sql" | Sort-Object Name
     Write-Host "$($migrations.Count) $name migrations -> $($schemas[$name])"
