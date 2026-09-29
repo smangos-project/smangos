@@ -1406,27 +1406,23 @@ void Spell::EffectDummy(SpellEffectIndex effIdx)
                 }
             }
 
-            //All IconID Check in there
-            switch (m_spellInfo->SpellIconID)
+            // Berserking (troll racial traits)
+            if (m_spellInfo->HasTag(SPELL_TAG_BERSERKING))
             {
-                // Berserking (troll racial traits)
-                case 1661:
-                {
-                    if (!m_casterUnit)
-                        return;
-
-                    uint32 healthPct = uint32(m_casterUnit->GetHealthPercent());
-                    int32 meleeMod = 10;
-                    if (healthPct <= 40)
-                        meleeMod = 30;
-                    if (healthPct < 100 && healthPct > 40)
-                        meleeMod = 10 + (100 - healthPct) / 3;
-
-                    // FIXME: custom spell required this aura state by some unknown reason, we not need remove it anyway
-                    m_casterUnit->ModifyAuraState(AURA_STATE_BERSERKING, true);
-                    m_casterUnit->CastCustomSpell(m_casterUnit, 26635, meleeMod, meleeMod, meleeMod, true, nullptr);
+                if (!m_casterUnit)
                     return;
-                }
+
+                uint32 healthPct = uint32(m_casterUnit->GetHealthPercent());
+                int32 meleeMod = 10;
+                if (healthPct <= 40)
+                    meleeMod = 30;
+                if (healthPct < 100 && healthPct > 40)
+                    meleeMod = 10 + (100 - healthPct) / 3;
+
+                // FIXME: custom spell required this aura state by some unknown reason, we not need remove it anyway
+                m_casterUnit->ModifyAuraState(AURA_STATE_BERSERKING, true);
+                m_casterUnit->CastCustomSpell(m_casterUnit, 26635, meleeMod, meleeMod, meleeMod, true, nullptr);
+                return;
             }
             break;
         }
@@ -4408,7 +4404,7 @@ void Spell::EffectScriptEffect(SpellEffectIndex effIdx)
                     // If spell that caused this aura has Crowd Control or Daze effect
                     if ((aurMechMask & MECHANIC_NOT_REMOVED_BY_SHAPESHIFT) ||
                         // some Daze spells have these parameters instead of MECHANIC_DAZE (skip snare spells)
-                        (aurSpellInfo->SpellIconID == 15 && aurSpellInfo->Dispel == 0 &&
+                        (aurSpellInfo->HasTag(SPELL_TAG_DAZE) &&
                         (aurMechMask & (1 << (MECHANIC_SNARE - 1))) == 0))
                     {
                         ++iter;
