@@ -281,9 +281,9 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
         }
 #endif
         // Improved Lay on Hands
-        if (spellProto->SpellIconID == 79 && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
+        if (sSpellMgr.GetFirstSpellInChain(spellProto->Id) == 20234)
         {
-            if (procSpell->SpellFamilyName == SPELLFAMILY_PALADIN && procSpell->SpellIconID == 79 && procSpell->Category == 56 && !isVictim)
+            if (procSpell->SpellFamilyName == SPELLFAMILY_PALADIN && procSpell->Category == 56 && !isVictim)
                 return SPELL_PROC_TRIGGER_OK;
             else
                 return SPELL_PROC_TRIGGER_FAILED;
@@ -829,7 +829,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
         case SPELLFAMILY_MAGE:
         {
             // Magic Absorption
-            if (dummySpell->SpellIconID == 459)             // only this spell have SpellIconID == 459 and dummy aura
+            if (sSpellMgr.GetFirstSpellInChain(dummySpell->Id) == 29441)
             {
                 if (GetPowerType() != POWER_MANA)
                     return SPELL_AURA_PROC_FAILED;
@@ -841,7 +841,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                 break;
             }
             // Master of Elements
-            if (dummySpell->SpellIconID == 1920)
+            if (sSpellMgr.GetFirstSpellInChain(dummySpell->Id) == 29074)
             {
                 if (!procSpell)
                     return SPELL_AURA_PROC_FAILED;
@@ -1218,7 +1218,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
         case SPELLFAMILY_WARLOCK:
         {
             // Pyroclasm
-            if (auraSpellInfo->SpellIconID == 1137)
+            if (sSpellMgr.GetFirstSpellInChain(auraSpellInfo->Id) == 18096)
             {
                 if (!pVictim || !pVictim->IsAlive() || pVictim == this || procSpell == nullptr)
                     return SPELL_AURA_PROC_FAILED;
@@ -1263,7 +1263,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
                     return SPELL_AURA_PROC_FAILED;
             }
             // Consequences ne proc pas sur soi-meme (Flammes infernales)
-            else if (auraSpellInfo->SpellIconID == 11)
+            else if (sSpellMgr.GetFirstSpellInChain(auraSpellInfo->Id) == 18119)
             {
                 if (pVictim == this)
                     return SPELL_AURA_PROC_FAILED;
@@ -1273,7 +1273,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
         case SPELLFAMILY_PRIEST:
         {
             // Shadowguard
-            if (auraSpellInfo->SpellIconID == 19)
+            if (sSpellMgr.GetFirstSpellInChain(auraSpellInfo->Id) == 18137)
             {
                 switch (auraSpellInfo->Id)
                 {
@@ -1301,7 +1301,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
                 }
             }
             // Blessed Recovery
-            else if (auraSpellInfo->SpellIconID == 1875)
+            else if (sSpellMgr.GetFirstSpellInChain(auraSpellInfo->Id) == 27811)
             {
                 switch (auraSpellInfo->Id)
                 {
@@ -1460,7 +1460,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
                 return SPELL_AURA_PROC_OK;                        // no hidden cooldown
             }
             // Illumination
-            else if (auraSpellInfo->SpellIconID == 241)
+            else if (sSpellMgr.GetFirstSpellInChain(auraSpellInfo->Id) == 20210)
             {
                 if (!procSpell)
                     return SPELL_AURA_PROC_FAILED;
@@ -1498,7 +1498,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
         case SPELLFAMILY_SHAMAN:
         {
             // Lightning Shield (overwrite non existing triggered spell call in spell.dbc
-            if (auraSpellInfo->IsFitToFamilyMask<CF_SHAMAN_LIGHTNING_SHIELD>() && auraSpellInfo->SpellVisual == 37)
+            if (auraSpellInfo->IsFitToFamilyMask<CF_SHAMAN_LIGHTNING_SHIELD>())
             {
                 switch (auraSpellInfo->Id)
                 {
