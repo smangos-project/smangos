@@ -579,7 +579,7 @@ namespace
         return 1;
     }
 
-    // verify [--final] [--update-delta] [--checks V1,V3] [--tables a,b]
+    // verify [--final] [--update] [--checks V1,V3] [--tables a,b]
     // verify init [--vdbc Name,Name|all]
     int RunVerifyCommand(std::vector<std::string> const& args)
     {
@@ -610,8 +610,8 @@ namespace
         {
             if (args[i] == "--final")
                 options.final = true;
-            else if (args[i] == "--update-delta")
-                options.updateDelta = true;
+            else if (args[i] == "--update")
+                options.update = true;
             else if (args[i] == "--checks" && i + 1 < args.size())
                 options.checks = SplitCsv(args[++i]);
             else if (args[i] == "--tables" && i + 1 < args.size())

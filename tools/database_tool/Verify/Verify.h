@@ -29,7 +29,7 @@ struct VerifyProblem
 struct VerifyOptions
 {
     bool final = false;
-    bool updateDelta = false; // rewrite Verify/client-delta.tsv from the measured V3 delta
+    bool update = false; // rewrite the measured lists (client-delta.tsv, references.tsv) instead of checking them
     std::vector<std::string> checks; // empty: every check
     std::vector<std::string> tables; // empty: every table
 };

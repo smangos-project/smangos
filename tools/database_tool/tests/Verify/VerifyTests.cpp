@@ -159,14 +159,14 @@ TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-de
         world.Execute("INSERT INTO dbc_map (ID, Directory) VALUES (1, 'x'), (2, 'y')");
         world.Execute("INSERT INTO dbc_chrraces (ID) VALUES (3)");
     }
-    options.updateDelta = true;
+    options.update = true;
     CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
 
     std::ifstream in(verifyDir / "client-delta.tsv");
     std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     CHECK(content == "table\tinserted\tchanged\tremoved\ndbc_chrraces\t1\t0\t0\ndbc_map\t1\t1\t0\n");
 
-    options.updateDelta = false;
+    options.update = false;
     CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
 }
 
@@ -218,4 +218,41 @@ TEST_CASE("V2 rebuilds vanilla tables through the columns.tsv mapping, up to all
     REQUIRE(allowed.problems.size() == 1);
     CHECK(allowed.problems[0].message ==
           "Minimum differs in 1 rows, first ID=2: original 250, rebuilt 300 (allow.tsv allows 2)");
+}
+
+TEST_CASE("V4 counts dangling client foreign keys and declared server references", "[Verify]")
+{
+    VerifyTempDir dir("v4");
+    std::filesystem::path worldPath = dir.path / "world.doltlite";
+    std::filesystem::path referencePath = dir.path / "reference.doltlite";
+    std::filesystem::path verifyDir = dir.path / "Verify";
+    DoltLiteDatabase(referencePath.string()).Execute("CREATE TABLE unused (x INTEGER)");
+    {
+        DoltLiteDatabase world(worldPath.string());
+        REQUIRE(CreateDbcTables(world, "dbc tables").error.empty());
+        world.Execute("INSERT INTO dbc_taxinodes (ID) VALUES (1)");
+        world.Execute("INSERT INTO dbc_taxipath (ID, FromTaxiNode, ToTaxiNode) VALUES (1, 1, 0), (2, 5, 0)");
+        world.Execute("CREATE TABLE thing (id INTEGER, node INTEGER, kind INTEGER)");
+        world.Execute("INSERT INTO thing VALUES (1, 1, 0), (2, 7, 0), (3, 8, 1)");
+    }
+    WriteVerifyTestFile(verifyDir / "references.tsv", "table\tcolumn\ttarget\twhere\tdangling\treason\n"
+                                                      "thing\tnode\tdbc_taxinodes.ID\tkind = 0\t0\ttest\n");
+
+    VerifyOptions options{ false, false, { "V4" }, { "dbc_taxipath", "thing" } };
+    VerifyResult result = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    REQUIRE(result.error.empty());
+    REQUIRE(result.problems.size() == 2);
+    CHECK(result.problems[0].message == "FromTaxiNode -> dbc_taxinodes.ID: 1 values don't resolve; references.tsv says 0");
+    CHECK(result.problems[1].message == "node -> dbc_taxinodes.ID: 1 values don't resolve; references.tsv says 0");
+
+    options.update = true;
+    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+    options.update = false;
+    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+
+    std::ifstream in(verifyDir / "references.tsv");
+    std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    CHECK(content == "table\tcolumn\ttarget\twhere\tdangling\treason\n"
+                     "dbc_taxipath\tFromTaxiNode\tdbc_taxinodes.ID\t\t1\t\n"
+                     "thing\tnode\tdbc_taxinodes.ID\tkind = 0\t1\ttest\n");
 }

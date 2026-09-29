@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <tuple>
 
 static std::string Trim(std::string const& value)
 {
@@ -481,7 +482,7 @@ static void VerifyClientDelta(DoltLiteDatabase& db, std::filesystem::path const&
                 measured[dbcTable] = delta;
 
             VerifyDelta expected = recorded.count(dbcTable) ? recorded[dbcTable] : VerifyDelta{};
-            if (!options.updateDelta && delta != expected)
+            if (!options.update && delta != expected)
                 result.problems.push_back({ "V3", dbcTable,
                     std::to_string(delta[0]) + " inserted, " + std::to_string(delta[1]) + " changed, " +
                     std::to_string(delta[2]) + " removed; client-delta.tsv says " + std::to_string(expected[0]) +
@@ -499,7 +500,7 @@ static void VerifyClientDelta(DoltLiteDatabase& db, std::filesystem::path const&
         if (!known.count(table))
             result.problems.push_back({ "V3", table, "client-delta.tsv names a table the client doesn't have" });
 
-    if (options.updateDelta)
+    if (options.update)
     {
         std::filesystem::create_directories(verifyDir);
         std::ofstream out(deltaPath, std::ios::trunc | std::ios::binary);
@@ -507,6 +508,132 @@ static void VerifyClientDelta(DoltLiteDatabase& db, std::filesystem::path const&
         for (auto const& [table, delta] : measured)
             if (known.count(table))
                 out << table << "\t" << delta[0] << "\t" << delta[1] << "\t" << delta[2] << "\n";
+    }
+}
+
+// One row of Verify/references.tsv: a column that points into a dbc_ table, and how many of its
+// non-zero values don't resolve. A dbc_ foreign key from the client metadata needs a row only
+// when something dangles; a server reference is declared by its row.
+struct VerifyReference
+{
+    std::string table;
+    std::string column;
+    std::string target; // "dbc_x.Column"
+    std::string where;  // optional condition on `table`'s rows
+    uint64_t dangling = 0;
+    std::string reason;
+};
+
+static uint64_t CountDangling(DoltLiteDatabase& db, VerifyReference const& reference)
+{
+    size_t dot = reference.target.find('.');
+    if (dot == std::string::npos)
+        throw std::runtime_error("target " + reference.target + " is not table.column");
+    std::string sql = "SELECT COUNT(*) FROM main." + Quote(reference.table) + " WHERE " + Quote(reference.column) +
+                      " <> 0 AND " + Quote(reference.column) + " NOT IN (SELECT " +
+                      Quote(reference.target.substr(dot + 1)) + " FROM main." +
+                      Quote(reference.target.substr(0, dot)) + ")";
+    if (!reference.where.empty())
+        sql += " AND (" + reference.where + ")";
+    DoltLiteStatement count = db.Prepare(sql);
+    count.Step();
+    return static_cast<uint64_t>(count.ColumnInt64(0));
+}
+
+// V4: every client-metadata foreign key and every declared server reference resolves, except for
+// the dangling counts Verify/references.tsv lists.
+static void VerifyReferences(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
+                             VerifyOptions const& options, VerifyResult& result)
+{
+    std::filesystem::path referencesPath = verifyDir / "references.tsv";
+    std::map<std::pair<std::string, std::string>, VerifyReference> listed;
+    for (std::vector<std::string> const& row : ReadTsv(referencesPath, 6))
+        listed[{ row[0], row[1] }] = { row[0], row[1], row[2], row[3], std::stoull(row[4]), row[5] };
+
+    std::vector<VerifyReference> references;
+    std::set<std::pair<std::string, std::string>> metadataKeys;
+    uint32_t unresolvedTargets = 0;
+    for (DbcTableMeta const& table : GetDbcTables())
+    {
+        for (uint32_t i = 0; i < table.fieldCount; ++i)
+        {
+            DbcFieldMeta const& field = table.fields[i];
+            if (!field.foreignTable || field.isNonInline)
+                continue;
+            DbcTableMeta const* target = FindDbcTable(field.foreignTable);
+            if (!target)
+            {
+                ++unresolvedTargets;
+                continue;
+            }
+            for (std::string const& column : DbcColumnNames(field))
+            {
+                VerifyReference reference{ table.sqlTable, column,
+                                           std::string(target->sqlTable) + "." + field.foreignColumn };
+                metadataKeys.insert({ reference.table, reference.column });
+                references.push_back(std::move(reference));
+            }
+        }
+    }
+    for (auto const& [key, reference] : listed)
+        if (!metadataKeys.count(key))
+            references.push_back(reference);
+
+    std::vector<VerifyReference> measured;
+    uint32_t checked = 0;
+    for (VerifyReference& reference : references)
+    {
+        auto it = listed.find({ reference.table, reference.column });
+        if (it != listed.end())
+        {
+            reference.where = it->second.where;
+            reference.reason = it->second.reason;
+        }
+        bool declared = !metadataKeys.count({ reference.table, reference.column });
+
+        if (!WantsTable(options, reference.table))
+        {
+            if (it != listed.end())
+                measured.push_back(it->second);
+            continue;
+        }
+
+        try
+        {
+            reference.dangling = CountDangling(db, reference);
+            ++checked;
+        }
+        catch (std::exception const& e)
+        {
+            result.problems.push_back({ "V4", reference.table, reference.column + ": " + e.what() });
+            if (it != listed.end())
+                measured.push_back(it->second);
+            continue;
+        }
+
+        uint64_t expected = it != listed.end() ? it->second.dangling : 0;
+        if (!options.update && reference.dangling != expected)
+            result.problems.push_back({ "V4", reference.table, reference.column + " -> " + reference.target + ": " +
+                                                                   std::to_string(reference.dangling) +
+                                                                   " values don't resolve; references.tsv says " +
+                                                                   std::to_string(expected) });
+        if (reference.dangling || declared)
+            measured.push_back(reference);
+    }
+
+    result.notes.push_back("V4: " + std::to_string(checked) + " references checked, " +
+                           std::to_string(unresolvedTargets) + " metadata foreign keys name a table the client lacks");
+
+    if (options.update)
+    {
+        std::sort(measured.begin(), measured.end(), [](VerifyReference const& a, VerifyReference const& b)
+                  { return std::tie(a.table, a.column) < std::tie(b.table, b.column); });
+        std::filesystem::create_directories(verifyDir);
+        std::ofstream out(referencesPath, std::ios::trunc | std::ios::binary);
+        out << "table\tcolumn\ttarget\twhere\tdangling\treason\n";
+        for (VerifyReference const& reference : measured)
+            out << reference.table << "\t" << reference.column << "\t" << reference.target << "\t" << reference.where
+                << "\t" << reference.dangling << "\t" << reference.reason << "\n";
     }
 }
 
@@ -536,6 +663,8 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
             VerifyVanillaTables(db, verifyDir, spec, options, result);
         if (Wants(options, "V3"))
             VerifyClientDelta(db, verifyDir, options, result);
+        if (Wants(options, "V4"))
+            VerifyReferences(db, verifyDir, options, result);
     }
     catch (std::exception const& e)
     {
