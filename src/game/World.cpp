@@ -1399,6 +1399,10 @@ void World::SetInitialWorldSettings()
     sSpellModMgr.LoadSpellMods();
     sSpellMgr.AssignInternalSpellFlags();
 
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading `spell_tag` and `spell_stack_key`...");
+    sSpellMgr.LoadSpellTags();
+    sSpellMgr.LoadSpellStackKeys();
+
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading SkillLineAbilityMultiMaps Data...");
     sSpellMgr.LoadSkillLineAbilityMaps();
 

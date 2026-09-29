@@ -23,6 +23,7 @@
 #define _SPELLENTRY_H
 
 #include <array>
+#include <bitset>
 #include "DBCStructure.h"
 #include "SharedDefines.h"
 #include "SpellDefines.h"
@@ -691,6 +692,10 @@ class SpellEntry
         uint32 Internal = 0;                                       // Assigned by the core.
         uint32 AllowedTargetMask = 0;                              // Assigned by the core.
         uint32 ScriptId = 0;
+        std::bitset<MAX_SPELL_TAG> Tags;                           // spell_tag
+        uint32 StackKey = 0;                                       // spell_stack_key, 0 matches nothing
+        uint32 RankKey = 0;
+        uint32 SingleTargetKey = 0;
 
         // HELPERS:
         DiminishingGroup GetDiminishingReturnsGroup(bool triggered) const;
@@ -737,6 +742,7 @@ class SpellEntry
             return count;
         }
 
+        bool HasTag(SpellTag tag) const { return Tags.test(tag); }
         bool HasAttribute(SpellAttributes attribute) const { return Attributes & attribute; }
         bool HasAttribute(SpellAttributesEx attribute) const { return AttributesEx & attribute; }
         bool HasAttribute(SpellAttributesEx2 attribute) const { return AttributesEx2 & attribute; }

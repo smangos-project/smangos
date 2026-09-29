@@ -718,6 +718,114 @@ bool SpellMgr::ListLessPowerfulSpells(uint32 spellId, std::vector<uint32>& list)
     return !list.empty();
 }
 
+static char const* const SpellTagNames[] =
+{
+    "SPELL_TAG_ARGENT_DAWN_COMMISSION",
+    "SPELL_TAG_ASPECT",
+    "SPELL_TAG_BERSERKING",
+    "SPELL_TAG_BLIZZARD",
+    "SPELL_TAG_DAMAGE_TOTEM",
+    "SPELL_TAG_DAZE",
+    "SPELL_TAG_EXECUTE",
+    "SPELL_TAG_FLASH_OF_LIGHT",
+    "SPELL_TAG_FLURRY",
+    "SPELL_TAG_HEALTH_FUNNEL_HEAL",
+    "SPELL_TAG_HELLFIRE",
+    "SPELL_TAG_HELLFIRE_CHANNEL",
+    "SPELL_TAG_ICE_BLOCK",
+    "SPELL_TAG_INSPIRATION",
+    "SPELL_TAG_OLD_JUDGEMENT_OF_COMMAND",
+    "SPELL_TAG_JUDGEMENT_OF_COMMAND",
+    "SPELL_TAG_KEEPS_STEALTH",
+    "SPELL_TAG_PREDATORY_STRIKES",
+    "SPELL_TAG_SAP",
+    "SPELL_TAG_SEAL_OF_RIGHTEOUSNESS",
+    "SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE",
+    "SPELL_TAG_SOULSTONE_RESURRECTION",
+    "SPELL_TAG_SOUL_FIRE",
+    "SPELL_TAG_STONECLAW_TOTEM",
+    "SPELL_TAG_TOTEM_HAS_THREAT",
+    "SPELL_TAG_WARLOCK_ARMOR",
+    "SPELL_TAG_WHIRLWIND",
+};
+static_assert(std::size(SpellTagNames) == MAX_SPELL_TAG, "SpellTagNames must list every SpellTag");
+
+void SpellMgr::LoadSpellTags()
+{
+    for (auto const& spell : mSpellEntryMap)
+        if (spell)
+            spell->Tags.reset();
+
+    uint32 count = 0;
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `spell_id`, `tag` FROM `spell_tag`"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 const spellId = fields[0].GetUInt32();
+            std::string const name = fields[1].GetCppString();
+            auto const tag = std::find(std::begin(SpellTagNames), std::end(SpellTagNames), name) - std::begin(SpellTagNames);
+
+            if (spellId >= mSpellEntryMap.size() || !mSpellEntryMap[spellId])
+            {
+                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_tag` does not exist", spellId);
+                continue;
+            }
+            if (tag >= MAX_SPELL_TAG)
+            {
+                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u has unknown tag %s in `spell_tag`", spellId, name.c_str());
+                continue;
+            }
+
+            mSpellEntryMap[spellId]->Tags.set(tag);
+            ++count;
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell tags", count);
+}
+
+void SpellMgr::LoadSpellStackKeys()
+{
+    for (auto const& spell : mSpellEntryMap)
+    {
+        if (spell)
+        {
+            spell->StackKey = 0;
+            spell->RankKey = 0;
+            spell->SingleTargetKey = 0;
+        }
+    }
+
+    uint32 count = 0;
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `spell_id`, `stack_key`, `rank_key`, `single_target_key` FROM `spell_stack_key`"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 const spellId = fields[0].GetUInt32();
+
+            if (spellId >= mSpellEntryMap.size() || !mSpellEntryMap[spellId])
+            {
+                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_stack_key` does not exist", spellId);
+                continue;
+            }
+
+            SpellEntry& spell = *mSpellEntryMap[spellId];
+            spell.StackKey = fields[1].GetUInt32();
+            spell.RankKey = fields[2].GetUInt32();
+            spell.SingleTargetKey = fields[3].GetUInt32();
+            ++count;
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell stack keys", count);
+}
+
 void SpellMgr::LoadSpellElixirs()
 {
     mSpellElixirs.clear();                                  // need for reload case

@@ -1015,6 +1015,39 @@ enum SpellAttributesCustom
     SPELL_CUSTOM_TRIGGER_WEAPON_PROCS       = 0x2000,    // Can trigger weapon enchants and on hit effects
 };
 
+// Spell sets that server logic checks for, assigned by name in `spell_tag`
+enum SpellTag
+{
+    SPELL_TAG_ARGENT_DAWN_COMMISSION,
+    SPELL_TAG_ASPECT,
+    SPELL_TAG_BERSERKING,
+    SPELL_TAG_BLIZZARD,
+    SPELL_TAG_DAMAGE_TOTEM,                     // Totems that don't use Zandalarian Hero Charm charges
+    SPELL_TAG_DAZE,
+    SPELL_TAG_EXECUTE,
+    SPELL_TAG_FLASH_OF_LIGHT,
+    SPELL_TAG_FLURRY,
+    SPELL_TAG_HEALTH_FUNNEL_HEAL,               // Periodic heals paid for by the caster
+    SPELL_TAG_HELLFIRE,
+    SPELL_TAG_HELLFIRE_CHANNEL,
+    SPELL_TAG_ICE_BLOCK,
+    SPELL_TAG_INSPIRATION,
+    SPELL_TAG_OLD_JUDGEMENT_OF_COMMAND,
+    SPELL_TAG_JUDGEMENT_OF_COMMAND,
+    SPELL_TAG_KEEPS_STEALTH,                    // Casting doesn't remove stealth
+    SPELL_TAG_PREDATORY_STRIKES,
+    SPELL_TAG_SAP,
+    SPELL_TAG_SEAL_OF_RIGHTEOUSNESS,
+    SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE,
+    SPELL_TAG_SOULSTONE_RESURRECTION,
+    SPELL_TAG_SOUL_FIRE,
+    SPELL_TAG_STONECLAW_TOTEM,
+    SPELL_TAG_TOTEM_HAS_THREAT,
+    SPELL_TAG_WARLOCK_ARMOR,
+    SPELL_TAG_WHIRLWIND,
+    MAX_SPELL_TAG
+};
+
 // Custom flags assigned by the core based on spell template data
 enum SpellAttributesInternal
 {

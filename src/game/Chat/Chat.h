@@ -856,6 +856,8 @@ class ChatHandler
         bool HandleReloadSpellAreaCommand(char* args);
         bool HandleReloadSpellChainCommand(char* args);
         bool HandleReloadSpellElixirCommand(char* args);
+        bool HandleReloadSpellTagCommand(char* args);
+        bool HandleReloadSpellStackKeyCommand(char* args);
         bool HandleReloadSpellLearnSpellCommand(char* args);
         bool HandleReloadSpellProcEventCommand(char* args);
         bool HandleReloadSpellProcItemEnchantCommand(char* args);

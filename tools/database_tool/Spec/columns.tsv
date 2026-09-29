@@ -4150,6 +4150,7 @@ new	spell_extra	default_coefficient3	derived	spell_template.effectBonusCoefficie
 new	spell_stack_key	spell_id	server			new table (plan.md 11.4): spell id; read by SpellMgr for the stacking and rank checks	yes
 new	spell_stack_key	stack_key	server			new table (plan.md 11.4): replaces the icon/visual part of the generic same-icon no-stack rule (SpellMgr.cpp:1247)	yes
 new	spell_stack_key	rank_key	server			new table (plan.md 11.4): replaces the icon/visual part of IsRankSpellDueToSpell (SpellMgr.cpp:883)	yes
+new	spell_stack_key	single_target_key	server			new table (plan.md 11.4): replaces the family/icon comparison of Spells::IsSingleTargetSpells (SpellEntry.cpp:256)	yes
 new	spell_tag	spell_id	server			new table (plan.md 11.4): spell id a tag applies to; loaded into SpellEntry tags by SpellMgr	yes
 new	spell_tag	tag	server			new table (plan.md 11.4): SpellTag enum name; replaces SpellIconID/SpellVisual set checks	yes
 new	race_taxi_mask	race	server			key: the vanilla ChrRaces.ID (dbc_chrraces.ID)	yes

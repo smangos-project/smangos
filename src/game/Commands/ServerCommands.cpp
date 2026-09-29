@@ -1358,6 +1358,22 @@ bool ChatHandler::HandleReloadSpellChainCommand(char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleReloadSpellTagCommand(char* /*args*/)
+{
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Re-Loading Spell Tags...");
+    sSpellMgr.LoadSpellTags();
+    SendSysMessage("DB table `spell_tag` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSpellStackKeyCommand(char* /*args*/)
+{
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Re-Loading Spell Stack Keys...");
+    sSpellMgr.LoadSpellStackKeys();
+    SendSysMessage("DB table `spell_stack_key` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSpellElixirCommand(char* /*args*/)
 {
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Re-Loading Spell Elixir types...");
@@ -1413,6 +1429,8 @@ bool ChatHandler::HandleReloadSpellTemplateCommand(char* /*args*/)
     SendSysMessage("DB table `spell_template` reloaded.");
     sSpellModMgr.LoadSpellMods();
     SendSysMessage("DB table `spell_mod` reloaded.");
+    HandleReloadSpellTagCommand((char*)"a");
+    HandleReloadSpellStackKeyCommand((char*)"a");
     return true;
 }
 
