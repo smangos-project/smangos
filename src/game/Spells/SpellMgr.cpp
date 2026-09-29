@@ -3350,7 +3350,7 @@ namespace SpellInternal
             return true;
 
         // Flash of Light triggers another spell to do the heal.
-        if (spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellIconID == 242)
+        if (spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->HasTag(SPELL_TAG_FLASH_OF_LIGHT))
             return true;
 
         // Demonic Sacrifice should be batched, so it's possible to use it together with Voidwalker's Sacrifice.
