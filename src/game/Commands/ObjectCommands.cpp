@@ -45,17 +45,17 @@ bool ChatHandler::HandleGameObjectTargetCommand(char* args)
         uint32 id;
         if (ExtractUInt32(&cId, id))
         {
-            result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, orientation, map, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM gameobject WHERE map = '%i' AND id = '%u' ORDER BY order_ ASC LIMIT 1",
-                                          pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetMapId(), id);
+            result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, orientation, map, (((position_x - '%f') * (position_x - '%f')) + ((position_y - '%f') * (position_y - '%f')) + ((position_z - '%f') * (position_z - '%f'))) AS order_ FROM gameobject WHERE map = '%i' AND id = '%u' ORDER BY order_ ASC LIMIT 1",
+                                          pl->GetPositionX(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetPositionZ(), pl->GetMapId(), id);
         }
         else
         {
             std::string name = cId;
             WorldDatabase.escape_string(name);
             result = WorldDatabase.PQuery(
-                         "SELECT guid, id, position_x, position_y, position_z, orientation, map, (POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ "
+                         "SELECT guid, id, position_x, position_y, position_z, orientation, map, (((position_x - %f) * (position_x - %f)) + ((position_y - %f) * (position_y - %f)) + ((position_z - %f) * (position_z - %f))) AS order_ "
                          "FROM gameobject,gameobject_template WHERE gameobject_template.entry = gameobject.id AND map = %i AND name LIKE '%%%s%%'"" ORDER BY order_ ASC LIMIT 1",
-                         pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetMapId(), name.c_str());
+                         pl->GetPositionX(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetPositionZ(), pl->GetMapId(), name.c_str());
         }
     }
     else
@@ -81,9 +81,9 @@ bool ChatHandler::HandleGameObjectTargetCommand(char* args)
             eventFilter << ")";
 
         result = WorldDatabase.PQuery("SELECT gameobject.guid, id, position_x, position_y, position_z, orientation, map, "
-                                      "(POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ FROM gameobject "
+                                      "(((position_x - %f) * (position_x - %f)) + ((position_y - %f) * (position_y - %f)) + ((position_z - %f) * (position_z - %f))) AS order_ FROM gameobject "
                                       "LEFT OUTER JOIN game_event_gameobject on gameobject.guid=game_event_gameobject.guid WHERE map = '%i' %s ORDER BY order_ ASC LIMIT 10",
-                                      pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetMapId(), eventFilter.str().c_str());
+                                      pl->GetPositionX(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetPositionZ(), pl->GetMapId(), eventFilter.str().c_str());
     }
 
     if (!result)
@@ -516,10 +516,10 @@ bool ChatHandler::HandleGameObjectNearCommand(char* args)
 
     Player* pl = m_session->GetPlayer();
     std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
-                          "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
-                          "FROM gameobject WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' ORDER BY order_",
-                          pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),
-                          pl->GetMapId(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), distance * distance);
+                          "(((position_x - '%f') * (position_x - '%f')) + ((position_y - '%f') * (position_y - '%f')) + ((position_z - '%f') * (position_z - '%f'))) AS order_ "
+                          "FROM gameobject WHERE map='%u' AND (((position_x - '%f') * (position_x - '%f')) + ((position_y - '%f') * (position_y - '%f')) + ((position_z - '%f') * (position_z - '%f'))) <= '%f' ORDER BY order_",
+                          pl->GetPositionX(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetPositionZ(),
+                          pl->GetMapId(), pl->GetPositionX(), pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetPositionZ(), distance * distance);
 
     if (result)
     {
