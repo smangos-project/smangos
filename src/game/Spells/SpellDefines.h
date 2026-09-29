@@ -1018,12 +1018,16 @@ enum SpellAttributesCustom
 // Spell sets that server logic checks for, assigned by name in `spell_tag`
 enum SpellTag
 {
+    SPELL_TAG_AGONY_DOOM,                       // Curse of Agony and Curse of Doom, for Corruption
     SPELL_TAG_ARGENT_DAWN_COMMISSION,
     SPELL_TAG_ASPECT,
+    SPELL_TAG_BATTLE_SHOUT,                     // Ranks stacking with Demoralizing Shout
     SPELL_TAG_BERSERKING,
     SPELL_TAG_BLIZZARD,
+    SPELL_TAG_CORRUPTION,
     SPELL_TAG_DAMAGE_TOTEM,                     // Totems that don't use Zandalarian Hero Charm charges
     SPELL_TAG_DAZE,
+    SPELL_TAG_DEMORALIZING_SHOUT,
     SPELL_TAG_EXECUTE,
     SPELL_TAG_FLASH_OF_LIGHT,
     SPELL_TAG_FLURRY,
@@ -1036,6 +1040,7 @@ enum SpellTag
     SPELL_TAG_JUDGEMENT_OF_COMMAND,
     SPELL_TAG_KEEPS_STEALTH,                    // Casting doesn't remove stealth
     SPELL_TAG_PREDATORY_STRIKES,
+    SPELL_TAG_PYROBLAST,                        // Pyroblast ranks that stack with Fireball
     SPELL_TAG_SAP,
     SPELL_TAG_SEAL_OF_RIGHTEOUSNESS,
     SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE,

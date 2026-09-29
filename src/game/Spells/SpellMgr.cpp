@@ -720,12 +720,16 @@ bool SpellMgr::ListLessPowerfulSpells(uint32 spellId, std::vector<uint32>& list)
 
 static char const* const SpellTagNames[] =
 {
+    "SPELL_TAG_AGONY_DOOM",
     "SPELL_TAG_ARGENT_DAWN_COMMISSION",
     "SPELL_TAG_ASPECT",
+    "SPELL_TAG_BATTLE_SHOUT",
     "SPELL_TAG_BERSERKING",
     "SPELL_TAG_BLIZZARD",
+    "SPELL_TAG_CORRUPTION",
     "SPELL_TAG_DAMAGE_TOTEM",
     "SPELL_TAG_DAZE",
+    "SPELL_TAG_DEMORALIZING_SHOUT",
     "SPELL_TAG_EXECUTE",
     "SPELL_TAG_FLASH_OF_LIGHT",
     "SPELL_TAG_FLURRY",
@@ -738,6 +742,7 @@ static char const* const SpellTagNames[] =
     "SPELL_TAG_JUDGEMENT_OF_COMMAND",
     "SPELL_TAG_KEEPS_STEALTH",
     "SPELL_TAG_PREDATORY_STRIKES",
+    "SPELL_TAG_PYROBLAST",
     "SPELL_TAG_SAP",
     "SPELL_TAG_SEAL_OF_RIGHTEOUSNESS",
     "SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE",
@@ -990,12 +995,10 @@ bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const* spellInfo_1, uint32 spell
     // Nostalrius : Check generique.
     if (spellInfo_1->SpellFamilyName == spellInfo_2->SpellFamilyName &&
         spellInfo_1->SpellFamilyFlags == spellInfo_2->SpellFamilyFlags &&
-        spellInfo_1->SpellIconID == spellInfo_2->SpellIconID &&
-        spellInfo_1->SpellVisual == spellInfo_2->SpellVisual &&
+        spellInfo_1->RankKey && spellInfo_1->RankKey == spellInfo_2->RankKey &&
         spellInfo_1->SpellFamilyName != SPELLFAMILY_GENERIC &&
         spellInfo_1->Effect[0] == spellInfo_2->Effect[0] &&
         spellInfo_1->EffectApplyAuraName[0] == spellInfo_2->EffectApplyAuraName[0] &&
-        spellInfo_1->SpellIconID > 1 &&
         (spellInfo_1->EffectApplyAuraName[0] != SPELL_AURA_ADD_FLAT_MODIFIER ||
          spellInfo_1->EffectMiscValue[0] == spellInfo_2->EffectMiscValue[0]))
     {
@@ -1031,6 +1034,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
     if (spellId_1 == spellId_2)
         return spellInfo_1->HasAttribute(SPELL_ATTR_EX_AURA_UNIQUE);
 
+    auto const isOneOf = [](uint32 id, std::initializer_list<uint32> ids) { return std::find(ids.begin(), ids.end(), id) != ids.end(); };
+
     // Resurrection sickness
     if ((spellInfo_1->Id == SPELL_ID_PASSIVE_RESURRECTION_SICKNESS) != (spellInfo_2->Id == SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
         return false;
@@ -1052,22 +1057,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                             (spellInfo_2->Id == 21992 && spellInfo_1->Id == 27648))
                         return false;
 
-                    // Atiesh aura stacking with Moonkin Aura
-                    if (spellInfo_1->SpellIconID == 46 && spellInfo_2->SpellIconID == 46)
-                        return false;
-
-                    // Soulstone Resurrection and Twisting Nether (resurrector)
-                    if (spellInfo_1->SpellIconID == 92 && spellInfo_2->SpellIconID == 92 && (
-                                (spellInfo_1->SpellVisual == 99 && spellInfo_2->SpellVisual == 0) ||
-                                (spellInfo_2->SpellVisual == 99 && spellInfo_1->SpellVisual == 0)))
-                        return false;
-
-                    // Heart of the Wild and (Primal Instinct (Idol of Terror) triggering spell or Agility)
-                    if (spellInfo_1->SpellIconID == 240 && spellInfo_2->SpellIconID == 240 && (
-                                (spellInfo_1->SpellVisual == 0 && spellInfo_2->SpellVisual == 78) ||
-                                (spellInfo_2->SpellVisual == 0 && spellInfo_1->SpellVisual == 78)))
-                        return false;
-
                     // Brood Affliction: Bronze
                     if ((spellInfo_1->Id == 23170 && spellInfo_2->Id == 23171) ||
                             (spellInfo_2->Id == 23170 && spellInfo_1->Id == 23171))
@@ -1080,26 +1069,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
                     break;
                 }
-                case SPELLFAMILY_MAGE:
-                    // Arcane Intellect and Insight
-                    if (spellInfo_2->SpellIconID == 125 && spellInfo_1->Id == 18820)
-                        return false;
-                    break;
                 case SPELLFAMILY_WARRIOR:
                 {
-                    // Scroll of Protection and Defensive Stance (multi-family check)
-                    if (spellInfo_1->SpellIconID == 276 && spellInfo_1->SpellVisual == 196 && spellInfo_2->Id == 71)
-                        return false;
-
                     // Improved Hamstring -> Hamstring (multi-family check)
                     if ((spellInfo_2->SpellFamilyFlags & uint64(0x2)) && spellInfo_1->Id == 23694)
-                        return false;
-                    break;
-                }
-                case SPELLFAMILY_DRUID:
-                {
-                    // Scroll of Stamina and Leader of the Pack (multi-family check)
-                    if (spellInfo_1->SpellIconID == 312 && spellInfo_1->SpellVisual == 216 && spellInfo_2->Id == 24932)
                         return false;
                     break;
                 }
@@ -1119,9 +1092,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
         case SPELLFAMILY_MAGE:
             if (spellInfo_2->SpellFamilyName == SPELLFAMILY_MAGE)
             {
-                // Explosion pyrotechnique / boule de feu
-                if ((spellInfo_1->SpellIconID == 184 && spellInfo_2->SpellIconID == 185) ||
-                        (spellInfo_2->SpellIconID == 184 && spellInfo_1->SpellIconID == 185))
+                // Pyroblast and Fireball
+                if ((spellInfo_1->HasTag(SPELL_TAG_PYROBLAST) && GetFirstSpellInChain(spellId_2) == 133) ||
+                        (spellInfo_2->HasTag(SPELL_TAG_PYROBLAST) && GetFirstSpellInChain(spellId_1) == 133))
                     return false;
 
                 // Blizzard & Chilled (and some other stacked with blizzard spells
@@ -1138,30 +1111,18 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if (spellInfo_1->IsFitToFamilyMask(1 << CF_MAGE_ARCANE_MISSILES_CHANNEL) && spellInfo_2->IsFitToFamilyMask(1 << CF_MAGE_ARCANE_MISSILES_CHANNEL))
                     return false;
             }
-            // Detect Invisibility and Mana Shield (multi-family check)
-            if (spellInfo_2->Id == 132 && spellInfo_1->SpellIconID == 209 && spellInfo_1->SpellVisual == 968)
-                return false;
-
-            // Combustion and Fire Protection Aura (multi-family check)
-            if (spellInfo_1->Id == 11129 && spellInfo_2->SpellIconID == 33 && spellInfo_2->SpellVisual == 321)
-                return false;
-
-            // Arcane Intellect and Insight
-            if (spellInfo_1->SpellIconID == 125 && spellInfo_2->Id == 18820)
-                return false;
-
             break;
         case SPELLFAMILY_WARLOCK:
             if (spellInfo_2->SpellFamilyName == SPELLFAMILY_WARLOCK)
             {
                 // Siphon Life and Drain Life
-                if ((spellInfo_1->SpellIconID == 152 && spellInfo_2->SpellIconID == 546) ||
-                        (spellInfo_2->SpellIconID == 152 && spellInfo_1->SpellIconID == 546))
+                if ((GetFirstSpellInChain(spellId_1) == 18265 && GetFirstSpellInChain(spellId_2) == 689) ||
+                        (GetFirstSpellInChain(spellId_2) == 18265 && GetFirstSpellInChain(spellId_1) == 689))
                     return false;
 
                 // Corruption and (Curse of Agony or Curse of Doom)
-                if ((spellInfo_1->SpellIconID == 313 && (spellInfo_2->SpellIconID == 544  || spellInfo_2->SpellIconID == 91)) ||
-                        (spellInfo_2->SpellIconID == 313 && (spellInfo_1->SpellIconID == 544  || spellInfo_1->SpellIconID == 91)))
+                if ((spellInfo_1->HasTag(SPELL_TAG_CORRUPTION) && spellInfo_2->HasTag(SPELL_TAG_AGONY_DOOM)) ||
+                        (spellInfo_2->HasTag(SPELL_TAG_CORRUPTION) && spellInfo_1->HasTag(SPELL_TAG_AGONY_DOOM)))
                     return false;
             }
             break;
@@ -1173,21 +1134,14 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                         ((spellInfo_2->SpellFamilyFlags & uint64(0x20)) && (spellInfo_1->SpellFamilyFlags & uint64(0x1000000000))))
                     return false;
 
-                // Cri demoralisant et cri de guerre
-                if ((spellInfo_2->SpellVisual == 246 && spellInfo_1->SpellVisual == 210) || (spellInfo_1->SpellVisual == 246 && spellInfo_2->SpellVisual == 210))
+                // Demoralizing Shout and Battle Shout
+                if ((spellInfo_1->HasTag(SPELL_TAG_DEMORALIZING_SHOUT) && spellInfo_2->HasTag(SPELL_TAG_BATTLE_SHOUT)) ||
+                        (spellInfo_2->HasTag(SPELL_TAG_DEMORALIZING_SHOUT) && spellInfo_1->HasTag(SPELL_TAG_BATTLE_SHOUT)))
                     return false;
             }
 
             // Hamstring -> Improved Hamstring (multi-family check)
             if ((spellInfo_1->SpellFamilyFlags & uint64(0x2)) && spellInfo_2->Id == 23694)
-                return false;
-
-            // Defensive Stance and Scroll of Protection (multi-family check)
-            if (spellInfo_1->Id == 71 && spellInfo_2->SpellIconID == 276 && spellInfo_2->SpellVisual == 196)
-                return false;
-
-            // Bloodlust and Bloodthirst (multi-family check)
-            if (spellInfo_2->Id == 2825 && spellInfo_1->SpellIconID == 38 && spellInfo_1->SpellVisual == 0)
                 return false;
 
             break;
@@ -1196,12 +1150,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             {
                 //Greater Heal Renew (8/8 transcendence) (and Renew.)
                 if (spellId_1==22009 || spellId_2==22009)
-                    return false;
-
-                // Shadow Vulnerability / Devouring Plague
-                if (spellInfo_1->SpellIconID == spellInfo_2->SpellIconID /* == 9 */ &&
-                        ((spellInfo_1->Id == 15258 &&  spellInfo_2->SpellFamilyFlags == 0x2000000) ||
-                         (spellInfo_2->Id == 15258 &&  spellInfo_1->SpellFamilyFlags == 0x2000000)))
                     return false;
 
                 //Devouring Plague and Shadow Vulnerability
@@ -1219,18 +1167,14 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             if (spellInfo_2->SpellFamilyName == SPELLFAMILY_DRUID)
             {
                 // Cat Form and Feline Swiftness Passive* (1.x specific conflict)
-                if (spellInfo_1->SpellIconID == 493 && spellInfo_2->SpellIconID == 493)
+                if (isOneOf(spellId_1, {24864, 24867, 24868}) && isOneOf(spellId_2, {24864, 24867, 24868}))
                     return false;
             }
-
-            // Leader of the Pack and Scroll of Stamina (multi-family check)
-            if (spellInfo_1->Id == 24932 && spellInfo_2->SpellIconID == 312 && spellInfo_2->SpellVisual == 216)
-                return false;
 
             break;
         case SPELLFAMILY_ROGUE:
             // Garrote -> Garrote-Silence (multi-family check)
-            if (spellInfo_1->SpellIconID == 498 && spellInfo_2->SpellIconID == 498 && spellInfo_2->SpellVisual == 0)
+            if (isOneOf(spellId_1, {14077, 14078}) && isOneOf(spellId_2, {14077, 14078}))
                 return false;
             break;
         case SPELLFAMILY_HUNTER:
@@ -1252,7 +1196,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     return false;
 
                 // Bestial Wrath
-                if (spellInfo_1->SpellIconID == 1680 && spellInfo_2->SpellIconID == 1680)
+                if (isOneOf(spellId_1, {24395, 24396, 24397, 26592, 28758, 29218}) && isOneOf(spellId_2, {24395, 24396, 24397, 26592, 28758, 29218}))
                     return false;
             }
 
@@ -1271,19 +1215,15 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if (spellInfo_1->IsSealSpell() && spellInfo_2->IsSealSpell())
                     return true;
                 // Concentration Aura and Improved Concentration Aura and Aura Mastery
-                if ((spellInfo_1->SpellIconID == 1487) && (spellInfo_2->SpellIconID == 1487))
+                if (isOneOf(spellId_1, {20254, 20255, 20256, 27736}) && isOneOf(spellId_2, {20254, 20255, 20256, 27736}))
                     return false;
             }
-
-            // Combustion and Fire Protection Aura (multi-family check)
-            if (spellInfo_2->Id == 11129 && spellInfo_1->SpellIconID == 33 && spellInfo_1->SpellVisual == 321)
-                return false;
             break;
         case SPELLFAMILY_SHAMAN:
             if (spellInfo_2->SpellFamilyName == SPELLFAMILY_SHAMAN)
             {
                 // Windfury weapon
-                if (spellInfo_1->SpellIconID == 220 && spellInfo_2->SpellIconID == 220 &&
+                if (GetFirstSpellInChain(spellId_1) == 8232 && GetFirstSpellInChain(spellId_2) == 8232 &&
                         !spellInfo_1->IsFitToFamilyMask(spellInfo_2->SpellFamilyFlags))
                     return false;
             }
@@ -1293,12 +1233,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
     }
 
     // more generic checks
-    if (spellInfo_1->SpellIconID == spellInfo_2->SpellIconID &&
-            spellInfo_1->SpellIconID != 0 && spellInfo_1->SpellIconID != 1 && // SpellIconID 1 stacks with everything ...
-            spellInfo_1->SpellFamilyName == spellInfo_2->SpellFamilyName &&
-            spellInfo_1->SpellVisual == spellInfo_2->SpellVisual &&
-            // Exception :
-            spellInfo_1->SpellIconID != 516 && // Improved Sprint
+    if (spellInfo_1->StackKey && spellInfo_1->StackKey == spellInfo_2->StackKey &&
             spellInfo_1->IsPositiveSpell() == spellInfo_2->IsPositiveSpell() // judgement does not remove the enemy seal in a pala-pala duel
        )
     {
