@@ -2148,7 +2148,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         case SPELLFAMILY_DRUID:
         {
             // Predatory Strikes
-            if (target->GetTypeId() == TYPEID_PLAYER && GetSpellProto()->SpellIconID == 1563)
+            if (target->GetTypeId() == TYPEID_PLAYER && GetSpellProto()->HasTag(SPELL_TAG_PREDATORY_STRIKES))
             {
                 ((Player*)target)->UpdateAttackPowerAndDamage();
                 return;
@@ -6000,7 +6000,7 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
                 return;
 
             // heal for caster damage (must be alive)
-            if (target != pCaster && spellProto->SpellVisual == 163 && !pCaster->IsAlive())
+            if (target != pCaster && spellProto->HasTag(SPELL_TAG_HEALTH_FUNNEL_HEAL) && !pCaster->IsAlive())
                 return;
 
             if (target->IsImmuneToSchool(spellProto, (1 << GetEffIndex())))
@@ -6062,7 +6062,7 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
             target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f * sSpellMgr.GetSpellThreatMultiplier(spellProto), spellProto);
 
             // heal for caster damage, warlock's health funnel already cost hps
-            if (target != pCaster && spellProto->SpellVisual == 163 &&
+            if (target != pCaster && spellProto->HasTag(SPELL_TAG_HEALTH_FUNNEL_HEAL) &&
                 !(spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK &&
                 spellProto->IsFitToFamilyMask<CF_WARLOCK_HEALTH_FUNNEL>()))
             {
@@ -8012,7 +8012,7 @@ void Aura::CalculatePeriodic(Player* modOwner, bool create)
     }
 
     // Stoneclaw Totem
-    if (GetSpellProto()->SpellVisual == 0 && GetSpellProto()->SpellIconID == 689)
+    if (GetSpellProto()->HasTag(SPELL_TAG_STONECLAW_TOTEM))
         return;
 
     switch (GetId())
