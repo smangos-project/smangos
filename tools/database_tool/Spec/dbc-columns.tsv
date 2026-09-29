@@ -1504,7 +1504,7 @@ dbc_spellinterrupts	ChannelInterruptFlags2		neutral
 dbc_spellinterrupts	SpellID		client
 dbc_spellitemenchantment	ID		
 dbc_spellitemenchantment	Name_lang		
-dbc_spellitemenchantment	HordeName_lang		
+dbc_spellitemenchantment	HordeName_lang		client
 dbc_spellitemenchantment	Charges		
 dbc_spellitemenchantment	Effect1		
 dbc_spellitemenchantment	Effect2		
@@ -1520,21 +1520,21 @@ dbc_spellitemenchantment	EffectArg2
 dbc_spellitemenchantment	EffectArg3		
 dbc_spellitemenchantment	ItemVisual		
 dbc_spellitemenchantment	Flags		
-dbc_spellitemenchantment	EffectScalingPoints1		
-dbc_spellitemenchantment	EffectScalingPoints2		
-dbc_spellitemenchantment	EffectScalingPoints3		
-dbc_spellitemenchantment	ScalingClass		
-dbc_spellitemenchantment	ScalingClassRestricted		
-dbc_spellitemenchantment	GemItemID		
-dbc_spellitemenchantment	Condition_ID		
-dbc_spellitemenchantment	RequiredSkillID		
-dbc_spellitemenchantment	RequiredSkillRank		
-dbc_spellitemenchantment	MinLevel		
-dbc_spellitemenchantment	MaxLevel		
-dbc_spellitemenchantment	Field_1_15_3_55112_018		
-dbc_spellitemenchantment	ItemLevel		
-dbc_spellitemenchantment	Field_1_15_3_55112_020		
-dbc_spellitemenchantment	Field_1_15_3_55112_021		
+dbc_spellitemenchantment	EffectScalingPoints1		neutral
+dbc_spellitemenchantment	EffectScalingPoints2		neutral
+dbc_spellitemenchantment	EffectScalingPoints3		neutral
+dbc_spellitemenchantment	ScalingClass		neutral
+dbc_spellitemenchantment	ScalingClassRestricted		neutral
+dbc_spellitemenchantment	GemItemID		neutral
+dbc_spellitemenchantment	Condition_ID		neutral
+dbc_spellitemenchantment	RequiredSkillID		neutral
+dbc_spellitemenchantment	RequiredSkillRank		neutral
+dbc_spellitemenchantment	MinLevel		neutral
+dbc_spellitemenchantment	MaxLevel		neutral
+dbc_spellitemenchantment	Field_1_15_3_55112_018		neutral
+dbc_spellitemenchantment	ItemLevel		client
+dbc_spellitemenchantment	Field_1_15_3_55112_020		neutral
+dbc_spellitemenchantment	Field_1_15_3_55112_021		neutral
 dbc_spelllevels	ID		client
 dbc_spelllevels	DifficultyID		client
 dbc_spelllevels	BaseLevel		

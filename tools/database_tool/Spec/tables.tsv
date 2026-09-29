@@ -4,3 +4,4 @@ spell_effect_mod	gone	Id, EffectIndex		dbc_spelleffect, spell_extra	spell_templa
 spell_proc_event	server	entry	spell_proc_event	dbc_spellauraoptions, dbc_spellprocsperminute	spell_template	procFlags, CustomChance, Cooldown and ppmRate move to the client tables, over spell_template's values; the filters (school, family, class masks, procEx) stay
 spell_cone	gone	entry		dbc_spelltargetrestrictions		cone angles are SpellTargetRestrictions.ConeDegrees; the loader default 60 covers spells with no row
 spell_chain	server	spell_id	spell_chain			rank links outside Talent and SkillLineAbility; rank and first_spell become derived
+spell_enchant_charges	gone	entry		dbc_spellitemenchantment		charges are SpellItemEnchantment.Charges of the enchantment the spell applies
