@@ -920,16 +920,16 @@ srv	item_template	dmg_max1	dbc	dbc_itemsparse.MaxDamage1	identity	70 differences
 srv	item_template	dmg_type1	dbc	dbc_item.DamageType1	identity	0 differences (data-plan.md 3.2.1); pairs.tsv's item row calls out damage type as one of the fields Item (not ItemSparse) supplies, still `skip`/not evaluated by spec evidence	yes
 srv	item_template	dmg_min2	dbc	dbc_itemsparse.MinDamage2	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_max2	dbc	dbc_itemsparse.MaxDamage2	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
-srv	item_template	dmg_type2	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_type2	dbc	dbc_item.DamageType2	identity	17,703/17,703 equal the client's Item.DamageType2 (22 non-zero on slot 2); Item has five damage types, like MinDamage/MaxDamage	yes
 srv	item_template	dmg_min3	dbc	dbc_itemsparse.MinDamage3	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_max3	dbc	dbc_itemsparse.MaxDamage3	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
-srv	item_template	dmg_type3	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_type3	dbc	dbc_item.DamageType3	identity	17,703/17,703 equal the client's Item.DamageType3 (22 non-zero on slot 2); Item has five damage types, like MinDamage/MaxDamage	yes
 srv	item_template	dmg_min4	dbc	dbc_itemsparse.MinDamage4	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_max4	dbc	dbc_itemsparse.MaxDamage4	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
-srv	item_template	dmg_type4	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_type4	dbc	dbc_item.DamageType4	identity	17,703/17,703 equal the client's Item.DamageType4 (22 non-zero on slot 2); Item has five damage types, like MinDamage/MaxDamage	yes
 srv	item_template	dmg_min5	dbc	dbc_itemsparse.MinDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_max5	dbc	dbc_itemsparse.MaxDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
-srv	item_template	dmg_type5	server			no DB2 field beyond the primary damage type; Item/ItemSparse don't carry a per-slot damage type array the way MinDamage/MaxDamage do	yes
+srv	item_template	dmg_type5	dbc	dbc_item.DamageType5	identity	17,703/17,703 equal the client's Item.DamageType5 (22 non-zero on slot 2); Item has five damage types, like MinDamage/MaxDamage	yes
 srv	item_template	block	server			no ItemSparse field; the modern client computes it from ItemArmorShield (data-plan.md 3.2.1)	yes
 srv	item_template	armor	dbc	dbc_itemsparse.Resistances1	identity	312 differences (data-plan.md 3.2.1)	yes
 srv	item_template	holy_res	dbc	dbc_itemsparse.Resistances2	identity	0 differences (data-plan.md 3.2.1)	yes
