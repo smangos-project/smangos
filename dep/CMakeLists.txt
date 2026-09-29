@@ -23,8 +23,9 @@ if (BUILD_EXTRACTORS)
   add_subdirectory(libmpq)
 endif()
 
+add_subdirectory(doltlite)
+
 if (BUILD_DATABASE_TOOL)
-  add_subdirectory(doltlite)
   add_subdirectory(lzmasdk)
 endif()
 

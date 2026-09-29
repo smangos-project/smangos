@@ -101,6 +101,7 @@ set (shared_SRCS
     Database/DatabaseCallback.h
     Database/DatabaseEnv.h
     Database/DatabaseImpl.h
+    Database/DatabaseDoltLite.h
     Database/DatabaseMysql.h
     Database/DBCFileLoader.h
     Database/DBCStore.h
@@ -133,6 +134,7 @@ set (shared_SRCS
     Auth/LoginThrottle.cpp
     Config/Config.cpp
     Database/Database.cpp
+    Database/DatabaseDoltLite.cpp
     Database/DatabaseMysql.cpp
     Database/DBCFileLoader.cpp
     Database/Field.cpp
@@ -307,6 +309,8 @@ if(WIN32)
     )
   endif()
 endif()
+
+target_link_libraries(shared PUBLIC doltlite)
 
 if (REQUIRES_LIBCURL)
   if(WIN32)

@@ -66,6 +66,7 @@ class QueryNamedResult
         // named access
         Field const& operator[] (std::string const& name) const { return mQuery->Fetch()[GetField_idx(name)]; }
         QueryFieldNames const& GetFieldNames() const { return mFieldNames; }
+        std::unique_ptr<QueryResult> ReleaseQuery() { return std::move(mQuery); }
 
         uint32 GetField_idx(std::string const& name) const
         {

@@ -612,12 +612,7 @@ bool Database::CheckRequiredMigrations(char const** migrations)
         migrations++;
     }
 
-    result = Query("SELECT DATABASE()");
-
-    if (!result)
-        return false;
-
-    std::string dbName = result->Fetch()[0].GetString();
+    std::string dbName = m_pQueryConnections[0]->DatabaseName();
 
     if (!missingMigrations.empty())
     {
