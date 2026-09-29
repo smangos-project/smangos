@@ -9699,17 +9699,8 @@ bool Unit::IsSecondaryThreatTarget() const
             if (!spellInfo)
                 return true;
 
-            switch (spellInfo->SpellIconID)
-            {
-                // Fire Nova Totem / Magma Totem / Searing Totem / Stoneclaw Totem do have threat
-                case 33:
-                case 37:
-                case 680:
-                case 689:
-                    break;
-                default:
-                    return true;
-            }
+            if (!spellInfo->HasTag(SPELL_TAG_TOTEM_HAS_THREAT))
+                return true;
         }
     }
     return false;
