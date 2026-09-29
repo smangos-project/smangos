@@ -112,7 +112,6 @@ DBCStorage <TransportAnimationEntry> sTransportAnimationStore(TransportAnimation
 
 DBCStorage <WMOAreaTableEntry>  sWMOAreaTableStore(WMOAreaTableEntryfmt);
 std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> sWMOAreaInfoByTripple;
-DBCStorage <WorldMapAreaEntry>  sWorldMapAreaStore(WorldMapAreaEntryfmt);
 //DBCStorage <WorldMapOverlayEntry> sWorldMapOverlayStore(WorldMapOverlayEntryfmt);
 
 typedef std::vector<std::string> StoreProblemList;
@@ -404,7 +403,6 @@ void LoadDBCStores(std::string const& dataPath)
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sTransportAnimationStore, dbcPath, "TransportAnimation.dbc");
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sWorldMapAreaStore,        dbcPath, "WorldMapArea.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sWMOAreaTableStore,        dbcPath, "WMOAreaTable.dbc");
     for (uint32 i = 0; i < sWMOAreaTableStore.GetNumRows(); ++i)
     {
@@ -554,7 +552,7 @@ ChatChannelsEntry const* GetChannelEntryFor(std::string const& name)
 
 bool Zone2MapCoordinates(float& x, float& y, uint32 zone)
 {
-    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zone);
+    ZoneMapBounds const* maEntry = sObjectMgr.GetZoneMapBounds(zone);
 
     // if not listed then map coordinates (instance)
     if (!maEntry || maEntry->x2 == maEntry->x1 || maEntry->y2 == maEntry->y1)
@@ -569,7 +567,7 @@ bool Zone2MapCoordinates(float& x, float& y, uint32 zone)
 
 bool Map2ZoneCoordinates(float& x, float& y, uint32 zone)
 {
-    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zone);
+    ZoneMapBounds const* maEntry = sObjectMgr.GetZoneMapBounds(zone);
 
     // if not listed then map coordinates (instance)
     if (!maEntry || maEntry->x2 == maEntry->x1 || maEntry->y2 == maEntry->y1)

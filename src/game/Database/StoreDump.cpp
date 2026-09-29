@@ -19,7 +19,6 @@ extern DBCStorage<ChatChannelsEntry> sChatChannelsStore;
 extern DBCStorage<NamesProfanityEntry> sNamesProfanityStore;
 extern DBCStorage<NamesReservedEntry> sNamesReservedStore;
 extern DBCStorage<TaxiPathNodeEntry> sTaxiPathNodeStore;
-extern DBCStorage<WorldMapAreaEntry> sWorldMapAreaStore;
 
 struct DumpColumn
 {
@@ -731,7 +730,6 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "TaxiPathNode", sTaxiPathNodeStore);
     ok &= DumpDBCStore(dir, "TransportAnimation", sTransportAnimationStore);
     ok &= DumpDBCStore(dir, "WMOAreaTable", sWMOAreaTableStore);
-    ok &= DumpDBCStore(dir, "WorldMapArea", sWorldMapAreaStore);
     ok &= DumpWorldSafeLocs(dir);
 
     ok &= DumpSQLStore(dir, sCreatureDataAddonStorage, 7);

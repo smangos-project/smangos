@@ -7748,6 +7748,34 @@ float ObjectMgr::GetWorldSafeLocFacing(uint32 id) const
     return entry ? entry->orientation : 0.0f;
 }
 
+void ObjectMgr::LoadZoneMapBounds()
+{
+    m_zoneMapBounds.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query(
+        "SELECT a.`AreaID`, a.`Region5`, a.`Region2`, a.`Region4`, a.`Region1` FROM `dbc_uimapassignment` a "
+        "JOIN `dbc_uimap` m ON m.`ID` = a.`UiMapID` "
+        "WHERE a.`AreaID` <> 0 AND a.`WMOGroupID` = 0 AND m.`Type` = 3 ORDER BY a.`ID`"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_zoneMapBounds.emplace(fields[0].GetUInt32(),
+                ZoneMapBounds{ fields[1].GetFloat(), fields[2].GetFloat(), fields[3].GetFloat(), fields[4].GetFloat() });
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u zone map bounds", uint32(m_zoneMapBounds.size()));
+}
+
+ZoneMapBounds const* ObjectMgr::GetZoneMapBounds(uint32 zoneId) const
+{
+    auto itr = m_zoneMapBounds.find(zoneId);
+    return itr != m_zoneMapBounds.end() ? &itr->second : nullptr;
+}
+
 void ObjectMgr::LoadAreaTriggerTeleports()
 {
     m_AreaTriggerTeleportMap.clear();                                  // need for reload case

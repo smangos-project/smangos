@@ -792,6 +792,8 @@ class ObjectMgr
         WorldSafeLocsEntry const* GetWorldSafeLoc(uint32 id) const;
         std::unordered_map<uint32, WorldSafeLocsEntry> const& GetWorldSafeLocs() const { return m_worldSafeLocs; }
         float GetWorldSafeLocFacing(uint32 id) const;
+        void LoadZoneMapBounds();
+        ZoneMapBounds const* GetZoneMapBounds(uint32 zoneId) const;
 
         AreaTriggerTeleport const* GetAreaTriggerTeleport(uint32 trigger) const
         {
@@ -1550,6 +1552,7 @@ class ObjectMgr
 
         GraveYardMap        m_GraveYardMap;
         std::unordered_map<uint32, WorldSafeLocsEntry> m_worldSafeLocs;
+        std::unordered_map<uint32, ZoneMapBounds> m_zoneMapBounds;
 
         GameTeleMap         m_GameTeleMap;
 
