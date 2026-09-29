@@ -7776,6 +7776,67 @@ ZoneMapBounds const* ObjectMgr::GetZoneMapBounds(uint32 zoneId) const
     return itr != m_zoneMapBounds.end() ? &itr->second : nullptr;
 }
 
+void ObjectMgr::LoadChrCustomizations()
+{
+    m_chrCustomizations = ChrCustomizationStore();
+
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ChrRacesID`, `Sex`, `ChrModelID` FROM `dbc_chrracexchrmodel`") })
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_chrCustomizations.AddRaceModel(fields[0].GetUInt8(), fields[1].GetUInt8(), fields[2].GetUInt32());
+        }
+        while (result->NextRow());
+    }
+
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ID`, `ChrModelID`, `Requirement` FROM `dbc_chrcustomizationoption`") })
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_chrCustomizations.AddOption(fields[0].GetUInt32(), fields[1].GetUInt32(), fields[2].GetUInt32());
+        }
+        while (result->NextRow());
+    }
+
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ID`, `ChrCustomizationOptionID`, `ChrCustomizationReqID`, `OrderIndex` FROM `dbc_chrcustomizationchoice`") })
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_chrCustomizations.AddChoice(fields[0].GetUInt32(), fields[1].GetUInt32(), fields[2].GetUInt32(), fields[3].GetUInt32());
+        }
+        while (result->NextRow());
+    }
+
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ID`, `ReqType`, `RaceMask`, `ClassMask`, `ReqAchievementID`, `ReqQuestID`, `ReqItemModifiedAppearanceID` FROM `dbc_chrcustomizationreq`") })
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_chrCustomizations.AddReq(fields[0].GetUInt32(), fields[1].GetUInt32(), fields[2].GetInt64(), fields[3].GetInt32(),
+                fields[4].GetUInt32(), fields[5].GetUInt32(), fields[6].GetUInt32());
+        }
+        while (result->NextRow());
+    }
+
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ChrCustomizationReqID`, `ChrCustomizationChoiceID` FROM `dbc_chrcustomizationreqchoice`") })
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_chrCustomizations.AddReqChoice(fields[0].GetUInt32(), fields[1].GetUInt32());
+        }
+        while (result->NextRow());
+    }
+
+    for (uint32 reqId : m_chrCustomizations.Finish())
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Character customization requirement %u needs an achievement, quest or item and always reads as unmet", reqId);
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u character customization options", m_chrCustomizations.GetOptionCount());
+}
+
 void ObjectMgr::LoadAreaTriggerTeleports()
 {
     m_AreaTriggerTeleportMap.clear();                                  // need for reload case

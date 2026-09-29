@@ -34,6 +34,7 @@
 #include "ObjectGuid.h"
 #include "Policies/Singleton.h"
 #include "SQLStorages.h"
+#include "Objects/ChrCustomization.h"
 
 #include <string>
 #include <map>
@@ -794,6 +795,8 @@ class ObjectMgr
         float GetWorldSafeLocFacing(uint32 id) const;
         void LoadZoneMapBounds();
         ZoneMapBounds const* GetZoneMapBounds(uint32 zoneId) const;
+        void LoadChrCustomizations();
+        ChrCustomizationStore const& GetChrCustomizations() const { return m_chrCustomizations; }
 
         AreaTriggerTeleport const* GetAreaTriggerTeleport(uint32 trigger) const
         {
@@ -1553,6 +1556,7 @@ class ObjectMgr
         GraveYardMap        m_GraveYardMap;
         std::unordered_map<uint32, WorldSafeLocsEntry> m_worldSafeLocs;
         std::unordered_map<uint32, ZoneMapBounds> m_zoneMapBounds;
+        ChrCustomizationStore m_chrCustomizations;
 
         GameTeleMap         m_GameTeleMap;
 

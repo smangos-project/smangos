@@ -3,6 +3,7 @@ add_executable(tests-game
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateField.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/Updates/UpdateFieldStructs.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Objects/MovementFlags.cpp
+  ${CMAKE_SOURCE_DIR}/src/game/Objects/ChrCustomization.cpp
   ${CMAKE_SOURCE_DIR}/src/game/Movement/spline/MonsterMovePacking.cpp
   ViewerDependentStubs.cpp
   ClassicGuidMappingTests.cpp
@@ -12,6 +13,7 @@ add_executable(tests-game
   MovementFlagsTests.cpp
   MonsterMovePackingTests.cpp
   SpellEffectNumberTests.cpp
+  ChrCustomizationTests.cpp
   TestMain.cpp
 )
 

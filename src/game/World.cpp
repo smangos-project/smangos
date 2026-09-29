@@ -1376,6 +1376,7 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading world safe locs ...");
     sObjectMgr.LoadWorldSafeLocs();
     sObjectMgr.LoadZoneMapBounds();
+    sObjectMgr.LoadChrCustomizations();
 
     // Load the DBC files
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Initialize data stores...");

@@ -176,6 +176,7 @@ set (game_SRCS
     Objects/MirrorTimer.cpp
     Objects/Object.cpp
     Objects/MovementFlags.cpp
+    Objects/ChrCustomization.cpp
     Objects/MovementInfoWire.cpp
     Objects/Pet.cpp
     Objects/Player.cpp
