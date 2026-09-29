@@ -4426,7 +4426,7 @@ void Spell::EffectScriptEffect(SpellEffectIndex effIdx)
         case SPELLFAMILY_PALADIN:
         {
             // Flash of Light
-            if (m_spellInfo->SpellIconID == 242)
+            if (sSpellMgr.GetFirstSpellInChain(m_spellInfo->Id) == 19750)
             {
                 if (!unitTarget || !unitTarget->IsAlive())
                     return;
