@@ -5406,7 +5406,7 @@ float Unit::SpellHealingBonusTaken(SpellCaster const* pCaster, SpellEntry const*
         AuraList const& mDummyAuras = GetAurasByType(SPELL_AURA_DUMMY);
         for (const auto& i : mDummyAuras)
         {
-            if (i->GetSpellProto()->IsFitToFamilyMask<CF_PALADIN_BLESSINGS>() && i->GetSpellProto()->SpellVisual == 300)
+            if (i->GetSpellProto()->IsFitToFamilyMask<CF_PALADIN_BLESSINGS>())
             {
                 // Holy Light
                 if (spellProto->IsFitToFamilyMask<CF_PALADIN_HOLY_LIGHT2>() && i->GetEffIndex() == EFFECT_INDEX_0)
