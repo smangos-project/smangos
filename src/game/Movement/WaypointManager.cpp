@@ -381,50 +381,28 @@ void WaypointManager::Load()
         sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature_movement_scripts` contains unused script, id %u.", id);
 }
 
+static void RenumberPoints(char const* table, char const* key)
+{
+    std::string const outOfOrder = std::string("SELECT 1 FROM `") + table + "` AS T WHERE `point` <> (SELECT COUNT(*) FROM `" + table + "` WHERE `" + key + "` = T.`" + key + "` AND `point` <= T.`point`) LIMIT 1";
+    if (std::unique_ptr<QueryResult> result = WorldDatabase.Query(outOfOrder.c_str()))
+    {
+        WorldDatabase.DirectPExecute("CREATE TEMPORARY TABLE `temp` AS SELECT `%s`, `point`, (SELECT COUNT(*) FROM `%s` WHERE `%s` = T.`%s` AND `point` <= T.`point`) AS `new_point` FROM `%s` AS T", key, table, key, key, table);
+        // Negative values keep the primary key unique while rows move.
+        WorldDatabase.DirectPExecute("UPDATE `%s` SET `point` = -(SELECT `new_point` FROM `temp` WHERE `temp`.`%s` = `%s`.`%s` AND `temp`.`point` = `%s`.`point`)", table, key, table, key, table);
+        WorldDatabase.DirectPExecute("UPDATE `%s` SET `point` = -`point` WHERE `point` < 0", table);
+        WorldDatabase.DirectExecute("DROP TABLE `temp`");
+
+        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `%s` was auto corrected for using points out of order (invalid or points missing)", table);
+
+        MANGOS_ASSERT(!(result = WorldDatabase.Query(outOfOrder.c_str())));
+    }
+}
+
 void WaypointManager::Cleanup()
 {
-    // check if points need to be renumbered and do it
-    if (std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT 1 from `creature_movement` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement` WHERE `id` = T.`id` AND `point` <= T.`point`) LIMIT 1"))
-    {
-        WorldDatabase.DirectExecute("CREATE TEMPORARY TABLE `temp` LIKE `creature_movement`");
-        WorldDatabase.DirectExecute("INSERT INTO `temp` SELECT * FROM `creature_movement`");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement` DROP PRIMARY KEY");
-        WorldDatabase.DirectExecute("UPDATE `creature_movement` AS T SET `point` = (SELECT COUNT(*) FROM `temp` WHERE `id` = T.`id` AND `point` <= T.`point`)");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement` ADD PRIMARY KEY (`id`, `point`)");
-        WorldDatabase.DirectExecute("DROP TABLE `temp`");
-
-        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature_movement` was auto corrected for using points out of order (invalid or points missing)");
-
-        MANGOS_ASSERT(!(result = WorldDatabase.Query("SELECT 1 from `creature_movement` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement` WHERE `id` = T.`id` AND `point` <= T.`point`) LIMIT 1")));
-    }
-
-    if (std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT 1 from `creature_movement_template` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement_template` WHERE `entry` = T.`entry` AND `point` <= T.`point`) LIMIT 1"))
-    {
-        WorldDatabase.DirectExecute("CREATE TEMPORARY TABLE `temp` LIKE `creature_movement_template`");
-        WorldDatabase.DirectExecute("INSERT INTO `temp` SELECT * FROM `creature_movement_template`");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement_template` DROP PRIMARY KEY");
-        WorldDatabase.DirectExecute("UPDATE `creature_movement_template` AS T SET `point` = (SELECT COUNT(*) FROM `temp` WHERE `entry` = T.`entry` AND `point` <= T.`point`)");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement_template` ADD PRIMARY KEY (`entry`, `point`)");
-        WorldDatabase.DirectExecute("DROP TABLE `temp`");
-
-        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature_movement_template` was auto corrected for using points out of order (invalid or points missing)");
-
-        MANGOS_ASSERT(!(result = WorldDatabase.Query("SELECT 1 from `creature_movement_template` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement_template` WHERE `entry` = T.`entry` AND `point` <= T.`point`) LIMIT 1")));
-    }
-
-    if (std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT 1 from `creature_movement_special` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement_special` WHERE `id` = T.`id` AND `point` <= T.`point`) LIMIT 1"))
-    {
-        WorldDatabase.DirectExecute("CREATE TEMPORARY TABLE `temp` LIKE `creature_movement_special`");
-        WorldDatabase.DirectExecute("INSERT INTO `temp` SELECT * FROM `creature_movement_special`");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement_special` DROP PRIMARY KEY");
-        WorldDatabase.DirectExecute("UPDATE `creature_movement_special` AS T SET `point` = (SELECT COUNT(*) FROM `temp` WHERE `id` = T.`id` AND `point` <= T.`point`)");
-        WorldDatabase.DirectExecute("ALTER TABLE `creature_movement_special` ADD PRIMARY KEY (`id`, `point`)");
-        WorldDatabase.DirectExecute("DROP TABLE `temp`");
-
-        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature_movement_special` was auto corrected for using points out of order (invalid or points missing)");
-
-        MANGOS_ASSERT(!(result = WorldDatabase.Query("SELECT 1 from `creature_movement_special` As T WHERE `point` <> (SELECT COUNT(*) FROM `creature_movement_special` WHERE `id` = T.`id` AND `point` <= T.`point`) LIMIT 1")));
-    }
+    RenumberPoints("creature_movement", "id");
+    RenumberPoints("creature_movement_template", "entry");
+    RenumberPoints("creature_movement_special", "id");
 }
 
 void WaypointManager::Unload()
