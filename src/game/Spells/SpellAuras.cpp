@@ -7474,10 +7474,12 @@ void SpellAuraHolder::BuildAuraInfo(AuraInfo& info) const
 
     Unit const* caster = GetCaster();
     aura.CastLevel = caster ? caster->GetLevel() : GetAuraLevel();
-    uint32 const stackCount = m_procCharges > 0 ? m_procCharges * m_stackAmount : m_stackAmount;
-    aura.Applications = uint8(std::min<uint32>(stackCount, 255));
+    uint32 const applications = m_spellProto->StackAmount > 1 ? m_stackAmount : std::max(m_procCharges, 1u);
+    aura.Applications = uint8(std::min<uint32>(applications, 255));
 
-    if (GetCasterGuid() != m_target->GetObjectGuid())
+    if (GetCasterGuid() == m_target->GetObjectGuid())
+        aura.Flags |= CLASSIC_AURA_FLAG_SELF_CAST;
+    else
         aura.CastUnit = ClassicGuidMapping::ToClassic(GetCasterGuid(), realmID);
 }
 
