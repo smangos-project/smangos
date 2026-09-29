@@ -1,10 +1,13 @@
 #include "Verify.h"
 
+#include "Dbc/DbcSchema.h"
+#include "Dbc/DbcTableMeta.h"
 #include "Verify/RowCompare.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/VersionCollapse.h"
 
 #include <algorithm>
+#include <array>
 #include <fstream>
 #include <map>
 #include <set>
@@ -271,6 +274,87 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
     }
 }
 
+typedef std::array<uint64_t, 3> VerifyDelta; // inserted, changed, removed
+
+// V3: every row of a dbc_ table that differs from the stock client (cdbc_) is counted in
+// Verify/client-delta.tsv. That file is the hotfix manifest.
+static void VerifyClientDelta(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
+                              VerifyOptions const& options, VerifyResult& result)
+{
+    std::filesystem::path deltaPath = verifyDir / "client-delta.tsv";
+    std::map<std::string, VerifyDelta> recorded;
+    for (std::vector<std::string> const& row : ReadTsv(deltaPath, 4))
+        recorded[row[0]] = { std::stoull(row[1]), std::stoull(row[2]), std::stoull(row[3]) };
+
+    std::vector<std::string> clientTables = TablesWithPrefix(db, "ref", "cdbc_");
+    std::map<std::string, VerifyDelta> measured = recorded;
+    std::set<std::string> known;
+    uint64_t clientRows = 0;
+
+    for (DbcTableMeta const& table : GetDbcTables())
+    {
+        std::string dbcTable = table.sqlTable;
+        known.insert(dbcTable);
+        if (!WantsTable(options, dbcTable))
+            continue;
+
+        std::string clientTable = "cdbc_" + std::string(table.fileStem);
+        bool hasClientRows = std::binary_search(clientTables.begin(), clientTables.end(), clientTable);
+
+        std::vector<int> keyColumns;
+        int column = 0;
+        for (uint32_t i = 0; i < table.fieldCount; ++i)
+        {
+            if (table.fields[i].isId)
+                keyColumns.push_back(column);
+            column += static_cast<int>(DbcColumnNames(table.fields[i]).size());
+        }
+
+        try
+        {
+            std::string original = hasClientRows ? "SELECT * FROM ref." + Quote(clientTable)
+                                                 : "SELECT * FROM main." + Quote(dbcTable) + " WHERE 0";
+            RowCompareResult compare =
+                CompareRowSets(db, original, "SELECT * FROM main." + Quote(dbcTable), keyColumns);
+            ++result.tablesCompared;
+            clientRows += compare.expectedRows;
+
+            VerifyDelta delta = { compare.extraRows, compare.changedRows, compare.missingRows };
+            if (delta == VerifyDelta{})
+                measured.erase(dbcTable);
+            else
+                measured[dbcTable] = delta;
+
+            VerifyDelta expected = recorded.count(dbcTable) ? recorded[dbcTable] : VerifyDelta{};
+            if (!options.updateDelta && delta != expected)
+                result.problems.push_back({ "V3", dbcTable,
+                    std::to_string(delta[0]) + " inserted, " + std::to_string(delta[1]) + " changed, " +
+                    std::to_string(delta[2]) + " removed; client-delta.tsv says " + std::to_string(expected[0]) +
+                    ", " + std::to_string(expected[1]) + ", " + std::to_string(expected[2]) });
+        }
+        catch (std::exception const& e)
+        {
+            result.problems.push_back({ "V3", dbcTable, e.what() });
+        }
+    }
+
+    result.notes.push_back("V3: " + std::to_string(clientRows) + " client rows compared");
+
+    for (auto const& [table, delta] : recorded)
+        if (!known.count(table))
+            result.problems.push_back({ "V3", table, "client-delta.tsv names a table the client doesn't have" });
+
+    if (options.updateDelta)
+    {
+        std::filesystem::create_directories(verifyDir);
+        std::ofstream out(deltaPath, std::ios::trunc | std::ios::binary);
+        out << "table\tinserted\tchanged\tremoved\n";
+        for (auto const& [table, delta] : measured)
+            if (known.count(table))
+                out << table << "\t" << delta[0] << "\t" << delta[1] << "\t" << delta[2] << "\n";
+    }
+}
+
 VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
                        std::filesystem::path const& verifyDir, VerifyOptions const& options)
 {
@@ -291,6 +375,8 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
 
         if (Wants(options, "V1"))
             VerifyServerTables(db, verifyDir, options, result);
+        if (Wants(options, "V3"))
+            VerifyClientDelta(db, verifyDir, options, result);
     }
     catch (std::exception const& e)
     {

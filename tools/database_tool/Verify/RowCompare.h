@@ -24,6 +24,7 @@ struct RowCompareResult
     uint64_t actualRows = 0;
     uint64_t missingRows = 0; // in expected, not in actual
     uint64_t extraRows = 0;   // in actual, not in expected
+    uint64_t changedRows = 0; // paired rows with at least one differing column
     std::string firstMissingKey;
     std::string firstExtraKey;
     std::vector<ColumnDifference> differences; // only columns with at least one differing row

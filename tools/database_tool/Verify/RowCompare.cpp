@@ -231,12 +231,14 @@ RowCompareResult CompareRowSets(DoltLiteDatabase& db, std::string const& expecte
         size_t paired = std::min(expectedRun.size(), actualRun.size());
         for (size_t r = 0; r < paired; ++r)
         {
+            bool changed = false;
             for (int column = 0; column < columnCount; ++column)
             {
                 VerifyValue const& e = expectedRun[r][column];
                 VerifyValue const& a = actualRun[r][column];
                 if (EqualValues(e, a))
                     continue;
+                changed = true;
                 ColumnDifference& difference = perColumn[column];
                 if (difference.rows++ == 0)
                 {
@@ -245,6 +247,8 @@ RowCompareResult CompareRowSets(DoltLiteDatabase& db, std::string const& expecte
                     difference.actual = FormatValue(a);
                 }
             }
+            if (changed)
+                ++result.changedRows;
         }
         if (expectedRun.size() > paired)
         {

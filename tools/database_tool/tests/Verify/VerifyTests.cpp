@@ -1,12 +1,14 @@
 #include "Verify/RowCompare.h"
 #include "Verify/Verify.h"
 
+#include "Dbc/DbcSchema.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <catch_amalgamated.hpp>
 
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 
 struct VerifyTempDir
 {
@@ -116,14 +118,53 @@ TEST_CASE("V1 rebuilds each srv_ table from its mapping and honours dropped colu
 
     WriteVerifyTestFile(verifyDir / "srv" / "thing.sql", "-- key: id\nSELECT ID AS id, Name AS name FROM dbc_thing\n");
 
-    VerifyResult undropped = RunVerify(worldPath, referencePath, verifyDir, {});
+    VerifyResult undropped = RunVerify(worldPath, referencePath, verifyDir, { false, false, { "V1" }, {} });
     REQUIRE(undropped.error.empty());
     REQUIRE(undropped.problems.size() == 1);
     CHECK(undropped.problems[0].table == "srv_thing");
     CHECK(undropped.problems[0].message == "column junk is neither mapped nor dropped");
 
     WriteVerifyTestFile(verifyDir / "srv" / "dropped.tsv", "table\tcolumn\treason\nthing\tjunk\tno reader\n");
-    VerifyResult dropped = RunVerify(worldPath, referencePath, verifyDir, { false, { "V1" }, { "thing" } });
+    VerifyResult dropped = RunVerify(worldPath, referencePath, verifyDir, { false, false, { "V1" }, { "thing" } });
     REQUIRE(dropped.problems.size() == 1);
     CHECK(dropped.problems[0].message == "name differs in 1 rows, first id=2: original 'b', rebuilt 'c'");
+}
+
+TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-delta.tsv", "[Verify]")
+{
+    VerifyTempDir dir("v3");
+    std::filesystem::path worldPath = dir.path / "world.doltlite";
+    std::filesystem::path referencePath = dir.path / "reference.doltlite";
+    std::filesystem::path verifyDir = dir.path / "Verify";
+    {
+        DoltLiteDatabase reference(referencePath.string());
+        reference.Execute(BuildDbcTableDdl(*FindDbcTable("Map"), "cdbc_map"));
+        reference.Execute("INSERT INTO cdbc_map (ID) VALUES (1)");
+    }
+    {
+        DoltLiteDatabase world(worldPath.string());
+        REQUIRE(CreateDbcTables(world, "dbc tables").error.empty());
+    }
+
+    VerifyOptions options{ false, false, { "V3" }, { "dbc_map", "dbc_chrraces" } };
+    VerifyResult result = RunVerify(worldPath, referencePath, verifyDir, options);
+    REQUIRE(result.error.empty());
+    REQUIRE(result.problems.size() == 1);
+    CHECK(result.problems[0].table == "dbc_map");
+    CHECK(result.problems[0].message == "0 inserted, 0 changed, 1 removed; client-delta.tsv says 0, 0, 0");
+
+    {
+        DoltLiteDatabase world(worldPath.string());
+        world.Execute("INSERT INTO dbc_map (ID, Directory) VALUES (1, 'x'), (2, 'y')");
+        world.Execute("INSERT INTO dbc_chrraces (ID) VALUES (3)");
+    }
+    options.updateDelta = true;
+    CHECK(RunVerify(worldPath, referencePath, verifyDir, options).problems.empty());
+
+    std::ifstream in(verifyDir / "client-delta.tsv");
+    std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    CHECK(content == "table\tinserted\tchanged\tremoved\ndbc_chrraces\t1\t0\t0\ndbc_map\t1\t1\t0\n");
+
+    options.updateDelta = false;
+    CHECK(RunVerify(worldPath, referencePath, verifyDir, options).problems.empty());
 }
