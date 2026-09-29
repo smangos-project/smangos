@@ -207,7 +207,8 @@ int Master::Run(std::string const& dumpStoresDir)
         WorldDatabase.StopServer();
         LoginDatabase.StopServer();
         LogsDatabase.StopServer();
-        return dumped ? 0 : 1;
+        fflush(nullptr);
+        std::_Exit(dumped ? 0 : 1);
     }
 
 #ifndef WIN32
