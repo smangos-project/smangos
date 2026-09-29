@@ -360,6 +360,39 @@ static bool DumpSpells(std::string const& dir)
     return table.Close();
 }
 
+static bool DumpSpellPairs(std::string const& dir)
+{
+    std::vector<SpellEntry const*> auras;
+    for (uint32 id = 0; id < sSpellMgr.GetMaxSpellId(); ++id)
+    {
+        SpellEntry const* s = sSpellMgr.GetSpellEntry(id);
+        if (s && (s->EffectApplyAuraName[0] || s->EffectApplyAuraName[1] || s->EffectApplyAuraName[2]))
+            auras.push_back(s);
+    }
+
+    DumpTable table(dir, "spell_pairs");
+    table.AddColumns({{"spell1"}, {"spell2"}, {"no_stack"}, {"rank"}, {"single_target"}});
+    table.EndHeader();
+
+    for (SpellEntry const* a : auras)
+    {
+        for (SpellEntry const* b : auras)
+        {
+            if (a == b)
+                continue;
+            uint32 noStack = sSpellMgr.IsNoStackSpellDueToSpell(a->Id, b->Id);
+            uint32 rank = sSpellMgr.IsRankSpellDueToSpell(a, b->Id);
+            uint32 single = Spells::IsSingleTargetSpells(a, b);
+            if (noStack || rank || single)
+            {
+                table << a->Id << b->Id << noStack << rank << single;
+                table.EndRow();
+            }
+        }
+    }
+    return table.Close();
+}
+
 static bool DumpCreatureTemplates(std::string const& dir)
 {
     DumpTable table(dir, "creature_template");
@@ -697,6 +730,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpSQLStore(dir, sCreatureSpellDataStorage);
 
     ok &= DumpSpells(dir);
+    ok &= DumpSpellPairs(dir);
     ok &= DumpCreatureTemplates(dir);
     ok &= DumpItemPrototypes(dir);
     ok &= DumpGameObjectInfos(dir);
