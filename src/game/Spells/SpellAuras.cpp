@@ -2522,7 +2522,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                     Unit::AuraList const& mDummy = target->GetAurasByType(SPELL_AURA_DUMMY);
                     for (auto const& i : mDummy)
                     {
-                        if (i->GetSpellProto()->SpellIconID == 238)
+                        if (sSpellMgr.GetFirstSpellInChain(i->GetId()) == 17056)
                         {
                             furorChance = i->GetModifier()->m_amount;
                             break;
@@ -4554,7 +4554,7 @@ void Aura::HandleAuraModResistance(bool apply, bool /*Real*/)
 
     // Faerie Fire (druid versions)
     SpellEntry const* spellProto = GetSpellProto();
-    if (spellProto->SpellIconID == 109 && spellProto->IsFitToFamily<SPELLFAMILY_DRUID, CF_DRUID_FAERIE_FIRE>())
+    if (spellProto->IsFitToFamily<SPELLFAMILY_DRUID, CF_DRUID_FAERIE_FIRE>())
     {
         target->ApplySpellDispelImmunity(spellProto, DISPEL_STEALTH, apply);
         target->ApplySpellDispelImmunity(spellProto, DISPEL_INVISIBILITY, apply);
@@ -5509,7 +5509,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 Unit::AuraList const& mModTotalStatPct = target->GetAurasByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
                 for (auto const& i : mModTotalStatPct)
                 {
-                    if (i->GetSpellProto()->SpellIconID == 240 && i->GetModifier()->m_miscvalue == 3)
+                    if (sSpellMgr.GetFirstSpellInChain(i->GetId()) == 17003 && i->GetModifier()->m_miscvalue == 3)
                     {
                         int32 HotWMod = i->GetModifier()->m_amount;
                         target->CastCustomSpell(target, HotWSpellId, HotWMod, {}, {}, true, nullptr, this);
@@ -7955,7 +7955,7 @@ void SpellAuraHolder::CalculateForDebuffLimit()
                 m_visibleSlotLimitScore = 3;
                 return;
             case SPELL_AURA_DUMMY:
-                if (m_spellProto->SpellVisual == 3582 && m_spellProto->SpellIconID == 150) // Vampiric Embrace
+                if (m_spellProto->IsFitToFamily<SPELLFAMILY_PRIEST, CF_PRIEST_VAMPIRIC_EMBRACE>())
                 {
                     m_visibleSlotLimitScore = 3;
                     return;
