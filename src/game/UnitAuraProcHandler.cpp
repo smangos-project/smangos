@@ -300,12 +300,6 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
                     return SPELL_PROC_TRIGGER_ROLL_FAILED;
             }
         }
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-        // World of Warcraft Client Patch 1.11.0 (2006-06-20)
-        // - Vengeance: Seal of Command critical hits can now trigger this ability
-        if ((procSpell->Id == 20424) && (spellProto->SpellIconID == 84))
-            return SPELL_PROC_TRIGGER_FAILED;
-#endif
         // DRUID
         // Omen of Clarity
         if (spellProto->Id == 16864)

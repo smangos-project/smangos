@@ -5642,10 +5642,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
             }
             // Some special spells with non-caster only mode
-            // Fire Shield
-            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK &&
-                    m_spellInfo->SpellIconID == 16)
-                return SPELL_FAILED_BAD_TARGETS;
             // Arcane Missiles
             if (m_caster == target &&
                     m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
