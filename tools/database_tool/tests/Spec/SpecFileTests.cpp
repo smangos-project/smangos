@@ -122,3 +122,21 @@ TEST_CASE("rules.tsv round-trips every field", "[SpecFile]")
     CHECK(read[0].inverse == "CASE WHEN {v} = -1 THEN 2047 ELSE {v} END");
     CHECK(read[0].appliesTo == "item class masks");
 }
+
+TEST_CASE("tables.tsv round-trips every field", "[SpecFile]")
+{
+    TempDir dir("tablesroundtrip");
+    std::filesystem::path path = dir.path / "tables.tsv";
+
+    WriteTablesTsv(path, { { "spell_mod", "gone", "Id", "", "dbc_spellmisc", "spell_template", "folded in" } });
+
+    std::vector<SpecTableRow> read = ReadTablesTsv(path);
+    REQUIRE(read.size() == 1);
+    CHECK(read[0].table == "spell_mod");
+    CHECK(read[0].kind == "gone");
+    CHECK(read[0].key == "Id");
+    CHECK(read[0].sources.empty());
+    CHECK(read[0].into == "dbc_spellmisc");
+    CHECK(read[0].overrides == "spell_template");
+    CHECK(read[0].reason == "folded in");
+}

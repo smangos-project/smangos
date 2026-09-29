@@ -197,3 +197,22 @@ void WriteRulesTsv(std::filesystem::path const& path, std::vector<SpecRuleRow> c
         data.push_back({ row.name, row.kind, row.expr, row.inverse, SanitizeField(row.appliesTo) });
     WriteRows(path, header, data);
 }
+
+std::vector<SpecTableRow> ReadTablesTsv(std::filesystem::path const& path)
+{
+    static std::vector<std::string> const header = { "table", "kind", "key", "sources", "into", "overrides", "reason" };
+    std::vector<SpecTableRow> rows;
+    for (std::vector<std::string> const& fields : ReadDataRows(path, header, header.size()))
+        rows.push_back({ fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6] });
+    return rows;
+}
+
+void WriteTablesTsv(std::filesystem::path const& path, std::vector<SpecTableRow> const& rows)
+{
+    static std::vector<std::string> const header = { "table", "kind", "key", "sources", "into", "overrides", "reason" };
+    std::vector<std::vector<std::string>> data;
+    data.reserve(rows.size());
+    for (SpecTableRow const& row : rows)
+        data.push_back({ row.table, row.kind, row.key, row.sources, row.into, row.overrides, SanitizeField(row.reason) });
+    WriteRows(path, header, data);
+}

@@ -80,6 +80,12 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
     std::vector<SpecEvidenceRow> const evidence = ReadEvidenceTsv(specDir / "evidence.tsv");
     std::vector<SpecRuleRow> const rules = ReadRulesTsv(specDir / "rules.tsv");
     std::vector<SpecGapRow> const gaps = ReadGapsTsv(specDir / "gaps.tsv");
+    std::map<std::string, std::string> overrides;
+    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
+    {
+        if (!row.overrides.empty())
+            overrides[row.table] = row.overrides;
+    }
     result.columnsChecked = static_cast<uint32_t>(columns.size());
 
     auto report = [&](uint32_t check, std::string message)
@@ -198,9 +204,24 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
         }
     }
 
-    // 5. one writer per target column
-    for (auto const& [target, writers] : dbcWriters)
+    // 5. one writer per target column; an override table's writer needs the overridden table's
+    for (auto const& [target, allWriters] : dbcWriters)
     {
+        std::vector<SpecColumnRow const*> writers;
+        for (SpecColumnRow const* writer : allWriters)
+        {
+            auto overrideIt = overrides.find(writer->table);
+            if (overrideIt == overrides.end())
+            {
+                writers.push_back(writer);
+                continue;
+            }
+            bool const hasBase = std::any_of(allWriters.begin(), allWriters.end(), [&](SpecColumnRow const* base)
+            { return base->source == writer->source && base->table == overrideIt->second && base->rule == writer->rule; });
+            if (!hasBase)
+                report(5, RowName(*writer) + " overrides " + overrideIt->second + ", which doesn't fill " + target +
+                    " with rule " + writer->rule);
+        }
         if (writers.size() < 2)
             continue;
         bool priority = writers.size() == 2 && writers[0]->source != writers[1]->source &&

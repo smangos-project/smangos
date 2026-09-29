@@ -151,6 +151,23 @@ TEST_CASE("CheckSpec flags two rows filling one target, except a shared-rule pai
     CHECK(HasProblem(result, 5, "dbc_bar.Flags is filled by"));
 }
 
+TEST_CASE("CheckSpec lets an override table fill its base table's target with the same rule (rule 5)", "[SpecCheck]")
+{
+    TempFixture fixture("override");
+    DoltLiteDatabase(fixture.reference.string()).Execute("CREATE TABLE \"srv_foo_mod\" (\"id\" INTEGER, \"Flags\" INTEGER, \"Other\" INTEGER)");
+    WriteTablesTsv(fixture.dir / "tables.tsv", { { "foo_mod", "gone", "id", "", "dbc_bar", "foo", "" } });
+    std::vector<SpecColumnRow> rows = TempFixture::GoodColumns();
+    rows[1] = { "srv", "foo", "spellid_1", "dbc", "dbc_bar.NewCol", "identity", "x", "yes" };
+    rows.push_back({ "srv", "foo_mod", "id", "drop", "", "", "key", "yes" });
+    rows.push_back({ "srv", "foo_mod", "Flags", "dbc", "dbc_bar.NewCol", "identity", "x", "yes" });
+    rows.push_back({ "srv", "foo_mod", "Other", "dbc", "dbc_bar.Flags", "identity", "x", "yes" });
+    fixture.SetColumns(rows);
+
+    SpecCheckResult result = fixture.Check();
+    CHECK_FALSE(HasProblem(result, 5, "dbc_bar.NewCol"));
+    CHECK(HasProblem(result, 5, "srv:foo_mod.Other overrides foo, which doesn't fill dbc_bar.Flags"));
+}
+
 TEST_CASE("CheckSpec wants a vanilla_value on 1.15-only columns of written tables (rule 7)", "[SpecCheck]")
 {
     TempFixture fixture("vanilla");

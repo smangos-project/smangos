@@ -96,6 +96,22 @@ struct SpecRuleRow
     std::string appliesTo;
 };
 
+// One row of Spec/tables.tsv: a table that exists after the port, or an original table that
+// disappears. `kind` is "dbc", "server" or "gone". `sources` are the original tables feeding a
+// target table, `into` the tables a gone table's data went to. `overrides` names a table whose
+// values this table's rows replace when the world database is created (spell_mod over
+// spell_template): both may fill the same target column.
+struct SpecTableRow
+{
+    std::string table;
+    std::string kind;
+    std::string key;
+    std::string sources;
+    std::string into;
+    std::string overrides;
+    std::string reason;
+};
+
 // Missing file reads as empty (spec init creates it from nothing). A malformed header throws.
 std::vector<SpecColumnRow> ReadColumnsTsv(std::filesystem::path const& path);
 void WriteColumnsTsv(std::filesystem::path const& path, std::vector<SpecColumnRow> const& rows);
@@ -114,5 +130,8 @@ void WriteRulesTsv(std::filesystem::path const& path, std::vector<SpecRuleRow> c
 
 std::vector<SpecGapRow> ReadGapsTsv(std::filesystem::path const& path);
 void WriteGapsTsv(std::filesystem::path const& path, std::vector<SpecGapRow> const& rows);
+
+std::vector<SpecTableRow> ReadTablesTsv(std::filesystem::path const& path);
+void WriteTablesTsv(std::filesystem::path const& path, std::vector<SpecTableRow> const& rows);
 
 #endif
