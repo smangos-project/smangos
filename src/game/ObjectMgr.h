@@ -748,6 +748,13 @@ class ObjectMgr
         }
         QuestMap const& GetQuestTemplates() const { return m_QuestTemplatesMap; }
 
+        // Bit index (from 1) the client uses for a quest in its completed-quests bitmap, 0 if it has none
+        uint32 GetQuestUniqueBit(uint32 questId) const
+        {
+            auto itr = m_questUniqueBits.find(questId);
+            return itr != m_questUniqueBits.end() ? itr->second : 0;
+        }
+
         // Return the ID of the item that starts a quest.
         // Return 0 if no such item exists.
         uint32 GetQuestStartingItemID(uint32 quest_id) const;
@@ -932,6 +939,7 @@ class ObjectMgr
 
         void LoadAreaTriggerTeleports();
         void LoadQuestAreaTriggers();
+        void LoadQuestUniqueBits();
         void LoadTavernAreaTriggers();
         void LoadAreaTriggerLocales();
         void LoadGameObjectForQuests();
@@ -1504,6 +1512,7 @@ class ObjectMgr
 
         AreaTriggerMap    m_AreaTriggersMap;
         QuestAreaTriggerMap m_QuestAreaTriggerMap;
+        std::unordered_map<uint32, uint32> m_questUniqueBits;
         TavernAreaTriggerSet m_TavernAreaTriggerSet;
         GameObjectForQuestSet m_GameObjectForQuestSet;
         AreaTriggerTeleportMap      m_AreaTriggerTeleportMap;

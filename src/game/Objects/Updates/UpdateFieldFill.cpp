@@ -348,7 +348,7 @@ void FillActivePlayerData(Player& player)
     FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::LastWeekRank, player.GetUInt32Value(PLAYER_FIELD_LAST_WEEK_RANK));
     FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::WatchedFactionIndex, int32(player.GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX)));
 
-    // Quest completion, permanent (non-repeatable rewarded) quests only, one bit per quest id --
+    // Quest completion, permanent (non-repeatable rewarded) quests only, one bit per quest (its `QuestV2` unique bit) --
     // matches GetQuestRewardStatus's own definition of "done" (a repeatable quest never sets this,
     // so it can still be offered again). mQuestStatus already holds the character's whole quest
     // history, not just the active log.
@@ -356,11 +356,14 @@ void FillActivePlayerData(Player& player)
         std::array<uint64, 1000> questCompletedBits{};
         for (auto const& [questId, status] : player.GetQuestStatusMap())
         {
-            uint32 const slot = questId / 64;
+            uint32 const uniqueBit = sObjectMgr.GetQuestUniqueBit(questId);
+            if (!uniqueBit)
+                continue;
+            uint32 const slot = (uniqueBit - 1) / 64;
             if (slot >= questCompletedBits.size())
                 continue;
             if (player.GetQuestRewardStatus(questId))
-                questCompletedBits[slot] |= uint64(1) << (questId % 64);
+                questCompletedBits[slot] |= uint64(1) << ((uniqueBit - 1) % 64);
         }
         for (uint32 slot = 0; slot < questCompletedBits.size(); ++slot)
             FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::QuestCompleted, slot, questCompletedBits[slot]);

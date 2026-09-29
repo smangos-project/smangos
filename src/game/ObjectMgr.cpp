@@ -7157,6 +7157,24 @@ void ObjectMgr::LoadAreaTriggers()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u area triggers.", (uint32)m_AreaTriggersMap.size());
 }
 
+void ObjectMgr::LoadQuestUniqueBits()
+{
+    m_questUniqueBits.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `ID`, `UniqueBitFlag` FROM `dbc_questv2` WHERE `UniqueBitFlag` <> 0"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_questUniqueBits[fields[0].GetUInt32()] = fields[1].GetUInt32();
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u quest completion bits", uint32(m_questUniqueBits.size()));
+}
+
 void ObjectMgr::LoadQuestAreaTriggers()
 {
     m_QuestAreaTriggerMap.clear();                           // need for reload case
