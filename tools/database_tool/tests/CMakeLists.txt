@@ -30,6 +30,7 @@ add_executable(tests-database-tool
   Spec/SpecInventoryTests.cpp
   Spec/SourceScanTests.cpp
   Spec/WireHintTests.cpp
+  Spec/ColumnMatchTests.cpp
   Spec/CounterpartTests.cpp
   Spec/ShapeTests.cpp
   Spec/EvidenceTests.cpp

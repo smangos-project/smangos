@@ -1,5 +1,6 @@
 #include "GapAnalysis.h"
 
+#include "Spec/ColumnMatch.h"
 #include "Spec/SpecFile.h"
 #include "World/DoltLiteDatabase.h"
 
@@ -69,36 +70,6 @@ namespace
     // SQLite's declared-type affinity is loose enough (INTEGER and REAL already compare
     // correctly against each other) that only text needs to be kept apart from everything else --
     // the same rule Counterpart.cpp uses.
-    std::string TypeCategory(std::string type)
-    {
-        std::transform(type.begin(), type.end(), type.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-        if (type.find("CHAR") != std::string::npos || type.find("TEXT") != std::string::npos || type.find("CLOB") != std::string::npos)
-            return "text";
-        return "numeric";
-    }
-
-    std::string ApplyRuleExpr(std::string const& expr, std::string const& columnRef)
-    {
-        std::string out;
-        out.reserve(expr.size());
-        for (size_t i = 0; i < expr.size();)
-        {
-            if (expr.compare(i, 3, "{v}") == 0)
-            {
-                out += columnRef;
-                i += 3;
-            }
-            else
-            {
-                out += expr[i];
-                ++i;
-            }
-        }
-        return out;
-    }
-
-    // --- 4.5.1: schema diff ---
-
     void ComputeSchemaDiffGaps(DoltLiteDatabase& reference, std::filesystem::path const& definitionsDir, std::vector<SpecGapRow>& gaps)
     {
         if (definitionsDir.empty() || !std::filesystem::exists(definitionsDir))
@@ -152,8 +123,9 @@ namespace
             if (!TableExists(reference, sourceTable) || !TableExists(reference, cdbcTable))
                 continue;
 
-            std::string missingClause = "\"" + sourceTable + "\" s WHERE NOT EXISTS (SELECT 1 FROM \"" + cdbcTable +
-                "\" c WHERE c.\"" + pair.cdbcKey + "\" = s.\"" + pair.sourceKey + "\")";
+            // A LEFT JOIN, not NOT EXISTS: SQLite indexes the join but scans the subquery per row.
+            std::string missingClause = "\"" + sourceTable + "\" s LEFT JOIN \"" + cdbcTable + "\" c ON c.\"" + pair.cdbcKey +
+                "\" = s.\"" + pair.sourceKey + "\" WHERE c.\"" + pair.cdbcKey + "\" IS NULL";
 
             DoltLiteStatement countStmt = reference.Prepare("SELECT COUNT(*) FROM " + missingClause);
             int64_t total = countStmt.Step() ? countStmt.ColumnInt64(0) : 0;
@@ -181,79 +153,18 @@ namespace
         std::set<std::string> keyNames;         // e.g. "ID", "SpellID"
     };
 
-    struct BestOutsideMatch
+    // One source table's search: the columns 4.3 left uncovered and their rule variants.
+    struct GapSearch
     {
-        std::string cdbcTable;
-        std::string cdbcColumn;
-        std::string ruleName;
-        int64_t matched = 0;
-        int64_t joined = 0;
-
-        bool BeatsRate(int64_t candidateMatched, int64_t candidateJoined) const
-        {
-            return joined == 0 || candidateMatched * joined > matched * candidateJoined;
-        }
+        std::string source;
+        std::string table;
+        KeyGroup const* group = nullptr;
+        LoadedTable data;
+        int sourceKey = -1;
+        std::vector<int> columns;
+        std::vector<std::vector<RuleVariant>> variants;
+        std::vector<BestColumnMatch> best;
     };
-
-    struct OutsideJoinCandidate
-    {
-        std::string cdbcTable;
-        std::string joinSql;
-        std::vector<ColumnInfo> cdbcColumns;
-    };
-
-    void ScoreAgainstOutsideJoin(DoltLiteDatabase& db, OutsideJoinCandidate const& join, std::string const& srcColumnRef,
-        std::vector<SpecRuleRow> const& valueRules, std::string const& sourceCategory, BestOutsideMatch& best)
-    {
-        std::vector<ColumnInfo> compatible;
-        for (ColumnInfo const& column : join.cdbcColumns)
-            if (TypeCategory(column.type) == sourceCategory)
-                compatible.push_back(column);
-        if (compatible.empty())
-            return;
-
-        struct Term
-        {
-            SpecRuleRow const* rule;
-            ColumnInfo const* column;
-        };
-        std::vector<Term> terms;
-        std::string sql = "SELECT COUNT(*)";
-        for (SpecRuleRow const& rule : valueRules)
-        {
-            std::string ruleValue = ApplyRuleExpr(rule.expr.empty() ? "{v}" : rule.expr, srcColumnRef);
-            for (ColumnInfo const& candidate : compatible)
-            {
-                sql += ", SUM(CASE WHEN (" + ruleValue + ") = c.\"" + candidate.name + "\" THEN 1 ELSE 0 END)";
-                terms.push_back({ &rule, &candidate });
-            }
-        }
-        sql += " FROM " + join.joinSql;
-
-        try
-        {
-            DoltLiteStatement stmt = db.Prepare(sql);
-            if (!stmt.Step())
-                return;
-
-            int64_t joined = stmt.ColumnInt64(0);
-            if (joined == 0)
-                return;
-
-            for (size_t i = 0; i < terms.size(); ++i)
-            {
-                if (stmt.ColumnIsNull(static_cast<int>(i) + 1))
-                    continue;
-                int64_t matched = stmt.ColumnInt64(static_cast<int>(i) + 1);
-                if (best.BeatsRate(matched, joined))
-                    best = { join.cdbcTable, terms[i].column->name, terms[i].rule->name, matched, joined };
-            }
-        }
-        catch (DoltLiteError const&)
-        {
-            // a rule expression that doesn't type-check against this candidate column -- move on
-        }
-    }
 
     void ComputeCounterpartCandidateGaps(DoltLiteDatabase& reference, std::vector<SpecPairRow> const& pairs,
         std::vector<SpecRuleRow> const& rules, std::vector<SpecEvidenceRow> const& evidence, std::vector<SpecGapRow>& gaps)
@@ -281,10 +192,8 @@ namespace
         {
             if (row.readers == "none")
                 continue;
-            // A constant (or all-null) column, like the empty vanilla locale slots 4.4 already
-            // flags, "matches" any other same-valued constant column at 100% by coincidence --
-            // noise from the search having nothing real to compare against, the same trap 4.4's
-            // Progress notes call out. There is nothing this pass can usefully find for it.
+            // A constant (or all-null) column "matches" any other same-valued constant column at
+            // 100% by coincidence; there is nothing this pass can usefully find for it.
             if (row.shape.find("distinct=0 ") != std::string::npos || row.shape.find("distinct=1 ") != std::string::npos)
                 continue;
             if (!row.counterpart.empty())
@@ -301,77 +210,88 @@ namespace
             uncoveredColumns[{ row.source, row.table }].push_back(row.column);
         }
 
-        std::vector<std::string> allCdbcTables = TablesWithPrefix(reference, "cdbc");
-
+        ValueEncoder encoder;
+        std::vector<GapSearch> searches;
         for (auto const& [key, group] : groups)
         {
             auto columnsIt = uncoveredColumns.find(key);
             if (columnsIt == uncoveredColumns.end())
                 continue;
 
-            std::string const& source = key.first;
-            std::string const& table = key.second;
-            std::string sourceTable = (source == "vdbc" ? "vdbc_" : "srv_") + table;
+            std::string sourceTable = (key.first == "vdbc" ? "vdbc_" : "srv_") + key.second;
             if (!TableExists(reference, sourceTable))
                 continue;
 
-            int64_t sourceRowCount = TableRowCount(reference, sourceTable);
-            if (sourceRowCount == 0)
-                continue;
-
-            std::vector<ColumnInfo> sourceColumns = TableColumnInfos(reference, sourceTable);
-            bool hasSourceKey = std::any_of(sourceColumns.begin(), sourceColumns.end(),
-                [&](ColumnInfo const& c) { return c.name == group.sourceKey; });
-            if (!hasSourceKey)
-                continue;
-
-            std::vector<OutsideJoinCandidate> candidates;
-            for (std::string const& qualified : allCdbcTables)
-            {
-                std::string cdbcTable = qualified.substr(5); // strip "cdbc_"
-                if (group.pairedCdbcTables.count(cdbcTable))
-                    continue; // already a declared pair -- 4.3's job, not this one's
-                if (TableRowCount(reference, qualified) == 0)
-                    continue;
-
-                std::vector<ColumnInfo> cdbcColumns = TableColumnInfos(reference, qualified);
-                for (ColumnInfo const& column : cdbcColumns)
-                {
-                    if (!group.keyNames.count(column.name))
-                        continue;
-                    std::string joinSql = "\"" + sourceTable + "\" s JOIN \"" + qualified + "\" c ON s.\"" + group.sourceKey +
-                                           "\" = c.\"" + column.name + "\"";
-                    candidates.push_back({ cdbcTable, std::move(joinSql), cdbcColumns });
-                    break; // one join per candidate table is enough, even if several columns share a key name
-                }
-            }
-            if (candidates.empty())
+            GapSearch search;
+            search.source = key.first;
+            search.table = key.second;
+            search.group = &group;
+            search.data = LoadTable(reference, sourceTable, encoder);
+            search.sourceKey = search.data.ColumnIndex(group.sourceKey);
+            if (search.data.rowCount == 0 || search.sourceKey < 0)
                 continue;
 
             for (std::string const& columnName : columnsIt->second)
             {
-                auto columnIt = std::find_if(sourceColumns.begin(), sourceColumns.end(),
-                    [&](ColumnInfo const& c) { return c.name == columnName; });
-                if (columnIt == sourceColumns.end())
+                int column = search.data.ColumnIndex(columnName);
+                if (column < 0)
                     continue;
+                search.columns.push_back(column);
+            }
+            search.variants = ApplyRulesToTable(reference, sourceTable, search.data, search.columns, valueRules, encoder);
+            search.best.resize(search.columns.size());
+            searches.push_back(std::move(search));
+        }
 
-                std::string sourceCategory = TypeCategory(columnIt->type);
-                std::string srcColumnRef = "s.\"" + columnName + "\"";
+        // Candidates in name order, each loaded once. Every column still meets its candidates in
+        // the same order, so ties resolve as they would table by table.
+        for (std::string const& qualified : TablesWithPrefix(reference, "cdbc"))
+        {
+            std::string cdbcTable = qualified.substr(5); // strip "cdbc_"
+            std::vector<std::pair<GapSearch*, std::string>> joinsByKey;
+            std::vector<ColumnInfo> cdbcColumns;
+            for (GapSearch& search : searches)
+            {
+                if (search.group->pairedCdbcTables.count(cdbcTable))
+                    continue; // already a declared pair -- 4.3's job, not this one's
+                if (cdbcColumns.empty())
+                    cdbcColumns = TableColumnInfos(reference, qualified);
+                // One join per candidate table is enough, even if several columns share a key name.
+                auto keyIt = std::find_if(cdbcColumns.begin(), cdbcColumns.end(),
+                    [&](ColumnInfo const& c) { return search.group->keyNames.count(c.name) != 0; });
+                if (keyIt != cdbcColumns.end())
+                    joinsByKey.push_back({ &search, keyIt->name });
+            }
+            if (joinsByKey.empty() || TableRowCount(reference, qualified) == 0)
+                continue;
 
-                BestOutsideMatch best;
-                for (OutsideJoinCandidate const& candidate : candidates)
-                    ScoreAgainstOutsideJoin(reference, candidate, srcColumnRef, valueRules, sourceCategory, best);
+            LoadedTable cdbcData = LoadTable(reference, qualified, encoder);
+            for (auto const& [search, keyName] : joinsByKey)
+            {
+                PreparedJoin join = PrepareJoin(search->data, search->sourceKey, cdbcTable, cdbcData, cdbcData.ColumnIndex(keyName));
+                ParallelFor(search->columns.size(), [&](size_t i)
+                {
+                    ScoreJoin(join, search->variants[i], TypeCategory(search->data.columns[search->columns[i]].type), search->best[i]);
+                });
+            }
+        }
 
+        for (GapSearch const& search : searches)
+        {
+            int64_t const sourceRowCount = static_cast<int64_t>(search.data.rowCount);
+            for (size_t i = 0; i < search.columns.size(); ++i)
+            {
+                BestColumnMatch const& best = search.best[i];
                 // Two gates beyond "found something": most of the source table's ids have to
                 // show up in the candidate at all (else it's a coincidental small-integer
-                // overlap, the same trap 4.3's Progress notes call out for the `inverse` rule),
-                // and the best rule has to actually agree on most of the joined rows.
+                // overlap), and the best rule has to actually agree on most of the joined rows.
                 if (best.joined * 2 < sourceRowCount || best.matched * 2 < best.joined)
                     continue;
 
-                std::string detail = "cdbc_" + best.cdbcTable + "." + best.cdbcColumn + " via " + best.ruleName + " " +
+                std::string detail = "cdbc_" + best.targetTable + "." + best.targetColumn + " via " + best.ruleName + " " +
                     std::to_string(best.matched) + "/" + std::to_string(best.joined) + " (not in pairs.tsv)";
-                gaps.push_back({ "counterpart_candidate", source + "_" + table, columnName, detail });
+                gaps.push_back({ "counterpart_candidate", search.source + "_" + search.table,
+                    search.data.columns[search.columns[i]].name, detail });
             }
         }
     }

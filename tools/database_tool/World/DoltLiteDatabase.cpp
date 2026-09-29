@@ -93,6 +93,11 @@ bool DoltLiteStatement::ColumnIsNull(int index) const
     return sqlite3_column_type(m_stmt, index) == SQLITE_NULL;
 }
 
+int DoltLiteStatement::ColumnType(int index) const
+{
+    return sqlite3_column_type(m_stmt, index);
+}
+
 int64_t DoltLiteStatement::ColumnInt64(int index) const
 {
     return sqlite3_column_int64(m_stmt, index);

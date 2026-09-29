@@ -28,6 +28,7 @@ add_library(database_tool_lib STATIC
   Spec/SpecInventory.cpp
   Spec/SourceScan.cpp
   Spec/WireHint.cpp
+  Spec/ColumnMatch.cpp
   Spec/Counterpart.cpp
   Spec/Shape.cpp
   Spec/Evidence.cpp
