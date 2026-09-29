@@ -161,11 +161,13 @@ TEST_CASE("CheckSpec lets an override table fill its base table's target with th
     rows.push_back({ "srv", "foo_mod", "id", "drop", "", "", "key", "yes" });
     rows.push_back({ "srv", "foo_mod", "Flags", "dbc", "dbc_bar.NewCol", "identity", "x", "yes" });
     rows.push_back({ "srv", "foo_mod", "Other", "dbc", "dbc_bar.Flags", "identity", "x", "yes" });
+    rows.push_back({ "srv", "foo_mod", "Sole", "dbc", "dbc_bar.Unwritten", "identity", "x", "yes" });
     fixture.SetColumns(rows);
 
     SpecCheckResult result = fixture.Check();
     CHECK_FALSE(HasProblem(result, 5, "dbc_bar.NewCol"));
     CHECK(HasProblem(result, 5, "srv:foo_mod.Other overrides foo, which doesn't fill dbc_bar.Flags"));
+    CHECK_FALSE(HasProblem(result, 5, "srv:foo_mod.Sole"));
 }
 
 TEST_CASE("CheckSpec wants a vanilla_value on 1.15-only columns of written tables (rule 7)", "[SpecCheck]")

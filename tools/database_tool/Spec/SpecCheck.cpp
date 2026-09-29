@@ -204,7 +204,8 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
         }
     }
 
-    // 5. one writer per target column; an override table's writer needs the overridden table's
+    // 5. one writer per target column; an override table's writer shares a column only with the
+    //    overridden table's
     for (auto const& [target, allWriters] : dbcWriters)
     {
         std::vector<SpecColumnRow const*> writers;
@@ -218,7 +219,7 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
             }
             bool const hasBase = std::any_of(allWriters.begin(), allWriters.end(), [&](SpecColumnRow const* base)
             { return base->source == writer->source && base->table == overrideIt->second && base->rule == writer->rule; });
-            if (!hasBase)
+            if (allWriters.size() > 1 && !hasBase)
                 report(5, RowName(*writer) + " overrides " + overrideIt->second + ", which doesn't fill " + target +
                     " with rule " + writer->rule);
         }
