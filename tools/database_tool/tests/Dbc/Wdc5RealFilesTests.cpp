@@ -87,7 +87,31 @@ TEST_CASE("ReadWdc5File decodes every real dbfilesclient file with a resolved de
         ++checked;
         Wdc5ReadResult result = ReadWdc5File(filePath, table);
         if (!result.error.empty())
+        {
             failures.push_back(std::string(table.name) + ": " + result.error);
+            continue;
+        }
+
+        // Every integer fits its declared width, read either signed or unsigned.
+        for (uint32_t i = 0, column = 0; i < table.fieldCount; column += table.fields[i].arrayLength, ++i)
+        {
+            DbcFieldMeta const& field = table.fields[i];
+            if (field.type != DbcFieldType::Int || field.bits == 0 || field.bits >= 64)
+                continue;
+            int64_t const min = -(int64_t(1) << (field.bits - 1));
+            int64_t const max = (int64_t(1) << field.bits) - 1;
+            for (Wdc5Row const& row : result.rows)
+            {
+                auto outside = std::find_if(row.begin() + column, row.begin() + column + field.arrayLength,
+                    [&](Wdc5Value const& value) { return value.intValue < min || value.intValue > max; });
+                if (outside != row.begin() + column + field.arrayLength)
+                {
+                    failures.push_back(std::string(table.name) + "." + field.name + ": " + std::to_string(outside->intValue) +
+                        " doesn't fit " + std::to_string(field.bits) + " bits");
+                    break;
+                }
+            }
+        }
     }
 
     INFO(checked << " files checked, " << missing << " tables with no file");

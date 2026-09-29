@@ -310,14 +310,14 @@ namespace
     {
         Wdc5Value value;
         DbcFieldMeta const& field = *ctx.field;
-        // For None compression this is the file's own declared width, which is authoritative --
-        // it can legitimately be wider than the field's nominal metadata width (e.g. a writer
-        // that widened a field whose real values didn't fit that nominal width). Clamped to 8:
-        // no integer column needs more, and `raw` below is a uint64_t -- an unclamped width from
-        // a stray/oversized bitSize would memcpy past it.
+        // For None compression this is the file's own declared width (bitSize covers the whole
+        // array), which is authoritative -- it can legitimately be wider than the field's nominal
+        // metadata width (e.g. a writer that widened a field whose real values didn't fit that
+        // nominal width). Clamped to 8: no integer column needs more, and `raw` below is a
+        // uint64_t -- an unclamped width from a stray/oversized bitSize would memcpy past it.
         int elementBytes = field.type == DbcFieldType::Float ? 4
             : field.type == DbcFieldType::String || field.type == DbcFieldType::LocString ? 4
-            : ctx.columnMeta.bitSize ? std::min<int>(ctx.columnMeta.bitSize / 8, 8)
+            : ctx.columnMeta.bitSize ? std::min<int>(ctx.columnMeta.bitSize / 8 / std::max<int>(field.arrayLength, 1), 8)
             : (field.bits ? field.bits / 8 : 4);
         size_t recordOffset = static_cast<size_t>(record - buffer);
 

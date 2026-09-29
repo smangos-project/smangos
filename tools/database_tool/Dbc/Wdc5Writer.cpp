@@ -260,7 +260,7 @@ namespace
         {
             DbcFieldMeta const& field = table.fields[f.fieldIndex];
             PutU16(file, static_cast<uint16_t>(f.byteOffset * 8));
-            PutU16(file, static_cast<uint16_t>(f.width * 8));
+            PutU16(file, static_cast<uint16_t>(f.width * 8 * field.arrayLength));
             PutU32(file, 0); // additionalDataSize
             PutU32(file, 0); // compressionType: None
             PutU32(file, 0);

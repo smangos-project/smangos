@@ -187,7 +187,7 @@ TEST_CASE("ReadWdc5File decodes None-compressed scalar and array fields", "[Wdc5
     PutColumnMeta(file, 32, 16, 0, Compression::None, 0, 0, 0);
     PutColumnMeta(file, 48, 32, 0, Compression::None, 0, 0, 0);
     PutColumnMeta(file, 80, 32, 0, Compression::None, 0, 0, 0);
-    PutColumnMeta(file, 112, 16, 0, Compression::None, 0, 0, 0);
+    PutColumnMeta(file, 112, 32, 0, Compression::None, 0, 0, 0); // bitSize covers both elements
 
     uint32_t fileOffset = static_cast<uint32_t>(file.size());
     PatchU32(file, sectionPos + 8, fileOffset); // section.fileOffset (after TactId u64)
