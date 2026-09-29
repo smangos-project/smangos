@@ -516,15 +516,6 @@ struct SkillRaceClassInfoEntry
     //uint32    skillCostID;                                // 7        m_skillCostIndex
 };
 
-#define MAX_SKILL_STEP 16
-
-struct SkillTiersEntry
-{
-    uint32    id;                                           // 0        m_ID
-    uint32    skillValue[MAX_SKILL_STEP];                   // 1-17     m_cost
-    uint32    maxSkillValue[MAX_SKILL_STEP];                // 18-33    m_valueMax
-};
-
 struct SkillLineEntry
 {
     uint32    id;                                           // 0        m_ID

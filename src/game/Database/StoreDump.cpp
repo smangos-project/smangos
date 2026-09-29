@@ -699,7 +699,6 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "QuestSort", sQuestSortStore);
     ok &= DumpDBCStore(dir, "SkillLine", sSkillLineStore);
     ok &= DumpDBCStore(dir, "SkillRaceClassInfo", sSkillRaceClassInfoStore);
-    ok &= DumpDBCStore(dir, "SkillTiers", sSkillTiersStore);
     ok &= DumpDBCStore(dir, "SpellItemEnchantment", sSpellItemEnchantmentStore);
     ok &= DumpDBCStore(dir, "SpellCategory", sSpellCategoryStore);
     ok &= DumpDBCStore(dir, "SpellCastTimes", sSpellCastTimesStore);

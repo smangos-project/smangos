@@ -10485,9 +10485,29 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u areas for fishing base skill level", count);
 }
 
+void ObjectMgr::LoadSkillTiers()
+{
+    m_skillTierIds.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `id` FROM `skill_tiers`"));
+    if (!result)
+    {
+        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, ">> Loaded `skill_tiers`, table is empty!");
+        return;
+    }
+
+    do
+    {
+        m_skillTierIds.insert((*result)[0].GetUInt32());
+    }
+    while (result->NextRow());
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u skill tiers", uint32(m_skillTierIds.size()));
+}
+
 SkillRangeType GetSkillRangeType(SkillLineEntry const* skill, SkillRaceClassInfoEntry const* rcEntry)
 {
-    if (sSkillTiersStore.LookupEntry(rcEntry->skillTierId))
+    if (sObjectMgr.IsSkillTier(rcEntry->skillTierId))
         return SKILL_RANGE_RANK;
 
     switch (skill->categoryId)

@@ -67,7 +67,6 @@ char const QuestSortEntryfmt[]="nxxxxxxxxx";
 char const SkillLinefmt[]="nixssssssssxxxxxxxxxxi";
 char const SkillLineAbilityfmt[]="niiiixxiiiiixxi";
 char const SkillRaceClassInfofmt[]="diiiiiix";
-char const SkillTiersfmt[] = "niiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
 char const SpellCategoryfmt[] = "ni";
 char const SpellCastTimefmt[]="niii";
 char const SpellDurationfmt[]="niii";

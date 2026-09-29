@@ -1650,6 +1650,9 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Skill Fishing base level requirements...");
     sObjectMgr.LoadFishingBaseSkillLevel();
 
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Skill Tiers...");
+    sObjectMgr.LoadSkillTiers();
+
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Npc Text Id...");
     sObjectMgr.LoadNpcGossips();                            // must be after load Creature and LoadNPCText
 

@@ -963,6 +963,8 @@ class ObjectMgr
         void LoadPetNumber();
         void LoadCorpses();
         void LoadFishingBaseSkillLevel();
+        void LoadSkillTiers();
+        bool IsSkillTier(uint32 id) const { return m_skillTierIds.find(id) != m_skillTierIds.end(); }
 
         void LoadReputationRewardRate();
         void LoadReputationOnKill();
@@ -1609,6 +1611,7 @@ class ObjectMgr
 
         typedef std::map<uint32,int32> FishingBaseSkillMap; // [areaId][base skill level]
         FishingBaseSkillMap m_FishingBaseSkillMap;
+        std::unordered_set<uint32> m_skillTierIds;
 
         typedef std::map<uint32,std::vector<std::string> > HalfNameMap;
 
