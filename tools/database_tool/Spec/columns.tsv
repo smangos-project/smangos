@@ -2343,7 +2343,7 @@ vdbc	chatchannels	Shortcut_lang_mask	drop			locale mask; every non-enUS slot is 
 vdbc	chatprofanity	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	chatprofanity	Text	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	chrclasses	ID	dbc	dbc_chrclasses.ID	identity	stuff-plan.md 6.3	yes
-vdbc	chrclasses	PlayerClass	server			redundant with ID; no DB2 field	yes
+vdbc	chrclasses	PlayerClass	drop			no mangosd reader (ChrClassesEntryfmt); redundant with ID	yes
 vdbc	chrclasses	DamageBonusStat	dbc	dbc_chrclasses.DamageBonusStat	identity	stuff-plan.md 6.3	yes
 vdbc	chrclasses	DisplayPower	dbc	dbc_chrclasses.DisplayPower	identity	stuff-plan.md 6.3	yes
 vdbc	chrclasses	PetNameToken	dbc	dbc_chrclasses.PetNameToken	identity	stuff-plan.md 6.3	yes
@@ -2362,11 +2362,11 @@ vdbc	chrclasses	Flags	dbc	dbc_chrclasses.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	ID	dbc	dbc_chrraces.ID	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	Flags	dbc	dbc_chrraces.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	FactionID	dbc	dbc_chrraces.FactionID	identity	stuff-plan.md 6.3	yes
-vdbc	chrraces	ExplorationSoundID	server			no DB2 field	yes
+vdbc	chrraces	ExplorationSoundID	drop			no mangosd reader (ChrRacesEntryfmt); no DB2 field	yes
 vdbc	chrraces	MaleDisplayID	dbc	dbc_chrraces.MaleDisplayID	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	FemaleDisplayID	dbc	dbc_chrraces.FemaleDisplayID	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	ClientPrefix	dbc	dbc_chrraces.ClientPrefix	identity	stuff-plan.md 6.3	yes
-vdbc	chrraces	MountScale	server			no DB2 field	yes
+vdbc	chrraces	MountScale	drop			no mangosd reader (ChrRacesEntryfmt); no DB2 field	yes
 vdbc	chrraces	BaseLanguage	dbc	dbc_chrraces.BaseLanguage	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	CreatureType	dbc	dbc_chrraces.CreatureType	identity	stuff-plan.md 6.3	yes
 vdbc	chrraces	LoginEffectSpellID	constant	836		always 836 for every race; hardcoded instead of stored (stuff-plan.md 8.3, Player.cpp:19185)	yes
@@ -2385,9 +2385,9 @@ vdbc	chrraces	Name_lang_5	drop			non-enUS locale slot, vanilla client only shipp
 vdbc	chrraces	Name_lang_6	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	chrraces	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
-vdbc	chrraces	FacialHairCustomization1	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
-vdbc	chrraces	FacialHairCustomization2	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
-vdbc	chrraces	HairCustomization	server			no DB2 field; superseded by ChrCustomization* validation, same as CharSections (stuff-plan.md 8.3)	yes
+vdbc	chrraces	FacialHairCustomization1	drop			no mangosd reader (ChrRacesEntryfmt); no DB2 field	yes
+vdbc	chrraces	FacialHairCustomization2	drop			no mangosd reader (ChrRacesEntryfmt); no DB2 field	yes
+vdbc	chrraces	HairCustomization	drop			no mangosd reader (ChrRacesEntryfmt); no DB2 field	yes
 vdbc	cinematiccamera	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	cinematiccamera	Model	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	cinematiccamera	SoundID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
@@ -2425,17 +2425,17 @@ vdbc	creaturedisplayinfoextra	FaceID	dbc	dbc_creaturedisplayinfoextra.FaceID	ide
 vdbc	creaturedisplayinfoextra	HairStyleID	dbc	dbc_creaturedisplayinfoextra.HairStyleID	identity	stuff-plan.md 6.3	yes
 vdbc	creaturedisplayinfoextra	HairColorID	dbc	dbc_creaturedisplayinfoextra.HairColorID	identity	stuff-plan.md 6.3	yes
 vdbc	creaturedisplayinfoextra	FacialHairID	dbc	dbc_creaturedisplayinfoextra.FacialHairID	identity	stuff-plan.md 6.3	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay1	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay2	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay3	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay4	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay5	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay6	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay7	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay8	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay9	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	NPCItemDisplay10	server			no DB2 field; NPC equipped-item display ids removed from CreatureDisplayInfoExtra in 1.15	yes
-vdbc	creaturedisplayinfoextra	BakeName	server			no DB2 field; replaced by BakeMaterialResourcesID's different resource system	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay1	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay2	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay3	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay4	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay5	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay6	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay7	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay8	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay9	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	NPCItemDisplay10	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); the client's NpcModelItemSlotDisplayInfo holds the slots (NpcModelID, ItemSlot N-1): 40,545/40,557 vanilla slots present, 39,103 with the same display id and 1,438 of the other 1,442 a re-exported ItemDisplayInfo with the same model and material; display data keeps the client's values (decision 9; reference DB)	yes
+vdbc	creaturedisplayinfoextra	BakeName	drop			no mangosd reader (CreatureDisplayInfoExtrafmt); replaced by BakeMaterialResourcesID's different resource system	yes
 vdbc	creaturefamily	ID	dbc	dbc_creaturefamily.ID	identity	stuff-plan.md 6.3	yes
 vdbc	creaturefamily	MinScale	dbc	dbc_creaturefamily.MinScale	identity	stuff-plan.md 6.3	yes
 vdbc	creaturefamily	MinScaleLevel	dbc	dbc_creaturefamily.MinScaleLevel	identity	stuff-plan.md 6.3	yes
@@ -2465,8 +2465,8 @@ vdbc	creaturemodeldata	FootprintTextureLength	dbc	dbc_creaturemodeldata.Footprin
 vdbc	creaturemodeldata	FootprintTextureWidth	dbc	dbc_creaturemodeldata.FootprintTextureWidth	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	FootprintParticleScale	dbc	dbc_creaturemodeldata.FootprintParticleScale	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	FoleyMaterialID	dbc	dbc_creaturemodeldata.FoleyMaterialID	identity	stuff-plan.md 6.3	yes
-vdbc	creaturemodeldata	FootstepShakeSize	server			no DB2 field; replaced by FootstepCameraEffectID's different camera-effect system	yes
-vdbc	creaturemodeldata	DeathThudShakeSize	server			no DB2 field; replaced by DeathThudCameraEffectID's different camera-effect system	yes
+vdbc	creaturemodeldata	FootstepShakeSize	drop			no mangosd reader (CreatureModelDatafmt); replaced by the client's camera-effect ids (FootstepCameraEffectID, DeathThudCameraEffectID)	yes
+vdbc	creaturemodeldata	DeathThudShakeSize	drop			no mangosd reader (CreatureModelDatafmt); replaced by the client's camera-effect ids (FootstepCameraEffectID, DeathThudCameraEffectID)	yes
 vdbc	creaturemodeldata	SoundID	dbc	dbc_creaturemodeldata.SoundID	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	CollisionWidth	dbc	dbc_creaturemodeldata.CollisionWidth	identity	stuff-plan.md 6.3	yes
 vdbc	creaturemodeldata	CollisionHeight	dbc	dbc_creaturemodeldata.CollisionHeight	identity	stuff-plan.md 6.3	yes
@@ -2696,16 +2696,16 @@ vdbc	gameobjectartkit	AttachModel3	drop			unloaded, no mangosd reader; the 1.15 
 vdbc	gameobjectartkit	AttachModel4	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gameobjectdisplayinfo	ID	dbc	dbc_gameobjectdisplayinfo.ID	identity	stuff-plan.md 6.3	yes
 vdbc	gameobjectdisplayinfo	ModelName	dbc	dbc_gameobjectdisplayinfo.ModelName	identity	stuff-plan.md 6.3	yes
-vdbc	gameobjectdisplayinfo	Sound1	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound2	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound3	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound4	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound5	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound6	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound7	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound8	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound9	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
-vdbc	gameobjectdisplayinfo	Sound10	server			no DB2 field for GameObjectDisplayInfo sound overrides	yes
+vdbc	gameobjectdisplayinfo	Sound1	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound2	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound3	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound4	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound5	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound6	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound7	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound8	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound9	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
+vdbc	gameobjectdisplayinfo	Sound10	drop			no mangosd reader (GameObjectDisplayInfofmt); the client's GameObjectDisplayInfoXSoundKit holds the slots (EventIndex N-1): 310/312 vanilla slots with the same SoundKitID; the other 2 (display 10, sounds 1281/1282) point at sounds neither vanilla nor the client has (reference DB)	yes
 vdbc	gametips	ID	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gametips	Text_lang	drop			unloaded, no mangosd reader; the 1.15 client file already has valid (re-exported) content of its own, and every vanilla id this data would label is already read from the 1.15 id space elsewhere, so vanilla values aren't carried forward (Q7, stuff-plan.md 6.3/8.3)	yes
 vdbc	gametips	Text_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3309,7 +3309,7 @@ vdbc	skillcostsdata	Cost2	drop			not imported	yes
 vdbc	skillcostsdata	Cost3	drop			not imported	yes
 vdbc	skillline	ID	dbc	dbc_skillline.ID	identity	stuff-plan.md 6.3	yes
 vdbc	skillline	CategoryID	dbc	dbc_skillline.CategoryID	identity	stuff-plan.md 6.3	yes
-vdbc	skillline	SkillCostsID	server			no DB2 field for a skill cost tier reference; skill_tiers stays server-side	yes
+vdbc	skillline	SkillCostsID	drop			no mangosd reader (SkillLinefmt); no DB2 field	yes
 vdbc	skillline	DisplayName_lang	dbc	dbc_skillline.DisplayName_lang	identity	stuff-plan.md 6.3	yes
 vdbc	skillline	DisplayName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	skillline	DisplayName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
@@ -3362,7 +3362,7 @@ vdbc	skillraceclassinfo	ClassMask	dbc	dbc_skillraceclassinfo.ClassMask	identity	
 vdbc	skillraceclassinfo	Flags	dbc	dbc_skillraceclassinfo.Flags	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	MinLevel	dbc	dbc_skillraceclassinfo.MinLevel	identity	stuff-plan.md 6.3	yes
 vdbc	skillraceclassinfo	SkillTierID	dbc	dbc_skillraceclassinfo.SkillTierID	identity	stuff-plan.md 6.3	yes
-vdbc	skillraceclassinfo	SkillCostIndex	server			no confirmed DB2 field; evidence.tsv's Field_1_15_0_52124_007 coincidence (185/200) needs hand verification before trusting it	yes
+vdbc	skillraceclassinfo	SkillCostIndex	drop			no mangosd reader (SkillRaceClassInfofmt); no confirmed DB2 field	yes
 vdbc	skilltiers	ID	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
 vdbc	skilltiers	Cost1	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
 vdbc	skilltiers	Cost2	server			keep: feeds a new server table skill_tiers; SkillTiers.dbc has no 1.15 twin (stuff-plan.md 8.3, gaps.tsv removed_table)	yes
@@ -3878,7 +3878,7 @@ vdbc	talenttab	Name_lang_6	drop			non-enUS locale slot, vanilla client only ship
 vdbc	talenttab	Name_lang_7	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	talenttab	Name_lang_mask	drop			locale mask; every non-enUS slot is empty, so it selects nothing	yes
 vdbc	talenttab	SpellIconID	dbc	dbc_talenttab.SpellIconID	identity	stuff-plan.md 6.3	yes
-vdbc	talenttab	RaceMask	server			no DB2 field; talent tabs are no longer race-gated in 1.15	yes
+vdbc	talenttab	RaceMask	drop			no mangosd reader (TalentTabEntryfmt); talent tabs are no longer race-gated in 1.15	yes
 vdbc	talenttab	ClassMask	dbc	dbc_talenttab.ClassMask	identity	stuff-plan.md 6.3	yes
 vdbc	talenttab	OrderIndex	dbc	dbc_talenttab.OrderIndex	identity	stuff-plan.md 6.3	yes
 vdbc	talenttab	BackgroundFile	dbc	dbc_talenttab.BackgroundFile	identity	stuff-plan.md 6.3	yes
@@ -4061,7 +4061,7 @@ vdbc	worldsafelocs	Continent	server			keep: feeds the new world_safe_locs server
 vdbc	worldsafelocs	Loc1	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
 vdbc	worldsafelocs	Loc2	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
 vdbc	worldsafelocs	Loc3	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
-vdbc	worldsafelocs	AreaName_lang	server			keep: feeds the new world_safe_locs server table merged with world_safe_locs_facing (F1); WorldSafeLocs.dbc has no 1.15 twin (stuff-plan.md 8.2/8.3, gaps.tsv removed_table)	yes
+vdbc	worldsafelocs	AreaName_lang	drop			no mangosd reader (WorldSafeLocsEntryfmt); a label only, the world_safe_locs server table keeps position, map and facing	yes
 vdbc	worldsafelocs	AreaName_lang_1	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_2	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
 vdbc	worldsafelocs	AreaName_lang_3	drop			non-enUS locale slot, vanilla client only shipped enUS text	yes
