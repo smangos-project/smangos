@@ -157,6 +157,11 @@ SpecRenderResult RenderSpec(std::filesystem::path const& specDir, std::filesyste
     // index.md
     std::ostringstream index;
     index << "# Target schema spec\n\n"
+          << "Every row says where one column of an *original* table (`srv_` vmangos, `vdbc_` 1.12 DBC) ends up "
+             "in the finished world database. In the finished database a `dbc_` table is the one source of truth "
+             "for every value it can hold, with no distinction by where a row came from; server tables hold only "
+             "what no `dbc_` column can. Rules, match rates, \"overwrite\" and \"vanilla wins\" describe the "
+             "migration that builds it, not the finished database (`plan.md` section 0).\n\n"
           << columns.size() << " columns, " << reviewed << " reviewed.\n\n"
           << "## Coverage\n\n| source | dispositions |\n|---|---|\n";
     for (auto const& [source, counts] : dispositionsBySource)
