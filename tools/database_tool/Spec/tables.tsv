@@ -1,7 +1,267 @@
 table	kind	key	sources	into	overrides	reason
-spell_mod	gone	Id		dbc_spell*, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's when the world DB is created; 43 ids create spells spell_template lacks
-spell_effect_mod	gone	Id, EffectIndex		dbc_spelleffect, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's effect slot when the world DB is created
-spell_proc_event	server	entry	spell_proc_event	dbc_spellauraoptions, dbc_spellprocsperminute	spell_template	procFlags, CustomChance, Cooldown and ppmRate move to the client tables, over spell_template's values; the filters (school, family, class masks, procEx) stay
-spell_cone	gone	entry		dbc_spelltargetrestrictions		cone angles are SpellTargetRestrictions.ConeDegrees; the loader default 60 covers spells with no row
-spell_chain	server	spell_id	spell_chain			rank links outside Talent and SkillLineAbility; rank and first_spell become derived
-spell_enchant_charges	gone	entry		dbc_spellitemenchantment		charges are SpellItemEnchantment.Charges of the enchantment the spell applies
+area_template	gone			dbc_areatable		every column is an AreaTable column (plan.md 10.2); the loader masks the client's flag bits
+areatrigger_bg_entrance	server	id	srv:areatrigger_bg_entrance			
+areatrigger_involvedrelation	server	id	srv:areatrigger_involvedrelation			
+areatrigger_scripts	server	id	srv:areatrigger_scripts			
+areatrigger_tavern	server	id	srv:areatrigger_tavern			
+areatrigger_teleport	server	id	srv:areatrigger_teleport			
+areatrigger_template	server	id	srv:areatrigger_template	dbc_areatrigger		
+auctionhousebot	server	item	srv:auctionhousebot			
+autobroadcast	server	string_id	srv:autobroadcast			
+battleground_events	server	map, event1, event2	srv:battleground_events			
+battleground_template	server	id	srv:battleground_template	dbc_battlemasterlist		
+battlemaster_entry	server	entry	srv:battlemaster_entry			
+broadcast_text	server	entry	srv:broadcast_text			
+cinematic_waypoints	server	cinematic, timer	srv:cinematic_waypoints			
+command	server	name	srv:command			
+conditions	server	condition_entry	srv:conditions			
+creature	server	guid	srv:creature			
+creature_addon	server	guid	srv:creature_addon			
+creature_ai_events	server	id	srv:creature_ai_events			
+creature_ai_scripts	server	id	srv:creature_ai_scripts			
+creature_battleground	server	guid, event1	srv:creature_battleground			
+creature_charm_spells	server	entry, slot, spell_id	srv:creature_charm_spells			
+creature_classlevelstats	server	class, level	srv:creature_classlevelstats			
+creature_display_info_addon	server	display_id	srv:creature_display_info_addon	dbc_creaturedisplayinfo		
+creature_equip_template	server	entry, item1, item2, item3	srv:creature_equip_template			
+creature_groups	server	member_guid	srv:creature_groups			
+creature_groups_entry_limit	server	leader_guid, creature_id	srv:creature_groups_entry_limit			
+creature_involvedrelation	server	id, quest	srv:creature_involvedrelation			
+creature_linking	server	guid	srv:creature_linking			
+creature_linking_template	server	entry, map	srv:creature_linking_template			
+creature_loot_template	server	entry, item, groupid	srv:creature_loot_template			
+creature_movement	server	id, point	srv:creature_movement			
+creature_movement_scripts	server	id	srv:creature_movement_scripts			
+creature_movement_special	server	id, point	srv:creature_movement_special			
+creature_movement_template	server	entry, point	srv:creature_movement_template			
+creature_onkill_reputation	server	creature_id	srv:creature_onkill_reputation			
+creature_questrelation	server	id, quest	srv:creature_questrelation			
+creature_spells	server	entry	srv:creature_spells			
+creature_spells_scripts	server	id	srv:creature_spells_scripts			
+creature_template	server	entry	srv:creature_template			
+custom_texts	server	entry	srv:custom_texts			
+disenchant_loot_template	server	entry, item	srv:disenchant_loot_template			
+event_scripts	server	id	srv:event_scripts			
+exploration_basexp	server	level	srv:exploration_basexp			
+faction	gone			dbc_faction		every column is a Faction column, 0 differences (plan.md 10.2)
+faction_template	gone			dbc_factiontemplate		every column is a FactionTemplate column, 8 cells differ (plan.md 10.2)
+fishing_loot_template	server	entry, item	srv:fishing_loot_template			
+forbidden_items	server	entry, after_or_before	srv:forbidden_items			
+game_event	server	entry	srv:game_event			
+game_event_creature	server	guid, event	srv:game_event_creature			
+game_event_creature_data	server	guid, event	srv:game_event_creature_data			
+game_event_gameobject	server	guid, event	srv:game_event_gameobject			
+game_event_mail	server	event, raceMask, quest	srv:game_event_mail			
+game_event_quest	server	quest, event	srv:game_event_quest			
+game_graveyard_zone	server	id, ghost_zone	srv:game_graveyard_zone			
+game_tele	server	id	srv:game_tele			
+game_weather	server	zone	srv:game_weather			
+gameobject	server	guid	srv:gameobject			
+gameobject_battleground	server	guid, event1, event2	srv:gameobject_battleground			
+gameobject_display_info_addon	gone			dbc_gameobjectdisplayinfo		the geobox is GameObjectDisplayInfo's (plan.md 10.2)
+gameobject_involvedrelation	server	id, quest	srv:gameobject_involvedrelation			
+gameobject_loot_template	server	entry, item	srv:gameobject_loot_template			
+gameobject_questrelation	server	id, quest	srv:gameobject_questrelation			
+gameobject_requirement	server	guid	srv:gameobject_requirement			
+gameobject_scripts	server	id	srv:gameobject_scripts			
+gameobject_template	server	entry	srv:gameobject_template			
+generic_scripts	server	id	srv:generic_scripts			
+gossip_menu	server	entry, text_id	srv:gossip_menu			
+gossip_menu_option	server	menu_id, id	srv:gossip_menu_option			
+gossip_scripts	server	id	srv:gossip_scripts			
+instance_buff_removal	server	map_id, spell_id	srv:instance_buff_removal			
+item_display_info	gone			dbc_itemdisplayinfo		ids are the client's ItemDisplayInfo rows; icon has no reader (items resolve displays through ItemModifiedAppearance)
+item_enchantment_template	server	entry, ench	srv:item_enchantment_template			
+item_loot_template	server	entry, item	srv:item_loot_template			
+item_required_target	server	entry, type, target_entry	srv:item_required_target			
+item_template	server	entry	srv:item_template	dbc_item, dbc_itemeffect, dbc_itemsparse		
+locales_area	server	Entry	srv:locales_area			
+locales_areatrigger	server	entry	srv:locales_areatrigger			
+locales_broadcast_text	server	entry	srv:locales_broadcast_text			
+locales_creature	server	entry	srv:locales_creature			
+locales_faction	server	entry	srv:locales_faction			
+locales_gameobject	server	entry	srv:locales_gameobject			
+locales_gossip_menu_option	server	menu_id, id	srv:locales_gossip_menu_option			
+locales_item	server	entry	srv:locales_item			
+locales_page_text	server	entry	srv:locales_page_text			
+locales_points_of_interest	server	entry	srv:locales_points_of_interest			
+locales_quest	server	entry	srv:locales_quest			
+locales_spell	server	entry	srv:locales_spell			
+locales_taxi_node	server	entry	srv:locales_taxi_node			
+mail_loot_template	server	entry, item	srv:mail_loot_template			
+mail_text_template	server	entry	srv:mail_text_template	dbc_mailtemplate		
+mangos_string	server	entry	srv:mangos_string			
+map_loot_disabled	server	map_id	srv:map_loot_disabled			
+map_template	server	entry	srv:map_template	dbc_map		
+npc_gossip	server	npc_guid	srv:npc_gossip			
+npc_text	server	ID	srv:npc_text			
+npc_trainer	server	entry, spell	srv:npc_trainer			
+npc_trainer_greeting	server	entry	srv:npc_trainer_greeting			
+npc_trainer_template	server	entry, spell	srv:npc_trainer_template			
+npc_vendor	server	entry, item	srv:npc_vendor			
+npc_vendor_template	server	entry, item	srv:npc_vendor_template			
+page_text	server	entry	srv:page_text			
+pet_levelstats	server	entry, level	srv:pet_levelstats			
+pet_name_generation	server	entry, half, word	srv:pet_name_generation			
+pet_spell_data	gone			dbc_creaturespelldata		every column is a CreatureSpellData column, 0 differences (plan.md 10.2)
+petcreateinfo_spell	server	entry	srv:petcreateinfo_spell			
+pickpocketing_loot_template	server	entry, item	srv:pickpocketing_loot_template			
+player_classlevelstats	server	class, level	srv:player_classlevelstats			
+player_crit_per_agility	server	class, level	srv:player_crit_per_agility			
+player_dodge_per_agility	server	class, level	srv:player_dodge_per_agility			
+player_factionchange_items	server	alliance_id, horde_id	srv:player_factionchange_items			
+player_factionchange_mounts	server	RaceId, MountNum	srv:player_factionchange_mounts			
+player_factionchange_quests	server	alliance_id, horde_id	srv:player_factionchange_quests			
+player_factionchange_reputations	server	alliance_id, horde_id	srv:player_factionchange_reputations			
+player_factionchange_spells	server	alliance_id, horde_id	srv:player_factionchange_spells			
+player_levelstats	server	race, class, level	srv:player_levelstats			
+player_premade_item	server	entry, item	srv:player_premade_item			
+player_premade_item_template	server	entry	srv:player_premade_item_template			
+player_premade_spell	server	entry, spell	srv:player_premade_spell			
+player_premade_spell_template	server	entry	srv:player_premade_spell_template			
+player_xp_for_level	server	lvl	srv:player_xp_for_level			
+playercreateinfo	server	race, class	srv:playercreateinfo			
+playercreateinfo_action	server	race, class, button	srv:playercreateinfo_action			
+playercreateinfo_item	server	race, class, itemid	srv:playercreateinfo_item			
+playercreateinfo_spell	server	race, class, spell	srv:playercreateinfo_spell			
+points_of_interest	server	entry	srv:points_of_interest			
+pool_creature	server	guid	srv:pool_creature			
+pool_creature_template	server	id	srv:pool_creature_template			
+pool_gameobject	server	guid	srv:pool_gameobject			
+pool_gameobject_template	server	id	srv:pool_gameobject_template			
+pool_pool	server	pool_id	srv:pool_pool			
+pool_template	server	entry	srv:pool_template			
+quest_end_scripts	server	id	srv:quest_end_scripts			
+quest_greeting	server	entry, type	srv:quest_greeting			
+quest_start_scripts	server	id	srv:quest_start_scripts			
+quest_template	server	entry	srv:quest_template			
+reference_loot_template	server	entry, item	srv:reference_loot_template			
+reputation_reward_rate	server	faction	srv:reputation_reward_rate			
+reputation_spillover_template	server	faction	srv:reputation_spillover_template			
+reserved_name	server	name	srv:reserved_name			
+script_escort_data	server	creature_id, quest	srv:script_escort_data			
+script_texts	server	entry	srv:script_texts			
+script_waypoint	server	entry, pointid	srv:script_waypoint			
+scripted_event_id	server	id	srv:scripted_event_id			
+skill_fishing_base_level	server	entry	srv:skill_fishing_base_level			
+skill_line_ability	gone			dbc_skilllineability		every column is a SkillLineAbility column; superseded_by is the inverse of SupercedesSpell (plan.md 10.2)
+skinning_loot_template	server	entry, item	srv:skinning_loot_template			
+sound_entries	gone			dbc_soundkit		ids are SoundKit ids; names have no reader (plan.md 10.2)
+spell_area	server	spell, area, quest_start, quest_start_active, aura_spell, racemask, gender	srv:spell_area			
+spell_chain	server	spell_id	srv:spell_chain			rank links outside Talent and SkillLineAbility; rank and first_spell become derived
+spell_check	server	spellid, SpellFamilyName, SpellFamilyMask, SpellCategory, Code	srv:spell_check			
+spell_cone	gone			dbc_spelltargetrestrictions		cone angles are SpellTargetRestrictions.ConeDegrees; the loader default 60 covers spells with no row
+spell_disabled	server	entry	srv:spell_disabled			
+spell_effect_mod	gone			dbc_spelleffect, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's effect slot when the world DB is created
+spell_elixir	server	entry	srv:spell_elixir			
+spell_enchant_charges	gone			dbc_spellitemenchantment		charges are SpellItemEnchantment.Charges of the enchantment the spell applies
+spell_group	server	group_id, group_spell_id, spell_id	srv:spell_group			
+spell_group_stack_rules	server	group_id	srv:spell_group_stack_rules			
+spell_learn_spell	server	entry, SpellID	srv:spell_learn_spell			
+spell_mod	gone			dbc_spell*, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's when the world DB is created; 43 ids create spells spell_template lacks
+spell_pet_auras	server	spell, pet	srv:spell_pet_auras			
+spell_proc_event	server	entry	srv:spell_proc_event	dbc_spellauraoptions, dbc_spellprocsperminute	spell_template	procFlags, CustomChance, Cooldown and ppmRate move to the client tables, over spell_template's values; the filters (school, family, class masks, procEx) stay
+spell_proc_item_enchant	server	entry	srv:spell_proc_item_enchant			
+spell_script_target	server	entry, type, targetEntry	srv:spell_script_target			
+spell_scripts	server	id	srv:spell_scripts			
+spell_target_position	server	id, target_map	srv:spell_target_position			
+spell_template	gone			dbc_spell*, spell_extra		values in the client spell tables, the rest renamed spell_extra (plan.md 11.5, decisions 12, 13)
+spell_threat	server	entry	srv:spell_threat			
+taxi_nodes	gone			dbc_taxinodes		every column is a TaxiNodes column; mount slots swapped (plan.md 10.2)
+taxi_path_transitions	server	in_path, out_path	srv:taxi_path_transitions			
+transports	server	entry	srv:transports			
+variables	server	index	srv:variables			
+warden_scans	gone					no mangosd reader: vmangos has no Warden implementation
+world_safe_locs_facing	gone			world_safe_locs		merged into world_safe_locs with the vanilla WorldSafeLocs rows (plan.md 10.3)
+creature_quest_item	server	CreatureEntry, Idx				quest items a creature drops, for the creature query reply (plan.md 10.4)
+dbc_areatable	dbc	ID	srv:area_template			
+dbc_areatrigger	dbc	ID	srv:areatrigger_template			
+dbc_auctionhouse	dbc	ID	vdbc:auctionhouse			
+dbc_bankbagslotprices	dbc	ID	vdbc:bankbagslotprices			
+dbc_battlemasterlist	dbc	ID	srv:battleground_template			
+dbc_chatchannels	dbc	ID	vdbc:chatchannels			
+dbc_chrclasses	dbc	ID	vdbc:chrclasses			
+dbc_chrraces	dbc	ID	vdbc:chrraces			
+dbc_cinematicsequences	dbc	ID	vdbc:cinematicsequences			
+dbc_creaturedisplayinfo	dbc	ID	srv:creature_display_info_addon, vdbc:creaturedisplayinfo			
+dbc_creaturedisplayinfoextra	dbc	ID	vdbc:creaturedisplayinfoextra			
+dbc_creaturefamily	dbc	ID	vdbc:creaturefamily			
+dbc_creaturemodeldata	dbc	ID	vdbc:creaturemodeldata			
+dbc_creaturespelldata	dbc	ID	srv:pet_spell_data			
+dbc_creaturetype	dbc	ID	vdbc:creaturetype			
+dbc_durabilitycosts	dbc	ID	vdbc:durabilitycosts			
+dbc_durabilityquality	dbc	ID	vdbc:durabilityquality			
+dbc_emotes	dbc	ID	vdbc:emotes			
+dbc_emotestext	dbc	ID	vdbc:emotestext			
+dbc_emotestextdata	dbc	ID	vdbc:emotestext			
+dbc_faction	dbc	ID	srv:faction			
+dbc_factiontemplate	dbc	ID	srv:faction_template			
+dbc_gameobjectdisplayinfo	dbc	ID	srv:gameobject_display_info_addon, vdbc:gameobjectdisplayinfo			
+dbc_item	dbc	ID	srv:item_template			
+dbc_itembagfamily	dbc	ID	vdbc:itembagfamily			
+dbc_itemdisplayinfo	dbc	ID	srv:item_display_info			
+dbc_itemeffect	dbc	ID	srv:item_template			
+dbc_itemrandomproperties	dbc	ID	vdbc:itemrandomproperties			
+dbc_itemset	dbc	ID	vdbc:itemset			
+dbc_itemsetspell	dbc	ID	vdbc:itemset			
+dbc_itemsparse	dbc	ID	srv:item_template			
+dbc_lock	dbc	ID	vdbc:lock			
+dbc_mailtemplate	dbc	ID	srv:mail_text_template			
+dbc_map	dbc	ID	srv:map_template			
+dbc_namesprofanity	dbc	ID	vdbc:namesprofanity			
+dbc_namesreserved	dbc	ID	vdbc:namesreserved			
+dbc_questsort	dbc	ID	vdbc:questsort			
+dbc_skillline	dbc	ID	vdbc:skillline			
+dbc_skilllineability	dbc	ID	srv:skill_line_ability			
+dbc_skillraceclassinfo	dbc	ID	vdbc:skillraceclassinfo			
+dbc_soundkit	dbc	ID	srv:sound_entries			
+dbc_spell	dbc	ID	srv:spell_template			
+dbc_spellauraoptions	dbc	ID	srv:spell_mod, srv:spell_proc_event, srv:spell_template			
+dbc_spellaurarestrictions	dbc	ID	srv:spell_template			
+dbc_spellcastingrequirements	dbc	ID	srv:spell_template			
+dbc_spellcasttimes	dbc	ID	vdbc:spellcasttimes			
+dbc_spellcategories	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellcategory	dbc	ID	vdbc:spellcategory			
+dbc_spellclassoptions	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellcooldowns	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellduration	dbc	ID	vdbc:spellduration			
+dbc_spelleffect	dbc	ID	srv:spell_effect_mod, srv:spell_template			
+dbc_spellequippeditems	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellfocusobject	dbc	ID	vdbc:spellfocusobject			
+dbc_spellinterrupts	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellitemenchantment	dbc	ID	srv:spell_enchant_charges, vdbc:spellitemenchantment			
+dbc_spelllevels	dbc	ID	srv:spell_template			
+dbc_spellmisc	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellname	dbc	ID	srv:spell_template			
+dbc_spellpower	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellprocsperminute	dbc	ID	srv:spell_proc_event			
+dbc_spellradius	dbc	ID	vdbc:spellradius			
+dbc_spellrange	dbc	ID	vdbc:spellrange			
+dbc_spellreagents	dbc	ID	srv:spell_template			
+dbc_spellshapeshift	dbc	ID	srv:spell_mod, srv:spell_template			
+dbc_spellshapeshiftform	dbc	ID	vdbc:spellshapeshiftform			
+dbc_spelltargetrestrictions	dbc	ID	srv:spell_cone, srv:spell_mod, srv:spell_template			
+dbc_spelltotems	dbc	ID	srv:spell_template			
+dbc_stableslotprices	dbc	ID	vdbc:stableslotprices			
+dbc_talent	dbc	ID	vdbc:talent			
+dbc_talenttab	dbc	ID	vdbc:talenttab			
+dbc_taxinodes	dbc	ID	srv:taxi_nodes			
+dbc_taxipath	dbc	ID	vdbc:taxipath			
+dbc_taxipathnode	dbc	ID	vdbc:taxipathnode			
+dbc_transportanimation	dbc	ID	vdbc:transportanimation			
+dbc_wmoareatable	dbc	ID	vdbc:wmoareatable			
+gameobject_quest_item	server	GameObjectEntry, Idx				quest items a game object holds, for the game object query reply (plan.md 10.4)
+race_taxi_mask	server	race	vdbc:chrraces			vanilla ChrRaces.StartingTaxiNodes, which the client's ChrRaces lacks (plan.md 10.3)
+skill_tiers	server	id	vdbc:skilltiers			vanilla SkillTiers (no 1.15 twin); SkillRaceClassInfo.SkillTierID points at it (plan.md 10.3)
+spell_extra	server	spell_id	srv:spell_effect_mod, srv:spell_mod, srv:spell_template			per-spell server data no client table holds: the slim spell_template (plan.md 11.5)
+spell_stack_key	server	spell_id				stacking and rank keys replacing the icon/visual conjuncts (plan.md 11.4)
+spell_tag	server	spell_id, tag				explicit spell sets replacing SpellIconID/SpellVisual checks (plan.md 11.4)
+world_safe_locs	server	id	srv:world_safe_locs_facing, vdbc:worldsafelocs			graveyards: the vanilla WorldSafeLocs rows (no 1.15 twin) plus vmangos's facing (plan.md 10.3)
+dbc_broadcasttext	placeholder	ID	broadcast_text			decision 11: shipped empty; DB replies come from broadcast_text
+dbc_creature	placeholder	ID	creature_template			decision 11: one stub row (creature 61544); creatures are creature_template
+dbc_creaturedifficulty	placeholder	ID	creature_template			decision 11: one stub row (creature 61544); creatures are creature_template
+dbc_creaturexdisplayinfo	placeholder	ID	creature_template			decision 11: two stub rows (creature 61544); displays are creature_template's
+dbc_questobjective	placeholder	ID	quest_template			decision 11: shipped empty; objectives are quest_template columns (ids: Q5)
+dbc_questpoiblob	placeholder	ID	quest_template			decision 11: shipped empty; POIs are quest_template Point* columns (Q6)
+dbc_questpoipoint	placeholder	ID	quest_template			decision 11: shipped empty; POIs are quest_template Point* columns (Q6)
+dbc_spelllearnspell	placeholder	ID	spell_learn_spell			decision 11: shipped empty; the data is spell_learn_spell

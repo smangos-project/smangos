@@ -4152,4 +4152,4 @@ new	spell_stack_key	stack_key	server			new table (plan.md 11.4): replaces the ic
 new	spell_stack_key	rank_key	server			new table (plan.md 11.4): replaces the icon/visual part of IsRankSpellDueToSpell (SpellMgr.cpp:883)	yes
 new	spell_tag	spell_id	server			new table (plan.md 11.4): spell id a tag applies to; loaded into SpellEntry tags by SpellMgr	yes
 new	spell_tag	tag	server			new table (plan.md 11.4): SpellTag enum name; replaces SpellIconID/SpellVisual set checks	yes
-new	race_taxi_mask	race	server		key: the vanilla ChrRaces.ID (dbc_chrraces.ID)	yes
+new	race_taxi_mask	race	server			key: the vanilla ChrRaces.ID (dbc_chrraces.ID)	yes
