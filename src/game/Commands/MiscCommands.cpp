@@ -1868,7 +1868,7 @@ bool ChatHandler::HandleLinkGraveCommand(char* args)
     else
         return false;
 
-    WorldSafeLocsEntry const* graveyard =  sWorldSafeLocsStore.LookupEntry(g_id);
+    WorldSafeLocsEntry const* graveyard =  sObjectMgr.GetWorldSafeLoc(g_id);
 
     if (!graveyard)
     {

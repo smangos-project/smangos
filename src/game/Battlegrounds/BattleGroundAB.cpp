@@ -522,7 +522,7 @@ WorldSafeLocsEntry const* BattleGroundAB::GetClosestGraveYard(Player* player)
     // repop players at the entrance GY if BG is not started yet
     if (GetStatus() != STATUS_IN_PROGRESS && !player->IsGameMaster())
     {
-        if (WorldSafeLocsEntry const* gEntry = sWorldSafeLocsStore.LookupEntry(player->GetTeam() == ALLIANCE ? 890 : 889))
+        if (WorldSafeLocsEntry const* gEntry = sObjectMgr.GetWorldSafeLoc(player->GetTeam() == ALLIANCE ? 890 : 889))
             return gEntry;
     }
 
@@ -544,7 +544,7 @@ WorldSafeLocsEntry const* BattleGroundAB::GetClosestGraveYard(Player* player)
         float minDist = 999999.0f;
         for (uint8 node : nodes)
         {
-            WorldSafeLocsEntry const*entry = sWorldSafeLocsStore.LookupEntry(BG_AB_GraveyardIds[node]);
+            WorldSafeLocsEntry const*entry = sObjectMgr.GetWorldSafeLoc(BG_AB_GraveyardIds[node]);
             if (!entry)
                 continue;
             float dist = (entry->x - playerX) * (entry->x - playerX) + (entry->y - playerY) * (entry->y - playerY);
@@ -558,7 +558,7 @@ WorldSafeLocsEntry const* BattleGroundAB::GetClosestGraveYard(Player* player)
     }
     // If not, place ghost on starting location
     if (!graveyard)
-        graveyard = sWorldSafeLocsStore.LookupEntry(BG_AB_GraveyardIds[teamIndex + 5]);
+        graveyard = sObjectMgr.GetWorldSafeLoc(BG_AB_GraveyardIds[teamIndex + 5]);
 
     return graveyard;
 }

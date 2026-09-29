@@ -1916,7 +1916,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                                 else
                                 {
                                     // If there is no nearby graveyard, player's ghost would spawn at the same spot.
-                                    WorldSafeLocsEntry const* pClosestGrave = casterPlayer->GetTeamId() == TEAM_HORDE ? sWorldSafeLocsStore.LookupEntry(10) : sWorldSafeLocsStore.LookupEntry(4);
+                                    WorldSafeLocsEntry const* pClosestGrave = casterPlayer->GetTeamId() == TEAM_HORDE ? sObjectMgr.GetWorldSafeLoc(10) : sObjectMgr.GetWorldSafeLoc(4);
                                     if (pClosestGrave)
                                     {
                                         casterPlayer->SetHealth(1);

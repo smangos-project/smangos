@@ -1490,7 +1490,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
 
         uint32 start1 = fields[9].GetUInt32();
 
-        WorldSafeLocsEntry const* start = sWorldSafeLocsStore.LookupEntry(start1);
+        WorldSafeLocsEntry const* start = sObjectMgr.GetWorldSafeLoc(start1);
         if (start)
         {
             AStartLoc[0] = start->x;
@@ -1506,7 +1506,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
 
         uint32 start2 = fields[10].GetUInt32();
 
-        start = sWorldSafeLocsStore.LookupEntry(start2);
+        start = sObjectMgr.GetWorldSafeLoc(start2);
         if (start)
         {
             HStartLoc[0] = start->x;

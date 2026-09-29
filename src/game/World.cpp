@@ -1373,8 +1373,8 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading pet spell data ...");
     sObjectMgr.LoadPetSpellData();
 
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading world safe locs facing values ...");
-    sObjectMgr.LoadWorldSafeLocsFacing();
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading world safe locs ...");
+    sObjectMgr.LoadWorldSafeLocs();
 
     // Load the DBC files
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Initialize data stores...");

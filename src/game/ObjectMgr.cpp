@@ -7518,7 +7518,7 @@ void ObjectMgr::LoadGraveyardZones()
         uint32 zoneId = fields[1].GetUInt32();
         uint32 team   = fields[2].GetUInt32();
 
-        WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(safeLocId);
+        WorldSafeLocsEntry const* entry = sObjectMgr.GetWorldSafeLoc(safeLocId);
         if (!entry)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `game_graveyard_zone` has record for not existing graveyard (WorldSafeLocs.dbc id) %u, skipped.", safeLocId);
@@ -7595,7 +7595,7 @@ WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYardForArea(uint32 areaOrZon
     {
         GraveYardData const& data = itr->second;
 
-        WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(data.safeLocId);
+        WorldSafeLocsEntry const* entry = sObjectMgr.GetWorldSafeLoc(data.safeLocId);
         if (!entry)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `game_graveyard_zone` has record for not existing graveyard (WorldSafeLocs.dbc id) %u, skipped.", data.safeLocId);
@@ -7704,17 +7704,18 @@ bool ObjectMgr::AddGraveYardLink(uint32 id, uint32 zoneId, Team team, bool inDB)
     return true;
 }
 
-void ObjectMgr::LoadWorldSafeLocsFacing()
+void ObjectMgr::LoadWorldSafeLocs()
 {
-    uint32 count = 0;
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `id`, `orientation` FROM `world_safe_locs_facing`"));
+    m_worldSafeLocs.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `id`, `map_id`, `x`, `y`, `z`, `orientation` FROM `world_safe_locs`"));
     if (!result)
     {
         BarGoLink bar(1);
         bar.step();
 
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u world safe locs facing values", count);
+        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, ">> Loaded `world_safe_locs`, table is empty!");
         return;
     }
     BarGoLink bar(result->GetRowCount());
@@ -7723,22 +7724,28 @@ void ObjectMgr::LoadWorldSafeLocsFacing()
         bar.step();
         Field* fields = result->Fetch();
 
-        uint32 safeLocId = fields[0].GetUInt32();
-        float orientation = fields[1].GetFloat();
-
-        m_worldSafeLocsFacingMap[safeLocId] = orientation;
-        count++;
+        WorldSafeLocsEntry& entry = m_worldSafeLocs[fields[0].GetUInt32()];
+        entry.ID = fields[0].GetUInt32();
+        entry.map_id = fields[1].GetUInt32();
+        entry.x = fields[2].GetFloat();
+        entry.y = fields[3].GetFloat();
+        entry.z = fields[4].GetFloat();
+        entry.orientation = fields[5].GetFloat();
     } while (result->NextRow());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u world safe locs facing values", count);
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u world safe locs", uint32(m_worldSafeLocs.size()));
+}
+
+WorldSafeLocsEntry const* ObjectMgr::GetWorldSafeLoc(uint32 id) const
+{
+    auto itr = m_worldSafeLocs.find(id);
+    return itr != m_worldSafeLocs.end() ? &itr->second : nullptr;
 }
 
 float ObjectMgr::GetWorldSafeLocFacing(uint32 id) const
 {
-    auto itr = m_worldSafeLocsFacingMap.find(id);
-    if (itr != m_worldSafeLocsFacingMap.end())
-        return itr->second;
-    return 0.0f;
+    WorldSafeLocsEntry const* entry = GetWorldSafeLoc(id);
+    return entry ? entry->orientation : 0.0f;
 }
 
 void ObjectMgr::LoadAreaTriggerTeleports()

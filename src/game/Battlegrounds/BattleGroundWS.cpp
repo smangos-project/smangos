@@ -680,14 +680,14 @@ WorldSafeLocsEntry const* BattleGroundWS::GetClosestGraveYard(Player* player)
     if (player->GetTeam() == ALLIANCE)
     {
         if (GetStatus() == STATUS_IN_PROGRESS)
-            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
-        return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_ALLIANCE);
+            return sObjectMgr.GetWorldSafeLoc(WS_GRAVEYARD_MAIN_ALLIANCE);
+        return sObjectMgr.GetWorldSafeLoc(WS_GRAVEYARD_FLAGROOM_ALLIANCE);
     }
 
     if (GetStatus() == STATUS_IN_PROGRESS)
-        return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
+        return sObjectMgr.GetWorldSafeLoc(WS_GRAVEYARD_MAIN_HORDE);
 
-    return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_HORDE);
+    return sObjectMgr.GetWorldSafeLoc(WS_GRAVEYARD_FLAGROOM_HORDE);
 }
 
 void BattleGroundWS::FillInitialWorldStates(WorldPacket& data, uint32& count)

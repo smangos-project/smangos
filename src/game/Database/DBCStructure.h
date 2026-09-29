@@ -765,8 +765,7 @@ struct WorldSafeLocsEntry
     float     x;                                            // 2        m_locX
     float     y;                                            // 3        m_locY
     float     z;                                            // 4        m_locZ
-    //char*   name[8]                                       // 5-12     m_AreaName_lang
-                                                            // 13 string flags
+    float     orientation = 0.0f;
 };
 
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform

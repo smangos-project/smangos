@@ -331,7 +331,7 @@ bool ChatHandler::HandleGoGraveyardCommand(char* args)
     if (!ExtractUInt32(&args, gyId))
         return false;
 
-    WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(gyId);
+    WorldSafeLocsEntry const* gy = sObjectMgr.GetWorldSafeLoc(gyId);
     if (!gy)
     {
         PSendSysMessage(LANG_COMMAND_GRAVEYARDNOEXIST, gyId);
@@ -1092,7 +1092,7 @@ bool ChatHandler::HandleUnstuckCommand(char* /*args*/)
         // Get nearest graveyard.
         WorldSafeLocsEntry const* pClosestGrave = sObjectMgr.GetClosestGraveYard(pPlayer->GetPositionX(), pPlayer->GetPositionY(), pPlayer->GetPositionZ(), pPlayer->GetMapId(), pPlayer->GetTeam());
         if (!pClosestGrave) // No nearby graveyards (stuck in void?). Send ally to Westfall, Horde to Barrens.
-            pClosestGrave = pPlayer->GetTeamId() == TEAM_HORDE ? sWorldSafeLocsStore.LookupEntry(10) : sWorldSafeLocsStore.LookupEntry(4);
+            pClosestGrave = pPlayer->GetTeamId() == TEAM_HORDE ? sObjectMgr.GetWorldSafeLoc(10) : sObjectMgr.GetWorldSafeLoc(4);
         if (pClosestGrave)
             pPlayer->TeleportTo(pClosestGrave->map_id, pClosestGrave->x, pClosestGrave->y, pClosestGrave->z, sObjectMgr.GetWorldSafeLocFacing(pClosestGrave->ID), 0);
         SendSysMessage(LANG_UNSTUCK_DEAD);

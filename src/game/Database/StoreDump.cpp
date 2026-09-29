@@ -659,6 +659,22 @@ static bool DumpSoundEntries(std::string const& dir)
     return table.Close();
 }
 
+static bool DumpWorldSafeLocs(std::string const& dir)
+{
+    DumpTable table(dir, "WorldSafeLocs");
+    table.AddColumns({{"ID"}, {"map_id"}, {"x"}, {"y"}, {"z"}, {"orientation"}});
+    table.EndHeader();
+
+    auto const& map = sObjectMgr.GetWorldSafeLocs();
+    for (uint32 id : SortedKeys(map))
+    {
+        WorldSafeLocsEntry const& e = map.at(id);
+        table << e.ID << e.map_id << e.x << e.y << e.z << e.orientation;
+        table.EndRow();
+    }
+    return table.Close();
+}
+
 bool DumpStores(std::string const& dir)
 {
     std::error_code ec;
@@ -716,7 +732,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "TransportAnimation", sTransportAnimationStore);
     ok &= DumpDBCStore(dir, "WMOAreaTable", sWMOAreaTableStore);
     ok &= DumpDBCStore(dir, "WorldMapArea", sWorldMapAreaStore);
-    ok &= DumpDBCStore(dir, "WorldSafeLocs", sWorldSafeLocsStore);
+    ok &= DumpWorldSafeLocs(dir);
 
     ok &= DumpSQLStore(dir, sCreatureDataAddonStorage, 7);
     ok &= DumpSQLStore(dir, sCreatureDisplayInfoAddonStorage);
