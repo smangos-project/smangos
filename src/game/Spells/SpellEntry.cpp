@@ -254,10 +254,7 @@ bool Spells::IsPositiveSpell(uint32 spellId, Unit* caster, Unit* victim)
 
 bool Spells::IsSingleTargetSpells(SpellEntry const* spellInfo1, SpellEntry const* spellInfo2)
 {
-    // TODO - need better check
-    // Equal icon and spellfamily
-    if (spellInfo1->SpellFamilyName == spellInfo2->SpellFamilyName &&
-            spellInfo1->SpellIconID == spellInfo2->SpellIconID)
+    if (spellInfo1->SingleTargetKey && spellInfo1->SingleTargetKey == spellInfo2->SingleTargetKey)
         return true;
 
     // TODO - need found Judgements rule
