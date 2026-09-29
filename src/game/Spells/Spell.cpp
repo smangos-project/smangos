@@ -4468,7 +4468,7 @@ void Spell::SendCastResult(Player const* caster, SpellEntry const* spellInfo, Sp
     CastFailed packet;
     packet.CastId = castId;
     packet.SpellId = spellInfo->Id;
-    packet.Visual.SpellXSpellVisualId = visual ? visual : int32(spellInfo->SpellVisual);
+    packet.Visual.SpellXSpellVisualId = visual ? visual : int32(spellInfo->ClientVisualId);
     packet.Reason = int32(ToClassicCastResult(spellInfo->HasAttribute(SPELL_ATTR_EX2_DO_NOT_REPORT_SPELL_FAILURE) || spellInfo->IsPassiveSpell() ? SPELL_FAILED_DONT_REPORT : result));
 
     switch (result)
@@ -4519,7 +4519,7 @@ void Spell::FillCastData(SpellCastData& data, uint32 castFlags)
     data.CasterUnit = ToClassicGuid(m_caster->GetObjectGuid());
     data.CastId = GetCastId();
     data.SpellId = m_spellInfo->Id;
-    data.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+    data.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->ClientVisualId);
 
     if (m_isClientStarted)
         castFlags |= CAST_FLAG_FROM_CLIENT;
@@ -4787,7 +4787,7 @@ void Spell::SendInterrupted(SpellCastResult result)
     failure.CasterUnit = ToClassicGuid(m_caster->GetObjectGuid());
     failure.CastId = GetCastId();
     failure.SpellId = m_spellInfo->Id;
-    failure.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+    failure.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->ClientVisualId);
     failure.Reason = uint16(ToClassicCastResult(result));
     WorldPacket failureData = MakeClassicPacket(failure);
     m_caster->SendObjectMessageToSet(&failureData, true);
@@ -4981,7 +4981,7 @@ void Spell::SendChannelStart(uint32 duration)
         SpellChannelStart packet;
         packet.CasterGuid = ToClassicGuid(m_caster->GetObjectGuid());
         packet.SpellId = m_spellInfo->Id;
-        packet.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->SpellVisual);
+        packet.Visual.SpellXSpellVisualId = m_clientVisual ? m_clientVisual : int32(m_spellInfo->ClientVisualId);
         packet.ChannelDuration = duration;
         WorldPacket data = MakeClassicPacket(packet);
         m_caster->SendObjectMessageToSet(&data, true);

@@ -10736,7 +10736,7 @@ void Unit::SendSpellGo(Unit* target, uint32 spellId) const
     cast.CastId = Spell::MakeCastId(GetMapId(), spellId);
     cast.SpellId = int32(spellId);
     if (SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(spellId))
-        cast.Visual.SpellXSpellVisualId = int32(spellInfo->SpellVisual);
+        cast.Visual.SpellXSpellVisualId = int32(spellInfo->ClientVisualId);
     cast.CastFlags = CAST_FLAG_UNKNOWN9;
     cast.HitTargets.push_back(ClassicGuidMapping::ToClassic(target->GetObjectGuid(), realmID));
     targets.WriteTargetData(cast.Target);

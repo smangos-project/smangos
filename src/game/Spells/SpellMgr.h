@@ -695,6 +695,7 @@ class SpellMgr
         void LoadSpellElixirs();
         void LoadSpellTags();
         void LoadSpellStackKeys();
+        void LoadSpellClientVisuals();
         void LoadSpellProcEvents();
         void LoadSpellProcItemEnchant();
         void LoadSpellTargetPositions();

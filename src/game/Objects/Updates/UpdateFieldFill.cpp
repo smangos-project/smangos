@@ -135,8 +135,11 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::GuildGUID,
         player && player->GetGuildId() ? ClassicGuidMapping::MakeGuild(player->GetGuildId()) : ClassicGuid());
 
-    FillField(*unit.m_unitData->ChannelData, [&]() { return unit.m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::ChannelData); },
-        &UFUnitChannel::SpellID, int32(unit.GetUInt32Value(UNIT_CHANNEL_SPELL)));
+    uint32 const channelSpellId = unit.GetUInt32Value(UNIT_CHANNEL_SPELL);
+    SpellEntry const* channelSpell = channelSpellId ? sSpellMgr.GetSpellEntry(channelSpellId) : nullptr;
+    auto channelData = [&]() { return unit.m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UFUnitData::ChannelData); };
+    FillField(*unit.m_unitData->ChannelData, channelData, &UFUnitChannel::SpellID, int32(channelSpellId));
+    FillField(*unit.m_unitData->ChannelData, channelData, &UFUnitChannel::SpellXSpellVisualID, channelSpell ? int32(channelSpell->ClientVisualId) : 0);
 
     FillField(unit, &Unit::m_unitData, &UFUnitData::Race, unit.GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE));
     FillField(unit, &Unit::m_unitData, &UFUnitData::ClassId, unit.GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS));

@@ -7447,7 +7447,7 @@ void SpellAuraHolder::BuildAuraInfo(AuraInfo& info) const
     aura.CastId = ClassicGuidMapping::MakeCast(realmID, m_target->GetMapId(), GetId(),
                                                m_target->GetObjectGuid().GetCounter(), CLASSIC_CAST_SOURCE_AURA);
     aura.SpellId = GetId();
-    aura.Visual.SpellXSpellVisualId = m_spellProto->SpellVisual;
+    aura.Visual.SpellXSpellVisualId = m_spellProto->ClientVisualId;
 
     uint16 flags = CLASSIC_AURA_FLAG_NONE;
     if (IsPositive())

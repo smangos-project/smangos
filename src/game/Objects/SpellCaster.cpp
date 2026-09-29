@@ -1095,7 +1095,7 @@ void SpellCaster::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage const* log) con
         packet.CastId = log->spell->GetCastId();
     packet.SpellId = int32(log->spellId);
     if (SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(log->spellId))
-        packet.Visual.SpellXSpellVisualId = int32(spellInfo->SpellVisual);
+        packet.Visual.SpellXSpellVisualId = int32(spellInfo->ClientVisualId);
     packet.Damage = int32(log->damage);
     packet.OriginalDamage = int32(log->damage);
     packet.SchoolMask = uint8(1u << log->school);

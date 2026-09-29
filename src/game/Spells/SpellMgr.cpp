@@ -831,6 +831,39 @@ void SpellMgr::LoadSpellStackKeys()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell stack keys", count);
 }
 
+void SpellMgr::LoadSpellClientVisuals()
+{
+    for (auto const& spell : mSpellEntryMap)
+        if (spell)
+            spell->ClientVisualId = 0;
+
+    uint32 count = 0;
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query(
+        "SELECT `SpellID`, `ID` FROM `dbc_spellxspellvisual` WHERE `DifficultyID` = 0 AND `SpellVisualID` <> 0 "
+        "AND `ViewerUnitConditionID` = 0 AND `ViewerPlayerConditionID` = 0 AND `CasterUnitConditionID` = 0 AND `CasterPlayerConditionID` = 0 "
+        "ORDER BY `SpellID`, `Priority` DESC, `ID`"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 const spellId = fields[0].GetUInt32();
+            if (spellId >= mSpellEntryMap.size() || !mSpellEntryMap[spellId])
+                continue;
+
+            SpellEntry& spell = *mSpellEntryMap[spellId];
+            if (!spell.ClientVisualId)
+            {
+                spell.ClientVisualId = fields[1].GetUInt32();
+                ++count;
+            }
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell client visuals", count);
+}
+
 void SpellMgr::LoadSpellElixirs()
 {
     mSpellElixirs.clear();                                  // need for reload case

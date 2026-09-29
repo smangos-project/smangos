@@ -696,6 +696,7 @@ class SpellEntry
         uint32 StackKey = 0;                                       // spell_stack_key, 0 matches nothing
         uint32 RankKey = 0;
         uint32 SingleTargetKey = 0;
+        uint32 ClientVisualId = 0;                                 // SpellXSpellVisual row id the client expects on the wire
 
         // HELPERS:
         DiminishingGroup GetDiminishingReturnsGroup(bool triggered) const;
