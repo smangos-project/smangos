@@ -19912,7 +19912,7 @@ uint32 Player::SelectResurrectionSpellId() const
     for (const auto dummyAura : dummyAuras)
     {
         // Soulstone Resurrection                           // prio: 3 (max, non death persistent)
-        if (prio < 2 && dummyAura->GetSpellProto()->SpellVisual == 99 && dummyAura->GetSpellProto()->SpellIconID == 92)
+        if (prio < 2 && dummyAura->GetSpellProto()->HasTag(SPELL_TAG_SOULSTONE_RESURRECTION))
         {
             switch (dummyAura->GetId())
             {
