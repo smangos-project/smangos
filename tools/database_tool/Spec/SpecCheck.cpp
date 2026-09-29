@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iterator>
 #include <map>
 #include <set>
+#include <sstream>
 #include <tuple>
 
 static std::map<std::string, std::set<std::string>> LoadTableColumns(DoltLiteDatabase& reference, std::string const& prefix)
@@ -61,6 +63,37 @@ static bool IsArraySlots(std::vector<SpecColumnRow const*> const& writers)
     return true;
 }
 
+// A tables.tsv list field: "a, b, c".
+static std::vector<std::string> SplitList(std::string const& value)
+{
+    std::vector<std::string> items;
+    std::istringstream stream(value);
+    std::string item;
+    while (std::getline(stream, item, ','))
+    {
+        size_t const first = item.find_first_not_of(' ');
+        if (first != std::string::npos)
+            items.push_back(item.substr(first, item.find_last_not_of(' ') - first + 1));
+    }
+    return items;
+}
+
+// `pattern` is a table name, or a prefix ending in '*' (dbc_spell*).
+static bool MatchesTable(std::string const& pattern, std::string const& table)
+{
+    if (!pattern.empty() && pattern.back() == '*')
+        return table.compare(0, pattern.size() - 1, pattern, 0, pattern.size() - 1) == 0;
+    return pattern == table;
+}
+
+static std::string JoinSet(std::set<std::string> const& items)
+{
+    std::string joined;
+    for (std::string const& item : items)
+        joined += (joined.empty() ? "" : ", ") + item;
+    return joined;
+}
+
 SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::filesystem::path const& specDir, bool final)
 {
     SpecCheckResult result;
@@ -80,8 +113,9 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
     std::vector<SpecEvidenceRow> const evidence = ReadEvidenceTsv(specDir / "evidence.tsv");
     std::vector<SpecRuleRow> const rules = ReadRulesTsv(specDir / "rules.tsv");
     std::vector<SpecGapRow> const gaps = ReadGapsTsv(specDir / "gaps.tsv");
+    std::vector<SpecTableRow> const tableRows = ReadTablesTsv(specDir / "tables.tsv");
     std::map<std::string, std::string> overrides;
-    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
+    for (SpecTableRow const& row : tableRows)
     {
         if (!row.overrides.empty())
             overrides[row.table] = row.overrides;
@@ -234,6 +268,167 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
         for (SpecColumnRow const* writer : writers)
             names += (names.empty() ? "" : ", ") + RowName(*writer);
         report(5, target + " is filled by " + names);
+    }
+
+    // 6. tables.tsv: a row for every srv_ table and every table the spec writes, agreeing with
+    //    columns.tsv on kind, key, sources and into
+    std::map<std::string, std::set<std::string>> sourcesOf;      // written table -> "srv:x", "vdbc:x"
+    std::map<std::string, std::set<std::string>> destinationsOf; // srv table -> other tables it writes
+    std::map<std::string, std::set<std::string>> serverColumns;  // server table -> its columns
+    std::set<std::string> keptInPlace;
+    std::set<std::string> newTables;
+    for (SpecColumnRow const& row : columns)
+    {
+        if (!IsDisposition(row.disposition))
+            continue;
+        if (row.source == "new")
+        {
+            newTables.insert(row.table);
+            serverColumns[row.table].insert(row.column);
+            continue;
+        }
+        if (row.source == "srv" && row.disposition != "drop")
+            serverColumns[row.table].insert(row.column);
+
+        size_t const dot = row.target.find('.');
+        std::string destination;
+        if (row.disposition == "dbc" || (row.disposition == "server" && !row.target.empty()))
+            destination = row.target.substr(0, dot);
+        if (row.disposition == "server" && dot != std::string::npos)
+            serverColumns[destination].insert(row.target.substr(dot + 1));
+
+        if (row.disposition == "server" && row.source == "srv" && (destination.empty() || destination == row.table))
+        {
+            keptInPlace.insert(row.table);
+            sourcesOf[row.table].insert("srv:" + row.table);
+            continue;
+        }
+        if (row.disposition == "server" && destination.empty())
+            report(6, RowName(row) + " is server with no target table");
+        if (destination.empty())
+            continue;
+        sourcesOf[destination].insert(row.source + ":" + row.table);
+        if (row.source == "srv")
+            destinationsOf[row.table].insert(destination);
+    }
+
+    std::map<std::string, SpecTableRow const*> tableByName;
+    for (SpecTableRow const& row : tableRows)
+    {
+        if (!tableByName.emplace(row.table, &row).second)
+            report(6, row.table + " has more than one tables.tsv row");
+    }
+
+    std::set<std::string> const noTables;
+    for (SpecTableRow const& row : tableRows)
+    {
+        std::string const& name = row.table;
+        bool const dbcKind = row.kind == "dbc" || row.kind == "placeholder";
+        if (!dbcKind && row.kind != "server" && row.kind != "gone")
+        {
+            report(6, name + " has kind \"" + row.kind + "\", expected dbc, placeholder, server or gone");
+            continue;
+        }
+        auto const clientIt = name.compare(0, 4, "dbc_") == 0 ? live["cdbc"].find(name.substr(4)) : live["cdbc"].end();
+        if (dbcKind != (clientIt != live["cdbc"].end()))
+        {
+            report(6, name + " is kind " + row.kind + (dbcKind ? " but names no client table" : " but names a client table"));
+            continue;
+        }
+
+        if (live["srv"].count(name))
+        {
+            bool const kept = keptInPlace.count(name) != 0;
+            if (kept && row.kind == "gone")
+                report(6, name + " is gone but keeps columns in place");
+            if (!kept && row.kind == "server")
+                report(6, name + " is server but keeps no column in place");
+        }
+        else if (row.kind == "gone")
+        {
+            report(6, name + " is gone but isn't a srv_ table");
+        }
+
+        if (row.kind != "gone")
+        {
+            std::vector<std::string> const key = SplitList(row.key);
+            if (key.empty())
+                report(6, name + " has no key");
+            auto const columnsIt = serverColumns.find(name);
+            std::set<std::string> const& tableColumns = dbcKind ? clientIt->second :
+                columnsIt != serverColumns.end() ? columnsIt->second : noTables;
+            for (std::string const& column : key)
+            {
+                if (!tableColumns.count(column))
+                    report(6, name + " has key column " + column + ", which the table doesn't have");
+            }
+        }
+
+        auto const sourcesIt = sourcesOf.find(name);
+        std::set<std::string> const& actualSources = sourcesIt != sourcesOf.end() ? sourcesIt->second : noTables;
+        std::vector<std::string> const listed = SplitList(row.sources);
+        if (row.kind == "placeholder")
+        {
+            if (!actualSources.empty())
+                report(6, "placeholder " + name + " is written by " + JoinSet(actualSources));
+            if (listed.empty())
+                report(6, "placeholder " + name + " names no server table holding its data");
+            for (std::string const& holder : listed)
+            {
+                auto const holderIt = tableByName.find(holder);
+                if (holderIt == tableByName.end() || holderIt->second->kind != "server")
+                    report(6, "placeholder " + name + " names " + holder + ", which isn't a server table");
+            }
+        }
+        else
+        {
+            std::set<std::string> const listedSet(listed.begin(), listed.end());
+            std::set<std::string> missing, extra;
+            std::set_difference(actualSources.begin(), actualSources.end(), listedSet.begin(), listedSet.end(),
+                std::inserter(missing, missing.end()));
+            std::set_difference(listedSet.begin(), listedSet.end(), actualSources.begin(), actualSources.end(),
+                std::inserter(extra, extra.end()));
+            if (!missing.empty())
+                report(6, name + " sources lack " + JoinSet(missing));
+            if (!extra.empty())
+                report(6, name + " sources list " + JoinSet(extra) + ", which write nothing into it");
+        }
+
+        auto const destinationsIt = destinationsOf.find(name);
+        std::set<std::string> const& destinations = destinationsIt != destinationsOf.end() ? destinationsIt->second : noTables;
+        std::vector<std::string> const into = SplitList(row.into);
+        for (std::string const& pattern : into)
+        {
+            if (std::none_of(destinations.begin(), destinations.end(), [&](std::string const& table) { return MatchesTable(pattern, table); }))
+                report(6, name + " has into " + pattern + ", which none of its columns write");
+        }
+        for (std::string const& destination : destinations)
+        {
+            if (std::none_of(into.begin(), into.end(), [&](std::string const& pattern) { return MatchesTable(pattern, destination); }))
+                report(6, name + " writes " + destination + ", which its into doesn't name");
+        }
+        if (row.kind == "gone" && into.empty() && row.reason.empty())
+            report(6, name + " is gone with no into and no reason");
+
+        if (!row.overrides.empty() && !tableByName.count(row.overrides))
+            report(6, name + " overrides " + row.overrides + ", which has no tables.tsv row");
+    }
+
+    for (auto const& [table, tableColumns] : live["srv"])
+    {
+        if (!tableByName.count(table))
+            report(6, "srv_" + table + " has no tables.tsv row");
+    }
+    for (auto const& [table, sources] : sourcesOf)
+    {
+        if (!tableByName.count(table))
+            report(6, table + " is written by " + JoinSet(sources) + " and has no tables.tsv row");
+    }
+    for (std::string const& table : newTables)
+    {
+        auto const it = tableByName.find(table);
+        if (it == tableByName.end() || it->second->kind != "server")
+            report(6, table + " has new columns and no server row in tables.tsv");
     }
 
     // 7. 1.15-only columns of written tables

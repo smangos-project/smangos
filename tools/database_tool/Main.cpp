@@ -462,7 +462,15 @@ namespace
         bool final = std::find(args.begin(), args.end(), "--final") != args.end();
 
         std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
-        SpecCheckResult result = CheckSpec(referencePath, SpecDir(), final);
+        SpecCheckResult result;
+        try
+        {
+            result = CheckSpec(referencePath, SpecDir(), final);
+        }
+        catch (std::exception const& e)
+        {
+            result.error = e.what();
+        }
         if (!result.error.empty())
         {
             std::printf("spec check: %s\n", result.error.c_str());

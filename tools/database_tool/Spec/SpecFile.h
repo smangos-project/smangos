@@ -97,8 +97,10 @@ struct SpecRuleRow
 };
 
 // One row of Spec/tables.tsv: a table that exists after the port, or an original table that
-// disappears. `kind` is "dbc", "server" or "gone". `sources` are the original tables feeding a
-// target table, `into` the tables a gone table's data went to. `overrides` names a table whose
+// disappears. `kind` is "dbc", "placeholder" (a client table kept as shipped and never read; its
+// data is in the `sources` server tables), "server" or "gone". `sources` are the original tables
+// feeding a target table ("srv:x", "vdbc:x"), `into` the other tables a srv_ table's data went
+// to. `overrides` names a table whose
 // values this table's rows replace when the world database is created (spell_mod over
 // spell_template): both may fill the same target column.
 struct SpecTableRow

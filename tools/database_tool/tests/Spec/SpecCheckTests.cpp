@@ -35,6 +35,7 @@ namespace
             WriteGapsTsv(dir / "gaps.tsv", {});
             WriteDbcColumnsTsv(dir / "dbc-columns.tsv", { { "dbc_bar", "NewCol", "", "0" } });
             WriteColumnsTsv(dir / "columns.tsv", GoodColumns());
+            WriteTablesTsv(dir / "tables.tsv", GoodTables());
         }
 
         ~TempFixture() { std::filesystem::remove_all(dir); }
@@ -47,6 +48,14 @@ namespace
                 { "srv", "foo", "spellid_2", "drop", "", "", "unused", "yes" },
                 { "vdbc", "bar", "ID", "dbc", "dbc_bar.ID", "identity", "", "yes" },
                 { "vdbc", "bar", "Flags", "dbc", "dbc_bar.Flags", "identity", "", "yes" },
+            };
+        }
+
+        static std::vector<SpecTableRow> GoodTables()
+        {
+            return {
+                { "foo", "server", "id", "srv:foo", "", "", "" },
+                { "dbc_bar", "dbc", "ID", "vdbc:bar", "", "", "" },
             };
         }
 
@@ -168,6 +177,35 @@ TEST_CASE("CheckSpec lets an override table fill its base table's target with th
     CHECK_FALSE(HasProblem(result, 5, "dbc_bar.NewCol"));
     CHECK(HasProblem(result, 5, "srv:foo_mod.Other overrides foo, which doesn't fill dbc_bar.Flags"));
     CHECK_FALSE(HasProblem(result, 5, "srv:foo_mod.Sole"));
+}
+
+TEST_CASE("CheckSpec wants tables.tsv to agree with columns.tsv (rule 6)", "[SpecCheck]")
+{
+    TempFixture fixture("tables");
+    DoltLiteDatabase(fixture.reference.string()).Execute("CREATE TABLE \"cdbc_holder\" (\"ID\" INTEGER)");
+    std::vector<SpecColumnRow> rows = TempFixture::GoodColumns();
+    rows[1] = { "srv", "foo", "spellid_1", "dbc", "dbc_bar.NewCol", "identity", "x", "yes" };
+    rows[2] = { "srv", "foo", "spellid_2", "server", "kept.spell", "", "x", "yes" };
+    rows.push_back({ "new", "tagged", "tag", "server", "", "", "x", "yes" });
+    fixture.SetColumns(rows);
+    WriteTablesTsv(fixture.dir / "tables.tsv", {
+        { "foo", "gone", "", "", "dbc_b*", "", "" },
+        { "dbc_bar", "dbc", "ID", "vdbc:bar, srv:other", "", "", "" },
+        { "kept", "server", "missing", "srv:foo", "", "", "" },
+        { "dbc_holder", "placeholder", "ID", "foo", "", "", "" },
+        { "dbc_holder", "dbc", "ID", "", "", "", "" },
+    });
+
+    SpecCheckResult result = fixture.Check();
+    CHECK(HasProblem(result, 6, "foo is gone but keeps columns in place"));
+    CHECK(HasProblem(result, 6, "foo writes kept, which its into doesn't name"));
+    CHECK_FALSE(HasProblem(result, 6, "foo has into dbc_b*"));
+    CHECK(HasProblem(result, 6, "dbc_bar sources lack srv:foo"));
+    CHECK(HasProblem(result, 6, "dbc_bar sources list srv:other"));
+    CHECK(HasProblem(result, 6, "kept has key column missing"));
+    CHECK(HasProblem(result, 6, "placeholder dbc_holder names foo, which isn't a server table"));
+    CHECK(HasProblem(result, 6, "dbc_holder has more than one tables.tsv row"));
+    CHECK(HasProblem(result, 6, "tagged has new columns and no server row"));
 }
 
 TEST_CASE("CheckSpec wants a vanilla_value on 1.15-only columns of written tables (rule 7)", "[SpecCheck]")
