@@ -132,13 +132,11 @@ void SpellModMgr::LoadSpellMods()
             if (customFlags)
                 spell->Custom = customFlags;
 
-            // 5         6                 7            8            9             10
-            // Category, CastingTimeIndex, StackAmount, SpellIconID, activeIconID, manaCost
+            // 5         6                 7            10
+            // Category, CastingTimeIndex, StackAmount, manaCost
             ModUInt32ValueIfExplicit(fields[5],  spell->Category);
             ModUInt32ValueIfExplicit(fields[6], spell->CastingTimeIndex);
             ModUInt32ValueIfExplicit(fields[7], spell->StackAmount);
-            ModUInt32ValueIfExplicit(fields[8], spell->SpellIconID);
-            ModUInt32ValueIfExplicit(fields[9], spell->activeIconID);
             ModUInt32ValueIfExplicit(fields[10], spell->manaCost);
 
             // 11          12            13              14            15

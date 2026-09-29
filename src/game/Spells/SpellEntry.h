@@ -660,8 +660,6 @@ class SpellEntry
         float     EffectPointsPerComboPoint[MAX_EFFECT_INDEX] = {};// 115-117
         uint32    SpellVisual = 0;                                 // 118
       //uint32    SpellVisual2;                                    // 119 not used
-        uint32    SpellIconID = 0;                                 // 120
-        uint32    activeIconID = 0;                                // 121
         uint32    spellPriority = 0;                               // 122
         std::array<std::string, MAX_DBC_LOCALE> SpellName{};       // 123-130
       //uint32    SpellNameFlag;                                   // 131     not used

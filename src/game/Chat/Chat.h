@@ -396,7 +396,7 @@ class ChatHandler
         // Other
         bool HandleFreezeCommand(char *args);
         bool HandleUnfreezeCommand(char *args);
-        bool HandleSpellIconFixCommand(char *args);
+        bool HandleSpellClearStackKeyCommand(char *args);
         bool HandleUnitStatCommand(char *args);
         bool HandleDebugControlCommand(char *args);
         bool HandlePvPCommand(char *args);

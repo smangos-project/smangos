@@ -315,7 +315,7 @@ static bool DumpSpells(std::string const& dir)
         {"EffectAmplitude", MAX_EFFECT_INDEX}, {"EffectMultipleValue", MAX_EFFECT_INDEX},
         {"EffectChainTarget", MAX_EFFECT_INDEX}, {"EffectItemType", MAX_EFFECT_INDEX},
         {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
-        {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX}, {"SpellVisual"}, {"SpellIconID"}, {"activeIconID"},
+        {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX}, {"SpellVisual"},
         {"spellPriority"}, {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
         {"StartRecoveryCategory"}, {"StartRecoveryTime"}, {"MaxTargetLevel"}, {"SpellFamilyName"},
         {"SpellFamilyFlags"}, {"MaxAffectedTargets"}, {"DmgClass"}, {"PreventionType"},
@@ -348,7 +348,7 @@ static bool DumpSpells(std::string const& dir)
             << s->EffectAmplitude << s->EffectMultipleValue
             << s->EffectChainTarget << s->EffectItemType
             << s->EffectMiscValue << s->EffectTriggerSpell
-            << s->EffectPointsPerComboPoint << s->SpellVisual << s->SpellIconID << s->activeIconID
+            << s->EffectPointsPerComboPoint << s->SpellVisual
             << s->spellPriority << s->SpellName << s->Rank << s->ManaCostPercentage
             << s->StartRecoveryCategory << s->StartRecoveryTime << s->MaxTargetLevel << s->SpellFamilyName
             << s->SpellFamilyFlags << s->MaxAffectedTargets << s->DmgClass << s->PreventionType

@@ -2833,8 +2833,8 @@ void SpellMgr::CheckUsedSpells(char const* table)
     uint32 countSpells = 0;
     uint32 countMasks = 0;
 
-    //                                                                0         1                  2                  3            4              5                6             7             8            9       10
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `spellid`, `SpellFamilyName`, `SpellFamilyMask`, `SpellIcon`, `SpellVisual`, `SpellCategory`, `EffectType`, `EffectAura`, `EffectIdx`, `Name`, `Code` FROM %s", table));
+    //                                                                0         1                  2                  3              4                5             6            7       8
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `spellid`, `SpellFamilyName`, `SpellFamilyMask`, `SpellVisual`, `SpellCategory`, `EffectType`, `EffectAura`, `EffectIdx`, `Name`, `Code` FROM %s", table));
 
     if (!result)
     {
@@ -2858,27 +2858,19 @@ void SpellMgr::CheckUsedSpells(char const* table)
         uint32 spell       = fields[0].GetUInt32();
         int32  family      = fields[1].GetInt32();
         uint64 familyMask  = fields[2].GetUInt64();
-        int32  spellIcon   = fields[3].GetInt32();
-        int32  spellVisual = fields[4].GetInt32();
-        int32  category    = fields[5].GetInt32();
-        int32  effectType  = fields[6].GetInt32();
-        int32  auraType    = fields[7].GetInt32();
-        int32  effectIdx   = fields[8].GetInt32();
-        std::string name   = fields[9].GetCppString();
-        std::string code   = fields[10].GetCppString();
+        int32  spellVisual = fields[3].GetInt32();
+        int32  category    = fields[4].GetInt32();
+        int32  effectType  = fields[5].GetInt32();
+        int32  auraType    = fields[6].GetInt32();
+        int32  effectIdx   = fields[7].GetInt32();
+        std::string name   = fields[8].GetCppString();
+        std::string code   = fields[9].GetCppString();
 
         // checks of correctness requirements itself
 
         if (family < -1 || family > SPELLFAMILY_UNK3)
         {
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Table '%s' for spell %u have wrong SpellFamily value(%u), skipped.", table, spell, family);
-            continue;
-        }
-
-        // TODO: spellIcon check need dbc loading
-        if (spellIcon < -1)
-        {
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Table '%s' for spell %u have wrong SpellIcon value(%u), skipped.", table, spell, spellIcon);
             continue;
         }
 
@@ -2956,12 +2948,6 @@ void SpellMgr::CheckUsedSpells(char const* table)
                 }
             }
 
-            if (spellIcon >= 0 && spellEntry->SpellIconID != uint32(spellIcon))
-            {
-                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u '%s' icon(%u) <> %u but used in %s.", spell, name.c_str(), spellEntry->SpellIconID, spellIcon, code.c_str());
-                continue;
-            }
-
             if (spellVisual >= 0 && spellEntry->SpellVisual != uint32(spellVisual))
             {
                 sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u '%s' visual(%u) <> %u but used in %s.", spell, name.c_str(), spellEntry->SpellVisual, spellVisual, code.c_str());
@@ -3032,9 +3018,6 @@ void SpellMgr::CheckUsedSpells(char const* table)
                     }
                 }
 
-                if (spellIcon >= 0 && spellEntry->SpellIconID != uint32(spellIcon))
-                    continue;
-
                 if (spellVisual >= 0 && spellEntry->SpellVisual != uint32(spellVisual))
                     continue;
 
@@ -3065,11 +3048,11 @@ void SpellMgr::CheckUsedSpells(char const* table)
             if (!found)
             {
                 if (effectIdx >= 0)
-                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spells '%s' not found for family %i (" I64FMT ") icon(%i) visual(%i) category(%i) effect%d(%i) aura%d(%i) but used in %s",
-                                  name.c_str(), family, familyMask, spellIcon, spellVisual, category, effectIdx + 1, effectType, effectIdx + 1, auraType, code.c_str());
+                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spells '%s' not found for family %i (" I64FMT ") visual(%i) category(%i) effect%d(%i) aura%d(%i) but used in %s",
+                                  name.c_str(), family, familyMask, spellVisual, category, effectIdx + 1, effectType, effectIdx + 1, auraType, code.c_str());
                 else
-                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spells '%s' not found for family %i (" I64FMT ") icon(%i) visual(%i) category(%i) effect(%i) aura(%i) but used in %s",
-                                  name.c_str(), family, familyMask, spellIcon, spellVisual, category, effectType, auraType, code.c_str());
+                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spells '%s' not found for family %i (" I64FMT ") visual(%i) category(%i) effect(%i) aura(%i) but used in %s",
+                                  name.c_str(), family, familyMask, spellVisual, category, effectType, auraType, code.c_str());
                 continue;
             }
         }
@@ -3945,8 +3928,6 @@ void SpellMgr::LoadSpell(Field* fields)
     spell->EffectPointsPerComboPoint[2] = fields[118].GetFloat();
     spell->SpellVisual = fields[119].GetUInt32();
     //spell->SpellVisual2 = fields[120].GetUInt32(); not used
-    spell->SpellIconID = fields[121].GetUInt32();
-    spell->activeIconID = fields[122].GetUInt32();
     spell->spellPriority = fields[123].GetUInt32();
     spell->SpellName[0] = fields[124].GetCppString();
     //spell->SpellNameFlag = fields[125].GetUInt32(); not used

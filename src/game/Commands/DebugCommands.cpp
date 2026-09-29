@@ -57,13 +57,13 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
-bool ChatHandler::HandleSpellIconFixCommand(char *args)
+bool ChatHandler::HandleSpellClearStackKeyCommand(char *args)
 {
     uint32 spellId = ExtractSpellIdFromLink(&args);
     if (!spellId)
         return false;
-    WorldDatabase.PExecute("REPLACE INTO spell_mod SET SpellIconID=1, Comment='Fix SpellIconID', Id=%u;", spellId);
-    sSpellModMgr.LoadSpellMods();
+    WorldDatabase.DirectPExecute("DELETE FROM spell_stack_key WHERE spell_id = %u", spellId);
+    sSpellMgr.LoadSpellStackKeys();
     return true;
 }
 
@@ -143,7 +143,7 @@ bool ChatHandler::HandleSpellInfosCommand(char *args)
     PSendSysMessage("School%u:Category%u:Dispel%u:Mechanic%u", pSpell->School, pSpell->Category, pSpell->Dispel, pSpell->Mechanic);
     PSendSysMessage("Attributes0x%x:Ex[0x%x:0x%x:0x%x:0x%x]", pSpell->Attributes, pSpell->AttributesEx, pSpell->AttributesEx2, pSpell->AttributesEx3, pSpell->AttributesEx4);
     PSendSysMessage("RequiresSpellFocus%u:StackAmount%u", pSpell->RequiresSpellFocus, pSpell->StackAmount);
-    PSendSysMessage("SpellIconID%u:SpellVisual%u:activeIconID%u", pSpell->SpellIconID, pSpell->SpellVisual, pSpell->activeIconID);
+    PSendSysMessage("SpellVisual%u:ClientVisualId%u", pSpell->SpellVisual, pSpell->ClientVisualId);
     PSendSysMessage("SpellFamilyName%u:SpellFamilyFlags0x%llx", pSpell->SpellFamilyName, pSpell->SpellFamilyFlags);
     PSendSysMessage("MaxTargetLevel%u:DmgClass%u:rangeIndex%u", pSpell->MaxTargetLevel, pSpell->DmgClass, pSpell->rangeIndex);
     PSendSysMessage("procChance%u:procFlags0x%x:procCharges%u", pSpell->procChance, pSpell->procFlags, pSpell->procCharges);
