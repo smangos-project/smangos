@@ -692,7 +692,7 @@ void Spell::prepareDataForTriggerSystem()
                     m_canTrigger = true;
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
                 // Seal of Righteousness
-                else if (!m_spellInfo->SpellFamilyFlags && m_spellInfo->SpellIconID == 25)
+                else if (m_spellInfo->HasTag(SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE))
                     m_canTrigger = true;
 #endif
                 // Holy Shock
@@ -757,7 +757,7 @@ void Spell::prepareDataForTriggerSystem()
             bool positive = m_spellInfo->IsPositiveSpell();
             // Some spells should be categorized as AoE
             // Hellfire regularly triggers an AoE spell.
-            if (m_spellInfo->IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_HELLFIRE>() && m_spellInfo->SpellIconID == 937)
+            if (m_spellInfo->IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_HELLFIRE>() && m_spellInfo->HasTag(SPELL_TAG_HELLFIRE))
                 aoe = true;
 
             // Check for positive spell. 'Positive' spells include various things such as buffs, but
@@ -1446,7 +1446,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         // JoR and JoC: Paladin melee spells trigger melee procs instead of magic
         if (m_spellInfo->IsFitToFamily<SPELLFAMILY_PALADIN, CF_PALADIN_JUDGEMENT_OF_RIGHTEOUSNESS>() ||
-            (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellIconID == 561 && m_spellInfo->SpellVisual == 0))
+            m_spellInfo->HasTag(SPELL_TAG_JUDGEMENT_OF_COMMAND))
         {
             procAttacker = PROC_FLAG_DEAL_MELEE_ABILITY;
             procVictim = PROC_FLAG_TAKE_MELEE_ABILITY | PROC_FLAG_TAKEN_ANY_DAMAGE;
@@ -8417,15 +8417,12 @@ bool Spell::ShouldRemoveStealthAuras()
     // Stealth must be removed at cast starting (at show channel bar)
     // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
     if (!m_IsTriggeredSpell && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_ALLOW_WHILE_STEALTHED)
-        && m_spellInfo->SpellIconID != 250 // Camouflage
-        && m_spellInfo->SpellIconID != 103 // Shadowmeld
-        && m_spellInfo->SpellIconID != 252 // Vanish
-        )
+        && !m_spellInfo->HasTag(SPELL_TAG_KEEPS_STEALTH))
     {
         bool doUnaura = true;
 
         // Sap
-        if (m_casterUnit->IsPlayer() && m_spellInfo->SpellIconID == 249)
+        if (m_casterUnit->IsPlayer() && m_spellInfo->HasTag(SPELL_TAG_SAP))
         {
             // Check for Improved Sap
             if (m_casterUnit->HasAura(14076))  // Rank 1
