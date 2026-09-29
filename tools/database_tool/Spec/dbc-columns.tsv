@@ -1322,30 +1322,30 @@ dbc_spell	AuraDescription_lang
 dbc_spellauraoptions	ID		client
 dbc_spellauraoptions	DifficultyID		client
 dbc_spellauraoptions	CumulativeAura		
-dbc_spellauraoptions	ProcCategoryRecovery		neutral
+dbc_spellauraoptions	ProcCategoryRecovery		client
 dbc_spellauraoptions	ProcChance		
 dbc_spellauraoptions	ProcCharges		
 dbc_spellauraoptions	SpellProcsPerMinuteID		rule
 dbc_spellauraoptions	ProcTypeMask1		
-dbc_spellauraoptions	ProcTypeMask2		neutral
+dbc_spellauraoptions	ProcTypeMask2		client
 dbc_spellauraoptions	SpellID		client
 dbc_spellaurarestrictions	ID		client
 dbc_spellaurarestrictions	DifficultyID		client
 dbc_spellaurarestrictions	CasterAuraState		
 dbc_spellaurarestrictions	TargetAuraState		
-dbc_spellaurarestrictions	ExcludeCasterAuraState		neutral
-dbc_spellaurarestrictions	ExcludeTargetAuraState		neutral
-dbc_spellaurarestrictions	CasterAuraSpell		neutral
-dbc_spellaurarestrictions	TargetAuraSpell		neutral
-dbc_spellaurarestrictions	ExcludeCasterAuraSpell		neutral
-dbc_spellaurarestrictions	ExcludeTargetAuraSpell		neutral
+dbc_spellaurarestrictions	ExcludeCasterAuraState		client
+dbc_spellaurarestrictions	ExcludeTargetAuraState		client
+dbc_spellaurarestrictions	CasterAuraSpell		client
+dbc_spellaurarestrictions	TargetAuraSpell		client
+dbc_spellaurarestrictions	ExcludeCasterAuraSpell		client
+dbc_spellaurarestrictions	ExcludeTargetAuraSpell		client
 dbc_spellaurarestrictions	SpellID		client
 dbc_spellcastingrequirements	ID		client
 dbc_spellcastingrequirements	SpellID		client
-dbc_spellcastingrequirements	FacingCasterFlags		neutral
+dbc_spellcastingrequirements	FacingCasterFlags		client
 dbc_spellcastingrequirements	MinFactionID		
 dbc_spellcastingrequirements	MinReputation		
-dbc_spellcastingrequirements	RequiredAreasID		neutral
+dbc_spellcastingrequirements	RequiredAreasID		client
 dbc_spellcastingrequirements	RequiredAuraVision		
 dbc_spellcastingrequirements	RequiresSpellFocus		
 dbc_spellcasttimes	ID		
@@ -1360,7 +1360,7 @@ dbc_spellcategories	DispelType
 dbc_spellcategories	Mechanic		
 dbc_spellcategories	PreventionType		
 dbc_spellcategories	StartRecoveryCategory		
-dbc_spellcategories	ChargeCategory		neutral
+dbc_spellcategories	ChargeCategory		client
 dbc_spellcategories	SpellID		client
 dbc_spellcategory	ID		
 dbc_spellcategory	Name_lang		client
@@ -1457,14 +1457,14 @@ dbc_spellclassoptions	ModalNextSpell
 dbc_spellclassoptions	SpellClassSet		
 dbc_spellclassoptions	SpellClassMask1		
 dbc_spellclassoptions	SpellClassMask2		rule
-dbc_spellclassoptions	SpellClassMask3		neutral
-dbc_spellclassoptions	SpellClassMask4		neutral
+dbc_spellclassoptions	SpellClassMask3		client
+dbc_spellclassoptions	SpellClassMask4		client
 dbc_spellcooldowns	ID		client
 dbc_spellcooldowns	DifficultyID		client
 dbc_spellcooldowns	CategoryRecoveryTime		
 dbc_spellcooldowns	RecoveryTime		
 dbc_spellcooldowns	StartRecoveryTime		
-dbc_spellcooldowns	AuraSpellID		neutral
+dbc_spellcooldowns	AuraSpellID		client
 dbc_spellcooldowns	SpellID		client
 dbc_spelldispeltype	ID		
 dbc_spelldispeltype	Name_lang		
@@ -1480,7 +1480,7 @@ dbc_spelleffect	DifficultyID		client
 dbc_spelleffect	EffectIndex		client
 dbc_spelleffect	Effect		
 dbc_spelleffect	EffectAmplitude		
-dbc_spelleffect	EffectAttributes		neutral
+dbc_spelleffect	EffectAttributes		client
 dbc_spelleffect	EffectAura		
 dbc_spelleffect	EffectAuraPeriod		
 dbc_spelleffect	EffectBasePoints		
@@ -1491,23 +1491,23 @@ dbc_spelleffect	EffectDieSides
 dbc_spelleffect	EffectItemType		
 dbc_spelleffect	EffectMechanic		
 dbc_spelleffect	EffectPointsPerResource		
-dbc_spelleffect	EffectPos_facing		neutral
+dbc_spelleffect	EffectPos_facing		client
 dbc_spelleffect	EffectRealPointsPerLevel		
 dbc_spelleffect	EffectTriggerSpell		
-dbc_spelleffect	BonusCoefficientFromAP		neutral
-dbc_spelleffect	PvpMultiplier		neutral
-dbc_spelleffect	Coefficient		neutral
-dbc_spelleffect	Variance		neutral
-dbc_spelleffect	ResourceCoefficient		neutral
-dbc_spelleffect	GroupSizeBasePointsCoefficient		neutral
+dbc_spelleffect	BonusCoefficientFromAP		client
+dbc_spelleffect	PvpMultiplier		client
+dbc_spelleffect	Coefficient		client
+dbc_spelleffect	Variance		client
+dbc_spelleffect	ResourceCoefficient		client
+dbc_spelleffect	GroupSizeBasePointsCoefficient		client
 dbc_spelleffect	EffectMiscValue1		
 dbc_spelleffect	EffectMiscValue2		rule
 dbc_spelleffect	EffectRadiusIndex1		
 dbc_spelleffect	EffectRadiusIndex2		rule
 dbc_spelleffect	EffectSpellClassMask1		rule
-dbc_spelleffect	EffectSpellClassMask2		neutral
-dbc_spelleffect	EffectSpellClassMask3		neutral
-dbc_spelleffect	EffectSpellClassMask4		neutral
+dbc_spelleffect	EffectSpellClassMask2		client
+dbc_spelleffect	EffectSpellClassMask3		client
+dbc_spelleffect	EffectSpellClassMask4		client
 dbc_spelleffect	ImplicitTarget1		
 dbc_spelleffect	ImplicitTarget2		
 dbc_spelleffect	SpellID		client
@@ -1522,9 +1522,9 @@ dbc_spellinterrupts	ID		client
 dbc_spellinterrupts	DifficultyID		client
 dbc_spellinterrupts	InterruptFlags		
 dbc_spellinterrupts	AuraInterruptFlags1		
-dbc_spellinterrupts	AuraInterruptFlags2		neutral
+dbc_spellinterrupts	AuraInterruptFlags2		client
 dbc_spellinterrupts	ChannelInterruptFlags1		
-dbc_spellinterrupts	ChannelInterruptFlags2		neutral
+dbc_spellinterrupts	ChannelInterruptFlags2		client
 dbc_spellinterrupts	SpellID		client
 dbc_spellitemenchantment	ID		
 dbc_spellitemenchantment	Name_lang		
@@ -1564,7 +1564,7 @@ dbc_spelllevels	DifficultyID		client
 dbc_spelllevels	BaseLevel		
 dbc_spelllevels	MaxLevel		
 dbc_spelllevels	SpellLevel		
-dbc_spelllevels	MaxPassiveAuraLevel		neutral
+dbc_spelllevels	MaxPassiveAuraLevel		client
 dbc_spelllevels	SpellID		client
 dbc_spellmechanic	ID		
 dbc_spellmechanic	StateName_lang		
@@ -1574,17 +1574,17 @@ dbc_spellmisc	Attributes2
 dbc_spellmisc	Attributes3		
 dbc_spellmisc	Attributes4		
 dbc_spellmisc	Attributes5		
-dbc_spellmisc	Attributes6		neutral
-dbc_spellmisc	Attributes7		rule
-dbc_spellmisc	Attributes8		neutral
-dbc_spellmisc	Attributes9		rule
-dbc_spellmisc	Attributes10		neutral
-dbc_spellmisc	Attributes11		neutral
-dbc_spellmisc	Attributes12		neutral
-dbc_spellmisc	Attributes13		neutral
-dbc_spellmisc	Attributes14		neutral
-dbc_spellmisc	Attributes15		neutral
-dbc_spellmisc	Attributes16		neutral
+dbc_spellmisc	Attributes6		client
+dbc_spellmisc	Attributes7		client
+dbc_spellmisc	Attributes8		client
+dbc_spellmisc	Attributes9		client
+dbc_spellmisc	Attributes10		client
+dbc_spellmisc	Attributes11		client
+dbc_spellmisc	Attributes12		client
+dbc_spellmisc	Attributes13		client
+dbc_spellmisc	Attributes14		client
+dbc_spellmisc	Attributes15		client
+dbc_spellmisc	Attributes16		client
 dbc_spellmisc	DifficultyID		client
 dbc_spellmisc	CastingTimeIndex		
 dbc_spellmisc	DurationIndex		
@@ -1592,11 +1592,11 @@ dbc_spellmisc	RangeIndex
 dbc_spellmisc	SchoolMask		
 dbc_spellmisc	Speed		
 dbc_spellmisc	LaunchDelay		client
-dbc_spellmisc	MinDuration		neutral
+dbc_spellmisc	MinDuration		client
 dbc_spellmisc	SpellIconFileDataID		client
 dbc_spellmisc	ActiveIconFileDataID		client
-dbc_spellmisc	ContentTuningID		neutral
-dbc_spellmisc	ShowFutureSpellPlayerConditionID		neutral
+dbc_spellmisc	ContentTuningID		client
+dbc_spellmisc	ShowFutureSpellPlayerConditionID		client
 dbc_spellmisc	SpellID		client
 dbc_spellname	ID		client
 dbc_spellname	Name_lang		
@@ -1606,13 +1606,13 @@ dbc_spellpower	ManaCost
 dbc_spellpower	ManaCostPerLevel		
 dbc_spellpower	ManaPerSecond		
 dbc_spellpower	PowerDisplayID		client
-dbc_spellpower	AltPowerBarID		neutral
+dbc_spellpower	AltPowerBarID		client
 dbc_spellpower	PowerCostPct		
-dbc_spellpower	PowerCostMaxPct		neutral
-dbc_spellpower	PowerPctPerSecond		neutral
+dbc_spellpower	PowerCostMaxPct		client
+dbc_spellpower	PowerPctPerSecond		client
 dbc_spellpower	PowerType		
-dbc_spellpower	RequiredAuraSpellID		neutral
-dbc_spellpower	OptionalCost		neutral
+dbc_spellpower	RequiredAuraSpellID		client
+dbc_spellpower	OptionalCost		client
 dbc_spellpower	SpellID		client
 dbc_spellprocsperminute	ID		rule
 dbc_spellprocsperminute	BaseProcRate		
@@ -1652,9 +1652,9 @@ dbc_spellshapeshift	ID		client
 dbc_spellshapeshift	SpellID		client
 dbc_spellshapeshift	StanceBarOrder		
 dbc_spellshapeshift	ShapeshiftExclude1		
-dbc_spellshapeshift	ShapeshiftExclude2		neutral
+dbc_spellshapeshift	ShapeshiftExclude2		client
 dbc_spellshapeshift	ShapeshiftMask1		
-dbc_spellshapeshift	ShapeshiftMask2		neutral
+dbc_spellshapeshift	ShapeshiftMask2		client
 dbc_spellshapeshiftform	ID		
 dbc_spellshapeshiftform	Name_lang		
 dbc_spellshapeshiftform	Field_1_15_0_52124_002		client
@@ -1684,12 +1684,12 @@ dbc_spelltargetrestrictions	MaxTargets
 dbc_spelltargetrestrictions	MaxTargetLevel		
 dbc_spelltargetrestrictions	TargetCreatureType		
 dbc_spelltargetrestrictions	Targets		
-dbc_spelltargetrestrictions	Width		neutral
+dbc_spelltargetrestrictions	Width		client
 dbc_spelltargetrestrictions	SpellID		client
 dbc_spelltotems	ID		client
 dbc_spelltotems	SpellID		client
-dbc_spelltotems	RequiredTotemCategoryID1		neutral
-dbc_spelltotems	RequiredTotemCategoryID2		neutral
+dbc_spelltotems	RequiredTotemCategoryID1		client
+dbc_spelltotems	RequiredTotemCategoryID2		client
 dbc_spelltotems	Totem1		
 dbc_spelltotems	Totem2		
 dbc_spellvisual	ID		

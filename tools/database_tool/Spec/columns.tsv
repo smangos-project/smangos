@@ -1929,7 +1929,7 @@ srv	spell_target_position	target_position_z	server			teleport-effect target coor
 srv	spell_target_position	target_orientation	server			teleport-effect target coordinates (SpellMgr.cpp:52); no DB2 counterpart	yes
 srv	spell_target_position	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	spell_target_position	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
-srv	spell_template	entry	server	spell_extra.spell_id		key of spell_extra (the slim spell_template, renamed; plan.md 11.5): per-spell server data no client table holds; spell values are in dbc_spell* (decision 12)	yes
+srv	spell_template	entry	server	spell_extra.spell_id		key of spell_extra (the slim spell_template, renamed; plan.md 11.5), which has one row per server spell: the server's spell set. At create, each server spell's values overwrite the dbc_spell* fields they cover; other spell ids stay as the client ships them (decision 12)	yes
 srv	spell_template	build	drop			progression removed	yes
 srv	spell_template	school	dbc	dbc_spellmisc.SchoolMask	school_index_to_mask	21037/21040 match the client on shared spells (reference DB); vanilla school index, client mask; decision 12 (plan.md 3): vmangos values overwrite the client row	yes
 srv	spell_template	category	dbc	dbc_spellcategories.Category	identity	21020/21040 match the client on shared spells (reference DB); decision 12 (plan.md 3): vmangos values overwrite the client row	yes
