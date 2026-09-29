@@ -42,10 +42,10 @@ dbc_areatable	UwIntroSound		client
 dbc_areatable	FactionGroupMask		
 dbc_areatable	Ambient_multiplier		client
 dbc_areatable	MountFlags		client
-dbc_areatable	PvpCombatWorldStateID		neutral
-dbc_areatable	WildBattlePetLevelMin		neutral
-dbc_areatable	WildBattlePetLevelMax		neutral
-dbc_areatable	WindSettingsID		neutral
+dbc_areatable	PvpCombatWorldStateID		client
+dbc_areatable	WildBattlePetLevelMin		client
+dbc_areatable	WildBattlePetLevelMax		client
+dbc_areatable	WindSettingsID		client
 dbc_areatable	Flags1		
 dbc_areatable	Flags2		client
 dbc_areatable	LiquidTypeID1		
@@ -58,9 +58,9 @@ dbc_areatrigger	Pos2
 dbc_areatrigger	Pos3		
 dbc_areatrigger	ID		
 dbc_areatrigger	ContinentID		
-dbc_areatrigger	PhaseUseFlags		neutral
-dbc_areatrigger	PhaseID		neutral
-dbc_areatrigger	PhaseGroupID		neutral
+dbc_areatrigger	PhaseUseFlags		client
+dbc_areatrigger	PhaseID		client
+dbc_areatrigger	PhaseGroupID		client
 dbc_areatrigger	Radius		
 dbc_areatrigger	Box_length		
 dbc_areatrigger	Box_width		
@@ -68,7 +68,7 @@ dbc_areatrigger	Box_height
 dbc_areatrigger	Box_yaw		
 dbc_areatrigger	ShapeType		client
 dbc_areatrigger	ShapeID		client
-dbc_areatrigger	AreaTriggerActionSetID		neutral
+dbc_areatrigger	AreaTriggerActionSetID		client
 dbc_areatrigger	Flags		client
 dbc_auctionhouse	ID		
 dbc_auctionhouse	Name_lang		
@@ -85,15 +85,15 @@ dbc_battlemasterlist	LongDescription_lang		client
 dbc_battlemasterlist	InstanceType		client
 dbc_battlemasterlist	MinLevel		
 dbc_battlemasterlist	MaxLevel		
-dbc_battlemasterlist	RatedPlayers		neutral
+dbc_battlemasterlist	RatedPlayers		client
 dbc_battlemasterlist	MinPlayers		
 dbc_battlemasterlist	MaxPlayers		
 dbc_battlemasterlist	GroupsAllowed		client
 dbc_battlemasterlist	MaxGroupSize		client
 dbc_battlemasterlist	HolidayWorldState		client
-dbc_battlemasterlist	Flags		neutral
+dbc_battlemasterlist	Flags		client
 dbc_battlemasterlist	IconFileDataID		client
-dbc_battlemasterlist	Required_Player_Condition_ID		neutral
+dbc_battlemasterlist	Required_Player_Condition_ID		client
 dbc_battlemasterlist	Field_1_15_3_55112_016		client
 dbc_battlemasterlist	Field_1_15_3_55112_017		client
 dbc_cfg_categories	ID		
@@ -186,7 +186,7 @@ dbc_chrclasses	StartingLevel		client
 dbc_chrclasses	SpellTextureBlobFileDataID		client
 dbc_chrclasses	ArmorTypeMask		client
 dbc_chrclasses	CinematicSequenceID		client
-dbc_chrclasses	DefaultSpec		neutral
+dbc_chrclasses	DefaultSpec		client
 dbc_chrclasses	HasStrengthAttackBonus		client
 dbc_chrclasses	PrimaryStatPriority		client
 dbc_chrclasses	DisplayPower		
@@ -194,9 +194,9 @@ dbc_chrclasses	RangedAttackPowerPerAgility		client
 dbc_chrclasses	AttackPowerPerAgility		client
 dbc_chrclasses	AttackPowerPerStrength		client
 dbc_chrclasses	SpellClassSet		
-dbc_chrclasses	RolesMask		neutral
+dbc_chrclasses	RolesMask		client
 dbc_chrclasses	DamageBonusStat		
-dbc_chrclasses	HasRelicSlot		neutral
+dbc_chrclasses	HasRelicSlot		client
 dbc_chrraces	ID		
 dbc_chrraces	ClientPrefix		
 dbc_chrraces	ClientFileString		
@@ -229,14 +229,14 @@ dbc_chrraces	AlteredFormStartVisualKitID3		client
 dbc_chrraces	AlteredFormFinishVisualKitID1		client
 dbc_chrraces	AlteredFormFinishVisualKitID2		client
 dbc_chrraces	AlteredFormFinishVisualKitID3		client
-dbc_chrraces	HeritageArmorAchievementID		neutral
+dbc_chrraces	HeritageArmorAchievementID		client
 dbc_chrraces	StartingLevel		client
 dbc_chrraces	UiDisplayOrder		client
 dbc_chrraces	PlayableRaceBit		client
 dbc_chrraces	FemaleSkeletonFileDataID		client
 dbc_chrraces	MaleSkeletonFileDataID		client
 dbc_chrraces	HelmetAnimScalingRaceID		client
-dbc_chrraces	TransmogrifyDisabledSlotMask		neutral
+dbc_chrraces	TransmogrifyDisabledSlotMask		client
 dbc_chrraces	AlteredFormCustomizeOffsetFallback1		client
 dbc_chrraces	AlteredFormCustomizeOffsetFallback2		client
 dbc_chrraces	AlteredFormCustomizeOffsetFallback3		client
@@ -512,11 +512,11 @@ dbc_faction	ID
 dbc_faction	ReputationIndex		
 dbc_faction	ParentFactionID		
 dbc_faction	Expansion		client
-dbc_faction	FriendshipRepID		neutral
+dbc_faction	FriendshipRepID		client
 dbc_faction	Flags		client
-dbc_faction	ParagonFactionID		neutral
-dbc_faction	RenownFactionID		neutral
-dbc_faction	RenownCurrencyID		neutral
+dbc_faction	ParagonFactionID		client
+dbc_faction	RenownFactionID		client
+dbc_faction	RenownCurrencyID		client
 dbc_faction	ReputationClassMask1		
 dbc_faction	ReputationClassMask2		
 dbc_faction	ReputationClassMask3		
@@ -641,15 +641,15 @@ dbc_item	InventoryType		rule
 dbc_item	RequiredLevel		rule
 dbc_item	SheatheType		rule
 dbc_item	RandomSelect		rule
-dbc_item	ItemRandomSuffixGroupID		neutral
+dbc_item	ItemRandomSuffixGroupID		client
 dbc_item	Sound_override_subclassID		client
-dbc_item	ScalingStatDistributionID		neutral
+dbc_item	ScalingStatDistributionID		client
 dbc_item	IconFileDataID		client
 dbc_item	ItemGroupSoundsID		client
-dbc_item	ContentTuningID		neutral
+dbc_item	ContentTuningID		client
 dbc_item	MaxDurability		rule
 dbc_item	AmmunitionType		rule
-dbc_item	ScalingStatValue		neutral
+dbc_item	ScalingStatValue		client
 dbc_item	DamageType1		
 dbc_item	DamageType2		
 dbc_item	DamageType3		
@@ -718,7 +718,7 @@ dbc_itemeffect	CoolDownMSec
 dbc_itemeffect	CategoryCoolDownMSec		
 dbc_itemeffect	SpellCategoryID		
 dbc_itemeffect	SpellID		
-dbc_itemeffect	ChrSpecializationID		neutral
+dbc_itemeffect	ChrSpecializationID		client
 dbc_itemeffect	ParentItemID		rule
 dbc_itemgroupsounds	ID		
 dbc_itemgroupsounds	Sound1		
@@ -757,7 +757,7 @@ dbc_itemset	ItemID15
 dbc_itemset	ItemID16		
 dbc_itemset	ItemID17		
 dbc_itemsetspell	ID		client
-dbc_itemsetspell	ChrSpecID		neutral
+dbc_itemsetspell	ChrSpecID		client
 dbc_itemsetspell	SpellID		
 dbc_itemsetspell	Threshold		
 dbc_itemsetspell	ItemSetID		rule
@@ -774,36 +774,36 @@ dbc_itemsparse	QualityModifier		client
 dbc_itemsparse	BagFamily		
 dbc_itemsparse	StartQuestID		
 dbc_itemsparse	ItemRange		
-dbc_itemsparse	StatPercentageOfSocket1		neutral
-dbc_itemsparse	StatPercentageOfSocket2		neutral
-dbc_itemsparse	StatPercentageOfSocket3		neutral
-dbc_itemsparse	StatPercentageOfSocket4		neutral
-dbc_itemsparse	StatPercentageOfSocket5		neutral
-dbc_itemsparse	StatPercentageOfSocket6		neutral
-dbc_itemsparse	StatPercentageOfSocket7		neutral
-dbc_itemsparse	StatPercentageOfSocket8		neutral
-dbc_itemsparse	StatPercentageOfSocket9		neutral
-dbc_itemsparse	StatPercentageOfSocket10		neutral
-dbc_itemsparse	StatPercentEditor1		neutral
-dbc_itemsparse	StatPercentEditor2		neutral
-dbc_itemsparse	StatPercentEditor3		neutral
-dbc_itemsparse	StatPercentEditor4		neutral
-dbc_itemsparse	StatPercentEditor5		neutral
-dbc_itemsparse	StatPercentEditor6		neutral
-dbc_itemsparse	StatPercentEditor7		neutral
-dbc_itemsparse	StatPercentEditor8		neutral
-dbc_itemsparse	StatPercentEditor9		neutral
-dbc_itemsparse	StatPercentEditor10		neutral
-dbc_itemsparse	Field_1_15_3_55112_0141		neutral
-dbc_itemsparse	Field_1_15_3_55112_0142		neutral
-dbc_itemsparse	Field_1_15_3_55112_0143		neutral
-dbc_itemsparse	Field_1_15_3_55112_0144		neutral
-dbc_itemsparse	Field_1_15_3_55112_0145		neutral
-dbc_itemsparse	Field_1_15_3_55112_0146		neutral
-dbc_itemsparse	Field_1_15_3_55112_0147		neutral
-dbc_itemsparse	Field_1_15_3_55112_0148		neutral
-dbc_itemsparse	Field_1_15_3_55112_0149		neutral
-dbc_itemsparse	Field_1_15_3_55112_01410		neutral
+dbc_itemsparse	StatPercentageOfSocket1		client
+dbc_itemsparse	StatPercentageOfSocket2		client
+dbc_itemsparse	StatPercentageOfSocket3		client
+dbc_itemsparse	StatPercentageOfSocket4		client
+dbc_itemsparse	StatPercentageOfSocket5		client
+dbc_itemsparse	StatPercentageOfSocket6		client
+dbc_itemsparse	StatPercentageOfSocket7		client
+dbc_itemsparse	StatPercentageOfSocket8		client
+dbc_itemsparse	StatPercentageOfSocket9		client
+dbc_itemsparse	StatPercentageOfSocket10		client
+dbc_itemsparse	StatPercentEditor1		client
+dbc_itemsparse	StatPercentEditor2		client
+dbc_itemsparse	StatPercentEditor3		client
+dbc_itemsparse	StatPercentEditor4		client
+dbc_itemsparse	StatPercentEditor5		client
+dbc_itemsparse	StatPercentEditor6		client
+dbc_itemsparse	StatPercentEditor7		client
+dbc_itemsparse	StatPercentEditor8		client
+dbc_itemsparse	StatPercentEditor9		client
+dbc_itemsparse	StatPercentEditor10		client
+dbc_itemsparse	Field_1_15_3_55112_0141		client
+dbc_itemsparse	Field_1_15_3_55112_0142		client
+dbc_itemsparse	Field_1_15_3_55112_0143		client
+dbc_itemsparse	Field_1_15_3_55112_0144		client
+dbc_itemsparse	Field_1_15_3_55112_0145		client
+dbc_itemsparse	Field_1_15_3_55112_0146		client
+dbc_itemsparse	Field_1_15_3_55112_0147		client
+dbc_itemsparse	Field_1_15_3_55112_0148		client
+dbc_itemsparse	Field_1_15_3_55112_0149		client
+dbc_itemsparse	Field_1_15_3_55112_01410		client
 dbc_itemsparse	StatModifier_bonusStat1		
 dbc_itemsparse	StatModifier_bonusStat2		
 dbc_itemsparse	StatModifier_bonusStat3		
@@ -825,24 +825,24 @@ dbc_itemsparse	PriceVariance		client
 dbc_itemsparse	PriceRandomValue		client
 dbc_itemsparse	Flags1		
 dbc_itemsparse	Flags2		
-dbc_itemsparse	Flags3		neutral
-dbc_itemsparse	Flags4		neutral
-dbc_itemsparse	Flags5		neutral
+dbc_itemsparse	Flags3		client
+dbc_itemsparse	Flags4		client
+dbc_itemsparse	Flags5		client
 dbc_itemsparse	OppositeFactionItemID		
-dbc_itemsparse	ModifiedCraftingReagentItemID		neutral
-dbc_itemsparse	ContentTuningID		neutral
-dbc_itemsparse	PlayerLevelToItemLevelCurveID		neutral
+dbc_itemsparse	ModifiedCraftingReagentItemID		client
+dbc_itemsparse	ContentTuningID		client
+dbc_itemsparse	PlayerLevelToItemLevelCurveID		client
 dbc_itemsparse	MaxDurability		
-dbc_itemsparse	ItemNameDescriptionID		neutral
-dbc_itemsparse	RequiredTransmogHoliday		neutral
-dbc_itemsparse	RequiredHoliday		neutral
-dbc_itemsparse	LimitCategory		neutral
-dbc_itemsparse	Gem_properties		neutral
-dbc_itemsparse	Socket_match_enchantment_ID		neutral
-dbc_itemsparse	TotemCategoryID		neutral
+dbc_itemsparse	ItemNameDescriptionID		client
+dbc_itemsparse	RequiredTransmogHoliday		client
+dbc_itemsparse	RequiredHoliday		client
+dbc_itemsparse	LimitCategory		client
+dbc_itemsparse	Gem_properties		client
+dbc_itemsparse	Socket_match_enchantment_ID		client
+dbc_itemsparse	TotemCategoryID		client
 dbc_itemsparse	InstanceBound		
 dbc_itemsparse	ZoneBound1		
-dbc_itemsparse	ZoneBound2		neutral
+dbc_itemsparse	ZoneBound2		client
 dbc_itemsparse	ItemSet		
 dbc_itemsparse	LockID		
 dbc_itemsparse	PageID		
@@ -852,7 +852,7 @@ dbc_itemsparse	RequiredSkillRank
 dbc_itemsparse	RequiredSkill		
 dbc_itemsparse	ItemLevel		
 dbc_itemsparse	AllowableClass		
-dbc_itemsparse	ItemRandomSuffixGroupID		neutral
+dbc_itemsparse	ItemRandomSuffixGroupID		client
 dbc_itemsparse	RandomSelect		
 dbc_itemsparse	MinDamage1		
 dbc_itemsparse	MinDamage2		
@@ -871,7 +871,7 @@ dbc_itemsparse	Resistances4
 dbc_itemsparse	Resistances5		
 dbc_itemsparse	Resistances6		
 dbc_itemsparse	Resistances7		
-dbc_itemsparse	ScalingStatDistributionID		neutral
+dbc_itemsparse	ScalingStatDistributionID		client
 dbc_itemsparse	StatModifier_bonusAmount1		
 dbc_itemsparse	StatModifier_bonusAmount2		
 dbc_itemsparse	StatModifier_bonusAmount3		
@@ -883,12 +883,12 @@ dbc_itemsparse	StatModifier_bonusAmount8
 dbc_itemsparse	StatModifier_bonusAmount9		
 dbc_itemsparse	StatModifier_bonusAmount10		
 dbc_itemsparse	ExpansionID		client
-dbc_itemsparse	ArtifactID		neutral
-dbc_itemsparse	SpellWeight		neutral
-dbc_itemsparse	SpellWeightCategory		neutral
-dbc_itemsparse	SocketType1		neutral
-dbc_itemsparse	SocketType2		neutral
-dbc_itemsparse	SocketType3		neutral
+dbc_itemsparse	ArtifactID		client
+dbc_itemsparse	SpellWeight		client
+dbc_itemsparse	SpellWeightCategory		client
+dbc_itemsparse	SocketType1		client
+dbc_itemsparse	SocketType2		client
+dbc_itemsparse	SocketType3		client
 dbc_itemsparse	SheatheType		
 dbc_itemsparse	Material		
 dbc_itemsparse	PageMaterialID		
@@ -1149,13 +1149,13 @@ dbc_map	AreaTableID		client
 dbc_map	LoadingScreenID		client
 dbc_map	TimeOfDayOverride		client
 dbc_map	ParentMapID		
-dbc_map	CosmeticParentMapID		neutral
+dbc_map	CosmeticParentMapID		client
 dbc_map	TimeOffset		client
 dbc_map	MinimapIconScale		client
 dbc_map	RaidOffset		client
 dbc_map	CorpseMapID		
 dbc_map	MaxPlayers		
-dbc_map	WindSettingsID		neutral
+dbc_map	WindSettingsID		client
 dbc_map	ZmpFileDataID		client
 dbc_map	Field_1_15_4_56400_021		client
 dbc_map	Flags1		client
@@ -1365,9 +1365,9 @@ dbc_spellcategories	SpellID		client
 dbc_spellcategory	ID		
 dbc_spellcategory	Name_lang		client
 dbc_spellcategory	Flags		
-dbc_spellcategory	UsesPerWeek		neutral
-dbc_spellcategory	MaxCharges		neutral
-dbc_spellcategory	ChargeRecoveryTime		neutral
+dbc_spellcategory	UsesPerWeek		client
+dbc_spellcategory	MaxCharges		client
+dbc_spellcategory	ChargeRecoveryTime		client
 dbc_spellcategory	TypeMask		client
 dbc_spellchaineffects	ID		
 dbc_spellchaineffects	AvgSegLen		
@@ -1544,21 +1544,21 @@ dbc_spellitemenchantment	EffectArg2
 dbc_spellitemenchantment	EffectArg3		
 dbc_spellitemenchantment	ItemVisual		
 dbc_spellitemenchantment	Flags		
-dbc_spellitemenchantment	EffectScalingPoints1		neutral
-dbc_spellitemenchantment	EffectScalingPoints2		neutral
-dbc_spellitemenchantment	EffectScalingPoints3		neutral
-dbc_spellitemenchantment	ScalingClass		neutral
-dbc_spellitemenchantment	ScalingClassRestricted		neutral
-dbc_spellitemenchantment	GemItemID		neutral
-dbc_spellitemenchantment	Condition_ID		neutral
-dbc_spellitemenchantment	RequiredSkillID		neutral
-dbc_spellitemenchantment	RequiredSkillRank		neutral
-dbc_spellitemenchantment	MinLevel		neutral
-dbc_spellitemenchantment	MaxLevel		neutral
-dbc_spellitemenchantment	Field_1_15_3_55112_018		neutral
+dbc_spellitemenchantment	EffectScalingPoints1		client
+dbc_spellitemenchantment	EffectScalingPoints2		client
+dbc_spellitemenchantment	EffectScalingPoints3		client
+dbc_spellitemenchantment	ScalingClass		client
+dbc_spellitemenchantment	ScalingClassRestricted		client
+dbc_spellitemenchantment	GemItemID		client
+dbc_spellitemenchantment	Condition_ID		client
+dbc_spellitemenchantment	RequiredSkillID		client
+dbc_spellitemenchantment	RequiredSkillRank		client
+dbc_spellitemenchantment	MinLevel		client
+dbc_spellitemenchantment	MaxLevel		client
+dbc_spellitemenchantment	Field_1_15_3_55112_018		client
 dbc_spellitemenchantment	ItemLevel		client
-dbc_spellitemenchantment	Field_1_15_3_55112_020		neutral
-dbc_spellitemenchantment	Field_1_15_3_55112_021		neutral
+dbc_spellitemenchantment	Field_1_15_3_55112_020		client
+dbc_spellitemenchantment	Field_1_15_3_55112_021		client
 dbc_spelllevels	ID		client
 dbc_spelllevels	DifficultyID		client
 dbc_spelllevels	BaseLevel		
@@ -1627,9 +1627,9 @@ dbc_spellrange	DisplayName_lang
 dbc_spellrange	DisplayNameShort_lang		
 dbc_spellrange	Flags		
 dbc_spellrange	RangeMin1		
-dbc_spellrange	RangeMin2		neutral
+dbc_spellrange	RangeMin2		client
 dbc_spellrange	RangeMax1		
-dbc_spellrange	RangeMax2		neutral
+dbc_spellrange	RangeMax2		client
 dbc_spellreagents	ID		client
 dbc_spellreagents	SpellID		client
 dbc_spellreagents	Reagent1		
@@ -1664,19 +1664,19 @@ dbc_spellshapeshiftform	AttackIconFileID
 dbc_spellshapeshiftform	BonusActionBar		
 dbc_spellshapeshiftform	CombatRoundTime		client
 dbc_spellshapeshiftform	DamageVariance		client
-dbc_spellshapeshiftform	MountTypeID		neutral
+dbc_spellshapeshiftform	MountTypeID		client
 dbc_spellshapeshiftform	CreatureDisplayID1		client
 dbc_spellshapeshiftform	CreatureDisplayID2		client
 dbc_spellshapeshiftform	CreatureDisplayID3		client
 dbc_spellshapeshiftform	CreatureDisplayID4		client
-dbc_spellshapeshiftform	PresetSpellID1		neutral
-dbc_spellshapeshiftform	PresetSpellID2		neutral
-dbc_spellshapeshiftform	PresetSpellID3		neutral
-dbc_spellshapeshiftform	PresetSpellID4		neutral
-dbc_spellshapeshiftform	PresetSpellID5		neutral
-dbc_spellshapeshiftform	PresetSpellID6		neutral
-dbc_spellshapeshiftform	PresetSpellID7		neutral
-dbc_spellshapeshiftform	PresetSpellID8		neutral
+dbc_spellshapeshiftform	PresetSpellID1		client
+dbc_spellshapeshiftform	PresetSpellID2		client
+dbc_spellshapeshiftform	PresetSpellID3		client
+dbc_spellshapeshiftform	PresetSpellID4		client
+dbc_spellshapeshiftform	PresetSpellID5		client
+dbc_spellshapeshiftform	PresetSpellID6		client
+dbc_spellshapeshiftform	PresetSpellID7		client
+dbc_spellshapeshiftform	PresetSpellID8		client
 dbc_spelltargetrestrictions	ID		client
 dbc_spelltargetrestrictions	DifficultyID		client
 dbc_spelltargetrestrictions	ConeDegrees		rule
@@ -1757,7 +1757,7 @@ dbc_talent	TabID
 dbc_talent	ClassID		client
 dbc_talent	SpecID		client
 dbc_talent	SpellID		client
-dbc_talent	OverridesSpellID		neutral
+dbc_talent	OverridesSpellID		client
 dbc_talent	RequiredSpellID		
 dbc_talent	CategoryMask1		client
 dbc_talent	CategoryMask2		client
@@ -1785,9 +1785,9 @@ dbc_talenttab	Field_4_4_0_53627_004		client
 dbc_talenttab	ClassMask		
 dbc_talenttab	CategoryEnumID		client
 dbc_talenttab	SpellIconID		
-dbc_talenttab	RoleMask		neutral
-dbc_talenttab	MasterySpellID1		neutral
-dbc_talenttab	MasterySpellID2		neutral
+dbc_talenttab	RoleMask		client
+dbc_talenttab	MasterySpellID1		client
+dbc_talenttab	MasterySpellID2		client
 dbc_taxinodes	Name_lang		
 dbc_taxinodes	Pos1		
 dbc_taxinodes	Pos2		
@@ -1798,13 +1798,13 @@ dbc_taxinodes	FlightMapOffset1		client
 dbc_taxinodes	FlightMapOffset2		client
 dbc_taxinodes	ID		
 dbc_taxinodes	ContinentID		
-dbc_taxinodes	ConditionID		neutral
+dbc_taxinodes	ConditionID		client
 dbc_taxinodes	CharacterBitNumber		client
 dbc_taxinodes	Flags		client
 dbc_taxinodes	UiTextureKitID		client
 dbc_taxinodes	Facing		client
-dbc_taxinodes	SpecialIconConditionID		neutral
-dbc_taxinodes	VisibilityConditionID		neutral
+dbc_taxinodes	SpecialIconConditionID		client
+dbc_taxinodes	VisibilityConditionID		client
 dbc_taxinodes	MountCreatureID1		
 dbc_taxinodes	MountCreatureID2		
 dbc_taxipath	ID		
