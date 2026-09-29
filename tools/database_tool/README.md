@@ -112,13 +112,15 @@ unlike everything else this tool writes), then helps fill them in bulk.
 
 ## Testing
 
-`ctest`/`tests-database-tool` covers everything with fixtures; three suites are opt-in, since they
+`ctest`/`tests-database-tool` covers everything with fixtures; four suites are opt-in, since they
 need real external resources:
 
 - `DATABASE_TOOL_TEST_MYSQL_CONNECTION="host;port;user;pass"` (no database name) -- the
   `[mysql]`-tagged tests, which create and drop their own `test_*` databases.
 - `DATABASE_TOOL_WORLD_DUMP=1` -- the `[network]`-tagged tests, which download the real ~16 MB
   base dump and import it.
+- `DATABASE_TOOL_VERIFY=1` -- runs `verify` on `.world/world.doltlite` and
+  `.world/reference.doltlite`.
 - `DATABASE_TOOL_DBFILESCLIENT=<path>` -- a copy of the real `dbfilesclient` directory; checks
   that every file with a resolved definition imports with no error, and that writing it back out
   and re-reading it reproduces the same rows.
