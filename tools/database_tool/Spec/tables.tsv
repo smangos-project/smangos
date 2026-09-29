@@ -1,3 +1,4 @@
 table	kind	key	sources	into	overrides	reason
 spell_mod	gone	Id		dbc_spell*, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's when the world DB is created; 43 ids create spells spell_template lacks
 spell_effect_mod	gone	Id, EffectIndex		dbc_spelleffect, spell_extra	spell_template	explicit values (SpellModMgr.cpp:54) replace spell_template's effect slot when the world DB is created
+spell_proc_event	server	entry	spell_proc_event	dbc_spellauraoptions, dbc_spellprocsperminute	spell_template	procFlags, CustomChance, Cooldown and ppmRate move to the client tables, over spell_template's values; the filters (school, family, class masks, procEx) stay

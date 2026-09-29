@@ -1301,7 +1301,7 @@ dbc_spellauraoptions	CumulativeAura
 dbc_spellauraoptions	ProcCategoryRecovery		neutral
 dbc_spellauraoptions	ProcChance		
 dbc_spellauraoptions	ProcCharges		
-dbc_spellauraoptions	SpellProcsPerMinuteID		neutral
+dbc_spellauraoptions	SpellProcsPerMinuteID		rule
 dbc_spellauraoptions	ProcTypeMask1		
 dbc_spellauraoptions	ProcTypeMask2		neutral
 dbc_spellauraoptions	SpellID		client
@@ -1590,6 +1590,9 @@ dbc_spellpower	PowerType
 dbc_spellpower	RequiredAuraSpellID		neutral
 dbc_spellpower	OptionalCost		neutral
 dbc_spellpower	SpellID		client
+dbc_spellprocsperminute	ID		rule
+dbc_spellprocsperminute	BaseProcRate		
+dbc_spellprocsperminute	Flags		rule
 dbc_spellradius	ID		
 dbc_spellradius	Radius		
 dbc_spellradius	RadiusPerLevel		
