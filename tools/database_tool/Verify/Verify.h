@@ -1,0 +1,58 @@
+#ifndef DATABASE_TOOL_VERIFY_VERIFY_H
+#define DATABASE_TOOL_VERIFY_VERIFY_H
+
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#include <vector>
+
+// One mapping file (Verify/srv/<table>.sql, Verify/vdbc/<Name>.sql): a single SELECT over the
+// world database that rebuilds one original table, and the columns rows are matched by.
+struct VerifyMapping
+{
+    std::vector<std::string> key;
+    std::string select;
+};
+
+// A "-- key: a, b" line names the key (empty or absent: every column); other "--" lines are
+// comments; the rest is the SELECT. Throws when the file can't be read.
+VerifyMapping ReadVerifyMapping(std::filesystem::path const& path);
+void WriteVerifyMapping(std::filesystem::path const& path, std::string const& header, VerifyMapping const& mapping);
+
+struct VerifyProblem
+{
+    std::string check; // "V0".."V5"
+    std::string table;
+    std::string message;
+};
+
+struct VerifyOptions
+{
+    bool final = false;
+    std::vector<std::string> checks; // empty: every check
+    std::vector<std::string> tables; // empty: every table
+};
+
+struct VerifyResult
+{
+    std::vector<VerifyProblem> problems;
+    std::vector<std::string> notes; // progress that isn't a failure yet (not gated without --final)
+    uint32_t tablesCompared = 0;
+    std::string error;
+};
+
+// Runs the checks of plan.md 6.2 against `worldPath` with `referencePath` attached as `ref`.
+VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
+                       std::filesystem::path const& verifyDir, VerifyOptions const& options);
+
+struct VerifyInitResult
+{
+    uint32_t written = 0;
+    std::string error;
+};
+
+// Writes an identity mapping (the world table collapsed to the vanilla version, as the reference
+// database was built) for every srv_ table that has no mapping file yet.
+VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, std::filesystem::path const& verifyDir);
+
+#endif

@@ -37,6 +37,7 @@ add_executable(tests-database-tool
   Spec/GapAnalysisTests.cpp
   Spec/SpecCheckTests.cpp
   Spec/SpecRenderTests.cpp
+  Verify/VerifyTests.cpp
 )
 
 target_link_libraries(tests-database-tool PRIVATE database_tool_lib Catch2)

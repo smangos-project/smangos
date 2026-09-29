@@ -88,6 +88,12 @@ int DoltLiteStatement::ColumnCount() const
     return sqlite3_column_count(m_stmt);
 }
 
+std::string DoltLiteStatement::ColumnName(int index) const
+{
+    char const* name = sqlite3_column_name(m_stmt, index);
+    return name ? std::string(name) : std::string();
+}
+
 bool DoltLiteStatement::ColumnIsNull(int index) const
 {
     return sqlite3_column_type(m_stmt, index) == SQLITE_NULL;

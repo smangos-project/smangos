@@ -36,6 +36,7 @@ public:
     void Reset();
 
     int ColumnCount() const;
+    std::string ColumnName(int index) const;
     bool ColumnIsNull(int index) const;
     // sqlite3 fundamental type of the current value: 1 integer, 2 float, 3 text, 4 blob, 5 null.
     int ColumnType(int index) const;

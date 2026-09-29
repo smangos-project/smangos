@@ -10,6 +10,7 @@
 #include "Spec/SpecCheck.h"
 #include "Spec/SpecRender.h"
 #include "Spec/SpecInventory.h"
+#include "Verify/Verify.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/WorldCompare.h"
 
@@ -578,6 +579,56 @@ namespace
         return 1;
     }
 
+    // verify [--final] [--checks V1,V3] [--tables a,b]
+    // verify init
+    int RunVerifyCommand(std::vector<std::string> const& args)
+    {
+        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const verifyDir = SourceRoot() / "tools" / "database_tool" / "Verify";
+
+        if (!args.empty() && args[0] == "init")
+        {
+            VerifyInitResult result = InitVerifyMappings(referencePath, verifyDir);
+            if (!result.error.empty())
+            {
+                std::printf("verify init: %s\n", result.error.c_str());
+                return 1;
+            }
+            std::printf("verify init: %u mapping files written\n", result.written);
+            return 0;
+        }
+
+        VerifyOptions options;
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            if (args[i] == "--final")
+                options.final = true;
+            else if (args[i] == "--checks" && i + 1 < args.size())
+                options.checks = SplitCsv(args[++i]);
+            else if (args[i] == "--tables" && i + 1 < args.size())
+                options.tables = SplitCsv(args[++i]);
+            else
+            {
+                std::printf("verify: unknown argument: %s\n", args[i].c_str());
+                return 1;
+            }
+        }
+
+        VerifyResult result = RunVerify(SourceRoot() / ".world" / "world.doltlite", referencePath, verifyDir, options);
+        if (!result.error.empty())
+        {
+            std::printf("verify: %s\n", result.error.c_str());
+            return 1;
+        }
+
+        for (std::string const& note : result.notes)
+            std::printf("note: %s\n", note.c_str());
+        for (VerifyProblem const& problem : result.problems)
+            std::printf("[%s] %s: %s\n", problem.check.c_str(), problem.table.c_str(), problem.message.c_str());
+        std::printf("verify: %u tables compared, %zu problems\n", result.tablesCompared, result.problems.size());
+        return result.problems.empty() ? 0 : 1;
+    }
+
     int RunPortMigration(std::vector<std::string> const& args)
     {
         if (args.empty())
@@ -634,6 +685,8 @@ int main(int argc, char** argv)
         return RunImport(rest);
     if (command == "export")
         return RunExport(rest);
+    if (command == "verify")
+        return RunVerifyCommand(rest);
 
     std::printf("unknown command: %s\n", command.c_str());
     return 1;

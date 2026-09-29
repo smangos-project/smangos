@@ -35,6 +35,8 @@ add_library(database_tool_lib STATIC
   Spec/GapAnalysis.cpp
   Spec/SpecCheck.cpp
   Spec/SpecRender.cpp
+  Verify/RowCompare.cpp
+  Verify/Verify.cpp
   generated/DbcTables.g.cpp
   generated/VanillaDbcTables.g.cpp
 )
