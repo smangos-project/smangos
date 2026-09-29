@@ -104,8 +104,34 @@ TEST_CASE("UpdateSpecInventory inventories srv_*/vdbc_* columns and cdbc_* colum
     CHECK(HasDbcColumnRow(dbcColumns, "dbc_bar", "ID"));
     CHECK(HasDbcColumnRow(dbcColumns, "dbc_bar", "Flags"));
     CHECK(HasDbcColumnRow(dbcColumns, "dbc_bar", "NewCol"));
-    // cdbc_baz has no vdbc_baz counterpart, so it never receives a vanilla row and is excluded.
+    // cdbc_baz has no vdbc_baz counterpart and no dbc row targets it, so it is excluded.
     CHECK_FALSE(HasDbcColumnRow(dbcColumns, "dbc_baz", "ID"));
+}
+
+TEST_CASE("UpdateSpecInventory inventories a cdbc_* table that a dbc row targets", "[SpecInventory]")
+{
+    TempDoltLiteFile reference("target");
+    {
+        DoltLiteDatabase db(reference.path.string());
+        MakeReferenceFixture(db);
+    }
+    TempDir specDir("target");
+
+    UpdateSpecInventory(reference.path, specDir.path);
+    std::vector<SpecColumnRow> columns = ReadColumnsTsv(specDir.path / "columns.tsv");
+    for (SpecColumnRow& row : columns)
+    {
+        if (row.source == "srv" && row.table == "foo" && row.column == "id")
+        {
+            row.disposition = "dbc";
+            row.target = "dbc_baz.ID";
+        }
+    }
+    WriteColumnsTsv(specDir.path / "columns.tsv", columns);
+
+    SpecInitResult result = UpdateSpecInventory(reference.path, specDir.path);
+    CHECK(result.dbcColumnsAdded == 1);
+    CHECK(HasDbcColumnRow(ReadDbcColumnsTsv(specDir.path / "dbc-columns.tsv"), "dbc_baz", "ID"));
 }
 
 TEST_CASE("UpdateSpecInventory is idempotent and preserves hand-filled dispositions", "[SpecInventory]")

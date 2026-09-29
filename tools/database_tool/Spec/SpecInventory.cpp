@@ -138,7 +138,8 @@ SpecInitResult UpdateSpecInventory(std::filesystem::path const& referencePath, s
     SortColumnRows(columns, liveColumns);
     WriteColumnsTsv(columnsPath, columns);
 
-    // --- dbc-columns.tsv: every cdbc_* column of a table with a same-named vdbc_* table ---
+    // --- dbc-columns.tsv: every cdbc_* column of a table with a same-named vdbc_* table or a
+    // columns.tsv dbc target ---
 
     std::filesystem::path dbcColumnsPath = specDir / "dbc-columns.tsv";
     std::vector<SpecDbcColumnRow> dbcColumns = ReadDbcColumnsTsv(dbcColumnsPath);
@@ -147,16 +148,21 @@ SpecInitResult UpdateSpecInventory(std::filesystem::path const& referencePath, s
     for (SpecDbcColumnRow const& row : dbcColumns)
         existingDbcKeys.insert({ row.table, row.column });
 
-    std::set<std::string> vdbcFileStems;
+    std::set<std::string> writtenFileStems;
     for (std::string const& qualified : TablesWithPrefix(reference, "vdbc"))
-        vdbcFileStems.insert(qualified.substr(5)); // strip "vdbc_"
+        writtenFileStems.insert(qualified.substr(5)); // strip "vdbc_"
+    for (SpecColumnRow const& row : columns)
+    {
+        if (row.disposition == "dbc" && row.target.compare(0, 4, "dbc_") == 0)
+            writtenFileStems.insert(row.target.substr(4, row.target.find('.') - 4));
+    }
 
     std::map<std::string, std::vector<std::string>> liveDbcColumns;
     for (std::string const& qualified : TablesWithPrefix(reference, "cdbc"))
     {
         std::string fileStem = qualified.substr(5); // strip "cdbc_"
-        if (!vdbcFileStems.count(fileStem))
-            continue; // no vanilla counterpart: can never receive a vanilla row
+        if (!writtenFileStems.count(fileStem))
+            continue; // nothing vanilla is written to it
 
         std::string dbcTable = "dbc_" + fileStem;
         std::vector<std::string> tableColumns = TableColumns(reference, qualified);
