@@ -1445,7 +1445,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
         // JoR and JoC: Paladin melee spells trigger melee procs instead of magic
-        if ((m_spellInfo->IsFitToFamilyMask<CF_PALADIN_JUDGEMENT_OF_RIGHTEOUSNESS>() && m_spellInfo->SpellIconID == 25) ||
+        if (m_spellInfo->IsFitToFamily<SPELLFAMILY_PALADIN, CF_PALADIN_JUDGEMENT_OF_RIGHTEOUSNESS>() ||
             (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellIconID == 561 && m_spellInfo->SpellVisual == 0))
         {
             procAttacker = PROC_FLAG_DEAL_MELEE_ABILITY;
@@ -6887,7 +6887,7 @@ bool Spell::CanAutoCast(Unit* target)
 
     // 2947 - Fire Shield, rank 1 enUS
     // When set to auto-cast, the Imp will cast this on any party members within 30 yds if they receive a melee attack.
-    if (m_spellInfo->IsFitToFamily<SPELLFAMILY_WARLOCK, CF_WARLOCK_IMP_BUFFS>() && m_spellInfo->SpellVisual == 289)
+    if (sSpellMgr.GetFirstSpellInChain(m_spellInfo->Id) == 2947)
         if (!target->GetAttackerForHelper())
             return false;
 
