@@ -614,6 +614,45 @@ dbc_groundeffecttexture	DoodadWeight1
 dbc_groundeffecttexture	DoodadWeight2		
 dbc_groundeffecttexture	DoodadWeight3		
 dbc_groundeffecttexture	DoodadWeight4		
+dbc_item	ID		
+dbc_item	ClassID		
+dbc_item	SubclassID		
+dbc_item	Material		
+dbc_item	InventoryType		
+dbc_item	RequiredLevel		
+dbc_item	SheatheType		
+dbc_item	RandomSelect		
+dbc_item	ItemRandomSuffixGroupID		
+dbc_item	Sound_override_subclassID		
+dbc_item	ScalingStatDistributionID		
+dbc_item	IconFileDataID		
+dbc_item	ItemGroupSoundsID		
+dbc_item	ContentTuningID		
+dbc_item	MaxDurability		
+dbc_item	AmmunitionType		
+dbc_item	ScalingStatValue		
+dbc_item	DamageType1		
+dbc_item	DamageType2		
+dbc_item	DamageType3		
+dbc_item	DamageType4		
+dbc_item	DamageType5		
+dbc_item	Resistances1		
+dbc_item	Resistances2		
+dbc_item	Resistances3		
+dbc_item	Resistances4		
+dbc_item	Resistances5		
+dbc_item	Resistances6		
+dbc_item	Resistances7		
+dbc_item	MinDamage1		
+dbc_item	MinDamage2		
+dbc_item	MinDamage3		
+dbc_item	MinDamage4		
+dbc_item	MinDamage5		
+dbc_item	MaxDamage1		
+dbc_item	MaxDamage2		
+dbc_item	MaxDamage3		
+dbc_item	MaxDamage4		
+dbc_item	MaxDamage5		
 dbc_itembagfamily	ID		
 dbc_itembagfamily	Name_lang		
 dbc_itemclass	ID		
@@ -652,6 +691,16 @@ dbc_itemdisplayinfo	AttachmentGeosetGroup5		client
 dbc_itemdisplayinfo	AttachmentGeosetGroup6		client
 dbc_itemdisplayinfo	HelmetGeosetVis1		client
 dbc_itemdisplayinfo	HelmetGeosetVis2		client
+dbc_itemeffect	ID		
+dbc_itemeffect	LegacySlotIndex		
+dbc_itemeffect	TriggerType		
+dbc_itemeffect	Charges		
+dbc_itemeffect	CoolDownMSec		
+dbc_itemeffect	CategoryCoolDownMSec		
+dbc_itemeffect	SpellCategoryID		
+dbc_itemeffect	SpellID		
+dbc_itemeffect	ChrSpecializationID		
+dbc_itemeffect	ParentItemID		
 dbc_itemgroupsounds	ID		
 dbc_itemgroupsounds	Sound1		
 dbc_itemgroupsounds	Sound2		
@@ -688,6 +737,147 @@ dbc_itemset	ItemID14
 dbc_itemset	ItemID15		
 dbc_itemset	ItemID16		
 dbc_itemset	ItemID17		
+dbc_itemsparse	ID		
+dbc_itemsparse	AllowableRace		
+dbc_itemsparse	Description_lang		
+dbc_itemsparse	Display3_lang		
+dbc_itemsparse	Display2_lang		
+dbc_itemsparse	Display1_lang		
+dbc_itemsparse	Display_lang		
+dbc_itemsparse	DmgVariance		
+dbc_itemsparse	DurationInInventory		
+dbc_itemsparse	QualityModifier		
+dbc_itemsparse	BagFamily		
+dbc_itemsparse	StartQuestID		
+dbc_itemsparse	ItemRange		
+dbc_itemsparse	StatPercentageOfSocket1		
+dbc_itemsparse	StatPercentageOfSocket2		
+dbc_itemsparse	StatPercentageOfSocket3		
+dbc_itemsparse	StatPercentageOfSocket4		
+dbc_itemsparse	StatPercentageOfSocket5		
+dbc_itemsparse	StatPercentageOfSocket6		
+dbc_itemsparse	StatPercentageOfSocket7		
+dbc_itemsparse	StatPercentageOfSocket8		
+dbc_itemsparse	StatPercentageOfSocket9		
+dbc_itemsparse	StatPercentageOfSocket10		
+dbc_itemsparse	StatPercentEditor1		
+dbc_itemsparse	StatPercentEditor2		
+dbc_itemsparse	StatPercentEditor3		
+dbc_itemsparse	StatPercentEditor4		
+dbc_itemsparse	StatPercentEditor5		
+dbc_itemsparse	StatPercentEditor6		
+dbc_itemsparse	StatPercentEditor7		
+dbc_itemsparse	StatPercentEditor8		
+dbc_itemsparse	StatPercentEditor9		
+dbc_itemsparse	StatPercentEditor10		
+dbc_itemsparse	Field_1_15_3_55112_0141		
+dbc_itemsparse	Field_1_15_3_55112_0142		
+dbc_itemsparse	Field_1_15_3_55112_0143		
+dbc_itemsparse	Field_1_15_3_55112_0144		
+dbc_itemsparse	Field_1_15_3_55112_0145		
+dbc_itemsparse	Field_1_15_3_55112_0146		
+dbc_itemsparse	Field_1_15_3_55112_0147		
+dbc_itemsparse	Field_1_15_3_55112_0148		
+dbc_itemsparse	Field_1_15_3_55112_0149		
+dbc_itemsparse	Field_1_15_3_55112_01410		
+dbc_itemsparse	StatModifier_bonusStat1		
+dbc_itemsparse	StatModifier_bonusStat2		
+dbc_itemsparse	StatModifier_bonusStat3		
+dbc_itemsparse	StatModifier_bonusStat4		
+dbc_itemsparse	StatModifier_bonusStat5		
+dbc_itemsparse	StatModifier_bonusStat6		
+dbc_itemsparse	StatModifier_bonusStat7		
+dbc_itemsparse	StatModifier_bonusStat8		
+dbc_itemsparse	StatModifier_bonusStat9		
+dbc_itemsparse	StatModifier_bonusStat10		
+dbc_itemsparse	Stackable		
+dbc_itemsparse	MaxCount		
+dbc_itemsparse	MinReputation		
+dbc_itemsparse	RequiredAbility		
+dbc_itemsparse	SellPrice		
+dbc_itemsparse	BuyPrice		
+dbc_itemsparse	VendorStackCount		
+dbc_itemsparse	PriceVariance		
+dbc_itemsparse	PriceRandomValue		
+dbc_itemsparse	Flags1		
+dbc_itemsparse	Flags2		
+dbc_itemsparse	Flags3		
+dbc_itemsparse	Flags4		
+dbc_itemsparse	Flags5		
+dbc_itemsparse	OppositeFactionItemID		
+dbc_itemsparse	ModifiedCraftingReagentItemID		
+dbc_itemsparse	ContentTuningID		
+dbc_itemsparse	PlayerLevelToItemLevelCurveID		
+dbc_itemsparse	MaxDurability		
+dbc_itemsparse	ItemNameDescriptionID		
+dbc_itemsparse	RequiredTransmogHoliday		
+dbc_itemsparse	RequiredHoliday		
+dbc_itemsparse	LimitCategory		
+dbc_itemsparse	Gem_properties		
+dbc_itemsparse	Socket_match_enchantment_ID		
+dbc_itemsparse	TotemCategoryID		
+dbc_itemsparse	InstanceBound		
+dbc_itemsparse	ZoneBound1		
+dbc_itemsparse	ZoneBound2		
+dbc_itemsparse	ItemSet		
+dbc_itemsparse	LockID		
+dbc_itemsparse	PageID		
+dbc_itemsparse	ItemDelay		
+dbc_itemsparse	MinFactionID		
+dbc_itemsparse	RequiredSkillRank		
+dbc_itemsparse	RequiredSkill		
+dbc_itemsparse	ItemLevel		
+dbc_itemsparse	AllowableClass		
+dbc_itemsparse	ItemRandomSuffixGroupID		
+dbc_itemsparse	RandomSelect		
+dbc_itemsparse	MinDamage1		
+dbc_itemsparse	MinDamage2		
+dbc_itemsparse	MinDamage3		
+dbc_itemsparse	MinDamage4		
+dbc_itemsparse	MinDamage5		
+dbc_itemsparse	MaxDamage1		
+dbc_itemsparse	MaxDamage2		
+dbc_itemsparse	MaxDamage3		
+dbc_itemsparse	MaxDamage4		
+dbc_itemsparse	MaxDamage5		
+dbc_itemsparse	Resistances1		
+dbc_itemsparse	Resistances2		
+dbc_itemsparse	Resistances3		
+dbc_itemsparse	Resistances4		
+dbc_itemsparse	Resistances5		
+dbc_itemsparse	Resistances6		
+dbc_itemsparse	Resistances7		
+dbc_itemsparse	ScalingStatDistributionID		
+dbc_itemsparse	StatModifier_bonusAmount1		
+dbc_itemsparse	StatModifier_bonusAmount2		
+dbc_itemsparse	StatModifier_bonusAmount3		
+dbc_itemsparse	StatModifier_bonusAmount4		
+dbc_itemsparse	StatModifier_bonusAmount5		
+dbc_itemsparse	StatModifier_bonusAmount6		
+dbc_itemsparse	StatModifier_bonusAmount7		
+dbc_itemsparse	StatModifier_bonusAmount8		
+dbc_itemsparse	StatModifier_bonusAmount9		
+dbc_itemsparse	StatModifier_bonusAmount10		
+dbc_itemsparse	ExpansionID		
+dbc_itemsparse	ArtifactID		
+dbc_itemsparse	SpellWeight		
+dbc_itemsparse	SpellWeightCategory		
+dbc_itemsparse	SocketType1		
+dbc_itemsparse	SocketType2		
+dbc_itemsparse	SocketType3		
+dbc_itemsparse	SheatheType		
+dbc_itemsparse	Material		
+dbc_itemsparse	PageMaterialID		
+dbc_itemsparse	LanguageID		
+dbc_itemsparse	Bonding		
+dbc_itemsparse	DamageType		
+dbc_itemsparse	ContainerSlots		
+dbc_itemsparse	RequiredPVPMedal		
+dbc_itemsparse	RequiredPVPRank		
+dbc_itemsparse	InventoryType		
+dbc_itemsparse	OverallQualityID		
+dbc_itemsparse	AmmunitionType		
+dbc_itemsparse	RequiredLevel		
 dbc_itemsubclass	ID		
 dbc_itemsubclass	DisplayName_lang		
 dbc_itemsubclass	VerboseName_lang		
@@ -1058,6 +1248,23 @@ dbc_soundambience	AmbienceStartID1
 dbc_soundambience	AmbienceStartID2		
 dbc_soundambience	AmbienceStopID1		
 dbc_soundambience	AmbienceStopID2		
+dbc_soundkit	ID		
+dbc_soundkit	SoundType		
+dbc_soundkit	VolumeFloat		
+dbc_soundkit	Flags		
+dbc_soundkit	MinDistance		
+dbc_soundkit	DistanceCutoff		
+dbc_soundkit	EAXDef		
+dbc_soundkit	SoundKitAdvancedID		
+dbc_soundkit	VolumeVariationPlus		
+dbc_soundkit	VolumeVariationMinus		
+dbc_soundkit	PitchVariationPlus		
+dbc_soundkit	PitchVariationMinus		
+dbc_soundkit	DialogType		
+dbc_soundkit	PitchAdjust		
+dbc_soundkit	BusOverwriteID		
+dbc_soundkit	MaxInstances		
+dbc_soundkit	SoundMixGroupID		
 dbc_soundproviderpreferences	ID		
 dbc_soundproviderpreferences	Description		
 dbc_soundproviderpreferences	EAXEnvironmentSelection		
@@ -1088,10 +1295,49 @@ dbc_spell	ID		client
 dbc_spell	NameSubtext_lang		
 dbc_spell	Description_lang		
 dbc_spell	AuraDescription_lang		
+dbc_spellauraoptions	ID		client
+dbc_spellauraoptions	DifficultyID		client
+dbc_spellauraoptions	CumulativeAura		
+dbc_spellauraoptions	ProcCategoryRecovery		client
+dbc_spellauraoptions	ProcChance		
+dbc_spellauraoptions	ProcCharges		
+dbc_spellauraoptions	SpellProcsPerMinuteID		client
+dbc_spellauraoptions	ProcTypeMask1		
+dbc_spellauraoptions	ProcTypeMask2		client
+dbc_spellauraoptions	SpellID		client
+dbc_spellaurarestrictions	ID		client
+dbc_spellaurarestrictions	DifficultyID		client
+dbc_spellaurarestrictions	CasterAuraState		
+dbc_spellaurarestrictions	TargetAuraState		
+dbc_spellaurarestrictions	ExcludeCasterAuraState		client
+dbc_spellaurarestrictions	ExcludeTargetAuraState		client
+dbc_spellaurarestrictions	CasterAuraSpell		client
+dbc_spellaurarestrictions	TargetAuraSpell		client
+dbc_spellaurarestrictions	ExcludeCasterAuraSpell		client
+dbc_spellaurarestrictions	ExcludeTargetAuraSpell		client
+dbc_spellaurarestrictions	SpellID		client
+dbc_spellcastingrequirements	ID		client
+dbc_spellcastingrequirements	SpellID		client
+dbc_spellcastingrequirements	FacingCasterFlags		client
+dbc_spellcastingrequirements	MinFactionID		
+dbc_spellcastingrequirements	MinReputation		
+dbc_spellcastingrequirements	RequiredAreasID		client
+dbc_spellcastingrequirements	RequiredAuraVision		
+dbc_spellcastingrequirements	RequiresSpellFocus		
 dbc_spellcasttimes	ID		
 dbc_spellcasttimes	Base		
 dbc_spellcasttimes	PerLevel		
 dbc_spellcasttimes	Minimum		
+dbc_spellcategories	ID		client
+dbc_spellcategories	DifficultyID		client
+dbc_spellcategories	Category		
+dbc_spellcategories	DefenseType		
+dbc_spellcategories	DispelType		
+dbc_spellcategories	Mechanic		
+dbc_spellcategories	PreventionType		
+dbc_spellcategories	StartRecoveryCategory		
+dbc_spellcategories	ChargeCategory		neutral
+dbc_spellcategories	SpellID		client
 dbc_spellcategory	ID		
 dbc_spellcategory	Name_lang		client
 dbc_spellcategory	Flags		
@@ -1181,6 +1427,21 @@ dbc_spellchaineffects	TextureRepeatLengthV3
 dbc_spellchaineffects	TextureFileDataID1		
 dbc_spellchaineffects	TextureFileDataID2		
 dbc_spellchaineffects	TextureFileDataID3		
+dbc_spellclassoptions	ID		client
+dbc_spellclassoptions	SpellID		client
+dbc_spellclassoptions	ModalNextSpell		
+dbc_spellclassoptions	SpellClassSet		
+dbc_spellclassoptions	SpellClassMask1		
+dbc_spellclassoptions	SpellClassMask2		rule
+dbc_spellclassoptions	SpellClassMask3		neutral
+dbc_spellclassoptions	SpellClassMask4		neutral
+dbc_spellcooldowns	ID		client
+dbc_spellcooldowns	DifficultyID		client
+dbc_spellcooldowns	CategoryRecoveryTime		
+dbc_spellcooldowns	RecoveryTime		
+dbc_spellcooldowns	StartRecoveryTime		
+dbc_spellcooldowns	AuraSpellID		client
+dbc_spellcooldowns	SpellID		client
 dbc_spelldispeltype	ID		
 dbc_spelldispeltype	Name_lang		
 dbc_spelldispeltype	InternalName		
@@ -1190,8 +1451,57 @@ dbc_spellduration	ID
 dbc_spellduration	Duration		
 dbc_spellduration	DurationPerLevel		
 dbc_spellduration	MaxDuration		
+dbc_spelleffect	ID		client
+dbc_spelleffect	DifficultyID		client
+dbc_spelleffect	EffectIndex		client
+dbc_spelleffect	Effect		
+dbc_spelleffect	EffectAmplitude		
+dbc_spelleffect	EffectAttributes		client
+dbc_spelleffect	EffectAura		
+dbc_spelleffect	EffectAuraPeriod		
+dbc_spelleffect	EffectBasePoints		
+dbc_spelleffect	EffectBonusCoefficient		
+dbc_spelleffect	EffectChainAmplitude		
+dbc_spelleffect	EffectChainTargets		
+dbc_spelleffect	EffectDieSides		
+dbc_spelleffect	EffectItemType		
+dbc_spelleffect	EffectMechanic		
+dbc_spelleffect	EffectPointsPerResource		
+dbc_spelleffect	EffectPos_facing		client
+dbc_spelleffect	EffectRealPointsPerLevel		
+dbc_spelleffect	EffectTriggerSpell		
+dbc_spelleffect	BonusCoefficientFromAP		client
+dbc_spelleffect	PvpMultiplier		client
+dbc_spelleffect	Coefficient		client
+dbc_spelleffect	Variance		client
+dbc_spelleffect	ResourceCoefficient		client
+dbc_spelleffect	GroupSizeBasePointsCoefficient		client
+dbc_spelleffect	EffectMiscValue1		
+dbc_spelleffect	EffectMiscValue2		rule
+dbc_spelleffect	EffectRadiusIndex1		
+dbc_spelleffect	EffectRadiusIndex2		rule
+dbc_spelleffect	EffectSpellClassMask1		rule
+dbc_spelleffect	EffectSpellClassMask2		client
+dbc_spelleffect	EffectSpellClassMask3		neutral
+dbc_spelleffect	EffectSpellClassMask4		neutral
+dbc_spelleffect	ImplicitTarget1		
+dbc_spelleffect	ImplicitTarget2		
+dbc_spelleffect	SpellID		client
+dbc_spellequippeditems	ID		client
+dbc_spellequippeditems	SpellID		client
+dbc_spellequippeditems	EquippedItemClass		
+dbc_spellequippeditems	EquippedItemInvTypes		
+dbc_spellequippeditems	EquippedItemSubclass		
 dbc_spellfocusobject	ID		
 dbc_spellfocusobject	Name_lang		
+dbc_spellinterrupts	ID		client
+dbc_spellinterrupts	DifficultyID		client
+dbc_spellinterrupts	InterruptFlags		
+dbc_spellinterrupts	AuraInterruptFlags1		
+dbc_spellinterrupts	AuraInterruptFlags2		client
+dbc_spellinterrupts	ChannelInterruptFlags1		
+dbc_spellinterrupts	ChannelInterruptFlags2		client
+dbc_spellinterrupts	SpellID		client
 dbc_spellitemenchantment	ID		
 dbc_spellitemenchantment	Name_lang		
 dbc_spellitemenchantment	HordeName_lang		
@@ -1225,8 +1535,61 @@ dbc_spellitemenchantment	Field_1_15_3_55112_018
 dbc_spellitemenchantment	ItemLevel		
 dbc_spellitemenchantment	Field_1_15_3_55112_020		
 dbc_spellitemenchantment	Field_1_15_3_55112_021		
+dbc_spelllevels	ID		client
+dbc_spelllevels	DifficultyID		client
+dbc_spelllevels	BaseLevel		
+dbc_spelllevels	MaxLevel		
+dbc_spelllevels	SpellLevel		
+dbc_spelllevels	MaxPassiveAuraLevel		client
+dbc_spelllevels	SpellID		client
 dbc_spellmechanic	ID		
 dbc_spellmechanic	StateName_lang		
+dbc_spellmisc	ID		client
+dbc_spellmisc	Attributes1		
+dbc_spellmisc	Attributes2		
+dbc_spellmisc	Attributes3		
+dbc_spellmisc	Attributes4		
+dbc_spellmisc	Attributes5		
+dbc_spellmisc	Attributes6		client
+dbc_spellmisc	Attributes7		client
+dbc_spellmisc	Attributes8		client
+dbc_spellmisc	Attributes9		client
+dbc_spellmisc	Attributes10		client
+dbc_spellmisc	Attributes11		client
+dbc_spellmisc	Attributes12		client
+dbc_spellmisc	Attributes13		client
+dbc_spellmisc	Attributes14		client
+dbc_spellmisc	Attributes15		client
+dbc_spellmisc	Attributes16		client
+dbc_spellmisc	DifficultyID		client
+dbc_spellmisc	CastingTimeIndex		
+dbc_spellmisc	DurationIndex		
+dbc_spellmisc	RangeIndex		
+dbc_spellmisc	SchoolMask		
+dbc_spellmisc	Speed		
+dbc_spellmisc	LaunchDelay		client
+dbc_spellmisc	MinDuration		client
+dbc_spellmisc	SpellIconFileDataID		client
+dbc_spellmisc	ActiveIconFileDataID		client
+dbc_spellmisc	ContentTuningID		client
+dbc_spellmisc	ShowFutureSpellPlayerConditionID		client
+dbc_spellmisc	SpellID		client
+dbc_spellname	ID		client
+dbc_spellname	Name_lang		
+dbc_spellpower	ID		client
+dbc_spellpower	OrderIndex		client
+dbc_spellpower	ManaCost		
+dbc_spellpower	ManaCostPerLevel		
+dbc_spellpower	ManaPerSecond		
+dbc_spellpower	PowerDisplayID		client
+dbc_spellpower	AltPowerBarID		client
+dbc_spellpower	PowerCostPct		
+dbc_spellpower	PowerCostMaxPct		client
+dbc_spellpower	PowerPctPerSecond		client
+dbc_spellpower	PowerType		
+dbc_spellpower	RequiredAuraSpellID		client
+dbc_spellpower	OptionalCost		client
+dbc_spellpower	SpellID		client
 dbc_spellradius	ID		
 dbc_spellradius	Radius		
 dbc_spellradius	RadiusPerLevel		
@@ -1240,6 +1603,31 @@ dbc_spellrange	RangeMin1
 dbc_spellrange	RangeMin2		neutral
 dbc_spellrange	RangeMax1		
 dbc_spellrange	RangeMax2		neutral
+dbc_spellreagents	ID		client
+dbc_spellreagents	SpellID		client
+dbc_spellreagents	Reagent1		
+dbc_spellreagents	Reagent2		
+dbc_spellreagents	Reagent3		
+dbc_spellreagents	Reagent4		
+dbc_spellreagents	Reagent5		
+dbc_spellreagents	Reagent6		
+dbc_spellreagents	Reagent7		
+dbc_spellreagents	Reagent8		
+dbc_spellreagents	ReagentCount1		
+dbc_spellreagents	ReagentCount2		
+dbc_spellreagents	ReagentCount3		
+dbc_spellreagents	ReagentCount4		
+dbc_spellreagents	ReagentCount5		
+dbc_spellreagents	ReagentCount6		
+dbc_spellreagents	ReagentCount7		
+dbc_spellreagents	ReagentCount8		
+dbc_spellshapeshift	ID		client
+dbc_spellshapeshift	SpellID		client
+dbc_spellshapeshift	StanceBarOrder		
+dbc_spellshapeshift	ShapeshiftExclude1		
+dbc_spellshapeshift	ShapeshiftExclude2		client
+dbc_spellshapeshift	ShapeshiftMask1		
+dbc_spellshapeshift	ShapeshiftMask2		client
 dbc_spellshapeshiftform	ID		
 dbc_spellshapeshiftform	Name_lang		
 dbc_spellshapeshiftform	Field_1_15_0_52124_002		client
@@ -1262,6 +1650,21 @@ dbc_spellshapeshiftform	PresetSpellID5		neutral
 dbc_spellshapeshiftform	PresetSpellID6		neutral
 dbc_spellshapeshiftform	PresetSpellID7		neutral
 dbc_spellshapeshiftform	PresetSpellID8		neutral
+dbc_spelltargetrestrictions	ID		client
+dbc_spelltargetrestrictions	DifficultyID		client
+dbc_spelltargetrestrictions	ConeDegrees		client
+dbc_spelltargetrestrictions	MaxTargets		
+dbc_spelltargetrestrictions	MaxTargetLevel		
+dbc_spelltargetrestrictions	TargetCreatureType		
+dbc_spelltargetrestrictions	Targets		
+dbc_spelltargetrestrictions	Width		client
+dbc_spelltargetrestrictions	SpellID		client
+dbc_spelltotems	ID		client
+dbc_spelltotems	SpellID		client
+dbc_spelltotems	RequiredTotemCategoryID1		client
+dbc_spelltotems	RequiredTotemCategoryID2		client
+dbc_spelltotems	Totem1		
+dbc_spelltotems	Totem2		
 dbc_spellvisual	ID		
 dbc_spellvisual	MissileCastOffset1		
 dbc_spellvisual	MissileCastOffset2		
