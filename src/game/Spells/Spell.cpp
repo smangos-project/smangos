@@ -4598,7 +4598,7 @@ void Spell::WriteAmmoToPacket(uint32& ammoDisplayId, uint32& ammoInventoryType)
         {
             ammoInventoryType = pItem->GetProto()->InventoryType;
             if (ammoInventoryType == INVTYPE_THROWN)
-                ammoDisplayId = pItem->GetProto()->DisplayInfoID;
+                ammoDisplayId = sObjectMgr.GetItemClientDisplayId(pItem->GetProto());
             else
             {
                 uint32 ammoID = ((Player*)m_caster)->GetUInt32Value(PLAYER_AMMO_ID);
@@ -4607,7 +4607,7 @@ void Spell::WriteAmmoToPacket(uint32& ammoDisplayId, uint32& ammoInventoryType)
                     ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(ammoID);
                     if (pProto)
                     {
-                        ammoDisplayId = pProto->DisplayInfoID;
+                        ammoDisplayId = sObjectMgr.GetItemClientDisplayId(pProto);
                         ammoInventoryType = pProto->InventoryType;
                     }
                 }

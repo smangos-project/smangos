@@ -472,7 +472,7 @@ void PlayerMenu::SendQuestInfo(uint32 questId) const
             choice.ItemId = int32(pQuest->RewChoiceItemId[i]);
             choice.Quantity = int32(pQuest->RewChoiceItemCount[i]);
             if (ItemPrototype const* proto = sObjectMgr.GetItemPrototype(pQuest->RewChoiceItemId[i]))
-                choice.DisplayId = int32(proto->DisplayInfoID);
+                choice.DisplayId = int32(sObjectMgr.GetItemClientDisplayId(proto));
         }
         packet.PoiContinent = int32(pQuest->GetPointMapId());
         packet.PoiX = pQuest->GetPointX();

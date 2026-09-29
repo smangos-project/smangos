@@ -748,6 +748,13 @@ class ObjectMgr
         }
         QuestMap const& GetQuestTemplates() const { return m_QuestTemplatesMap; }
 
+        // The display id the client resolves the item to, the item's own when the client has none
+        uint32 GetItemClientDisplayId(ItemPrototype const* proto) const
+        {
+            auto itr = m_itemClientDisplayIds.find(proto->ItemId);
+            return itr != m_itemClientDisplayIds.end() ? itr->second : proto->DisplayInfoID;
+        }
+
         // Bit index (from 1) the client uses for a quest in its completed-quests bitmap, 0 if it has none
         uint32 GetQuestUniqueBit(uint32 questId) const
         {
@@ -940,6 +947,7 @@ class ObjectMgr
         void LoadAreaTriggerTeleports();
         void LoadQuestAreaTriggers();
         void LoadQuestUniqueBits();
+        void LoadItemClientDisplayIds();
         void LoadTavernAreaTriggers();
         void LoadAreaTriggerLocales();
         void LoadGameObjectForQuests();
@@ -1513,6 +1521,7 @@ class ObjectMgr
         AreaTriggerMap    m_AreaTriggersMap;
         QuestAreaTriggerMap m_QuestAreaTriggerMap;
         std::unordered_map<uint32, uint32> m_questUniqueBits;
+        std::unordered_map<uint32, uint32> m_itemClientDisplayIds;
         TavernAreaTriggerSet m_TavernAreaTriggerSet;
         GameObjectForQuestSet m_GameObjectForQuestSet;
         AreaTriggerTeleportMap      m_AreaTriggerTeleportMap;

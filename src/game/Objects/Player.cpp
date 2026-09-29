@@ -4778,7 +4778,7 @@ Corpse* Player::CreateCorpse()
     {
         if (m_items[i])
         {
-            iDisplayID = m_items[i]->GetProto()->DisplayInfoID;
+            iDisplayID = sObjectMgr.GetItemClientDisplayId(m_items[i]->GetProto());
             iIventoryType = m_items[i]->GetProto()->InventoryType;
 
             _cfi =  iDisplayID | (iIventoryType << 24);

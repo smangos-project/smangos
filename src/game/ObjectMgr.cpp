@@ -7175,6 +7175,27 @@ void ObjectMgr::LoadQuestUniqueBits()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u quest completion bits", uint32(m_questUniqueBits.size()));
 }
 
+void ObjectMgr::LoadItemClientDisplayIds()
+{
+    m_itemClientDisplayIds.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query(
+        "SELECT m.`ItemID`, a.`ItemDisplayInfoID` FROM `dbc_itemmodifiedappearance` m "
+        "JOIN `dbc_itemappearance` a ON a.`ID` = m.`ItemAppearanceID` "
+        "WHERE m.`ItemAppearanceModifierID` = 0 AND m.`OrderIndex` = 0 AND a.`ItemDisplayInfoID` <> 0"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            m_itemClientDisplayIds[fields[0].GetUInt32()] = fields[1].GetUInt32();
+        }
+        while (result->NextRow());
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u item client display ids", uint32(m_itemClientDisplayIds.size()));
+}
+
 void ObjectMgr::LoadQuestAreaTriggers()
 {
     m_QuestAreaTriggerMap.clear();                           // need for reload case

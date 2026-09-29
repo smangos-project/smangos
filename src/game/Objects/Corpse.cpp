@@ -225,7 +225,7 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
             continue;
         }
 
-        SetUInt32Value(CORPSE_FIELD_ITEM + slot, proto->DisplayInfoID | (proto->InventoryType << 24));
+        SetUInt32Value(CORPSE_FIELD_ITEM + slot, sObjectMgr.GetItemClientDisplayId(proto) | (proto->InventoryType << 24));
     }
 
     SetUInt32Value(CORPSE_FIELD_BYTES_1, ((0x00) | (race << 8) | (gender << 16) | (skin << 24)));
