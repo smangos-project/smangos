@@ -6612,7 +6612,7 @@ SpellAuraHolder::SpellAuraHolder(SpellEntry const* spellproto, Unit* target, Uni
     m_duration = m_maxDuration = spellproto->CalculateDuration(unitCaster, target, m_auraScript);
 
     // Checking visual because of The Green Tower shield equip effect and Natural Shapeshifter talent.
-    if (m_maxDuration == -1 || (m_isPassive && (spellproto->DurationIndex == 0 || !spellproto->SpellVisual)))
+    if (m_maxDuration == -1 || (m_isPassive && (spellproto->DurationIndex == 0 || !spellproto->ClientVisualId)))
         m_permanent = true;
 
     // Fixes how very short duration buffs are displayed in the combat log
@@ -7053,7 +7053,7 @@ bool SpellAuraHolder::IsNeedVisibleSlot(Unit const* caster) const
     }
 
     // necessary for some spells, e.g. Immolate visual passive 28330
-    if (m_spellProto->SpellVisual)
+    if (m_spellProto->ClientVisualId)
         return true;
 
     // passive auras (except totem auras) do not get placed in the slots

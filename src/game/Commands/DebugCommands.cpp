@@ -238,7 +238,7 @@ bool ChatHandler::HandleDebugSendNextChannelSpellVisualCommand(char *args)
     for (id = uiPlayId + 1; id <= sSpellMgr.GetMaxSpellId(); id++)
     {
         spellInfo = sSpellMgr.GetSpellEntry(id);
-        if (!spellInfo || uiPlayId >= spellInfo->Id || !spellInfo->SpellVisual || !spellInfo->IsChanneledSpell())
+        if (!spellInfo || uiPlayId >= spellInfo->Id || !spellInfo->ClientVisualId || !spellInfo->IsChanneledSpell())
             continue;
         else
             break;
