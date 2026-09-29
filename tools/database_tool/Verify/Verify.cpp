@@ -2,6 +2,7 @@
 
 #include "Dbc/DbcSchema.h"
 #include "Dbc/DbcTableMeta.h"
+#include "Spec/SpecFile.h"
 #include "Verify/RowCompare.h"
 #include "World/DoltLiteDatabase.h"
 #include "World/VersionCollapse.h"
@@ -145,28 +146,58 @@ static bool WantsTable(VerifyOptions const& options, std::string const& table)
            std::find(options.tables.begin(), options.tables.end(), table) != options.tables.end();
 }
 
-static void ReportCompare(VerifyResult& result, std::string const& check, std::string const& table,
-                          RowCompareResult const& compare)
+// What a table's rebuild may differ in: original columns the mapping may leave out (`drop` in
+// columns.tsv), exact differing-row counts per column ("(missing)" for missing rows) from
+// Verify/vdbc/allow.tsv, and whether rows only the world has are fine.
+struct VerifyTableRules
 {
+    std::set<std::string> dropped;
+    std::map<std::string, uint64_t> allowed;
+    bool allowExtraRows = false;
+};
+
+static void ReportDifference(VerifyResult& result, std::string const& check, std::string const& table,
+                             VerifyTableRules const& rules, std::set<std::string>& allowedSeen,
+                             std::string const& column, uint64_t rows, std::string const& message)
+{
+    auto allowed = rules.allowed.find(column);
+    if (allowed != rules.allowed.end())
+    {
+        allowedSeen.insert(column);
+        if (allowed->second == rows)
+            return;
+        result.problems.push_back({ check, table, message + " (allow.tsv allows " + std::to_string(allowed->second) + ")" });
+        return;
+    }
+    result.problems.push_back({ check, table, message });
+}
+
+static void ReportCompare(VerifyResult& result, std::string const& check, std::string const& table,
+                          VerifyTableRules const& rules, RowCompareResult const& compare)
+{
+    std::set<std::string> allowedSeen;
     if (compare.missingRows)
-        result.problems.push_back({ check, table, std::to_string(compare.missingRows) + " of " +
-                                                      std::to_string(compare.expectedRows) +
-                                                      " rows missing, first " + compare.firstMissingKey });
-    if (compare.extraRows)
+        ReportDifference(result, check, table, rules, allowedSeen, "(missing)", compare.missingRows,
+                         std::to_string(compare.missingRows) + " of " + std::to_string(compare.expectedRows) +
+                             " rows missing, first " + compare.firstMissingKey);
+    if (compare.extraRows && !rules.allowExtraRows)
         result.problems.push_back({ check, table, std::to_string(compare.extraRows) + " extra rows, first " +
                                                       compare.firstExtraKey });
     for (ColumnDifference const& difference : compare.differences)
-        result.problems.push_back({ check, table, difference.column + " differs in " +
-                                                      std::to_string(difference.rows) + " rows, first " +
-                                                      difference.firstKey + ": original " + difference.expected +
-                                                      ", rebuilt " + difference.actual });
+        ReportDifference(result, check, table, rules, allowedSeen, difference.column, difference.rows,
+                         difference.column + " differs in " + std::to_string(difference.rows) + " rows, first " +
+                             difference.firstKey + ": original " + difference.expected + ", rebuilt " +
+                             difference.actual);
+    for (auto const& [column, rows] : rules.allowed)
+        if (!allowedSeen.count(column))
+            result.problems.push_back({ check, table, "allow.tsv allows " + std::to_string(rows) + " rows in " + column +
+                                                          ", none differ" });
 }
 
-// Checks a mapping's columns against the original's, then compares the rows. `dropped` are the
-// original columns the mapping may leave out.
+// Checks a mapping's columns against the original's, then compares the rows.
 static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::string const& check,
                               std::string const& originalTable, std::filesystem::path const& mappingPath,
-                              std::set<std::string> const& dropped)
+                              VerifyTableRules const& rules)
 {
     VerifyMapping mapping;
     std::vector<std::string> mappingColumns;
@@ -203,16 +234,11 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
             columnsOk = false;
         }
         next = index + 1;
-        if (dropped.count(column))
-        {
-            result.problems.push_back({ check, originalTable, "column " + column + " is both mapped and dropped" });
-            columnsOk = false;
-        }
     }
     for (VerifyTableColumn const& column : originalColumns)
     {
         if (std::find(mappingColumns.begin(), mappingColumns.end(), column.name) == mappingColumns.end() &&
-            !dropped.count(column.name))
+            !rules.dropped.count(column.name))
         {
             result.problems.push_back({ check, originalTable, "column " + column.name + " is neither mapped nor dropped" });
             columnsOk = false;
@@ -241,7 +267,7 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
 
     try
     {
-        ReportCompare(result, check, originalTable, CompareRowSets(db, expected, mapping.select, keyColumns));
+        ReportCompare(result, check, originalTable, rules, CompareRowSets(db, expected, mapping.select, keyColumns));
         ++result.tablesCompared;
     }
     catch (std::exception const& e)
@@ -250,14 +276,30 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
     }
 }
 
-// V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
-static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
-                               VerifyOptions const& options, VerifyResult& result)
+// Per (source, table): the columns columns.tsv marks `drop`, and every column it lists.
+struct VerifySpecColumns
 {
     std::map<std::string, std::set<std::string>> dropped;
-    for (std::vector<std::string> const& row : ReadTsv(verifyDir / "srv" / "dropped.tsv", 3))
-        dropped[row[0]].insert(row[1]);
+    std::map<std::string, std::vector<SpecColumnRow>> rows;
+};
 
+static VerifySpecColumns ReadSpecColumns(std::filesystem::path const& specDir)
+{
+    VerifySpecColumns spec;
+    for (SpecColumnRow& row : ReadColumnsTsv(specDir / "columns.tsv"))
+    {
+        std::string key = row.source + ":" + row.table;
+        if (row.disposition == "drop")
+            spec.dropped[key].insert(row.column);
+        spec.rows[key].push_back(std::move(row));
+    }
+    return spec;
+}
+
+// V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
+static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
+                               VerifySpecColumns const& spec, VerifyOptions const& options, VerifyResult& result)
+{
     for (std::string const& originalTable : TablesWithPrefix(db, "ref", "srv_"))
     {
         std::string table = originalTable.substr(4);
@@ -270,8 +312,121 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
             result.problems.push_back({ "V1", originalTable, "no mapping file srv/" + table + ".sql" });
             continue;
         }
-        VerifyMappedTable(db, result, "V1", originalTable, mappingPath, dropped[table]);
+
+        VerifyTableRules rules;
+        if (auto it = spec.dropped.find("srv:" + table); it != spec.dropped.end())
+            rules.dropped = it->second;
+        VerifyMappedTable(db, result, "V1", originalTable, mappingPath, rules);
     }
+}
+
+// V2: every vdbc_ table with data the finished database keeps is rebuilt by
+// Verify/vdbc/<Name>.sql, up to the differences in Verify/vdbc/allow.tsv. The world may have rows
+// the 1.12 files don't. A table whose columns are all `drop` needs no mapping.
+static void VerifyVanillaTables(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
+                                VerifySpecColumns const& spec, VerifyOptions const& options, VerifyResult& result)
+{
+    std::map<std::string, std::map<std::string, uint64_t>> allowed;
+    for (std::vector<std::string> const& row : ReadTsv(verifyDir / "vdbc" / "allow.tsv", 4))
+        allowed[row[0]][row[1]] = std::stoull(row[2]);
+
+    std::vector<std::string> unmapped;
+    for (std::string const& originalTable : TablesWithPrefix(db, "ref", "vdbc_"))
+    {
+        std::string table = originalTable.substr(5);
+        if (!WantsTable(options, originalTable) && !WantsTable(options, table))
+            continue;
+
+        DbcTableMeta const* meta = FindVanillaDbcTable(table);
+        std::string name = meta ? meta->name : table;
+        std::filesystem::path mappingPath = verifyDir / "vdbc" / (name + ".sql");
+
+        VerifyTableRules rules;
+        rules.allowExtraRows = true;
+        if (auto it = spec.dropped.find("vdbc:" + table); it != spec.dropped.end())
+            rules.dropped = it->second;
+        if (auto it = allowed.find(name); it != allowed.end())
+            rules.allowed = it->second;
+
+        if (std::filesystem::exists(mappingPath))
+        {
+            VerifyMappedTable(db, result, "V2", originalTable, mappingPath, rules);
+            continue;
+        }
+
+        auto columns = spec.rows.find("vdbc:" + table);
+        bool keepsData = columns == spec.rows.end() ||
+                         std::any_of(columns->second.begin(), columns->second.end(),
+                                     [](SpecColumnRow const& row) { return row.disposition != "drop"; });
+        if (!keepsData)
+            continue;
+        if (options.final)
+            result.problems.push_back({ "V2", originalTable, "no mapping file vdbc/" + name + ".sql" });
+        else
+            unmapped.push_back(name);
+    }
+
+    if (!unmapped.empty())
+    {
+        std::string note = "V2: " + std::to_string(unmapped.size()) + " vanilla tables not mapped yet:";
+        for (std::string const& name : unmapped)
+            note += " " + name;
+        result.notes.push_back(note);
+    }
+}
+
+// The mapping columns.tsv implies for a vanilla table whose kept columns all come from one dbc_
+// table through a rule with a scalar inverse, or are constants. Empty when there is none.
+static std::string GenerateVanillaMapping(std::string const& table, std::vector<SpecColumnRow> const& columns,
+                                          std::map<std::string, SpecRuleRow> const& rules, std::string& reason)
+{
+    std::string dbcTable;
+    std::string select;
+    for (SpecColumnRow const& column : columns)
+    {
+        std::string expression;
+        if (column.disposition == "drop")
+            continue;
+        if (column.disposition == "constant")
+            expression = column.target;
+        else if (column.disposition == "dbc")
+        {
+            size_t dot = column.target.find('.');
+            auto rule = rules.find(column.rule.empty() ? "identity" : column.rule);
+            if (dot == std::string::npos || rule == rules.end() || rule->second.kind != "value" ||
+                rule->second.inverse.empty())
+            {
+                reason = column.column + ": no scalar inverse for rule " + column.rule;
+                return {};
+            }
+            std::string target = column.target.substr(0, dot);
+            if (!dbcTable.empty() && target != dbcTable)
+            {
+                reason = column.column + ": a second target table " + target;
+                return {};
+            }
+            dbcTable = target;
+
+            expression = rule->second.inverse;
+            std::string value = "d." + Quote(column.target.substr(dot + 1));
+            for (size_t at = expression.find("{v}"); at != std::string::npos; at = expression.find("{v}", at + value.size()))
+                expression.replace(at, 3, value);
+        }
+        else
+        {
+            reason = column.column + ": disposition " + column.disposition;
+            return {};
+        }
+
+        select += (select.empty() ? "SELECT " : ",\n       ") + expression + " AS " + Quote(column.column);
+    }
+
+    if (dbcTable.empty())
+    {
+        reason = "no dbc column";
+        return {};
+    }
+    return select + "\nFROM " + Quote(dbcTable) + " d";
 }
 
 typedef std::array<uint64_t, 3> VerifyDelta; // inserted, changed, removed
@@ -356,7 +511,8 @@ static void VerifyClientDelta(DoltLiteDatabase& db, std::filesystem::path const&
 }
 
 VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
-                       std::filesystem::path const& verifyDir, VerifyOptions const& options)
+                       std::filesystem::path const& specDir, std::filesystem::path const& verifyDir,
+                       VerifyOptions const& options)
 {
     VerifyResult result;
     for (std::filesystem::path const& path : { worldPath, referencePath })
@@ -373,8 +529,11 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
         DoltLiteDatabase db(worldPath.string());
         db.Execute("ATTACH DATABASE '" + referencePath.string() + "' AS ref");
 
+        VerifySpecColumns spec = ReadSpecColumns(specDir);
         if (Wants(options, "V1"))
-            VerifyServerTables(db, verifyDir, options, result);
+            VerifyServerTables(db, verifyDir, spec, options, result);
+        if (Wants(options, "V2"))
+            VerifyVanillaTables(db, verifyDir, spec, options, result);
         if (Wants(options, "V3"))
             VerifyClientDelta(db, verifyDir, options, result);
     }
@@ -385,7 +544,50 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
     return result;
 }
 
-VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, std::filesystem::path const& verifyDir)
+static void InitVanillaMappings(DoltLiteDatabase& db, std::filesystem::path const& specDir,
+                                std::filesystem::path const& verifyDir, std::vector<std::string> const& vanillaTables,
+                                VerifyInitResult& result)
+{
+    VerifySpecColumns spec = ReadSpecColumns(specDir);
+    std::map<std::string, SpecRuleRow> rules;
+    for (SpecRuleRow& rule : ReadRulesTsv(specDir / "rules.tsv"))
+        rules[rule.name] = std::move(rule);
+
+    bool all = std::find(vanillaTables.begin(), vanillaTables.end(), "all") != vanillaTables.end();
+    for (std::string const& originalTable : TablesWithPrefix(db, "main", "vdbc_"))
+    {
+        DbcTableMeta const* meta = FindVanillaDbcTable(originalTable.substr(5));
+        auto columns = spec.rows.find("vdbc:" + originalTable.substr(5));
+        if (!meta || columns == spec.rows.end())
+            continue;
+        std::string name = meta->name;
+        if (!all && std::find(vanillaTables.begin(), vanillaTables.end(), name) == vanillaTables.end())
+            continue;
+        std::filesystem::path path = verifyDir / "vdbc" / (name + ".sql");
+        if (std::filesystem::exists(path))
+            continue;
+
+        std::string reason;
+        VerifyMapping mapping;
+        mapping.select = GenerateVanillaMapping(originalTable, columns->second, rules, reason);
+        if (mapping.select.empty())
+        {
+            if (!all || reason != "no dbc column")
+                result.skipped.push_back(name + ": " + reason);
+            continue;
+        }
+        for (uint32_t i = 0; i < meta->fieldCount; ++i)
+            if (meta->fields[i].isId)
+                mapping.key.push_back(meta->fields[i].name);
+
+        WriteVerifyMapping(path, {}, mapping);
+        ++result.written;
+    }
+}
+
+VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, std::filesystem::path const& specDir,
+                                    std::filesystem::path const& verifyDir,
+                                    std::vector<std::string> const& vanillaTables)
 {
     VerifyInitResult result;
     try
@@ -430,6 +632,9 @@ VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, 
             WriteVerifyMapping(path, {}, mapping);
             ++result.written;
         }
+
+        if (!vanillaTables.empty())
+            InitVanillaMappings(db, specDir, verifyDir, vanillaTables, result);
     }
     catch (std::exception const& e)
     {

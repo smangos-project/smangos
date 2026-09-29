@@ -111,21 +111,22 @@ TEST_CASE("V1 rebuilds each srv_ table from its mapping and honours dropped colu
         world.Execute("INSERT INTO other VALUES (1, 0, 10), (1, 2, 11), (1, 11, 12)");
     }
 
-    VerifyInitResult init = InitVerifyMappings(referencePath, verifyDir);
+    VerifyInitResult init = InitVerifyMappings(referencePath, dir.path, verifyDir);
     REQUIRE(init.error.empty());
     CHECK(init.written == 2);
     CHECK(ReadVerifyMapping(verifyDir / "srv" / "other.sql").key == std::vector<std::string>{ "id" });
 
     WriteVerifyTestFile(verifyDir / "srv" / "thing.sql", "-- key: id\nSELECT ID AS id, Name AS name FROM dbc_thing\n");
 
-    VerifyResult undropped = RunVerify(worldPath, referencePath, verifyDir, { false, false, { "V1" }, {} });
+    VerifyResult undropped = RunVerify(worldPath, referencePath, dir.path, verifyDir, { false, false, { "V1" }, {} });
     REQUIRE(undropped.error.empty());
     REQUIRE(undropped.problems.size() == 1);
     CHECK(undropped.problems[0].table == "srv_thing");
     CHECK(undropped.problems[0].message == "column junk is neither mapped nor dropped");
 
-    WriteVerifyTestFile(verifyDir / "srv" / "dropped.tsv", "table\tcolumn\treason\nthing\tjunk\tno reader\n");
-    VerifyResult dropped = RunVerify(worldPath, referencePath, verifyDir, { false, false, { "V1" }, { "thing" } });
+    WriteVerifyTestFile(dir.path / "columns.tsv", "source\ttable\tcolumn\tdisposition\ttarget\trule\treason\treviewed\n"
+                                                  "srv\tthing\tjunk\tdrop\t\t\tno reader\tyes\n");
+    VerifyResult dropped = RunVerify(worldPath, referencePath, dir.path, verifyDir, { false, false, { "V1" }, { "thing" } });
     REQUIRE(dropped.problems.size() == 1);
     CHECK(dropped.problems[0].message == "name differs in 1 rows, first id=2: original 'b', rebuilt 'c'");
 }
@@ -147,7 +148,7 @@ TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-de
     }
 
     VerifyOptions options{ false, false, { "V3" }, { "dbc_map", "dbc_chrraces" } };
-    VerifyResult result = RunVerify(worldPath, referencePath, verifyDir, options);
+    VerifyResult result = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
     REQUIRE(result.error.empty());
     REQUIRE(result.problems.size() == 1);
     CHECK(result.problems[0].table == "dbc_map");
@@ -159,12 +160,62 @@ TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-de
         world.Execute("INSERT INTO dbc_chrraces (ID) VALUES (3)");
     }
     options.updateDelta = true;
-    CHECK(RunVerify(worldPath, referencePath, verifyDir, options).problems.empty());
+    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
 
     std::ifstream in(verifyDir / "client-delta.tsv");
     std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     CHECK(content == "table\tinserted\tchanged\tremoved\ndbc_chrraces\t1\t0\t0\ndbc_map\t1\t1\t0\n");
 
     options.updateDelta = false;
-    CHECK(RunVerify(worldPath, referencePath, verifyDir, options).problems.empty());
+    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+}
+
+TEST_CASE("V2 rebuilds vanilla tables through the columns.tsv mapping, up to allow.tsv", "[Verify]")
+{
+    VerifyTempDir dir("v2");
+    std::filesystem::path worldPath = dir.path / "world.doltlite";
+    std::filesystem::path referencePath = dir.path / "reference.doltlite";
+    std::filesystem::path verifyDir = dir.path / "Verify";
+    {
+        DoltLiteDatabase reference(referencePath.string());
+        reference.Execute(BuildDbcTableDdl(*FindVanillaDbcTable("SpellCastTimes"), "vdbc_spellcasttimes", 9));
+        reference.Execute("INSERT INTO vdbc_spellcasttimes VALUES (1, 0, 0, 0), (2, 250, 0, 250), (3, 500, 0, 500)");
+    }
+    {
+        DoltLiteDatabase world(worldPath.string());
+        world.Execute(BuildDbcTableDdl(*FindDbcTable("SpellCastTimes")));
+        world.Execute("INSERT INTO dbc_spellcasttimes VALUES (1, 0, 0, 0), (2, 250, 0, 300), (4, 1, 0, 1)");
+    }
+    WriteVerifyTestFile(dir.path / "rules.tsv", "name\tkind\texpr\tinverse\tapplies_to\nidentity\tvalue\t{v}\t{v}\t\n");
+    WriteVerifyTestFile(dir.path / "columns.tsv",
+                        "source\ttable\tcolumn\tdisposition\ttarget\trule\treason\treviewed\n"
+                        "vdbc\tspellcasttimes\tID\tdbc\tdbc_spellcasttimes.ID\tidentity\t\tyes\n"
+                        "vdbc\tspellcasttimes\tBase\tdbc\tdbc_spellcasttimes.Base\tidentity\t\tyes\n"
+                        "vdbc\tspellcasttimes\tPerLevel\tconstant\t0\t\t\tyes\n"
+                        "vdbc\tspellcasttimes\tMinimum\tdbc\tdbc_spellcasttimes.Minimum\tidentity\t\tyes\n");
+
+    VerifyOptions options{ false, false, { "V2" }, {} };
+    VerifyResult unmapped = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    CHECK(unmapped.problems.empty());
+    CHECK(unmapped.notes == std::vector<std::string>{ "V2: 1 vanilla tables not mapped yet: SpellCastTimes" });
+
+    VerifyInitResult init = InitVerifyMappings(referencePath, dir.path, verifyDir, { "all" });
+    REQUIRE(init.error.empty());
+    CHECK(init.written == 1);
+    CHECK(ReadVerifyMapping(verifyDir / "vdbc" / "SpellCastTimes.sql").select ==
+          "SELECT d.\"ID\" AS \"ID\",\n       d.\"Base\" AS \"Base\",\n       0 AS \"PerLevel\",\n"
+          "       d.\"Minimum\" AS \"Minimum\"\nFROM \"dbc_spellcasttimes\" d");
+
+    VerifyResult mapped = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    REQUIRE(mapped.problems.size() == 2);
+    CHECK(mapped.problems[0].message == "1 of 3 rows missing, first ID=3");
+    CHECK(mapped.problems[1].message == "Minimum differs in 1 rows, first ID=2: original 250, rebuilt 300");
+
+    WriteVerifyTestFile(verifyDir / "vdbc" / "allow.tsv", "table\tcolumn\trows\treason\n"
+                                                          "SpellCastTimes\t(missing)\t1\tvmangos fix\n"
+                                                          "SpellCastTimes\tMinimum\t2\tvmangos fix\n");
+    VerifyResult allowed = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    REQUIRE(allowed.problems.size() == 1);
+    CHECK(allowed.problems[0].message ==
+          "Minimum differs in 1 rows, first ID=2: original 250, rebuilt 300 (allow.tsv allows 2)");
 }

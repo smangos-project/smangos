@@ -580,7 +580,7 @@ namespace
     }
 
     // verify [--final] [--update-delta] [--checks V1,V3] [--tables a,b]
-    // verify init
+    // verify init [--vdbc Name,Name|all]
     int RunVerifyCommand(std::vector<std::string> const& args)
     {
         std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
@@ -588,12 +588,19 @@ namespace
 
         if (!args.empty() && args[0] == "init")
         {
-            VerifyInitResult result = InitVerifyMappings(referencePath, verifyDir);
+            std::vector<std::string> vanillaTables;
+            for (size_t i = 1; i + 1 < args.size(); ++i)
+                if (args[i] == "--vdbc")
+                    vanillaTables = SplitCsv(args[i + 1]);
+
+            VerifyInitResult result = InitVerifyMappings(referencePath, SpecDir(), verifyDir, vanillaTables);
             if (!result.error.empty())
             {
                 std::printf("verify init: %s\n", result.error.c_str());
                 return 1;
             }
+            for (std::string const& skipped : result.skipped)
+                std::printf("skipped %s\n", skipped.c_str());
             std::printf("verify init: %u mapping files written\n", result.written);
             return 0;
         }
@@ -616,7 +623,7 @@ namespace
             }
         }
 
-        VerifyResult result = RunVerify(SourceRoot() / ".world" / "world.doltlite", referencePath, verifyDir, options);
+        VerifyResult result = RunVerify(SourceRoot() / ".world" / "world.doltlite", referencePath, SpecDir(), verifyDir, options);
         if (!result.error.empty())
         {
             std::printf("verify: %s\n", result.error.c_str());

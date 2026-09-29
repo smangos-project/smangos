@@ -43,17 +43,24 @@ struct VerifyResult
 };
 
 // Runs the checks of plan.md 6.2 against `worldPath` with `referencePath` attached as `ref`.
+// Dropped columns come from `specDir`'s columns.tsv.
 VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
-                       std::filesystem::path const& verifyDir, VerifyOptions const& options);
+                       std::filesystem::path const& specDir, std::filesystem::path const& verifyDir,
+                       VerifyOptions const& options);
 
 struct VerifyInitResult
 {
     uint32_t written = 0;
+    std::vector<std::string> skipped; // "<Name>: why columns.tsv implies no vdbc mapping"
     std::string error;
 };
 
 // Writes an identity mapping (the world table collapsed to the vanilla version, as the reference
-// database was built) for every srv_ table that has no mapping file yet.
-VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, std::filesystem::path const& verifyDir);
+// database was built) for every srv_ table that has no mapping file yet, and for the vanilla
+// tables named in `vanillaTables` ("all": every one) the mapping columns.tsv implies: each kept
+// column read back from its dbc_ target through the rule's inverse.
+VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, std::filesystem::path const& specDir,
+                                    std::filesystem::path const& verifyDir,
+                                    std::vector<std::string> const& vanillaTables = {});
 
 #endif
