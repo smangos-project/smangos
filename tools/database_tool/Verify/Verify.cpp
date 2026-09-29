@@ -2,6 +2,7 @@
 
 #include "Dbc/DbcSchema.h"
 #include "Dbc/DbcTableMeta.h"
+#include "Spec/ColumnMatch.h"
 #include "Spec/SpecFile.h"
 #include "Verify/RowCompare.h"
 #include "World/DoltLiteDatabase.h"
@@ -9,6 +10,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <fstream>
 #include <map>
 #include <set>
@@ -640,6 +642,177 @@ static void VerifyReferences(DoltLiteDatabase& db, std::filesystem::path const& 
     }
 }
 
+// Adds a finished-database difference: a problem with --final, else counted into one note.
+static void ReportFinal(VerifyResult& result, VerifyOptions const& options, std::string const& check,
+                        std::string const& table, std::string const& message, uint32_t& count)
+{
+    ++count;
+    if (options.final)
+        result.problems.push_back({ check, table, message });
+}
+
+// "t.col", "t.col1-3" (col1, col2, col3) and "t.col (note)" as (table, column) pairs.
+static std::vector<std::pair<std::string, std::string>> ExpandTarget(std::string const& target)
+{
+    std::string plain = target.substr(0, target.find(' '));
+    size_t dot = plain.find('.');
+    if (dot == std::string::npos)
+        return {};
+    std::string table = plain.substr(0, dot), column = plain.substr(dot + 1);
+
+    size_t dash = column.rfind('-');
+    size_t digits = dash;
+    while (digits != std::string::npos && digits > 0 && std::isdigit(static_cast<unsigned char>(column[digits - 1])))
+        --digits;
+    if (dash == std::string::npos || digits == dash || dash + 1 >= column.size())
+        return { { table, column } };
+
+    std::string stem = column.substr(0, digits);
+    std::vector<std::pair<std::string, std::string>> columns;
+    for (int i = std::stoi(column.substr(digits, dash - digits)), last = std::stoi(column.substr(dash + 1)); i <= last; ++i)
+        columns.push_back({ table, stem + std::to_string(i) });
+    return columns;
+}
+
+// V0: the world database's tables and server columns are what tables.tsv and columns.tsv say the
+// finished database has.
+static void VerifySchema(DoltLiteDatabase& db, std::filesystem::path const& specDir, VerifySpecColumns const& spec,
+                         VerifyOptions const& options, VerifyResult& result)
+{
+    std::map<std::string, std::string> kinds;
+    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
+        kinds[row.table] = row.kind;
+
+    std::map<std::string, std::set<std::string>> expected;
+    for (auto const& [key, rows] : spec.rows)
+    {
+        for (SpecColumnRow const& row : rows)
+        {
+            if (row.source == "new")
+                expected[row.table].insert(row.column);
+            else if (row.disposition == "server" && row.target.empty())
+                expected[row.table].insert(row.column);
+            else if (row.disposition == "server")
+                for (auto const& [table, column] : ExpandTarget(row.target))
+                    expected[table].insert(column);
+        }
+    }
+
+    std::set<std::string> worldTables;
+    {
+        DoltLiteStatement stmt = db.Prepare("SELECT name FROM main.sqlite_master WHERE type = 'table'");
+        while (stmt.Step())
+            worldTables.insert(stmt.ColumnText(0));
+    }
+
+    uint32_t count = 0;
+    for (std::string const& table : worldTables)
+    {
+        if (table.rfind("dbc_", 0) == 0 || table.rfind("dolt_", 0) == 0 || table.rfind("sqlite_", 0) == 0 ||
+            table == "migrations" || !WantsTable(options, table))
+            continue;
+
+        auto kind = kinds.find(table);
+        if (kind == kinds.end())
+        {
+            ReportFinal(result, options, "V0", table, "table is not in tables.tsv", count);
+            continue;
+        }
+        if (kind->second == "gone")
+        {
+            ReportFinal(result, options, "V0", table, "table is gone in the finished database", count);
+            continue;
+        }
+
+        std::set<std::string> columns;
+        for (VerifyTableColumn const& column : ReadTableColumns(db, "main", table))
+            columns.insert(column.name);
+        std::set<std::string> const& wanted = expected[table];
+        for (std::string const& column : columns)
+            if (!wanted.count(column))
+                ReportFinal(result, options, "V0", table, "column " + column + " is not a server column in columns.tsv", count);
+        for (std::string const& column : wanted)
+            if (!columns.count(column))
+                ReportFinal(result, options, "V0", table, "missing column " + column, count);
+    }
+
+    for (auto const& [table, kind] : kinds)
+        if (kind != "gone" && !worldTables.count(table) && WantsTable(options, table))
+            ReportFinal(result, options, "V0", table, "missing " + kind + " table", count);
+
+    if (count && !options.final)
+        result.notes.push_back("V0: " + std::to_string(count) + " differences from the finished schema (--final lists them)");
+}
+
+// V5: no server column repeats a dbc_ column: over each pairs.tsv id join, a server column whose
+// non-constant values equal a dbc_ column's in every joined row is stored twice.
+static void VerifyRedundancy(DoltLiteDatabase& db, std::filesystem::path const& specDir, VerifyOptions const& options,
+                             VerifyResult& result)
+{
+    std::set<std::string> worldTables;
+    {
+        DoltLiteStatement stmt = db.Prepare("SELECT name FROM main.sqlite_master WHERE type = 'table'");
+        while (stmt.Step())
+            worldTables.insert(stmt.ColumnText(0));
+    }
+
+    uint32_t count = 0;
+    for (SpecPairRow const& pair : ReadPairsTsv(specDir / "pairs.tsv"))
+    {
+        std::string dbcTable = "dbc_" + pair.cdbcTable;
+        if (pair.source != "srv" || pair.joinKind != "id" || !worldTables.count(pair.table) ||
+            !worldTables.count(dbcTable) || !WantsTable(options, pair.table))
+            continue;
+
+        ValueEncoder encoder;
+        LoadedTable server = LoadTable(db, pair.table, encoder);
+        LoadedTable client = LoadTable(db, dbcTable, encoder);
+        int serverKey = server.ColumnIndex(pair.sourceKey), clientKey = client.ColumnIndex(pair.cdbcKey);
+        if (serverKey < 0 || clientKey < 0)
+        {
+            result.problems.push_back({ "V5", pair.table, "pairs.tsv key " + pair.sourceKey + "/" + pair.cdbcKey + " not found" });
+            continue;
+        }
+        PreparedJoin join = PrepareJoin(server, serverKey, dbcTable, client, clientKey);
+        if (join.sourceRows.empty())
+            continue;
+
+        std::vector<std::vector<std::string>> repeats(server.columns.size());
+        ParallelFor(server.columns.size(), [&](size_t column)
+        {
+            if (static_cast<int>(column) == serverKey)
+                return;
+            std::vector<EncodedValue> const& values = server.values[column];
+            bool varies = false;
+            for (uint32_t row : join.sourceRows)
+                if (!SqlEqual(values[row], values[join.sourceRows.front()]))
+                    varies = true;
+            if (!varies)
+                return;
+
+            for (size_t target = 0; target < join.targetColumns.size(); ++target)
+            {
+                std::vector<EncodedValue> const& targetValues = join.targetValues[target];
+                bool equal = true;
+                for (size_t j = 0; j < join.sourceRows.size() && equal; ++j)
+                    equal = SqlEqual(values[join.sourceRows[j]], targetValues[j]);
+                if (equal)
+                    repeats[column].push_back(join.targetColumns[target].name);
+            }
+        });
+
+        for (size_t column = 0; column < server.columns.size(); ++column)
+            for (std::string const& target : repeats[column])
+                ReportFinal(result, options, "V5", pair.table,
+                            server.columns[column].name + " repeats " + dbcTable + "." + target + " in all " +
+                                std::to_string(join.sourceRows.size()) + " joined rows",
+                            count);
+    }
+
+    if (count && !options.final)
+        result.notes.push_back("V5: " + std::to_string(count) + " server columns repeat a dbc_ column (--final lists them)");
+}
+
 VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
                        std::filesystem::path const& specDir, std::filesystem::path const& verifyDir,
                        VerifyOptions const& options)
@@ -660,6 +833,8 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
         db.Execute("ATTACH DATABASE '" + referencePath.string() + "' AS ref");
 
         VerifySpecColumns spec = ReadSpecColumns(specDir);
+        if (Wants(options, "V0"))
+            VerifySchema(db, specDir, spec, options, result);
         if (Wants(options, "V1"))
             VerifyServerTables(db, verifyDir, spec, options, result);
         if (Wants(options, "V2"))
@@ -668,6 +843,8 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
             VerifyClientDelta(db, verifyDir, options, result);
         if (Wants(options, "V4"))
             VerifyReferences(db, verifyDir, options, result);
+        if (Wants(options, "V5"))
+            VerifyRedundancy(db, specDir, options, result);
     }
     catch (std::exception const& e)
     {

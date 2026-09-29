@@ -6,6 +6,7 @@
 
 #include <catch_amalgamated.hpp>
 
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -263,4 +264,72 @@ TEST_CASE("V4 counts dangling client foreign keys and declared server references
     CHECK(content == "table\tcolumn\ttarget\twhere\tdangling\treason\n"
                      "dbc_taxipath\tFromTaxiNode\tdbc_taxinodes.ID\t\t1\t\n"
                      "thing\tnode\tdbc_taxinodes.ID\tkind = 0\t1\ttest\n");
+}
+
+TEST_CASE("V0 and V5 compare the world with the finished database, gated by --final", "[Verify]")
+{
+    VerifyTempDir dir("v0v5");
+    std::filesystem::path worldPath = dir.path / "world.doltlite";
+    std::filesystem::path referencePath = dir.path / "reference.doltlite";
+    std::filesystem::path verifyDir = dir.path / "Verify";
+    DoltLiteDatabase(referencePath.string()).Execute("CREATE TABLE unused (x INTEGER)");
+    {
+        DoltLiteDatabase world(worldPath.string());
+        world.Execute("CREATE TABLE thing (entry INTEGER, kept INTEGER, copy INTEGER, same INTEGER, patch INTEGER)");
+        world.Execute("INSERT INTO thing VALUES (1, 5, 10, 0, 0), (2, 6, 20, 0, 0)");
+        world.Execute("CREATE TABLE old_thing (x INTEGER)");
+        world.Execute("CREATE TABLE dbc_thing (ID INTEGER, Copy INTEGER, Zero INTEGER)");
+        world.Execute("INSERT INTO dbc_thing VALUES (1, 10, 0), (2, 20, 0)");
+    }
+    WriteVerifyTestFile(dir.path / "tables.tsv", "table\tkind\tkey\tsources\tinto\toverrides\treason\n"
+                                                 "thing\tserver\tentry\tsrv:thing\t\t\t\n"
+                                                 "old_thing\tgone\t\t\tthing\t\t\n"
+                                                 "new_thing\tserver\tid\t\t\t\t\n");
+    WriteVerifyTestFile(dir.path / "columns.tsv",
+                        "source\ttable\tcolumn\tdisposition\ttarget\trule\treason\treviewed\n"
+                        "srv\tthing\tentry\tserver\t\t\t\tyes\n"
+                        "srv\tthing\tkept\tserver\t\t\t\tyes\n"
+                        "srv\tthing\tcopy\tdbc\tdbc_thing.Copy\tidentity\t\tyes\n"
+                        "srv\tthing\tsame\tserver\t\t\t\tyes\n"
+                        "srv\tthing\tpatch\tdrop\t\t\t\tyes\n"
+                        "srv\told_thing\tx\tserver\tnew_thing.x1-2 (note)\t\t\tyes\n"
+                        "new\tnew_thing\tid\tserver\t\t\t\tyes\n");
+    WriteVerifyTestFile(dir.path / "pairs.tsv", "source\ttable\tcdbc_table\tjoin_kind\tsource_key\tcdbc_key\tnotes\n"
+                                                "srv\tthing\tthing\tid\tentry\tID\t\n");
+
+    VerifyOptions options{ false, false, { "V0", "V5" }, {} };
+    VerifyResult progress = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    REQUIRE(progress.error.empty());
+    CHECK(progress.problems.empty());
+    CHECK(progress.notes == std::vector<std::string>{
+                                "V0: 4 differences from the finished schema (--final lists them)",
+                                "V5: 1 server columns repeat a dbc_ column (--final lists them)" });
+
+    options.final = true;
+    VerifyResult final = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    REQUIRE(final.problems.size() == 5);
+    CHECK(final.problems[0].message == "table is gone in the finished database");
+    CHECK(final.problems[1].message == "column copy is not a server column in columns.tsv");
+    CHECK(final.problems[2].message == "column patch is not a server column in columns.tsv");
+    CHECK(final.problems[3].message == "missing server table");
+    CHECK(final.problems[3].table == "new_thing");
+    CHECK(final.problems[4].message == "copy repeats dbc_thing.Copy in all 2 joined rows");
+}
+
+TEST_CASE("verify passes on the real world and reference databases", "[Verify][world]")
+{
+    // Opt-in: needs .world/world.doltlite and .world/reference.doltlite.
+    if (!std::getenv("DATABASE_TOOL_VERIFY"))
+    {
+        WARN("DATABASE_TOOL_VERIFY not set, skipping (needs .world/world.doltlite and .world/reference.doltlite)");
+        return;
+    }
+
+    std::filesystem::path root = DATABASE_TOOL_TEST_REPO_ROOT_DIR;
+    VerifyResult result = RunVerify(root / ".world" / "world.doltlite", root / ".world" / "reference.doltlite",
+                                    root / "tools" / "database_tool" / "Spec", root / "tools" / "database_tool" / "Verify", {});
+    REQUIRE(result.error.empty());
+    for (VerifyProblem const& problem : result.problems)
+        UNSCOPED_INFO("[" << problem.check << "] " << problem.table << ": " << problem.message);
+    CHECK(result.problems.empty());
 }
