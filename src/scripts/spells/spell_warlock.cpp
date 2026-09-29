@@ -151,8 +151,8 @@ struct WarlockLifeTapScript : SpellScript
                 Unit::AuraList const& auraDummy = spell->m_casterUnit->GetAurasByType(SPELL_AURA_DUMMY);
                 for (const auto itr : auraDummy)
                 {
-                    // only Imp. Life Tap have this in combination with dummy aura
-                    if (itr->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && itr->GetSpellProto()->SpellIconID == 208)
+                    // Improved Life Tap
+                    if (sSpellMgr.GetFirstSpellInChain(itr->GetId()) == 18182)
                         mana = (itr->GetModifier()->m_amount + 100) * mana / 100;
                 }
 
