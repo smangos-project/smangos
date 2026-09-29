@@ -1785,8 +1785,8 @@ srv	spell_chain	build_max	drop			progression removed (version-range column, same
 srv	spell_check	spellid	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	SpellFamilyName	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	SpellFamilyMask	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
-srv	spell_check	SpellIcon	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
-srv	spell_check	SpellVisual	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
+srv	spell_check	SpellIcon	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
+srv	spell_check	SpellVisual	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
 srv	spell_check	SpellCategory	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	EffectType	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
 srv	spell_check	EffectAura	server			GM debug consistency-check table (.debug spellcheck, DebugCommands.cpp:995, SpellMgr::CheckUsedSpells) asserting hardcoded spell assumptions in script code against spell_template; no DB2 counterpart	yes
@@ -1823,9 +1823,9 @@ srv	spell_elixir	build_min	drop			progression removed (version-range column, sam
 srv	spell_elixir	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	spell_enchant_charges	entry	server			consumable-enchant charge count (SpellMgr.cpp:1915); no DB2 counterpart	yes
 srv	spell_enchant_charges	charges	server			consumable-enchant charge count (SpellMgr.cpp:1915); no DB2 counterpart	yes
-srv	spell_group	group_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
-srv	spell_group	group_spell_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
-srv	spell_group	spell_id	server			spell grouping for stack-rule and diminishing-return purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	group_id	server			spell grouping for stack-rule purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	group_spell_id	server			spell grouping for stack-rule purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
+srv	spell_group	spell_id	server			spell grouping for stack-rule purposes (SpellMgr.cpp:534); no DB2 counterpart	yes
 srv	spell_group	build_min	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	spell_group	build_max	drop			progression removed (version-range column, same treatment as F0's build/patch/patch_min/patch_max bucket, phase0-plan.md 5 F0)	yes
 srv	spell_group_stack_rules	group_id	server			stack-rule per spell group (SpellMgr.cpp:615); no DB2 counterpart	yes
@@ -1844,8 +1844,8 @@ srv	spell_mod	DurationIndex	server			per-spell field override table applied by S
 srv	spell_mod	Category	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	CastingTimeIndex	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	StackAmount	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
-srv	spell_mod	SpellIconID	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
-srv	spell_mod	activeIconID	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellIconID	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
+srv	spell_mod	activeIconID	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
 srv	spell_mod	manaCost	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	Attributes	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	AttributesEx	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
@@ -1859,7 +1859,7 @@ srv	spell_mod	ChannelInterruptFlags	server			per-spell field override table appl
 srv	spell_mod	Dispel	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	Stances	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	StancesNot	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
-srv	spell_mod	SpellVisual	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
+srv	spell_mod	SpellVisual	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
 srv	spell_mod	ManaCostPercentage	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	StartRecoveryCategory	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
 srv	spell_mod	StartRecoveryTime	server			per-spell field override table applied by SpellModMgr (SpellModMgr.cpp:104); mirrors spell_template's own fields, all server per spell-plan.md 10	yes
@@ -2048,10 +2048,10 @@ srv	spell_template	effectTriggerSpell3	server			16 differ (spell-plan.md 5, 10)	
 srv	spell_template	effectPointsPerComboPoint1	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
 srv	spell_template	effectPointsPerComboPoint2	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
 srv	spell_template	effectPointsPerComboPoint3	server			= DB2 EffectPointsPerResource, identical encoding (spell-plan.md 4.4, 10)	yes
-srv	spell_template	spellVisual1	server			kept as the vanilla visual id (Q2, phase0-plan.md 6): server-internal once the wire uses SpellXSpellVisual instead of this column (spell-plan.md 8.2/9)	yes
-srv	spell_template	spellVisual2	server			kept as the vanilla visual id (Q2, phase0-plan.md 6): server-internal once the wire uses SpellXSpellVisual instead of this column (spell-plan.md 8.2/9)	yes
-srv	spell_template	spellIconId	server			kept as the vanilla icon id (Q2, phase0-plan.md 6): near 1:1 with SpellIconFileDataID but 7 icons map to more than one file id and 10 file ids map to more than one icon (spell-plan.md 4.4), and 111 gameplay checks compare against it directly	yes
-srv	spell_template	activeIconId	server			ActiveIconFileDataID counterpart exists; kept alongside spellIconId under the same Q2 decision	yes
+srv	spell_template	spellVisual1	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
+srv	spell_template	spellVisual2	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
+srv	spell_template	spellIconId	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
+srv	spell_template	activeIconId	drop			icon and visual are client presentation; spell identity is explicit data in spell_tag/spell_stack_key (decision 10, plan.md 11.4); removed with the checks in work item 9	yes
 srv	spell_template	spellPriority	server			no DB2 field (not in spell-plan.md 3.1's field lists); vmangos/1.12-only	yes
 srv	spell_template	name	dbc	dbc_spellname.Name_lang	identity	presentational text, no patch-progression significance; 20999/21040 match the client (evidence.tsv), same policy as other display strings in this spec	yes
 srv	spell_template	nameFlags	server			vanilla locale-mask bookkeeping for vmangos's own multi-locale locstring storage; moot once the matching text column is dbc-sourced from the client's own single locstring	yes
@@ -4144,3 +4144,8 @@ new	creature_quest_item	ItemId	derived	creature_loot_template.item	quest_item_fr
 new	gameobject_quest_item	GameObjectEntry	derived	gameobject_template.entry	identity	new table (TC schema: gameobject_questitem, columns GameObjectEntry/Idx/ItemId); the game object side of the join key, stuff-plan.md 8.4	yes
 new	gameobject_quest_item	Idx	derived	quest_template.ReqItemId1-4,ReqSourceId1-4	quest_item_from_loot	0-based position among a game object's quest items; derived when the migration builds the table, stuff-plan.md 8.4	yes
 new	gameobject_quest_item	ItemId	derived	gameobject_loot_template.item	quest_item_from_loot	item ids a quest needs that also appear in the game object's loot (gameobject_loot_template); precomputed by a migration, one row per (gameobject, item), stuff-plan.md 8.4	yes
+new	spell_tag	spell_id	server			new table (plan.md 11.4): spell id a tag applies to; loaded into SpellEntry tags by SpellMgr	yes
+new	spell_tag	tag	server			new table (plan.md 11.4): SpellTag enum name; replaces SpellIconID/SpellVisual set checks	yes
+new	spell_stack_key	spell_id	server			new table (plan.md 11.4): spell id; read by SpellMgr for the stacking and rank checks	yes
+new	spell_stack_key	stack_key	server			new table (plan.md 11.4): replaces the icon/visual part of the generic same-icon no-stack rule (SpellMgr.cpp:1247)	yes
+new	spell_stack_key	rank_key	server			new table (plan.md 11.4): replaces the icon/visual part of IsRankSpellDueToSpell (SpellMgr.cpp:883)	yes
