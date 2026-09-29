@@ -48,7 +48,7 @@ TEST_CASE("DiscoverMigrations finds every real migration for one database, sorte
         CHECK(file.hasLegacyEnvelope == actuallyHasEnvelope);
     }
 
-    CHECK(DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "characters").size() == 8);
+    CHECK(DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "characters").size() == 9);
     CHECK(DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "logon").size() == 11);
     CHECK(DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "logs").size() == 7);
 }

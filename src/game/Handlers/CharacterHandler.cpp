@@ -79,7 +79,7 @@ bool LoginQueryHolder::Initialize()
 
     // NOTE: all fields in `characters` must be read to prevent lost character data at next save in case wrong DB structure.
     // !!! NOTE: including unused `zone`,`online`
-    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADFROM,            "SELECT `guid`, `account`, `name`, `race`, `class`, `gender`, `level`, `xp`, `money`, `skin`, `face`, `hair_style`, `hair_color`, `facial_hair`, `bank_bag_slots`, `character_flags`, "
+    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADFROM,            "SELECT `guid`, `account`, `name`, `race`, `class`, `gender`, `level`, `xp`, `money`, `bank_bag_slots`, `character_flags`, "
                      "`position_x`, `position_y`, `position_z`, `map`, `orientation`, `known_taxi_mask`, `played_time_total`, `played_time_level`, `rest_bonus`, `logout_time`, `reset_talents_multiplier`, "
                      "`reset_talents_time`, `transport_guid`, `transport_x`, `transport_y`, `transport_z`, `transport_o`, `extra_flags`, `stable_slots`, `death_expire_time`, `current_taxi_path`, "
                      "`honor_rank_points`, `honor_highest_rank`, `honor_standing`, `honor_last_week_hk`, `honor_last_week_cp`, `honor_stored_hk`, `honor_stored_dk`, "
@@ -104,6 +104,7 @@ bool LoginQueryHolder::Initialize()
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADSKILLS,          "SELECT `skill`, `value`, `max` FROM `character_skills` WHERE `guid` = '%u'", m_guid.GetCounter());
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILS,           "SELECT `id`, `message_type`, `sender_guid`, `receiver_guid`, `subject`, `item_text_id`, `expire_time`, `deliver_time`, `money`, `cod`, `checked`, `stationery`, `mail_template_id`, `has_items` FROM `mail` WHERE `receiver_guid` = '%u' ORDER BY `id` DESC", m_guid.GetCounter());
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILEDITEMS,     "SELECT `creator_guid`, `gift_creator_guid`, `count`, `duration`, `charges`, `flags`, `enchantments`, `random_property_id`, `durability`, `text`, `mail_id`, `item_guid`, `item_instance`.`item_id`, `generated_loot` FROM `mail_items` JOIN `item_instance` ON `item_guid` = `guid` WHERE `receiver_guid` = '%u'", m_guid.GetCounter());
+    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADCUSTOMIZATIONS,  "SELECT `chrCustomizationOptionID`, `chrCustomizationChoiceID` FROM `character_customizations` WHERE `guid` = '%u' ORDER BY `chrCustomizationOptionID`", m_guid.GetCounter());
     res &= SetPQuery(PLAYER_LOGIN_QUERY_FORGOTTEN_SKILLS,    "SELECT `skill`, `value` FROM `character_forgotten_skills` WHERE `guid` = '%u'", m_guid.GetCounter());
 
     return res;
@@ -115,15 +116,6 @@ bool LoginQueryHolder::Initialize()
 class CharacterHandler
 {
 public:
-    void HandleCharEnumCallback(std::unique_ptr<QueryResult> result, uint32 account)
-    {
-        WorldSession* session = sWorld.FindSession(account);
-        if (!session)
-        {
-            return;
-        }
-        session->HandleCharEnum(std::move(result));
-    }
     void HandlePlayerLoginCallback(std::unique_ptr<QueryResult> /*dummy*/, SqlQueryHolder* holder)
     {
         if (!holder)
@@ -140,52 +132,6 @@ public:
         session->HandlePlayerLogin((LoginQueryHolder*)holder);
     }
 } chrHandler;
-
-void WorldSession::HandleCharEnum(std::unique_ptr<QueryResult> result)
-{
-    WorldPacket data(SMSG_CHAR_ENUM, 100);                  // we guess size
-
-    uint8 num = 0;
-    data << num;
-
-    if (result)
-    {
-        do
-        {
-            uint32 guidlow = (*result)[0].GetUInt32();
-            uint32 level   = (*result)[10].GetUInt32();
-            if (m_characterMaxLevel < level)
-                m_characterMaxLevel = level;
-
-            sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "Build enum data for char guid %u from account %u.", guidlow, GetAccountId());
-            if (Player::BuildEnumData(result, &data))
-                ++num;
-        }
-        while (result->NextRow());
-    }
-
-    data.put<uint8>(0, num);
-    m_charactersCount = num;
-
-    SendPacket(&data);
-}
-
-void WorldSession::HandleCharEnumOpcode(NullClientPacket const& /*packet*/)
-{
-    // get all the data necessary for loading all characters (along with their pets) on the account
-    CharacterDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
-                                  //           0                    1                    2                    3                     4                      5                    6                    7                          8                          9                           10
-                                  "SELECT `characters`.`guid`, `characters`.`name`, `characters`.`race`, `characters`.`class`, `characters`.`gender`, `characters`.`skin`, `characters`.`face`, `characters`.`hair_style`, `characters`.`hair_color`, `characters`.`facial_hair`, `characters`.`level`, "
-                                  //    11                   12                  13                         14                         15                         16                         17
-                                  "`characters`.`zone`, `characters`.`map`, `characters`.`position_x`, `characters`.`position_y`, `characters`.`position_z`, `guild_member`.`guild_id`, `characters`.`character_flags`, "
-                                  //    18                                19                       20                            21                       22
-                                  "`characters`.`played_time_total`, `character_pet`.`entry`, `character_pet`.`display_id`, `character_pet`.`level`, `characters`.`equipment_cache` "
-                                  "FROM `characters` LEFT JOIN `character_pet` ON `characters`.`guid`=`character_pet`.`owner_guid` AND `character_pet`.`slot`='%u' "
-                                  "LEFT JOIN `guild_member` ON `characters`.`guid` = `guild_member`.`guid` "
-                                  "WHERE `characters`.`account` = '%u' ORDER BY `characters`.`create_time`, `characters`.`guid` "
-                                  "LIMIT 0,10",
-                                  PET_SAVE_AS_CURRENT, GetAccountId());
-}
 
 void WorldSession::LoginPlayer(ObjectGuid loginPlayerGuid)
 {
@@ -772,12 +718,10 @@ void WorldSession::HandleCharCreateOpcode(CharCreate const& packet)
         return;
     }
 
-    // The bots never send customization choices (CharCreate::CustomizationCount is always 0),
-    // which maps to a random valid vanilla appearance rather than always the same one -- a real
-    // client's own customization choices aren't converted to vanilla appearance bytes yet.
-    uint8 skin = 0, face = 0, hairStyle = 0, hairColor = 0, facialHair = 0;
-    Player::SelectRandomAppearance(packet.Race, packet.Gender, hairStyle, hairColor, face, facialHair, skin);
-    if (!Player::ValidateAppearance(packet.Race, packet.Gender, hairStyle, hairColor, face, facialHair, skin))
+    // The client's own customization choices are not read yet; every character gets a random valid look.
+    ChrCustomizationList customizations;
+    Player::SelectRandomAppearance(packet.Race, packet.Class, packet.Gender, customizations);
+    if (!Player::ValidateAppearance(packet.Race, packet.Class, packet.Gender, customizations))
     {
         sendResponse(CLASSIC_CHAR_CREATE_FAILED);
         return;
@@ -834,7 +778,7 @@ void WorldSession::HandleCharCreateOpcode(CharCreate const& packet)
     }
 
     uint32 const guidLow = sObjectMgr.GeneratePlayerLowGuid();
-    if (Player::SaveNewPlayer(this, guidLow, safeName, packet.Race, packet.Class, packet.Gender, skin, face, hairStyle, hairColor, facialHair))
+    if (Player::SaveNewPlayer(this, guidLow, safeName, packet.Race, packet.Class, packet.Gender, customizations))
     {
         uint32 const newCount = uint32(accountCharacters.size()) + 1;
         m_charactersCount = newCount;

@@ -2250,8 +2250,7 @@ bool ChatHandler::HandleCharacterCopySkinCommand(char* args)
         std::string plName(args);
         CharacterDatabase.escape_string(plName); // No SQL injection
 
-        //                                                                      0       1       2             3             4              5
-        std::unique_ptr<QueryResult> result = CharacterDatabase.PQuery("SELECT `skin`, `face`, `hair_style`, `hair_color`, `facial_hair`, `gender` FROM `characters` WHERE `name`='%s'", plName.c_str());
+        std::unique_ptr<QueryResult> result = CharacterDatabase.PQuery("SELECT `guid`, `gender` FROM `characters` WHERE `name`='%s'", plName.c_str());
         if (!result)
         {
             PSendSysMessage("Player %s not found.", args);
@@ -2259,19 +2258,30 @@ bool ChatHandler::HandleCharacterCopySkinCommand(char* args)
             return false;
         }
         Field* fields = result->Fetch();
-        uint8 skin = fields[0].GetUInt32();
-        uint8 face = fields[1].GetUInt32();
-        uint8 hairStyle = fields[2].GetUInt32();
-        uint8 hairColor = fields[3].GetUInt32();
-        uint8 facialHair = fields[4].GetUInt32();
-        uint8 gender = fields[5].GetUInt8();
-        target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID, skin);
-        target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID, face);
-        target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID, hairStyle);
-        target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID, hairColor);
-        target->SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE, facialHair);
+        uint32 sourceGuid = fields[0].GetUInt32();
+        uint8 gender = fields[1].GetUInt8();
+
+        ChrCustomizationList list;
+        if (std::unique_ptr<QueryResult> rows = CharacterDatabase.PQuery("SELECT `chrCustomizationOptionID`, `chrCustomizationChoiceID` FROM `character_customizations` WHERE `guid`=%u ORDER BY `chrCustomizationOptionID`", sourceGuid))
+        {
+            do
+            {
+                Field* rowFields = rows->Fetch();
+                list.push_back({ rowFields[0].GetUInt32(), rowFields[1].GetUInt32() });
+            }
+            while (rows->NextRow());
+        }
+
+        if (!Player::ValidateAppearance(target->GetRace(), target->GetClass(), gender, list))
+        {
+            SendSysMessage("That appearance is not valid for the selected character.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+
         target->SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender);
-        SendSysMessage("Modification du skin/genre OK.");
+        target->SetCustomizations(list);
+        SendSysMessage("Appearance copied.");
         return true;
     }
     return false;
@@ -4249,6 +4259,10 @@ bool ChatHandler::HandleModifyGenderCommand(char *args)
     player->SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender);
     player->SetUInt16Value(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER_AND_INEBRIATION, uint16(gender) | (player->GetDrunkValue() & 0xFFFE));
 
+    ChrCustomizationList customizations;
+    sObjectMgr.GetChrCustomizations().Complete(player->GetRace(), player->GetClass(), gender, customizations);
+    player->SetCustomizations(customizations);
+
     // Change display ID
     player->InitPlayerDisplayIds();
 
@@ -4810,86 +4824,43 @@ bool ChatHandler::HandleModifyRageCommand(char* args)
     return true;
 }
 
-// This is the first id in the dbc and exists in all clients.
-#define DISPLAY_ID_BOX 4
-
-bool ChatHandler::HandleModifyHairStyleCommand(char* args)
+bool ChatHandler::HandleModifyCustomizationCommand(char* args)
 {
-    if (!*args)
-        return false;
-
-    uint8 hairstyle = (uint8)atoi(args);
     Player* target = GetSelectedPlayer();
-
     if (!target)
         target = m_session->GetPlayer();
 
-    target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID, hairstyle);
-    target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendValueUpdate();
-    target->DeMorph();
+    ChrCustomizationList list = target->GetCustomizations();
 
-    PSendSysMessage("Character's hair style has been changed to: %u", hairstyle);
-    return true;
-}
-
-bool ChatHandler::HandleModifyHairColorCommand(char* args)
-{
+    uint32 optionId, choiceId;
     if (!*args)
+    {
+        for (ChrCustomizationChoice const& choice : list)
+            PSendSysMessage("Option %u: choice %u", choice.OptionID, choice.ChoiceID);
+        return true;
+    }
+
+    if (!ExtractUInt32(&args, optionId) || !ExtractUInt32(&args, choiceId))
         return false;
 
-    uint8 haircolor = (uint8)atoi(args);
-    Player* target = GetSelectedPlayer();
+    auto itr = std::find_if(list.begin(), list.end(), [optionId](ChrCustomizationChoice const& c) { return c.OptionID == optionId; });
+    if (itr != list.end())
+        itr->ChoiceID = choiceId;
+    else
+    {
+        list.push_back({ optionId, choiceId });
+        std::sort(list.begin(), list.end());
+    }
 
-    if (!target)
-        target = m_session->GetPlayer();
-
-    target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID, haircolor);
-    target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendValueUpdate();
-    target->DeMorph();
-
-    PSendSysMessage("Character's hair color has been changed to: %u", haircolor);
-    return true;
-}
-
-bool ChatHandler::HandleModifySkinColorCommand(char* args)
-{
-    if (!*args)
+    if (!Player::ValidateAppearance(target->GetRace(), target->GetClass(), target->GetGender(), list))
+    {
+        SendSysMessage("Invalid option or choice for this character.");
+        SetSentErrorMessage(true);
         return false;
+    }
 
-    uint8 skincolor = (uint8)atoi(args);
-    Player* target = GetSelectedPlayer();
-
-    if (!target)
-        target = m_session->GetPlayer();
-
-    target->SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID, skincolor);
-    target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendValueUpdate();
-    target->DeMorph();
-
-    PSendSysMessage("Character's skin color has been changed to: %u", skincolor);
-    return true;
-}
-
-bool ChatHandler::HandleModifyAccessoriesCommand(char* args)
-{
-    if (!*args)
-        return false;
-
-    uint8 accessories = (uint8)atoi(args);
-    Player* target = GetSelectedPlayer();
-
-    if (!target)
-        target = m_session->GetPlayer();
-
-    target->SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE, accessories);
-    target->SetDisplayId(DISPLAY_ID_BOX);
-    target->DirectSendValueUpdate();
-    target->DeMorph();
-
-    PSendSysMessage("Character's facial hair / markings / hooves have been changed to: %u", accessories);
+    target->SetCustomizations(list);
+    PSendSysMessage("Option %u is now choice %u.", optionId, choiceId);
     return true;
 }
 

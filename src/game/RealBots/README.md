@@ -1049,12 +1049,10 @@ None of these is proven against a real 1.15.6 client yet.
   assumes a client always enumerates before it creates; the classic create/two-side-account checks read
   the live cache instead, needing no prior enum.
 
-- **A zero-customization create gets a random valid vanilla appearance, not a fixed one.** The bots
+- **A zero-customization create gets a random valid look, not a fixed one.** The bots
   never send `ChrCustomization` choices (`CharCreate::Read` rejects a nonzero count
-  outright), so there is nothing to convert to vanilla skin/face/hair yet (decision 7's mapping table).
-  `Player::SelectRandomAppearance` is used instead of hardcoded zeros, since an all-zero appearance
-  fails `ValidateAppearance` for some race/gender pairs. A real client's actual choices still can't be
-  honored.
+  outright), so `Player::SelectRandomAppearance` picks one valid choice per option. A real client's
+  actual choices are not read yet.
 
 - **A handful of `ResponseCodes` have no confirmed modern wire value.** `Packets/Classic/Character.h`
   defines the classic-numbered codes the bots and this tree's checks actually exercise

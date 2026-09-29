@@ -160,8 +160,8 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
 {
     ////                                                                    0            1            2                  3                  4                  5                   6
     //std::unique_ptr<QueryResult> result = CharacterDatabase.Query("SELECT corpse.guid, player_guid, corpse.position_x, corpse.position_y, corpse.position_z, corpse.orientation, corpse.map,"
-    ////   7     8            9         10      11    12     13     14   15          16          17           18               19        20
-    //    "time, corpse_type, instance, gender, race, class, skin, face, hair_style, hair_color, facial_hair, equipment_cache, guild_id, player_flags FROM corpse"
+    ////   7     8            9         10      11    12     13               14        15
+    //    "time, corpse_type, instance, gender, race, class, equipment_cache, guild_id, player_flags FROM corpse"
     uint32 playerLowGuid = fields[1].GetUInt32();
     float positionX     = fields[2].GetFloat();
     float positionY     = fields[3].GetFloat();
@@ -185,14 +185,8 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
     uint8 race          = fields[11].GetUInt8();
     uint8 _class        = fields[12].GetUInt8();
 
-    uint8 skin = fields[13].GetUInt8();
-    uint8 face = fields[14].GetUInt8();
-    uint8 hairstyle = fields[15].GetUInt8();
-    uint8 haircolor = fields[16].GetUInt8();
-    uint8 facialhair = fields[17].GetUInt8();
-
-    uint32 guildId      = fields[19].GetUInt32();
-    uint32 charFlags    = fields[20].GetUInt32();
+    uint32 guildId      = fields[14].GetUInt32();
+    uint32 charFlags    = fields[15].GetUInt32();
 
     ObjectGuid guid = ObjectGuid(HIGHGUID_CORPSE, lowguid);
     ObjectGuid playerGuid = ObjectGuid(HIGHGUID_PLAYER, playerLowGuid);
@@ -213,7 +207,7 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
     m_faction = sObjectMgr.GetFactionTemplateEntry(Player::GetFactionForRace(race));
 
     // Load equipment
-    Tokens data = StrSplit(fields[18].GetCppString(), " ");
+    Tokens data = StrSplit(fields[13].GetCppString(), " ");
     for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; slot++)
     {
         uint32 visualbase = slot * 2;
@@ -228,8 +222,7 @@ bool Corpse::LoadFromDB(uint32 lowguid, Field* fields)
         SetUInt32Value(CORPSE_FIELD_ITEM + slot, sObjectMgr.GetItemClientDisplayId(proto) | (proto->InventoryType << 24));
     }
 
-    SetUInt32Value(CORPSE_FIELD_BYTES_1, ((0x00) | (race << 8) | (gender << 16) | (skin << 24)));
-    SetUInt32Value(CORPSE_FIELD_BYTES_2, ((face) | (hairstyle << 8) | (haircolor << 16) | (facialhair << 24)));
+    SetUInt32Value(CORPSE_FIELD_BYTES_1, ((0x00) | (race << 8) | (gender << 16)));
 
     SetUInt32Value(CORPSE_FIELD_GUILD, guildId);
 

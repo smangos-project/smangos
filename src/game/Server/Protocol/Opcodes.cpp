@@ -137,7 +137,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_AUTH_SRP6_PROOF,              UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTH_SRP6_RECODE,             UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_CHAR_CREATE,                  UnhandleReason::Unhandled);
-    DEFINE_HANDLER(CMSG_CHAR_ENUM,                    STATUS_AUTHED,    PACKET_PROCESS_WORLD,         &WorldSession::HandleCharEnumOpcode);
+    INVALID_PACKET(CMSG_CHAR_ENUM,                    UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_CHAR_DELETE,                  UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_AUTH_SRP6_RESPONSE,           UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHAR_CREATE,                  UnhandleReason::SendByServer);

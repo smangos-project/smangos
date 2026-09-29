@@ -77,30 +77,25 @@ bool PlayerBotAI::SpawnNewPlayer(WorldSession* sess, uint8 class_, uint32 race_,
     normalizePlayerName(name);
 
     uint8 gender;
-    uint8 skin;
-    uint8 face;
-    uint8 hairStyle;
-    uint8 hairColor;
-    uint8 facialHair;
+    ChrCustomizationList customizations;
 
     if (pClone)
     {
         gender = pClone->GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER);
-        skin = pClone->GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID);
-        face = pClone->GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID);
-        hairStyle = pClone->GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID);
-        hairColor = pClone->GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID);
-        facialHair = pClone->GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE);
+        if (pClone->GetRace() == race_)
+            customizations = pClone->GetCustomizations();
+        else
+            Player::SelectRandomAppearance(race_, class_, gender, customizations);
     }
     else
     {
         gender = urand(0, 1);
-        Player::SelectRandomAppearance(race_, gender, hairStyle, hairColor, face, facialHair, skin);
+        Player::SelectRandomAppearance(race_, class_, gender, customizations);
     }
 
     Player* newChar = new Player(sess);
     uint32 guid = botEntry->playerGUID;
-    if (!newChar->Create(guid, name, race_, class_, gender, skin, face, hairStyle, hairColor, facialHair))
+    if (!newChar->Create(guid, name, race_, class_, gender, customizations))
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "PlayerBotAI::SpawnNewPlayer: Unable to create a player!");
         delete newChar;

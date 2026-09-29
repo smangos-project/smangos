@@ -567,12 +567,9 @@ class WorldSession
         void Handle_EarlyProccess(WorldPacket& recvPacket);// just mark packets processed in WorldSocket::OnRead
         void Handle_ServerSide(WorldPacket& recvPacket);    // sever side only, can't be accepted from client
 
-        void HandleCharEnumOpcode(NullClientPacket const& packet);
-        void HandleCharEnum(std::unique_ptr<QueryResult> result);
         void HandlePlayerLogin(LoginQueryHolder* holder);
 
-        // Classic (modern-client) character screen; HandleCharEnumOpcode above stays for its own
-        // legacy opcode, which nothing sends anymore but which still compiles (the legacy lane).
+        // Classic (modern-client) character screen
         void HandleClassicCharEnumOpcode(ClassicEnumCharacters const& packet);
         void HandleCharCreateOpcode(CharCreate const& packet);
         void HandleCharDeleteOpcode(CharDelete const& packet);

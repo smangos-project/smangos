@@ -38,6 +38,7 @@
 #include "SpellMgr.h"
 #include "HonorMgr.h"
 #include "PlayerTaxi.h"
+#include "ChrCustomization.h"
 #include "MirrorTimer.h"
 
 #include <string>
@@ -331,17 +332,8 @@ enum PlayerFlags
 #endif
 };
 
-enum PlayerBytesOffsets
-{
-    PLAYER_BYTES_OFFSET_SKIN_ID         = 0,
-    PLAYER_BYTES_OFFSET_FACE_ID         = 1,
-    PLAYER_BYTES_OFFSET_HAIR_STYLE_ID   = 2,
-    PLAYER_BYTES_OFFSET_HAIR_COLOR_ID   = 3
-};
-
 enum PlayerBytes2Offsets
 {
-    PLAYER_BYTES_2_OFFSET_FACIAL_STYLE   = 0,
     PLAYER_BYTES_2_OFFSET_UNK1           = 1,
     PLAYER_BYTES_2_OFFSET_BANK_BAG_SLOTS = 2,
     PLAYER_BYTES_2_OFFSET_REST_STATE     = 3
@@ -630,6 +622,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADMAILEDITEMS,
     PLAYER_LOGIN_QUERY_BATTLEGROUND_DATA,
     PLAYER_LOGIN_QUERY_FORGOTTEN_SKILLS,
+    PLAYER_LOGIN_QUERY_LOADCUSTOMIZATIONS,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -761,12 +754,10 @@ class Player final: public Unit
         void CleanupsBeforeDelete() override;
 
         // Initializes a new Player object that was not loaded from the database.
-        bool Create(uint32 guidlow, std::string const& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair);
+        bool Create(uint32 guidlow, std::string const& name, uint8 race, uint8 class_, uint8 gender, ChrCustomizationList const& customizations);
 
         void Update(uint32 update_diff, uint32 time) override;
         void Heartbeat() override;
-
-        static bool BuildEnumData(const std::unique_ptr<QueryResult>& result,  WorldPacket* pData);
 
         /**
          * @brief Can only be called from Master server (or ASSERT will fail)
@@ -1233,8 +1224,10 @@ class Player final: public Unit
         bool HasCharacterFlag(CharacterFlags f) const { return m_characterFlags & f; }
         void SetCharacterFlag(CharacterFlags f, bool enabled) { if (enabled) m_characterFlags |= f; else m_characterFlags &= ~f; }
         void UpdateCharacterFlags();
-        static bool ValidateAppearance(uint8 race, uint8 gender, uint8 hairID, uint8 hairColor, uint8 faceID, uint8 facialHair, uint8 skinColor);
-        static void SelectRandomAppearance(uint8 race, uint8 gender, uint8& hairID, uint8& hairColor, uint8& faceID, uint8& facialHair, uint8& skinColor);
+        static bool ValidateAppearance(uint8 race, uint8 playerClass, uint8 gender, ChrCustomizationList const& customizations);
+        static void SelectRandomAppearance(uint8 race, uint8 playerClass, uint8 gender, ChrCustomizationList& customizations);
+        ChrCustomizationList const& GetCustomizations() const { return m_customizations; }
+        void SetCustomizations(ChrCustomizationList const& customizations);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -1249,10 +1242,12 @@ class Player final: public Unit
         void _SaveBGData();
         void _SaveStats();
         uint32 m_nextSave;
+        ChrCustomizationList m_customizations;
+        bool m_customizationsChanged = false;
         bool m_saveDisabled; // used for temporary bots and faction change
     public:
         // Saves a new character directly in the database, without creating a Player object in memory.
-        static bool SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string const& name, uint8 raceId, uint8 classId, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair);
+        static bool SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string const& name, uint8 raceId, uint8 classId, uint8 gender, ChrCustomizationList const& customizations);
         void SaveToDB(bool online = true, bool force = false);
         void SaveInventoryAndGoldToDB();                    // fast save function for item/money cheating preventing
         void SaveGoldToDB();

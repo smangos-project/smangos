@@ -27,6 +27,7 @@
 #include "Database/DatabaseEnv.h"
 #include "GridDefines.h"
 #include "LootMgr.h"
+#include "ChrCustomization.h"
 
 enum CorpseType
 {
@@ -71,6 +72,9 @@ class Corpse : public WorldObject
         void DeleteBonesFromWorld();
         void DeleteFromDB();
 
+        ChrCustomizationList const& GetCustomizations() const { return m_customizations; }
+        void SetCustomizations(ChrCustomizationList const& customizations) { m_customizations = customizations; }
+
         ObjectGuid const& GetOwnerGuid() const { return GetGuidValue(CORPSE_FIELD_OWNER); }
 
         time_t const& GetGhostTime() const { return m_time; }
@@ -103,6 +107,7 @@ class Corpse : public WorldObject
         FactionTemplateEntry const* m_faction;
 
         CorpseType m_type;
+        ChrCustomizationList m_customizations;
         time_t m_time;
         GridPair m_grid;                                    // gride for corpse position for fast search
 };

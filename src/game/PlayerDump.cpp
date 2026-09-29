@@ -53,6 +53,7 @@ static DumpTable dumpTables[] =
     { "character_skills",                 DTT_CHAR_TABLE },
     { "character_spell",                  DTT_CHAR_TABLE },
     { "character_spell_cooldown",         DTT_CHAR_TABLE },
+    { "character_customizations",         DTT_CHAR_TABLE },
     { "mail",                             DTT_MAIL       }, // -> mail guids
     { "mail_items",                       DTT_MAIL_ITEM  }, // -> item guids    <- mail guids
     { "pet_aura",                         DTT_PET_TABLE  }, //                  <- pet number
@@ -540,7 +541,7 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
                     result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `name` = '%s'", name.c_str());
                     if (result)
                     {
-                        if (!changenth(line, 15, "16384"))  // characters.character_flags set to "rename on login"
+                        if (!changenth(line, 10, "16384"))  // characters.character_flags set to "rename on login"
                             ROLLBACK(DUMP_FILE_BROKEN);
                     }
                 }

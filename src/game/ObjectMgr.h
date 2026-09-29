@@ -460,6 +460,7 @@ struct PlayerCacheData
     float fPosZ;
     float fOrientation;
     bool bInFlight;
+    ChrCustomizationList customizations;
 };
 typedef std::map<uint32 /*guid*/, PlayerCacheData> PlayerCacheDataMap;
 

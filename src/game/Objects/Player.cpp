@@ -336,82 +336,25 @@ void Player::CleanupsBeforeDelete()
     Unit::CleanupsBeforeDelete();
 }
 
-bool Player::ValidateAppearance(uint8 race, uint8 gender, uint8 hairID, uint8 hairColor, uint8 faceID, uint8 facialHair, uint8 skinColor)
+void Player::SetCustomizations(ChrCustomizationList const& customizations)
 {
-    // For Skin type is always 0
-    CharSectionsEntry const* skinEntry = GetCharSectionEntry(race, SECTION_TYPE_SKIN, gender, 0, skinColor);
-    if (!skinEntry)
-        return false;
-
-    // Skin Color defined as Face color, too
-    CharSectionsEntry const* faceEntry = GetCharSectionEntry(race, SECTION_TYPE_FACE, gender, faceID, skinColor);
-    if (!faceEntry)
-        return false;
-
-    // Check Hair
-    CharSectionsEntry const* hairEntry = GetCharSectionEntry(race, SECTION_TYPE_HAIR, gender, hairID, hairColor);
-    if (!hairEntry)
-        return false;
-
-    // These combinations don't have an entry of Type SECTION_TYPE_FACIAL_HAIR, exclude them from that check
-    bool const excludeCheck = (race == RACE_TAUREN) || (gender == GENDER_FEMALE && race != RACE_NIGHTELF && race != RACE_UNDEAD);
-    if (!excludeCheck)
-    {
-        CharSectionsEntry const* facialHairEntry = GetCharSectionEntry(race, SECTION_TYPE_FACIAL_HAIR, gender, facialHair, hairColor);
-        if (!facialHairEntry)
-            return false;
-    }
-
-    CharacterFacialHairStylesEntry const* entry = GetCharFacialHairEntry(race, gender, facialHair);
-    if (!entry)
-        return false;
-
-    return true;
+    m_customizations = customizations;
+    m_customizationsChanged = true;
+    if (PlayerCacheData* data = sObjectMgr.GetPlayerDataByGUID(GetGUIDLow()))
+        data->customizations = customizations;
 }
 
-void Player::SelectRandomAppearance(uint8 race, uint8 gender, uint8& hairID, uint8& hairColor, uint8& faceID, uint8& facialHair, uint8& skinColor)
+bool Player::ValidateAppearance(uint8 race, uint8 playerClass, uint8 gender, ChrCustomizationList const& customizations)
 {
-    // make sure values are always initialized
-    hairID = 0;
-    hairColor = 0;
-    faceID = 0;
-    facialHair = 0;
-    skinColor = 0;
-
-    {
-        std::vector<std::pair<uint8, uint8>> validFace;
-        GetAllValidCharSectionVariationAndColorPairs(race, SECTION_TYPE_FACE, gender, validFace);
-        if (!validFace.empty())
-        {
-            auto face = SelectRandomContainerElement(validFace);
-            faceID = face.first;
-            skinColor = face.second;
-        }
-    }
-
-    {
-        std::vector<std::pair<uint8, uint8>> validHair;
-        GetAllValidCharSectionVariationAndColorPairs(race, SECTION_TYPE_HAIR, gender, validHair);
-        if (!validHair.empty())
-        {
-            auto hair = SelectRandomContainerElement(validHair);
-            hairID = hair.first;
-            hairColor = hair.second;
-        }
-    }
-
-    {
-        std::vector<std::pair<uint8, uint8>> validFacialHair;
-        GetAllValidCharSectionVariationAndColorPairs(race, SECTION_TYPE_FACIAL_HAIR, gender, validFacialHair);
-        if (!validFacialHair.empty())
-        {
-            auto beard = SelectRandomContainerElement(validFacialHair);
-            facialHair = beard.first;
-        }
-    }
+    return sObjectMgr.GetChrCustomizations().Validate(race, playerClass, gender, customizations);
 }
 
-bool Player::Create(uint32 guidlow, std::string const& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair)
+void Player::SelectRandomAppearance(uint8 race, uint8 playerClass, uint8 gender, ChrCustomizationList& customizations)
+{
+    sObjectMgr.GetChrCustomizations().SelectRandom(race, playerClass, gender, customizations);
+}
+
+bool Player::Create(uint32 guidlow, std::string const& name, uint8 race, uint8 class_, uint8 gender, ChrCustomizationList const& customizations)
 {
     m_saveDisabled = true; // only temporary bots are created this way
     Object::_Create(guidlow, 0, HIGHGUID_PLAYER);
@@ -485,12 +428,8 @@ bool Player::Create(uint32 guidlow, std::string const& name, uint8 race, uint8 c
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, -1);  // -1 is default value
 #endif
 
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID, skin);
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID, face);
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID, hairStyle);
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID, hairColor);
+    SetCustomizations(customizations);
 
-    SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE, facialHair);
     SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_UNK1, 0xEE);
     SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_REST_STATE, REST_STATE_NORMAL);
 
@@ -1641,108 +1580,6 @@ void Player::AutoReSummonPet()
     pet->SetHealth(pet->GetMaxHealth());
 }
 
-
-bool Player::BuildEnumData(const std::unique_ptr<QueryResult>& result, WorldPacket* pData)
-{
-    //                0                1                2                3                 4                  5                6                7                      8                      9                       10
-    //    "SELECT characters.guid, characters.name, characters.race, characters.class, characters.gender, characters.skin, characters.face, characters.hair_style, characters.hair_color, characters.facial_hair, characters.level, "
-    //         11               12              13                     14                     15                     16                     17
-    //    "characters.zone, characters.map, characters.position_x, characters.position_y, characters.position_z, guild_member.guild_id, characters.character_flags, "
-    //         18                         19                   20                        21                   22
-    //    "characters.played_time_total, character_pet.entry, character_pet.display_id, character_pet.level, characters.equipment_cache "
-
-    Field* fields = result->Fetch();
-
-    uint32 guid = fields[0].GetUInt32();
-    uint8 pRace = fields[2].GetUInt8();
-    uint8 pClass = fields[3].GetUInt8();
-
-    PlayerInfo const* info = sObjectMgr.GetPlayerInfo(pRace, pClass);
-    if (!info)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Player %u has incorrect race/class pair. Don't build enum.", guid);
-        return false;
-    }
-
-    *pData << ObjectGuid(HIGHGUID_PLAYER, guid);
-    *pData << fields[1].GetString();                       // name
-    *pData << uint8(pRace);                                // race
-    *pData << uint8(pClass);                               // class
-    *pData << uint8(fields[4].GetUInt8());                 // gender
-
-    uint8 skin = fields[5].GetUInt8();
-    uint8 face = fields[6].GetUInt8();
-    uint8 hairStyle = fields[7].GetUInt8();
-    uint8 hairColor = fields[8].GetUInt8();
-    *pData << uint8(skin);                                 // skin
-    *pData << uint8(face);                                 // face
-    *pData << uint8(hairStyle);                            // hair style
-    *pData << uint8(hairColor);                            // hair color
-
-    uint8 facialHair = fields[9].GetUInt8();
-    *pData << uint8(facialHair);                           // facial hair
-
-    *pData << uint8(fields[10].GetUInt8());                // level
-    *pData << uint32(fields[11].GetUInt32());              // zone
-    *pData << uint32(fields[12].GetUInt32());              // map
-
-    *pData << fields[13].GetFloat();                       // x
-    *pData << fields[14].GetFloat();                       // y
-    *pData << fields[15].GetFloat();                       // z
-
-    *pData << uint32(fields[16].GetUInt32());              // guild id
-
-    uint32 charFlags = fields[17].GetUInt32();
-    *pData << uint32(charFlags);                           // character flags
-
-    // First login
-    uint32 totalPlayedTime = fields[18].GetUInt32();
-    *pData << uint8(totalPlayedTime != 0 ? 0 : 1);
-
-    // Pets info
-    {
-        uint32 petDisplayId = 0;
-        uint32 petLevel = 0;
-        uint32 petFamily = 0;
-
-        // show pet at selection character in character list only for non-ghost character
-        if (result && !(charFlags & CHARACTER_FLAG_GHOST) && (pClass == CLASS_WARLOCK || pClass == CLASS_HUNTER))
-        {
-            uint32 entry = fields[19].GetUInt32();
-            CreatureInfo const* cInfo = sObjectMgr.GetCreatureTemplate(entry);
-            if (cInfo)
-            {
-                petDisplayId = fields[20].GetUInt32();
-                petLevel = fields[21].GetUInt32();
-                petFamily = cInfo->pet_family;
-            }
-        }
-
-        *pData << uint32(petDisplayId);
-        *pData << uint32(petLevel);
-        *pData << uint32(petFamily);
-    }
-
-
-    Tokens data = StrSplit(fields[22].GetCppString(), " ");
-    for (uint8 slot = 0; slot < INVENTORY_SLOT_BAG_START + 1; slot++)
-    {
-        uint32 visualbase = slot * 2;                       // entry, perm ench., temp ench.
-        uint32 itemId = GetUInt32ValueFromArray(data, visualbase);
-        ItemPrototype const* proto = sObjectMgr.GetItemPrototype(itemId);
-        if (!proto)
-        {
-            *pData << uint32(0);
-            *pData << uint8(0);
-            continue;
-        }
-
-        *pData << uint32(proto->DisplayInfoID);
-        *pData << uint8(proto->InventoryType);
-    }
-
-    return true;
-}
 
 bool Player::ToggleAFK()
 {
@@ -4480,6 +4317,7 @@ void Player::DeleteFromDB(ObjectGuid playerGuid, uint32 accountId, bool updateRe
             CharacterDatabase.PExecute("DELETE FROM `character_queststatus` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `character_reputation` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `character_skills` WHERE `guid` = '%u'", lowGuid);
+            CharacterDatabase.PExecute("DELETE FROM `character_customizations` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `character_forgotten_skills` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `character_spell` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `character_spell_cooldown` WHERE `guid` = '%u'", lowGuid);
@@ -4744,20 +4582,9 @@ Corpse* Player::CreateCorpse()
         return nullptr;
     }
 
-    uint8 skin       = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID);
-    uint8 face       = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID);
-    uint8 hairstyle  = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID);
-    uint8 haircolor  = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID);
-    uint8 facialhair = GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE);
-
     corpse->SetByteValue(CORPSE_FIELD_BYTES_1, 1, GetRace());
     corpse->SetByteValue(CORPSE_FIELD_BYTES_1, 2, GetGender());
-    corpse->SetByteValue(CORPSE_FIELD_BYTES_1, 3, skin);
-
-    corpse->SetByteValue(CORPSE_FIELD_BYTES_2, 0, face);
-    corpse->SetByteValue(CORPSE_FIELD_BYTES_2, 1, hairstyle);
-    corpse->SetByteValue(CORPSE_FIELD_BYTES_2, 2, haircolor);
-    corpse->SetByteValue(CORPSE_FIELD_BYTES_2, 3, facialhair);
+    corpse->SetCustomizations(m_customizations);
 
     uint32 flags = CORPSE_FLAG_UNK2;
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
@@ -14609,8 +14436,8 @@ void Player::_LoadIntoDataField(char const* data, uint32 startOffset, uint32 cou
 
 bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 {
-    //       0     1        2     3     4      5       6      7   8      9     10    11          12          13           14              15
-    //SELECT guid, account, name, race, class, gender, level, xp, money, skin, face, hair_style, hair_color, facial_hair, bank_bag_slots, character_flags,
+    //       0     1        2     3     4      5       6      7   8      9               10
+    //SELECT guid, account, name, race, class, gender, level, xp, money, bank_bag_slots, character_flags,
     // 16          17          18          19   20           21               22                 23                 24          25           26
     //"position_x, position_y, position_z, map, orientation, known_taxi_mask, played_time_total, played_time_level, rest_bonus, logout_time, reset_talents_multiplier,"
     // 27                  28              29           30           31           32           33           34            35                 36
@@ -14647,7 +14474,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     }
 
     // prevent login to locked character
-    m_characterFlags = fields[15].GetUInt32();
+    m_characterFlags = fields[10].GetUInt32();
     if (m_characterFlags & (CHARACTER_FLAG_RENAME | CHARACTER_FLAG_LOCKED_FOR_TRANSFER | CHARACTER_FLAG_DELETED_BY_TRANSFER))
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "%s attempts to login but character is locked!", guid.GetString().c_str());
@@ -14670,7 +14497,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     SetGuidValue(OBJECT_FIELD_GUID, guid);
 
     // Phasing
-    SetWorldMask(fields[55].GetUInt32());
+    SetWorldMask(fields[50].GetUInt32());
 
     // overwrite some data fields
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, fields[3].GetUInt8()); // race
@@ -14684,7 +14511,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[52].GetString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[47].GetString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
 
     InitPlayerDisplayIds();                                       // model, scale and model data
 
@@ -14693,16 +14520,26 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
         money = GetMaxMoney();
     SetMoney(money);
 
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID, fields[9].GetUInt8());
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID, fields[10].GetUInt8());
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID, fields[11].GetUInt8());
-    SetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID, fields[12].GetUInt8());
-    SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE, fields[13].GetUInt8());
+    m_customizations.clear();
+    if (std::unique_ptr<QueryResult> customizations = holder->TakeResult(PLAYER_LOGIN_QUERY_LOADCUSTOMIZATIONS))
+    {
+        do
+        {
+            Field* customizationFields = customizations->Fetch();
+            m_customizations.push_back({ customizationFields[0].GetUInt32(), customizationFields[1].GetUInt32() });
+        }
+        while (customizations->NextRow());
+    }
+    if (sObjectMgr.GetChrCustomizations().Complete(GetRace(), GetClass(), gender, m_customizations))
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Player %u has an invalid or incomplete character customization list, repaired.", lowGuid);
+        m_customizationsChanged = true;
+    }
     SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_UNK1, 0xEE);
-    SetBankBagSlotCount(fields[14].GetUInt8());
+    SetBankBagSlotCount(fields[9].GetUInt8());
     SetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_REST_STATE, REST_STATE_NORMAL);
 
-    m_drunk = fields[45].GetUInt16();
+    m_drunk = fields[40].GetUInt16();
 
     SetUInt16Value(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER_AND_INEBRIATION, (m_drunk & 0xFFFE) | gender);
 
@@ -14736,13 +14573,13 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 #endif
 
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[39].GetInt32());
 #endif
 
-    SetUInt32Value(PLAYER_AMMO_ID, fields[53].GetUInt32());
+    SetUInt32Value(PLAYER_AMMO_ID, fields[48].GetUInt32());
 
     // Action bars state
-    SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BARS, fields[54].GetUInt8());
+    SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BARS, fields[49].GetUInt8());
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
@@ -14769,9 +14606,9 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     InitPrimaryProfessions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    uint32 transGUID = fields[28].GetUInt32();
+    uint32 transGUID = fields[23].GetUInt32();
 
-    if (!MaNGOS::IsValidMapCoord(fields[16].GetFloat(), fields[17].GetFloat(), fields[18].GetFloat(), fields[20].GetFloat()))
+    if (!MaNGOS::IsValidMapCoord(fields[11].GetFloat(), fields[12].GetFloat(), fields[13].GetFloat(), fields[15].GetFloat()))
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "%s have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",
                       guid.GetString().c_str(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
@@ -14783,19 +14620,19 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     }
     else
     {
-        Relocate(fields[16].GetFloat(), fields[17].GetFloat(), fields[18].GetFloat(), fields[20].GetFloat());
-        SetLocationMapId(fields[19].GetUInt32());
+        Relocate(fields[11].GetFloat(), fields[12].GetFloat(), fields[13].GetFloat(), fields[15].GetFloat());
+        SetLocationMapId(fields[14].GetUInt32());
     }
 
     _LoadGroup(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADGROUP));
 
-    m_honorMgr.SetRankPoints(fields[37].GetFloat());
-    m_honorMgr.SetHighestRank(fields[38].GetUInt32());
-    m_honorMgr.SetStanding(fields[39].GetUInt32());
-    m_honorMgr.SetLastWeekHK(fields[40].GetUInt32());
-    m_honorMgr.SetLastWeekCP(fields[41].GetFloat());
-    m_honorMgr.SetStoredHK(fields[42].GetUInt32());
-    m_honorMgr.SetStoredDK(fields[43].GetUInt32());
+    m_honorMgr.SetRankPoints(fields[32].GetFloat());
+    m_honorMgr.SetHighestRank(fields[33].GetUInt32());
+    m_honorMgr.SetStanding(fields[34].GetUInt32());
+    m_honorMgr.SetLastWeekHK(fields[35].GetUInt32());
+    m_honorMgr.SetLastWeekCP(fields[36].GetFloat());
+    m_honorMgr.SetStoredHK(fields[37].GetUInt32());
+    m_honorMgr.SetStoredDK(fields[38].GetUInt32());
 
     m_honorMgr.Load(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADHONORCP));
     _LoadBoundInstances(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
@@ -14837,7 +14674,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
         GenericTransport* transport = GetMap()->GetTransport(guid);
         if (transport && !HasCharacterFlag(CHARACTER_FLAG_ON_UNSAFE_TRANSPORT))
         {
-            float x = fields[29].GetFloat(), y = fields[30].GetFloat(), z = fields[31].GetFloat(), o = fields[32].GetFloat();
+            float x = fields[24].GetFloat(), y = fields[25].GetFloat(), z = fields[26].GetFloat(), o = fields[27].GetFloat();
             m_movementInfo.SetTransportData(guid, x, y, z, o);
             transport->CalculatePassengerPosition(x, y, z, &o);
 
@@ -14892,7 +14729,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     if (mapEntry && mapEntry->IsDungeon())
     {
         // if the player is in an instance and it has been reset in the meantime teleport him to the entrance
-        uint32 instanceId = fields[57].GetUInt32();
+        uint32 instanceId = fields[52].GetUInt32();
         if (!state || state->GetInstanceId() != instanceId)
         {
             AreaTriggerTeleport const* at = sObjectMgr.GetGoBackTrigger(GetMapId());
@@ -14920,7 +14757,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     SaveRecallPosition();
 
     // time since last logout (in seconds)
-    time_t const logoutTime = time_t(fields[25].GetUInt64());
+    time_t const logoutTime = time_t(fields[20].GetUInt64());
     uint32 const timeDiff = uint32(now - logoutTime);
 
     // set value, including drunk invisibility detection
@@ -14933,29 +14770,29 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     uint16 newDrunkenValue = uint16(soberFactor * m_drunk);
     SetDrunkValue(newDrunkenValue);
 
-    m_playedTime[PLAYED_TIME_TOTAL] = fields[22].GetUInt32();
-    m_playedTime[PLAYED_TIME_LEVEL] = fields[23].GetUInt32();
-    m_createTime = fields[56].GetUInt64();
+    m_playedTime[PLAYED_TIME_TOTAL] = fields[17].GetUInt32();
+    m_playedTime[PLAYED_TIME_LEVEL] = fields[18].GetUInt32();
+    m_createTime = fields[51].GetUInt64();
 
-    m_resetTalentsMultiplier = fields[26].GetUInt32();
-    m_resetTalentsTime = time_t(fields[27].GetUInt64());
+    m_resetTalentsMultiplier = fields[21].GetUInt32();
+    m_resetTalentsTime = time_t(fields[22].GetUInt64());
 
-    m_taxi.LoadTaxiMask(fields[21].GetString());
+    m_taxi.LoadTaxiMask(fields[16].GetString());
 
-    uint32 extraflags = fields[33].GetUInt32();
+    uint32 extraflags = fields[28].GetUInt32();
 
-    m_stableSlots = fields[34].GetUInt32();
+    m_stableSlots = fields[29].GetUInt32();
     if (m_stableSlots > MAX_PET_STABLES)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
         m_stableSlots = MAX_PET_STABLES;
     }
 
-    m_deathExpireTime = (time_t)fields[35].GetUInt64();
+    m_deathExpireTime = (time_t)fields[30].GetUInt64();
     if (m_deathExpireTime > now + MAX_DEATH_COUNT * DEATH_EXPIRE_STEP)
         m_deathExpireTime = now + MAX_DEATH_COUNT * DEATH_EXPIRE_STEP - 1;
 
-    std::string taxi_nodes = fields[36].GetCppString();
+    std::string taxi_nodes = fields[31].GetCppString();
 
     // clear channel spell data (if saved at channel spell casting)
     SetChannelObjectGuid(ObjectGuid());
@@ -14993,7 +14830,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
         SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_PET_LOYALTY, 0xEE);
 
     // rest bonus can only be calculated after InitStatsForLevel()
-    m_restBonus = fields[24].GetFloat();
+    m_restBonus = fields[19].GetFloat();
 
     if (timeDiff > 0)
         SetRestBonus(GetRestBonus() + ComputeRest(timeDiff, true, HasCharacterFlag(CHARACTER_FLAG_RESTING)));
@@ -15101,7 +14938,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedhealth = fields[46].GetUInt32();
+    uint32 savedhealth = fields[41].GetUInt32();
     SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
     for (uint32 i = 0; i < MAX_POWERS; ++i)
     {
@@ -16214,7 +16051,7 @@ void Player::_LoadGuild(std::unique_ptr<QueryResult> result)
 /***                   SAVE SYSTEM                     ***/
 /*********************************************************/
 
-bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string const& name, uint8 raceId, uint8 classId, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair)
+bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string const& name, uint8 raceId, uint8 classId, uint8 gender, ChrCustomizationList const& customizations)
 {
     PlayerInfo const* info = sObjectMgr.GetPlayerInfo(raceId, classId);
     if (!info)
@@ -16242,13 +16079,11 @@ bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string co
     static SqlStatementID insChar;
 
     SqlStatement uberInsert = CharacterDatabase.CreateStatement(insChar,"REPLACE INTO `characters` (`guid`, `account`, `name`, `race`, `class`, `gender`, `level`, `money`, "
-        "`skin`, `face`, `hair_style`, `hair_color`, `facial_hair`, "
         "`map`, `position_x`, `position_y`, `position_z`, `orientation`, "
         "`known_taxi_mask`, `current_taxi_path`, `online`, `extra_flags`, "
         "`health`, `power1`, `power2`, `power3`, `power4`, `power5`, "
         "`explored_zones`, `equipment_cache`, `ammo_id`, `world_phase_mask`, `create_time`, `logout_time`) "
         "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
@@ -16264,12 +16099,6 @@ bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string co
     uint32 const startingLevel = sWorld.getConfig((session->GetSecurity() >= SEC_MODERATOR) ? CONFIG_UINT32_START_GM_LEVEL : CONFIG_UINT32_START_PLAYER_LEVEL);
     uberInsert.addUInt32(startingLevel);
     uberInsert.addUInt32(sWorld.getConfig(CONFIG_UINT32_START_PLAYER_MONEY));
-
-    uberInsert.addInt8(skin);
-    uberInsert.addInt8(face);
-    uberInsert.addInt8(hairStyle);
-    uberInsert.addInt8(hairColor);
-    uberInsert.addUInt8(facialHair);
 
     uberInsert.addUInt32(info->mapId);
     uberInsert.addFloat(info->positionX);
@@ -16356,6 +16185,13 @@ bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string co
     uberInsert.addUInt64(uint64(time(nullptr))); // logout time (for rested xp)
     uberInsert.Execute();
 
+    for (ChrCustomizationChoice const& choice : customizations)
+    {
+        static SqlStatementID insCustomization;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(insCustomization, "INSERT INTO `character_customizations` (`guid`, `chrCustomizationOptionID`, `chrCustomizationChoiceID`) VALUES (?, ?, ?)");
+        stmt.PExecute(guidlow, choice.OptionID, choice.ChoiceID);
+    }
+
     sObjectMgr.SetPlayerWorldMask(guidlow, WORLD_DEFAULT_CHAR);
     session->SaveTutorialsData(); // changed only while character in game
 
@@ -16370,6 +16206,7 @@ bool Player::SaveNewPlayer(WorldSession* session, uint32 guidlow, std::string co
     masterPlayer.Create(ObjectGuid(HIGHGUID_PLAYER, guidlow), raceId, classId);
     masterPlayer.SaveToDB();
     PlayerCacheData* cacheData = sObjectMgr.InsertPlayerInCache(guidlow, raceId, classId, gender, session->GetAccountId(), name, startingLevel, zoneId);
+    cacheData->customizations = customizations;
     sObjectMgr.UpdatePlayerCachedPosition(cacheData, info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation, false);
     sLog.Player(session, LOG_CHAR, "Create", LOG_LVL_BASIC, "Character %s guid %u", name.c_str(), guidlow);
 
@@ -16414,7 +16251,7 @@ void Player::SaveToDB(bool online, bool force)
 
     static SqlStatementID insChar;
 
-    SqlStatement uberInsert = CharacterDatabase.CreateStatement(insChar, "REPLACE INTO `characters` (`guid`, `account`, `name`, `race`, `class`, `gender`, `level`, `xp`, `money`, `skin`, `face`, `hair_style`, `hair_color`, `facial_hair`, `bank_bag_slots`, `character_flags`,"
+    SqlStatement uberInsert = CharacterDatabase.CreateStatement(insChar, "REPLACE INTO `characters` (`guid`, `account`, `name`, `race`, `class`, `gender`, `level`, `xp`, `money`, `bank_bag_slots`, `character_flags`,"
                               "`map`, `instance`, `position_x`, `position_y`, `position_z`, `orientation`, "
                               "`transport_guid`, `transport_x`, `transport_y`, `transport_z`, `transport_o`, "
                               "`known_taxi_mask`, `current_taxi_path`, `online`, `played_time_total`, `played_time_level`, "
@@ -16423,7 +16260,7 @@ void Player::SaveToDB(bool online, bool force)
                               "`honor_rank_points`, `honor_highest_rank`, `honor_standing`, `honor_last_week_hk`, `honor_last_week_cp`, `honor_stored_hk`, `honor_stored_dk`, "
                               "`watched_faction`, `drunk`, `health`, `power1`, `power2`, `power3`, `power4`, `power5`, "
                               "`explored_zones`, `equipment_cache`, `ammo_id`, `action_bars`, `world_phase_mask`, `create_time`) "
-                              "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                              "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
                               "?, ?, ?, ?, ?, ?, "
                                "?, ?, ?, ?, ?, "
                               "?, ?, ?, ?, ?, "
@@ -16442,11 +16279,6 @@ void Player::SaveToDB(bool online, bool force)
     uberInsert.addUInt32(GetLevel());
     uberInsert.addUInt32(GetUInt32Value(PLAYER_XP));
     uberInsert.addUInt32(GetMoney());
-    uberInsert.addUInt8(GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID));
-    uberInsert.addUInt8(GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID));
-    uberInsert.addUInt8(GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID));
-    uberInsert.addUInt8(GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID));
-    uberInsert.addUInt32(GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE));
     uberInsert.addUInt32(GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_BANK_BAG_SLOTS));
 
     UpdateCharacterFlags();
@@ -16551,6 +16383,20 @@ void Player::SaveToDB(bool online, bool force)
     uberInsert.addUInt32(GetWorldMask());
     uberInsert.addUInt64(uint64(m_createTime));
     uberInsert.Execute();
+
+    if (m_customizationsChanged)
+    {
+        static SqlStatementID delCustomizations;
+        SqlStatement del = CharacterDatabase.CreateStatement(delCustomizations, "DELETE FROM `character_customizations` WHERE `guid` = ?");
+        del.PExecute(GetGUIDLow());
+        for (ChrCustomizationChoice const& choice : m_customizations)
+        {
+            static SqlStatementID insCustomization;
+            SqlStatement ins = CharacterDatabase.CreateStatement(insCustomization, "INSERT INTO `character_customizations` (`guid`, `chrCustomizationOptionID`, `chrCustomizationChoiceID`) VALUES (?, ?, ?)");
+            ins.PExecute(GetGUIDLow(), choice.OptionID, choice.ChoiceID);
+        }
+        m_customizationsChanged = false;
+    }
 
     _SaveBGData();
     _SaveInventory();

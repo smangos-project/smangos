@@ -725,10 +725,25 @@ void ObjectMgr::LoadPlayerCacheData(uint32 lowGuid)
 
             UpdatePlayerCachedPosition(data, fields[8].GetUInt32(), fields[9].GetFloat(), fields[10].GetFloat(),
                 fields[11].GetFloat(), fields[12].GetFloat(), !fields[13].GetCppString().empty());
+            data->customizations.clear();
         }
         ++totalCount;
     }
     while (result->NextRow());
+
+    std::unique_ptr<QueryResult> customizations = lowGuid ?
+        CharacterDatabase.PQuery("SELECT `guid`, `chrCustomizationOptionID`, `chrCustomizationChoiceID` FROM `character_customizations` WHERE `guid`=%u ORDER BY `chrCustomizationOptionID`", lowGuid) :
+        CharacterDatabase.Query("SELECT `guid`, `chrCustomizationOptionID`, `chrCustomizationChoiceID` FROM `character_customizations` ORDER BY `guid`, `chrCustomizationOptionID`");
+    if (customizations)
+    {
+        do
+        {
+            Field* fields = customizations->Fetch();
+            if (PlayerCacheData* data = GetPlayerDataByGUID(fields[0].GetUInt32()))
+                data->customizations.push_back({ fields[1].GetUInt32(), fields[2].GetUInt32() });
+        }
+        while (customizations->NextRow());
+    }
 
     if (!lowGuid)
     {
@@ -841,7 +856,9 @@ PlayerCacheData* ObjectMgr::InsertPlayerInCache(Player* pPlayer)
         return nullptr;
     auto accountId = pSession->GetAccountId();
 
-    return InsertPlayerInCache(pPlayer->GetGUIDLow(), pPlayer->GetRace(), pPlayer->GetClass(), pPlayer->GetGender(), accountId, pPlayer->GetName(), pPlayer->GetLevel(), pPlayer->GetCachedZoneId());
+    PlayerCacheData* data = InsertPlayerInCache(pPlayer->GetGUIDLow(), pPlayer->GetRace(), pPlayer->GetClass(), pPlayer->GetGender(), accountId, pPlayer->GetName(), pPlayer->GetLevel(), pPlayer->GetCachedZoneId());
+    data->customizations = pPlayer->GetCustomizations();
+    return data;
 }
 
 void ObjectMgr::UpdatePlayerCachedPosition(Player* pPlayer)
@@ -890,6 +907,7 @@ void ObjectMgr::UpdatePlayerCache(Player* pPlayer)
 
     if (!data)
         return;
+    data->customizations = pPlayer->GetCustomizations();
     if (pPlayer->GetSession())
         UpdatePlayerCache(data, pPlayer->GetRace(), pPlayer->GetClass(), pPlayer->GetGender(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetName(), pPlayer->GetLevel(), pPlayer->GetCachedZoneId());
 
@@ -8760,8 +8778,8 @@ void ObjectMgr::LoadCorpses()
     uint32 count = 0;
     //                                                                            0       1                       2                      3                      4                      5                       6
     std::unique_ptr<QueryResult> result(CharacterDatabase.Query("SELECT `corpse`.`guid`, `player_guid`, `corpse`.`position_x`, `corpse`.`position_y`, `corpse`.`position_z`, `corpse`.`orientation`, `corpse`.`map`, "
-    //                      7       8                       9           10        11      12       13      14      15            16            17             18                 19          20
-                          "`time`, `corpse_type`, `corpse`.`instance`, `gender`, `race`, `class`, `skin`, `face`, `hair_style`, `hair_color`, `facial_hair`, `equipment_cache`, `guild_id`, `character_flags` FROM `corpse` "
+    //                      7       8                       9           10        11      12       13                 14          15
+                          "`time`, `corpse_type`, `corpse`.`instance`, `gender`, `race`, `class`, `equipment_cache`, `guild_id`, `character_flags` FROM `corpse` "
                           "JOIN `characters` ON `player_guid` = `characters`.`guid` "
                           "LEFT JOIN `guild_member` ON `player_guid`=`guild_member`.`guid` WHERE `corpse_type` <> 0"));
 
@@ -8773,6 +8791,19 @@ void ObjectMgr::LoadCorpses()
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u corpses", count);
         return;
+    }
+
+    std::unordered_map<uint32, ChrCustomizationList> customizations;
+    if (std::unique_ptr<QueryResult> rows = CharacterDatabase.Query(
+        "SELECT `cc`.`guid`, `cc`.`chrCustomizationOptionID`, `cc`.`chrCustomizationChoiceID` FROM `character_customizations` `cc` "
+        "JOIN `corpse` `c` ON `c`.`player_guid` = `cc`.`guid` WHERE `c`.`corpse_type` <> 0 ORDER BY `cc`.`guid`, `cc`.`chrCustomizationOptionID`"))
+    {
+        do
+        {
+            Field* rowFields = rows->Fetch();
+            customizations[rowFields[0].GetUInt32()].push_back({ rowFields[1].GetUInt32(), rowFields[2].GetUInt32() });
+        }
+        while (rows->NextRow());
     }
 
     BarGoLink bar(result->GetRowCount());
@@ -8790,6 +8821,9 @@ void ObjectMgr::LoadCorpses()
             delete corpse;
             continue;
         }
+        auto customization = customizations.find(fields[1].GetUInt32());
+        if (customization != customizations.end())
+            corpse->SetCustomizations(customization->second);
 
         sObjectAccessor.AddCorpse(corpse);
 
