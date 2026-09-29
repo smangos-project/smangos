@@ -435,7 +435,7 @@ int Master::Run(std::string const& dumpStoresDir)
     return World::GetExitCode();
 }
 
-bool StartDB(const std::string& name, DatabaseType& database, char const** migrations)
+bool StartDB(const std::string& name, Database& database, char const** migrations)
 {
     // Get database info from configuration file
     std::string dbstring = sConfig.GetStringDefault((name + "Database.Info").c_str(), "");
@@ -474,7 +474,7 @@ bool StartDB(const std::string& name, DatabaseType& database, char const** migra
 
         dbStringLog.replace(start, end, "*");
     }
-    else
+    else if (!dynamic_cast<DatabaseDoltLite*>(&database))
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Incorrectly formatted database connection string for database %s", name.c_str());
         return false;

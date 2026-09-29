@@ -28,10 +28,11 @@
 #include "Database/QueryResultMysql.h"
 #include "Database/Database.h"
 #include "Database/DatabaseMysql.h"
+#include "Database/DatabaseDoltLite.h"
 
 typedef DatabaseMysql DatabaseType;
 
-extern DatabaseType WorldDatabase;
+extern DatabaseDoltLite WorldDatabase;
 extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
 extern DatabaseType LogsDatabase;

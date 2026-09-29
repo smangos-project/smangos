@@ -78,7 +78,7 @@ Set-ConfigValues (Join-Path $repo "src\mangosd\mangosd.conf.dist.in") (Join-Path
     "RealmID"                   = $RealmId
     "DataDir"                   = "`"$dataForConf`""
     "LoginDatabase.Info"        = Database-Info "realmd"
-    "WorldDatabase.Info"        = Database-Info "world"
+    "WorldDatabase.Info"        = "`"$($repo -replace '\\', '/')/.world/world.doltlite`""
     "CharacterDatabase.Info"    = Database-Info "characters"
     "LogsDatabase.Info"         = Database-Info "logs"
     "WorldServerPort"           = $WorldPort

@@ -102,6 +102,8 @@ else()
   )
 endif()
 
+doltlite_copy_runtime(${EXECUTABLE_NAME})
+
 if(WIN32)
   target_link_libraries(${EXECUTABLE_NAME}
     optimized ${MYSQL_LIBRARY}

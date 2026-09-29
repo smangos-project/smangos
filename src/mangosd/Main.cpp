@@ -51,7 +51,7 @@ volatile int m_ServiceStatus = -1;
 #include "PosixDaemon.h"
 #endif
 
-DatabaseType WorldDatabase;                                 // Accessor to the world database
+DatabaseDoltLite WorldDatabase;                            // Accessor to the world database
 DatabaseType CharacterDatabase;                             // Accessor to the character database
 DatabaseType LoginDatabase;                                 // Accessor to the realm/login database
 DatabaseType LogsDatabase;                                  // Accessor to the logs database
