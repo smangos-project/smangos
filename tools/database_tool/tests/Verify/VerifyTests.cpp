@@ -160,14 +160,18 @@ TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-de
         world.Execute("INSERT INTO dbc_chrraces (ID) VALUES (3)");
     }
     options.update = true;
-    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+    VerifyResult updated = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    CHECK(updated.error.empty());
+    CHECK(updated.problems.empty());
 
     std::ifstream in(verifyDir / "client-delta.tsv");
     std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     CHECK(content == "table\tinserted\tchanged\tremoved\ndbc_chrraces\t1\t0\t0\ndbc_map\t1\t1\t0\n");
 
     options.update = false;
-    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+    VerifyResult rechecked = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    CHECK(rechecked.error.empty());
+    CHECK(rechecked.problems.empty());
 }
 
 TEST_CASE("V2 rebuilds vanilla tables through the columns.tsv mapping, up to allow.tsv", "[Verify]")
@@ -246,9 +250,13 @@ TEST_CASE("V4 counts dangling client foreign keys and declared server references
     CHECK(result.problems[1].message == "node -> dbc_taxinodes.ID: 1 values don't resolve; references.tsv says 0");
 
     options.update = true;
-    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+    VerifyResult updated = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    CHECK(updated.error.empty());
+    CHECK(updated.problems.empty());
     options.update = false;
-    CHECK(RunVerify(worldPath, referencePath, dir.path, verifyDir, options).problems.empty());
+    VerifyResult rechecked = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
+    CHECK(rechecked.error.empty());
+    CHECK(rechecked.problems.empty());
 
     std::ifstream in(verifyDir / "references.tsv");
     std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());

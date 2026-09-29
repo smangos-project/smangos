@@ -123,11 +123,14 @@ static std::vector<std::vector<std::string>> ReadTsv(std::filesystem::path const
             line.pop_back();
         if (line.empty())
             continue;
-        std::vector<std::string> fields;
-        std::istringstream fieldsIn(line);
-        std::string field;
-        while (std::getline(fieldsIn, field, '\t'))
-            fields.push_back(field);
+        std::vector<std::string> fields(1);
+        for (char c : line)
+        {
+            if (c == '\t')
+                fields.emplace_back();
+            else
+                fields.back() += c;
+        }
         if (fields.size() < columns)
             throw std::runtime_error(path.string() + ": row with " + std::to_string(fields.size()) + " fields");
         rows.push_back(std::move(fields));
