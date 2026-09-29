@@ -261,7 +261,7 @@ float Unit::GetAttackPowerFromStrengthAndAgility(bool ranged, float strength, fl
                         for (const auto itr : mDummy)
                         {
                             // Predatory Strikes
-                            if (itr->GetSpellProto()->SpellIconID == 1563)
+                            if (itr->GetSpellProto()->HasTag(SPELL_TAG_PREDATORY_STRIKES))
                             {
                                 mLevelMult = itr->GetModifier()->m_amount / 100.0f;
                                 break;
