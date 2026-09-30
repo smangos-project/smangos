@@ -614,7 +614,7 @@ srv	fishing_loot_template	patch_min	drop			progression removed	yes
 srv	fishing_loot_template	patch_max	drop			progression removed	yes
 srv	forbidden_items	entry	server			used as a subquery filter by LootStore::LoadLootTable (LootMgr.cpp:106) and ObjectMgr::LoadVendors (ObjectMgr.cpp:10788)	yes
 srv	forbidden_items	patch	drop			progression removed	yes
-srv	forbidden_items	after_or_before	server			used as a subquery filter by LootStore::LoadLootTable (LootMgr.cpp:106) and ObjectMgr::LoadVendors (ObjectMgr.cpp:10788)	yes
+srv	forbidden_items	after_or_before	drop			progression removed: the table keeps only the entries forbidden at patch 10	yes
 srv	game_event	entry	server			fully read by GameEventMgr::LoadFromDB (GameEventMgr.cpp:183)	yes
 srv	game_event	start_time	server			fully read by GameEventMgr::LoadFromDB (GameEventMgr.cpp:183)	yes
 srv	game_event	end_time	server			fully read by GameEventMgr::LoadFromDB (GameEventMgr.cpp:183)	yes

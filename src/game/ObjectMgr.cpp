@@ -10950,7 +10950,7 @@ void ObjectMgr::LoadVendors(char const* tableName, bool isTemplates)
         itr.second.Clear();
     vendorList.clear();
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `item`, `maxcount`, `incrtime`, `itemflags`, `condition_id` FROM %s WHERE (`item` NOT IN (SELECT `entry` FROM `forbidden_items` WHERE (`after_or_before` = 0 AND `patch` <= %u) || (`after_or_before` = 1 AND `patch` >= %u))) ORDER BY `entry`, `slot`", tableName, sWorld.GetWowPatch(), sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `item`, `maxcount`, `incrtime`, `itemflags`, `condition_id` FROM %s WHERE (`item` NOT IN (SELECT `entry` FROM `forbidden_items`)) ORDER BY `entry`, `slot`", tableName));
     if (!result)
     {
         BarGoLink bar(1);

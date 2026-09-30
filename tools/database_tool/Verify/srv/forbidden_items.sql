@@ -1,2 +1,3 @@
--- key: entry, after_or_before
-SELECT "entry", "patch", "after_or_before" FROM (SELECT "entry", "patch", "after_or_before", ROW_NUMBER() OVER (PARTITION BY "entry", "after_or_before" ORDER BY "patch" DESC, rowid DESC) AS __rn FROM "forbidden_items" WHERE "patch" <= 10) WHERE __rn = 1
+-- key: entry
+-- where: ("after_or_before" = 0 AND "patch" <= 10) OR ("after_or_before" = 1 AND "patch" >= 10)
+SELECT "entry" FROM "forbidden_items"
