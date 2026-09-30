@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -13,10 +14,12 @@ struct VerifyMapping
     std::vector<std::string> key;
     std::string select;
     std::string originalWhere; // limits the original's rows, for rows the server never loaded
+    std::map<std::string, std::string> originalExpressions; // column -> expression evaluated on the original's row instead of the stored value
 };
 
 // A "-- key: a, b" line names the key (empty or absent: every column), a "-- where: <condition>" line
-// limits the original's rows; other "--" lines are
+// limits the original's rows and "-- expect: <column> = <expression>" replaces a column's
+// value on the original's side; other "--" lines are
 // comments; the rest is the SELECT. Throws when the file can't be read.
 VerifyMapping ReadVerifyMapping(std::filesystem::path const& path);
 void WriteVerifyMapping(std::filesystem::path const& path, std::string const& header, VerifyMapping const& mapping);

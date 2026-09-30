@@ -104,6 +104,20 @@ TEST_CASE("ReadVerifyMapping reads the where line", "[Verify]")
     CHECK(ReadVerifyMapping(path).originalWhere == mapping.originalWhere);
 }
 
+TEST_CASE("ReadVerifyMapping reads expect lines", "[Verify]")
+{
+    VerifyTempDir dir("mapping-expect");
+    std::filesystem::path path = dir.path / "t.sql";
+    WriteVerifyTestFile(path, "-- key: a\n-- expect: b = CASE WHEN a = 0 THEN -1 ELSE b END\nSELECT a, b FROM t;\n");
+
+    VerifyMapping mapping = ReadVerifyMapping(path);
+    REQUIRE(mapping.originalExpressions.count("b") == 1);
+    CHECK(mapping.originalExpressions["b"] == "CASE WHEN a = 0 THEN -1 ELSE b END");
+
+    WriteVerifyMapping(path, {}, mapping);
+    CHECK(ReadVerifyMapping(path).originalExpressions == mapping.originalExpressions);
+}
+
 TEST_CASE("V1 rebuilds each srv_ table from its mapping and honours dropped columns", "[Verify]")
 {
     VerifyTempDir dir("v1");

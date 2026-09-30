@@ -869,9 +869,9 @@ srv	item_template	entry	dbc	dbc_itemsparse.ID	identity	0 differences (data-plan.
 srv	item_template	patch	drop			progression removed	yes
 srv	item_template	class	dbc	dbc_item.ClassID	identity	class/subclass: 7 differences total (data-plan.md 3.2.1); from Item, not ItemSparse -- pairs.tsv's item row is still `skip` (needs a second join), so this isn't evaluated by spec evidence yet, overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
 srv	item_template	subclass	dbc	dbc_item.SubclassID	identity	class/subclass: 7 differences total (data-plan.md 3.2.1); from Item, same known gap as class	yes
-srv	item_template	name	dbc	dbc_itemsparse.Display_lang	identity	31 differences (data-plan.md 3.2.1)	yes
-srv	item_template	description	dbc	dbc_itemsparse.Description_lang	identity	11 differences (data-plan.md 3.2.1)	yes
-srv	item_template	display_id	derived	dbc_itemmodifiedappearance.ItemAppearanceID -> dbc_itemappearance.ItemDisplayInfoID		13,257 differ, Classic re-pointed item appearances (data-plan.md 3.2.1); the client resolves display only through ItemModifiedAppearance (entry=ItemID), a 2-hop join no single rule expresses	yes
+srv	item_template	name	drop			client text stays (not gameplay); the 114 items the client lacks get their vanilla name	yes
+srv	item_template	description	drop			client text stays (not gameplay)	yes
+srv	item_template	display_id	drop			the client resolves the display through ItemModifiedAppearance and the server reads it from there	yes
 srv	item_template	quality	dbc	dbc_itemsparse.OverallQualityID	identity	29 differences (data-plan.md 3.2.1)	yes
 srv	item_template	flags	dbc	dbc_itemsparse.Flags1	identity	46 differences (data-plan.md 3.2.1); 1.15 expands a single flags word to Flags1-5, vanilla's value maps to the first	yes
 srv	item_template	buy_count	dbc	dbc_itemsparse.VendorStackCount	identity	0 differences (data-plan.md 3.2.1)	yes
@@ -930,7 +930,7 @@ srv	item_template	dmg_type4	dbc	dbc_item.DamageType4	identity	17,703/17,703 equa
 srv	item_template	dmg_min5	dbc	dbc_itemsparse.MinDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_max5	dbc	dbc_itemsparse.MaxDamage5	identity	secondary damage: 0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	dmg_type5	dbc	dbc_item.DamageType5	identity	17,703/17,703 equal the client's Item.DamageType5 (22 non-zero on slot 2); Item has five damage types, like MinDamage/MaxDamage	yes
-srv	item_template	block	server			no ItemSparse field; the modern client computes it from ItemArmorShield (data-plan.md 3.2.1)	yes
+srv	item_template	block	server	item_extra.block		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	armor	dbc	dbc_itemsparse.Resistances1	identity	312 differences (data-plan.md 3.2.1)	yes
 srv	item_template	holy_res	dbc	dbc_itemsparse.Resistances2	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	fire_res	dbc	dbc_itemsparse.Resistances3	identity	0 differences (data-plan.md 3.2.1)	yes
@@ -941,35 +941,35 @@ srv	item_template	arcane_res	dbc	dbc_itemsparse.Resistances7	identity	0 differen
 srv	item_template	spellid_1	dbc	dbc_itemeffect.SpellID	identity	slot 1: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spelltrigger_1	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcharges_1	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
-srv	item_template	spellppmrate_1	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellppmrate_1	server	item_extra.spellppmrate_1		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	spellcooldown_1	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategory_1	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategorycooldown_1	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellid_2	dbc	dbc_itemeffect.SpellID	identity	slot 2: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spelltrigger_2	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcharges_2	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
-srv	item_template	spellppmrate_2	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellppmrate_2	server	item_extra.spellppmrate_2		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	spellcooldown_2	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategory_2	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategorycooldown_2	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellid_3	dbc	dbc_itemeffect.SpellID	identity	slot 3: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spelltrigger_3	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcharges_3	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
-srv	item_template	spellppmrate_3	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellppmrate_3	server	item_extra.spellppmrate_3		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	spellcooldown_3	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategory_3	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategorycooldown_3	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellid_4	dbc	dbc_itemeffect.SpellID	identity	slot 4: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spelltrigger_4	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcharges_4	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
-srv	item_template	spellppmrate_4	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellppmrate_4	server	item_extra.spellppmrate_4		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	spellcooldown_4	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategory_4	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategorycooldown_4	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellid_5	dbc	dbc_itemeffect.SpellID	identity	slot 5: representation differences mostly (data-plan.md 3.2.1), vs ItemEffect.SpellID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spelltrigger_5	dbc	dbc_itemeffect.TriggerType	identity	vs ItemEffect.TriggerType at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcharges_5	dbc	dbc_itemeffect.Charges	identity	vs ItemEffect.Charges at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
-srv	item_template	spellppmrate_5	server			no ItemEffect field; proc-per-minute scaling isn't tracked per legacy slot in 1.15	yes
+srv	item_template	spellppmrate_5	server	item_extra.spellppmrate_5		vmangos-only value with no client column (item_extra)	yes
 srv	item_template	spellcooldown_5	dbc	dbc_itemeffect.CoolDownMSec	identity	vmangos cooldown 120000 on potions vs DB2 0 with CategoryCoolDownMSec (data-plan.md 3.2.1), vs ItemEffect.CoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategory_5	dbc	dbc_itemeffect.SpellCategoryID	identity	vs ItemEffect.SpellCategoryID at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
 srv	item_template	spellcategorycooldown_5	dbc	dbc_itemeffect.CategoryCoolDownMSec	identity	vs ItemEffect.CategoryCoolDownMSec at LegacySlotIndex = N-1; the unpivot join isn't evaluated by spec evidence yet (phase0-plan.md 4.3 known gaps)	yes
@@ -979,7 +979,7 @@ srv	item_template	page_language	dbc	dbc_itemsparse.LanguageID	identity	0 differe
 srv	item_template	page_material	dbc	dbc_itemsparse.PageMaterialID	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	start_quest	dbc	dbc_itemsparse.StartQuestID	identity	7 differences (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
 srv	item_template	lock_id	dbc	dbc_itemsparse.LockID	identity	1 difference (data-plan.md 3.2.1)	yes
-srv	item_template	material	dbc	dbc_itemsparse.Material	material_neg1	1074 raw differences, representation only (data-plan.md 3.2.1/5)	yes
+srv	item_template	material	drop			client value stays (-1 vs 0 "none" encoding, sound only)	yes
 srv	item_template	sheath	dbc	dbc_itemsparse.SheatheType	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	random_property	dbc	dbc_itemsparse.RandomSelect	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	set_id	dbc	dbc_itemsparse.ItemSet	identity	0 differences (data-plan.md 3.2.1)	yes
@@ -988,13 +988,13 @@ srv	item_template	area_bound	dbc	dbc_itemsparse.ZoneBound1	identity	1 difference
 srv	item_template	map_bound	dbc	dbc_itemsparse.InstanceBound	identity	0 differences (data-plan.md 3.2.1)	yes
 srv	item_template	duration	dbc	dbc_itemsparse.DurationInInventory	identity	1 difference (data-plan.md 3.2.1); overriding evidence.tsv's spurious StatPercentageOfSocket1 coincidence	yes
 srv	item_template	bag_family	dbc	dbc_itemsparse.BagFamily	bag_family_mask	198 raw differences, representation only (data-plan.md 3.2.1/5)	yes
-srv	item_template	disenchant_id	server			no DB2 field; disenchanting stays server-side loot logic	yes
-srv	item_template	food_type	server			no DB2 field; pet feeding stays server-side logic	yes
-srv	item_template	min_money_loot	server			no DB2 field; money loot randomization stays server-side	yes
-srv	item_template	max_money_loot	server			no DB2 field; money loot randomization stays server-side	yes
-srv	item_template	wrapped_gift	server			no DB2 field; gift wrapping stays a server-side spell effect	yes
-srv	item_template	extra_flags	dbc	dbc_itemsparse.Flags2	identity	the second vanilla flags word; 1.15 expands to a 5-slot Flags array, overriding evidence.tsv's spurious RequiredPVPMedal coincidence	yes
-srv	item_template	other_team_entry	dbc	dbc_itemsparse.OppositeFactionItemID	identity	overriding evidence.tsv's spurious PriceVariance coincidence	yes
+srv	item_template	disenchant_id	server	item_extra.disenchant_id		vmangos-only value with no client column (item_extra)	yes
+srv	item_template	food_type	server	item_extra.food_type		vmangos-only value with no client column (item_extra)	yes
+srv	item_template	min_money_loot	server	item_extra.min_money_loot		vmangos-only value with no client column (item_extra)	yes
+srv	item_template	max_money_loot	server	item_extra.max_money_loot		vmangos-only value with no client column (item_extra)	yes
+srv	item_template	wrapped_gift	server	item_extra.wrapped_gift		vmangos-only value with no client column (item_extra)	yes
+srv	item_template	extra_flags	server	item_extra.extra_flags		vmangos server flag / other-team item, not the client's Flags2 / OppositeFactionItemID	yes
+srv	item_template	other_team_entry	server	item_extra.other_team_entry		vmangos server flag / other-team item, not the client's Flags2 / OppositeFactionItemID	yes
 srv	locales_area	Entry	server			join key into m_AreaLocaleMap (ObjectMgr::LoadAreaLocales, ObjectMgr.cpp:12058)	yes
 srv	locales_area	NameLoc1	server			non-enUS translation loaded into AreaLocale::Name[1] (ObjectMgr::LoadAreaLocales, ObjectMgr.cpp:12058); read by GetAreaLocaleString	yes
 srv	locales_area	NameLoc2	server			non-enUS translation loaded into AreaLocale::Name[2] (ObjectMgr::LoadAreaLocales, ObjectMgr.cpp:12058); read by GetAreaLocaleString	yes
@@ -4162,3 +4162,17 @@ new	areatrigger_extra	script_id	server			areatrigger_scripts id (ObjectMgr::Load
 new	areatrigger_extra	script_name	server			core script name (ObjectMgr::LoadAreaTriggers)	yes
 new	skill_line_ability_extra	id	server			key: the skill_line_ability id the exception applies to	yes
 new	skill_line_ability_extra	superseded_by_spell	server			next-rank spell read by ObjectMgr::LoadSkillLineAbility when no row of the skill supersedes this spell	yes
+new	item_extra	entry	server			key: the vanilla item entry (dbc_itemsparse.ID)	yes
+new	item_extra	block	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	spellppmrate_1	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	spellppmrate_2	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	spellppmrate_3	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	spellppmrate_4	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	spellppmrate_5	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	disenchant_id	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	food_type	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	min_money_loot	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	max_money_loot	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	wrapped_gift	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	extra_flags	server			read by ObjectMgr::LoadItemPrototypes	yes
+new	item_extra	other_team_entry	server			read by ObjectMgr::LoadItemPrototypes	yes

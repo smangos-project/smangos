@@ -3284,7 +3284,7 @@ bool ChatHandler::HandleAddItemCommand(char* args)
     {
         std::string itemName = cId;
         WorldDatabase.escape_string(itemName);
-        std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT `entry` FROM `item_template` WHERE `name` = '%s'", itemName.c_str());
+        std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT `ID` FROM `dbc_itemsparse` WHERE `Display_lang` = '%s'", itemName.c_str());
         if (!result)
         {
             PSendSysMessage(LANG_COMMAND_COULDNOTFIND, cId);
@@ -3380,7 +3380,7 @@ bool ChatHandler::HandleDeleteItemCommand(char* args)
         std::string itemName = cId;
         WorldDatabase.escape_string(itemName);
 
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry` FROM `item_template` WHERE `name` = '%s'", itemName.c_str()));
+        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `ID` FROM `dbc_itemsparse` WHERE `Display_lang` = '%s'", itemName.c_str()));
 
         if (!result)
         {

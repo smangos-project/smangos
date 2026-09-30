@@ -1545,7 +1545,6 @@ void World::SetInitialWorldSettings()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Quests...");
     sObjectMgr.LoadQuestUniqueBits();
-    sObjectMgr.LoadItemClientDisplayIds();
     sObjectMgr.LoadQuests();                                // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Quests Relations...");

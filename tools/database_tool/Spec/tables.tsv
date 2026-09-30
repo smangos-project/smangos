@@ -75,7 +75,8 @@ item_display_info	gone			dbc_itemdisplayinfo		ids are the client's ItemDisplayIn
 item_enchantment_template	server	entry, ench	srv:item_enchantment_template			
 item_loot_template	server	entry, item	srv:item_loot_template			
 item_required_target	server	entry, type, target_entry	srv:item_required_target			
-item_template	server	entry	srv:item_template	dbc_item, dbc_itemeffect, dbc_itemsparse		
+item_extra	server	entry	srv:item_template			vmangos-only item values with no client column, rows only for items that have some
+item_template	gone			dbc_item, dbc_itemeffect, dbc_itemsparse, item_extra		every client-visible column is an Item, ItemSparse or ItemEffect column; the rest moved to item_extra
 locales_area	server	Entry	srv:locales_area			
 locales_areatrigger	server	entry	srv:locales_areatrigger			
 locales_broadcast_text	server	entry	srv:locales_broadcast_text			

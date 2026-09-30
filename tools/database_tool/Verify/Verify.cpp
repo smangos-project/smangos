@@ -60,6 +60,13 @@ VerifyMapping ReadVerifyMapping(std::filesystem::path const& path)
                 mapping.key = SplitTrimmed(comment.substr(4), ',');
             else if (comment.rfind("where:", 0) == 0)
                 mapping.originalWhere = Trim(comment.substr(6));
+            else if (comment.rfind("expect:", 0) == 0)
+            {
+                std::string rest = Trim(comment.substr(7));
+                size_t equals = rest.find('=');
+                if (equals != std::string::npos)
+                    mapping.originalExpressions[Trim(rest.substr(0, equals))] = Trim(rest.substr(equals + 1));
+            }
             continue;
         }
         if (!trimmed.empty())
@@ -84,6 +91,8 @@ void WriteVerifyMapping(std::filesystem::path const& path, std::string const& he
     out << "\n";
     if (!mapping.originalWhere.empty())
         out << "-- where: " << mapping.originalWhere << "\n";
+    for (auto const& [column, expression] : mapping.originalExpressions)
+        out << "-- expect: " << column << " = " << expression << "\n";
     out << mapping.select << "\n";
 }
 
@@ -273,7 +282,14 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
 
     std::string expected = "SELECT ";
     for (size_t i = 0; i < mappingColumns.size(); ++i)
-        expected += (i ? ", " : "") + Quote(mappingColumns[i]);
+    {
+        auto expression = mapping.originalExpressions.find(mappingColumns[i]);
+        expected += (i ? ", " : "");
+        if (expression != mapping.originalExpressions.end())
+            expected += "(" + expression->second + ") AS " + Quote(mappingColumns[i]);
+        else
+            expected += Quote(mappingColumns[i]);
+    }
     expected += " FROM ref." + Quote(originalTable);
     if (!mapping.originalWhere.empty())
         expected += " WHERE " + mapping.originalWhere;

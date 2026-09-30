@@ -44,7 +44,7 @@ dbc_itemeffect	SpellID	dbc_spell.ID		124
 dbc_itemmodifiedappearance	ItemID	dbc_item.ID		1	
 dbc_itemsetspell	SpellID	dbc_spell.ID		9	
 dbc_itemsparse	RequiredSkill	dbc_skillline.ID		1	
-dbc_itemsparse	StartQuestID	dbc_questv2.ID		93	
+dbc_itemsparse	StartQuestID	dbc_questv2.ID		90	
 dbc_itemsubclass	ClassID	dbc_itemclass.ClassID		1	
 dbc_journalencounterxmaploc	JournalEncounterID	dbc_journalencounter.ID		756	
 dbc_lfgdungeons	Faction	dbc_faction.ID		54	

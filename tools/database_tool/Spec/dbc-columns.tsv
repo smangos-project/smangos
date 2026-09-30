@@ -763,11 +763,11 @@ dbc_itemsetspell	Threshold
 dbc_itemsetspell	ItemSetID		rule
 dbc_itemsparse	ID		
 dbc_itemsparse	AllowableRace		
-dbc_itemsparse	Description_lang		
+dbc_itemsparse	Description_lang		client
 dbc_itemsparse	Display3_lang		client
 dbc_itemsparse	Display2_lang		client
 dbc_itemsparse	Display1_lang		client
-dbc_itemsparse	Display_lang		
+dbc_itemsparse	Display_lang		client
 dbc_itemsparse	DmgVariance		client
 dbc_itemsparse	DurationInInventory		
 dbc_itemsparse	QualityModifier		client
@@ -824,11 +824,11 @@ dbc_itemsparse	VendorStackCount
 dbc_itemsparse	PriceVariance		client
 dbc_itemsparse	PriceRandomValue		client
 dbc_itemsparse	Flags1		
-dbc_itemsparse	Flags2		
+dbc_itemsparse	Flags2		client
 dbc_itemsparse	Flags3		client
 dbc_itemsparse	Flags4		client
 dbc_itemsparse	Flags5		client
-dbc_itemsparse	OppositeFactionItemID		
+dbc_itemsparse	OppositeFactionItemID		client
 dbc_itemsparse	ModifiedCraftingReagentItemID		client
 dbc_itemsparse	ContentTuningID		client
 dbc_itemsparse	PlayerLevelToItemLevelCurveID		client
@@ -890,7 +890,7 @@ dbc_itemsparse	SocketType1		client
 dbc_itemsparse	SocketType2		client
 dbc_itemsparse	SocketType3		client
 dbc_itemsparse	SheatheType		
-dbc_itemsparse	Material		
+dbc_itemsparse	Material		client
 dbc_itemsparse	PageMaterialID		
 dbc_itemsparse	LanguageID		
 dbc_itemsparse	Bonding		
