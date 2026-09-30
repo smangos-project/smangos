@@ -1420,7 +1420,7 @@ void ScriptMgr::LoadAreaTriggerScripts()
     LoadScripts(sAreaTriggerScripts, "areatrigger_scripts");
 
     std::set<uint32> usedScripts;
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT DISTINCT `script_id` FROM `areatrigger_template` WHERE `script_id` != 0"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT DISTINCT `script_id` FROM `areatrigger_extra` WHERE `script_id` != 0"));
     if (result)
     {
         do
@@ -1442,7 +1442,7 @@ void ScriptMgr::LoadAreaTriggerScripts()
 
     for (auto const& scriptId : usedScripts)
     {
-        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `areatrigger_template` has script (Id: %u) not found in `areatrigger_scripts`", scriptId);
+        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `areatrigger_extra` has script (Id: %u) not found in `areatrigger_scripts`", scriptId);
     }
 }
 
@@ -1758,7 +1758,7 @@ void ScriptMgr::LoadScriptNames()
     uint32 count = 0;
     char const* tableNames[6] =
     {
-        "areatrigger_template",
+        "areatrigger_extra",
         "creature_template",
         "gameobject_template",
         "scripted_event_id",

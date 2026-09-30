@@ -1,11 +1,12 @@
 table	kind	key	sources	into	overrides	reason
 area_template	gone			dbc_areatable		every column is an AreaTable column (plan.md 10.2); the loader masks the client's flag bits
+areatrigger_template	gone			dbc_areatrigger, areatrigger_extra		every column is an AreaTrigger column or moved to areatrigger_extra
 areatrigger_bg_entrance	server	id	srv:areatrigger_bg_entrance			
 areatrigger_involvedrelation	server	id	srv:areatrigger_involvedrelation			
 areatrigger_scripts	server	id	srv:areatrigger_scripts			
 areatrigger_tavern	server	id	srv:areatrigger_tavern			
 areatrigger_teleport	server	id	srv:areatrigger_teleport			
-areatrigger_template	server	id	srv:areatrigger_template	dbc_areatrigger		
+areatrigger_extra	server	id	srv:areatrigger_template			script name, script id, cooldown, condition and admin name of a trigger; the client's areatrigger holds the shape and Message_lang
 auctionhousebot	server	item	srv:auctionhousebot			
 autobroadcast	server	string_id	srv:autobroadcast			
 battleground_events	server	map, event1, event2	srv:battleground_events			

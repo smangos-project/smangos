@@ -261,7 +261,7 @@ void ObjectMgr::LoadAllIdentifiers()
     }
 
     m_AreaTriggerIdSet.clear();
-    result = WorldDatabase.Query("SELECT DISTINCT `id` FROM `areatrigger_template`");
+    result = WorldDatabase.Query("SELECT `ID` FROM `dbc_areatrigger`");
 
     if (result)
     {
@@ -7104,14 +7104,17 @@ bool IsPointInAreaTriggerZone(AreaTriggerEntry const* atEntry, uint32 mapid, flo
 
 void ObjectMgr::LoadAreaTriggers()
 {
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `areatrigger_template` t1 WHERE `build`=(SELECT max(`build`) FROM `areatrigger_template` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query(
+        "SELECT a.`ID`, a.`ContinentID`, a.`Pos1`, a.`Pos2`, a.`Pos3`, a.`Radius`, a.`Box_length`, a.`Box_width`, a.`Box_height`, a.`Box_yaw`, "
+        "COALESCE(e.`name`, ''), COALESCE(e.`cooldown`, 0), COALESCE(e.`condition_id`, 0), COALESCE(e.`script_id`, 0), COALESCE(e.`script_name`, '') "
+        "FROM `dbc_areatrigger` a LEFT JOIN `areatrigger_extra` e ON e.`id` = a.`ID`"));
 
     if (!result)
     {
         BarGoLink bar(1);
         bar.step();
 
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 area triggers. DB table `areatrigger_template` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 area triggers. DB table `dbc_areatrigger` is empty.");
         return;
     }
 
@@ -7127,21 +7130,20 @@ void ObjectMgr::LoadAreaTriggers()
         uint32 triggerId = fields[0].GetUInt32();
 
         areaTrigger.id = triggerId;
-        areaTrigger.name = fields[2].GetCppString();
-        areaTrigger.map_id = fields[3].GetUInt32();
-        areaTrigger.x = fields[4].GetFloat();
-        areaTrigger.y = fields[5].GetFloat();
-        areaTrigger.z = fields[6].GetFloat();
-        areaTrigger.radius = fields[7].GetFloat();
-        areaTrigger.box_x = fields[8].GetFloat();
-        areaTrigger.box_y = fields[9].GetFloat();
-        areaTrigger.box_z = fields[10].GetFloat();
-        areaTrigger.box_orientation = fields[11].GetFloat();
-        areaTrigger.cooldown = fields[12].GetUInt32();
-        areaTrigger.condition_id = fields[13].GetUInt32();
-        areaTrigger.script_id = fields[14].GetUInt32();
-        char const* scriptName = fields[15].GetString();
-        areaTrigger.script_name = GetScriptId(scriptName);
+        areaTrigger.map_id = fields[1].GetUInt32();
+        areaTrigger.x = fields[2].GetFloat();
+        areaTrigger.y = fields[3].GetFloat();
+        areaTrigger.z = fields[4].GetFloat();
+        areaTrigger.radius = fields[5].GetFloat();
+        areaTrigger.box_x = fields[6].GetFloat();
+        areaTrigger.box_y = fields[7].GetFloat();
+        areaTrigger.box_z = fields[8].GetFloat();
+        areaTrigger.box_orientation = fields[9].GetFloat();
+        areaTrigger.name = fields[10].GetCppString();
+        areaTrigger.cooldown = fields[11].GetUInt32();
+        areaTrigger.condition_id = fields[12].GetUInt32();
+        areaTrigger.script_id = fields[13].GetUInt32();
+        areaTrigger.script_name = GetScriptId(fields[14].GetString());
 
         if (areaTrigger.condition_id)
         {

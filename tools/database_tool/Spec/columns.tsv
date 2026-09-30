@@ -57,7 +57,7 @@ srv	areatrigger_teleport	target_position_z	server			fully read by ObjectMgr::Loa
 srv	areatrigger_teleport	target_orientation	server			fully read by ObjectMgr::LoadAreaTriggerTeleports (ObjectMgr.cpp:7711)	yes
 srv	areatrigger_template	id	dbc	dbc_areatrigger.ID	identity	404/449 shared; 17 of the 449 are vmangos-only (not in the 1.12 DBC either), 45 aren't in DB2 (data-plan.md 3.1)	yes
 srv	areatrigger_template	build	drop			progression removed	yes
-srv	areatrigger_template	name	server			admin label, not gameplay text; only matches Message_lang on 4/404 rows, overriding evidence.tsv's weak coincidence -- script_name is the real Message_lang counterpart	yes
+srv	areatrigger_template	name	server	areatrigger_extra.name		admin label, not gameplay text; only matches Message_lang on 4/404 rows, overriding evidence.tsv's weak coincidence -- script_name is the real Message_lang counterpart	yes
 srv	areatrigger_template	map_id	dbc	dbc_areatrigger.ContinentID	identity	0-1 differences (data-plan.md 3.1)	yes
 srv	areatrigger_template	x	dbc	dbc_areatrigger.Pos1	identity	positions are one Pos[3] array (data-plan.md 3.1, data-plan.md 5), overriding evidence.tsv's spurious PhaseUseFlags coincidence	yes
 srv	areatrigger_template	y	dbc	dbc_areatrigger.Pos2	identity	positions are one Pos[3] array, same override as x	yes
@@ -67,10 +67,10 @@ srv	areatrigger_template	box_x	dbc	dbc_areatrigger.Box_length	identity	box field
 srv	areatrigger_template	box_y	dbc	dbc_areatrigger.Box_width	identity	box fields differ in 7 rows total, same source as box_x	yes
 srv	areatrigger_template	box_z	dbc	dbc_areatrigger.Box_height	identity	box fields differ in 7 rows total, same source as box_x	yes
 srv	areatrigger_template	box_orientation	dbc	dbc_areatrigger.Box_yaw	identity	box fields differ in 7 rows total, same source as box_x	yes
-srv	areatrigger_template	cooldown	server			server-only trigger cooldown, no DB2 field, overriding evidence.tsv's spurious PhaseUseFlags coincidence	yes
-srv	areatrigger_template	condition_id	server			server-side condition system reference, no DB2 field	yes
-srv	areatrigger_template	script_id	server			server-side C++ script binding id, no DB2 field	yes
-srv	areatrigger_template	script_name	dbc	dbc_areatrigger.Message_lang	identity	302/404 match; the real Message_lang counterpart (see name's note)	yes
+srv	areatrigger_template	cooldown	server	areatrigger_extra.cooldown		server-only trigger cooldown, no DB2 field, overriding evidence.tsv's spurious PhaseUseFlags coincidence	yes
+srv	areatrigger_template	condition_id	server	areatrigger_extra.condition_id		server-side condition system reference, no DB2 field	yes
+srv	areatrigger_template	script_id	server	areatrigger_extra.script_id		server-side C++ script binding id, no DB2 field	yes
+srv	areatrigger_template	script_name	server	areatrigger_extra.script_name		a script name is not client text; Message_lang keeps the client's message	yes
 srv	auctionhousebot	item	server			fully read by AuctionHouseBotMgr's loader (AuctionHouseBotMgr.cpp:32)	yes
 srv	auctionhousebot	stack	server			fully read by AuctionHouseBotMgr's loader (AuctionHouseBotMgr.cpp:32)	yes
 srv	auctionhousebot	bid	server			fully read by AuctionHouseBotMgr's loader (AuctionHouseBotMgr.cpp:32)	yes
@@ -4154,3 +4154,9 @@ new	spell_stack_key	single_target_key	server			new table (plan.md 11.4): replace
 new	spell_tag	spell_id	server			new table (plan.md 11.4): spell id a tag applies to; loaded into SpellEntry tags by SpellMgr	yes
 new	spell_tag	tag	server			new table (plan.md 11.4): SpellTag enum name; replaces SpellIconID/SpellVisual set checks	yes
 new	race_taxi_mask	race	server			key: the vanilla ChrRaces.ID (dbc_chrraces.ID)	yes
+new	areatrigger_extra	id	server			key: the trigger's dbc_areatrigger.ID	yes
+new	areatrigger_extra	name	server			admin label of the trigger	yes
+new	areatrigger_extra	cooldown	server			seconds between script runs (ObjectMgr::LoadAreaTriggers)	yes
+new	areatrigger_extra	condition_id	server			condition checked before the script runs (ObjectMgr::LoadAreaTriggers)	yes
+new	areatrigger_extra	script_id	server			areatrigger_scripts id (ObjectMgr::LoadAreaTriggers)	yes
+new	areatrigger_extra	script_name	server			core script name (ObjectMgr::LoadAreaTriggers)	yes
