@@ -4,7 +4,7 @@ Starts the retail-engine Classic Era client (`WowClassic.exe`) against this serv
 
 - `client_loader/` -> `custom_launcher.exe`: starts the client suspended and injects `custom.dll` before any client code runs.
 - `client_library/` -> `custom.dll`: the in-process patches and hooks (cert bypass, CASC bypass, client patches, net diagnostics), built on `hook_lib` + MinHook.
-- `common/` : header shared by both (launcher <-> dll protocol, dll-only command line options).
+- `client_common/` : header shared by both (launcher <-> dll protocol, dll-only command line options).
 
 ## Build
 

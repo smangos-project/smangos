@@ -1,5 +1,5 @@
 add_library(client_common INTERFACE)
-target_include_directories(client_common INTERFACE common/include)
+target_include_directories(client_common INTERFACE client_common/include)
 
 add_subdirectory(client_library)
 add_subdirectory(client_loader)
