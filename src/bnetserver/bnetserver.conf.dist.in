@@ -38,7 +38,7 @@ ConfVersion=2026092501
 #    CertificatesFile
 #    PrivateKeyFile
 #        PEM certificate chain and private key served on both ports.
-#        Default: "./bnetserver.cert.pem" and "./bnetserver.key.pem"
+#        Default: "config/bnetserver.cert.pem" and "config/bnetserver.key.pem"
 #
 #    LoginREST.TicketDuration
 #        Seconds a login ticket stays valid, and is extended by on every use or refresh.
@@ -114,14 +114,14 @@ ConfVersion=2026092501
 ###################################################################################################################
 
 LoginDatabaseInfo = "127.0.0.1;3306;mangos;mangos;realmd"
-LogsDir = ""
+LogsDir = "logs"
 LoginREST.Port = 8081
 BattlenetPort = 1119
 BindIP = "0.0.0.0"
 LoginREST.ExternalAddress = "127.0.0.1"
 LoginREST.LocalAddress = "127.0.0.1"
-CertificatesFile = "./bnetserver.cert.pem"
-PrivateKeyFile = "./bnetserver.key.pem"
+CertificatesFile = "config/bnetserver.cert.pem"
+PrivateKeyFile = "config/bnetserver.key.pem"
 LoginREST.TicketDuration = 3600
 LoginREST.SessionDuration = 300
 Battlenet.LoginTimeout = 60

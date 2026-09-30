@@ -72,17 +72,17 @@ ConfVersion=2025040601
 ###################################################################################################################
 
 RealmID = 1
-DataDir = "."
-LogsDir = ""
+DataDir = "data"
+LogsDir = "logs"
 HonorDir = ""
 LoginDatabase.Info = "127.0.0.1;3306;mangos;mangos;realmd"
 LoginDatabase.Connections = 1
 LoginDatabase.WorkerThreads = 1
 # WorldDatabase.Info
 #        Path of the DoltLite world database file built by database_tool.
-#        Default: ".world/world.doltlite"
+#        Default: "../.world/world.doltlite"
 
-WorldDatabase.Info = ".world/world.doltlite"
+WorldDatabase.Info = "../.world/world.doltlite"
 WorldDatabase.Connections = 1
 WorldDatabase.WorkerThreads = 1
 CharacterDatabase.Info = "127.0.0.1;3306;mangos;mangos;characters"
@@ -3290,6 +3290,6 @@ RealBots.ReapAfterMs = 0
 RealBots.DefaultTarget = ""
 RealBots.DefaultTasks = ""
 RealBots.PacketLog = 0
-RealBots.PacketLogDir = "realbots-packets"
+RealBots.PacketLogDir = "logs/realbots-packets"
 RealBots.Targets = ""
 

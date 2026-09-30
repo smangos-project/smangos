@@ -320,6 +320,20 @@ message(STATUS "MaNGOS CXX flags      : ${MANGOS_CXX_FLAGS}")
 add_subdirectory(dep)
 add_subdirectory(src)
 
+set(SERVER_MAP_DATA_DIR "" CACHE PATH "Folder with the extracted maps (vmaps/mmaps next to it); server_setup links .server/data to it")
+get_property(server_setup_configs GLOBAL PROPERTY SERVER_SETUP_CONFIGS)
+string(REPLACE ";" "," server_setup_configs "${server_setup_configs}")
+add_custom_target(server_setup
+  COMMAND ${CMAKE_COMMAND}
+    -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+    -DMAP_DATA_DIR=${SERVER_MAP_DATA_DIR}
+    "-DCONFIGS=${server_setup_configs}"
+    -P ${CMAKE_SOURCE_DIR}/cmake/ServerSetup.cmake
+  USES_TERMINAL
+  VERBATIM
+  COMMENT "Setting up .server")
+add_dependencies(server_setup mangosd bnetserver)
+
 if (BUILD_TESTING)
   enable_testing()
   add_subdirectory(tests)

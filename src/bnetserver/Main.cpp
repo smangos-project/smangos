@@ -176,8 +176,8 @@ extern int main(int argc, char** argv)
     sBnetLoginTickets.SetDuration(sConfig.GetIntDefault("LoginREST.TicketDuration", 3600));
 
     SSL_CTX* sslCtx = BnetCreateServerSslContext(
-        sConfig.GetStringDefault("CertificatesFile", "./bnetserver.cert.pem"),
-        sConfig.GetStringDefault("PrivateKeyFile", "./bnetserver.key.pem"));
+        sConfig.GetStringDefault("CertificatesFile", "config/bnetserver.cert.pem"),
+        sConfig.GetStringDefault("PrivateKeyFile", "config/bnetserver.key.pem"));
     if (!sslCtx)
     {
         Log::WaitBeforeContinueIfNeed();

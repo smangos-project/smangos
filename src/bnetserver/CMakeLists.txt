@@ -86,6 +86,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
 mangos_copy_openssl_dlls(${EXECUTABLE_NAME})
 
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
+set_property(GLOBAL APPEND PROPERTY SERVER_SETUP_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/bnetserver.conf.dist.in|bnetserver.conf")
 install(FILES bnetserver.conf.dist.in DESTINATION ${CONF_DIR} RENAME bnetserver.conf.dist)
 
 if(WIN32 AND MSVC)
