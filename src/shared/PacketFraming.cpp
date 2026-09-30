@@ -2,6 +2,11 @@
 #include <zlib.h>
 #include <cstring>
 
+namespace
+{
+    constexpr uLong CompressedPacketAdlerSeed = 0x9827D8F1;
+}
+
 std::vector<uint8> PacketFraming::BuildPlaintext(uint32 opcode, uint8 const* body, size_t bodySize)
 {
     std::vector<uint8> plaintext(sizeof(uint32) + bodySize);
@@ -30,8 +35,9 @@ CompressedPacketHeader PacketFraming::BuildCompressedHeader(uint8 const* uncompr
 {
     CompressedPacketHeader header{};
     header.UncompressedSize = uint32(uncompressedSize);
-    header.UncompressedAdler = uint32(adler32(adler32(0L, nullptr, 0), uncompressed, uInt(uncompressedSize)));
-    header.CompressedAdler = uint32(adler32(adler32(0L, nullptr, 0), compressed, uInt(compressedSize)));
+    // The client checks both against this seed, not zlib's default of 1 (TrinityCore's WorldSocket does the same).
+    header.UncompressedAdler = uint32(adler32(CompressedPacketAdlerSeed, uncompressed, uInt(uncompressedSize)));
+    header.CompressedAdler = uint32(adler32(CompressedPacketAdlerSeed, compressed, uInt(compressedSize)));
     return header;
 }
 

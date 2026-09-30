@@ -47,8 +47,8 @@ TEST_CASE("PacketFraming::BuildCompressedHeader computes both adler32 checksums"
         uncompressed.data(), uncompressed.size(), compressed.data(), compressed.size());
 
     CHECK(header.UncompressedSize == uncompressed.size());
-    CHECK(header.UncompressedAdler == uint32(adler32(adler32(0L, nullptr, 0), uncompressed.data(), uInt(uncompressed.size()))));
-    CHECK(header.CompressedAdler == uint32(adler32(adler32(0L, nullptr, 0), compressed.data(), uInt(compressed.size()))));
+    CHECK(header.UncompressedAdler == uint32(adler32(0x9827D8F1, uncompressed.data(), uInt(uncompressed.size()))));
+    CHECK(header.CompressedAdler == uint32(adler32(0x9827D8F1, compressed.data(), uInt(compressed.size()))));
 }
 
 // The half-against-half proof for the stateful raw-deflate/-inflate windows: one
