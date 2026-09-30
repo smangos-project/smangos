@@ -93,9 +93,7 @@ TEST_CASE("guild: a GM founds a guild, invites, promotes and kicks a member", "[
         AcceptGuildInvite accept;
         member.Send(accept);
         REQUIRE(co_await founder.WaitReceived<GuildEventPlayerJoined>(5000, [&](GuildEventPlayerJoined const& p) { return p.Guid == memberGuid; }));
-        auto const joinerMotd = co_await member.Packet<GuildEventMotd>(5000);
-        REQUIRE(joinerMotd);
-        CHECK(joinerMotd->MotdText == motd.Motd);
+        REQUIRE(co_await member.WaitReceived<GuildEventMotd>(5000, [&](GuildEventMotd const& p) { return p.MotdText == motd.Motd; }));
 
         GuildPromoteMember promote;
         promote.PromoteeGuid = memberGuid;
