@@ -108,6 +108,8 @@ private:
     HandlerResult FailAuthSession(char const* reason);
 
     void SendEnterEncryptedMode();
+    /// SMSG_AUTH_RESPONSE with its success info, then the packets the glue screen needs.
+    void SendAuthResponseAndGlueScreen();
     /// Called on CMSG_ENTER_ENCRYPTED_MODE_ACK.
     HandlerResult HandleEnterEncryptedModeAck(ByteBuffer& data);
 

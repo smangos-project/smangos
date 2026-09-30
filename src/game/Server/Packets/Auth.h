@@ -5,6 +5,8 @@
 #include "ClassicOpcodes.h"
 #include <array>
 #include <string>
+#include <utility>
+#include <vector>
 
 struct AuthChallenge
 {
@@ -299,6 +301,69 @@ struct AuthResponse
         data.WriteBit(SuccessInfoPresent);
         data.WriteBit(WaitInfoPresent);
         data.FlushBits();
+    }
+};
+
+// The body that follows AuthResponse when its SuccessInfo bit is set: the realm, the races and
+// classes the account may create, and (empty here) game time and character templates.
+struct AuthSuccessInfo
+{
+    uint32 RealmAddress = 0;
+    std::string RealmName;
+    int64 Time = 0;
+    std::vector<std::pair<uint8, std::vector<uint8>>> RaceClasses;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << RealmAddress;
+        data << uint32(1); // VirtualRealms
+        data << uint32(0); // TimeRested
+        data << uint8(0);  // ActiveExpansionLevel
+        data << uint8(0);  // AccountExpansionLevel
+        data << uint32(0); // TimeSecondsUntilPCKick
+        data << uint32(RaceClasses.size());
+        data << uint32(0); // Templates
+        data << uint32(0); // CurrencyID
+        data << Time;
+
+        for (auto const& race : RaceClasses)
+        {
+            data << race.first;
+            data << uint32(race.second.size());
+            for (uint8 classId : race.second)
+            {
+                data << classId;
+                data << uint8(0); // ActiveExpansionLevel
+                data << uint8(0); // AccountExpansionLevel
+                data << uint8(0); // MinActiveExpansionLevel
+            }
+        }
+
+        data.WriteBit(false); // IsExpansionTrial
+        data.WriteBit(false); // ForceCharacterTemplate
+        data.WriteBit(false); // NumPlayersHorde
+        data.WriteBit(false); // NumPlayersAlliance
+        data.WriteBit(false); // ExpansionTrialExpiration
+        data.WriteBit(false); // CurrentBuild
+        data.FlushBits();
+
+        data << uint32(0); // GameTimeInfo.BillingType
+        data << uint32(0); // GameTimeInfo.MinutesRemaining
+        data << uint32(0); // GameTimeInfo.RealBillingType
+        data.WriteBit(false); // IsInIGR
+        data.WriteBit(false); // IsPaidForByIGR
+        data.WriteBit(false); // IsCAISEnabled
+        data.FlushBits();
+
+        // VirtualRealms[0]: this realm
+        data << RealmAddress;
+        data.WriteBit(true);  // IsLocal
+        data.WriteBit(false); // IsInternalRealm
+        data.WriteBits(uint32(RealmName.size()), 8);
+        data.WriteBits(uint32(RealmName.size()), 8);
+        data.FlushBits();
+        data.WriteString(RealmName);
+        data.WriteString(RealmName);
     }
 };
 

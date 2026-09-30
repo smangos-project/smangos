@@ -451,25 +451,101 @@ WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& 
         return HandlerResult::Okay;
     }
 
-    AuthResponse response;
-    response.Result = 0; // Ok
-    // SuccessInfo (derived race/class availability, realm data) isn't built yet -- no bot parses
-    // it and no real client has reached this far to check it either; see the README.
-    response.SuccessInfoPresent = false;
-    response.WaitInfoPresent = false;
-    SendClassic(response);
-
-    // The glue-screen packets TrinityCore sends right after SMSG_AUTH_RESPONSE, empty-bodied:
-    // nothing parses their content yet, only that they arrive (world_socket: "the glue-screen
-    // packets arrive after SMSG_AUTH_RESPONSE").
-    ByteBuffer const empty;
-    SendRaw(CLASSIC_SMSG_SET_TIME_ZONE_INFORMATION, empty);
-    SendRaw(CLASSIC_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN, empty);
-    SendRaw(CLASSIC_SMSG_CACHE_VERSION, empty);
-    SendRaw(CLASSIC_SMSG_AVAILABLE_HOTFIXES, empty);
-    SendRaw(CLASSIC_SMSG_BATTLE_NET_CONNECTION_STATUS, empty);
+    SendAuthResponseAndGlueScreen();
 
     return HandlerResult::Okay;
+}
+
+void WorldSocket::SendAuthResponseAndGlueScreen()
+{
+    std::string realmName;
+    if (std::unique_ptr<QueryResult> result = LoginDatabase.PQuery("SELECT `name` FROM `realmlist` WHERE `id` = '%u'", realmID))
+        realmName = result->Fetch()[0].GetCppString();
+
+    AuthSuccessInfo info;
+    info.RealmAddress = (uint32(1) << 24) | (uint32(1) << 16) | uint16(realmID);
+    info.RealmName = realmName;
+    info.Time = int64(time(nullptr));
+    info.RaceClasses =
+    {
+        { 1, { 1, 2, 4, 5, 8, 9 } },
+        { 2, { 1, 3, 4, 7, 9 } },
+        { 3, { 1, 2, 3, 4, 5 } },
+        { 4, { 1, 3, 4, 5, 11 } },
+        { 5, { 1, 4, 5, 8, 9 } },
+        { 6, { 1, 3, 7, 11 } },
+        { 7, { 1, 4, 8, 9 } },
+        { 8, { 1, 3, 4, 5, 7, 8 } },
+    };
+
+    AuthResponse response;
+    response.Result = 0; // Ok
+    response.SuccessInfoPresent = true;
+    ByteBuffer authBody;
+    response.Write(authBody);
+    info.Write(authBody);
+    SendRaw(CLASSIC_SMSG_AUTH_RESPONSE, authBody);
+
+    ByteBuffer timeZone;
+    std::string const zone = "Europe/Paris";
+    timeZone.WriteBits(uint32(zone.size()), 7);
+    timeZone.WriteBits(uint32(zone.size()), 7);
+    timeZone.FlushBits();
+    timeZone.WriteString(zone);
+    timeZone.WriteString(zone);
+    SendRaw(CLASSIC_SMSG_SET_TIME_ZONE_INFORMATION, timeZone);
+
+    ByteBuffer features;
+    for (int i = 0; i < 20; ++i)
+        features.WriteBit(false);   // Bpay store, undelete, commerce, boost, live region and crash reporter flags
+    features.WriteBit(true);        // EuropaTicketSystemStatus present
+    for (int i = 0; i < 11; ++i)
+        features.WriteBit(false);   // NameReservationOnly .. AccountLockedByExport
+    features.WriteBits(uint32(0), 11); // RealmHiddenAlert length
+    features.WriteBit(true);        // BNSendWhisperUseV2Services
+    features.WriteBit(true);        // BNSendGameDataUseV2Services
+    features.WriteBit(false);       // CharacterSelectListModeRealmless
+    features.FlushBits();
+    for (int i = 0; i < 4; ++i)
+        features.WriteBit(true);    // TicketsEnabled, BugsEnabled, ComplaintsEnabled, SuggestionsEnabled
+    features.FlushBits();
+    features << uint32(10) << uint32(60000) << uint32(1) << uint32(111111); // SavedThrottleObjectState
+    features << uint32(0);  // TokenPollTimeSeconds
+    features << uint32(0);  // KioskSessionMinutes
+    features << int64(0);   // TokenBalanceAmount
+    features << int32(sWorld.getConfig(CONFIG_UINT32_CHARACTERS_PER_REALM));
+    features << uint32(0);  // LiveRegionCharacterCopySourceRegions
+    features << uint32(0);  // BpayStoreProductDeliveryDelay
+    features << int32(0);   // ActiveBoostType
+    features << int32(0);   // TrialBoostType
+    features << int32(0);   // MinimumExpansionLevel
+    features << int32(0);   // MaximumExpansionLevel
+    features << int32(0);   // ContentSetID
+    features << uint32(0);  // GameRuleValues
+    features << int32(0);   // ActiveTimerunningSeasonID
+    features << int32(0);   // RemainingTimerunningSeasonSeconds
+    features << int16(50);  // MaxPlayerGuidLookupsPerRequest
+    features << int16(600); // NameLookupTelemetryInterval
+    features << uint32(10); // NotFoundCacheTimeSeconds
+    features << uint32(0);  // DebugTimeEvents
+    features << int32(0);   // MostRecentTimeEventID
+    features << uint32(0);  // EventRealmQueues
+    SendRaw(CLASSIC_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN, features);
+
+    ByteBuffer cacheVersion;
+    cacheVersion << uint32(0);
+    SendRaw(CLASSIC_SMSG_CACHE_VERSION, cacheVersion);
+
+    ByteBuffer hotfixes;
+    hotfixes << info.RealmAddress;
+    hotfixes << int32(0);
+    SendRaw(CLASSIC_SMSG_AVAILABLE_HOTFIXES, hotfixes);
+
+    ByteBuffer connectionStatus;
+    connectionStatus.WriteBits(uint32(1), 2); // State
+    connectionStatus.WriteBit(true);          // SuppressNotification
+    connectionStatus.FlushBits();
+    SendRaw(CLASSIC_SMSG_BATTLE_NET_CONNECTION_STATUS, connectionStatus);
 }
 
 WorldSocket::HandlerResult WorldSocket::HandlePing(ByteBuffer& data)
