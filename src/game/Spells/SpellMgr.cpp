@@ -1919,44 +1919,38 @@ void SpellMgr::LoadSpellEnchantCharges()
 {
     mSpellEnchantChargesMap.clear();                              // need for reload case
 
-    uint32 count = 0;
-
-    //                                                               0        1
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `entry`, `charges` FROM `spell_enchant_charges`"));
-    if (!result)
+    std::map<uint32, uint32> enchantCharges;
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT `ID`, `Charges` FROM `dbc_spellitemenchantment` WHERE `Charges` <> 0");
+    if (result)
     {
-        BarGoLink bar(1);
-        bar.step();
-
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell enchant charges", count);
-        return;
+        do
+        {
+            Field* fields = result->Fetch();
+            enchantCharges[fields[0].GetUInt32()] = fields[1].GetUInt32();
+        } while (result->NextRow());
     }
 
-    BarGoLink bar(result->GetRowCount());
-
-    do
+    uint32 count = 0;
+    for (std::unique_ptr<SpellEntry> const& spell : mSpellEntryMap)
     {
-        Field* fields = result->Fetch();
-
-        bar.step();
-
-        uint32 entry = fields[0].GetUInt32();
-        uint32 charges = fields[1].GetUInt32();
-
-        SpellEntry const* pSpellInfo = GetSpellEntry(entry);
-
-        if (!pSpellInfo)
-        {
-            if (!IsExistingSpellId(entry))
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_enchant_charges` does not exist", entry);
+        if (!spell)
             continue;
+
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        {
+            if (spell->Effect[i] != SPELL_EFFECT_ENCHANT_ITEM && spell->Effect[i] != SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY &&
+                spell->Effect[i] != SPELL_EFFECT_ENCHANT_HELD_ITEM)
+                continue;
+
+            auto itr = enchantCharges.find(spell->EffectMiscValue[i]);
+            if (itr != enchantCharges.end())
+            {
+                mSpellEnchantChargesMap[spell->Id] = itr->second;
+                ++count;
+            }
+            break;
         }
-
-        mSpellEnchantChargesMap[entry] = charges;
-
-        ++count;
-    } while (result->NextRow());
+    }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell enchant charges", count);
@@ -2404,50 +2398,28 @@ void SpellMgr::LoadSpellCones()
 
     uint32 count = 0;
 
-    //                                                               0        1
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `entry`, `cone_degrees` FROM `spell_cone`"));
-    if (!result)
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT `SpellID`, `ConeDegrees` FROM `dbc_spelltargetrestrictions` WHERE `DifficultyID` = 0 AND `ConeDegrees` <> 60");
+    if (result)
     {
-        BarGoLink bar(1);
-        bar.step();
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 const entry = fields[0].GetUInt32();
+            float const degrees = fields[1].GetFloat();
 
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell cones", count);
-        return;
+            if (!GetSpellEntry(entry))
+                continue;
+
+            if (degrees < -360.0f || degrees > 360.0f)
+            {
+                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Spell %u has a cone angle %g outside of the valid range", entry, degrees);
+                continue;
+            }
+
+            mSpellCones[entry] = degrees * M_PI_F / 180.0f;
+            ++count;
+        } while (result->NextRow());
     }
-
-    BarGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field* fields = result->Fetch();
-
-        bar.step();
-
-        uint32 entry = fields[0].GetUInt32();
-        int16 degrees = fields[1].GetInt16();
-
-        SpellEntry const* pSpellInfo = GetSpellEntry(entry);
-
-        if (!pSpellInfo)
-        {
-            if (!IsExistingSpellId(entry))
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_cone` does not exist", entry);
-            continue;
-        }
-
-        if (degrees < -360 || degrees > 360)
-        {
-            sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_cone` has incorrect angle %i outside of valid range", entry, degrees);
-            continue;
-        }
-
-        float angle = degrees * M_PI_F / 180.0f;
-
-        mSpellCones[entry] = angle;
-
-        ++count;
-    } while (result->NextRow());
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spell cones", count);

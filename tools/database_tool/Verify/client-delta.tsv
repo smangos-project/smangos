@@ -34,11 +34,11 @@ dbc_spellitemenchantment	0	14	0
 dbc_spelllevels	723	33	0
 dbc_spellmisc	1384	1134	0
 dbc_spellname	1384	41	0
-dbc_spellpower	294	28	0
+dbc_spellpower	294	6	0
 dbc_spellreagents	11	8	0
 dbc_spellshapeshift	951	116	0
 dbc_spellshapeshiftform	0	7	0
-dbc_spelltargetrestrictions	161	70	0
+dbc_spelltargetrestrictions	161	72	0
 dbc_spelltotems	11	4	0
 dbc_talenttab	0	1	0
 dbc_taxinodes	1	14	0
