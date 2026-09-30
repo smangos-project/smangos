@@ -56,6 +56,11 @@ class PacketFraming
         static CompressedPacketHeader BuildCompressedHeader(uint8 const* uncompressed, size_t uncompressedSize,
             uint8 const* compressed, size_t compressedSize);
 
+        // True when `header` matches the plaintext and compressed bytes it claims to describe: both
+        // adler32 checksums (with the seed the client checks) and the plaintext size.
+        static bool VerifyCompressedHeader(CompressedPacketHeader const& header, uint8 const* uncompressed, size_t uncompressedSize,
+            uint8 const* compressed, size_t compressedSize);
+
         PacketFraming();
         ~PacketFraming();
         PacketFraming(PacketFraming const&) = delete;

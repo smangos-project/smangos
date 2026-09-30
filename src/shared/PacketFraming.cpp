@@ -41,6 +41,17 @@ CompressedPacketHeader PacketFraming::BuildCompressedHeader(uint8 const* uncompr
     return header;
 }
 
+bool PacketFraming::VerifyCompressedHeader(CompressedPacketHeader const& header, uint8 const* uncompressed, size_t uncompressedSize,
+    uint8 const* compressed, size_t compressedSize)
+{
+    // Spelled out here rather than shared with BuildCompressedHeader: this is what the client checks,
+    // and a sender that drifts from it must fail this, not agree with itself.
+    constexpr uLong clientSeed = 0x9827D8F1;
+    return header.UncompressedSize == uncompressedSize
+        && header.UncompressedAdler == uint32(adler32(clientSeed, uncompressed, uInt(uncompressedSize)))
+        && header.CompressedAdler == uint32(adler32(clientSeed, compressed, uInt(compressedSize)));
+}
+
 PacketFraming::PacketFraming()
 {
     // One stateful raw-inflate stream for the connection's lifetime (windowBits=-15 for raw

@@ -8,6 +8,7 @@
 #include "Packets/Classic/Guid.h"
 #include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
+#include "PacketFraming.h"
 #include "TestPacketRoundTrip.h"
 #include <catch_amalgamated.hpp>
 
@@ -456,6 +457,66 @@ TEST_CASE("ClassicEnumCharactersResult round-trips every character's fixed-layou
         CHECK(a.FirstLogin == b.FirstLogin);
         CHECK(a.Name == b.Name);
     }
+}
+
+TEST_CASE("ClassicEnumCharactersResult round-trips each slot's equipment display", "[packets]")
+{
+    ClassicEnumCharactersResult out;
+    out.Characters.push_back(MakeCharacter(0x111111, "Botto", 1, 1, 12));
+    out.Characters.push_back(MakeCharacter(0x222222, "Zqwertyui", 4, 8, 60));
+    out.Characters[0].Equipment[3] = { 1234, 4 };
+    out.Characters[0].Equipment[15] = { 5678, 13 };
+    out.Characters[1].Equipment[18] = { 9999, 15 };
+
+    ByteBuffer data;
+    out.Write(data);
+
+    ClassicEnumCharactersResult in;
+    REQUIRE(in.Read(data));
+    REQUIRE(in.Characters.size() == 2);
+    for (size_t i = 0; i < 2; ++i)
+        for (size_t slot = 0; slot < out.Characters[i].Equipment.size(); ++slot)
+        {
+            CHECK(in.Characters[i].Equipment[slot].DisplayId == out.Characters[i].Equipment[slot].DisplayId);
+            CHECK(in.Characters[i].Equipment[slot].InventoryType == out.Characters[i].Equipment[slot].InventoryType);
+        }
+    // The fields after the equipment block are still in place.
+    CHECK(in.Characters[1].Name == "Zqwertyui");
+}
+
+// Two characters are about 1.4 KB on the wire, past the size where the server wraps a packet in
+// SMSG_COMPRESSED_PACKET; the real client checks that wrapper's checksums and drops the connection
+// on a bad one, which is how a second character once made every login fail.
+TEST_CASE("ClassicEnumCharactersResult with two characters is large enough to be compressed and survives it", "[packets]")
+{
+    ClassicEnumCharactersResult out;
+    out.Characters.push_back(MakeCharacter(0x111111, "Botto", 1, 1, 12));
+    out.Characters.push_back(MakeCharacter(0x222222, "Zqwertyui", 4, 8, 60));
+
+    ByteBuffer data;
+    out.Write(data);
+    REQUIRE(data.size() > 0x400);
+
+    std::vector<uint8> const inner = PacketFraming::BuildPlaintext(out.Opcode, data.contents(), data.size());
+    PacketFraming compressor;
+    PacketFraming decompressor;
+    std::vector<uint8> compressed;
+    REQUIRE(compressor.Deflate(inner.data(), inner.size(), compressed));
+    CompressedPacketHeader const header = PacketFraming::BuildCompressedHeader(inner.data(), inner.size(), compressed.data(), compressed.size());
+
+    std::vector<uint8> decompressed;
+    REQUIRE(decompressor.Inflate(compressed.data(), compressed.size(), header.UncompressedSize, decompressed));
+    CHECK(PacketFraming::VerifyCompressedHeader(header, decompressed.data(), decompressed.size(), compressed.data(), compressed.size()));
+
+    uint32 opcode = 0;
+    uint8 const* body = nullptr;
+    size_t bodySize = 0;
+    REQUIRE(PacketFraming::ParsePlaintext(decompressed, opcode, body, bodySize));
+    ByteBuffer roundTripped;
+    roundTripped.append(body, bodySize);
+    ClassicEnumCharactersResult in;
+    REQUIRE(in.Read(roundTripped));
+    CHECK(in.Characters.size() == 2);
 }
 
 TEST_CASE("ClassicEnumCharactersResult: a full-layout body cut short falls back to the count and first guid", "[packets]")

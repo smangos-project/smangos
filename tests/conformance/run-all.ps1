@@ -33,6 +33,9 @@
     Targets left out of the default list. "deadhost" is the deliberately unreachable one the framework
     scenario uses via TargetOverride, never a target to run against.
 
+.PARAMETER Filter
+    A Catch2 test spec (e.g. "char_screen*") limiting the scenarios run.
+
 .PARAMETER Strict
     Also run each target with --strict and report the expected-fail scenarios that now pass.
 
@@ -45,6 +48,7 @@ param(
     [string] $Exe,
     [string[]] $Targets,
     [string[]] $Skip = @('deadhost'),
+    [string] $Filter,
     [switch] $Strict
 )
 
@@ -81,6 +85,7 @@ function Invoke-Pass([string] $target, [bool] $strict) {
     $xml = Join-Path ([IO.Path]::GetTempPath()) ("conformance-$target-" + [Guid]::NewGuid().ToString('N') + '.xml')
     $arguments = @('--target', $target, '--config', $Config, '-r', 'junit', '-o', $xml)
     if ($strict) { $arguments += '--strict' }
+    if ($Filter) { $arguments += $Filter }
 
     Push-Location (Split-Path -Parent $Exe)
     try {

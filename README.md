@@ -39,7 +39,7 @@ The server runs from `.server` (git-ignored): `config/` holds `common.conf` (dat
 `cmake --build build --config <config> --target bot_tests` builds `server`, `tests-realbots` and `tests-conformance`, then runs the
 RealBots unit tests and the conformance suite against `.server`. It starts the server when nothing listens on the RPC port, creates
 the bot accounts listed in `.server/config/tests-conformance.conf` (made by `server_setup`) through its console, and stops it
-afterwards; a server that is already running is used as it is. Extra switches (`-Strict`, `-NoServer`) go in `-DBOT_TESTS_ARGS="-Strict"`.
+afterwards; a server that is already running is used as it is. Extra switches (`-Strict`, `-NoServer`, `-Filter "char_screen*"` to run only matching scenarios) go in `-DBOT_TESTS_ARGS="-Strict"`.
 
 ### Downloads
 - [![Development Release](https://github.com/vmangos/core/actions/workflows/development-release.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/latest) Latest development build (Linux, macOS, and Windows)

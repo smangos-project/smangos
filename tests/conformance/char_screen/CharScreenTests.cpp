@@ -86,6 +86,8 @@ TEST_CASE("char_screen: enum lists an existing character", "[protocol]")
         // Every account in a target's pool carries a character (login/world_entry scenarios rely
         // on it), and the list says who they are.
         CHECK(result->CharacterCount >= 1);
+        // Without race unlock entries the creation screen greys every race out ("faction imbalance").
+        CHECK(result->RaceUnlockCount >= 8);
         REQUIRE_FALSE(result->Characters.empty());
         for (ClassicCharacterInfo const& c : result->Characters)
         {
@@ -134,6 +136,94 @@ TEST_CASE("char_screen: a created character shows up in the enum, and a deleted 
         auto afterDelete = co_await bot.Packet<ClassicEnumCharactersResult>(10000);
         REQUIRE(afterDelete);
         CHECK_FALSE(Contains(*afterDelete, created->Guid));
+    });
+}
+
+TEST_CASE("char_screen: a created warrior is listed wearing its starting gear", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
+        REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
+
+        bot.Send(MakeCreate(RandomCharacterName()));
+        auto created = co_await bot.Packet<CharCreateResponse>(10000);
+        REQUIRE(created);
+        if (IsFullResult(created->Result))
+            SKIP("the account has no free character slot (result " << int(created->Result) << ")");
+        REQUIRE(created->Result == CLASSIC_CHAR_CREATE_SUCCESS);
+        DeleteOnExit cleanup{ bot, created->Guid, true };
+
+        bot.Send(ClassicEnumCharacters{});
+        auto list = co_await bot.Packet<ClassicEnumCharactersResult>(10000);
+        REQUIRE(list);
+        auto const mine = std::find_if(list->Characters.begin(), list->Characters.end(),
+            [&](ClassicCharacterInfo const& c) { return c.Guid.Low == created->Guid.Low && c.Guid.High == created->Guid.High; });
+        REQUIRE(mine != list->Characters.end());
+
+        // The character screen draws the model from these; all zeros is a naked character.
+        size_t const drawn = std::count_if(mine->Equipment.begin(), mine->Equipment.end(),
+            [](ClassicEquipmentVisual const& v) { return v.DisplayId != 0 && v.InventoryType != 0; });
+        CHECK(drawn >= 3);
+
+        CharDelete del;
+        del.Guid = created->Guid;
+        bot.Send(del);
+        auto deleted = co_await bot.Packet<CharDeleteResponse>(10000);
+        REQUIRE(deleted);
+        CHECK(deleted->Result == CLASSIC_CHAR_DELETE_SUCCESS);
+        cleanup.Armed = false;
+    });
+}
+
+// Each character is about 640 bytes on the wire, so a few make the list past the size where the
+// server wraps it in SMSG_COMPRESSED_PACKET. The bot checks that wrapper's checksums the way the
+// client does, so a bad one fails the enum here.
+TEST_CASE("char_screen: a character list large enough to be compressed still arrives intact", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
+        REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
+
+        std::vector<ClassicGuid> made;
+        for (int i = 0; i < 2; ++i)
+        {
+            bot.Send(MakeCreate(RandomCharacterName()));
+            auto created = co_await bot.Packet<CharCreateResponse>(10000);
+            REQUIRE(created);
+            if (IsFullResult(created->Result))
+            {
+                for (ClassicGuid const& guid : made)
+                {
+                    CharDelete del;
+                    del.Guid = guid;
+                    bot.Send(del);
+                    co_await bot.Packet<CharDeleteResponse>(10000);
+                }
+                SKIP("the account has no free character slot (result " << int(created->Result) << ")");
+            }
+            REQUIRE(created->Result == CLASSIC_CHAR_CREATE_SUCCESS);
+            made.push_back(created->Guid);
+        }
+
+        bot.Send(ClassicEnumCharacters{});
+        auto list = co_await bot.Packet<ClassicEnumCharactersResult>(10000);
+
+        for (ClassicGuid const& guid : made)
+        {
+            CharDelete del;
+            del.Guid = guid;
+            bot.Send(del);
+            auto deleted = co_await bot.Packet<CharDeleteResponse>(10000);
+            CHECK(deleted);
+        }
+
+        REQUIRE(list);
+        REQUIRE(list->Characters.size() >= 3);
+        for (ClassicGuid const& guid : made)
+            CHECK(Contains(*list, guid));
+        CHECK(list->RaceUnlockCount >= 8);
     });
 }
 

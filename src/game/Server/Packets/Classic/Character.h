@@ -86,6 +86,7 @@ struct ClassicEnumCharactersResult
 
     uint32 CharacterCount = 0;
     int32 MaxCharacterLevel = 0;
+    uint32 RaceUnlockCount = 0; // races the character creation screen may offer
     ClassicGuid FirstCharacterGuid;
     std::vector<ClassicCharacterInfo> Characters; // empty unless every character parsed
 
@@ -125,6 +126,8 @@ struct ClassicEnumCharactersResult
             uint32 skip;
             data >> skip;
         }
+
+        RaceUnlockCount = raceUnlockCount;
 
         // RaceUnlockData follows the characters: RaceID (4) and one byte of flag bits each.
         auto const skipRaceUnlockData = [&]()
@@ -264,7 +267,15 @@ struct ClassicEnumCharactersResult
                 if (!need(12 + 1 + 12 + equipmentBytes + 4 + 8 + 4 + 20 + 8 + 4 + 4))
                     return false;
                 uint32 flags2, flags3; data >> c.CharFlags >> flags2 >> flags3;
-                data.rpos(data.rpos() + 1 + 12 + equipmentBytes + 4 + 8 + 4 + 20 + 8 + 4 + 4);
+                data.rpos(data.rpos() + 1 + 12);
+                for (ClassicEquipmentVisual& visual : c.Equipment)
+                {
+                    // DisplayId, InventoryType, then enchant (4), subclass (1), secondary appearance (4),
+                    // item id (4) and transmog id (4), which nothing reads.
+                    data >> visual.DisplayId >> visual.InventoryType;
+                    data.rpos(data.rpos() + 4 + 1 + 4 + 4 + 4);
+                }
+                data.rpos(data.rpos() + 4 + 8 + 4 + 20 + 8 + 4 + 4);
 
                 if (customizationCount > 1024 || !need(size_t(customizationCount) * 8 + 1))
                     return false;

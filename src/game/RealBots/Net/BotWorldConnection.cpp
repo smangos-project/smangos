@@ -153,6 +153,16 @@ void BotWorldConnection::HandleCompletePacket(std::vector<uint8> plaintext)
             return;
         }
 
+        // The real client rejects a packet whose checksums are off, so a bot must too, or a server
+        // bug here only shows up with the real client.
+        if (!PacketFraming::VerifyCompressedHeader(cmp, decompressed.data(), decompressed.size(),
+                bodyStart + sizeof(cmp), bodySize - sizeof(cmp)))
+        {
+            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "BotWorldConnection: compressed packet checksum mismatch");
+            Close();
+            return;
+        }
+
         uint32 innerOpcode;
         uint8 const* innerBodyStart;
         size_t innerBodySize;

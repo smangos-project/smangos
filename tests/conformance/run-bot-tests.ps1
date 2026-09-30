@@ -33,6 +33,9 @@
 .PARAMETER Target
     The conformance target to run (default: vmangos).
 
+.PARAMETER Filter
+    A Catch2 test spec (e.g. "char_screen*") limiting the conformance scenarios run; the unit tests are skipped.
+
 .PARAMETER Strict
     Also run the scenarios the target's expectations file leaves out and report which now pass.
 
@@ -47,6 +50,7 @@ param(
     [string] $ServerDir,
     [string] $Config,
     [string] $Target = 'vmangos',
+    [string] $Filter,
     [switch] $Strict,
     [switch] $NoServer
 )
@@ -160,7 +164,7 @@ try {
         }
     }
 
-    if ($UnitExe) {
+    if ($UnitExe -and -not $Filter) {
         Write-Host ''
         Write-Host '=== RealBots unit tests ===' -ForegroundColor Cyan
         Push-Location (Split-Path -Parent (Resolve-Path $UnitExe).Path)
@@ -170,6 +174,7 @@ try {
 
     $runAll = @{ Config = $effective; Exe = $Exe; Targets = @($Target) }
     if ($Strict) { $runAll['Strict'] = $true }
+    if ($Filter) { $runAll['Filter'] = $Filter }
     & (Join-Path $here 'run-all.ps1') @runAll
     if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
 }
