@@ -383,9 +383,7 @@ static bool DumpSpellProcEvents(std::string const& dir)
             masks[i] = s->EffectApplyAuraName[i] ? spe->spellFamilyMask[i] : 0;
 
         table << id << spe->schoolMask << spe->spellFamilyName << masks << spe->procEx
-            << (spe->procFlags ? spe->procFlags : s->procFlags)
-            << (spe->customChance != 0.0f ? uint32(spe->customChance) : s->procChance)
-            << spe->ppmRate << spe->cooldown;
+            << s->procFlags << s->procChance << s->ProcsPerMinute << s->ProcCooldown;
         table.EndRow();
     }
     return table.Close();

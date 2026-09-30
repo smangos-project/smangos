@@ -4093,8 +4093,8 @@ void Unit::HandleTriggers(Unit* pVictim, uint32 procExtra, uint32 amount, uint32
         }
 
         uint32 cooldown = 0;
-        if (spellProcEvent && spellProcEvent->cooldown)
-            cooldown = spellProcEvent->cooldown;
+        if (spellProcEvent && triggeredByHolder->GetSpellProto()->ProcCooldown)
+            cooldown = triggeredByHolder->GetSpellProto()->ProcCooldown;
 
         for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
@@ -8811,8 +8811,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* pTarget, ProcSystemArgumen
         {
             if (result == SPELL_PROC_TRIGGER_ROLL_FAILED &&
                 itr.second->GetSpellProto()->HasAttribute(SPELL_ATTR_EX2_PROC_COOLDOWN_ON_FAILURE) &&
-                spellProcEvent && spellProcEvent->cooldown)
-                AddCooldown(itr.second->GetSpellProto(), nullptr, false, spellProcEvent->cooldown);
+                spellProcEvent && itr.second->GetSpellProto()->ProcCooldown)
+                AddCooldown(itr.second->GetSpellProto(), nullptr, false, itr.second->GetSpellProto()->ProcCooldown);
 
             continue;
         }

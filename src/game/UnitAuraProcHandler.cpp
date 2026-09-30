@@ -369,10 +369,7 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
 
     // Get EventProcFlag
     uint32 EventProcFlag;
-    if (spellProcEvent && spellProcEvent->procFlags) // if exist get custom spellProcEvent->procFlags
-        EventProcFlag = spellProcEvent->procFlags;
-    else
-        EventProcFlag = spellProto->procFlags;       // else get from spell proto
+    EventProcFlag = spellProto->procFlags;
     // Continue if no trigger exist
     if (!EventProcFlag)
         return SPELL_PROC_TRIGGER_FAILED;
@@ -436,15 +433,12 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
 
     // Get chance from spell
     float chance = (float)spellProto->procChance;
-    // If in spellProcEvent exist custom chance, chance = spellProcEvent->customChance;
-    if (spellProcEvent && spellProcEvent->customChance)
-        chance = spellProcEvent->customChance;
 
     // If PPM exist calculate chance from PPM
-    if (!isVictim && spellProcEvent && spellProcEvent->ppmRate != 0)
+    if (!isVictim && spellProcEvent && spellProto->ProcsPerMinute != 0)
     {
         uint32 WeaponSpeed = GetAttackTime(attType);
-        chance = GetPPMProcChance(WeaponSpeed, spellProcEvent->ppmRate);
+        chance = GetPPMProcChance(WeaponSpeed, spellProto->ProcsPerMinute);
     }
 
     // Apply chance modifier aura

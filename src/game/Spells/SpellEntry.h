@@ -620,6 +620,8 @@ class SpellEntry
         uint32    procFlags = 0;                                   // 24
         uint32    procChance = 0;                                  // 25
         uint32    procCharges = 0;                                 // 26
+        uint32    ProcCooldown = 0;                                // hidden cooldown of the proc, in ms
+        float     ProcsPerMinute = 0.0f;                           // proc rate per minute; when zero the chance is procChance
         uint32    maxLevel = 0;                                    // 27
         uint32    baseLevel = 0;                                   // 28
         uint32    spellLevel = 0;                                  // 29

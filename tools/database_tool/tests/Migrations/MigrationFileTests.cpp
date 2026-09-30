@@ -31,7 +31,7 @@ TEST_CASE("TryParseMigrationFilename rejects anything else found in sql/migratio
 TEST_CASE("DiscoverMigrations finds every real migration for one database, sorted by id", "[MigrationFile]")
 {
     auto world = DiscoverMigrations(DATABASE_TOOL_TEST_MIGRATIONS_DIR, "world");
-    CHECK(world.size() == 1177);
+    CHECK(world.size() == 1178);
     CHECK(std::is_sorted(world.begin(), world.end(), [](MigrationFile const& a, MigrationFile const& b) { return a.id < b.id; }));
     for (MigrationFile const& file : world)
     {

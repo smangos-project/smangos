@@ -214,19 +214,9 @@ struct DoSpellProcEvent
                 }
             }
 
-            if (spe.procFlags != r_spe.procFlags)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` as custom rank have different procFlags from first rank in chain", spell_id);
-
             if (spe.procEx != r_spe.procEx)
                 sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` as custom rank have different procEx from first rank in chain", spell_id);
 
-            // only ppm allowed has been different from first rank
-
-            if (spe.customChance != r_spe.customChance)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` as custom rank have different customChance from first rank in chain", spell_id);
-
-            if (spe.cooldown != r_spe.cooldown)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` as custom rank have different cooldown from first rank in chain", spell_id);
         }
     }
 
@@ -237,7 +227,8 @@ struct DoSpellProcEvent
     bool IsValidCustomRank(SpellProcEventEntry const& spe, uint32 entry, uint32 first_id)
     {
         // let have independent data in table for spells with ppm rates (exist rank dependent ppm rate spells)
-        if (!spe.ppmRate)
+        SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(entry);
+        if (!spellInfo || !spellInfo->ProcsPerMinute)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` is not first rank (%u) in chain", entry, first_id);
             // prevent loading since it won't have an effect anyway
@@ -251,39 +242,13 @@ struct DoSpellProcEvent
 
         bool isCustom = false;
 
-        if (spe.procFlags == 0)
-        {
-            if (spell->procFlags == 0)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` probally not triggered spell (no proc flags)", spell->Id);
-        }
-        else
-        {
-            if (spell->procFlags == spe.procFlags)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` has exactly same proc flags as in spell.dbc, field value redundant", spell->Id);
-            else
-                isCustom = true;
-        }
-
-        if (spe.customChance == 0)
-        {
-            /* enable for re-check cases, 0 chance ok for some cases because in some cases it set by another spell/talent spellmod)
-            if (spell->procChance==0 && !spe.ppmRate)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` probally not triggered spell (no chance or ppm)", spell->Id);
-            */
-        }
-        else
-        {
-            if (spell->procChance == spe.customChance)
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` has exactly same custom chance as in spell.dbc, field value redundant", spell->Id);
-            else
-                isCustom = true;
-        }
+        if (spell->procFlags == 0)
+            sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Spell %u listed in `spell_proc_event` probally not triggered spell (no proc flags)", spell->Id);
 
         // totally redundant record
-        if (!spe.schoolMask && !spe.procFlags &&
-                !spe.procEx && !spe.ppmRate && !spe.customChance && !spe.cooldown)
+        if (!spe.schoolMask && !spe.procEx && !spe.spellFamilyName)
         {
-            bool empty = spe.spellFamilyName == 0;
+            bool empty = true;
             for (uint64 i : spe.spellFamilyMask)
             {
                 if (i)
@@ -322,7 +287,7 @@ void SpellMgr::LoadSpellProcEvents()
     mSpellProcEventMap.clear();                             // need for reload case
 
     //                                                                0        1             2                  3                   4                   5                   6            7         8          9               10
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown` FROM `spell_proc_event`"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procEx` FROM `spell_proc_event`"));
     if (!result)
     {
         BarGoLink bar(1);
@@ -351,11 +316,7 @@ void SpellMgr::LoadSpellProcEvents()
         for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
             spe.spellFamilyMask[i] = fields[3 + i].GetUInt64();
 
-        spe.procFlags       = fields[6].GetUInt32();
-        spe.procEx          = fields[7].GetUInt32();
-        spe.ppmRate         = fields[8].GetFloat();
-        spe.customChance    = fields[9].GetFloat();
-        spe.cooldown        = fields[10].GetUInt32();
+        spe.procEx          = fields[6].GetUInt32();
 
         rankHelper.RecordRank(spe, entry);
 
@@ -363,6 +324,31 @@ void SpellMgr::LoadSpellProcEvents()
     while (result->NextRow());
 
     rankHelper.FillHigherRanks();
+
+    // Where the aura keeps its own class mask in the effect (auras 107, 108, 109, 112), the proc mask is
+    // the table value; elsewhere it is the effect's class mask.
+    std::map<std::pair<uint32, uint32>, uint64> effectMasks;
+    result = WorldDatabase.Query("SELECT `SpellID`, `EffectIndex`, `EffectSpellClassMask1`, `EffectSpellClassMask2` FROM `dbc_spelleffect` WHERE `DifficultyID` = 0 AND `EffectIndex` < 3 AND `Effect` <> 0");
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            effectMasks[{fields[0].GetUInt32(), fields[1].GetUInt32()}] = uint64(fields[2].GetUInt32()) | (uint64(fields[3].GetUInt32()) << 32);
+        } while (result->NextRow());
+    }
+    for (auto& [spellId, spe] : mSpellProcEventMap)
+    {
+        SpellEntry const* spell = GetSpellEntry(spellId);
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        {
+            uint32 const aura = spell->EffectApplyAuraName[i];
+            if (aura == 107 || aura == 108 || aura == 109 || aura == 112)
+                continue;
+            auto itr = effectMasks.find({spellId, i});
+            spe.spellFamilyMask[i] = itr != effectMasks.end() ? itr->second : 0;
+        }
+    }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u extra spell proc event conditions +%u custom proc (inc. +%u custom ranks)",  rankHelper.worker.count, rankHelper.worker.customProc, rankHelper.customRank);
@@ -3762,13 +3748,26 @@ void SpellMgr::LoadSpells()
         s.maxLevel = f[2].GetUInt32();
         s.spellLevel = f[3].GetUInt32();
     });
-    forEachRow("dbc_spellauraoptions", "SELECT `SpellID`, `CumulativeAura`, `ProcChance`, `ProcCharges`, `ProcTypeMask1` FROM `dbc_spellauraoptions` WHERE `DifficultyID` = 0",
-        [](SpellEntry& s, Field* f)
+    std::map<uint32, float> procRates;
+    result = WorldDatabase.Query("SELECT `ID`, `BaseProcRate` FROM `dbc_spellprocsperminute`");
+    if (result)
+    {
+        do
+        {
+            Field* f = result->Fetch();
+            procRates[f[0].GetUInt32()] = f[1].GetFloat();
+        } while (result->NextRow());
+    }
+    forEachRow("dbc_spellauraoptions", "SELECT `SpellID`, `CumulativeAura`, `ProcChance`, `ProcCharges`, `ProcTypeMask1`, `ProcCategoryRecovery`, `SpellProcsPerMinuteID` FROM `dbc_spellauraoptions` WHERE `DifficultyID` = 0",
+        [&procRates](SpellEntry& s, Field* f)
     {
         s.StackAmount = f[1].GetUInt32();
         s.procChance = f[2].GetUInt32();
         s.procCharges = f[3].GetUInt32();
         s.procFlags = f[4].GetUInt32();
+        s.ProcCooldown = f[5].GetUInt32();
+        auto itr = procRates.find(f[6].GetUInt32());
+        s.ProcsPerMinute = itr != procRates.end() ? itr->second : 0.0f;
     });
     forEachRow("dbc_spellaurarestrictions", "SELECT `SpellID`, `CasterAuraState`, `TargetAuraState` FROM `dbc_spellaurarestrictions` WHERE `DifficultyID` = 0",
         [](SpellEntry& s, Field* f)
