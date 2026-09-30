@@ -1005,7 +1005,7 @@ bool ChatHandler::HandleAuraHelper(uint32 spellId, int32 duration, Unit* unit)
 
     for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
     {
-        uint8 eff = spellInfo->Effect[i];
+        uint32 eff = spellInfo->Effect[i];
         if (eff >= TOTAL_SPELL_EFFECTS)
             continue;
         if (Spells::IsAreaAuraEffect(eff) ||

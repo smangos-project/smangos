@@ -5231,7 +5231,7 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item *pItemTarget, GameObject* pGOT
     itemTarget = pItemTarget;
     gameObjTarget = pGOTarget;
 
-    uint8 eff = m_spellInfo->Effect[i];
+    uint32 eff = m_spellInfo->Effect[i];
 
     damage = CalculateDamage(i, unitTarget) * DamageMultiplier;
 
