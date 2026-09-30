@@ -317,6 +317,9 @@ add_subdirectory(dep)
 add_subdirectory(src)
 
 set(SERVER_MAP_DATA_DIR "" CACHE PATH "Folder with the extracted maps (vmaps/mmaps next to it); server_setup links .server/data to it")
+if (ENABLE_REALBOTS)
+  set_property(GLOBAL APPEND PROPERTY SERVER_SETUP_CONFIGS "${CMAKE_SOURCE_DIR}/tests/conformance/targets/server.conf.in|tests-conformance.conf")
+endif()
 get_property(server_setup_configs GLOBAL PROPERTY SERVER_SETUP_CONFIGS)
 string(REPLACE ";" "," server_setup_configs "${server_setup_configs}")
 add_custom_target(server_setup

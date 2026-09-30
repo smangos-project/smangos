@@ -116,3 +116,21 @@ mangos_copy_openssl_dlls(tests-conformance)
 # unit doesn't) -- no catch_discover_tests call here at all. Run by hand:
 #   tests-conformance --target vibemangos
 # from anywhere: expectations/*.txt is found relative to the config file, not the working directory.
+
+# Builds everything, then runs the unit and conformance bot tests against .server (starting the
+# server and creating the bot accounts when needed): cmake --build <dir> --target bot_tests
+# Pass extra run-bot-tests.ps1 switches (-Strict, -NoServer) through BOT_TESTS_ARGS.
+if (WIN32)
+  set(BOT_TESTS_ARGS "" CACHE STRING "Extra arguments for run-bot-tests.ps1 (e.g. -Strict)")
+  separate_arguments(bot_tests_args WINDOWS_COMMAND "${BOT_TESTS_ARGS}")
+  add_custom_target(bot_tests
+    COMMAND powershell -NoProfile -ExecutionPolicy Bypass -File ${CMAKE_CURRENT_SOURCE_DIR}/run-bot-tests.ps1
+      -Exe $<TARGET_FILE:tests-conformance>
+      -UnitExe $<TARGET_FILE:tests-realbots>
+      -ServerExe $<TARGET_FILE:server>
+      ${bot_tests_args}
+    USES_TERMINAL
+    VERBATIM
+    COMMENT "Running the bot tests")
+  add_dependencies(bot_tests tests-conformance tests-realbots server_setup)
+endif()

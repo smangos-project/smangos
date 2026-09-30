@@ -1,0 +1,43 @@
+# tests-conformance config for the server in .server (created by server_setup, never overwritten).
+# run-bot-tests.ps1 fills in the ports from .server/config/bnetserver.conf and creates the accounts
+# below on the server console, so the pool only has to be listed here.
+#
+# Tags decide which scenarios run: "slow" adds the ones that wait on server-side timeouts, "load"
+# adds the many-bot scenarios (10, 50 and 100 bots; they skip when the pool is smaller).
+RealBots.Targets = "vmangos vmangos-gm deadhost"
+
+RealBots.Target.vmangos.LoginAddress          = "127.0.0.1"
+RealBots.Target.vmangos.RestPort              = 8081
+RealBots.Target.vmangos.RpcPort               = 1119
+RealBots.Target.vmangos.ClientBuild           = 58797
+RealBots.Target.vmangos.ClientVersion         = "1.15.6"
+RealBots.Target.vmangos.Tags                  = "protocol gameplay"
+RealBots.Target.vmangos.Accounts              = "bot001:botpass bot002:botpass bot003:botpass bot004:botpass bot005:botpass bot006:botpass bot007:botpass bot008:botpass bot009:botpass bot010:botpass"
+RealBots.Target.vmangos.VerifyServerSignature = 1
+RealBots.Target.vmangos.ConnectTimeoutMs      = 10000
+RealBots.Target.vmangos.StageTimeoutMs        = 30000
+
+# Game master account for the scenarios that drive the server with chat commands.
+RealBots.Target.vmangos-gm.LoginAddress          = "127.0.0.1"
+RealBots.Target.vmangos-gm.RestPort              = 8081
+RealBots.Target.vmangos-gm.RpcPort               = 1119
+RealBots.Target.vmangos-gm.ClientBuild           = 58797
+RealBots.Target.vmangos-gm.ClientVersion         = "1.15.6"
+RealBots.Target.vmangos-gm.Accounts              = "botgm1:botpass"
+RealBots.Target.vmangos-gm.VerifyServerSignature = 1
+
+# Deliberately unreachable (RFC 5737 TEST-NET-3); only the framework scenario that checks a dead
+# address fails cleanly uses it.
+RealBots.Target.deadhost.LoginAddress     = "203.0.113.1"
+RealBots.Target.deadhost.RestPort         = 8081
+RealBots.Target.deadhost.RpcPort          = 1119
+RealBots.Target.deadhost.Tags             = "protocol gameplay"
+RealBots.Target.deadhost.Accounts         = "bot1@bots:pass"
+RealBots.Target.deadhost.ConnectTimeoutMs = 2000
+RealBots.Target.deadhost.StageTimeoutMs   = 5000
+
+RealBots.IoThreads       = 1
+RealBots.WorkerThreads   = 2
+RealBots.TickIntervalMs  = 100
+RealBots.PingIntervalMs  = 5000
+RealBots.LogoutTimeoutMs = 5000
