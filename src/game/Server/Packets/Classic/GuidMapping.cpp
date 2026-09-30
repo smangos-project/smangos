@@ -147,6 +147,13 @@ ClassicGuid ClassicGuidMapping::MakeGuild(uint32 guildId)
     return ClassicGuid{ guildId, uint64(CLASSIC_GUID_GUILD) << TYPE_SHIFT };
 }
 
+nonstd::optional<uint32> ClassicGuidMapping::GuildIdFromClassic(ClassicGuid const& guid)
+{
+    if (uint8((guid.High >> TYPE_SHIFT) & 0x3F) != CLASSIC_GUID_GUILD)
+        return nonstd::nullopt;
+    return uint32(guid.Low & COUNTER_MASK);
+}
+
 ClassicGuid ClassicGuidMapping::MakeChannel(uint32 realmId, uint32 mapId, uint32 zoneId, uint32 channelId)
 {
     ClassicGuid out;

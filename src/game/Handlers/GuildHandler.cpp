@@ -46,8 +46,8 @@ void WorldSession::HandleGuildQueryOpcode(GuildQuery const& packet)
 
     // Falls back to the queried player's own guild if no guild guid was supplied -- matches how
     // the client asks when inspecting a player's guild tab.
-    nonstd::optional<ObjectGuid> const guildGuid = ClassicGuidMapping::FromClassic(packet.GuildGuid);
-    Guild* guild = guildGuid ? sGuildMgr.GetGuildById(guildGuid->GetCounter()) : nullptr;
+    nonstd::optional<uint32> const guildId = ClassicGuidMapping::GuildIdFromClassic(packet.GuildGuid);
+    Guild* guild = guildId ? sGuildMgr.GetGuildById(*guildId) : nullptr;
     if (!guild)
     {
         nonstd::optional<ObjectGuid> const playerGuid = ClassicGuidMapping::FromClassic(packet.PlayerGuid);
