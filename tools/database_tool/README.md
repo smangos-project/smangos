@@ -2,8 +2,8 @@
 
 Creates and updates every server database the way vmangos documents it, except the world
 database, which is a DoltLite (versioned SQLite) file at `.world/world.doltlite` instead of a
-MySQL schema. The server itself doesn't use `.world` yet; this tool exists to build and validate
-it on its own. `logon`, `characters` and `logs` stay ordinary MySQL databases.
+MySQL schema. The server reads it through `WorldDatabase.Info` in `common.conf`; this tool builds
+and validates it. `logon`, `characters` and `logs` stay ordinary MySQL databases.
 
 See `.local/plan/wms/database_tool/plan.md`, `world-sql.md` and `dbc-formats.md` for the full
 design. This file is just the command reference.
@@ -50,7 +50,7 @@ Exit codes: `0` success, `1` failure, `2` for `port-migration` when any file was
 
 `status` (plan.md's command set) isn't implemented yet, and neither is a `--config` flag: `create`
 and `update` only drive `world`; `logon`/`characters`/`logs` aren't wired into the CLI yet (see
-`Commands/CreateMysqlDatabase.h` to drive them directly against a `mangosd.conf`-style file).
+`Commands/CreateMysqlDatabase.h` to drive them directly against a `common.conf`-style file).
 
 ### create
 

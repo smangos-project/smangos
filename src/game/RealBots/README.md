@@ -402,13 +402,9 @@ tests-conformance.conf.dist` both have the full shape, including every global `R
   client available) -- only by code review and by `mangosd` linking successfully both with
   `ENABLE_REALBOTS` on and off.
 
-**A local environment gotcha, not a RealBots bug**: if crypto init fails with "Failed to load
-openssl legacy provider," it's about the process's **current working directory at launch**, not
-where `legacy.dll` or the executable physically live -- `Crypto::InitializeCryptoAndPrintVersion`
-(`src/shared/Crypto/InitializeCrypto.cpp`) retries `OSSL_PROVIDER_load` after pointing OpenSSL's
-provider search path at `ToAbsolutePath(".")`. Run from the directory `legacy.dll` actually sits in
-(the build's shared output directory, e.g. `bin/RelWithDebInfo/`), not from the repo root or
-elsewhere, even with the DLL correctly copied there by `mangos_copy_openssl_dlls`.
+If crypto init fails with "Failed to load openssl legacy provider," `legacy.dll` is missing next to
+the executable: `Crypto::InitializeCryptoAndPrintVersion` retries `OSSL_PROVIDER_load` with the working
+directory and the executable's directory as search path. `mangos_copy_openssl_dlls` copies the DLL there.
 
 ## Running the port target
 
@@ -426,8 +422,9 @@ character and log databases (the world database is a DoltLite file):
 3. Build the `server_setup` target with `-DSERVER_MAP_DATA_DIR=<the maps folder>`. It creates `.server/`
    (configs from the `.dist` files, the development certificate, a link to the map data). Edit the
    database strings and ports (REST 8091, RPC 1129, world 8095, instance 8096) in
-   `.server/config/mangosd.conf` and `bnetserver.conf` once; mangosd adds the realm row itself.
-4. Run `bin/RelWithDebInfo/bnetserver.exe` and `mangosd.exe` with no arguments (both change into `.server`).
+   `.server/config/common.conf`, `mangosd.conf` and `bnetserver.conf` once; mangosd adds the realm row itself.
+4. Run `bin/RelWithDebInfo/server.exe` with no arguments (it runs both services and changes into `.server`;
+   `--services mangosd` or `--services bnetserver` runs one).
 5. `account create <name> <password>` on the `mangosd` console provisions each bot account, including
    its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
    commands and the `Accounts` line.

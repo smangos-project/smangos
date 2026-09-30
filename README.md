@@ -23,6 +23,17 @@ This project is an independent continuation of the Elysium / LightsHope codebase
 - Full progression: The ultimate goal of this project is to have complete progression starting from patch 1.2 through 1.12. This means every piece of data must be marked with the patch in which it was added or changed to it's current state.
 - Tools are great: Content creation should not require programming knowledge. We hope to eventually provide tools that allow for user-friendly editing of database scripts and content, with all data presented in human-readable form.
 
+### Running the server
+
+The server runs from `.server` (git-ignored): `config/` holds `common.conf` (databases, directories, logging),
+`mangosd.conf` and `bnetserver.conf`, `data/` the map data, `logs/` every log.
+
+1. Configure once with `-DSERVER_MAP_DATA_DIR=<your maps folder>` (`vmaps` and `mmaps` next to it are linked too).
+2. Build the `server_setup` target. It builds `server` and creates whatever of `.server` is missing; it never overwrites.
+3. Edit the database strings in `.server/config/common.conf`.
+4. Run `bin/<config>/server` from anywhere. `--services mangosd` or `--services bnetserver` runs only one
+   (default: `Server.Services` in `common.conf`); `--server-dir <dir>` uses another server directory.
+
 ### Downloads
 - [![Development Release](https://github.com/vmangos/core/actions/workflows/development-release.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/latest) Latest development build (Linux, macOS, and Windows)
 - [![Development Database Dump](https://github.com/vmangos/core/actions/workflows/development-db-dump.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/db_latest) Latest MySQL 5.6 development database snapshot; no updates required
