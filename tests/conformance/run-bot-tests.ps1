@@ -153,7 +153,7 @@ try {
             $commands += "account create $($account.Name) $($account.Password)"
             $commands += "account set password $($account.Name) $($account.Password) $($account.Password)"
         }
-        foreach ($account in @(Get-Accounts "$Target-gm")) { $commands += "account set gmlevel $($account.Name) 4 -1" }
+        foreach ($account in @(Get-Accounts "$Target-gm")) { $commands += "account set gmlevel $($account.Name) 6 -1" }
         if ($commands.Count -gt 0) {
             Write-Host "creating the bot accounts ($($commands.Count) console commands; existing ones get their password reset)"
             foreach ($command in $commands) {

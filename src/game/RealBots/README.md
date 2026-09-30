@@ -431,7 +431,7 @@ character and log databases (the world database is a DoltLite file):
 6. `tests-conformance --target vmangos` with the `vmangos` block of `tests-conformance.conf.dist`.
    Scenarios that need a game master (a speed change, a root or a teleport, driven by chat
    commands) lease from a companion target named `<target>-gm` and skip when it is not configured:
-   create one account, `account set gmlevel <name> 4 -1`, and list it as the `vmangos-gm` target's
+   create one account, `account set gmlevel <name> 6 -1`, and list it as the `vmangos-gm` target's
    only account (same address and realm as `vmangos`, no `Tags`).
 7. `debug unported` on the `mangosd` console (or in game, `.debug unported`) lists every vanilla SMSG a
    session tried to send and the legacy lane dropped, with counts. This is the server-side list of
