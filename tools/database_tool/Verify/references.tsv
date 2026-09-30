@@ -127,4 +127,4 @@ dbc_wmoareatable	ZoneMusic	dbc_zonemusic.ID		24
 dbc_zonestory	DisplayAchievementID	dbc_achievement.ID		160	
 gameobject_template	data0	dbc_lock.ID	type IN (2, 3, 6, 10, 12, 13, 24, 25, 26)	3	lock of the types GameObjectInfo::GetLockId reads from data0
 gameobject_template	data1	dbc_lock.ID	type IN (0, 1)	0	lock of doors and buttons
-gameobject_template	displayId	dbc_gameobjectdisplayinfo.ID		23	game object model
+gameobject_template	displayId	dbc_gameobjectdisplayinfo.ID		0	game object model

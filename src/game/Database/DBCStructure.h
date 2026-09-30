@@ -490,7 +490,7 @@ struct SkillLineEntry
                                                             // 11 string flags
     //char*     description[8];                             // 12-19    m_description_lang
                                                             // 20 string flags
-    uint32    spellIcon;                                    // 21       m_spellIconID
+                                                            // 21       m_spellIconID
 };
 
 struct SkillLineAbilityEntry

@@ -175,10 +175,10 @@ inline void LoadDBC(uint32& availableDbcLocales, BarGoLink& bar, StoreProblemLis
 }
 
 template<class T, class Fill>
-static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, char const* table, char const* columns, Fill fill)
+static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, char const* table, char const* columns, Fill fill, char const* orderBy = "")
 {
     std::vector<std::pair<uint32, T>> rows;
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT %s FROM `%s`", columns, table));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT %s FROM `%s` %s", columns, table, orderBy));
     if (result)
     {
         do
@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 22;
+    uint32 const DBCFilesCount = 18;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -337,7 +337,12 @@ void LoadDBCStores(std::string const& dataPath)
         e.textid = f[1].GetUInt32();
         return e.Id;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sGameObjectDisplayInfoStore, dbcPath, "GameObjectDisplayInfo.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sGameObjectDisplayInfoStore, "dbc_gameobjectdisplayinfo", "`ID`, `ModelName`", [&](Field* f, GameObjectDisplayInfoEntry& e)
+    {
+        e.Displayid = f[0].GetUInt32();
+        e.filename = const_cast<char*>(sGameObjectDisplayInfoStore.InternString(f[1].GetCppString()));
+        return e.Displayid;
+    });
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     LoadDBCFromWorld(bar, badDbcFiles, sItemBagFamilyStore, "dbc_itembagfamily", "`ID`", [](Field* f, ItemBagFamilyEntry& e)
     {
@@ -385,7 +390,17 @@ void LoadDBCStores(std::string const& dataPath)
         }
         while (result->NextRow());
     }
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sLockStore,                dbcPath, "Lock.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sLockStore, "dbc_lock", "`ID`, `Type1`, `Type2`, `Type3`, `Type4`, `Type5`, `Type6`, `Type7`, `Type8`, `Index1`, `Index2`, `Index3`, `Index4`, `Index5`, `Index6`, `Index7`, `Index8`, `Skill1`, `Skill2`, `Skill3`, `Skill4`, `Skill5`, `Skill6`, `Skill7`, `Skill8`", [](Field* f, LockEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        for (uint32 i = 0; i < MAX_LOCK_CASE; ++i)
+        {
+            e.Type[i] = f[1 + i].GetUInt32();
+            e.Index[i] = f[9 + i].GetUInt32();
+            e.Skill[i] = f[17 + i].GetUInt32();
+        }
+        return e.ID;
+    });
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sNamesProfanityStore,      dbcPath, "NamesProfanity.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sNamesReservedStore,       dbcPath, "NamesReserved.dbc");
@@ -435,8 +450,26 @@ void LoadDBCStores(std::string const& dataPath)
         e.id = f[0].GetUInt32();
         return e.id;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSkillLineStore,           dbcPath, "SkillLine.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSkillRaceClassInfoStore,  dbcPath, "SkillRaceClassInfo.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sSkillLineStore, "dbc_skillline", "`ID`, `CategoryID`, `DisplayName_lang`", [&](Field* f, SkillLineEntry& e)
+    {
+        e.id = f[0].GetUInt32();
+        e.categoryId = f[1].GetInt32();
+        FillLocalizedString(sSkillLineStore, const_cast<char const**>(e.name), f[2].GetCppString());
+        return e.id;
+    });
+    {
+        uint32 skillRaceClassIndex = 0;
+        LoadDBCFromWorld(bar, badDbcFiles, sSkillRaceClassInfoStore, "dbc_skillraceclassinfo", "`SkillID`, `RaceMask`, `ClassMask`, `Flags`, `MinLevel`, `SkillTierID`", [&](Field* f, SkillRaceClassInfoEntry& e)
+        {
+            e.skillId = f[0].GetUInt32();
+            e.raceMask = f[1].GetUInt32();
+            e.classMask = f[2].GetUInt32();
+            e.flags = f[3].GetUInt32();
+            e.reqLevel = f[4].GetUInt32();
+            e.skillTierId = f[5].GetUInt32();
+            return skillRaceClassIndex++;
+        }, "ORDER BY `ID`");
+    }
     for (uint32 i = 1; i < sSpellMgr.GetMaxSpellId(); ++i)
     {
         SpellEntry const* spell = sSpellMgr.GetSpellEntry(i);
