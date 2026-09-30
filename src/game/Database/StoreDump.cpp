@@ -359,6 +359,58 @@ static bool DumpSpells(std::string const& dir)
     return table.Close();
 }
 
+static bool DumpSpellProcEvents(std::string const& dir)
+{
+    std::vector<uint32> ids;
+    for (auto const& [id, spe] : sSpellMgr.GetSpellProcEvents())
+        ids.push_back(id);
+    std::sort(ids.begin(), ids.end());
+
+    DumpTable table(dir, "spell_proc_event");
+    table.AddColumns({{"Id"}, {"schoolMask"}, {"spellFamilyName"}, {"spellFamilyMask", MAX_EFFECT_INDEX},
+        {"procEx"}, {"effProcFlags"}, {"effChance"}, {"ppmRate"}, {"cooldown"}});
+    table.EndHeader();
+
+    for (uint32 id : ids)
+    {
+        SpellProcEventEntry const* spe = sSpellMgr.GetSpellProcEvent(id);
+        SpellEntry const* s = sSpellMgr.GetSpellEntry(id);
+        if (!spe || !s)
+            continue;
+
+        uint64 masks[MAX_EFFECT_INDEX];
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+            masks[i] = s->EffectApplyAuraName[i] ? spe->spellFamilyMask[i] : 0;
+
+        table << id << spe->schoolMask << spe->spellFamilyName << masks << spe->procEx
+            << (spe->procFlags ? spe->procFlags : s->procFlags)
+            << (spe->customChance != 0.0f ? uint32(spe->customChance) : s->procChance)
+            << spe->ppmRate << spe->cooldown;
+        table.EndRow();
+    }
+    return table.Close();
+}
+
+static bool DumpSpellChains(std::string const& dir)
+{
+    std::vector<uint32> ids;
+    for (auto const& [id, node] : sSpellMgr.GetSpellChains())
+        ids.push_back(id);
+    std::sort(ids.begin(), ids.end());
+
+    DumpTable table(dir, "spell_chain");
+    table.AddColumns({{"Id"}, {"prev"}, {"first"}, {"rank"}, {"req"}});
+    table.EndHeader();
+
+    for (uint32 id : ids)
+    {
+        SpellChainNode const* node = sSpellMgr.GetSpellChainNode(id);
+        table << id << node->prev << node->first << uint32(node->rank) << node->req;
+        table.EndRow();
+    }
+    return table.Close();
+}
+
 static bool DumpSpellPairs(std::string const& dir)
 {
     std::vector<SpellEntry const*> auras;
@@ -739,6 +791,8 @@ bool DumpStores(std::string const& dir)
     ok &= DumpSQLStore(dir, sCreatureSpellDataStorage, -1, "pet_spell_data");
 
     ok &= DumpSpells(dir);
+    ok &= DumpSpellProcEvents(dir);
+    ok &= DumpSpellChains(dir);
     ok &= DumpSpellPairs(dir);
     ok &= DumpCreatureTemplates(dir);
     ok &= DumpItemPrototypes(dir);

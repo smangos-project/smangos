@@ -469,6 +469,8 @@ class SpellMgr
             return nullptr;
         }
 
+        SpellProcEventMap const& GetSpellProcEvents() const { return mSpellProcEventMap; }
+
         // Spell procs from item enchants
         float GetItemEnchantProcChance(uint32 spellid) const
         {
@@ -516,6 +518,7 @@ class SpellMgr
             return 0;
         }
 
+        SpellChainMap const& GetSpellChains() const { return mSpellChains; }
         SpellChainMapNext const& GetSpellChainNext() const { return mSpellChainsNext; }
 
         template<typename Worker>
