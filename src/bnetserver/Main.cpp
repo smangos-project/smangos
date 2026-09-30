@@ -121,19 +121,8 @@ extern int main(int argc, char** argv)
         Log::WaitBeforeContinueIfNeed();
     }
 
-    std::string pidfile = sConfig.GetStringDefault("PidFile", "");
-    if (!pidfile.empty())
-    {
-        uint32 pid = CreatePIDFile(pidfile);
-        if (!pid)
-        {
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Cannot create PID file %s.\n", pidfile.c_str());
-            Log::WaitBeforeContinueIfNeed();
-            return 1;
-        }
-
-        sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "Daemon PID: %u\n", pid);
-    }
+    if (!CreateServerPidFile())
+        return 1;
 
     if (!StartDB())
     {
@@ -154,44 +143,8 @@ extern int main(int argc, char** argv)
 
     HookSignals();
 
-#ifdef WIN32
-    {
-        HANDLE hProcess = ::GetCurrentProcess();
-
-        uint32 Aff = sConfig.GetIntDefault("UseProcessors", 0);
-        if (Aff > 0)
-        {
-            ULONG_PTR appAff;
-            ULONG_PTR sysAff;
-
-            if (::GetProcessAffinityMask(hProcess, &appAff, &sysAff))
-            {
-                ULONG_PTR curAff = Aff & appAff;
-
-                if (!curAff)
-                {
-                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Processors marked in UseProcessors bitmask (hex) %x not accessible for bnetserver. Accessible processors bitmask (hex): %x", Aff, appAff);
-                }
-                else
-                {
-                    if (::SetProcessAffinityMask(hProcess, curAff))
-                        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using processors (bitmask, hex): %x", curAff);
-                    else
-                        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set used processors (hex): %x", curAff);
-                }
-            }
-            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        }
-
-        if (sConfig.GetBoolDefault("ProcessPriority", false))
-        {
-            if (::SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
-                sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "bnetserver process priority class set to HIGH");
-            else
-                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set bnetserver process priority class.");
-        }
-    }
-#endif
+    ApplyProcessSettings();
+    IO::Multithreading::RenameCurrentThread("bnetserver-main");
 
     LoginDatabase.AllowAsyncTransactions();
 

@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-set(EXECUTABLE_NAME mangosd)
-set(EXECUTABLE_SRCS
+set(LIBRARY_NAME mangosd)
+set(EXECUTABLE_NAME mangosd_exe)
+set(LIBRARY_SRCS
   CliRunnable.h
   Master.h
   WorldRunnable.h
   CliRunnable.cpp
-  Main.cpp
   Master.cpp
   WorldRunnable.cpp
   remote/RemoteAccess/RASocket.h
@@ -29,12 +29,6 @@ set(EXECUTABLE_SRCS
   remote/soap/MaNGOSsoap.h
   remote/soap/MaNGOSsoap.cpp
 )
-
-if(WIN32)
-  list(APPEND EXECUTABLE_SRCS
-    mangosd.rc
-  )
-endif()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/framework
@@ -77,13 +71,24 @@ endif()
 # Display some debug informations at server startup
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
 
+add_library(${LIBRARY_NAME} STATIC
+  ${LIBRARY_SRCS}
+)
+mangos_target_flags(${LIBRARY_NAME})
+
+set(EXECUTABLE_SRCS Main.cpp)
+if(WIN32)
+  list(APPEND EXECUTABLE_SRCS mangosd.rc)
+endif()
 add_executable(${EXECUTABLE_NAME}
   ${EXECUTABLE_SRCS}
 )
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME mangosd)
 mangos_target_flags(${EXECUTABLE_NAME})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
 
 if(USE_SCRIPTS)
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     game
     scripts
     shared
@@ -92,7 +97,7 @@ if(USE_SCRIPTS)
     gsoap
   )
 else()
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     game
     #scripts
     shared
@@ -105,7 +110,7 @@ endif()
 doltlite_copy_runtime(${EXECUTABLE_NAME})
 
 if(WIN32)
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     optimized ${MYSQL_LIBRARY}
     optimized ${OPENSSL_LIBRARIES}
     debug ${MYSQL_DEBUG_LIBRARY}
@@ -114,17 +119,17 @@ if(WIN32)
     $<$<NOT:$<CONFIG:Debug>>:${OPENSSL_SSL_LIBRARIES}>
   )
   if(MINGW)
-    target_link_libraries(${EXECUTABLE_NAME}
+    target_link_libraries(${LIBRARY_NAME}
       -lws2_32
     )
   endif()
   if(PLATFORM MATCHES X86)
-    target_link_libraries(${EXECUTABLE_NAME})
+    target_link_libraries(${LIBRARY_NAME})
   endif()
 endif()
 
 if(UNIX)
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     ${MYSQL_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${OPENSSL_EXTRA_LIBRARIES}

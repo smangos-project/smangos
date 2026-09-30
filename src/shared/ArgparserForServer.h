@@ -33,6 +33,12 @@ bool LoadServerConfig(ServerStartupArguments const& args);
 /// Warns when common.conf is older than this build expects. Needs the config loaded.
 void CheckCommonConfVersion();
 
+/// Creates the PID file named by PidFile, if any.
+bool CreateServerPidFile();
+
+/// Applies UseProcessors and ProcessPriority (Windows only).
+void ApplyProcessSettings();
+
 /// Returns a parsed ServerStartupArguments or exit value
 nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartupArguments(int argc, char** argv);
 

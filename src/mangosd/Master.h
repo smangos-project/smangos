@@ -27,7 +27,15 @@
 #define _MASTER_H
 
 #include "Common.h"
+#include "IO/Context/IoContext.h"
+#include "IO/Networking/AsyncSocketAcceptor.h"
 #include "Policies/Singleton.h"
+
+#include <memory>
+#include <thread>
+#include <vector>
+
+class Database;
 
 // Start the server
 class Master
@@ -35,7 +43,12 @@ class Master
     public:
         Master();
         ~Master();
-        int Run(std::string const& dumpStoresDir);
+        // Starts the world databases (Login must already run), loads the world and starts the threads.
+        // Returns false only while no thread runs yet. After that a failure stops the world and Run()
+        // returns the error code. With a dump directory it writes the stores and exits the process.
+        bool Start(std::string const& dumpStoresDir);
+        // Blocks until the world stops, tears down and returns the exit code (0 shutdown, 1 error, 2 restart).
+        int Run();
         static volatile uint32  m_masterLoopCounter;
         static volatile bool    m_handleSigvSignals;
         static void SigvSignalHandler();
@@ -49,9 +62,20 @@ class Master
         static void _OnSignal(int s);
 
         void clearOnlineAccounts();
+
+        std::thread m_worldThread;
+        std::unique_ptr<std::thread> m_cliThread;
+        std::unique_ptr<std::thread> m_soapThread;
+        std::unique_ptr<std::thread> m_freezeThread;
+        std::unique_ptr<IO::IoContext> m_ioCtx;
+        std::vector<std::thread> m_ioRunners;
+        std::unique_ptr<IO::Networking::AsyncSocketAcceptor> m_raServer;
 };
 
+extern uint32 realmID;
+bool LoadRealmId();
 bool EnsureRealmRow(uint32 id);
+bool StartDB(std::string const& name, Database& database, char const** migrations);
 
 #define sMaster MaNGOS::Singleton<Master>::Instance()
 #endif

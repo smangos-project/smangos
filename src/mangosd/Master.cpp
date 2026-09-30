@@ -67,6 +67,13 @@ extern volatile int m_ServiceStatus;
 
 INSTANTIATE_SINGLETON_1(Master);
 
+DatabaseDoltLite WorldDatabase;                             // Accessor to the world database
+DatabaseType CharacterDatabase;                             // Accessor to the character database
+DatabaseType LogsDatabase;                                  // Accessor to the logs database
+
+uint32 realmID;                                             // Id of the realm
+std::string realmName;                                      // Name of the realm
+
 volatile uint32 Master::m_masterLoopCounter = 0;
 volatile bool Master::m_handleSigvSignals = false;
 
@@ -132,57 +139,32 @@ Master::~Master()
 {
 }
 
-// Main function
-int Master::Run(std::string const& dumpStoresDir)
+// Starts everything up to the world loop. Returns false only while no thread runs yet; once a thread
+// runs, a failure stops the world and Run() joins everything and returns the error code.
+bool Master::Start(std::string const& dumpStoresDir)
 {
-    // worldd PID file creation
-    std::string pidFilePath = sConfig.GetStringDefault("PidFile", "");
-    if (!pidFilePath.empty())
-    {
-        uint32 pid = CreatePIDFile(pidFilePath);
-        if (!pid)
-        {
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Cannot create PID file %s.\n", pidFilePath.c_str());
-            Log::WaitBeforeContinueIfNeed();
-            return 1;
-        }
-
-        sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "Daemon PID: %u\n", pid);
-    }
-
     // Start the databases
     if (!_StartDB())
     {
         Log::WaitBeforeContinueIfNeed();
-        return 1;
-    }
-
-    if (!EnsureRealmRow(realmID))
-    {
-        Log::WaitBeforeContinueIfNeed();
-        return 1;
+        return false;
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "World server is running realm ID: %d Name: \"%s\"", realmID, realmName.c_str());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 
-    // Region/battlegroup only matter for the bnet-encoded realm address (bnetserver's own use);
-    // this realm's row (address, port) is all SendConnectToInstance needs.
-    sBnetRealmList.Initialize(1, 1, sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
-
-    std::unique_ptr<IO::IoContext> ioCtxUniquePtr = IO::IoContext::CreateIoContext();
-    IO::IoContext* ioCtx = ioCtxUniquePtr.get();
-    std::vector<std::thread> ioCtxRunners;
+    m_ioCtx = IO::IoContext::CreateIoContext();
+    IO::IoContext* ioCtx = m_ioCtx.get();
     int ioNetworkThreadCount = sConfig.GetIntDefault("Network.Threads", 1);
     if (ioNetworkThreadCount <= 0)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Config 'Network.Threads' must be greater than 0");
-        World::StopNow(ERROR_EXIT_CODE);
-        return 1;
+        Log::WaitBeforeContinueIfNeed();
+        return false;
     }
     for (int32 i = 0; i < ioNetworkThreadCount; ++i)
     {
-        ioCtxRunners.emplace_back(IO::Multithreading::CreateThread("IO[" + std::to_string(i) + "]", [ioCtx]()
+        m_ioRunners.emplace_back(IO::Multithreading::CreateThread("IO[" + std::to_string(i) + "]", [ioCtx]()
         {
             ioCtx->RunUntilShutdown();
         }));
@@ -196,7 +178,7 @@ int Master::Run(std::string const& dumpStoresDir)
         bool dumped = DumpStores(dumpStoresDir);
         sAsyncSystemTimer.RemoveAllTimersAndStopThread();
         ioCtx->Shutdown();
-        for (std::thread& thread : ioCtxRunners)
+        for (std::thread& thread : m_ioRunners)
             thread.join();
         CharacterDatabase.StopServer();
         WorldDatabase.StopServer();
@@ -206,9 +188,6 @@ int Master::Run(std::string const& dumpStoresDir)
         std::_Exit(dumped ? 0 : 1);
     }
 
-#ifndef WIN32
-    detachDaemon();
-#endif
     // server loaded successfully => enable async DB requests
     // this is done to forbid any async transactions during server startup!
     CharacterDatabase.AllowAsyncTransactions();
@@ -220,7 +199,7 @@ int Master::Run(std::string const& dumpStoresDir)
     _HookSignals();
 
     // Launch WorldRunnable thread
-    std::thread world_thread = IO::Multithreading::CreateThread("WorldRunnable", WorldRunnable());
+    m_worldThread = IO::Multithreading::CreateThread("WorldRunnable", WorldRunnable());
     // world_thread.setPriority(ACE_Based::Highest); // TODO
 
     // set realmbuilds depend on mangosd expected builds, and set server online
@@ -231,8 +210,6 @@ int Master::Run(std::string const& dumpStoresDir)
         LoginDatabase.PExecute("UPDATE `realmlist` SET `realmflags` = `realmflags` & ~(%u), `population` = 0, `realmbuilds` = '%s'  WHERE `id` = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
-    std::unique_ptr<std::thread> cliThread = nullptr;
-
 #ifdef WIN32
     if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
 #else
@@ -240,74 +217,26 @@ int Master::Run(std::string const& dumpStoresDir)
 #endif
     {
         // Launch CliRunnable thread
-        cliThread = IO::Multithreading::CreateThreadPtr("CLI", CliRunnable());
+        m_cliThread = IO::Multithreading::CreateThreadPtr("CLI", CliRunnable());
     }
 
-    std::unique_ptr<IO::Networking::AsyncSocketAcceptor> remoteAccessServer = nullptr;
     if (sConfig.GetBoolDefault("Ra.Enable", false))
-        remoteAccessServer = SetupRemoteAccessServer(ioCtx);
-
-    // Handle affinity for multiple processors and process priority on Windows
-#ifdef WIN32
-    {
-        HANDLE hProcess = ::GetCurrentProcess();
-
-        uint32 Aff = sConfig.GetIntDefault("UseProcessors", 0);
-        if (Aff > 0)
-        {
-            ULONG_PTR appAff;
-            ULONG_PTR sysAff;
-
-            if (::GetProcessAffinityMask(hProcess, &appAff, &sysAff))
-            {
-                ULONG_PTR curAff = Aff & appAff;            // remove non accessible processors
-
-                if (!curAff)
-                {
-                    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Processors marked in UseProcessors bitmask (hex) %x not accessible for mangosd. Accessible processors bitmask (hex): %x",Aff,appAff);
-                }
-                else
-                {
-                    if (::SetProcessAffinityMask(hProcess, curAff))
-                        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using processors (bitmask, hex): %x", curAff);
-                    else
-                        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set used processors (hex): %x", curAff);
-                }
-            }
-            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        }
-
-        bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
-
-     // if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
-        if(Prio)
-        {
-            if (::SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
-                sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "mangosd process priority class set to HIGH");
-            else
-                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set mangosd process priority class.");
-        }
-    }
-#endif
+        m_raServer = SetupRemoteAccessServer(ioCtx);
 
     (void)sAsyncSystemTimer; // <-- Pre-Initialize SystemTimer
-    IO::Multithreading::RenameCurrentThread("mangosd-main");
 
     // Start soap serving thread
-    std::unique_ptr<std::thread> soap_thread = nullptr;
-
     if (sConfig.GetBoolDefault("SOAP.Enabled", false))
     {
         std::string soapBindIp = sConfig.GetStringDefault("SOAP.IP", "127.0.0.1");
         uint16 soapBindPort = sConfig.GetIntDefault("SOAP.Port", 7878);
-        soap_thread = StartSoapThread(soapBindIp, soapBindPort);
+        m_soapThread = StartSoapThread(soapBindIp, soapBindPort);
     }
 
     // Start up freeze catcher thread
-    std::unique_ptr<std::thread> freeze_thread = nullptr;
     if (uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0))
     {
-        freeze_thread = IO::Multithreading::CreateThreadPtr("FreezeDetector", std::bind(&freezeDetector, freeze_delay * 1000));
+        m_freezeThread = IO::Multithreading::CreateThreadPtr("FreezeDetector", std::bind(&freezeDetector, freeze_delay * 1000));
     }
 
     // Launch the world listener socket
@@ -334,34 +263,37 @@ int Master::Run(std::string const& dumpStoresDir)
         World::StopNow(ERROR_EXIT_CODE);
     }
 
-    world_thread.join(); // <-- This will block until the world stops
+    return true;
+}
+
+// Blocks until the world stops, then tears down; returns the exit code.
+int Master::Run()
+{
+    m_worldThread.join(); // <-- This will block until the world stops
 
     _UnhookSignals(); // Remove signal handling before leaving
 
-    if (freeze_thread)
-        freeze_thread->join();
+    if (m_freezeThread)
+        m_freezeThread->join();
 
-    if (soap_thread)
-        soap_thread->join();
+    if (m_soapThread)
+        m_soapThread->join();
 
     // Set server offline in realmlist
     LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     sWorldSocketMgr.StopWorldNetworking();
 
-    if (remoteAccessServer)
+    if (m_raServer)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Stop remote access...");
-        remoteAccessServer->ClosePortAndStopAcceptingNewConnections();
-        remoteAccessServer.reset();
+        m_raServer->ClosePortAndStopAcceptingNewConnections();
+        m_raServer.reset();
     }
 
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Stop system timers...");
-    sAsyncSystemTimer.RemoveAllTimersAndStopThread();
-
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Stop IO context...");
-    ioCtx->Shutdown();
-    for (std::thread& thread : ioCtxRunners)
+    m_ioCtx->Shutdown();
+    for (std::thread& thread : m_ioRunners)
         thread.join();
 
     // Clean account database before leaving
@@ -376,12 +308,11 @@ int Master::Run(std::string const& dumpStoresDir)
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Closing database connections...");
     CharacterDatabase.StopServer();
     WorldDatabase.StopServer();
-    LoginDatabase.StopServer();
     LogsDatabase.StopServer();
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Halting process...");
 
-    if (cliThread)
+    if (m_cliThread)
     {
 
 #ifdef WIN32
@@ -422,12 +353,24 @@ int Master::Run(std::string const& dumpStoresDir)
 #else
         ::fclose(stdin);
 #endif
-        if (cliThread->joinable())
-            cliThread->join();
+        if (m_cliThread->joinable())
+            m_cliThread->join();
     }
 
     // Exit the process with specified return value
     return World::GetExitCode();
+}
+
+// Reads the realm id from config.
+bool LoadRealmId()
+{
+    realmID = sConfig.GetIntDefault("RealmID", 0);
+    if (!realmID)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Realm ID not defined in configuration file");
+        return false;
+    }
+    return true;
 }
 
 // Reads the realm's name, adding a `realmlist` row from config when the id has none.
@@ -516,22 +459,12 @@ bool StartDB(const std::string& name, Database& database, char const** migration
 // Initialize connection to the databases
 bool Master::_StartDB()
 {
-    // Get the realm Id from the configuration file
-    realmID = sConfig.GetIntDefault("RealmID", 0);
-    if (!realmID)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Realm ID not defined in configuration file");
-        return false;
-    }
-
     if (!StartDB("World", WorldDatabase, MIGRATIONS_WORLD) ||
         !StartDB("Character", CharacterDatabase, MIGRATIONS_CHARACTERS) ||
-        !StartDB("Login", LoginDatabase, MIGRATIONS_LOGON) ||
         !StartDB("Logs", LogsDatabase, MIGRATIONS_LOGS))
     {
         WorldDatabase.HaltDelayThread();
         CharacterDatabase.HaltDelayThread();
-        LoginDatabase.HaltDelayThread();
         LogsDatabase.HaltDelayThread();
         return false;
     }

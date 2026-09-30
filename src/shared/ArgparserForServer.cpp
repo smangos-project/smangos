@@ -2,6 +2,7 @@
 #include "SystemConfig.h"
 #include "Config/Config.h"
 #include "Log.h"
+#include "Util.h"
 
 #include <filesystem>
 
@@ -206,4 +207,57 @@ void CheckCommonConfVersion()
     sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "          unexpected behavior.");
     sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
     Log::WaitBeforeContinueIfNeed();
+}
+
+bool CreateServerPidFile()
+{
+    std::string const pidFile = sConfig.GetStringDefault("PidFile", "");
+    if (pidFile.empty())
+        return true;
+
+    uint32 const pid = CreatePIDFile(pidFile);
+    if (!pid)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Cannot create PID file %s.\n", pidFile.c_str());
+        Log::WaitBeforeContinueIfNeed();
+        return false;
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "Daemon PID: %u\n", pid);
+    return true;
+}
+
+void ApplyProcessSettings()
+{
+#ifdef WIN32
+    HANDLE hProcess = ::GetCurrentProcess();
+
+    uint32 const affinity = sConfig.GetIntDefault("UseProcessors", 0);
+    if (affinity > 0)
+    {
+        ULONG_PTR appAffinity;
+        ULONG_PTR sysAffinity;
+
+        if (::GetProcessAffinityMask(hProcess, &appAffinity, &sysAffinity))
+        {
+            ULONG_PTR const current = affinity & appAffinity; // remove non accessible processors
+
+            if (!current)
+                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Processors marked in UseProcessors bitmask (hex) %x not accessible. Accessible processors bitmask (hex): %x", affinity, uint32(appAffinity));
+            else if (::SetProcessAffinityMask(hProcess, current))
+                sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using processors (bitmask, hex): %x", uint32(current));
+            else
+                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set used processors (hex): %x", uint32(current));
+        }
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
+    }
+
+    if (sConfig.GetBoolDefault("ProcessPriority", false))
+    {
+        if (::SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
+            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "process priority class set to HIGH");
+        else
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set process priority class.");
+    }
+#endif
 }

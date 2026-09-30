@@ -34,6 +34,10 @@
 #include "ArgparserForServer.h"
 
 #include "Crypto/InitializeCrypto.h"
+#include "Bnet/BnetRealmList.h"
+#include "IO/Multithreading/CreateThread.h"
+#include "IO/Timer/AsyncSystemTimer.h"
+#include "migrations_list.h"
 
 #ifdef WIN32
 #include "ServiceWin32.h"
@@ -51,13 +55,7 @@ volatile int m_ServiceStatus = -1;
 #include "PosixDaemon.h"
 #endif
 
-DatabaseDoltLite WorldDatabase;                            // Accessor to the world database
-DatabaseType CharacterDatabase;                             // Accessor to the character database
 DatabaseType LoginDatabase;                                 // Accessor to the realm/login database
-DatabaseType LogsDatabase;                                  // Accessor to the logs database
-
-uint32 realmID;                                             // Id of the realm
-std::string realmName;                                      // Name of the realm
 
 char const* g_mainLogFileName = "Server.log";
 
@@ -134,9 +132,38 @@ extern int main(int argc, char **argv)
     // Set progress bars show mode
     BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", true));
 
-    // and run the 'Master'
-    // TODO: Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
-    return sMaster.Run(args.dumpStoresDir);
+    if (!CreateServerPidFile())
+        return EXIT_FAILURE;
+
+    if (!LoadRealmId() || !StartDB("Login", LoginDatabase, MIGRATIONS_LOGON) || !EnsureRealmRow(realmID))
+    {
+        Log::WaitBeforeContinueIfNeed();
+        LoginDatabase.HaltDelayThread();
+        return EXIT_FAILURE;
+    }
+
+    // Region/battlegroup only matter for the bnet-encoded realm address (bnetserver's own use);
+    // this realm's row (address, port) is all SendConnectToInstance needs.
+    sBnetRealmList.Initialize(1, 1, sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
+
+    ApplyProcessSettings();
+    IO::Multithreading::RenameCurrentThread("mangosd-main");
+
+    if (!sMaster.Start(args.dumpStoresDir))
+    {
+        LoginDatabase.HaltDelayThread();
+        return EXIT_FAILURE;
+    }
+
+#ifndef WIN32
+    detachDaemon();
+#endif
+    LoginDatabase.AllowAsyncTransactions();
+
+    int const exitCode = sMaster.Run();
+    sAsyncSystemTimer.RemoveAllTimersAndStopThread();
+    LoginDatabase.StopServer();
+    return exitCode;
 
     // at sMaster return function exist with codes
     // 0 - normal shutdown
