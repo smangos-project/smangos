@@ -25,6 +25,7 @@
 #include "Common.h"
 #include "Database/DBCStore.h"
 #include "DBCStructure.h"
+#include "Spells/SummonKind.h"
 
 #include <list>
 
@@ -85,6 +86,7 @@ extern SpellCategoriesStore                      sSpellCategoriesStore;
 extern PetFamilySpellsStore                      sPetFamilySpellsStore;
 extern DBCStorage <SpellRadiusEntry>             sSpellRadiusStore;
 extern DBCStorage <SpellRangeEntry>              sSpellRangeStore;
+extern DBCStorage <SummonPropertiesEntry>       sSummonPropertiesStore;
 extern DBCStorage <SpellShapeshiftFormEntry>     sSpellShapeshiftFormStore;
 extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 extern DBCStorage <TalentEntry>                  sTalentStore;

@@ -88,6 +88,7 @@ DBCStorage <SpellDurationEntry> sSpellDurationStore(SpellDurationfmt);
 DBCStorage <SpellFocusObjectEntry> sSpellFocusObjectStore(SpellFocusObjectfmt);
 DBCStorage <SpellRadiusEntry> sSpellRadiusStore(SpellRadiusfmt);
 DBCStorage <SpellRangeEntry> sSpellRangeStore(SpellRangefmt);
+DBCStorage <SummonPropertiesEntry> sSummonPropertiesStore(SummonPropertiesfmt);
 DBCStorage <SpellShapeshiftFormEntry> sSpellShapeshiftFormStore(SpellShapeshiftfmt);
 DBCStorage <StableSlotPricesEntry> sStableSlotPricesStore(StableSlotPricesfmt);
 DBCStorage <TalentEntry> sTalentStore(TalentEntryfmt);
@@ -163,7 +164,7 @@ static void FillLocalizedString(DBCStorage<T>& storage, char const** out, std::s
 
 void LoadDBCStores()
 {
-    uint32 const DBCFilesCount = 40;
+    uint32 const DBCFilesCount = 41;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -516,6 +517,16 @@ void LoadDBCStores()
         e.ID = f[0].GetUInt32();
         e.minRange = f[1].GetFloat();
         e.maxRange = f[2].GetFloat();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSummonPropertiesStore, "dbc_summonproperties", "`ID`, `Control`, `Faction`, `Title`, `Slot`, `Flags1`", [](Field* f, SummonPropertiesEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.Control = f[1].GetUInt32();
+        e.Faction = f[2].GetUInt32();
+        e.Title = f[3].GetUInt32();
+        e.Slot = f[4].GetUInt32();
+        e.Flags = f[5].GetUInt32();
         return e.ID;
     });
     LoadDBCFromWorld(bar, badDbcFiles, sSpellShapeshiftFormStore, "dbc_spellshapeshiftform", "`ID`, `Name_lang`, `Flags`, `CreatureType`", [&](Field* f, SpellShapeshiftFormEntry& e)

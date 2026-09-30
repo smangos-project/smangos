@@ -770,6 +770,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpDBCStore(dir, "SpellFocusObject", sSpellFocusObjectStore);
     ok &= DumpDBCStore(dir, "SpellRadius", sSpellRadiusStore);
     ok &= DumpDBCStore(dir, "SpellRange", sSpellRangeStore);
+    ok &= DumpDBCStore(dir, "SummonProperties", sSummonPropertiesStore);
     ok &= DumpDBCStore(dir, "SpellShapeshiftForm", sSpellShapeshiftFormStore);
     ok &= DumpDBCStore(dir, "StableSlotPrices", sStableSlotPricesStore);
     ok &= DumpDBCStore(dir, "Talent", sTalentStore);
