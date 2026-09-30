@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 26;
+    uint32 const DBCFilesCount = 22;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -268,10 +268,42 @@ void LoadDBCStores(std::string const& dataPath)
         e.Id = f[0].GetUInt32();
         return e.Id;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureDisplayInfoStore, dbcPath, "CreatureDisplayInfo.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureDisplayInfoExtraStore, dbcPath, "CreatureDisplayInfoExtra.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureModelDataStore,   dbcPath, "CreatureModelData.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureFamilyStore,      dbcPath, "CreatureFamily.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sCreatureDisplayInfoStore, "dbc_creaturedisplayinfo", "`ID`, `ModelID`, `ExtendedDisplayInfoID`, `CreatureModelScale`", [](Field* f, CreatureDisplayInfoEntry& e)
+    {
+        e.Displayid = f[0].GetUInt32();
+        e.ModelId = f[1].GetUInt32();
+        e.ExtendedDisplayInfoID = f[2].GetUInt32();
+        e.scale = f[3].GetFloat();
+        return e.Displayid;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sCreatureDisplayInfoExtraStore, "dbc_creaturedisplayinfoextra", "`ID`, `DisplayRaceID`", [](Field* f, CreatureDisplayInfoExtraEntry& e)
+    {
+        e.DisplayExtraId = f[0].GetUInt32();
+        e.Race = f[1].GetUInt32();
+        return e.DisplayExtraId;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sCreatureModelDataStore, "dbc_creaturemodeldata", "`ID`, `Flags`, `ModelScale`, `CollisionHeight`", [&](Field* f, CreatureModelDataEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.flags = f[1].GetUInt32();
+        e.modelName = const_cast<char*>(sCreatureModelDataStore.InternString(""));
+        e.modelScale = f[2].GetFloat();
+        e.collisionHeight = f[3].GetFloat();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sCreatureFamilyStore, "dbc_creaturefamily", "`ID`, `MinScale`, `MinScaleLevel`, `MaxScale`, `MaxScaleLevel`, `SkillLine1`, `SkillLine2`, `PetFoodMask`, `Name_lang`", [&](Field* f, CreatureFamilyEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.minScale = f[1].GetFloat();
+        e.minScaleLevel = f[2].GetUInt32();
+        e.maxScale = f[3].GetFloat();
+        e.maxScaleLevel = f[4].GetUInt32();
+        e.skillLine[0] = f[5].GetUInt32();
+        e.skillLine[1] = f[6].GetUInt32();
+        e.petFoodMask = f[7].GetUInt32();
+        FillLocalizedString(sCreatureFamilyStore, const_cast<char const**>(e.Name), f[8].GetCppString());
+        return e.ID;
+    });
     LoadDBCFromWorld(bar, badDbcFiles, sCreatureTypeStore, "dbc_creaturetype", "`ID`", [](Field* f, CreatureTypeEntry& e)
     {
         e.ID = f[0].GetUInt32();
