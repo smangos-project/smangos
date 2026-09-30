@@ -732,7 +732,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpSQLStore(dir, sCreatureDisplayInfoAddonStorage, -1, "creature_display_info_addon");
     ok &= DumpSQLStore(dir, sGameObjectDisplayInfoAddonStorage, -1, "gameobject_display_info_addon");
     ok &= DumpSQLStore(dir, sPageTextStore);
-    ok &= DumpSQLStore(dir, sMapStorage);
+    ok &= DumpSQLStore(dir, sMapStorage, -1, "map_template");
     ok &= DumpSQLStore(dir, sConditionStorage);
     ok &= DumpSQLStore(dir, sAreaStorage);
     ok &= DumpSQLStore(dir, sMailTemplateStorage, -1, "mail_text_template");

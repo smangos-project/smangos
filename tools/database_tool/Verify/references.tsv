@@ -49,7 +49,7 @@ dbc_itemsubclass	ClassID	dbc_itemclass.ClassID		1
 dbc_journalencounterxmaploc	JournalEncounterID	dbc_journalencounter.ID		756	
 dbc_lfgdungeons	Faction	dbc_faction.ID		54	
 dbc_light	ContinentID	dbc_map.ID		28	
-dbc_map	CorpseMapID	dbc_map.ID		22	
+dbc_map	CorpseMapID	dbc_map.ID		32	
 dbc_map	CosmeticParentMapID	dbc_map.ID		57	
 dbc_map	ParentMapID	dbc_map.ID		56	
 dbc_mapdifficulty	LockID	dbc_lock.ID		6	

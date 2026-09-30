@@ -1272,7 +1272,7 @@ srv	map_template	map_type	dbc	dbc_map.InstanceType	identity	1 difference (data-p
 srv	map_template	linked_zone	server			vmangos-specific; no InstanceType/ExpansionID-shaped DB2 field carries this, overriding evidence.tsv's spurious ExpansionID coincidence	yes
 srv	map_template	player_limit	dbc	dbc_map.MaxPlayers	identity	9 differences (data-plan.md 3.1); DB2's MaxPlayers differences are Classic-era changes (Onyxia and so on), overriding evidence.tsv's spurious MinimapIconScale coincidence	yes
 srv	map_template	reset_delay	server			instance reset timing is server-only logic, no DB2 field	yes
-srv	map_template	ghost_entrance_map	dbc	dbc_map.CorpseMapID	ghost_map_neg1	10 differences; vmangos -1 = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	map_template	ghost_entrance_map	dbc	dbc_map.CorpseMapID	identity	10 differences; vmangos -1 = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
 srv	map_template	ghost_entrance_x	server			DB2 Map has no corpse position fields, only CorpseMapID	yes
 srv	map_template	ghost_entrance_y	server			DB2 Map has no corpse position fields, only CorpseMapID	yes
 srv	map_template	map_name	dbc	dbc_map.MapName_lang	identity	4 differences (data-plan.md 3.1)	yes
