@@ -9432,7 +9432,7 @@ void ObjectMgr::LoadCreatureInvolvedRelations()
 void ObjectMgr::LoadTaxiNodes()
 {
     // Getting the maximum ID.
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT MAX(`id`) FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT MAX(`ID`) FROM `dbc_taxinodes`"));
 
     if (!result)
     {
@@ -9440,7 +9440,7 @@ void ObjectMgr::LoadTaxiNodes()
         bar.step();
 
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 taxi nodes. DB table `taxi_nodes` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 taxi nodes. DB table `dbc_taxinodes` is empty.");
         return;
     }
 
@@ -9448,7 +9448,7 @@ void ObjectMgr::LoadTaxiNodes()
     uint32 maxTaxiNodeEntry = fields[0].GetUInt32() + 1;
 
     // Actually loading the taxi nodes.
-    result = WorldDatabase.PQuery("SELECT * FROM `taxi_nodes` t1 WHERE `build`=(SELECT max(`build`) FROM `taxi_nodes` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD);
+    result = WorldDatabase.Query("SELECT `ID`, `ContinentID`, `Pos1`, `Pos2`, `Pos3`, `Name_lang`, `MountCreatureID1`, `MountCreatureID2` FROM `dbc_taxinodes`");
 
     if (!result)
     {
@@ -9456,7 +9456,7 @@ void ObjectMgr::LoadTaxiNodes()
         bar.step();
 
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 taxi nodes. DB table `taxi_nodes` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 taxi nodes. DB table `dbc_taxinodes` is empty.");
         return;
     }
 
@@ -9473,13 +9473,13 @@ void ObjectMgr::LoadTaxiNodes()
         uint32 nodeId = fields[0].GetUInt32();
 
         taxiNode->ID = nodeId;
-        taxiNode->map_id = fields[2].GetUInt32();
-        taxiNode->x = fields[3].GetFloat();
-        taxiNode->y = fields[4].GetFloat();
-        taxiNode->z = fields[5].GetFloat();
-        taxiNode->name[0] = fields[6].GetCppString();
-        taxiNode->MountCreatureID[0] = fields[7].GetUInt32();
-        taxiNode->MountCreatureID[1] = fields[8].GetUInt32();
+        taxiNode->map_id = fields[1].GetUInt32();
+        taxiNode->x = fields[2].GetFloat();
+        taxiNode->y = fields[3].GetFloat();
+        taxiNode->z = fields[4].GetFloat();
+        taxiNode->name[0] = fields[5].GetCppString();
+        taxiNode->MountCreatureID[0] = fields[6].GetUInt32();
+        taxiNode->MountCreatureID[1] = fields[7].GetUInt32();
 
         m_TaxiNodes[nodeId] = std::move(taxiNode);
 

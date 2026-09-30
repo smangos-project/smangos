@@ -38,7 +38,7 @@ char const CreatureSpellDatafmt[] = "iiiii";
 
 SQLStorage sCreatureDataAddonStorage(CreatureDataAddonInfofmt, "guid", "creature_addon");
 SQLStorage sCreatureDisplayInfoAddonStorage(CreatureDisplayInfoAddonfmt, "display_id", "creature_display_info_addon");
-SQLStorage sGameObjectDisplayInfoAddonStorage(GameObjectDisplayInfoAddonfmt, "display_id", "gameobject_display_info_addon");
+SQLStorage sGameObjectDisplayInfoAddonStorage(GameObjectDisplayInfoAddonfmt, "display_id", "(SELECT `ID` AS `display_id`, `GeoBox1` AS `min_x`, `GeoBox2` AS `min_y`, `GeoBox3` AS `min_z`, `GeoBox4` AS `max_x`, `GeoBox5` AS `max_y`, `GeoBox6` AS `max_z` FROM `dbc_gameobjectdisplayinfo`)");
 SQLStorage sPageTextStore(PageTextfmt, "entry", "page_text");
 SQLStorage sMapStorage(MapEntrysrcfmt, MapEntrydstfmt, "entry", "map_template");
 SQLStorage sConditionStorage(ConditionsSrcFmt, ConditionsDstFmt, "condition_entry", "conditions");

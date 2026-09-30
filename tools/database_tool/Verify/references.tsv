@@ -110,9 +110,9 @@ dbc_spellvisualkitmodelattach	SpellVisualEffectNameID	dbc_spellvisualeffectname.
 dbc_spellvisualkitmodelattach	StartAnimID	dbc_animationdata.ID		4632	
 dbc_spellxdescriptionvariables	SpellDescriptionVariablesID	dbc_spelldescriptionvariables.ID		340	
 dbc_spellxdescriptionvariables	SpellID	dbc_spell.ID		314	
-dbc_taxinodes	MountCreatureID1	dbc_creature.ID		43	
-dbc_taxinodes	MountCreatureID2	dbc_creature.ID		44	
-dbc_taxipath	FromTaxiNode	dbc_taxinodes.ID		1	
+dbc_taxinodes	ContinentID	dbc_map.ID		1	
+dbc_taxinodes	MountCreatureID1	dbc_creature.ID		45	
+dbc_taxinodes	MountCreatureID2	dbc_creature.ID		42	
 dbc_taxipathnode	PathID	dbc_taxipath.ID		99	
 dbc_tiertransition	AnimationTierDataID1	dbc_animationdata.ID		2	
 dbc_tiertransition	AnimationTierDataID2	dbc_animationdata.ID		2	
