@@ -427,7 +427,7 @@ character and log databases (the world database is a DoltLite file):
    (configs from the `.dist` files, the development certificate, a link to the map data). Edit the
    database strings and ports (REST 8091, RPC 1129, world 8095, instance 8096) in
    `.server/config/mangosd.conf` and `bnetserver.conf` once; mangosd adds the realm row itself.
-4. Run `bin\RelWithDebInfonetserver.exe` and `mangosd.exe` with no arguments (both change into `.server`).
+4. Run `bin/RelWithDebInfo/bnetserver.exe` and `mangosd.exe` with no arguments (both change into `.server`).
 5. `account create <name> <password>` on the `mangosd` console provisions each bot account, including
    its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
    commands and the `Accounts` line.
