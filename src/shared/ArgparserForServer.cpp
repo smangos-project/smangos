@@ -1,6 +1,8 @@
 #include "ArgparserForServer.h"
 #include "SystemConfig.h"
 
+#include <filesystem>
+
 // Print out the usage string for this program on the console.
 void printUsage(char const* thisExecutableName)
 {
@@ -8,6 +10,7 @@ void printUsage(char const* thisExecutableName)
     printf(R"END(Usage: %s [<options>]
     -v, --version               print version and exist
     -c, --config <config_file>  use config_file as configuration file
+    --server-dir <dir>          run from dir (default: <source root>/.server)
     --dump-stores <dir>         write the loaded world stores to dir and exit
   Running as service functions:
     -s run                      run as service
@@ -18,6 +21,7 @@ void printUsage(char const* thisExecutableName)
     printf(R"END(Usage: %s [<options>]
     -v, --version               print version and exist
     -c, --config <config_file>  use config_file as configuration file
+    --server-dir <dir>          run from dir (default: <source root>/.server)
     --dump-stores <dir>         write the loaded world stores to dir and exit
   Running as daemon functions:
     -s run                      run as daemon
@@ -35,6 +39,7 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
     ServerStartupArguments args
     {
         ServiceDaemonAction::NotSet,
+        "",
         "",
         ""
     };
@@ -69,6 +74,19 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
             argc--;
 
             args.configFilePath = nextPart;
+        }
+        else if (part == "--server-dir")
+        {
+            if (argc == 0)
+            {
+                printf("Error: Server directory required\n");
+                printUsage(thisExecutableName);
+                return nonstd::make_unexpected(EXIT_FAILURE);
+            }
+
+            args.serverDir = std::string(*argv);
+            argv++;
+            argc--;
         }
         else if (part == "--dump-stores")
         {
@@ -131,4 +149,35 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
     }
 
     return args;
+}
+
+bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfigName)
+{
+    try
+    {
+        std::filesystem::path serverDir = std::filesystem::absolute(args.serverDir.empty() ? std::filesystem::path(_SERVER_DIR_DEFAULT) : std::filesystem::path(args.serverDir)).lexically_normal();
+        if (!std::filesystem::is_directory(serverDir))
+        {
+            fprintf(stderr, "server: %s does not exist; build the server_setup target first\n", serverDir.string().c_str());
+            return false;
+        }
+
+        if (args.configFilePath.empty())
+            args.configFilePath = (serverDir / "config" / defaultConfigName).string();
+        else
+            args.configFilePath = std::filesystem::absolute(args.configFilePath).string();
+
+        if (!args.dumpStoresDir.empty())
+            args.dumpStoresDir = std::filesystem::absolute(args.dumpStoresDir).string();
+
+        std::filesystem::create_directories(serverDir / "logs");
+        std::filesystem::current_path(serverDir);
+        args.serverDir = serverDir.string();
+        return true;
+    }
+    catch (std::filesystem::filesystem_error const& e)
+    {
+        fprintf(stderr, "server: %s\n", e.what());
+        return false;
+    }
 }

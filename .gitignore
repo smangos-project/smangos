@@ -129,6 +129,9 @@ Progression.h
 # database_tool world database and download cache
 .world/*
 
+# runnable server: configs, map data links, logs
+.server/*
+
 # sanitizer builds (ENABLE_ASAN)
 /build-asan/
 /bin-asan/

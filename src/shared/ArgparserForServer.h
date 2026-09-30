@@ -21,7 +21,11 @@ struct ServerStartupArguments
     ServiceDaemonAction inputServiceMode; // will be empty when no mode was set
     std::string configFilePath;
     std::string dumpStoresDir; // mangosd: write the loaded world stores here, then exit
+    std::string serverDir;
 };
+
+/// Makes the paths absolute, fills defaults and changes into the server directory.
+bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfigName);
 
 /// Returns a parsed ServerStartupArguments or exit value
 nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartupArguments(int argc, char** argv);

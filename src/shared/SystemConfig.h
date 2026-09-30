@@ -86,6 +86,11 @@
 # define _BNETSERVER_CONFIG SYSCONFDIR "bnetserver.conf"
 #endif
 
+#ifndef SERVER_SOURCE_DIR
+#  define SERVER_SOURCE_DIR "."
+#endif
+#define _SERVER_DIR_DEFAULT SERVER_SOURCE_DIR "/.server"
+
 #define _FULLVERSION REVISION_HASH " / " REVISION_DATE " / " _ENDIAN_PLATFORM
 
 #define DEFAULT_PLAYER_LIMIT 100

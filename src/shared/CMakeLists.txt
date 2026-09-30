@@ -297,6 +297,7 @@ target_include_directories(shared PUBLIC
   ${ZLIB_INCLUDE_DIRS}
 )
 target_compile_definitions(shared PUBLIC OPENSSL_NO_DEPRECATED) # Disable the usage of deprecated OpenSSL functions
+target_compile_definitions(shared PUBLIC SERVER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 if(WIN32)
   target_include_directories(shared PUBLIC

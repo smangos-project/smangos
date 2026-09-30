@@ -74,8 +74,8 @@ extern int main(int argc, char **argv)
         args = parseResult.value();
     }
 
-    if (args.configFilePath.empty())
-        args.configFilePath = _MANGOSD_CONFIG;
+    if (!EnterServerDirectory(args, "mangosd.conf"))
+        return EXIT_FAILURE;
 
     if (!sConfig.LoadFromFile(args.configFilePath)) // must be done before (linux) service init
     {
