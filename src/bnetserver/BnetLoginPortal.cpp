@@ -268,8 +268,7 @@ BnetHttpResponse HandleSrpChallenge(HttpRequest const& request, PortalContext& c
     if (login.empty() || login.size() > 320 || !BnetAccountStore::NormalizeLogin(login))
         return UnableToDecode();
 
-    // A session already carrying this request's cookie is reused; otherwise this starts one.
-    std::shared_ptr<PortalSession> session = context.session ? context.session : std::make_shared<PortalSession>();
+    std::shared_ptr<PortalSession> session = context.session;
     session->srp.reset();
     session->login = login;
     session->bnetAccountId = 0;
@@ -294,9 +293,6 @@ BnetHttpResponse HandleSrpChallenge(HttpRequest const& request, PortalContext& c
     session->srp = std::make_unique<BnetSRP6>();
     session->srp->Initialize(salt, verifier);
     session->srp->CalculateHostPublicEphemeral();
-
-    if (!context.session)
-        context.newSessionId = CreateSession(session);
 
     return JsonResponse({
         { "version", 1 },
@@ -415,6 +411,11 @@ BnetHttpResponse BnetLoginPortal::Handle(HttpRequest const& request, std::string
     context.clientIp = clientIp;
     context.sessionId = CookieValue(request, SESSION_COOKIE);
     context.session = FindSession(context.sessionId);
+    if (!context.session)
+    {
+        context.session = std::make_shared<PortalSession>();
+        context.newSessionId = CreateSession(context.session);
+    }
 
     BnetHttpResponse response;
     if (method == "GET" && path == "/bnetserver/login/")
@@ -436,7 +437,11 @@ BnetHttpResponse BnetLoginPortal::Handle(HttpRequest const& request, std::string
     }
 
     if (!context.newSessionId.empty())
-        response.headers.push_back({ "Set-Cookie", std::string(SESSION_COOKIE) + "=" + context.newSessionId + "; Path=/; Secure; HttpOnly" });
+    {
+        std::string host = HttpMessage::FindHeader(request.Headers, "host").value_or(std::string());
+        host.erase(std::min(host.find(':'), host.size()));
+        response.headers.push_back({ "Set-Cookie", std::string(SESSION_COOKIE) + "=" + context.newSessionId + "; Path=/bnetserver; Domain=" + host + "; Secure; HttpOnly; SameSite=None" });
+    }
     return response;
 }
 
