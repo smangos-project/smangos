@@ -104,6 +104,19 @@ TEST_CASE("ReadVerifyMapping reads the where line", "[Verify]")
     CHECK(ReadVerifyMapping(path).originalWhere == mapping.originalWhere);
 }
 
+TEST_CASE("ReadVerifyMapping reads extra-rows lines", "[Verify]")
+{
+    VerifyTempDir dir("mapping-extra");
+    std::filesystem::path path = dir.path / "t.sql";
+    WriteVerifyTestFile(path, "-- key: a\n-- extra-rows: disabled events\nSELECT a FROM t;\n");
+
+    VerifyMapping mapping = ReadVerifyMapping(path);
+    CHECK(mapping.allowExtraRows);
+
+    WriteVerifyMapping(path, {}, mapping);
+    CHECK(ReadVerifyMapping(path).allowExtraRows);
+}
+
 TEST_CASE("ReadVerifyMapping reads expect lines", "[Verify]")
 {
     VerifyTempDir dir("mapping-expect");

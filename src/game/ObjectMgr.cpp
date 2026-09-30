@@ -1749,7 +1749,7 @@ void ObjectMgr::LoadEquipmentTemplates()
     m_CreatureEquipmentMap.clear(); // need for reload case
 
     //                                                                0        1              2        3        4
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `probability`, `item1`, `item2`, `item3` FROM `creature_equip_template` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `probability`, `item1`, `item2`, `item3` FROM `creature_equip_template`"));
 
     if (!result)
     {
@@ -2341,8 +2341,8 @@ void ObjectMgr::LoadCreatures(bool reload)
                           "`position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecsmin`, `spawntimesecsmax`, `wander_distance`, "
     //                      14                15              16               17
                           "`health_percent`, `mana_percent`, `movement_type`, `event`,"
-    //                                      18                                     19            20             21                           22                      23
-                          "`pool_creature`.`pool_entry`, `pool_creature_template`.`pool_entry`, `spawn_flags`, `visibility_mod`, `creature`.`patch_min`, `creature`.`patch_max`  "
+    //                                      18                                     19            20             21
+                          "`pool_creature`.`pool_entry`, `pool_creature_template`.`pool_entry`, `spawn_flags`, `visibility_mod` "
                           "FROM `creature` "
                           "LEFT OUTER JOIN `game_event_creature` ON `creature`.`guid` = `game_event_creature`.`guid` "
                           "LEFT OUTER JOIN `pool_creature` ON `creature`.`guid` = `pool_creature`.`guid` "
@@ -2371,26 +2371,12 @@ void ObjectMgr::LoadCreatures(bool reload)
         float curmana       = fields[15].GetFloat();
         uint32 spawnFlags   = fields[20].GetUInt32();
         bool is_dead        = spawnFlags & SPAWN_FLAG_DEAD;
-        uint8 patch_min     = fields[22].GetUInt8();
-        uint8 patch_max     = fields[23].GetUInt8();
-        bool existsInPatch  = true;
 
         if (!first_entry)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature` has creature (GUID: %u) with non existing creature entry %u, skipped.", guid, first_entry);
             continue;
         }
-
-        if ((patch_min > patch_max) || (patch_max > 10))
-        {
-            sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature` GUID %u (entry %u) has invalid values patch_min=%u, patch_max=%u.", guid, first_entry, patch_min, patch_max);
-            sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "UPDATE `creature` SET `patch_min`=0, `patch_max`=10 WHERE `guid`=%u AND `id`=%u;", guid, first_entry);
-            patch_min = 0;
-            patch_max = 10;
-        }
-
-        if (!((sWorld.GetWowPatch() >= patch_min) && (sWorld.GetWowPatch() <= patch_max)))
-            existsInPatch = false;
 
         bool skip = false;
         for (int i = 0; i < MAX_CREATURE_IDS_PER_SPAWN; i++)
@@ -2400,11 +2386,8 @@ void ObjectMgr::LoadCreatures(bool reload)
                 CreatureInfo const* cInfo = GetCreatureTemplate(entry);
                 if (!cInfo)
                 {
-                    if (existsInPatch) // don't print error when it is not loaded for the current patch
-                    {
-                        sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature` has creature (GUID: %u) with non existing creature entry %u, skipped.", guid, entry);
-                        sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "DELETE FROM `creature` WHERE `guid`=%u;", guid);
-                    }
+                    sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature` has creature (GUID: %u) with non existing creature entry %u, skipped.", guid, entry);
+                    sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "DELETE FROM `creature` WHERE `guid`=%u;", guid);
                     skip = true;
                     break;
                 }
@@ -2476,9 +2459,6 @@ void ObjectMgr::LoadCreatures(bool reload)
             continue;
         }
 
-        if (!existsInPatch)
-            data.spawn_flags |= SPAWN_FLAG_DISABLED;
-
         if (data.spawntimesecsmax < data.spawntimesecsmin)
         {
             sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `creature` have creature (GUID: %u Entry: %u) with `spawntimesecsmax` (%u) value lower than `spawntimesecsmin` (%u), it will be adjusted to %u.",
@@ -2511,7 +2491,7 @@ void ObjectMgr::LoadCreatures(bool reload)
             }
         }
 
-        if (!alreadyPresent && existsInPatch && gameEvent == 0 && GuidPoolId == 0 && EntryPoolId == 0) // if not this is to be managed by GameEvent System or Pool system
+        if (!alreadyPresent && gameEvent == 0 && GuidPoolId == 0 && EntryPoolId == 0) // if not this is to be managed by GameEvent System or Pool system
             AddCreatureToGrid(guid, &data);
     }
     while (result->NextRow());
@@ -2546,8 +2526,8 @@ void ObjectMgr::LoadGameobjects(bool reload)
     std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `gameobject`.`guid`, `gameobject`.`id`, `map`, `position_x`, `position_y`, `position_z`, `orientation`,"
     //                      7            8            9            10           11                12              13       14      15
                           "`rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecsmin`, `spawntimesecsmax`, `animprogress`, `state`, `event`, "
-    //                                        16                                       17            18             19                             20                        21
-                          "`pool_gameobject`.`pool_entry`, `pool_gameobject_template`.`pool_entry`, `spawn_flags`, `visibility_mod`, `gameobject`.`patch_min`, `gameobject`.`patch_max` "
+    //                                        16                                       17            18             19
+                          "`pool_gameobject`.`pool_entry`, `pool_gameobject_template`.`pool_entry`, `spawn_flags`, `visibility_mod` "
                           "FROM `gameobject` "
                           "LEFT OUTER JOIN `game_event_gameobject` ON `gameobject`.`guid` = `game_event_gameobject`.`guid` "
                           "LEFT OUTER JOIN `pool_gameobject` ON `gameobject`.`guid` = `pool_gameobject`.`guid` "
@@ -2572,20 +2552,6 @@ void ObjectMgr::LoadGameobjects(bool reload)
 
         uint32 guid         = fields[ 0].GetUInt32();
         uint32 entry        = fields[ 1].GetUInt32();
-        uint8 patch_min     = fields[20].GetUInt8();
-        uint8 patch_max     = fields[21].GetUInt8();
-
-        if ((patch_min > patch_max) || (patch_max > 10))
-        {
-            sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `gameobject` GUID %u (entry %u) has invalid values patch_min=%u, patch_max=%u.", guid, entry, patch_min, patch_max);
-            sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "UPDATE gameobject SET patch_min=0, patch_max=10 WHERE guid=%u AND id=%u;", guid, entry);
-            patch_min = 0;
-            patch_max = 10;
-        }
-
-        if (!((sWorld.GetWowPatch() >= patch_min) && (sWorld.GetWowPatch() <= patch_max)))
-            continue;
-
         GameObjectInfo const* gInfo = GetGameObjectTemplate(entry);
         if (!gInfo)
         {
@@ -4693,7 +4659,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Load playercreateinfo_spell
     {
         //                                                                0       1        2
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `race`, `class`, `spell` FROM `playercreateinfo_spell` WHERE %u BETWEEN `build_min` AND `build_max`", SUPPORTED_CLIENT_BUILD));
+        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `race`, `class`, `spell` FROM `playercreateinfo_spell`"));
 
         uint32 count = 0;
 
@@ -6419,7 +6385,7 @@ void ObjectMgr::LoadQuestLocales()
 void ObjectMgr::LoadCreatureCharmSpells()
 {
     //                                                                0        1       2               3           4               5
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `slot`, `availability`, `spell_id`, `cooldown_min`, `cooldown_max` FROM `creature_charm_spells` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `slot`, `availability`, `spell_id`, `cooldown_min`, `cooldown_max` FROM `creature_charm_spells`"));
     if (!result)
     {
         BarGoLink bar(1);
@@ -6489,7 +6455,7 @@ void ObjectMgr::LoadCreatureCharmSpells()
 
 void ObjectMgr::LoadPetCreateSpells()
 {
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `spell1`, `spell2`, `spell3`, `spell4` FROM `petcreateinfo_spell` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `entry`, `spell1`, `spell2`, `spell3`, `spell4` FROM `petcreateinfo_spell`"));
     if (!result)
     {
         BarGoLink bar(1);
@@ -7263,7 +7229,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
 {
     m_TavernAreaTriggerSet.clear();                          // need for reload case
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id` FROM `areatrigger_tavern` WHERE `patch_min` <= %u", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `id` FROM `areatrigger_tavern`"));
 
     uint32 count = 0;
 
@@ -7491,7 +7457,7 @@ void ObjectMgr::LoadGraveyardZones()
 {
     m_GraveYardMap.clear();                                  // need for reload case
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `ghost_zone`, `faction` FROM `game_graveyard_zone` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `ghost_zone`, `faction` FROM `game_graveyard_zone`"));
 
     uint32 count = 0;
 
@@ -9311,7 +9277,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelationsMap& map, char const* tab
 
     uint32 count = 0;
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `quest` FROM %s WHERE %u BETWEEN `patch_min` AND `patch_max`", table, sWorld.GetWowPatch()));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `quest` FROM %s", table));
 
     if (!result)
     {
@@ -9500,7 +9466,7 @@ void ObjectMgr::LoadTaxiPathTransitions()
 
     uint32 count = 0;
 
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `in_path`, `out_path`, `in_node`, `out_node` FROM `taxi_path_transitions` WHERE `build_min` <= %u", SUPPORTED_CLIENT_BUILD));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `in_path`, `out_path`, `in_node`, `out_node` FROM `taxi_path_transitions`"));
 
     if (!result)
     {
@@ -10783,7 +10749,7 @@ void ObjectMgr::LoadTrainers(char const* tableName, bool isTemplates)
         } while (result->NextRow());
     }
 
-    result = WorldDatabase.PQuery("SELECT `entry`, `spell`, `spellcost`, `reqskill`, `reqskillvalue`, `reqlevel` FROM %s WHERE %u BETWEEN `build_min` AND `build_max`", tableName, SUPPORTED_CLIENT_BUILD);
+    result = WorldDatabase.PQuery("SELECT `entry`, `spell`, `spellcost`, `reqskill`, `reqskillvalue`, `reqlevel` FROM %s", tableName);
 
     if (!result)
     {

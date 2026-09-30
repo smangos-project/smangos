@@ -3,6 +3,5 @@ SELECT "in_path",
        "out_path",
        "in_node",
        "out_node",
-       "comment",
-       "build_min"
+       "comment"
 FROM "taxi_path_transitions"

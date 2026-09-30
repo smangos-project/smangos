@@ -1,5 +1,4 @@
 -- key: id
 SELECT "id",
-       "name",
-       "patch_min"
+       "name"
 FROM "areatrigger_tavern"

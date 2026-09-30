@@ -13,12 +13,13 @@ struct VerifyMapping
 {
     std::vector<std::string> key;
     std::string select;
+    bool allowExtraRows = false; // the world keeps rows the original never had
     std::string originalWhere; // limits the original's rows, for rows the server never loaded
     std::map<std::string, std::string> originalExpressions; // column -> expression evaluated on the original's row instead of the stored value
 };
 
 // A "-- key: a, b" line names the key (empty or absent: every column), a "-- where: <condition>" line
-// limits the original's rows and "-- expect: <column> = <expression>" replaces a column's
+// limits the original's rows, "-- extra-rows: <reason>" lets the world hold rows the original lacks and "-- expect: <column> = <expression>" replaces a column's
 // value on the original's side; other "--" lines are
 // comments; the rest is the SELECT. Throws when the file can't be read.
 VerifyMapping ReadVerifyMapping(std::filesystem::path const& path);

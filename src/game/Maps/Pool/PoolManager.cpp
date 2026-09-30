@@ -667,7 +667,7 @@ bool CheckPoolAndChance(char const* table, uint16 pool_id, float chance)
 
 void PoolManager::LoadFromDB()
 {
-    std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT MAX(`entry`) FROM `pool_template` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch());
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT MAX(`entry`) FROM `pool_template`");
     if (!result)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Table pool_template is empty.");
@@ -682,7 +682,7 @@ void PoolManager::LoadFromDB()
 
     m_poolTemplate.resize(m_maxPoolId + 1);
 
-    result = WorldDatabase.PQuery("SELECT `entry`, `max_limit`, `flags`, `description`, `instance` FROM `pool_template` WHERE %u BETWEEN `patch_min` AND `patch_max`", sWorld.GetWowPatch());
+    result = WorldDatabase.Query("SELECT `entry`, `max_limit`, `flags`, `description`, `instance` FROM `pool_template`");
     if (!result)
     {
         m_poolTemplate.clear();
@@ -728,11 +728,11 @@ void PoolManager::LoadFromDB()
     m_poolCreatureGroups.resize(m_maxPoolId + 1);
     m_creatureSearchMap.clear();
 
-    result = WorldDatabase.PQuery(
-            "SELECT `guid`, `pool_entry`, `chance`, 0, `flags`, `patch_min`, `patch_max` FROM `pool_creature` WHERE %u BETWEEN `patch_min` AND `patch_max` "
+    result = WorldDatabase.Query(
+            "SELECT `guid`, `pool_entry`, `chance`, 0, `flags` FROM `pool_creature` "
             "UNION "
-            " SELECT `guid`, `pool_entry`, `chance`, `pool_creature_template`.`id`, `pool_creature_template`.`flags`, `pool_creature_template`.`patch_min`, `pool_creature_template`.`patch_max` "
-            "FROM `pool_creature_template` LEFT JOIN `creature` ON `creature`.`id` = `pool_creature_template`.`id`;", sWorld.GetWowPatch());
+            " SELECT `guid`, `pool_entry`, `chance`, `pool_creature_template`.`id`, `pool_creature_template`.`flags` "
+            "FROM `pool_creature_template` LEFT JOIN `creature` ON `creature`.`id` = `pool_creature_template`.`id`;");
 
     count = 0;
     if (!result)
@@ -758,12 +758,6 @@ void PoolManager::LoadFromDB()
             float chance   = fields[2].GetFloat();
             uint32 entry_id= fields[3].GetUInt32();
             uint32 flags   = fields[4].GetUInt32();
-            uint32 patch_min = fields[5].GetUInt8();
-            uint32 patch_max = fields[6].GetUInt8();
-
-            if ((patch_min > sWorld.GetWowPatch()) || (patch_max < sWorld.GetWowPatch()))
-                continue;
-
             char const* table = entry_id ? "pool_creature_template" : "pool_creature";
 
             CreatureData const* data = sObjectMgr.GetCreatureData(guid);
@@ -815,11 +809,11 @@ void PoolManager::LoadFromDB()
     // Gameobjects (guids and entries)
     m_poolGameObjectGroups.resize(m_maxPoolId + 1);
     m_gameObjectSearchMap.clear();
-    //                                     0       1             2        3   4        5            6
-    result = WorldDatabase.PQuery("SELECT `guid`, `pool_entry`, `chance`, 0, `flags`, `patch_min`, `patch_max` FROM `pool_gameobject` WHERE (%u BETWEEN `patch_min` AND `patch_max`) "
+    //                                     0       1             2        3   4
+    result = WorldDatabase.Query("SELECT `guid`, `pool_entry`, `chance`, 0, `flags` FROM `pool_gameobject` "
         "UNION "
-        "SELECT `guid`, `pool_entry`, `chance`, `pool_gameobject_template`.`id`, `pool_gameobject_template`.`flags`, `pool_gameobject_template`.`patch_min`, `pool_gameobject_template`.`patch_max` "
-        "FROM `pool_gameobject_template` LEFT JOIN `gameobject` ON `gameobject`.`id` = `pool_gameobject_template`.`id`", sWorld.GetWowPatch());
+        "SELECT `guid`, `pool_entry`, `chance`, `pool_gameobject_template`.`id`, `pool_gameobject_template`.`flags` "
+        "FROM `pool_gameobject_template` LEFT JOIN `gameobject` ON `gameobject`.`id` = `pool_gameobject_template`.`id`");
 
     count = 0;
     if (!result)
@@ -845,12 +839,6 @@ void PoolManager::LoadFromDB()
             float chance   = fields[2].GetFloat();
             uint32 entry_id= fields[3].GetUInt32();
             uint32 flags   = fields[4].GetUInt32();
-            uint32 patch_min = fields[5].GetUInt8();
-            uint32 patch_max = fields[6].GetUInt8();
-
-            if ((patch_min > sWorld.GetWowPatch()) || (patch_max < sWorld.GetWowPatch()))
-                continue;
-
             char const* table = entry_id ? "pool_gameobject_template" : "pool_gameobject";
 
             GameObjectData const* data = sObjectMgr.GetGOData(guid);

@@ -55,7 +55,7 @@ void LoadRandomEnchantmentsTable()
     uint32 entry, ench;
     uint32 count = 0;
 
-    std::unique_ptr<QueryResult> result = WorldDatabase.PQuery("SELECT entry, ench, chance FROM item_enchantment_template WHERE ((%u >= patch_min) AND (%u <= patch_max))", sWorld.GetWowPatch(), sWorld.GetWowPatch());
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
 
     if (result)
     {

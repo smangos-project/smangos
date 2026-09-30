@@ -180,7 +180,7 @@ void GameEventMgr::LoadFromDB()
         mGameEvent.resize(max_event_id + 1);
     }
 
-    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT entry,CAST(strftime('%s',start_time,'utc') AS INTEGER),CAST(strftime('%s',end_time,'utc') AS INTEGER),occurence,length,holiday,description,hardcoded,disabled,patch_min,patch_max FROM game_event");
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT entry,CAST(strftime('%s',start_time,'utc') AS INTEGER),CAST(strftime('%s',end_time,'utc') AS INTEGER),occurence,length,holiday,description,hardcoded,disabled FROM game_event");
     if (!result)
     {
         mGameEvent.clear();
@@ -225,20 +225,6 @@ void GameEventMgr::LoadFromDB()
             pGameEvent.description  = fields[6].GetCppString();
             pGameEvent.hardcoded    = fields[7].GetUInt8();
             pGameEvent.disabled     = fields[8].GetUInt8();
-            uint8 patch_min         = fields[9].GetUInt8();
-            uint8 patch_max         = fields[10].GetUInt8();
-
-            if ((patch_min > patch_max) || (patch_max > 10))
-            {
-                sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Table `game_event` game event id (%i) has invalid values patch_min=%u, patch_max=%u.", event_id, patch_min, patch_max);
-                sLog.Out(LOG_DBERRFIX, LOG_LVL_MINIMAL, "UPDATE game_event SET patch_min=0, patch_max=10 WHERE entry=%u;", event_id);
-                patch_min = 0;
-                patch_max = 10;
-            }
-
-            if (!((sWorld.GetWowPatch() >= patch_min) && (sWorld.GetWowPatch() <= patch_max)))
-                pGameEvent.disabled = 1;
-
             // Leap days are needed to adjust yearly events
             if (pGameEvent.occurence == default_year_length && pGameEvent.length < default_year_length)
             {
@@ -442,7 +428,7 @@ void GameEventMgr::LoadFromDB()
     mGameEventCreatureData.resize(mGameEvent.size());
     //                                     0       1        2             3               4           5              6
     result = WorldDatabase.PQuery("SELECT `guid`, `event`, `display_id`, `equipment_id`, `entry_id`, `spell_start`, `spell_end` "
-                                  "FROM `game_event_creature_data` t1 WHERE `patch`=(SELECT max(`patch`) FROM `game_event_creature_data` t2 WHERE t1.`guid`=t2.`guid` AND t1.`event`=t2.`event` AND `patch` <= %u)", sWorld.GetWowPatch());
+                                  "FROM `game_event_creature_data`");
 
     count = 0;
     if (!result)
@@ -531,7 +517,7 @@ void GameEventMgr::LoadFromDB()
 
     mGameEventQuests.resize(mGameEvent.size());
 
-    result = WorldDatabase.PQuery("SELECT quest, event FROM game_event_quest WHERE patch_min <= %u", sWorld.GetWowPatch());
+    result = WorldDatabase.Query("SELECT quest, event FROM game_event_quest");
 
     count = 0;
     if (!result)

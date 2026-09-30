@@ -1,5 +1,4 @@
 -- key: quest, event
 SELECT "quest",
-       "event",
-       "patch_min"
+       "event"
 FROM "game_event_quest"

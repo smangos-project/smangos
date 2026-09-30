@@ -58,6 +58,8 @@ VerifyMapping ReadVerifyMapping(std::filesystem::path const& path)
             std::string comment = Trim(trimmed.substr(2));
             if (comment.rfind("key:", 0) == 0)
                 mapping.key = SplitTrimmed(comment.substr(4), ',');
+            else if (comment.rfind("extra-rows:", 0) == 0)
+                mapping.allowExtraRows = true;
             else if (comment.rfind("where:", 0) == 0)
                 mapping.originalWhere = Trim(comment.substr(6));
             else if (comment.rfind("expect:", 0) == 0)
@@ -89,6 +91,8 @@ void WriteVerifyMapping(std::filesystem::path const& path, std::string const& he
     for (size_t i = 0; i < mapping.key.size(); ++i)
         out << (i ? ", " : " ") << mapping.key[i];
     out << "\n";
+    if (mapping.allowExtraRows)
+        out << "-- extra-rows: kept\n";
     if (!mapping.originalWhere.empty())
         out << "-- where: " << mapping.originalWhere << "\n";
     for (auto const& [column, expression] : mapping.originalExpressions)
@@ -217,8 +221,9 @@ static void ReportCompare(VerifyResult& result, std::string const& check, std::s
 // Checks a mapping's columns against the original's, then compares the rows.
 static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::string const& check,
                               std::string const& originalTable, std::filesystem::path const& mappingPath,
-                              VerifyTableRules const& rules)
+                              VerifyTableRules const& baseRules)
 {
+    VerifyTableRules rules = baseRules;
     VerifyMapping mapping;
     std::vector<std::string> mappingColumns;
     try
@@ -233,6 +238,8 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
         result.problems.push_back({ check, originalTable, mappingPath.filename().string() + ": " + e.what() });
         return;
     }
+
+    rules.allowExtraRows = rules.allowExtraRows || mapping.allowExtraRows;
 
     std::vector<VerifyTableColumn> originalColumns = ReadTableColumns(db, "ref", originalTable);
     size_t next = 0;

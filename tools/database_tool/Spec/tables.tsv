@@ -47,7 +47,7 @@ exploration_basexp	server	level	srv:exploration_basexp
 faction	gone			dbc_faction		every column is a Faction column, 0 differences (plan.md 10.2)
 faction_template	gone			dbc_factiontemplate		every column is a FactionTemplate column, 8 cells differ (plan.md 10.2)
 fishing_loot_template	server	entry, item	srv:fishing_loot_template			
-forbidden_items	server	entry, after_or_before	srv:forbidden_items			
+forbidden_items	server	entry	srv:forbidden_items			
 game_event	server	entry	srv:game_event			
 game_event_creature	server	guid, event	srv:game_event_creature			
 game_event_creature_data	server	guid, event	srv:game_event_creature_data			
