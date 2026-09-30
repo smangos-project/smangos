@@ -97,7 +97,7 @@ extern DBCStorage <TransportAnimationEntry> sTransportAnimationStore;
 extern DBCStorage <WMOAreaTableEntry>            sWMOAreaTableStore;
 //extern DBCStorage <WorldMapOverlayEntry>         sWorldMapOverlayStore;
 
-void LoadDBCStores(std::string const& dataPath);
+void LoadDBCStores();
 
 char const* GetUnitRaceName(uint8 race, uint8 locale);
 char const* GetUnitClassName(uint8 class_, uint8 locale);

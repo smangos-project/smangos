@@ -130,50 +130,6 @@ std::string AcceptableClientBuildsListStr()
     return data.str();
 }
 
-static bool LoadDBC_assert_print(uint32 fsize, uint32 rsize, std::string const& filename)
-{
-    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
-
-    // ASSERT must fail after function call
-    return false;
-}
-
-template<class T>
-inline void LoadDBC(uint32& availableDbcLocales, BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, std::string const& dbc_path, std::string const& filename)
-{
-    // compatibility format and C++ structure sizes
-    MANGOS_ASSERT(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()), sizeof(T), filename));
-
-    std::string dbc_filename = dbc_path + filename;
-    if (storage.Load(dbc_filename.c_str()))
-    {
-        bar.step();
-        for (uint8 i = 0; fullLocaleNameList[i].name; ++i)
-        {
-            if (!(availableDbcLocales & (1 << i)))
-                continue;
-
-            std::string dbc_filename_loc = dbc_path + fullLocaleNameList[i].name + "/" + filename;
-            if (!storage.LoadStringsFrom(dbc_filename_loc.c_str()))
-                availableDbcLocales &= ~(1 << i);           // mark as not available for speedup next checks
-        }
-    }
-    else
-    {
-        // sort problematic dbc to (1) non compatible and (2) nonexistent
-        FILE* f = fopen(dbc_filename.c_str(), "rb");
-        if (f)
-        {
-            char buf[100];
-            snprintf(buf, 100, " (exist, but have %d fields instead " SIZEFMTD ") Wrong client version DBC file?", storage.GetFieldCount(), strlen(storage.GetFormat()));
-            errlist.push_back(dbc_filename + buf);
-            fclose(f);
-        }
-        else
-            errlist.push_back(dbc_filename);
-    }
-}
-
 template<class T, class Fill>
 static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, char const* table, char const* columns, Fill fill, char const* orderBy = "")
 {
@@ -205,18 +161,13 @@ static void FillLocalizedString(DBCStorage<T>& storage, char const** out, std::s
         out[i] = "";
 }
 
-void LoadDBCStores(std::string const& dataPath)
+void LoadDBCStores()
 {
-    std::string dbcPath = dataPath + "dbc/";
-
-    uint32 const DBCFilesCount = 10;
+    uint32 const DBCFilesCount = 40;
 
     BarGoLink bar(DBCFilesCount);
 
     StoreProblemList badDbcFiles;
-
-    // bitmask for index of fullLocaleNameList
-    uint32 availableDbcLocales = 0xFFFFFFFF;
 
     LoadDBCFromWorld(bar, badDbcFiles, sAuctionHouseStore, "dbc_auctionhouse", "`ID`, `FactionID`, `DepositRate`, `ConsignmentRate`", [](Field* f, AuctionHouseEntry& e)
     {
@@ -350,7 +301,6 @@ void LoadDBCStores(std::string const& dataPath)
         return e.ID;
     });
 #endif
-    //LoadDBC(availableDbcLocales,bar,badDbcFiles,sItemDisplayInfoStore,     dbcPath,"ItemDisplayInfo.dbc");     -- not used currently
     LoadDBCFromWorld(bar, badDbcFiles, sItemRandomPropertiesStore, "dbc_itemrandomproperties", "`ID`, `Name_lang`, `Enchantment1`, `Enchantment2`, `Enchantment3`", [&](Field* f, ItemRandomPropertiesEntry& e)
     {
         e.ID = f[0].GetUInt32();
@@ -402,8 +352,22 @@ void LoadDBCStores(std::string const& dataPath)
         return e.ID;
     });
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sNamesProfanityStore,      dbcPath, "NamesProfanity.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sNamesReservedStore,       dbcPath, "NamesReserved.dbc");
+    {
+        uint32 index = 0;
+        LoadDBCFromWorld(bar, badDbcFiles, sNamesProfanityStore, "dbc_namesprofanity", "`Name`", [&](Field* f, NamesProfanityEntry& e)
+        {
+            e.Name = sNamesProfanityStore.InternString(f[0].GetCppString());
+            return index++;
+        }, "ORDER BY `ID`");
+    }
+    {
+        uint32 index = 0;
+        LoadDBCFromWorld(bar, badDbcFiles, sNamesReservedStore, "dbc_namesreserved", "`Name`", [&](Field* f, NamesReservedEntry& e)
+        {
+            e.Name = sNamesReservedStore.InternString(f[0].GetCppString());
+            return index++;
+        }, "ORDER BY `ID`");
+    }
     for (uint32 i = 0; i < sNamesProfanityStore.GetNumRows(); ++i)
     {
         NamesProfanityEntry const* namesProfanity = sNamesProfanityStore.LookupEntry(i);
@@ -602,14 +566,35 @@ void LoadDBCStores(std::string const& dataPath)
         return e.TalentTabID;
     });
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sTaxiPathStore,            dbcPath, "TaxiPath.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sTaxiPathStore, "dbc_taxipath", "`ID`, `FromTaxiNode`, `ToTaxiNode`, `Cost`", [](Field* f, TaxiPathEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.from = f[1].GetUInt32();
+        e.to = f[2].GetUInt32();
+        e.price = f[3].GetUInt32();
+        return e.ID;
+    });
     for (uint32 i = 1; i < sTaxiPathStore.GetNumRows(); ++i)
         if (TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(i))
             sTaxiPathSetBySource[entry->from][entry->to] = TaxiPathBySourceAndDestination(entry->ID, entry->price);
     uint32 pathCount = sTaxiPathStore.GetNumRows();
 
     //## TaxiPathNode.dbc ## Loaded only for initialization different structures
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sTaxiPathNodeStore,        dbcPath, "TaxiPathNode.dbc");
+    {
+        uint32 index = 0;
+        LoadDBCFromWorld(bar, badDbcFiles, sTaxiPathNodeStore, "dbc_taxipathnode", "`PathID`, `NodeIndex`, `ContinentID`, `Loc1`, `Loc2`, `Loc3`, `Flags`, `Delay`", [&](Field* f, TaxiPathNodeEntry& e)
+        {
+            e.path = f[0].GetUInt32();
+            e.index = f[1].GetUInt32();
+            e.mapid = f[2].GetUInt32();
+            e.x = f[3].GetFloat();
+            e.y = f[4].GetFloat();
+            e.z = f[5].GetFloat();
+            e.actionFlag = f[6].GetUInt32();
+            e.delay = f[7].GetUInt32();
+            return index++;
+        }, "ORDER BY `ID`");
+    }
     // Calculate path nodes count
     std::vector<uint32> pathLength;
     pathLength.resize(pathCount);                           // 0 and some other indexes not used
@@ -680,33 +665,34 @@ void LoadDBCStores(std::string const& dataPath)
         return f[0].GetUInt32();
     });
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sWMOAreaTableStore,        dbcPath, "WMOAreaTable.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sWMOAreaTableStore, "dbc_wmoareatable", "`ID`, `WMOID`, `NameSetID`, `WMOGroupID`, `Flags`, `AreaTableID`", [](Field* f, WMOAreaTableEntry& e)
+    {
+        e.Id = f[0].GetUInt32();
+        e.rootId = static_cast<int32>(f[1].GetUInt32());
+        e.adtId = static_cast<int32>(f[2].GetUInt32());
+        e.groupId = static_cast<int32>(f[3].GetUInt32());
+        e.Flags = f[4].GetUInt32();
+        e.areaId = f[5].GetUInt32();
+        return e.Id;
+    });
     for (uint32 i = 0; i < sWMOAreaTableStore.GetNumRows(); ++i)
     {
         if (WMOAreaTableEntry const* entry = sWMOAreaTableStore.LookupEntry(i))
             sWMOAreaInfoByTripple.insert({ WMOAreaTableTripple(entry->rootId, entry->adtId, entry->groupId), entry });
     }
-    //LoadDBC(availableDbcLocales,bar,badDbcFiles,sWorldMapOverlayStore,     dbcPath,"WorldMapOverlay.dbc");
 
     for (uint32 i = 0; i < sSkillRaceClassInfoStore.GetNumRows(); ++i)
         if (SkillRaceClassInfoEntry const* entry = sSkillRaceClassInfoStore.LookupEntry(i))
             if (sSkillLineStore.LookupEntry(entry->skillId))
                 SkillRaceClassInfoBySkill.insert(SkillRaceClassInfoMap::value_type(entry->skillId, entry));
 
-    // error checks
-    if (badDbcFiles.size() >= DBCFilesCount)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "\nIncorrect DataDir value in mangosd.conf or ALL required *.dbc files (%d) not found by path: %sdbc", DBCFilesCount, dataPath.c_str());
-        Log::WaitBeforeContinueIfNeed();
-        exit(1);
-    }
-    else if (!badDbcFiles.empty())
+    if (!badDbcFiles.empty())
     {
         std::string str;
         for (const auto& bad_dbc_file : badDbcFiles)
-            str += bad_dbc_file + "\n";
+            str += bad_dbc_file + '\n';
 
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "\nSome required *.dbc files (%u from %d) not found or not compatible:\n%s", (uint32)badDbcFiles.size(), DBCFilesCount, str.c_str());
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "\nSome required data stores (%u from %d) could not be loaded from the world database:\n%s", (uint32)badDbcFiles.size(), DBCFilesCount, str.c_str());
         Log::WaitBeforeContinueIfNeed();
         exit(1);
     }
