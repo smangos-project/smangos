@@ -38,7 +38,6 @@
 #include "CharacterDatabaseCache.h"
 #include "AuraRemovalMgr.h"
 #include "AutoBroadCastMgr.h"
-#include "SpellModMgr.h"
 #include "MapManager.h"
 #include "CreatureGroups.h"
 #include "HardcodedEvents.h"
@@ -968,7 +967,7 @@ bool ChatHandler::HandleReloadAllScriptsCommand(char* /*args*/)
 
 bool ChatHandler::HandleReloadAllSpellCommand(char* /*args*/)
 {
-    HandleReloadSpellTemplateCommand((char*)"a");
+    HandleReloadSpellsCommand((char*)"a");
     HandleReloadSpellAreaCommand((char*)"a");
     HandleReloadSpellChainCommand((char*)"a");
     HandleReloadSpellElixirCommand((char*)"a");
@@ -1422,13 +1421,11 @@ bool ChatHandler::HandleReloadSpellTargetPositionCommand(char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleReloadSpellTemplateCommand(char* /*args*/)
+bool ChatHandler::HandleReloadSpellsCommand(char* /*args*/)
 {
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Re-Loading Spell Definitions...");
     sSpellMgr.LoadSpells();
-    SendSysMessage("DB table `spell_template` reloaded.");
-    sSpellModMgr.LoadSpellMods();
-    SendSysMessage("DB table `spell_mod` reloaded.");
+    SendSysMessage("Spell definitions reloaded.");
     HandleReloadSpellTagCommand((char*)"a");
     HandleReloadSpellStackKeyCommand((char*)"a");
     return true;
@@ -1937,13 +1934,6 @@ bool ChatHandler::HandleReloadAutoBroadcastCommand(char *args)
 {
     sAutoBroadCastMgr.Load();
     SendSysMessage("DB table `autobroadcast` reloaded.");
-    return true;
-}
-
-bool ChatHandler::HandleReloadSpellModsCommand(char *args)
-{
-    sSpellModMgr.LoadSpellMods();
-    SendSysMessage("DB table `spell_mod` reloaded.");
     return true;
 }
 

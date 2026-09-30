@@ -656,10 +656,10 @@ class SpellEntry
         uint32    EffectChainTarget[MAX_EFFECT_INDEX] = {};        // 103-105
         uint64    EffectItemType[MAX_EFFECT_INDEX] = {};           // 106-108
         int32     EffectMiscValue[MAX_EFFECT_INDEX] = {};          // 109-111
+        int32     EffectMiscValueB[MAX_EFFECT_INDEX] = {};         // SummonProperties id on summon effects
         uint32    EffectTriggerSpell[MAX_EFFECT_INDEX] = {};       // 112-114
         float     EffectPointsPerComboPoint[MAX_EFFECT_INDEX] = {};// 115-117
       //uint32    SpellVisual2;                                    // 119 not used
-        uint32    spellPriority = 0;                               // 122
         std::array<std::string, MAX_DBC_LOCALE> SpellName{};       // 123-130
       //uint32    SpellNameFlag;                                   // 131     not used
         std::array<std::string, MAX_DBC_LOCALE> Rank{};            // 132-139
@@ -876,7 +876,7 @@ class SpellEntry
 
         bool IsCustomSpell() const
         {
-            return Internal & SPELL_INTERNAL_CUSTOM;
+            return Custom & SPELL_CUSTOM_CLIENT_UNKNOWN;
         }
 
         bool IsSpellWithDelayableEffects() const

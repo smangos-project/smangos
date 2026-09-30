@@ -1005,6 +1005,7 @@ enum SpellAttributesCustom
     SPELL_CUSTOM_SEPARATE_AURA_PER_CASTER   = 0x1000,    // Each caster has his own aura slot, instead of replacing others
     SPELL_CUSTOM_TRIGGER_WEAPON_PROCS       = 0x2000,    // Can trigger weapon enchants and on hit effects
     SPELL_CUSTOM_MAGNET_REDIRECT            = 0x4000,    // Non-magic spell that spell magnets redirect
+    SPELL_CUSTOM_CLIENT_UNKNOWN             = 0x8000,    // Spell the client has no data for
 };
 
 // Spell sets that server logic checks for, assigned by name in `spell_tag`
@@ -1060,7 +1061,6 @@ enum SpellAttributesInternal
     SPELL_INTERNAL_DISMOUNT                 = 0x00200,
     SPELL_INTERNAL_CHARM                    = 0x00400,
     SPELL_INTERNAL_REFLECTABLE              = 0x00800,
-    SPELL_INTERNAL_CUSTOM                   = 0x01000,
     SPELL_INTERNAL_DELAYABLE_EFFECTS        = 0x02000,
     SPELL_INTERNAL_BINARY                   = 0x04000,
     SPELL_INTERNAL_NON_PERIODIC_DISPEL      = 0x08000,

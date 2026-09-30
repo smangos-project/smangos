@@ -316,7 +316,6 @@ class ChatHandler
         // AutoBroadCast
         bool HandleReloadAutoBroadcastCommand(char *args);
         // SpellMods
-        bool HandleReloadSpellModsCommand(char *args);
         // MapLootDisabled
         bool HandleReloadMapLootDisabledCommand(char *args);
         // Autres reload
@@ -861,7 +860,7 @@ class ChatHandler
         bool HandleReloadSpellScriptTargetCommand(char* args);
         bool HandleReloadSpellScriptsCommand(char* args);
         bool HandleReloadSpellTargetPositionCommand(char* args);
-        bool HandleReloadSpellTemplateCommand(char* args);
+        bool HandleReloadSpellsCommand(char* args);
         bool HandleReloadSpellThreatsCommand(char* args);
         bool HandleReloadSpellPetAurasCommand(char* args);
         bool HandleReloadItemTemplate(char* args);

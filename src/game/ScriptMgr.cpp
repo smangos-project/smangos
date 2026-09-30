@@ -1510,7 +1510,7 @@ void ScriptMgr::LoadSpellScripts()
     LoadScripts(sSpellScripts, "spell_scripts");
 
     std::set<uint32> scriptSpells;
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `entry` FROM `spell_template` WHERE 77 IN (`effect1`, `effect2`, `effect3`)"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT DISTINCT `SpellID` FROM `dbc_spelleffect` WHERE `DifficultyID` = 0 AND `EffectIndex` < 3 AND `Effect` = 77"));
     if (result)
     {
         do
@@ -1760,7 +1760,7 @@ void ScriptMgr::LoadScriptNames()
         "creature_template",
         "gameobject_template",
         "scripted_event_id",
-        "spell_template",
+        "spell_extra",
         "map_template"
     };
 
@@ -2543,7 +2543,7 @@ void ScriptMgr::CollectPossibleEventIds(std::set<uint32>& eventIds)
     // Load all possible script entries from spells.
     for (uint32 i = 1; i < 4; ++i)
     {
-        result = WorldDatabase.PQuery("SELECT `effectMiscValue%u` FROM `spell_template` WHERE `effect%u`=61", i, i);
+        result = WorldDatabase.PQuery("SELECT `EffectMiscValue1` FROM `dbc_spelleffect` WHERE `DifficultyID` = 0 AND `EffectIndex` = %u AND `Effect` = 61", i - 1);
 
         if (result)
         {

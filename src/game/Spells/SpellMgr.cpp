@@ -20,6 +20,7 @@
  */
 
 #include "SpellMgr.h"
+#include "SummonKind.h"
 #include "ObjectMgr.h"
 #include "SpellAuraDefines.h"
 #include "ProgressBar.h"
@@ -29,6 +30,9 @@
 #include "ScriptMgr.h"
 #include "Unit.h"
 #include "BattleGround.h"
+
+#include <cmath>
+#include <map>
 
 using namespace Spells;
 
@@ -3108,7 +3112,7 @@ void SpellMgr::LoadExistingSpellIds()
     mExistingSpellsSet.clear();
 
     Field* fields;
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT DISTINCT `entry` FROM `spell_template`"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `ID` FROM `dbc_spellname`"));
 
     if (result)
     {
@@ -3536,287 +3540,462 @@ void SpellMgr::AssignInternalSpellFlags()
 }
 
 
+namespace
+{
+    // The effect number the spell code uses for a number the client renumbered.
+    uint32 EngineEffect(uint32 effect, int32 summonProperties, uint32& clamped)
+    {
+        switch (effect)
+        {
+            case 252: return SPELL_EFFECT_TELEPORT_UNITS;
+            case 325: return SPELL_EFFECT_ADD_HONOR;
+            case 326: return SPELL_EFFECT_OPEN_LOCK_ITEM;
+            case 327: return SPELL_EFFECT_PULL;
+            case 328: return SPELL_EFFECT_ADD_COMBO_POINTS;
+            case 320: return SPELL_EFFECT_SUMMON_OBJECT_SLOT1;
+            case 321: return SPELL_EFFECT_SUMMON_OBJECT_SLOT2;
+            case 322: return SPELL_EFFECT_SUMMON_OBJECT_SLOT3;
+            case 323: return SPELL_EFFECT_SUMMON_OBJECT_SLOT4;
+            case 329: return SPELL_EFFECT_RESURRECT_NEW;
+            case SPELL_EFFECT_SUMMON:
+                switch (GetSummonKind(uint32(summonProperties), sSummonPropertiesStore.LookupEntry(uint32(summonProperties))))
+                {
+                    case SUMMON_KIND_WILD:          return SPELL_EFFECT_SUMMON_WILD;
+                    case SUMMON_KIND_GUARDIAN:      return SPELL_EFFECT_SUMMON_GUARDIAN;
+                    case SUMMON_KIND_POSSESSED:     return SPELL_EFFECT_SUMMON_POSSESSED;
+                    case SUMMON_KIND_TOTEM:         return SPELL_EFFECT_SUMMON_TOTEM;
+                    case SUMMON_KIND_TOTEM_SLOT1:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT1;
+                    case SUMMON_KIND_TOTEM_SLOT2:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT2;
+                    case SUMMON_KIND_TOTEM_SLOT3:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT3;
+                    case SUMMON_KIND_TOTEM_SLOT4:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT4;
+                    case SUMMON_KIND_CRITTER:       return SPELL_EFFECT_SUMMON_CRITTER;
+                    case SUMMON_KIND_DEMON:         return SPELL_EFFECT_SUMMON_DEMON;
+                    case SUMMON_KIND_TRANS_DOOR:    return SPELL_EFFECT_TRANS_DOOR;
+                    default:                        return SPELL_EFFECT_SUMMON;
+                }
+            // Numbers that only the old numbering gave a meaning to.
+            case SPELL_EFFECT_TELEPORT_UNITS:
+            case SPELL_EFFECT_SUMMON_WILD:
+            case SPELL_EFFECT_SUMMON_GUARDIAN:
+            case SPELL_EFFECT_ADD_HONOR:
+            case SPELL_EFFECT_OPEN_LOCK_ITEM:
+            case SPELL_EFFECT_PULL:
+            case SPELL_EFFECT_SUMMON_POSSESSED:
+            case SPELL_EFFECT_SUMMON_TOTEM:
+            case SPELL_EFFECT_ADD_COMBO_POINTS:
+            case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
+            case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
+            case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
+            case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
+            case SPELL_EFFECT_SUMMON_CRITTER:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
+            case SPELL_EFFECT_SUMMON_DEMON:
+            case SPELL_EFFECT_RESURRECT_NEW:
+                ++clamped;
+                return 0;
+        }
+        if (effect >= TOTAL_SPELL_EFFECTS)
+        {
+            ++clamped;
+            return 0;
+        }
+        return effect;
+    }
+
+    // The aura number the spell code uses for a number the client renumbered.
+    uint32 EngineAura(uint32 aura, uint32& clamped)
+    {
+        switch (aura)
+        {
+            case 551: return 70;
+            case 552: return 71;
+            case 553: return 73;
+            case 556: return 125;
+            case 378: return 128;
+            case 557: return 141;
+            case 558: return 143;
+            case 559: return 145;
+            case 560: return 148;
+            case 561: return 150;
+            case 562: return 153;
+            case 563: return 157;
+            case 564: return 158;
+            case 565: return 160;
+            case 566: return 165;
+            case 547: return 169;
+            case 569: return 179;
+            case 571: return 182;
+            case 572: return 183;
+            case 573: return 188;
+            case 70: case 71: case 73: case 125: case 128: case 141: case 143: case 145: case 148: case 150:
+            case 153: case 157: case 158: case 160: case 165: case 169: case 179: case 182: case 183: case 188:
+                ++clamped;
+                return 0;
+        }
+        if (aura >= TOTAL_AURAS)
+        {
+            ++clamped;
+            return 0;
+        }
+        return aura;
+    }
+
+    void ClampTo(uint32& value, uint32 max, uint32& clamped)
+    {
+        if (value > max)
+        {
+            value = 0;
+            ++clamped;
+        }
+    }
+}
+
 void SpellMgr::LoadSpells()
 {
     uint32 oldMSTime = WorldTimer::getMSTime();
 
-    // Getting the maximum ID.
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT MAX(`entry`) FROM `spell_template`"));
-
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT MAX(`ID`) FROM `dbc_spellname`"));
     if (!result)
     {
         BarGoLink bar(1);
         bar.step();
 
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 spells. DB table `spell_template` is empty.");
-        return;
-    }
-    auto fields = result->Fetch();
-    uint32 maxEntry = fields[0].GetUInt32() + 1;
-
-    // Actually loading the spells.
-    result = WorldDatabase.PQuery("SELECT * FROM `spell_template`");
-
-    if (!result)
-    {
-        BarGoLink bar(1);
-        bar.step();
-
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 spells. DB table `spell_template` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 spells. DB table `dbc_spellname` is empty.");
         return;
     }
 
+    uint32 const maxEntry = (*result)[0].GetUInt32() + 1;
     if (maxEntry > mSpellEntryMap.size())
         mSpellEntryMap.resize(maxEntry);
 
-    BarGoLink bar(result->GetRowCount());
+    BarGoLink bar(1);
+    bar.step();
 
-    do
+    // Rows of the other spell tables that belong to no spell.
+    std::map<std::string, uint32> ignored;
+    auto forEachRow = [&](char const* table, char const* query, auto&& fill)
     {
-        bar.step();
-        fields = result->Fetch();
-        LoadSpell(fields);
-    } while (result->NextRow());
+        std::unique_ptr<QueryResult> rows = WorldDatabase.Query(query);
+        if (!rows)
+            return;
+        do
+        {
+            Field* f = rows->Fetch();
+            uint32 const id = f[0].GetUInt32();
+            SpellEntry* spell = id < mSpellEntryMap.size() ? mSpellEntryMap[id].get() : nullptr;
+            if (!spell)
+            {
+                ++ignored[table];
+                continue;
+            }
+            fill(*spell, f);
+        } while (rows->NextRow());
+    };
 
-    // Load localized texts (currently we only have 1.12 locales).
-    //                                    0        1            2            3            4            5            6            7                   8                   9                   10                  11                  12                  13                  14                  15                  16                  17                  18                  19                      20                      21                      22                      23                      24
-    result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6`, `nameSubtext_loc1`, `nameSubtext_loc2`, `nameSubtext_loc3`, `nameSubtext_loc4`, `nameSubtext_loc5`, `nameSubtext_loc6`, `description_loc1`, `description_loc2`, `description_loc3`, `description_loc4`, `description_loc5`, `description_loc6`, `auraDescription_loc1`, `auraDescription_loc2`, `auraDescription_loc3`, `auraDescription_loc4`, `auraDescription_loc5`, `auraDescription_loc6` FROM `locales_spell`");
+    result = WorldDatabase.Query("SELECT `ID`, `Name_lang` FROM `dbc_spellname`");
     if (result)
     {
         do
         {
-            fields = result->Fetch();
-            uint32 spellId = fields[0].GetUInt32();
-            if ((spellId > maxEntry) || (!mSpellEntryMap[spellId]))
-                continue;
-
-            mSpellEntryMap[spellId]->SpellName[1] = fields[1].GetCppString();
-            mSpellEntryMap[spellId]->SpellName[2] = fields[2].GetCppString();
-            mSpellEntryMap[spellId]->SpellName[3] = fields[3].GetCppString();
-            mSpellEntryMap[spellId]->SpellName[4] = fields[4].GetCppString();
-            mSpellEntryMap[spellId]->SpellName[5] = fields[5].GetCppString();
-            mSpellEntryMap[spellId]->SpellName[6] = fields[6].GetCppString();
-            mSpellEntryMap[spellId]->Rank[1] = fields[7].GetCppString();
-            mSpellEntryMap[spellId]->Rank[2] = fields[8].GetCppString();
-            mSpellEntryMap[spellId]->Rank[3] = fields[9].GetCppString();
-            mSpellEntryMap[spellId]->Rank[4] = fields[10].GetCppString();
-            mSpellEntryMap[spellId]->Rank[5] = fields[11].GetCppString();
-            mSpellEntryMap[spellId]->Rank[6] = fields[12].GetCppString();
-
-            /*
-            unused
-            mSpellEntryMap[spellId]->Description[1] = fields[13].GetCppString();
-            mSpellEntryMap[spellId]->Description[2] = fields[14].GetCppString();
-            mSpellEntryMap[spellId]->Description[3] = fields[15].GetCppString();
-            mSpellEntryMap[spellId]->Description[4] = fields[16].GetCppString();
-            mSpellEntryMap[spellId]->Description[5] = fields[17].GetCppString();
-            mSpellEntryMap[spellId]->Description[6] = fields[18].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[1] = fields[19].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[2] = fields[20].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[3] = fields[21].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[4] = fields[22].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[5] = fields[23].GetCppString();
-            mSpellEntryMap[spellId]->ToolTip[6] = fields[24].GetCppString();
-            */
-
+            Field* f = result->Fetch();
+            uint32 const id = f[0].GetUInt32();
+            std::unique_ptr<SpellEntry>& spell = mSpellEntryMap[id];
+            if (!spell)
+                spell = std::make_unique<SpellEntry>();
+            else
+            {
+                // Reload: same address, values from scratch, values other loaders own kept.
+                SpellEntry fresh;
+                fresh.Internal = spell->Internal;
+                fresh.AllowedTargetMask = spell->AllowedTargetMask;
+                fresh.Tags = spell->Tags;
+                fresh.StackKey = spell->StackKey;
+                fresh.RankKey = spell->RankKey;
+                fresh.SingleTargetKey = spell->SingleTargetKey;
+                fresh.ClientVisualId = spell->ClientVisualId;
+                fresh.HasClientActiveIcon = spell->HasClientActiveIcon;
+                *spell = fresh;
+            }
+            spell->Id = id;
+            spell->procChance = 101;
+            spell->SpellName[0] = f[1].GetCppString();
         } while (result->NextRow());
     }
 
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spells in %ums.", mSpellEntryMap.size(), WorldTimer::getMSTimeDiffToNow(oldMSTime));
-}
-
-void SpellMgr::LoadSpell(Field* fields)
-{
-    uint32 spellId = fields[0].GetUInt32();
-    std::unique_ptr<SpellEntry>& spell = mSpellEntryMap[spellId];
-    if (!spell)
-        spell = std::make_unique<SpellEntry>();
-
-    spell->Id = spellId;
-    spell->School = fields[1].GetUInt32();
-    spell->Category = fields[2].GetUInt32();
-    //spell->castUI = fields[3].GetUInt32(); not used
-    spell->Dispel = fields[4].GetUInt32();
-    spell->Mechanic = fields[5].GetUInt32();
-    spell->Attributes = fields[6].GetUInt32();
-    spell->AttributesEx = fields[7].GetUInt32();
-    spell->AttributesEx2 = fields[8].GetUInt32();
-    spell->AttributesEx3 = fields[9].GetUInt32();
-    spell->AttributesEx4 = fields[10].GetUInt32();
-    spell->Stances = fields[11].GetUInt32();
-    spell->StancesNot = fields[12].GetUInt32();
-    spell->Targets = fields[13].GetUInt32();
-    spell->TargetCreatureType = fields[14].GetUInt32();
-    spell->RequiresSpellFocus = fields[15].GetUInt32();
-    spell->CasterAuraState = fields[16].GetUInt32();
-    spell->TargetAuraState = fields[17].GetUInt32();
-    spell->CastingTimeIndex = fields[18].GetUInt32();
-    spell->RecoveryTime = fields[19].GetUInt32();
-    spell->CategoryRecoveryTime = fields[20].GetUInt32();
-    spell->InterruptFlags = fields[21].GetUInt32();
-    spell->AuraInterruptFlags = fields[22].GetUInt32();
-    spell->ChannelInterruptFlags = fields[23].GetUInt32();
-    spell->procFlags = fields[24].GetUInt32();
-    spell->procChance = fields[25].GetUInt32();
-    spell->procCharges = fields[26].GetUInt32();
-    spell->maxLevel = fields[27].GetUInt32();
-    spell->baseLevel = fields[28].GetUInt32();
-    spell->spellLevel = fields[29].GetUInt32();
-    spell->DurationIndex = fields[30].GetUInt32();
-    spell->powerType = fields[31].GetUInt32();
-    spell->manaCost = fields[32].GetUInt32();
-    spell->manaCostPerlevel = fields[33].GetUInt32();
-    spell->manaPerSecond = fields[34].GetUInt32();
-    spell->manaPerSecondPerLevel = fields[35].GetUInt32();
-    spell->rangeIndex = fields[36].GetUInt32();
-    spell->speed = fields[37].GetFloat();
-    //spell->modalNextSpell = fields[38].GetUInt32(); not used
-    spell->StackAmount = fields[39].GetUInt32();
-    spell->Totem[0] = fields[40].GetUInt32();
-    spell->Totem[1] = fields[41].GetUInt32();
-    spell->Reagent[0] = fields[42].GetInt32();
-    spell->Reagent[1] = fields[43].GetInt32();
-    spell->Reagent[2] = fields[44].GetInt32();
-    spell->Reagent[3] = fields[45].GetInt32();
-    spell->Reagent[4] = fields[46].GetInt32();
-    spell->Reagent[5] = fields[47].GetInt32();
-    spell->Reagent[6] = fields[48].GetInt32();
-    spell->Reagent[7] = fields[49].GetInt32();
-    spell->ReagentCount[0] = fields[50].GetUInt32();
-    spell->ReagentCount[1] = fields[51].GetUInt32();
-    spell->ReagentCount[2] = fields[52].GetUInt32();
-    spell->ReagentCount[3] = fields[53].GetUInt32();
-    spell->ReagentCount[4] = fields[54].GetUInt32();
-    spell->ReagentCount[5] = fields[55].GetUInt32();
-    spell->ReagentCount[6] = fields[56].GetUInt32();
-    spell->ReagentCount[7] = fields[57].GetUInt32();
-    spell->EquippedItemClass = fields[58].GetInt32();
-    spell->EquippedItemSubClassMask = fields[59].GetInt32();
-    spell->EquippedItemInventoryTypeMask = fields[60].GetInt32();
-    spell->Effect[0] = fields[61].GetUInt32();
-    spell->Effect[1] = fields[62].GetUInt32();
-    spell->Effect[2] = fields[63].GetUInt32();
-    spell->EffectDieSides[0] = fields[64].GetInt32();
-    spell->EffectDieSides[1] = fields[65].GetInt32();
-    spell->EffectDieSides[2] = fields[66].GetInt32();
-    spell->EffectBaseDice[0] = fields[67].GetUInt32();
-    spell->EffectBaseDice[1] = fields[68].GetUInt32();
-    spell->EffectBaseDice[2] = fields[69].GetUInt32();
-    spell->EffectDicePerLevel[0] = fields[70].GetFloat();
-    spell->EffectDicePerLevel[1] = fields[71].GetFloat();
-    spell->EffectDicePerLevel[2] = fields[72].GetFloat();
-    spell->EffectRealPointsPerLevel[0] = fields[73].GetFloat();
-    spell->EffectRealPointsPerLevel[1] = fields[74].GetFloat();
-    spell->EffectRealPointsPerLevel[2] = fields[75].GetFloat();
-    spell->EffectBasePoints[0] = fields[76].GetInt32();
-    spell->EffectBasePoints[1] = fields[77].GetInt32();
-    spell->EffectBasePoints[2] = fields[78].GetInt32();
-    spell->EffectBonusCoefficient[0] = fields[79].GetFloat();
-    spell->EffectBonusCoefficient[1] = fields[80].GetFloat();
-    spell->EffectBonusCoefficient[2] = fields[81].GetFloat();
-    spell->EffectMechanic[0] = fields[82].GetUInt32();
-    spell->EffectMechanic[1] = fields[83].GetUInt32();
-    spell->EffectMechanic[2] = fields[84].GetUInt32();
-    spell->EffectImplicitTargetA[0] = fields[85].GetUInt32();
-    spell->EffectImplicitTargetA[1] = fields[86].GetUInt32();
-    spell->EffectImplicitTargetA[2] = fields[87].GetUInt32();
-    spell->EffectImplicitTargetB[0] = fields[88].GetUInt32();
-    spell->EffectImplicitTargetB[1] = fields[89].GetUInt32();
-    spell->EffectImplicitTargetB[2] = fields[90].GetUInt32();
-    spell->EffectRadiusIndex[0] = fields[91].GetUInt32();
-    spell->EffectRadiusIndex[1] = fields[92].GetUInt32();
-    spell->EffectRadiusIndex[2] = fields[93].GetUInt32();
-    spell->EffectApplyAuraName[0] = fields[94].GetUInt32();
-    spell->EffectApplyAuraName[1] = fields[95].GetUInt32();
-    spell->EffectApplyAuraName[2] = fields[96].GetUInt32();
-    spell->EffectAmplitude[0] = fields[97].GetUInt32();
-    spell->EffectAmplitude[1] = fields[98].GetUInt32();
-    spell->EffectAmplitude[2] = fields[99].GetUInt32();
-    spell->EffectMultipleValue[0] = fields[100].GetFloat();
-    spell->EffectMultipleValue[1] = fields[101].GetFloat();
-    spell->EffectMultipleValue[2] = fields[102].GetFloat();
-    spell->EffectChainTarget[0] = fields[103].GetUInt32();
-    spell->EffectChainTarget[1] = fields[104].GetUInt32();
-    spell->EffectChainTarget[2] = fields[105].GetUInt32();
-    spell->EffectItemType[0] = fields[106].GetUInt64();
-    spell->EffectItemType[1] = fields[107].GetUInt64();
-    spell->EffectItemType[2] = fields[108].GetUInt64();
-    spell->EffectMiscValue[0] = fields[109].GetInt32();
-    spell->EffectMiscValue[1] = fields[110].GetInt32();
-    spell->EffectMiscValue[2] = fields[111].GetInt32();
-    spell->EffectTriggerSpell[0] = fields[112].GetUInt32();
-    spell->EffectTriggerSpell[1] = fields[113].GetUInt32();
-    spell->EffectTriggerSpell[2] = fields[114].GetUInt32();
-    spell->EffectPointsPerComboPoint[0] = fields[115].GetFloat();
-    spell->EffectPointsPerComboPoint[1] = fields[116].GetFloat();
-    spell->EffectPointsPerComboPoint[2] = fields[117].GetFloat();
-    //spell->SpellVisual2 = fields[119].GetUInt32(); not used
-    spell->spellPriority = fields[122].GetUInt32();
-    spell->SpellName[0] = fields[123].GetCppString();
-    //spell->SpellNameFlag = fields[124].GetUInt32(); not used
-    spell->Rank[0] = fields[125].GetCppString();
-    /* not used
-    spell->RankFlags = fields[126].GetUInt32();
-    spell->Description[0] = fields[127].GetCppString();
-    spell->DescriptionFlags = fields[128].GetUInt32();
-    spell->ToolTip[0] = fields[129].GetCppString();
-    spell->ToolTipFlags = fields[130].GetUInt32();
-    */
-    spell->ManaCostPercentage = fields[131].GetUInt32();
-    spell->StartRecoveryCategory = fields[132].GetUInt32();
-    spell->StartRecoveryTime = fields[133].GetUInt32();
-    spell->MinTargetLevel = fields[134].GetUInt32();
-    spell->MaxTargetLevel = fields[135].GetUInt32();
-    spell->SpellFamilyName = fields[136].GetUInt32();
-    spell->SpellFamilyFlags = fields[137].GetUInt64();
-    spell->MaxAffectedTargets = fields[138].GetUInt32();
-    spell->DmgClass = fields[139].GetUInt32();
-    spell->PreventionType = fields[140].GetUInt32();
-    //spell->StanceBarOrder = fields[141].GetInt32();
-    spell->DmgMultiplier[0] = fields[142].GetFloat();
-    spell->DmgMultiplier[1] = fields[143].GetFloat();
-    spell->DmgMultiplier[2] = fields[144].GetFloat();
-    //spell->MinFactionId = fields[145].GetUInt32();
-    //spell->MinReputation = fields[146].GetUInt32();
-    //spell->RequiredAuraVision = fields[147].GetUInt32();
-    spell->Custom = fields[148].GetUInt32();
-    spell->ScriptId = sScriptMgr.GetScriptId(fields[149].GetString());
-
-    // It seems that in vanilla when the Amplitude of a
-    // periodic aura was 0, it defaulted to a 5 seconds timer.
-    // Check out Violet Tragan (Item 8526, Spell 6727).
-    // There are comments from vanilla saying it does
-    // damage every 5 seconds, while TBC comments say
-    // it does no damage, so behavior changed then.
-    // In classic the spell was edited in 1.13.6 and
-    // the timer was set to 5000, as it didn't work before.
-    for (int i = EFFECT_INDEX_0; i <= EFFECT_INDEX_2; ++i)
+    forEachRow("dbc_spellmisc", "SELECT `SpellID`, `Attributes1`, `Attributes2`, `Attributes3`, `Attributes4`, `Attributes5`, `CastingTimeIndex`, `DurationIndex`, `RangeIndex`, `SchoolMask`, `Speed` FROM `dbc_spellmisc` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
     {
-        switch (spell->EffectApplyAuraName[i])
+        s.Attributes = f[1].GetUInt32();
+        s.AttributesEx = f[2].GetUInt32();
+        s.AttributesEx2 = f[3].GetUInt32();
+        s.AttributesEx3 = f[4].GetUInt32();
+        s.AttributesEx4 = f[5].GetUInt32();
+        s.CastingTimeIndex = f[6].GetUInt32();
+        s.DurationIndex = f[7].GetUInt32();
+        s.rangeIndex = f[8].GetUInt32();
+        uint32 const mask = f[9].GetUInt32();
+        s.School = 0;
+        for (uint32 school = 0; mask && school < 32; ++school)
         {
-        case SPELL_AURA_PERIODIC_DAMAGE:
-        case SPELL_AURA_PERIODIC_HEAL:
-        case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-        case SPELL_AURA_PERIODIC_ENERGIZE:
-        case SPELL_AURA_PERIODIC_LEECH:
-        case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
-        case SPELL_AURA_PERIODIC_MANA_FUNNEL:
-        case SPELL_AURA_PERIODIC_MANA_LEECH:
-        case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
-        case SPELL_AURA_POWER_BURN_MANA:
-            if (spell->EffectAmplitude[i] == 0)
-                spell->EffectAmplitude[i] = 5000;
-            break;
+            if (mask & (1u << school))
+            {
+                s.School = school;
+                break;
+            }
         }
+        s.speed = f[10].GetFloat();
+    });
+    forEachRow("dbc_spell", "SELECT `ID`, `NameSubtext_lang` FROM `dbc_spell`", [](SpellEntry& s, Field* f)
+    {
+        s.Rank[0] = f[1].GetCppString();
+    });
+    forEachRow("dbc_spellcategories", "SELECT `SpellID`, `Category`, `DispelType`, `Mechanic`, `DefenseType`, `PreventionType`, `StartRecoveryCategory` FROM `dbc_spellcategories` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.Category = f[1].GetUInt32();
+        s.Dispel = f[2].GetUInt32();
+        s.Mechanic = f[3].GetUInt32();
+        s.DmgClass = f[4].GetUInt32();
+        s.PreventionType = f[5].GetUInt32();
+        s.StartRecoveryCategory = f[6].GetUInt32();
+    });
+    forEachRow("dbc_spellclassoptions", "SELECT `SpellID`, `SpellClassSet`, `SpellClassMask1`, `SpellClassMask2` FROM `dbc_spellclassoptions`",
+        [](SpellEntry& s, Field* f)
+    {
+        s.SpellFamilyName = f[1].GetUInt32();
+        s.SpellFamilyFlags = uint64(f[2].GetUInt32()) | (uint64(f[3].GetUInt32()) << 32);
+    });
+    forEachRow("dbc_spellcooldowns", "SELECT `SpellID`, `RecoveryTime`, `CategoryRecoveryTime`, `StartRecoveryTime` FROM `dbc_spellcooldowns` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.RecoveryTime = f[1].GetUInt32();
+        s.CategoryRecoveryTime = f[2].GetUInt32();
+        s.StartRecoveryTime = f[3].GetUInt32();
+    });
+    forEachRow("dbc_spellinterrupts", "SELECT `SpellID`, `InterruptFlags`, `AuraInterruptFlags1`, `ChannelInterruptFlags1` FROM `dbc_spellinterrupts` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.InterruptFlags = f[1].GetUInt32();
+        s.AuraInterruptFlags = f[2].GetUInt32();
+        s.ChannelInterruptFlags = f[3].GetUInt32();
+    });
+    forEachRow("dbc_spelllevels", "SELECT `SpellID`, `BaseLevel`, `MaxLevel`, `SpellLevel` FROM `dbc_spelllevels` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.baseLevel = f[1].GetUInt32();
+        s.maxLevel = f[2].GetUInt32();
+        s.spellLevel = f[3].GetUInt32();
+    });
+    forEachRow("dbc_spellauraoptions", "SELECT `SpellID`, `CumulativeAura`, `ProcChance`, `ProcCharges`, `ProcTypeMask1` FROM `dbc_spellauraoptions` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.StackAmount = f[1].GetUInt32();
+        s.procChance = f[2].GetUInt32();
+        s.procCharges = f[3].GetUInt32();
+        s.procFlags = f[4].GetUInt32();
+    });
+    forEachRow("dbc_spellaurarestrictions", "SELECT `SpellID`, `CasterAuraState`, `TargetAuraState` FROM `dbc_spellaurarestrictions` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.CasterAuraState = f[1].GetUInt32();
+        s.TargetAuraState = f[2].GetUInt32();
+    });
+    forEachRow("dbc_spellcastingrequirements", "SELECT `SpellID`, `RequiresSpellFocus` FROM `dbc_spellcastingrequirements`",
+        [](SpellEntry& s, Field* f)
+    {
+        s.RequiresSpellFocus = f[1].GetUInt32();
+    });
+    forEachRow("dbc_spellequippeditems", "SELECT `SpellID`, `EquippedItemClass`, `EquippedItemSubclass`, `EquippedItemInvTypes` FROM `dbc_spellequippeditems`",
+        [](SpellEntry& s, Field* f)
+    {
+        s.EquippedItemClass = f[1].GetInt32();
+        s.EquippedItemSubClassMask = f[2].GetInt32();
+        s.EquippedItemInventoryTypeMask = f[3].GetInt32();
+    });
+    forEachRow("dbc_spellpower", "SELECT `SpellID`, `PowerType`, `ManaCost`, `ManaCostPerLevel`, `ManaPerSecond`, `PowerCostPct` FROM `dbc_spellpower` WHERE `OrderIndex` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.powerType = f[1].GetUInt32();
+        s.manaCost = f[2].GetUInt32();
+        s.manaCostPerlevel = f[3].GetUInt32();
+        s.manaPerSecond = f[4].GetUInt32();
+        s.ManaCostPercentage = uint32(std::lround(f[5].GetFloat()));
+    });
+    forEachRow("dbc_spellreagents", "SELECT `SpellID`, `Reagent1`, `Reagent2`, `Reagent3`, `Reagent4`, `Reagent5`, `Reagent6`, `Reagent7`, `Reagent8`, `ReagentCount1`, `ReagentCount2`, `ReagentCount3`, `ReagentCount4`, `ReagentCount5`, `ReagentCount6`, `ReagentCount7`, `ReagentCount8` FROM `dbc_spellreagents`",
+        [](SpellEntry& s, Field* f)
+    {
+        for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
+        {
+            s.Reagent[i] = f[1 + i].GetInt32();
+            s.ReagentCount[i] = f[9 + i].GetUInt32();
+        }
+    });
+    forEachRow("dbc_spellshapeshift", "SELECT `SpellID`, `ShapeshiftMask1`, `ShapeshiftExclude1` FROM `dbc_spellshapeshift`",
+        [](SpellEntry& s, Field* f)
+    {
+        s.Stances = f[1].GetUInt32();
+        s.StancesNot = f[2].GetUInt32();
+    });
+    forEachRow("dbc_spelltargetrestrictions", "SELECT `SpellID`, `Targets`, `TargetCreatureType`, `MaxTargets`, `MaxTargetLevel` FROM `dbc_spelltargetrestrictions` WHERE `DifficultyID` = 0",
+        [](SpellEntry& s, Field* f)
+    {
+        s.Targets = f[1].GetUInt32();
+        s.TargetCreatureType = f[2].GetUInt32();
+        s.MaxAffectedTargets = f[3].GetUInt32();
+        s.MaxTargetLevel = f[4].GetUInt32();
+    });
+    forEachRow("dbc_spelltotems", "SELECT `SpellID`, `Totem1`, `Totem2` FROM `dbc_spelltotems`", [](SpellEntry& s, Field* f)
+    {
+        s.Totem[0] = f[1].GetUInt32();
+        s.Totem[1] = f[2].GetUInt32();
+    });
+    forEachRow("dbc_spelleffect", "SELECT `SpellID`, `EffectIndex`, `Effect`, `EffectAura`, `EffectBasePoints`, `EffectDieSides`, `EffectRealPointsPerLevel`, `EffectPointsPerResource`, `EffectAuraPeriod`, `EffectAmplitude`, `EffectChainAmplitude`, `EffectChainTargets`, `EffectMechanic`, `EffectMiscValue1`, `EffectMiscValue2`, `ImplicitTarget1`, `ImplicitTarget2`, `EffectTriggerSpell`, `EffectBonusCoefficient`, `EffectRadiusIndex1`, `EffectRadiusIndex2`, `EffectItemType`, `EffectSpellClassMask1`, `EffectSpellClassMask2` FROM `dbc_spelleffect` WHERE `DifficultyID` = 0 AND `EffectIndex` < 3 AND `Effect` <> 0",
+        [](SpellEntry& s, Field* f)
+    {
+        uint32 const i = f[1].GetUInt32();
+        s.Effect[i] = f[2].GetUInt32();
+        s.EffectApplyAuraName[i] = f[3].GetUInt32();
+        s.EffectBasePoints[i] = f[4].GetInt32();
+        s.EffectDieSides[i] = f[5].GetInt32();
+        s.EffectRealPointsPerLevel[i] = f[6].GetFloat();
+        s.EffectPointsPerComboPoint[i] = f[7].GetFloat();
+        s.EffectAmplitude[i] = f[8].GetUInt32();
+        s.EffectMultipleValue[i] = f[9].GetFloat();
+        s.DmgMultiplier[i] = f[10].GetFloat();
+        s.EffectChainTarget[i] = f[11].GetUInt32();
+        s.EffectMechanic[i] = f[12].GetUInt32();
+        s.EffectMiscValue[i] = f[13].GetInt32();
+        s.EffectMiscValueB[i] = f[14].GetInt32();
+        s.EffectImplicitTargetA[i] = f[15].GetUInt32();
+        s.EffectImplicitTargetB[i] = f[16].GetUInt32();
+        s.EffectTriggerSpell[i] = f[17].GetUInt32();
+        s.EffectBonusCoefficient[i] = f[18].GetFloat();
+        uint32 const radius2 = f[20].GetUInt32();
+        s.EffectRadiusIndex[i] = radius2 ? radius2 : f[19].GetUInt32();
+        switch (s.EffectApplyAuraName[i])
+        {
+            case 107:
+            case 108:
+            case 109:
+            case 112:
+                s.EffectItemType[i] = uint64(f[22].GetUInt32()) | (uint64(f[23].GetUInt32()) << 32);
+                break;
+            default:
+                s.EffectItemType[i] = f[21].GetUInt32();
+                break;
+        }
+    });
+
+    for (std::unique_ptr<SpellEntry> const& spell : mSpellEntryMap)
+    {
+        if (!spell)
+            continue;
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+            spell->EffectBaseDice[i] = spell->EffectDieSides[i] ? 1 : 0;
     }
 
-    // Attribute replaced with aura state in patch 1.8.
-    if (spell->HasAttribute(SPELL_ATTR_EX2_ENABLE_AFTER_PARRY))
-        spell->CasterAuraState = spell->SpellFamilyName == SPELLFAMILY_HUNTER ? AURA_STATE_HUNTER_PARRY : AURA_STATE_DEFENSE;
+    forEachRow("spell_extra", "SELECT `spell_id`, `custom_flags`, `script_name`, `min_target_level`, `effect_base_dice1`, `effect_base_dice2`, `effect_base_dice3`, `effect_dice_per_level1`, `effect_dice_per_level2`, `effect_dice_per_level3`, `default_coefficient1`, `default_coefficient2`, `default_coefficient3` FROM `spell_extra`",
+        [](SpellEntry& s, Field* f)
+    {
+        s.Custom = f[1].GetUInt32();
+        s.ScriptId = sScriptMgr.GetScriptId(f[2].GetString());
+        s.MinTargetLevel = f[3].GetUInt32();
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        {
+            if (!f[4 + i].IsNULL())
+                s.EffectBaseDice[i] = f[4 + i].GetUInt32();
+            s.EffectDicePerLevel[i] = f[7 + i].GetFloat();
+            if (f[10 + i].GetUInt32() == 1)
+                s.EffectBonusCoefficient[i] = -1.0f;
+        }
+    });
 
+    result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6`, `nameSubtext_loc1`, `nameSubtext_loc2`, `nameSubtext_loc3`, `nameSubtext_loc4`, `nameSubtext_loc5`, `nameSubtext_loc6` FROM `locales_spell`");
+    if (result)
+    {
+        do
+        {
+            Field* f = result->Fetch();
+            uint32 const spellId = f[0].GetUInt32();
+            if (spellId >= mSpellEntryMap.size() || !mSpellEntryMap[spellId])
+                continue;
 
-    // Before 1.10, the spell proc flags had completely different meanings.
+            for (uint32 i = 0; i < 6; ++i)
+            {
+                mSpellEntryMap[spellId]->SpellName[1 + i] = f[1 + i].GetCppString();
+                mSpellEntryMap[spellId]->Rank[1 + i] = f[7 + i].GetCppString();
+            }
+        } while (result->NextRow());
+    }
+
+    // The spell code still runs on the old effect and aura numbers.
+    std::map<std::string, uint32> clamped;
+    for (std::unique_ptr<SpellEntry> const& spell : mSpellEntryMap)
+    {
+        if (!spell)
+            continue;
+
+        for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        {
+            spell->Effect[i] = EngineEffect(spell->Effect[i], spell->EffectMiscValueB[i], clamped["Effect"]);
+            spell->EffectApplyAuraName[i] = EngineAura(spell->EffectApplyAuraName[i], clamped["EffectApplyAuraName"]);
+            ClampTo(spell->EffectImplicitTargetA[i], TARGET_LOCATION_UNIT_POSITION, clamped["EffectImplicitTargetA"]);
+            ClampTo(spell->EffectImplicitTargetB[i], TARGET_LOCATION_UNIT_POSITION, clamped["EffectImplicitTargetB"]);
+            ClampTo(spell->EffectMechanic[i], MECHANIC_SLOW_CAST_SPEED, clamped["EffectMechanic"]);
+        }
+        ClampTo(spell->Mechanic, MECHANIC_SLOW_CAST_SPEED, clamped["Mechanic"]);
+        ClampTo(spell->Dispel, DISPEL_ZG_TICKET, clamped["Dispel"]);
+        ClampTo(spell->School, MAX_SPELL_SCHOOL - 1, clamped["School"]);
+        if (spell->powerType >= MAX_POWERS && spell->powerType != POWER_HEALTH)
+        {
+            spell->powerType = 0;
+            ++clamped["powerType"];
+        }
+
+        // It seems that in vanilla when the Amplitude of a
+        // periodic aura was 0, it defaulted to a 5 seconds timer.
+        // Check out Violet Tragan (Item 8526, Spell 6727).
+        // There are comments from vanilla saying it does
+        // damage every 5 seconds, while TBC comments say
+        // it does no damage, so behavior changed then.
+        // In classic the spell was edited in 1.13.6 and
+        // the timer was set to 5000, as it didn't work before.
+        for (int i = EFFECT_INDEX_0; i <= EFFECT_INDEX_2; ++i)
+        {
+            switch (spell->EffectApplyAuraName[i])
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
+                case SPELL_AURA_PERIODIC_MANA_FUNNEL:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                case SPELL_AURA_POWER_BURN_MANA:
+                    if (spell->EffectAmplitude[i] == 0)
+                        spell->EffectAmplitude[i] = 5000;
+                    break;
+            }
+        }
+
+        // Attribute replaced with aura state in patch 1.8.
+        if (spell->HasAttribute(SPELL_ATTR_EX2_ENABLE_AFTER_PARRY))
+            spell->CasterAuraState = spell->SpellFamilyName == SPELLFAMILY_HUNTER ? AURA_STATE_HUNTER_PARRY : AURA_STATE_DEFENSE;
+    }
+
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spells in %ums.", uint32(mSpellEntryMap.size()), WorldTimer::getMSTimeDiffToNow(oldMSTime));
+    for (auto const& [table, count] : ignored)
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Ignored %u rows of `%s` that belong to no spell.", count, table.c_str());
+    for (auto const& [field, count] : clamped)
+    {
+        if (count)
+            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Set %u out-of-range `%s` values to 0.", count, field.c_str());
+    }
 }

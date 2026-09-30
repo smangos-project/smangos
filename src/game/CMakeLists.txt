@@ -227,7 +227,6 @@ set (game_SRCS
     Spells/SpellEntry.cpp
     Spells/SpellMgr.cpp
     Spells/SpellModifier.cpp
-    Spells/SpellModMgr.cpp
     Spells/SummonKind.cpp
     Threat/HostileRefManager.cpp
     Threat/ThreatManager.cpp
@@ -498,7 +497,6 @@ set (game_SRCS
     Spells/SpellEntry.h
     Spells/SpellMgr.h
     Spells/SpellModifier.h
-    Spells/SpellModMgr.h
     Spells/SummonKind.h
     Threat/HostileRefManager.h
     Threat/ThreatManager.h

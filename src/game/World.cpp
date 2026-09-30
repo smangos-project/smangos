@@ -73,7 +73,6 @@
 #include "CharacterDatabaseCache.h"
 #include "CreatureGroups.h"
 #include "MoveMap.h"
-#include "SpellModMgr.h"
 #include "Anticheat.h"
 #include "MovementBroadcaster.h"
 #include "HonorMgr.h"
@@ -1329,9 +1328,6 @@ void World::SetInitialWorldSettings()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading AreaTemplate...");
     sObjectMgr.LoadAreaTemplate();
-
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading `spell_mod` and `spell_effect_mod`...");
-    sSpellModMgr.LoadSpellMods();
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading `spell_tag` and `spell_stack_key`...");
     sSpellMgr.LoadSpellTags();

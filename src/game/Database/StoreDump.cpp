@@ -313,9 +313,9 @@ static bool DumpSpells(std::string const& dir)
         {"EffectRadiusIndex", MAX_EFFECT_INDEX}, {"EffectApplyAuraName", MAX_EFFECT_INDEX},
         {"EffectAmplitude", MAX_EFFECT_INDEX}, {"EffectMultipleValue", MAX_EFFECT_INDEX},
         {"EffectChainTarget", MAX_EFFECT_INDEX}, {"EffectItemType", MAX_EFFECT_INDEX},
-        {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
+        {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectMiscValueB", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
         {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX},
-        {"spellPriority"}, {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
+        {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
         {"StartRecoveryCategory"}, {"StartRecoveryTime"}, {"MaxTargetLevel"}, {"SpellFamilyName"},
         {"SpellFamilyFlags"}, {"MaxAffectedTargets"}, {"DmgClass"}, {"PreventionType"},
         {"DmgMultiplier", MAX_EFFECT_INDEX}, {"MinTargetLevel"}, {"Custom"}, {"Internal"}, {"AllowedTargetMask"},
@@ -346,9 +346,9 @@ static bool DumpSpells(std::string const& dir)
             << s->EffectRadiusIndex << s->EffectApplyAuraName
             << s->EffectAmplitude << s->EffectMultipleValue
             << s->EffectChainTarget << s->EffectItemType
-            << s->EffectMiscValue << s->EffectTriggerSpell
+            << s->EffectMiscValue << s->EffectMiscValueB << s->EffectTriggerSpell
             << s->EffectPointsPerComboPoint
-            << s->spellPriority << s->SpellName << s->Rank << s->ManaCostPercentage
+            << s->SpellName << s->Rank << s->ManaCostPercentage
             << s->StartRecoveryCategory << s->StartRecoveryTime << s->MaxTargetLevel << s->SpellFamilyName
             << s->SpellFamilyFlags << s->MaxAffectedTargets << s->DmgClass << s->PreventionType
             << s->DmgMultiplier << s->MinTargetLevel << s->Custom << s->Internal << s->AllowedTargetMask

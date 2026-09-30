@@ -715,28 +715,10 @@ class SpellMgr
 
         // SpellEntry
         void LoadSpells();
-        void LoadSpell(Field* fields);
         void AssignInternalSpellFlags();
         SpellEntry const* GetSpellEntry(uint32 spellId) const { return spellId < GetMaxSpellId() ? mSpellEntryMap[spellId].get() : nullptr; }
         uint32 GetMaxSpellId() const { return mSpellEntryMap.size(); }
         bool IsExistingSpellId(uint32 id) const { return (mExistingSpellsSet.find(id) != mExistingSpellsSet.end()); }
-
-        // spell_mod
-        SpellEntry const*  OverwriteSpellEntry(uint32 id)
-        {
-            if (id < GetMaxSpellId())
-            {
-                std::unique_ptr<SpellEntry> newSpell = std::make_unique<SpellEntry>();
-                newSpell->Internal |= SPELL_INTERNAL_CUSTOM;
-                for (uint32 i = 0; i < 8; ++i)
-                {
-                    newSpell->SpellName[i] = "CustomSpell";
-                }
-                mSpellEntryMap[id] = std::move(newSpell);
-                return mSpellEntryMap[id].get();
-            }
-            return nullptr;
-        }
 
     private:
         SpellScriptTarget       mSpellScriptTarget;
