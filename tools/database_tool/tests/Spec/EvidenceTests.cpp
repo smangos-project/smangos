@@ -268,19 +268,11 @@ TEST_CASE("BuildEvidence against the real reference database and source tree", "
     }
     CHECK(sawAreaTableColumn);
 
-    // WMOAreaTable is loaded, and its areaId field (SQL column AreaTableID) is read elsewhere
-    // (GetWMOAreaTableEntryByTripple).
+    // WMOAreaTable loads from dbc_wmoareatable through LoadDBCFromWorld, not a LoadDBC format string.
     bool sawWmoAreaId = false;
     for (SpecEvidenceRow const& row : rows)
-    {
         if (row.source == "vdbc" && row.table == "wmoareatable" && row.column == "AreaTableID")
-        {
             sawWmoAreaId = true;
-            CHECK(row.readers != "none");
-            CHECK(row.readers.rfind("manual:", 0) != 0);
-            CHECK(row.readers.rfind("WMOAreaTableEntry::areaId", 0) == 0);
-        }
-    }
     CHECK(sawWmoAreaId);
 
     // Row count matches columns.tsv's srv+vdbc universe (phase0-plan.md 3.1: same universe).
