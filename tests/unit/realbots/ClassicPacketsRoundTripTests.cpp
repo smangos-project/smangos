@@ -467,9 +467,10 @@ TEST_CASE("ClassicEnumCharactersResult: a full-layout body cut short falls back 
     ByteBuffer full;
     out.Write(full);
 
-    // Cut off inside the second character.
+    // Cut off inside the second character, before the race block that follows the list.
+    size_t const raceBlock = ClassicEnumCharactersResult::RACE_COUNT * 5;
     ByteBuffer cut;
-    cut.append(full.contents(), full.size() - 40);
+    cut.append(full.contents(), full.size() - raceBlock - 40);
 
     ClassicEnumCharactersResult in;
     REQUIRE(in.Read(cut));
@@ -485,8 +486,9 @@ TEST_CASE("ClassicEnumCharactersResult: a character with mail senders is not wal
 
     ByteBuffer data;
     out.Write(data);
-    // The last twelve bytes are Flags4, MailSenders.Count, MailSenderTypes.Count: make it non-zero.
-    data.put<uint32>(data.size() - 8, 3);
+    // The twelve bytes before the race block are Flags4, MailSenders.Count, MailSenderTypes.Count: make it non-zero.
+    size_t const raceBlock = ClassicEnumCharactersResult::RACE_COUNT * 5;
+    data.put<uint32>(data.size() - raceBlock - 8, 3);
 
     ClassicEnumCharactersResult in;
     REQUIRE(in.Read(data));

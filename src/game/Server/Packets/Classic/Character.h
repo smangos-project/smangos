@@ -73,7 +73,10 @@ struct ClassicEnumCharactersResult
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_ENUM_CHARACTERS_RESULT;
     static constexpr uint32 EQUIPMENT_SLOTS = 19;
 
+    static constexpr uint8 RACE_COUNT = 8; // races 1-8, all unlocked
+
     uint32 CharacterCount = 0;
+    int32 MaxCharacterLevel = 0;
     ClassicGuid FirstCharacterGuid;
     std::vector<ClassicCharacterInfo> Characters; // empty unless every character parsed
 
@@ -100,10 +103,13 @@ struct ClassicEnumCharactersResult
         if (data.size() - data.rpos() < sizeof(uint32) * fixedFields)
             return false;
         data >> CharacterCount;
+        uint32 raceUnlockCount = 0;
         for (int i = 0; i < 6; ++i)
         {
-            uint32 skip;
-            data >> skip;
+            uint32 value;
+            data >> value;
+            if (i == 2)
+                raceUnlockCount = value;
         }
         if (disabledClassesMaskPresent)
         {
@@ -111,20 +117,34 @@ struct ClassicEnumCharactersResult
             data >> skip;
         }
 
+        // RaceUnlockData follows the characters: RaceID (4) and one byte of flag bits each.
+        auto const skipRaceUnlockData = [&]()
+        {
+            size_t const bytes = std::min(size_t(raceUnlockCount) * 5, data.size() - data.rpos());
+            data.rpos(data.rpos() + bytes);
+        };
+
         Characters.clear();
         if (CharacterCount == 0)
+        {
+            skipRaceUnlockData();
             return true;
+        }
 
         // The full per-character parse if the layout matches; else the lenient subset.
         size_t const listStart = data.rpos();
         if (ReadCharacters(data))
         {
             FirstCharacterGuid = Characters[0].Guid;
+            skipRaceUnlockData();
             return true;
         }
         Characters.clear();
         data.rpos(listStart);
-        return FirstCharacterGuid.Read(data);
+        if (!FirstCharacterGuid.Read(data))
+            return false;
+        skipRaceUnlockData();
+        return true;
     }
 
     // With Characters set: the whole fixed layout for each (unknown fields zero, no mail); without:
@@ -133,21 +153,20 @@ struct ClassicEnumCharactersResult
     void Write(ByteBuffer& data) const
     {
         for (int i = 0; i < 9; ++i)
-            data.WriteBit(i == 0);
+            data.WriteBit(i == 0 || i == 7); // Success, DisabledClassesMask.HasValue
         data.FlushBits();
 
-        // DisabledClassesMask.HasValue (bit 7 above) is always false, so its field is omitted here
-        // too -- matching Read, which only consumes it when that bit is set.
         data << (Characters.empty() ? CharacterCount : uint32(Characters.size()));
-        for (int i = 0; i < 6; ++i)
-            data << uint32(0);
+        data << uint32(0);                 // RegionwideCharacters.Count
+        data << MaxCharacterLevel;
+        data << uint32(RACE_COUNT);        // RaceUnlockData.Count
+        data << uint32(0);                 // UnlockedConditionalAppearances.Count
+        data << uint32(0);                 // RaceLimitDisables.Count
+        data << uint32(0);                 // WarbandGroups.Count
+        data << uint32(0);                 // DisabledClassesMask
 
-        if (Characters.empty())
-        {
-            if (CharacterCount > 0)
-                FirstCharacterGuid.Write(data);
-            return;
-        }
+        if (Characters.empty() && CharacterCount > 0)
+            FirstCharacterGuid.Write(data);
 
         for (ClassicCharacterInfo const& c : Characters)
         {
@@ -186,6 +205,17 @@ struct ClassicEnumCharactersResult
             data.WriteBit(false);              // RpeResetQuestClearAvailable
             data.FlushBits();
             data << uint32(0) << uint32(0) << uint32(0); // Flags4, mail senders, mail sender types
+        }
+
+        for (uint8 race = 1; race <= RACE_COUNT; ++race)
+        {
+            data << int32(race);
+            data.WriteBit(true);  // HasExpansion
+            data.WriteBit(false); // HasAchievement
+            data.WriteBit(false); // HasHeritageArmor
+            data.WriteBit(false); // IsLocked
+            data.WriteBit(false); // Unused1027
+            data.FlushBits();
         }
     }
 

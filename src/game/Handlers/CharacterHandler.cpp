@@ -676,6 +676,7 @@ void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*pa
     }
 
     response.CharacterCount = uint32(response.Characters.size());
+    response.MaxCharacterLevel = int32(m_characterMaxLevel);
     m_charactersCount = uint8(response.Characters.size());
 
     SendClassic(response);
