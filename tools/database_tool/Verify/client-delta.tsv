@@ -8,5 +8,8 @@ dbc_gameobjectdisplayinfo	20	0	0
 dbc_lock	0	1	0
 dbc_skillline	1	0	0
 dbc_skillraceclassinfo	1	74	0
+dbc_spellduration	2	0	0
+dbc_spellitemenchantment	0	14	0
+dbc_spellshapeshiftform	0	7	0
 dbc_talenttab	0	1	0
 dbc_transportanimation	0	300	0

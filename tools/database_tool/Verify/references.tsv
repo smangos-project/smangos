@@ -96,8 +96,10 @@ dbc_spellauravisxtalenttab	SpellAuraVisibilityID	dbc_spellauravisibility.ID		151
 dbc_spellcategories	Category	dbc_spellcategory.ID		5	
 dbc_spelleffect	EffectTriggerSpell	dbc_spell.ID		352	
 dbc_spellitemenchantment	EffectArg1	dbc_spell.ID		119	
-dbc_spellitemenchantment	EffectArg2	dbc_spell.ID		56	
+dbc_spellitemenchantment	EffectArg2	dbc_spell.ID		50	
+dbc_spellitemenchantment	ItemVisual	dbc_itemvisuals.ID		1	
 dbc_spellpower	PowerType	dbc_powertype.PowerTypeEnum		22	
+dbc_spellshapeshiftform	CreatureType	dbc_creaturetype.ID		5	
 dbc_spellvisual	SpellVisualMissileSetID	dbc_spellvisualmissile.SpellVisualMissileSetID		15	
 dbc_spellvisualanim	InitialAnimID	dbc_animationdata.ID		1443	
 dbc_spellvisualanim	LoopAnimID	dbc_animationdata.ID		119	

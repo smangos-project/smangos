@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 18;
+    uint32 const DBCFilesCount = 10;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -503,14 +503,67 @@ void LoadDBCStores(std::string const& dataPath)
         }
     }
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellCategoryStore,       dbcPath, "SpellCategory.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellCastTimesStore,      dbcPath, "SpellCastTimes.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellDurationStore,       dbcPath, "SpellDuration.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellFocusObjectStore,    dbcPath, "SpellFocusObject.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellItemEnchantmentStore, dbcPath, "SpellItemEnchantment.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellRadiusStore,         dbcPath, "SpellRadius.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellRangeStore,          dbcPath, "SpellRange.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellShapeshiftFormStore, dbcPath, "SpellShapeshiftForm.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellCategoryStore, "dbc_spellcategory", "`ID`, `Flags`", [](Field* f, SpellCategoryEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.Flags = f[1].GetUInt32();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellCastTimesStore, "dbc_spellcasttimes", "`ID`, `Base`, `PerLevel`, `Minimum`", [](Field* f, SpellCastTimesEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.CastTime = f[1].GetInt32();
+        e.CastTimePerLevel = f[2].GetInt32();
+        e.MinCastTime = f[3].GetInt32();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellDurationStore, "dbc_spellduration", "`ID`, `Duration`, `DurationPerLevel`, `MaxDuration`", [](Field* f, SpellDurationEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        for (uint32 i = 0; i < 3; ++i)
+            e.Duration[i] = f[1 + i].GetInt32();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellFocusObjectStore, "dbc_spellfocusobject", "`ID`", [](Field* f, SpellFocusObjectEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellItemEnchantmentStore, "dbc_spellitemenchantment", "`ID`, `Effect1`, `Effect2`, `Effect3`, `EffectPointsMin1`, `EffectPointsMin2`, `EffectPointsMin3`, `EffectArg1`, `EffectArg2`, `EffectArg3`, `Name_lang`, `ItemVisual`, `Flags`", [&](Field* f, SpellItemEnchantmentEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        for (uint32 i = 0; i < 3; ++i)
+        {
+            e.type[i] = f[1 + i].GetUInt32();
+            e.amount[i] = f[4 + i].GetUInt32();
+            e.spellid[i] = f[7 + i].GetUInt32();
+        }
+        FillLocalizedString(sSpellItemEnchantmentStore, const_cast<char const**>(e.description), f[10].GetCppString());
+        e.aura_id = static_cast<uint32>(f[11].GetInt32());
+        e.slot = f[12].GetUInt32();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellRadiusStore, "dbc_spellradius", "`ID`, `Radius`", [](Field* f, SpellRadiusEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.Radius = f[1].GetFloat();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellRangeStore, "dbc_spellrange", "`ID`, `RangeMin1`, `RangeMax1`", [](Field* f, SpellRangeEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        e.minRange = f[1].GetFloat();
+        e.maxRange = f[2].GetFloat();
+        return e.ID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sSpellShapeshiftFormStore, "dbc_spellshapeshiftform", "`ID`, `Name_lang`, `Flags`, `CreatureType`", [&](Field* f, SpellShapeshiftFormEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        FillLocalizedString(sSpellShapeshiftFormStore, const_cast<char const**>(e.Name), f[1].GetCppString());
+        e.flags1 = f[2].GetUInt32();
+        e.creatureType = f[3].GetInt32();
+        return e.ID;
+    });
     LoadDBCFromWorld(bar, badDbcFiles, sStableSlotPricesStore, "dbc_stableslotprices", "`ID`, `Cost`", [](Field* f, StableSlotPricesEntry& e)
     {
         e.Slot = f[0].GetUInt32();
