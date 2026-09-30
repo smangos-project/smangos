@@ -1203,7 +1203,7 @@ float SpellCaster::CalculateSpellEffectValue(Unit const* target, SpellEntry cons
                 case SPELL_AURA_MOD_SPEED_ALWAYS:
                 case SPELL_AURA_MOD_SPEED_NOT_STACK:
                 case SPELL_AURA_MOD_DECREASE_SPEED:
-                    modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPEED, value, spell);
+                    modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT2, value, spell);
                     break;
             }
         }
@@ -1757,7 +1757,7 @@ float SpellCaster::SpellBonusWithCoeffs(SpellEntry const* spellProto, SpellEffec
             if (Player* modOwner = pUnit->GetSpellModOwner())
             {
                 coeff *= 100.0f;
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, coeff, spell);
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff, spell);
                 coeff /= 100.0f;
             }
         }

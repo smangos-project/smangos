@@ -313,7 +313,7 @@ static bool DumpSpells(std::string const& dir)
         {"EffectRadiusIndex", MAX_EFFECT_INDEX}, {"EffectApplyAuraName", MAX_EFFECT_INDEX},
         {"EffectAmplitude", MAX_EFFECT_INDEX}, {"EffectMultipleValue", MAX_EFFECT_INDEX},
         {"EffectChainTarget", MAX_EFFECT_INDEX}, {"EffectItemType", MAX_EFFECT_INDEX},
-        {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectMiscValueB", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
+        {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectMiscValueB", MAX_EFFECT_INDEX}, {"EffectSummonKind", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
         {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX},
         {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
         {"StartRecoveryCategory"}, {"StartRecoveryTime"}, {"MaxTargetLevel"}, {"SpellFamilyName"},
@@ -346,7 +346,7 @@ static bool DumpSpells(std::string const& dir)
             << s->EffectRadiusIndex << s->EffectApplyAuraName
             << s->EffectAmplitude << s->EffectMultipleValue
             << s->EffectChainTarget << s->EffectItemType
-            << s->EffectMiscValue << s->EffectMiscValueB << s->EffectTriggerSpell
+            << s->EffectMiscValue << s->EffectMiscValueB << uint32(s->EffectSummonKind[0]) << uint32(s->EffectSummonKind[1]) << uint32(s->EffectSummonKind[2]) << s->EffectTriggerSpell
             << s->EffectPointsPerComboPoint
             << s->SpellName << s->Rank << s->ManaCostPercentage
             << s->StartRecoveryCategory << s->StartRecoveryTime << s->MaxTargetLevel << s->SpellFamilyName

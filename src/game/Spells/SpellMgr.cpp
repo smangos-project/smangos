@@ -3500,107 +3500,6 @@ void SpellMgr::AssignInternalSpellFlags()
 
 namespace
 {
-    // The effect number the spell code uses for a number the client renumbered.
-    uint32 EngineEffect(uint32 effect, int32 summonProperties, uint32& clamped)
-    {
-        switch (effect)
-        {
-            case 252: return SPELL_EFFECT_TELEPORT_UNITS;
-            case 325: return SPELL_EFFECT_ADD_HONOR;
-            case 326: return SPELL_EFFECT_OPEN_LOCK_ITEM;
-            case 327: return SPELL_EFFECT_PULL;
-            case 328: return SPELL_EFFECT_ADD_COMBO_POINTS;
-            case 320: return SPELL_EFFECT_SUMMON_OBJECT_SLOT1;
-            case 321: return SPELL_EFFECT_SUMMON_OBJECT_SLOT2;
-            case 322: return SPELL_EFFECT_SUMMON_OBJECT_SLOT3;
-            case 323: return SPELL_EFFECT_SUMMON_OBJECT_SLOT4;
-            case 329: return SPELL_EFFECT_RESURRECT_NEW;
-            case SPELL_EFFECT_SUMMON:
-                switch (GetSummonKind(uint32(summonProperties), sSummonPropertiesStore.LookupEntry(uint32(summonProperties))))
-                {
-                    case SUMMON_KIND_WILD:          return SPELL_EFFECT_SUMMON_WILD;
-                    case SUMMON_KIND_GUARDIAN:      return SPELL_EFFECT_SUMMON_GUARDIAN;
-                    case SUMMON_KIND_POSSESSED:     return SPELL_EFFECT_SUMMON_POSSESSED;
-                    case SUMMON_KIND_TOTEM:         return SPELL_EFFECT_SUMMON_TOTEM;
-                    case SUMMON_KIND_TOTEM_SLOT1:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT1;
-                    case SUMMON_KIND_TOTEM_SLOT2:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT2;
-                    case SUMMON_KIND_TOTEM_SLOT3:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT3;
-                    case SUMMON_KIND_TOTEM_SLOT4:   return SPELL_EFFECT_SUMMON_TOTEM_SLOT4;
-                    case SUMMON_KIND_CRITTER:       return SPELL_EFFECT_SUMMON_CRITTER;
-                    case SUMMON_KIND_DEMON:         return SPELL_EFFECT_SUMMON_DEMON;
-                    case SUMMON_KIND_TRANS_DOOR:    return SPELL_EFFECT_TRANS_DOOR;
-                    default:                        return SPELL_EFFECT_SUMMON;
-                }
-            // Numbers that only the old numbering gave a meaning to.
-            case SPELL_EFFECT_TELEPORT_UNITS:
-            case SPELL_EFFECT_SUMMON_WILD:
-            case SPELL_EFFECT_SUMMON_GUARDIAN:
-            case SPELL_EFFECT_ADD_HONOR:
-            case SPELL_EFFECT_OPEN_LOCK_ITEM:
-            case SPELL_EFFECT_PULL:
-            case SPELL_EFFECT_SUMMON_POSSESSED:
-            case SPELL_EFFECT_SUMMON_TOTEM:
-            case SPELL_EFFECT_ADD_COMBO_POINTS:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
-            case SPELL_EFFECT_SUMMON_CRITTER:
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
-            case SPELL_EFFECT_SUMMON_DEMON:
-            case SPELL_EFFECT_RESURRECT_NEW:
-                ++clamped;
-                return 0;
-        }
-        if (effect >= TOTAL_SPELL_EFFECTS)
-        {
-            ++clamped;
-            return 0;
-        }
-        return effect;
-    }
-
-    // The aura number the spell code uses for a number the client renumbered.
-    uint32 EngineAura(uint32 aura, uint32& clamped)
-    {
-        switch (aura)
-        {
-            case 551: return 70;
-            case 552: return 71;
-            case 553: return 73;
-            case 556: return 125;
-            case 378: return 128;
-            case 557: return 141;
-            case 558: return 143;
-            case 559: return 145;
-            case 560: return 148;
-            case 561: return 150;
-            case 562: return 153;
-            case 563: return 157;
-            case 564: return 158;
-            case 565: return 160;
-            case 566: return 165;
-            case 547: return 169;
-            case 569: return 179;
-            case 571: return 182;
-            case 572: return 183;
-            case 573: return 188;
-            case 70: case 71: case 73: case 125: case 128: case 141: case 143: case 145: case 148: case 150:
-            case 153: case 157: case 158: case 160: case 165: case 169: case 179: case 182: case 183: case 188:
-                ++clamped;
-                return 0;
-        }
-        if (aura >= TOTAL_AURAS)
-        {
-            ++clamped;
-            return 0;
-        }
-        return aura;
-    }
-
     void ClampTo(uint32& value, uint32 max, uint32& clamped)
     {
         if (value > max)
@@ -3903,7 +3802,6 @@ void SpellMgr::LoadSpells()
         } while (result->NextRow());
     }
 
-    // The spell code still runs on the old effect and aura numbers.
     std::map<std::string, uint32> clamped;
     for (std::unique_ptr<SpellEntry> const& spell : mSpellEntryMap)
     {
@@ -3912,8 +3810,10 @@ void SpellMgr::LoadSpells()
 
         for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
-            spell->Effect[i] = EngineEffect(spell->Effect[i], spell->EffectMiscValueB[i], clamped["Effect"]);
-            spell->EffectApplyAuraName[i] = EngineAura(spell->EffectApplyAuraName[i], clamped["EffectApplyAuraName"]);
+            ClampTo(spell->Effect[i], TOTAL_SPELL_EFFECTS - 1, clamped["Effect"]);
+            ClampTo(spell->EffectApplyAuraName[i], TOTAL_AURAS - 1, clamped["EffectApplyAuraName"]);
+            if (spell->Effect[i] == SPELL_EFFECT_SUMMON)
+                spell->EffectSummonKind[i] = GetSummonKind(uint32(spell->EffectMiscValueB[i]), sSummonPropertiesStore.LookupEntry(uint32(spell->EffectMiscValueB[i])));
             ClampTo(spell->EffectImplicitTargetA[i], TARGET_LOCATION_UNIT_POSITION, clamped["EffectImplicitTargetA"]);
             ClampTo(spell->EffectImplicitTargetB[i], TARGET_LOCATION_UNIT_POSITION, clamped["EffectImplicitTargetB"]);
             ClampTo(spell->EffectMechanic[i], MECHANIC_SLOW_CAST_SPEED, clamped["EffectMechanic"]);

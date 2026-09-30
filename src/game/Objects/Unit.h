@@ -22,6 +22,8 @@
 #ifndef __UNIT_H
 #define __UNIT_H
 
+#include <array>
+#include <map>
 #include "Common.h"
 #include "SharedDefines.h"
 #include "ItemPrototype.h"
@@ -617,7 +619,21 @@ class Unit : public SpellCaster
         SpellAuraHolderList m_deletedHolders;
         SingleCastSpellTargetMap m_singleCastSpellTargets;  // casted by unit single per-caster auras
         std::vector<GameObject*> m_spellGameObjects;
-        AuraList m_modAuras[TOTAL_AURAS];
+        // Auras of the unit by aura type; a type without auras costs nothing.
+        class AuraTypeLists
+        {
+            public:
+                AuraList& operator[](uint32 type) { return m_lists[type]; }
+                AuraList const& operator[](uint32 type) const
+                {
+                    auto itr = m_lists.find(type);
+                    return itr != m_lists.end() ? itr->second : m_empty;
+                }
+            private:
+                std::map<uint32, AuraList> m_lists;
+                inline static AuraList const m_empty{};
+        };
+        AuraTypeLists m_modAuras;
         uint32 m_lastManaUseSpellId;
         uint32 m_lastManaUseTimer;
         uint32 m_spellUpdateTimeBuffer;
@@ -1409,7 +1425,7 @@ class Unit : public SpellCaster
 };
 
 typedef SpellAuraProcResult(Unit::*pAuraProcHandler)(Unit* pVictim, uint32 amount, uint32 originalAmount, Aura* triggeredByAura, SpellEntry const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
-extern pAuraProcHandler AuraProcHandler[TOTAL_AURAS];
+extern std::array<pAuraProcHandler, TOTAL_AURAS> AuraProcHandler;
 
 
 inline Unit* Object::ToUnit()

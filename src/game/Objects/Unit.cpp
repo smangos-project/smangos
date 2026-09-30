@@ -4800,7 +4800,7 @@ void  Unit::RemoveSummonPossessedAuras(AuraRemoveMode mode)
     // these spells use dummy aura
     for (AuraList::const_iterator iter = m_modAuras[SPELL_AURA_DUMMY].begin(); iter != m_modAuras[SPELL_AURA_DUMMY].end();)
     {
-        if (!(*iter)->GetSpellProto()->HasEffect(SPELL_EFFECT_SUMMON_POSSESSED))
+        if (!(*iter)->GetSpellProto()->HasSummonEffect(SUMMON_KIND_POSSESSED))
         {
             ++iter;
             continue;

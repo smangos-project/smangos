@@ -243,7 +243,7 @@ enum SpellEffects
     SPELL_EFFECT_SCHOOL_DAMAGE             = 2,
     SPELL_EFFECT_DUMMY                     = 3,
     SPELL_EFFECT_PORTAL_TELEPORT           = 4,
-    SPELL_EFFECT_TELEPORT_UNITS            = 5,
+    SPELL_EFFECT_TELEPORT_UNITS            = 252,
     SPELL_EFFECT_APPLY_AURA                = 6,
     SPELL_EFFECT_ENVIRONMENTAL_DAMAGE      = 7,
     SPELL_EFFECT_POWER_DRAIN               = 8,
@@ -279,11 +279,9 @@ enum SpellEffects
     SPELL_EFFECT_DISPEL                    = 38,
     SPELL_EFFECT_LANGUAGE                  = 39,
     SPELL_EFFECT_DUAL_WIELD                = 40,
-    SPELL_EFFECT_SUMMON_WILD               = 41,
-    SPELL_EFFECT_SUMMON_GUARDIAN           = 42,
     SPELL_EFFECT_TELEPORT_UNITS_FACE_CASTER= 43,
     SPELL_EFFECT_SKILL_STEP                = 44,
-    SPELL_EFFECT_ADD_HONOR                 = 45,
+    SPELL_EFFECT_ADD_HONOR                 = 325,
     SPELL_EFFECT_SPAWN                     = 46,
     SPELL_EFFECT_TRADE_SKILL               = 47,
     SPELL_EFFECT_STEALTH                   = 48,
@@ -297,7 +295,7 @@ enum SpellEffects
     SPELL_EFFECT_SUMMON_PET                = 56,
     SPELL_EFFECT_LEARN_PET_SPELL           = 57,
     SPELL_EFFECT_WEAPON_DAMAGE             = 58,
-    SPELL_EFFECT_OPEN_LOCK_ITEM            = 59,
+    SPELL_EFFECT_OPEN_LOCK_ITEM            = 326,
     SPELL_EFFECT_PROFICIENCY               = 60,
     SPELL_EFFECT_SEND_EVENT                = 61,
     SPELL_EFFECT_POWER_BURN                = 62,
@@ -308,50 +306,42 @@ enum SpellEffects
     SPELL_EFFECT_HEAL_MAX_HEALTH           = 67,
     SPELL_EFFECT_INTERRUPT_CAST            = 68,
     SPELL_EFFECT_DISTRACT                  = 69,
-    SPELL_EFFECT_PULL                      = 70,
+    SPELL_EFFECT_PULL                      = 327,
     SPELL_EFFECT_PICKPOCKET                = 71,
     SPELL_EFFECT_ADD_FARSIGHT              = 72,
-    SPELL_EFFECT_SUMMON_POSSESSED          = 73,
-    SPELL_EFFECT_SUMMON_TOTEM              = 74,
     SPELL_EFFECT_HEAL_MECHANICAL           = 75,
     SPELL_EFFECT_SUMMON_OBJECT_WILD        = 76,
     SPELL_EFFECT_SCRIPT_EFFECT             = 77,
     SPELL_EFFECT_ATTACK                    = 78,
     SPELL_EFFECT_SANCTUARY                 = 79,
-    SPELL_EFFECT_ADD_COMBO_POINTS          = 80,
+    SPELL_EFFECT_ADD_COMBO_POINTS          = 328,
     SPELL_EFFECT_CREATE_HOUSE              = 81,
     SPELL_EFFECT_BIND_SIGHT                = 82,
     SPELL_EFFECT_DUEL                      = 83,
     SPELL_EFFECT_STUCK                     = 84,
     SPELL_EFFECT_SUMMON_PLAYER             = 85,
     SPELL_EFFECT_ACTIVATE_OBJECT           = 86,
-    SPELL_EFFECT_SUMMON_TOTEM_SLOT1        = 87,
-    SPELL_EFFECT_SUMMON_TOTEM_SLOT2        = 88,
-    SPELL_EFFECT_SUMMON_TOTEM_SLOT3        = 89,
-    SPELL_EFFECT_SUMMON_TOTEM_SLOT4        = 90,
     SPELL_EFFECT_THREAT_ALL                = 91,
     SPELL_EFFECT_ENCHANT_HELD_ITEM         = 92,
     SPELL_EFFECT_SUMMON_PHANTASM           = 93,
     SPELL_EFFECT_SELF_RESURRECT            = 94,
     SPELL_EFFECT_SKINNING                  = 95,
     SPELL_EFFECT_CHARGE                    = 96,
-    SPELL_EFFECT_SUMMON_CRITTER            = 97,
     SPELL_EFFECT_KNOCK_BACK                = 98,
     SPELL_EFFECT_DISENCHANT                = 99,
     SPELL_EFFECT_INEBRIATE                 = 100,
     SPELL_EFFECT_FEED_PET                  = 101,
     SPELL_EFFECT_DISMISS_PET               = 102,
     SPELL_EFFECT_REPUTATION                = 103,
-    SPELL_EFFECT_SUMMON_OBJECT_SLOT1       = 104,
-    SPELL_EFFECT_SUMMON_OBJECT_SLOT2       = 105,
-    SPELL_EFFECT_SUMMON_OBJECT_SLOT3       = 106,
-    SPELL_EFFECT_SUMMON_OBJECT_SLOT4       = 107,
+    SPELL_EFFECT_SUMMON_OBJECT_SLOT1       = 320,
+    SPELL_EFFECT_SUMMON_OBJECT_SLOT2       = 321,
+    SPELL_EFFECT_SUMMON_OBJECT_SLOT3       = 322,
+    SPELL_EFFECT_SUMMON_OBJECT_SLOT4       = 323,
     SPELL_EFFECT_DISPEL_MECHANIC           = 108,
     SPELL_EFFECT_SUMMON_DEAD_PET           = 109,
     SPELL_EFFECT_DESTROY_ALL_TOTEMS        = 110,
     SPELL_EFFECT_DURABILITY_DAMAGE         = 111,
-    SPELL_EFFECT_SUMMON_DEMON              = 112,
-    SPELL_EFFECT_RESURRECT_NEW             = 113,
+    SPELL_EFFECT_RESURRECT_NEW             = 329,
     SPELL_EFFECT_ATTACK_ME                 = 114,
     SPELL_EFFECT_DURABILITY_DAMAGE_PCT     = 115,
     SPELL_EFFECT_SKIN_PLAYER_CORPSE        = 116,
@@ -374,37 +364,8 @@ enum SpellEffects
     SPELL_EFFECT_NOSTALRIUS                = 131,
     SPELL_EFFECT_APPLY_AREA_AURA_RAID      = 132,
     SPELL_EFFECT_APPLY_AREA_AURA_OWNER     = 133,
-    TOTAL_SPELL_EFFECTS                    = 134
+    TOTAL_SPELL_EFFECTS                    = 332
 };
-
-// The effect number the 1.15 client uses for a spell effect number of ours
-inline uint32 GetClientSpellEffect(uint32 effect)
-{
-    switch (effect)
-    {
-        case SPELL_EFFECT_TELEPORT_UNITS:       return 252;
-        case SPELL_EFFECT_ADD_HONOR:            return 325;
-        case SPELL_EFFECT_OPEN_LOCK_ITEM:       return 326;
-        case SPELL_EFFECT_PULL:                 return 327;
-        case SPELL_EFFECT_ADD_COMBO_POINTS:     return 328;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:  return 320;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:  return 321;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:  return 322;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:  return 323;
-        case SPELL_EFFECT_RESURRECT_NEW:        return 329;
-        case SPELL_EFFECT_SUMMON_WILD:
-        case SPELL_EFFECT_SUMMON_GUARDIAN:
-        case SPELL_EFFECT_SUMMON_POSSESSED:
-        case SPELL_EFFECT_SUMMON_TOTEM:
-        case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
-        case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
-        case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
-        case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
-        case SPELL_EFFECT_SUMMON_CRITTER:
-        case SPELL_EFFECT_SUMMON_DEMON:         return 28;
-        default:                                return effect;
-    }
-}
 
 enum SpellCastResult
 {
@@ -599,7 +560,7 @@ enum SpellModOp
     SPELLMOD_DAMAGE                 = 0,
     SPELLMOD_DURATION               = 1,
     SPELLMOD_THREAT                 = 2,
-    SPELLMOD_ATTACK_POWER           = 3,
+    SPELLMOD_EFFECT1           = 3,
     SPELLMOD_CHARGES                = 4,
     SPELLMOD_RANGE                  = 5,
     SPELLMOD_RADIUS                 = 6,
@@ -608,7 +569,7 @@ enum SpellModOp
     SPELLMOD_NOT_LOSE_CASTING_TIME  = 9,
     SPELLMOD_CASTING_TIME           = 10,
     SPELLMOD_COOLDOWN               = 11,
-    SPELLMOD_SPEED                  = 12,
+    SPELLMOD_EFFECT2                  = 12,
     SPELLMOD_COST                   = 14,
     SPELLMOD_CRIT_DAMAGE_BONUS      = 15,
     SPELLMOD_RESIST_MISS_CHANCE     = 16,
@@ -618,8 +579,8 @@ enum SpellModOp
     SPELLMOD_EFFECT_PAST_FIRST      = 20,
     SPELLMOD_GLOBAL_COOLDOWN        = 21,
     SPELLMOD_DOT                    = 22,
-    SPELLMOD_HASTE                  = 23,
-    SPELLMOD_SPELL_BONUS_DAMAGE     = 24,
+    SPELLMOD_EFFECT3                  = 23,
+    SPELLMOD_BONUS_MULTIPLIER     = 24,
     SPELLMOD_MULTIPLE_VALUE         = 27,
     SPELLMOD_RESIST_DISPEL_CHANCE   = 28,
     MAX_SPELLMOD                    = 29,

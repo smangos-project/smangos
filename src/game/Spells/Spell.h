@@ -130,6 +130,7 @@ class Spell
         void EffectProficiency(SpellEffectIndex effIdx);
         void EffectApplyAreaAura(SpellEffectIndex effIdx);
         void EffectSummon(SpellEffectIndex effIdx);
+        void EffectSummonPetCreature(SpellEffectIndex effIdx);
         void EffectLearnSpell(SpellEffectIndex effIdx);
         void EffectDispel(SpellEffectIndex effIdx);
         void EffectLanguage(SpellEffectIndex effIdx);

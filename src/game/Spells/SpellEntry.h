@@ -27,6 +27,7 @@
 #include "DBCStructure.h"
 #include "SharedDefines.h"
 #include "SpellDefines.h"
+#include "SummonKind.h"
 #include "SpellAuraDefines.h"
 
 class Spell;
@@ -561,24 +562,14 @@ namespace Spells
         switch (effectName)
         {
             case SPELL_EFFECT_SUMMON:
-            case SPELL_EFFECT_SUMMON_WILD:
-            case SPELL_EFFECT_SUMMON_GUARDIAN:
             case SPELL_EFFECT_SUMMON_PET:
-            case SPELL_EFFECT_SUMMON_POSSESSED:
-            case SPELL_EFFECT_SUMMON_TOTEM:
             case SPELL_EFFECT_SUMMON_OBJECT_WILD:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
             case SPELL_EFFECT_SUMMON_PHANTASM:
-            case SPELL_EFFECT_SUMMON_CRITTER:
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
             case SPELL_EFFECT_SUMMON_DEAD_PET:
-            case SPELL_EFFECT_SUMMON_DEMON:
             return true;
         }
 
@@ -659,6 +650,7 @@ class SpellEntry
         uint64    EffectItemType[MAX_EFFECT_INDEX] = {};           // 106-108
         int32     EffectMiscValue[MAX_EFFECT_INDEX] = {};          // 109-111
         int32     EffectMiscValueB[MAX_EFFECT_INDEX] = {};         // SummonProperties id on summon effects
+        SummonKind EffectSummonKind[MAX_EFFECT_INDEX] = {};        // kind of the summon effects
         uint32    EffectTriggerSpell[MAX_EFFECT_INDEX] = {};       // 112-114
         float     EffectPointsPerComboPoint[MAX_EFFECT_INDEX] = {};// 115-117
       //uint32    SpellVisual2;                                    // 119 not used
@@ -1087,9 +1079,22 @@ class SpellEntry
             return (AttributesEx & (SPELL_ATTR_EX_FINISHING_MOVE_DAMAGE | SPELL_ATTR_EX_FINISHING_MOVE_DURATION));
         }
 
+        bool IsSummonEffect(uint32 index, SummonKind kind) const
+        {
+            return Effect[index] == SPELL_EFFECT_SUMMON && EffectSummonKind[index] == kind;
+        }
+
+        bool HasSummonEffect(SummonKind kind) const
+        {
+            for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+                if (IsSummonEffect(i, kind))
+                    return true;
+            return false;
+        }
+
         bool IsTotemSummonSpell() const
         {
-            return Effect[0] >= SPELL_EFFECT_SUMMON_TOTEM_SLOT1 && Effect[0] <= SPELL_EFFECT_SUMMON_TOTEM_SLOT4;
+            return Effect[0] == SPELL_EFFECT_SUMMON && EffectSummonKind[0] >= SUMMON_KIND_TOTEM_SLOT1 && EffectSummonKind[0] <= SUMMON_KIND_TOTEM_SLOT4;
         }
 
         bool HasRealTimeDuration() const

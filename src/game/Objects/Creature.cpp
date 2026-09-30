@@ -4028,7 +4028,7 @@ SpellCastResult Creature::TryToCast(Unit* pTarget, SpellEntry const* pSpellInfo,
         // Do not summon multiple of same guardian mob.
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (pSpellInfo->Effect[i] == SPELL_EFFECT_SUMMON_GUARDIAN && GetGuardianCountWithEntry(pSpellInfo->EffectMiscValue[i]))
+            if (pSpellInfo->IsSummonEffect(i, SUMMON_KIND_GUARDIAN) && GetGuardianCountWithEntry(pSpellInfo->EffectMiscValue[i]))
                 return SPELL_FAILED_ALREADY_HAVE_SUMMON;
         }
     }
@@ -4299,7 +4299,7 @@ void Creature::CancelSummonPossessedCharm()
     {
         if (SpellEntry const* pSpellInfo = sSpellMgr.GetSpellEntry(GetUInt32Value(UNIT_CREATED_BY_SPELL)))
         {
-            if (pSpellInfo->HasEffect(SPELL_EFFECT_SUMMON_POSSESSED))
+            if (pSpellInfo->HasSummonEffect(SUMMON_KIND_POSSESSED))
             {
                 if (Unit* pOwner = GetCharmer())
                 {

@@ -19,6 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <array>
 #include "Spell.h"
 #include "Log.h"
 #include "Opcodes.h"
@@ -65,7 +66,7 @@ ClassicGuid ToClassicGuid(ObjectGuid const& guid)
 }
 }
 
-extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
+extern std::array<pEffect, TOTAL_SPELL_EFFECTS> SpellEffects;
 
 Spell::Spell(Unit* caster, SpellEntry const* info, bool triggered, ObjectGuid originalCasterGUID, SpellEntry const* triggeredBy, Unit* victim, SpellEntry const* triggeredByParent):
     m_spellInfo(info), m_triggeredBySpellInfo(triggeredBy), m_triggeredByParentSpellInfo(triggeredByParent), m_caster(caster), m_casterUnit(caster), m_IsTriggeredSpell(triggered)
@@ -2373,7 +2374,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
         {
             if (m_spellInfo->Effect[effIndex] == SPELL_EFFECT_PERSISTENT_AREA_AURA)
                 break;
-            else if (m_spellInfo->Effect[effIndex] == SPELL_EFFECT_SUMMON || m_spellInfo->Effect[effIndex] == SPELL_EFFECT_SUMMON_WILD || m_spellInfo->Effect[effIndex] == SPELL_EFFECT_SUMMON_OBJECT_WILD)
+            else if (m_spellInfo->IsSummonEffect(effIndex, SUMMON_KIND_PET) || m_spellInfo->IsSummonEffect(effIndex, SUMMON_KIND_WILD) || m_spellInfo->Effect[effIndex] == SPELL_EFFECT_SUMMON_OBJECT_WILD)
             {
                 if (m_casterUnit)
                     targetUnitMap.push_back(m_casterUnit);
@@ -2484,6 +2485,11 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
             switch (m_spellInfo->Effect[effIndex])
             {
                 case SPELL_EFFECT_SUMMON:
+                    if (m_spellInfo->EffectSummonKind[effIndex] != SUMMON_KIND_PET)
+                    {
+                        FillAreaTargets(targetUnitMap, radius, PUSH_DEST_CENTER, SPELL_TARGETS_AOE_DAMAGE);
+                        break;
+                    }
                     if (m_casterUnit)
                         targetUnitMap.push_back(m_casterUnit);
                     break;
@@ -3048,7 +3054,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 case SPELL_EFFECT_LEARN_SPELL:
                 case SPELL_EFFECT_SKILL_STEP:
                 case SPELL_EFFECT_PROFICIENCY:
-                case SPELL_EFFECT_SUMMON_POSSESSED:
                 case SPELL_EFFECT_SUMMON_OBJECT_WILD:
                 case SPELL_EFFECT_SELF_RESURRECT:
                 case SPELL_EFFECT_REPUTATION:
@@ -3080,15 +3085,38 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                     }
                     break;
                 case SPELL_EFFECT_SUMMON:
-                    /*[-ZERO]  if (m_spellInfo->EffectMiscValueB[effIndex] == SUMMON_TYPE_POSESSED ||
-                          m_spellInfo->EffectMiscValueB[effIndex] == SUMMON_TYPE_POSESSED2)
-                      {
-                          if (m_targets.getUnitTarget())
-                              targetUnitMap.push_back(m_targets.getUnitTarget());
-                      }
-                      else */
-                    if (m_casterUnit)
-                        targetUnitMap.push_back(m_casterUnit);
+                    switch (m_spellInfo->EffectSummonKind[effIndex])
+                    {
+                        case SUMMON_KIND_POSSESSED:
+                            if (m_targets.getUnitTarget())
+                                targetUnitMap.push_back(m_targets.getUnitTarget());
+                            break;
+                        case SUMMON_KIND_WILD:
+                            if (!m_originalCasterGUID.IsEmpty() && m_originalCasterGUID.IsGameObject())
+                            {
+                                if (GameObject* pSummoner = m_caster->GetMap()->GetGameObject(m_originalCasterGUID))
+                                    m_targets.setDestination(pSummoner->GetPositionX(), pSummoner->GetPositionY(), pSummoner->GetPositionZ());
+                            }
+
+                            if (m_casterUnit)
+                                targetUnitMap.push_back(m_casterUnit);
+                            else if (m_casterGo)
+                                AddGOTarget(m_casterGo, effIndex);
+                            break;
+                        case SUMMON_KIND_DEMON:
+                            if (m_casterUnit)
+                                targetUnitMap.push_back(m_casterUnit);
+                            else if (m_casterGo)
+                                AddGOTarget(m_casterGo, effIndex);
+                            break;
+                        case SUMMON_KIND_PET:
+                        case SUMMON_KIND_GUARDIAN:
+                            if (m_casterUnit)
+                                targetUnitMap.push_back(m_casterUnit);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case SPELL_EFFECT_TRANS_DOOR:
                 {
@@ -3102,30 +3130,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                         targetUnitMap.push_back(m_casterUnit);
                     break;
                 }
-                case SPELL_EFFECT_SUMMON_WILD:
-                {
-                    if (!m_originalCasterGUID.IsEmpty() && m_originalCasterGUID.IsGameObject())
-                    {
-                        if (GameObject* pSummoner = m_caster->GetMap()->GetGameObject(m_originalCasterGUID))
-                            m_targets.setDestination(pSummoner->GetPositionX(), pSummoner->GetPositionY(), pSummoner->GetPositionZ());
-                    }
-
-                    if (m_casterUnit)
-                        targetUnitMap.push_back(m_casterUnit);
-                    else if (m_casterGo)
-                        AddGOTarget(m_casterGo, effIndex);
-                    break;
-                }
-                case SPELL_EFFECT_SUMMON_DEMON:
-                {
-                    if (m_casterUnit)
-                        targetUnitMap.push_back(m_casterUnit);
-                    else if (m_casterGo)
-                        AddGOTarget(m_casterGo, effIndex);
-                    break;
-                }
                 case SPELL_EFFECT_SUMMON_CHANGE_ITEM:
-                case SPELL_EFFECT_SUMMON_GUARDIAN:
                 case SPELL_EFFECT_ADD_FARSIGHT:
                 case SPELL_EFFECT_STUCK:
                 case SPELL_EFFECT_DESTROY_ALL_TOTEMS:
@@ -4622,7 +4627,7 @@ void Spell::SendLogExecute()
             continue;
 
         SpellLogEffect effect;
-        effect.Effect = int32(GetClientSpellEffect(m_spellInfo->Effect[i]));
+        effect.Effect = int32(m_spellInfo->Effect[i]);
         for (ExecuteLogInfo const& info : m_executeLogInfo[i])
         {
             ClassicGuid const victim = ToClassicGuid(info.targetGuid);
@@ -4662,21 +4667,11 @@ void Spell::SendLogExecute()
                 case SPELL_EFFECT_TRANS_DOOR:
                 case SPELL_EFFECT_SUMMON:
                 case SPELL_EFFECT_SUMMON_PET:
-                case SPELL_EFFECT_SUMMON_WILD:
-                case SPELL_EFFECT_SUMMON_GUARDIAN:
-                case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:
-                case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:
-                case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:
-                case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:
-                case SPELL_EFFECT_SUMMON_POSSESSED:
-                case SPELL_EFFECT_SUMMON_TOTEM:
-                case SPELL_EFFECT_SUMMON_CRITTER:
                 case SPELL_EFFECT_SUMMON_OBJECT_WILD:
                 case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
                 case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
                 case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
                 case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
-                case SPELL_EFFECT_SUMMON_DEMON:
                     effect.GenericVictimTargets.push_back(victim);
                     break;
                 default:
@@ -6088,15 +6083,19 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 break;
             }
-            // Don't make this check for SPELL_EFFECT_SUMMON_CRITTER, SPELL_EFFECT_SUMMON_WILD or SPELL_EFFECT_SUMMON_GUARDIAN.
-            // These won't show up in m_caster->GetPetGUID()
-            case SPELL_EFFECT_SUMMON_POSSESSED:
-                if (m_casterUnit && m_casterUnit->GetCharmGuid())
-                    return SPELL_FAILED_ALREADY_HAVE_CHARM;
-                break;
             case SPELL_EFFECT_SUMMON:
+                // Don't make this check for critters, wild summons or guardians.
+                // These won't show up in m_caster->GetPetGUID()
+                if (m_spellInfo->EffectSummonKind[i] == SUMMON_KIND_POSSESSED)
+                {
+                    if (m_casterUnit && m_casterUnit->GetCharmGuid())
+                        return SPELL_FAILED_ALREADY_HAVE_CHARM;
+                    break;
+                }
+                if (m_spellInfo->EffectSummonKind[i] != SUMMON_KIND_PET && m_spellInfo->EffectSummonKind[i] != SUMMON_KIND_DEMON)
+                    break;
+                [[fallthrough]];
             case SPELL_EFFECT_SUMMON_PHANTASM:
-            case SPELL_EFFECT_SUMMON_DEMON:
             case SPELL_EFFECT_SUMMON_PET:
             {
                 if (m_casterUnit)
