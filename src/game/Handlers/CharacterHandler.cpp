@@ -929,6 +929,7 @@ void WorldSession::HandleClassicConnectToFailedOpcode(ConnectToFailed const& pac
     {
         m_awaitingInstanceConnect = false;
         ClearPendingInstanceConnect();
+        DropHeldInstancePackets();
         CharacterLoginFailed failed;
         failed.Reason = 1; // NoWorld
         SendClassic(failed);

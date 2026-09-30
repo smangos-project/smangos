@@ -258,7 +258,19 @@ void WorldSession::SendPacketImpl(WorldPacket const* packet)
     // Every classic opcode has a fixed connection (decision 5); a packet whose socket isn't up yet
     // (most commonly the Instance one, before SMSG_CONNECT_TO's redirect lands) is dropped rather
     // than sent on the wrong socket.
-    WorldSocket* target = ClassicSendRoute(packet->GetOpcode()) == ClassicConnectionType::Instance ? m_instanceSocket.get() : m_socket.get();
+    bool const toInstance = ClassicSendRoute(packet->GetOpcode()) == ClassicConnectionType::Instance;
+    if (toInstance)
+    {
+        std::lock_guard<std::mutex> lock(m_heldInstancePacketsLock);
+        if (m_holdInstancePackets)
+        {
+            if (m_heldInstancePackets.size() < 4096)
+                m_heldInstancePackets.push_back(*packet);
+            return;
+        }
+    }
+
+    WorldSocket* target = toInstance ? m_instanceSocket.get() : m_socket.get();
     if (!target)
     {
         sLog.Out(LOG_NETWORK, LOG_LVL_DEBUG, "[NETWORK] %s has no socket to send %s on yet, dropped", GetPlayerName(), LookupOpcodeName(packet->GetOpcode()));
@@ -273,6 +285,7 @@ void WorldSession::SendConnectToInstance(uint32 serial)
     {
         SendClassic(CharacterLoginFailed{ 1 }); // NoWorld
         m_awaitingInstanceConnect = false;
+        DropHeldInstancePackets();
     };
 
     nonstd::optional<BnetRealm> realm = sBnetRealmList.FindById(realmID);
@@ -331,8 +344,31 @@ void WorldSession::SendConnectToInstance(uint32 serial)
     m_pendingInstanceConnectKey = packedKey;
     m_pendingInstanceConnectSerial = serial;
     m_awaitingInstanceConnect = true;
+    {
+        std::lock_guard<std::mutex> lock(m_heldInstancePacketsLock);
+        if (!m_holdInstancePackets)
+            m_heldInstancePackets.clear();
+        m_holdInstancePackets = true;
+    }
 
     SendClassic(connectTo);
+}
+
+void WorldSession::FlushHeldInstancePackets()
+{
+    std::lock_guard<std::mutex> lock(m_heldInstancePacketsLock);
+    m_holdInstancePackets = false;
+    for (WorldPacket const& packet : m_heldInstancePackets)
+        if (m_instanceSocket)
+            m_instanceSocket->SendPacket(packet);
+    m_heldInstancePackets.clear();
+}
+
+void WorldSession::DropHeldInstancePackets()
+{
+    std::lock_guard<std::mutex> lock(m_heldInstancePacketsLock);
+    m_holdInstancePackets = false;
+    m_heldInstancePackets.clear();
 }
 
 void WorldSession::SetInstanceSocket(std::shared_ptr<WorldSocket> socket)

@@ -268,6 +268,8 @@ class WorldSession
         // CMSG_AUTH_CONTINUED_SESSION attaches one.
         std::shared_ptr<WorldSocket> GetInstanceSocket() { return m_instanceSocket; }
         void SetInstanceSocket(std::shared_ptr<WorldSocket> socket);
+        void FlushHeldInstancePackets();
+        void DropHeldInstancePackets();
 
         // The 40-byte world session key CMSG_AUTH_SESSION established on the Realm connection;
         // CMSG_AUTH_CONTINUED_SESSION's digest is checked against it rather than a fresh exchange.
@@ -954,6 +956,9 @@ class WorldSession
         uint64 m_pendingInstanceConnectKey = 0; // the most recently issued SMSG_CONNECT_TO's key
         uint32 m_pendingInstanceConnectSerial = 0; // ... and the attempt serial it went out with
         bool m_awaitingInstanceConnect = false; // true from the first SMSG_CONNECT_TO until one lands
+        std::mutex m_heldInstancePacketsLock;
+        std::vector<WorldPacket> m_heldInstancePackets; // Instance packets sent before that connection resumed
+        bool m_holdInstancePackets = false;
         std::string m_remoteIpAddress; // might also be "<BOT>"
         LockedQueue<std::unique_ptr<ClientPacket const>, std::mutex> m_recvQueue[PACKET_PROCESS_MAX_TYPE];
         bool m_receivedPacketType[PACKET_PROCESS_MAX_TYPE];

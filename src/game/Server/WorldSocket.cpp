@@ -448,6 +448,8 @@ WorldSocket::HandlerResult WorldSocket::HandleEnterEncryptedModeAck(ByteBuffer& 
     if (m_connectionType == ClassicConnectionType::Instance)
     {
         SendClassic(ResumeComms{});
+        if (m_Session)
+            m_Session->FlushHeldInstancePackets();
         return HandlerResult::Okay;
     }
 
