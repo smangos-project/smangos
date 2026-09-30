@@ -423,12 +423,11 @@ character and log databases (the world database is a DoltLite file):
 2. `contrib/vmport/setup-databases.ps1` loads `sql/logon.sql`, `characters.sql`, `logs.sql`, then their
    migrations in `sql/migrations`. Build the world database with `database_tool create`, which writes
    `.world/world.doltlite`; `CheckRequiredMigrations` at startup checks it is current.
-3. `contrib/vmport/setup-run-dir.ps1 -ClientData <the 5875 folder holding dbc\>` links the client
-   data (never copies or writes it), writes `mangosd.conf` and `bnetserver.conf` from the `.dist`
-   files with this setup's databases and ports (REST 8091, RPC 1129, world 8095, instance 8096),
-   copies the development certificate from `contrib/bnetserver/` and adds the realm row.
-4. Run `bin\Release\bnetserver.exe -c <run>\bnetserver.conf` and `mangosd.exe -c <run>\mangosd.conf`
-   from the build output directory (the OpenSSL and `libmySQL` DLLs are found there).
+3. Build the `server_setup` target with `-DSERVER_MAP_DATA_DIR=<the maps folder>`. It creates `.server/`
+   (configs from the `.dist` files, the development certificate, a link to the map data). Edit the
+   database strings and ports (REST 8091, RPC 1129, world 8095, instance 8096) in
+   `.server/config/mangosd.conf` and `bnetserver.conf` once; mangosd adds the realm row itself.
+4. Run `bin\RelWithDebInfonetserver.exe` and `mangosd.exe` with no arguments (both change into `.server`).
 5. `account create <name> <password>` on the `mangosd` console provisions each bot account, including
    its Battle.net row. `contrib/realbotrunner/provision-accounts.ps1 -Flavor vmangos` prints the
    commands and the `Accounts` line.
