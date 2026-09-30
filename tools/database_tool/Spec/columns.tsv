@@ -1245,7 +1245,7 @@ srv	mail_loot_template	condition_id	server			read at LootMgr.cpp:123	yes
 srv	mail_loot_template	patch_min	drop			progression removed	yes
 srv	mail_loot_template	patch_max	drop			progression removed	yes
 srv	mail_text_template	entry	dbc	dbc_mailtemplate.ID	identity	95/96 shared, 1 vanilla-only row needs a manual insert (data-plan.md 3.1)	yes
-srv	mail_text_template	content_default	dbc	dbc_mailtemplate.Body_lang	mail_body_newline	body text differs only in \r\n (DB2) vs spaces (DB) line breaks, 7/95 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	mail_text_template	content_default	dbc	dbc_mailtemplate.Body_lang	identity	the client's text equals the vanilla text except 7 rows, which the migration sets to the vanilla text (the vanilla text has line breaks where the client has spaces)	yes
 srv	mail_text_template	content_loc1	server			non-default-locale mail text; DB2 is enUS only, so server-side localization has no client counterpart (stuff-plan.md 8.2 locales_* note)	yes
 srv	mail_text_template	content_loc2	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
 srv	mail_text_template	content_loc3	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes

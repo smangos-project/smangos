@@ -8,6 +8,7 @@ dbc_factiontemplate	0	6	0
 dbc_gameobjectdisplayinfo	20	233	0
 dbc_itemdisplayinfo	2	0	0
 dbc_lock	0	1	0
+dbc_mailtemplate	1	0	0
 dbc_namesprofanity	16	684	0
 dbc_namesreserved	232	1791	0
 dbc_skillline	1	0	0
