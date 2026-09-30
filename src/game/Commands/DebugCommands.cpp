@@ -1789,12 +1789,10 @@ bool ChatHandler::HandleSendSpellImpactCommand(char *args)
         uiPlayId = uint32(atoi(playIdStr));
     PSendSysMessage("Spell %u impact on target '%s'.", uiPlayId, pTarget->GetName());
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     auto packet = std::make_unique<WorldPackets::Spell::PlaySpellImpact>();
     packet->targetGuid = pTarget->GetObjectGuid();
     packet->spellVisualId = uiPlayId;
     pTarget->SendMessageToSet(std::move(packet), true);
-#endif
     return true;
 }
 
@@ -2232,7 +2230,6 @@ bool ChatHandler::HandleDebugMonsterChatCommand(char* args)
     }
 
     // 1.12.1 client
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     if (chatType == 11 || chatType == 12 || chatType == 90 || chatType == 13 || chatType == 26)
     {
         data << uint32(strlen(pSender->GetName()) + 1);
@@ -2275,41 +2272,6 @@ bool ChatHandler::HandleDebugMonsterChatCommand(char* args)
     data << rightText.c_str();
     data << uint8(0);
     pTarget->SendMessageToSet(&data, true);
-#else // 1.11.2 client
-
-    if (chatType == 11 || chatType == 12 || chatType == 89 || chatType == 13 || chatType == 26)
-    {
-        data << uint32(strlen(pSender->GetName()) + 1);
-        data << pSender->GetName();
-        data << pTarget->GetObjectGuid();
-        data << uint32(strlen(rightText.c_str()) + 1);
-        data << rightText.c_str();
-        data << uint8(0);
-        pTarget->SendMessageToSet(&data, true);
-        return true;
-    }
-
-    if (chatType == 82 || chatType == 83 || chatType == 84)
-    {
-        data << pTarget->GetObjectGuid();
-        data << uint32(strlen(rightText.c_str()) + 1);
-        data << rightText.c_str();
-        data << uint8(0);
-        pTarget->SendMessageToSet(&data, true);
-        return true;
-    }
-
-    if (chatType == 14)
-    {
-        data << "Channel";
-    }
-
-    data << pTarget->GetObjectGuid();
-    data << uint32(strlen(rightText.c_str()) + 1);
-    data << rightText.c_str();
-    data << uint8(0);
-    pTarget->SendMessageToSet(&data, true);
-#endif
 
     return true;
 }

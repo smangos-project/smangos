@@ -21,7 +21,6 @@
 #include "ZoneScript.h"
 #include "WorldStates.h"
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
 
 enum BroadCastTexts
 {
@@ -467,6 +466,5 @@ class OutdoorPvPEP : public OutdoorPvP
         uint32 m_HordeTowersControlled;
 };
 
-#endif
 
 #endif

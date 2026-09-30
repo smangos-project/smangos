@@ -39,13 +39,8 @@ AddonHandler::~AddonHandler()
 
 enum AddonStatus
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     ADDON_STATUS_BANNED  = 0,
     ADDON_STATUS_VISIBLE = 1,
-#else
-    ADDON_STATUS_VISIBLE = 0,
-    ADDON_STATUS_BANNED  = 1,
-#endif
     ADDON_STATUS_HIDDEN  = 2,
 };
 
@@ -80,7 +75,6 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* sourcePacket, WorldPacket* targ
 
     if (!uncompress(const_cast<uint8*>(decompressedPacket.contents()), &addonRealSize, const_cast<uint8*>((*sourcePacket).contents() + currentPosition), (*sourcePacket).size() - currentPosition) != Z_OK)
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         targetPacket->Initialize(SMSG_ADDON_INFO);
 
         static constexpr uint8 tdata[256] =
@@ -104,15 +98,6 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* sourcePacket, WorldPacket* targ
         };
         static constexpr uint32 correctModulusCRC = 0x4C1C776D;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-        uint8 unknown0;
-        uint32 unknown1;
-        decompressedPacket >> unknown0;
-        decompressedPacket >> unknown1;
-
-        // wowdev.pub
-        *targetPacket << uint8(0);
-#endif
 
         while (decompressedPacket.rpos() < decompressedPacket.size())
         {
@@ -147,7 +132,6 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* sourcePacket, WorldPacket* targ
                               << uint8(0)  // InfoProvided
                               << uint8(0); // UrlProvided
         }
-#endif
     }
     else
     {

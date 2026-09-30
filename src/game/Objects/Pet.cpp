@@ -401,10 +401,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petNumber, bool c
 
     if (owner->GetTypeId() == TYPEID_PLAYER)
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         if (owner->IsMounted())
             m_enabled = false;
-#endif
 
         owner->PetSpellInitialize();
         if (owner->GetGroup())
@@ -1261,11 +1259,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_MISC_FLAGS, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5);
         SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_RENAME | UNIT_FLAG_PET_ABANDON);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         SetFloatValue(UNIT_MOD_CAST_SPEED, creature->GetFloatValue(UNIT_MOD_CAST_SPEED));
-#else
-        SetInt32Value(UNIT_MOD_CAST_SPEED, creature->GetInt32Value(UNIT_MOD_CAST_SPEED));
-#endif
 
         SetLoyaltyLevel(REBELLIOUS);
     }
@@ -1311,22 +1305,14 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
     SetLevel(petlevel);
     SetInitCreaturePowerType();
 
-    // Before 1.9 pets retain their wild damage type
-    if (sWorld.GetWowPatch() < WOW_PATCH_109 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PETS))
-        SetMeleeDamageSchool(SpellSchools(cinfo->damage_school));
-    else
-        SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
+    SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
 
     // Nostalrius: pre-2.0: normalisation de la vitesse d'attaque des pets.
     SetAttackTime(BASE_ATTACK, cinfo->base_attack_time); //BASE_ATTACK_TIME);
     SetAttackTime(OFF_ATTACK, cinfo->base_attack_time); //BASE_ATTACK_TIME);
     SetAttackTime(RANGED_ATTACK, cinfo->ranged_attack_time); //BASE_ATTACK_TIME);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-#else
-    SetInt32Value(UNIT_MOD_CAST_SPEED, 0);
-#endif
 
     CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->pet_family);
     if (cFamily && cFamily->minScale > 0.0f && GetPetType() == HUNTER_PET)
@@ -1344,10 +1330,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
     }
     m_bonusdamage = 0;
 
-    // http://wowwiki.wikia.com/wiki/Patch_1.3.0
-    // Before 1.3 pets retain their wild resistances, however it is mentioned as a bug.
-    // TODO: Do we keep it or remove it?
-    if (GetPetType() != HUNTER_PET || (sWorld.GetWowPatch() < WOW_PATCH_103 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PETS)))
+    if (GetPetType() != HUNTER_PET)
     {
         SetCreateResistance(SPELL_SCHOOL_HOLY, cinfo->holy_res);
         SetCreateResistance(SPELL_SCHOOL_FIRE, cinfo->fire_res);

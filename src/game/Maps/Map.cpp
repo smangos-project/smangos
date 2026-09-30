@@ -1847,7 +1847,6 @@ bool Map::SendToPlayersInZone(WorldPacket const* data, uint32 zoneId) const
 
 void Map::SendDefenseMessage(int32 textId, uint32 zoneId) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     for (const auto& itr : m_mapRefManager)
     {
         Player* pPlayer = itr.getSource();
@@ -1860,7 +1859,6 @@ void Map::SendDefenseMessage(int32 textId, uint32 zoneId) const
 
         pPlayer->GetSession()->SendPacket(&data);
     }
-#endif
 }
 
 bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
@@ -2134,7 +2132,6 @@ bool DungeonMap::CanEnter(Player* player)
     //   accommodate this change.Combat resurrections, soulstones,
     //   reincarnate, etc.will still work fine.This is primarily to combat
     //   graveyard rushing in instances.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     Group* pGroup = player->GetGroup();
     if (IsRaid() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress() &&
         pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->IsAlive() && !player->IsGameMaster())
@@ -2142,7 +2139,6 @@ bool DungeonMap::CanEnter(Player* player)
         player->SendTransferAborted(TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
     }
-#endif
 
     return Map::CanEnter(player);
 }
@@ -3634,7 +3630,6 @@ void Map::RemoveCorpses(bool unload)
             // add bones in grid store if grid loaded where corpse placed
             Add(bones);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
             if (looterGuid)
             {
                 // Now we must make bones lootable, and send player loot
@@ -3646,7 +3641,6 @@ void Map::RemoveCorpses(bool unload)
                     looter->SendLoot(bones->GetObjectGuid(), LOOT_INSIGNIA, owner);
                 }
             }
-#endif
 
             // Only take the lock for a second
             {

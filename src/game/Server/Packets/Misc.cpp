@@ -94,7 +94,6 @@ void WorldPackets::Misc::LogoutCancelAck::AppendBodyTo(ByteBuffer& /*buffer*/) c
 {
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
 size_t WorldPackets::Misc::PlayTimeWarning::EstimateFinalSize() const
 {
     return sizeof(flag) +
@@ -105,7 +104,6 @@ void WorldPackets::Misc::PlayTimeWarning::AppendBodyTo(ByteBuffer& buffer) const
     buffer << flag;
     buffer << timeLeftInSeconds;
 }
-#endif
 
 size_t WorldPackets::Misc::LogoutResponse::EstimateFinalSize() const
 {
@@ -145,24 +143,14 @@ void WorldPackets::Misc::MeetingstoneJoinFailed::AppendBodyTo(ByteBuffer& buffer
 size_t WorldPackets::Misc::MeetingstoneSetQueue::EstimateFinalSize() const
 {
     return
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
            sizeof(areaId) +
            sizeof(status);
-#else
-           sizeof(idempotencyToken) +
-           sizeof(areaId);
-#endif
 }
 
 void WorldPackets::Misc::MeetingstoneSetQueue::AppendBodyTo(ByteBuffer& buffer) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     buffer << areaId;
     buffer << status;
-#else
-    buffer << idempotencyToken;
-    buffer << areaId;
-#endif
 }
 
 size_t WorldPackets::Misc::MeetingstoneMemberAdded::EstimateFinalSize() const
@@ -249,7 +237,6 @@ void WorldPackets::Misc::Notification::AppendBodyTo(ByteBuffer& buffer) const
     buffer << message;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
 size_t WorldPackets::Misc::InvalidatePlayer::EstimateFinalSize() const
 {
     return sizeof(playerGuid);
@@ -258,7 +245,6 @@ void WorldPackets::Misc::InvalidatePlayer::AppendBodyTo(ByteBuffer& buffer) cons
 {
     buffer << playerGuid;
 }
-#endif
 
 size_t WorldPackets::Misc::ZoneUnderAttack::EstimateFinalSize() const
 {
@@ -292,7 +278,6 @@ void WorldPackets::Misc::TriggerCinematic::AppendBodyTo(ByteBuffer& buffer) cons
     buffer << cinematicSequenceId;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
 size_t WorldPackets::Misc::FactionAtWarChange::EstimateFinalSize() const
 {
     return sizeof(reputationId) +
@@ -303,9 +288,7 @@ void WorldPackets::Misc::FactionAtWarChange::AppendBodyTo(ByteBuffer& buffer) co
     buffer << reputationId;
     buffer << flags;
 }
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 size_t WorldPackets::Misc::InstanceReset::EstimateFinalSize() const
 {
     return sizeof(mapId);
@@ -325,7 +308,6 @@ void WorldPackets::Misc::InstanceResetFailed::AppendBodyTo(ByteBuffer& buffer) c
     buffer << reason;
     buffer << mapId;
 }
-#endif
 
 size_t WorldPackets::Misc::RaidGroupOnly::EstimateFinalSize() const
 {
@@ -352,7 +334,6 @@ void WorldPackets::Misc::PlayerBound::AppendBodyTo(ByteBuffer& buffer) const
 }
 
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
 size_t WorldPackets::Misc::RaidInstanceMessage::EstimateFinalSize() const
 {
     return sizeof(messageType) +
@@ -365,9 +346,7 @@ void WorldPackets::Misc::RaidInstanceMessage::AppendBodyTo(ByteBuffer& buffer) c
     buffer << mapId;
     buffer << resetTime;
 }
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 size_t WorldPackets::Misc::UpdateInstanceOwnership::EstimateFinalSize() const
 {
     return sizeof(hasBeenSaved);
@@ -385,26 +364,15 @@ void WorldPackets::Misc::UpdateLastInstance::AppendBodyTo(ByteBuffer& buffer) co
 {
     buffer << mapId;
 }
-#endif
 
 size_t WorldPackets::Misc::UpdateWorldState::EstimateFinalSize() const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     return sizeof(field) +
            sizeof(value);
-#else
-    return sizeof(uint16) + /*field*/
-           sizeof(uint16); /*value*/
-#endif
 }
 
 void WorldPackets::Misc::UpdateWorldState::AppendBodyTo(ByteBuffer& buffer) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     buffer << field;
     buffer << value;
-#else
-    buffer << static_cast<uint16>(field);
-    buffer << static_cast<uint16>(value);
-#endif
 }

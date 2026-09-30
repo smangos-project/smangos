@@ -308,7 +308,7 @@ struct boss_majordomoAI : public ScriptedAI
             {
                 // World of Warcraft Client Patch 1.4.0 (2005-04-19)
                 // - Ragnaros now stays up 2 hours rather than 1 after being summoned. 
-                uint32 const despawnTime = (sWorld.GetWowPatch() >= WOW_PATCH_104) ? (2 * HOUR * IN_MILLISECONDS) : (1 * HOUR * IN_MILLISECONDS);
+                uint32 const despawnTime = 2 * HOUR * IN_MILLISECONDS;
                 if (Creature* pRagnaros = m_creature->SummonCreature(NPC_RAGNAROS, 838.308f, -831.466f, -232.185f, 2.19911f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, despawnTime))
                     m_creature->SetFacingToObject(pRagnaros);
                 break;

@@ -47,23 +47,13 @@ enum GameobjectTypes
     GAMEOBJECT_TYPE_GUARDPOST              = 21,
     GAMEOBJECT_TYPE_SPELLCASTER            = 22,
     GAMEOBJECT_TYPE_MEETINGSTONE           = 23,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     GAMEOBJECT_TYPE_FLAGSTAND              = 24,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     GAMEOBJECT_TYPE_FISHINGHOLE            = 25,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     GAMEOBJECT_TYPE_FLAGDROP               = 26,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     GAMEOBJECT_TYPE_MINI_GAME              = 27,
     GAMEOBJECT_TYPE_LOTTERY_KIOSK          = 28,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     GAMEOBJECT_TYPE_CAPTURE_POINT          = 29,
     GAMEOBJECT_TYPE_AURA_GENERATOR         = 30,
-#endif
     GAMEOBJECT_TYPE_MAX
 };
 
@@ -444,7 +434,6 @@ struct GameObjectInfo
             uint32 maxLevel;                                //1
             uint32 areaID;                                  //2
         } meetingstone;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         //24 GAMEOBJECT_TYPE_FLAGSTAND
         struct
         {
@@ -457,8 +446,6 @@ struct GameObjectInfo
             uint32 openTextID;                              //6
             uint32 losOK;                                   //7
         } flagstand;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         //25 GAMEOBJECT_TYPE_FISHINGHOLE
         struct
         {
@@ -468,8 +455,6 @@ struct GameObjectInfo
             uint32 maxSuccessOpens;                         //3
             uint32 lockId;                                  //4 -> Lock.dbc; possibly 1628 for all?
         } fishinghole;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         //26 GAMEOBJECT_TYPE_FLAGDROP
         struct
         {
@@ -479,15 +464,11 @@ struct GameObjectInfo
             uint32 noDamageImmune;                          //3
             uint32 openTextID;                              //4
         } flagdrop;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         //27 GAMEOBJECT_TYPE_MINI_GAME
         struct
         {
             uint32 gameType;                                //0
         } miniGame;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         //29 GAMEOBJECT_TYPE_CAPTURE_POINT
         struct
         {
@@ -523,7 +504,6 @@ struct GameObjectInfo
             uint32 conditionID2;                            //5
             uint32 serverOnly;                              //6
         } auraGenerator;
-#endif
         // not use for specific field access (only for output with loop by all filed), also this determinate max union size
         struct
         {
@@ -571,15 +551,9 @@ struct GameObjectInfo
             case GAMEOBJECT_TYPE_GOOBER:     return goober.lockId;
             case GAMEOBJECT_TYPE_AREADAMAGE: return areadamage.lockId;
             case GAMEOBJECT_TYPE_CAMERA:     return camera.lockId;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.lockId;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             case GAMEOBJECT_TYPE_FISHINGHOLE:return fishinghole.lockId;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
             case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.lockId;
-#endif
             default: return 0;
         }
     }
@@ -592,12 +566,8 @@ struct GameObjectInfo
             case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune;
             case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune;
             case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
             case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune;
-#endif
             default: return true;
         }
     }
@@ -611,12 +581,8 @@ struct GameObjectInfo
             case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune != 0;
             case GAMEOBJECT_TYPE_CHEST:      return true;                           // All chests cannot be opened while immune on 3.3.5a
             case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune != 0;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune != 0;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
             case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune != 0;
-#endif
             default: return false;
         }
     }
@@ -675,9 +641,7 @@ struct GameObjectInfo
         switch(type)
         {
             case GAMEOBJECT_TYPE_CHEST:       return chest.lootId;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             case GAMEOBJECT_TYPE_FISHINGHOLE: return fishinghole.lootId;
-#endif
             default: return 0;
         }
     }
@@ -703,9 +667,7 @@ struct GameObjectInfo
             case GAMEOBJECT_TYPE_SPELL_FOCUS:       return spellFocus.large != 0;
             case GAMEOBJECT_TYPE_GOOBER:            return goober.large != 0;
             case GAMEOBJECT_TYPE_SPELLCASTER:       return spellcaster.large != 0;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             case GAMEOBJECT_TYPE_CAPTURE_POINT:     return capturePoint.large != 0;
-#endif
             default: return false;
         }
     }
@@ -715,12 +677,8 @@ struct GameObjectInfo
         switch (type)
         {
             case GAMEOBJECT_TYPE_DOOR:                  return true;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             case GAMEOBJECT_TYPE_FLAGSTAND:             return true;
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
             case GAMEOBJECT_TYPE_FLAGDROP:              return true;
-#endif
             default: return false;
         }
     }
@@ -732,9 +690,7 @@ struct GameObjectInfo
             case GAMEOBJECT_TYPE_GENERIC: return _generic.serverOnly;
             case GAMEOBJECT_TYPE_TRAP: return trap.serverOnly;
             case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.serverOnly;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             case GAMEOBJECT_TYPE_AURA_GENERATOR: return auraGenerator.serverOnly;
-#endif
             default: return false;
         }
     }
@@ -765,15 +721,9 @@ struct GameObjectInfo
         {
             case GAMEOBJECT_TYPE_QUESTGIVER:
             case GAMEOBJECT_TYPE_TEXT:
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             case GAMEOBJECT_TYPE_FLAGSTAND:
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
             case GAMEOBJECT_TYPE_FLAGDROP:
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
             case GAMEOBJECT_TYPE_MINI_GAME:
-#endif
                 return 5.55556f;
             case GAMEOBJECT_TYPE_BINDER:
                 return 10.0f;

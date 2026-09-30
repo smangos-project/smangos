@@ -39,7 +39,6 @@ void WorldPackets::Npc::StableResult::AppendBodyTo(ByteBuffer& buffer) const
     buffer << result;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 size_t WorldPackets::Npc::BinderConfirm::EstimateFinalSize() const
 {
     return sizeof(binderGuid);
@@ -49,4 +48,3 @@ void WorldPackets::Npc::BinderConfirm::AppendBodyTo(ByteBuffer& buffer) const
 {
     buffer << binderGuid;
 }
-#endif

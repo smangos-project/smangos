@@ -271,9 +271,6 @@ Player::Player(WorldSession* session) : Unit(),
 
     m_lastFromClientCastedSpellID = 0;
 
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_6_1
-    m_resurrectionSpellId = 0;
-#endif
 
     // Anti undermap
     m_undermapPosValid = false;
@@ -419,15 +416,9 @@ bool Player::Create(uint32 guidlow, std::string const& name, uint8 race, uint8 c
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
     // fix cast time showed in spell tooltip on client
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-#else
-    SetInt32Value(UNIT_MOD_CAST_SPEED, 0);
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, -1);  // -1 is default value
-#endif
 
     SetCustomizations(customizations);
 
@@ -629,7 +620,7 @@ void Player::SatisfyItemRequirements(ItemPrototype const* pItem)
     }
 
     // Set required honor rank
-    auto playerRank = (sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_EQUIP_REQUIREMENTS) && sWorld.GetWowPatch() < WOW_PATCH_106) ? m_honorMgr.GetRank().rank : m_honorMgr.GetHighestRank().rank;
+    auto playerRank = m_honorMgr.GetHighestRank().rank;
     if (playerRank < (uint8)pItem->RequiredHonorRank)
     {
         HonorRankInfo rank;
@@ -696,9 +687,6 @@ uint32 Player::EnvironmentalDamage(EnvironmentalDamageType type, uint32 damage)
         // World of Warcraft Client Patch 1.7.0 (2005-09-13)
         // - Damage absorption no longer protects against falling, drowning, or
         //   fatigue damage.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-        CalculateDamageAbsorbAndResist(this, SPELL_SCHOOL_MASK_NORMAL, DIRECT_DAMAGE, damage, &absorb, &resist, nullptr);
-#endif
     }
 
     uint32 const bonus = (resist < 0 ? uint32(std::abs(resist)) : 0);
@@ -1238,12 +1226,8 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     // World of Warcraft Client Patch 1.11.0 (2006-06-20)
     // - Release timers have been be removed from instances. This includes
     //   dungeons, battlegrounds, and raid instances.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     // not auto-free ghost from body in instances
     if (GetDeathState() == CORPSE  && !GetMap()->Instanceable())
-#else
-    if (GetDeathState() == CORPSE)
-#endif
     {
         if (p_time >= m_deathTimer)
         {
@@ -1488,12 +1472,8 @@ void Player::SetDeathState(DeathState s)
 
 // World of Warcraft Client Patch 1.6.0 (2005-07-12)
 // - Self-resurrection spells show their name on the button in the release spirit dialog.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         // save value before aura remove in Unit::SetDeathState
         ressSpellId = GetUInt32Value(PLAYER_SELF_RES_SPELL);
-#else
-        ressSpellId = GetResurrectionSpellId();
-#endif
 
         // passive spell
         if (!ressSpellId)
@@ -1508,23 +1488,13 @@ void Player::SetDeathState(DeathState s)
     // restore resurrection spell id for player after aura remove
     if (s == JUST_DIED && cur && ressSpellId)
     {
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
-#else
-        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT);
-        SetResurrectionSpellId(ressSpellId);
-#endif
     }
 
     if (IsAlive() && !cur)
     {
         //clear self-resurrection state after resurrection by another way (spells will be applied before next death)
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
-#else
-        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT);
-        SetResurrectionSpellId(0);
-#endif
 
         UpdatePvPContested(false, true);
     }
@@ -2838,18 +2808,6 @@ void Player::RemoveFromGroup(Group* group, ObjectGuid guid)
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-uint32 Player::GetWhoListPartyStatus() const
-{
-    if (IsInLFG())
-        return WHO_PARTY_STATUS_LFG;
-
-    if (GetGroup())
-        return WHO_PARTY_STATUS_IN_PARTY;
-
-    return WHO_PARTY_STATUS_NOT_IN_PARTY;
-}
-#endif
 
 void Player::SendLogXPGain(uint32 givenXP, Unit const* victim, uint32 restXP) const
 {
@@ -2864,13 +2822,11 @@ void Player::SendLogXPGain(uint32 givenXP, Unit const* victim, uint32 restXP) co
 
 void Player::GiveXP(uint32 xp, Unit const* victim)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
         return;
 
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PARTIAL_PLAY_TIME))
         xp /= 2;
-#endif
 
     if (GetPersonalXpRate() >= 0.0f)
         xp *= GetPersonalXpRate();
@@ -3127,11 +3083,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     UpdateSkillsForLevel();
 
     // set default cast time multiplier
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-#else
-    SetInt32Value(UNIT_MOD_CAST_SPEED, 0);
-#endif
 
     // save base values (bonuses already included in stored stats)
     for (int i = STAT_STRENGTH; i < MAX_STATS; ++i)
@@ -3172,15 +3124,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetInt32Value(UNIT_FIELD_ATTACK_POWER,            0);
     SetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 0, 0);
     SetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 1, 0);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, 0.0f);
-#endif
     SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0);
     SetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 0, 0);
     SetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 1, 0);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER, 0.0f);
-#endif
 
     // Base crit values (will be recalculated in UpdateAllStats() at loading and in _ApplyAllStatBonuses() at reset
     SetFloatValue(PLAYER_CRIT_PERCENTAGE, 0.0f);
@@ -3210,13 +3158,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
 //[-ZERO]    SetUInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE,0);
 //[-ZERO]    SetUInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE,0);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
     {
         SetUInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + i, 0);
         SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i, 0.0f);
     }
-#endif
     // Init data for form but skip reapply item mods for form
     InitDataForForm(reapplyMods);
 
@@ -3244,10 +3190,8 @@ void Player::InitStatsForLevel(bool reapplyMods)
     // one form stealth modified bytes
     RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_VIS_FLAGS_ALL);
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
     // restore if need some important flags
     SetUInt32Value(PLAYER_FIELD_BYTES2, 0);                 // flags empty by default
-#endif
 
     if (reapplyMods)                                        //reapply stats values only on .reset stats (level) command
         _ApplyAllStatBonuses();
@@ -3358,12 +3302,6 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
     bool cannotSupercede = false;
 
     // fixes Nature's Grasp displaying as not learned on talent interface after learning next rank
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-    if (uint32 firstRank = sSpellMgr.GetFirstSpellInChain(spellId))
-        if (uint32 nextRank = sSpellMgr.GetSpellBookSuccessorSpellId(firstRank))
-            if (GetTalentSpellPos(firstRank) && !GetTalentSpellPos(nextRank))
-                cannotSupercede = true;
-#endif
 
     PlayerSpellMap::iterator itr = m_spells.find(spellId);
     if (itr != m_spells.end())
@@ -3903,8 +3841,7 @@ void Player::UpdateResetTalentsMultiplier() const
 uint32 Player::GetResetTalentsCost() const
 {
     // decay respec cost
-    if (!sWorld.getConfig(CONFIG_BOOL_NO_RESPEC_PRICE_DECAY) || (sWorld.GetWowPatch() >= WOW_PATCH_111))
-        UpdateResetTalentsMultiplier();
+    UpdateResetTalentsMultiplier();
 
     if (!m_resetTalentsMultiplier) // initial respec
     {
@@ -4015,7 +3952,6 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) c
 
             m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         for (int i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; ++i)
         {
             if (m_items[i] == nullptr)
@@ -4023,7 +3959,6 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData& data, Player* target) c
 
             m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
         }
-#endif
         for (int i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; ++i)
         {
             if (m_items[i] == nullptr)
@@ -4859,11 +4794,7 @@ void Player::RepopAtGraveyard()
         // World of Warcraft Client Patch 1.8.0 (2005-10-11)
         // - All graveyards that needed adjustment were changed so that a
         //   character's spirit comes into the world facing toward the Spirit Healer.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         float orientation = sObjectMgr.GetWorldSafeLocFacing(pClosestGrave->ID);
-#else
-        float orientation = GetOrientation();
-#endif
 
         TeleportTo(pClosestGrave->map_id, pClosestGrave->x, pClosestGrave->y, pClosestGrave->z, orientation, TELE_TO_NOT_UNSUMMON_PET, std::move(recover));
 
@@ -5689,7 +5620,6 @@ void Player::UpdateSpellTrainedSkills(uint32 spellId, bool apply)
                             // - Two-Handed Axes/Maces (Enhancement Talent) - Skill levels gained
                             //   with these two weapons will now be retained if you decide to unspend
                             //   this talent point and return to it later.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
                             if (pSkill->categoryId == SKILL_CATEGORY_WEAPON)
                             {
                                 const auto savedValue = m_forgottenSkills.find(pSkill->id);
@@ -5698,7 +5628,6 @@ void Player::UpdateSpellTrainedSkills(uint32 spellId, bool apply)
                                     if (savedValue->second <= GetSkillMaxForLevel())
                                         newSkillValue = savedValue->second;
                             }
-#endif
                             SetSkill(uint16(pSkill->id), newSkillValue, GetSkillMaxForLevel());
                             break;
                         }
@@ -5726,11 +5655,9 @@ void Player::UpdateSpellTrainedSkills(uint32 spellId, bool apply)
                     // - Two-Handed Axes/Maces (Enhancement Talent) - Skill levels gained
                     //   with these two weapons will now be retained if you decide to unspend
                     //   this talent point and return to it later.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
                     if (pSkill->categoryId == SKILL_CATEGORY_WEAPON)
                         if (GetSkillValuePure(pSkill->id) > m_forgottenSkills[pSkill->id])
                             m_forgottenSkills[pSkill->id] = GetSkillValuePure(pSkill->id);
-#endif
 
                     SetSkill(uint16(pSkill->id), 0, 0);
 
@@ -6202,9 +6129,8 @@ void Player::RewardReputation(Unit const* pVictim, float rate)
     if (!pVictim || pVictim->IsPlayer())
         return;
 
-    // World of Warcraft Client Patch 1.10.0 (2006-03-28)
-    // - Pets no longer modify your reputation if you kill them.
-    if (pVictim->IsPet() && sWorld.GetWowPatch() >= WOW_PATCH_110)
+    // Pets no longer modify your reputation if you kill them.
+    if (pVictim->IsPet())
         return;
 
     ReputationOnKillEntry const* pRep = sObjectMgr.GetReputationOnKillEntry(((Creature*)pVictim)->GetEntry());
@@ -6225,11 +6151,7 @@ void Player::RewardReputation(Unit const* pVictim, float rate)
         //   gains for killing a monster were previously capped at the middle of
         //   the range for Friendly on a monster, then they are now capped at the
         //   end of Friendly.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         if (pFactionEntry1 && currentRepRank1 <= pRep->reputation_max_cap1)
-#else
-        if (pFactionEntry1 && (GetReputationMgr().GetReputation(pFactionEntry1) < (ReputationMgr::GetRepPointsToRank(ReputationRank(pRep->reputation_max_cap1)) + (ReputationMgr::PointsInRank[pRep->reputation_max_cap1] / 2))))
-#endif
             GetReputationMgr().ModifyReputation(pFactionEntry1, doneRep1);
 
         // Wiki: Team factions value divided by 2
@@ -6248,11 +6170,7 @@ void Player::RewardReputation(Unit const* pVictim, float rate)
         FactionEntry const* pFactionEntry2 = sObjectMgr.GetFactionEntry(pRep->repfaction2);
         uint32 currentRepRank2 = GetReputationMgr().GetRank(pFactionEntry2);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         if (pFactionEntry2 && currentRepRank2 <= pRep->reputation_max_cap2)
-#else
-        if (pFactionEntry2 && (GetReputationMgr().GetReputation(pFactionEntry2) < (ReputationMgr::GetRepPointsToRank(ReputationRank(pRep->reputation_max_cap2)) + (ReputationMgr::PointsInRank[pRep->reputation_max_cap2] / 2))))
-#endif
             GetReputationMgr().ModifyReputation(pFactionEntry2, doneRep2);
 
         // Wiki: Team factions value divided by 2
@@ -6494,9 +6412,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     //   cause the item to disappear, however.
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     if (IsAlive())
-#endif
         DestroyZoneLimitedItem(true, newZone);
 
     // recent client version not send leave/join channel packets for built-in local channels
@@ -6603,11 +6519,7 @@ void Player::DuelComplete(DuelCompleteType type)
         if (!itr.second->IsPositive() &&
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - You are no longer able to kill players in duels with reflected DoT spells
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
            (itr.second->GetCasterGuid() == GetObjectGuid() || itr.second->IsReflected()) &&
-#else
-            itr.second->GetCasterGuid() == GetObjectGuid() &&
-#endif
             itr.second->GetAuraApplyTime() >= m_duel->startTime)
             auras2remove.push_back(itr.second->GetId());
     }
@@ -6622,11 +6534,7 @@ void Player::DuelComplete(DuelCompleteType type)
         if (!aura.second->IsPositive() &&
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - You are no longer able to kill players in duels with reflected DoT spells
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
            (aura.second->GetCasterGuid() == m_duel->opponent->GetObjectGuid() || aura.second->IsReflected()) &&
-#else
-            aura.second->GetCasterGuid() == m_duel->opponent->GetObjectGuid() &&
-#endif
             aura.second->GetAuraApplyTime() >= m_duel->startTime)
             auras2remove.push_back(aura.second->GetId());
     }
@@ -6828,11 +6736,7 @@ void Player::_ApplyItemBonuses(ItemPrototype const* proto, uint8 slot, bool appl
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - When you swap weapons in combat, you start your swing again, instead
             //   of continuing your last swing.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 #define RESET_ATTACK_TIME IsInCombat()
-#else
-#define RESET_ATTACK_TIME false
-#endif
 
             if (slot == EQUIPMENT_SLOT_RANGED)
                 SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME, RESET_ATTACK_TIME);
@@ -7602,7 +7506,6 @@ void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
             }
             break;
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
         case HIGHGUID_CORPSE:                               // remove insignia
         {
             Corpse* bones = GetMap()->GetCorpse(guid);
@@ -7646,7 +7549,6 @@ void Player::SendLoot(ObjectGuid guid, LootType lootType, Player const* pVictim)
             bones->ForceValuesUpdate(FORCED_UPDATE_DYNAMIC_FLAGS);
             break;
         }
-#endif
         case HIGHGUID_UNIT:
         {
             Creature* creature = GetMap()->GetCreature(guid);
@@ -8126,11 +8028,9 @@ float Player::ComputeRest(time_t timePassed, bool offline /*= false*/, bool inRe
 
 void Player::SetBindPoint(ObjectGuid guid) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     auto packet = std::make_unique<WorldPackets::Npc::BinderConfirm>();
     packet->binderGuid = guid;
     GetSession()->SendPacket(std::move(packet));
-#endif
 }
 
 void Player::SendTalentWipeConfirm(ObjectGuid trainerGuid) const
@@ -8385,18 +8285,10 @@ Item* Player::GetWeaponForParry() const
     // World of Warcraft Client Patch 1.6.0 (2005-07-12)
     // - Fist Weapons will now have the normal chance to parry that all
     //   weapons use.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_5_1
-    if (pWeapon && pWeapon->GetProto()->SubClass == ITEM_SUBCLASS_WEAPON_FIST)
-        pWeapon = nullptr;
-#endif
 
     if (!pWeapon)
         pWeapon = GetWeaponForAttack(OFF_ATTACK, true, true);
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_5_1
-    if (pWeapon && pWeapon->GetProto()->SubClass == ITEM_SUBCLASS_WEAPON_FIST)
-        pWeapon = nullptr;
-#endif
 
     return pWeapon;
 }
@@ -8889,13 +8781,7 @@ InventoryResult Player::_CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 s
     return EQUIP_ERR_OK;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 #define LAST_ITEM_SLOT_FIELD (PLAYER_FIELD_KEYRING_SLOT_1 + (MAX_KEYRING_SLOTS - 1) * 2)
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
-#define LAST_ITEM_SLOT_FIELD (PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + (BUYBACK_SLOT_END - BUYBACK_SLOT_START - 1) * 2)
-#else
-#define LAST_ITEM_SLOT_FIELD PLAYER_FIELD_VENDORBUYBACK_SLOT
-#endif
 
 InventoryResult Player::_CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, uint8& bagSlot, Item const* pItem, bool swap, uint32* no_space_count) const
 {
@@ -9549,10 +9435,8 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16& dest, ItemPrototype con
             // - It will no longer be possible to swap any equipment while stunned.
             // May be here should be more stronger checks; STUNNED checked
             // ROOT, CONFUSED, DISTRACTED, FLEEING this needs to be checked.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             if (HasUnitState(UNIT_STATE_STUNNED | UNIT_STATE_PENDING_STUNNED))
                 return EQUIP_ERR_YOU_ARE_STUNNED;
-#endif
 
             // do not allow equipping gear except weapons, offhands, projectiles, relics in
             // - combat
@@ -9564,11 +9448,7 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16& dest, ItemPrototype con
 
             // prevent equip item in process logout
             if (GetSession()->IsLogingOut())
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
                 return EQUIP_ERR_YOU_ARE_STUNNED;
-#else
-                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-#endif
 
             if (IsInCombat() && pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
                 return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
@@ -9674,10 +9554,8 @@ InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
         return EQUIP_ERR_ALREADY_LOOTED;
 
     // you cannot unequip main hand weapon while disarmed
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     if (IsMainHandPos(pos) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
         return EQUIP_ERR_NOT_WHILE_DISARMED;
-#endif
 
     // do not allow unequipping gear except weapons, offhands, projectiles, relics in combat
     if (!pProto->CanChangeEquipStateInCombat())
@@ -9688,11 +9566,7 @@ InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
 
     // prevent unequip item in process logout
     if (GetSession()->IsLogingOut())
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         return EQUIP_ERR_YOU_ARE_STUNNED;
-#else
-        return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-#endif
 
     if (!swap && pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
         return EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS;
@@ -9906,11 +9780,7 @@ InventoryResult Player::CanUseItem(Item const* pItem, bool not_loading) const
                 return msg;
 
             if (pProto->RequiredReputationFaction && uint32(GetReputationRank(pProto->RequiredReputationFaction)) < pProto->RequiredReputationRank)
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                 return EQUIP_ERR_CANT_EQUIP_REPUTATION;
-#else
-                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-#endif
 
             return EQUIP_ERR_OK;
         }
@@ -9938,7 +9808,7 @@ InventoryResult Player::CanUseItem(ItemPrototype const* pProto, bool not_loading
         if (pProto->RequiredSpell != 0 && !HasSpell(pProto->RequiredSpell))
             return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
 
-        auto playerRank = (sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_EQUIP_REQUIREMENTS) && sWorld.GetWowPatch() < WOW_PATCH_106) ? m_honorMgr.GetRank().rank : m_honorMgr.GetHighestRank().rank;
+        auto playerRank = m_honorMgr.GetHighestRank().rank;
 
         if (not_loading && playerRank < (uint8)pProto->RequiredHonorRank)
             return EQUIP_ERR_CANT_EQUIP_RANK;
@@ -10205,17 +10075,14 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
             // - Switching weapons in combat triggers a 1 second global cooldown for
             //   all abilities for rogues and a 1.5 second global cooldown for
             //   everyone else.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             // Weapons and also Totem/Relic/Sigil/etc
             if (pProto && IsInCombat() && (pProto->Class == ITEM_CLASS_WEAPON || pProto->InventoryType == INVTYPE_RELIC) && m_weaponChangeTimer == 0)
             {
                 uint32 cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s;
 
                 // There doesn't appear to be a 1 sec combat swap cd spell before 1.9.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                 if (GetClass() == CLASS_ROGUE)
                     cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s;
-#endif
 
                 SpellEntry const* spellProto = sSpellMgr.GetSpellEntry(cooldownSpell);
 
@@ -10223,15 +10090,10 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Weapon switch cooldown spell %u couldn't be found in Spell.dbc", cooldownSpell);
                 else
                 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                     m_weaponChangeTimer = spellProto->StartRecoveryTime;
-#else
-                    m_weaponChangeTimer = (GetClass() == CLASS_ROGUE) ? 1000 : spellProto->StartRecoveryTime;
-#endif
                     AddGCD(spellProto, 0, true);
                 }
             }
-#endif
         }
 
         if (IsInWorld() && update)
@@ -11290,7 +11152,6 @@ void Player::AddItemToBuyBackSlot(Item* pItem, uint32 money, ObjectGuid vendorGu
     MANGOS_ASSERT(!!pItem);
 
     uint32 slot = m_currentBuybackSlot;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     // if current back slot non-empty search oldest or free
     if (m_items[slot])
     {
@@ -11334,19 +11195,6 @@ void Player::AddItemToBuyBackSlot(Item* pItem, uint32 money, ObjectGuid vendorGu
     // move to next (for non filled list is move most optimized choice)
     if (m_currentBuybackSlot < BUYBACK_SLOT_END - 1)
         ++m_currentBuybackSlot;
-#else
-    RemoveItemFromBuyBackSlot(slot, true);
-    sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "STORAGE: AddItemToBuyBackSlot item = %u, slot = %u", pItem->GetEntry(), slot);
-    m_items[slot] = pItem;
-    SetGuidValue(PLAYER_FIELD_VENDORBUYBACK_SLOT, pItem->GetObjectGuid());
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_ITEM_ID, pItem->GetEntry());
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_RANDOM_PROPERTIES_ID, pItem->GetItemRandomPropertyId());
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_SEED, pItem->GetItemSuffixFactor());
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE, (pItem->GetProto()->BuyPrice / pItem->GetProto()->BuyCount) * pItem->GetCount());
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_DURABILITY, pItem->GetUInt32Value(ITEM_FIELD_DURABILITY));
-    SetUInt32Value(PLAYER_FIELD_BUYBACK_COUNT, pItem->GetCount());
-    SetUInt64Value(PLAYER_FIELD_BUYBACK_NPC, vendorGuid);
-#endif
 
 }
 
@@ -11372,20 +11220,10 @@ void Player::RemoveItemFromBuyBackSlot(uint32 slot, bool del)
 
         m_items[slot] = nullptr;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         uint32 eslot = slot - BUYBACK_SLOT_START;
         SetGuidValue(PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + (eslot * 2), ObjectGuid());
         SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, 0);
         SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + eslot, 0);
-#else
-        SetGuidValue(PLAYER_FIELD_VENDORBUYBACK_SLOT, ObjectGuid());
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_ITEM_ID, 0);
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_RANDOM_PROPERTIES_ID, 0);
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_SEED, 0);
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE, 0);
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_DURABILITY, 0);
-        SetUInt32Value(PLAYER_FIELD_BUYBACK_COUNT, 0);
-#endif
 
         // if current backslot is filled set to now free slot
         if (m_items[m_currentBuybackSlot])
@@ -12105,11 +11943,7 @@ void Player::OnGossipSelect(WorldObject* pSource, uint32 gossipListId)
             break;
         case GOSSIP_OPTION_INNKEEPER:
             PlayerTalkClass->CloseGossip();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             SetBindPoint(guid);
-#else
-            GetSession()->SendBindPoint((Creature*)pSource);
-#endif
             break;
         case GOSSIP_OPTION_BANKER:
             GetSession()->SendShowBank(guid);
@@ -12579,14 +12413,12 @@ bool Player::CanRewardQuest(Quest const* pQuest, bool msg) const
         return false;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
     {
         if (msg)
             GetSession()->SendPlayTimeWarning(PTF_UNHEALTHY_TIME, 0);
         return false;
     }
-#endif
 
     return true;
 }
@@ -12912,7 +12744,6 @@ void Player::RemoveQuestAtSlot(uint32 slot)
 
                 // Destroying items on abandoning quest was added in 1.12.1.
                 // https://www.engadget.com/2006-10-10-quest-items-disappear-when-abandoning-quests.html
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_12_1
                 for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
                 {
                     if (uint32 itemId = pQuest->ReqItemId[i])
@@ -12921,7 +12752,6 @@ void Player::RemoveQuestAtSlot(uint32 slot)
                                 if (uint32 count = GetItemCount(itemId, true))
                                     DestroyItemCount(itemId, count, true, false, true);
                 }
-#endif
             }
 
             SetQuestStatus(quest, QUEST_STATUS_NONE);
@@ -14561,7 +14391,6 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 
     time_t const now = time(nullptr);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (sWorld.getConfig(CONFIG_BOOL_LIMIT_PLAY_TIME))
     {
         time_t const accountPlayedTime = GetSession()->GetConsecutivePlayTime(now);
@@ -14571,11 +14400,8 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
         else if (accountPlayedTime >= PLAY_TIME_LIMIT_PARTIAL)
             SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PARTIAL_PLAY_TIME);
     }
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[39].GetInt32());
-#endif
 
     SetUInt32Value(PLAYER_AMMO_ID, fields[48].GetUInt32());
 
@@ -14839,9 +14665,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->TakeResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     _LoadForgottenSkills(holder->TakeResult(PLAYER_LOGIN_QUERY_FORGOTTEN_SKILLS));
-#endif
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
@@ -15032,7 +14856,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     sBattleGroundMgr.PlayerLoggedIn(this); // Add to BG queue if needed
     CreatePacketBroadcaster();
 
-    if (sWorld.GetWowPatch() >= WOW_PATCH_112 && !HasCharacterFlag(CHARACTER_FLAG_MOUNT_UPGRADED))
+    if (!HasCharacterFlag(CHARACTER_FLAG_MOUNT_UPGRADED))
         UpdateOldRidingSkillToNew(hasEpicMount);
 
     return true;
@@ -15886,7 +15710,6 @@ void Player::SendRaidInfo() const
 */
 void Player::SendSavedInstances() const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     bool hasBeenSaved = false;
 
     std::lock_guard<std::mutex> guard(m_boundInstancesMutex);
@@ -15918,7 +15741,6 @@ void Player::SendSavedInstances() const
             GetSession()->SendPacket(std::move(packet));
         }
     }
-#endif
 }
 
 // convert the player's binds to the group
@@ -16345,11 +16167,7 @@ void Player::SaveToDB(bool online, bool force)
     uberInsert.addUInt32(m_honorMgr.GetStoredHK());
     uberInsert.addUInt32(m_honorMgr.GetStoredDK());
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     uberInsert.addInt32(GetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX));
-#else
-    uberInsert.addInt32(-1);
-#endif
 
     uberInsert.addUInt16(uint16(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
 
@@ -16801,7 +16619,6 @@ void Player::_SaveSkills()
     }
 
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     // Forgotten weapon skills.
     static SqlStatementID forSkills;
 
@@ -16813,7 +16630,6 @@ void Player::_SaveSkills()
             stmt.PExecute(GetGUIDLow(), itr.first, itr.second);
         }
     }
-#endif
 }
 
 void Player::_SaveSpells()
@@ -16965,12 +16781,10 @@ void Player::SendExplorationExperience(uint32 Area, uint32 Experience) const
 
 void Player::SendFactionAtWar(uint32 reputationId, bool apply) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     auto packet = std::make_unique<WorldPackets::Misc::FactionAtWarChange>();
     packet->reputationId = reputationId;
     packet->flags = apply ? FACTION_FLAG_AT_WAR : 0;
     GetSession()->SendPacket(std::move(packet));
-#endif
 }
 
 void Player::SendResetFailedNotify()
@@ -17062,22 +16876,18 @@ void Player::ResetPersonalInstanceOnLeaveDungeon(uint32 mapId)
 
 void Player::SendResetInstanceSuccess(uint32 mapId) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     auto packet = std::make_unique<WorldPackets::Misc::InstanceReset>();
     packet->mapId = mapId;
     GetSession()->SendPacket(std::move(packet));
-#endif
 }
 
 void Player::SendResetInstanceFailed(uint32 reason, uint32 mapId) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     // reason: see enum InstanceResetFailReason
     auto packet = std::make_unique<WorldPackets::Misc::InstanceResetFailed>();
     packet->reason = reason;
     packet->mapId = mapId;
     GetSession()->SendPacket(std::move(packet));
-#endif
 }
 
 /** Implementation of hourly maximum instances per account */
@@ -17937,13 +17747,8 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature const
     // World of Warcraft Client Patch 1.6.0 (2005-07-12)
     // - If you have PvP combat toggled on, it will no longer be cleared when
     //   taking a flight.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     if (!IsPvPDesired())
         UpdatePvP(false, true);
-#else
-    SetPvPDesired(false);
-    UpdatePvP(false, true);
-#endif
 
     //Checks and preparations done, DO FLIGHT
     ModifyMoney(-(int32)sourceCost);
@@ -18211,11 +18016,6 @@ bool Player::IsVendorItemVisible(Creature* vendor, VendorItem const* vendorItem,
     //   you their entire inventory regardless of current reputation, allowing
     //   players to peruse their full range of wares.The items in question
     //   now require the appropriate reputation level to make use of them.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-    if (itemProto->RequiredReputationFaction && itemProto->RequiredReputationRank > 0 &&
-        ReputationRank(itemProto->RequiredReputationRank) > GetReputationRank(itemProto->RequiredReputationFaction))
-        return false;
-#endif
 
     return !vendorItem->conditionId ||
         IsConditionSatisfied(vendorItem->conditionId, this, vendor->GetMap(), vendor, CONDITION_FROM_VENDOR);
@@ -18300,8 +18100,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
         return false;
     }
 
-    auto playerRank = (sWorld.GetWowPatch() < WOW_PATCH_107) && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_PURCHASE_REQUIREMENTS) ?
-        m_honorMgr.GetHighestRank().rank : m_honorMgr.GetRank().rank;
+    auto playerRank = m_honorMgr.GetRank().rank;
 
     // do not check level requirement for normal items (PvP related bonus items is another case)
     if (pProto->RequiredHonorRank && (playerRank < (uint8)pProto->RequiredHonorRank || GetLevel() < pProto->RequiredLevel))
@@ -19075,7 +18874,6 @@ void Player::SendTransferAborted(uint8 reason) const
 
 void Player::SendInstanceResetWarning(uint32 mapId, uint32 resetTime) const
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     // type of warning, based on the time remaining until reset
     uint32 type;
     if (resetTime > 3600)
@@ -19091,7 +18889,6 @@ void Player::SendInstanceResetWarning(uint32 mapId, uint32 resetTime) const
     packet->mapId = mapId;
     packet->resetTime = resetTime;
     GetSession()->SendPacket(std::move(packet));
-#endif
 }
 
 void Player::ApplyEquipCooldown(Item const* pItem)
@@ -20521,7 +20318,6 @@ void Player::_LoadSkills(std::unique_ptr<QueryResult> result)
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 void Player::_LoadForgottenSkills(std::unique_ptr<QueryResult> result)
 {
     //                                                                 0      1
@@ -20554,7 +20350,6 @@ void Player::_LoadForgottenSkills(std::unique_ptr<QueryResult> result)
         while (result->NextRow());
     }
 }
-#endif
 
 void Player::LoadSkillsFromFields()
 {
@@ -21693,13 +21488,11 @@ std::string Player::GetShortDescription() const
 
 void Player::LootMoney(int32 money, Loot* loot)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
         return;
 
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PARTIAL_PLAY_TIME))
         money /= 2;
-#endif
 
     if (!money)
         return;
@@ -21712,10 +21505,6 @@ void Player::LootMoney(int32 money, Loot* loot)
 
 void Player::RewardHonor(Unit const* pVictim, uint32 groupSize)
 {
-    // Honor System was added in 1.4.
-    if (sWorld.GetWowPatch() < WOW_PATCH_104 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_TIMELINE))
-        return;
-
     if (!pVictim)
         return;
 
@@ -21729,10 +21518,6 @@ void Player::RewardHonor(Unit const* pVictim, uint32 groupSize)
         if (cVictim->IsCivilian() && !IsHonorOrXPTarget(cVictim))
         {
             if (!sWorld.getConfig(CONFIG_BOOL_ENABLE_DK))
-                return;
-
-            // Dishonorable kills were added in 1.5.
-            if (sWorld.GetWowPatch() < WOW_PATCH_105 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_TIMELINE))
                 return;
 
             m_honorMgr.Add(HonorMgr::DishonorableKillPoints(GetLevel()), DISHONORABLE, cVictim);
@@ -21750,10 +21535,6 @@ void Player::RewardHonor(Unit const* pVictim, uint32 groupSize)
 
 void Player::RewardHonorOnDeath()
 {
-    // Honor System was added in 1.4.
-    if (sWorld.GetWowPatch() < WOW_PATCH_104 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PVP_TIMELINE))
-        return;
-
     if (HasAuraType(SPELL_AURA_NO_PVP_CREDIT)) // Honorless Target
         return;
 
@@ -22010,11 +21791,7 @@ void Player::AddGCD(SpellEntry const* spellEntry, uint32 /*forcedDuration = 0*/,
         spellEntry->DmgClass != SPELL_DAMAGE_CLASS_MELEE && spellEntry->DmgClass != SPELL_DAMAGE_CLASS_RANGED &&
         !spellEntry->HasAttribute(SPELL_ATTR_USES_RANGED_SLOT) && !spellEntry->HasAttribute(SPELL_ATTR_IS_ABILITY))
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         gcdDuration = int32(float(gcdDuration) * GetFloatValue(UNIT_MOD_CAST_SPEED));
-#else
-        gcdDuration = int32(float(gcdDuration) * (1.0f + GetInt32Value(UNIT_MOD_CAST_SPEED) / 100.0f));
-#endif
         gcdDuration = std::max(gcdDuration, 1000);
         gcdDuration = std::min(gcdDuration, 1500);
     }
@@ -22341,12 +22118,10 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
         if (dropCharge)
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
             // World of Warcraft Client Patch 1.11.0 (2006-06-20)
             // - Nature's Grace: You will no longer consume this effect when casting a
             //   spell which was made instant by Nature's Swiftness.
             if (!((mod->op == SPELLMOD_CASTING_TIME) && (mod->type == SPELLMOD_FLAT) && HasInstantCastingSpellMod(spellInfo)))
-#endif
                 DropModCharge(mod, spell);
         }
 

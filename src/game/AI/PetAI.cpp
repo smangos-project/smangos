@@ -50,10 +50,6 @@ PetAI::PetAI(Creature* c) : CreatureAI(c), m_updateAlliesTimer(0)
     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
     //- If you call a tamed Deepmoss Hatchling, you are no longer notified
     //  that you hatched.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-    if (c->GetEntry() == 4263)
-        DoScriptText(1413, c);
-#endif
 }
 
 bool PetAI::_needToStop() const
@@ -123,10 +119,8 @@ void PetAI::MoveInLineOfSight(Unit* pWho)
 
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Guardians and pets in aggressive mode no longer attack civilians.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (pWho->IsCreature() && static_cast<Creature*>(pWho)->IsCivilian())
         return;
-#endif
 
     if (m_creature->HasStaticFlag(CREATURE_STATIC_FLAG_ONLY_ATTACK_PVP_ENABLING) &&
         !pWho->IsPvP() && pWho->IsCharmerOrOwnerPlayerOrPlayerItself())

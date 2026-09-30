@@ -151,8 +151,7 @@ void instance_ruins_of_ahnqiraj::OnCreatureEnterCombat(Creature * pCreature)
             // "and actually blizzard even goofed that, if u pull before talking to the NPCs,"
             // "the NPCs run right past the first wave and wait at the door for them."
             if (m_auiEncounter[TYPE_RAJAXX] != DONE &&
-               (m_auiEncounter[TYPE_GENERAL_ANDOROV] == NOT_STARTED || m_auiEncounter[TYPE_GENERAL_ANDOROV] == FAIL) &&
-                sWorld.GetWowPatch() >= WOW_PATCH_110)
+               (m_auiEncounter[TYPE_GENERAL_ANDOROV] == NOT_STARTED || m_auiEncounter[TYPE_GENERAL_ANDOROV] == FAIL))
             {
                 if (Creature* pAndorov = instance->GetCreature(m_uiAndorovGUID))
                 {
@@ -381,8 +380,7 @@ void instance_ruins_of_ahnqiraj::SetData(uint32 uiType, uint32 uiData)
                     // World of Warcraft Client Patch 1.10.0 (2006-03-28)
                     // - Lieutenant General Andorov will now offer supplies if kept alive
                     //   through the battle.
-                    if (sWorld.GetWowPatch() >= WOW_PATCH_110)
-                        pAndorov->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR);
+                    pAndorov->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR);
 
                     pAndorov->SetDefaultGossipMenuId(ANDOROV_GOSSIP_DONE);
                     pAndorov->SetRespawnTime(AQ_RESPAWN_FOUR_DAYS);
@@ -473,28 +471,25 @@ void instance_ruins_of_ahnqiraj::Update(uint32 uiDiff)
 
     https://wowwiki-archive.fandom.com/wiki/General_Rajaxx?oldid=121120#Fight_Change_in_1.10.1
     */
-    if (sWorld.GetWowPatch() > WOW_PATCH_109)
+    if (IsAnyBossInCombat())
     {
-        if (IsAnyBossInCombat())
+        if (m_doorGuid.IsEmpty())
         {
-            if (m_doorGuid.IsEmpty())
-            {
-                if (GameObject* pAQDoor = GetMap()->SummonGameObject(176149,
-                    -8526,
-                    1507.4f,
-                    49,
-                    4.20662f, 0, 0, 0.861534f, -0.5077f, -1, 0))
-                    m_doorGuid = pAQDoor->GetObjectGuid();
-            }
+            if (GameObject* pAQDoor = GetMap()->SummonGameObject(176149,
+                -8526,
+                1507.4f,
+                49,
+                4.20662f, 0, 0, 0.861534f, -0.5077f, -1, 0))
+                m_doorGuid = pAQDoor->GetObjectGuid();
         }
-        else
+    }
+    else
+    {
+        if (!m_doorGuid.IsEmpty())
         {
-            if (!m_doorGuid.IsEmpty())
-            {
-                if (GameObject* pAQDoor = GetMap()->GetGameObject(m_doorGuid))
-                    pAQDoor->AddObjectToRemoveList();
-                m_doorGuid.Clear();
-            }
+            if (GameObject* pAQDoor = GetMap()->GetGameObject(m_doorGuid))
+                pAQDoor->AddObjectToRemoveList();
+            m_doorGuid.Clear();
         }
     }
 
@@ -625,8 +620,8 @@ void instance_ruins_of_ahnqiraj::GiveRepAfterRajaxxDeath(Creature* pRajaxx)
     // Rep gain was buffed in patch 1.10.
     // Old - https://www.youtube.com/watch?v=NOF6xI7Iwj8
     // New - https://www.youtube.com/watch?v=ETO4UsKbKOY
-    int const repForKill = sWorld.GetWowPatch() >= WOW_PATCH_110 ? 50 : irand(33, 34);
-    int const repPerHelper = sWorld.GetWowPatch() >= WOW_PATCH_110 ? 45 : 30;
+    int const repForKill = 50;
+    int const repPerHelper = 45;
 
     auto GiveRep = [factionEntry, helpersAlive, repForKill, repPerHelper](Player* pPlayer)
     {

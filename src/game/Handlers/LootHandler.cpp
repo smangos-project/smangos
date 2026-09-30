@@ -63,10 +63,8 @@ void WorldSession::AutostoreLootSlot(uint32 lootSlot)
                 if (go->GetOwnerGuid() == player->GetObjectGuid())
                     return false;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                 if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
                     return false;
-#endif
 
                 return true;
             };
@@ -371,13 +369,11 @@ void WorldSession::HandleLootOpcode(LootUnit const& request)
         return;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
     {
         _player->SendLootError(guid, LOOT_ERROR_PLAY_TIME_EXCEEDED);
         return;
     }
-#endif
 
     if (_player->GetStandState() != UNIT_STAND_STATE_STAND)
     {
@@ -502,7 +498,6 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
                     else                                        // not vein
                         go->SetLootState(GO_JUST_DEACTIVATED);
                 }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                 else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
                 {
                     // The fishing hole used once more
@@ -512,7 +507,6 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
                     else
                         go->SetLootState(GO_READY);
                 }
-#endif
                 else // not chest (or vein/herb/etc)
                     go->SetLootState(GO_JUST_DEACTIVATED);
 
@@ -531,7 +525,6 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
             }
             break;
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
         case HIGHGUID_CORPSE:                               // ONLY remove insignia at BG
         {
             Corpse* corpse = _player->GetMap()->GetCorpse(lguid);
@@ -549,7 +542,6 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
             corpse->ExecuteDelayedActions();
             break;
         }
-#endif
         case HIGHGUID_ITEM:
         {
             Item *pItem = player->GetItemByGuid(lguid);
@@ -655,13 +647,11 @@ void WorldSession::MasterLootSlot(ObjectGuid lootGuid, uint8 slotId, ObjectGuid 
         return;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (target->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
     {
         _player->SendLootError(lootGuid, LOOT_ERROR_MASTER_OTHER);
         return;
     }
-#endif
 
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = %s [%s].", playerGuid.GetString().c_str(), target->GetName());
 

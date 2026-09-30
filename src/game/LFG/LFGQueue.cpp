@@ -258,11 +258,7 @@ void LFGQueue::AddGroup(LFGGroupQueueInfo const& groupInfo, uint32 groupId)
 
         auto packet = std::make_unique<WorldPackets::Misc::MeetingstoneSetQueue>();
         packet->areaId = areaId;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-        packet->idempotencyToken = 0; // TODO: Must forward this
-#else
         packet->status = MEETINGSTONE_STATUS_JOINED_QUEUE;
-#endif
         group->BroadcastPacket(std::move(packet), true);
     });
 }
@@ -407,11 +403,7 @@ void LFGQueue::RemovePlayerFromQueue(ObjectGuid playerGuid, PlayerLeaveMethod le
                         {
                             WorldPackets::Misc::MeetingstoneSetQueue packet;
                             packet.areaId = 0;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-                            packet.idempotencyToken = 0; // TODO: Must forward this
-#else
                             packet.status = MEETINGSTONE_STATUS_LEAVE_QUEUE;
-#endif
 
                             // TODO Use broadcaster which does the binary conversion automatically
                             WorldPacket data;
@@ -442,11 +434,7 @@ void LFGQueue::RemoveGroupFromQueue(uint32 groupId, GroupLeaveMethod leaveMethod
                 {
                     auto packet = std::make_unique<WorldPackets::Misc::MeetingstoneSetQueue>();
                     packet->areaId = 0;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-                    packet->idempotencyToken = 0; // TODO: Must forward this
-#else
                     packet->status = MEETINGSTONE_STATUS_LEAVE_QUEUE;
-#endif
                     grp->BroadcastPacket(std::move(packet), true);
                 }
                 else
@@ -460,11 +448,7 @@ void LFGQueue::RemoveGroupFromQueue(uint32 groupId, GroupLeaveMethod leaveMethod
                     {
                         auto packet = std::make_unique<WorldPackets::Misc::MeetingstoneSetQueue>();
                         packet->areaId = 0;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-                        packet->idempotencyToken = 0; // TODO: Must forward this
-#else
                         packet->status = MEETINGSTONE_STATUS_NONE;
-#endif
                         grp->BroadcastPacket(std::move(packet), true);
                     }
                 }

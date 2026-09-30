@@ -912,7 +912,6 @@ void Spell::EffectDummy(SpellEffectIndex effIdx)
                     unitTarget->CastSpell(unitTarget, 20495, true);
                     return;
                 }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                 case 19593:                                // Egg Explosion (Buru)
                 {
                     if (!unitTarget)
@@ -937,16 +936,13 @@ void Spell::EffectDummy(SpellEffectIndex effIdx)
                     m_originalCaster->CastCustomSpell(unitTarget, 5255, damage, {}, {}, true);
                     return;
                 }
-#endif
                 case 20572:                                 // Blood Fury
                 {
                     Player* pPlayer = m_caster->ToPlayer();
                     if (!pPlayer)
                         return;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                     pPlayer->CastSpell(pPlayer, 23230, true);
-#endif
 
                     damage = rand_dither(damage * (pPlayer->GetInt32Value(UNIT_FIELD_ATTACK_POWER)) / 100);
                     if (damage > 0)
@@ -2082,7 +2078,6 @@ void Spell::EffectOpenLock(SpellEffectIndex effIdx)
                 return;
             }
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         else if (goInfo->type == GAMEOBJECT_TYPE_FLAGSTAND)
         {
             //CanUseBattleGroundObject() already called in CheckCast()
@@ -2090,7 +2085,6 @@ void Spell::EffectOpenLock(SpellEffectIndex effIdx)
             if (BattleGround *bg = player->GetBattleGround())
                 return;
         }
-#endif
         lockId = goInfo->GetLockId();
         guid = gameObjTarget->GetObjectGuid();
     }
@@ -2129,10 +2123,8 @@ void Spell::EffectOpenLock(SpellEffectIndex effIdx)
     {
         // World of Warcraft Client Patch 1.6.0 (2005-07-12)
         // - Disarming an enemy faction hunter's trap will now flag the rogue for PvP.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         if (Unit* pOwner = gameObjTarget->GetOwner())
             m_casterUnit->TogglePlayerPvPFlagOnAttackVictim(pOwner, true);
-#endif
 
         if (player)
             sScriptMgr.OnGameObjectOpen(player, gameObjTarget);
@@ -3335,9 +3327,7 @@ void Spell::EffectTaunt(SpellEffectIndex effIdx)
         // but a taunt now gives you instant aggro on the mob.
         // Of course if other people are generating significant threat on the mob, they could exceed your threat by more than 10 % before the taunt debuff wears off,
         // and will gain aggro as soon as it does.There is no limit to the amount of threat you can gain from Taunt.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         unitTarget->GetThreatManager().setCurrentVictimIfCan(m_casterUnit);
-#endif
     }
 
     AddExecuteLogInfo(effIdx, ExecuteLogInfo(unitTarget->GetObjectGuid()));
@@ -3581,11 +3571,7 @@ void Spell::EffectSummonObjectWild(SpellEffectIndex effIdx)
     // Wild object not have owner and check clickable by players
     map->Add(pGameObj);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP && m_caster->IsPlayer())
-#else
-    if ((pGameObj->GetEntry() == 179785 || pGameObj->GetEntry() == 179786) && m_caster->IsPlayer())
-#endif
     {
         Player* pl = (Player*)m_caster;
         BattleGround* bg = ((Player*)m_caster)->GetBattleGround();
@@ -4515,9 +4501,8 @@ void Spell::EffectSanctuary(SpellEffectIndex effIdx)
     if (!unitTarget)
         return;
 
-    // World of Warcraft Client Patch 1.12.0 (2006-08-22)
-    // - Neutral guards are now able to see through the rogue Vanish ability.
-    bool guardCheck = m_spellInfo->IsFitToFamily<SPELLFAMILY_ROGUE, CF_ROGUE_VANISH>() && (sWorld.GetWowPatch() >= WOW_PATCH_112);
+    // Neutral guards are able to see through the rogue Vanish ability.
+    bool guardCheck = m_spellInfo->IsFitToFamily<SPELLFAMILY_ROGUE, CF_ROGUE_VANISH>();
     bool noGuards = true;
 
     unitTarget->InterruptSpellsCastedOnMe(true);
@@ -5205,9 +5190,6 @@ void Spell::EffectAddExtraAttacks(SpellEffectIndex effIdx)
     // - Fixed a bug where abilities that give extra attacks, like the paladin
     //   Reckoning talent, could cause the following swing to take longer than
     //   it should.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_2_4
-    unitTarget->ResetAttackTimer();
-#endif
 
     unitTarget->AddExtraAttackOnUpdate();
     unitTarget->SetExtraAttaks(damage);

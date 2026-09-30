@@ -71,7 +71,6 @@ class GameObject : public SpellCaster
         bool LoadFromDB(uint32 guid, Map* map, bool force = false);
         void DeleteFromDB() const;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
         void SetOwnerGuid(ObjectGuid ownerGuid)
         {
             m_spawnedByDefault = false;                     // all object with owner is despawned after delay
@@ -79,16 +78,6 @@ class GameObject : public SpellCaster
         }
 
         ObjectGuid const& GetOwnerGuid() const { return GetGuidValue(OBJECT_FIELD_CREATED_BY); }
-#else
-        ObjectGuid m_ownerGuid;
-        void SetOwnerGuid(ObjectGuid ownerGuid)
-        {
-            m_spawnedByDefault = false;                     // all object with owner is despawned after delay
-            m_ownerGuid = ownerGuid;
-        }
-
-        ObjectGuid const& GetOwnerGuid() const { return m_ownerGuid; }
-#endif
         Unit* GetOwner() const;
         Player* GetAffectingPlayer() const final;
         bool IsCharmerOrOwnerPlayerOrPlayerItself() const final { return GetOwnerGuid().IsPlayer(); }
@@ -146,17 +135,10 @@ class GameObject : public SpellCaster
         GOState GetGoState() const { return GOState(GetUInt32Value(GAMEOBJECT_STATE)); }
         void SetGoState(GOState state);
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_12_1
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit) { SetUInt32Value(GAMEOBJECT_ARTKIT, artkit); }
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
-#else
-        uint32 GetGoArtKit() const { return 0; }
-        void SetGoArtKit(uint32 artkit) { }
-        uint32 GetGoAnimProgress() const { return 0; }
-        void SetGoAnimProgress(uint32 animprogress) { }
-#endif
         uint32 GetDisplayId() const { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
         void SetDisplayId(uint32 modelId);
 

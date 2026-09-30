@@ -294,13 +294,11 @@ void LoadDBCStores()
         e.filename = const_cast<char*>(sGameObjectDisplayInfoStore.InternString(f[1].GetCppString()));
         return e.Displayid;
     });
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     LoadDBCFromWorld(bar, badDbcFiles, sItemBagFamilyStore, "dbc_itembagfamily", "`ID`", [](Field* f, ItemBagFamilyEntry& e)
     {
         e.ID = f[0].GetUInt32();
         return e.ID;
     });
-#endif
     LoadDBCFromWorld(bar, badDbcFiles, sItemRandomPropertiesStore, "dbc_itemrandomproperties", "`ID`, `Name_lang`, `Enchantment1`, `Enchantment2`, `Enchantment3`", [&](Field* f, ItemRandomPropertiesEntry& e)
     {
         e.ID = f[0].GetUInt32();

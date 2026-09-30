@@ -8,7 +8,6 @@ void WorldPackets::Spell::OpenItem::ReadFromWorldPacket(WorldPacket& recv_data)
     recv_data >> slot;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
 size_t WorldPackets::Spell::PlaySpellImpact::EstimateFinalSize() const
 {
     return sizeof(targetGuid) +
@@ -20,5 +19,4 @@ void WorldPackets::Spell::PlaySpellImpact::AppendBodyTo(ByteBuffer& buffer) cons
     buffer << targetGuid;
     buffer << spellVisualId;
 }
-#endif
 

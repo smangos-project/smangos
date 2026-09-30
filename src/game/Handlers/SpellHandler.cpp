@@ -356,10 +356,8 @@ void WorldSession::HandleCancelAuraOpcode(CancelAura const& packet)
     if (!spellInfo)
         return;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     if (spellInfo->HasAttribute(SPELL_ATTR_NO_AURA_CANCEL))
         return;
-#endif
 
     if (spellInfo->HasAttribute(SPELL_ATTR_DO_NOT_DISPLAY))
         return;
@@ -397,12 +395,8 @@ void WorldSession::HandleCancelAuraOpcode(CancelAura const& packet)
 
     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
     // - Druids should now be able to shapeshift back into caster form while Feared.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-    if (_player->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING | UNIT_FLAG_POSSESSED))
-#else
     // confirmed you cant remove buffs while mind controlled on wotlk ptr
     if (_player->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED))
-#endif
         return;
 
     // channeled spell case (it currently casted then)
@@ -516,7 +510,6 @@ void WorldSession::HandleSelfResOpcode(SelfRes const& /*packet*/)
 {
 // World of Warcraft Client Patch 1.6.0 (2005-07-12)
 // - Self-resurrection spells show their name on the button in the release spirit dialog.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
     if (_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
         SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
@@ -525,15 +518,4 @@ void WorldSession::HandleSelfResOpcode(SelfRes const& /*packet*/)
 
         _player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
     }
-#else
-    if (_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT))
-    {
-        SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(_player->GetResurrectionSpellId());
-        if (spellInfo)
-            _player->CastSpell(_player, spellInfo, false);
-
-        _player->SetResurrectionSpellId(0);
-        _player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT);
-    }
-#endif
 }

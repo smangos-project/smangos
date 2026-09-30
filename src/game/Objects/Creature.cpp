@@ -413,11 +413,7 @@ bool Creature::InitEntry(uint32 entry, GameEventCreatureData const* eventData /*
     // Load creature equipment
     LoadDefaultEquipment(eventData);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-#else
-    SetInt32Value(UNIT_MOD_CAST_SPEED, 0);
-#endif
 
     // update speed for the new CreatureInfo base speed mods
     UpdateSpeed(MOVE_WALK, false);

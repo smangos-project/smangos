@@ -133,7 +133,6 @@ AuraScript* GetScript_MageIgnite(SpellEntry const*)
     return new MageIgniteScript();
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
 
 enum
 {
@@ -190,7 +189,6 @@ AuraScript* GetScript_MageCombustionBuff(SpellEntry const*)
     return new MageCombustionBuffScript();
 }
 
-#endif
 
 void AddSC_mage_spell_scripts()
 {
@@ -206,7 +204,6 @@ void AddSC_mage_spell_scripts()
     newscript->GetAuraScript = &GetScript_MageIgnite;
     newscript->RegisterSelf();
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     newscript = new Script;
     newscript->Name = "spell_mage_combustion_proc";
     newscript->GetAuraScript = &GetScript_MageCombustionProc;
@@ -216,5 +213,4 @@ void AddSC_mage_spell_scripts()
     newscript->Name = "spell_mage_combustion_buff";
     newscript->GetAuraScript = &GetScript_MageCombustionBuff;
     newscript->RegisterSelf();
-#endif
 }

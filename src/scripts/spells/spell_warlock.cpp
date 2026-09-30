@@ -175,22 +175,6 @@ struct WarlockCurseOfAgonyDummyScript : SpellScript
 {
     bool OnEffectExecute(Spell* spell, SpellEffectIndex effIdx) const final
     {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-        if (effIdx == EFFECT_INDEX_0 && spell->GetUnitTarget())
-        {
-            if (SpellEntry const* pSpellEntry = spell->m_triggeredByAuraSpell)
-            {
-                SpellCaster* pCaster = spell->m_caster;
-                if (SpellAuraHolder const* pAuraHolder = spell->GetUnitTarget()->GetSpellAuraHolder(pSpellEntry->Id))
-                    if (Unit* pAuraCaster = pAuraHolder->GetCaster())
-                        pCaster = pAuraCaster;
-
-                int32 damagePoint = spell->m_triggeredByAuraBasePoints;
-                damagePoint = pCaster->SpellDamageBonusDone(spell->GetUnitTarget(), pSpellEntry, EFFECT_INDEX_0, damagePoint, DOT);
-                pCaster->CastCustomSpell(spell->GetUnitTarget(), 18277, damagePoint, {}, {}, true);
-            }
-        }
-#endif
         return true;
     }
 };

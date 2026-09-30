@@ -992,11 +992,7 @@ bool ChatHandler::HandleGoForwardCommand(char* args)
     if (Player* pPlayer = m_session->GetPlayer())
     {
         pPlayer->GetRelativePositions(add, 0.0f, 0.0f, x, y, z);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         pPlayer->NearLandTo(x, y, z, pPlayer->GetOrientation());
-#else
-        pPlayer->NearTeleportTo(x, y, z, pPlayer->GetOrientation());
-#endif
     }
     return true;
 }
@@ -1009,11 +1005,7 @@ bool ChatHandler::HandleGoUpCommand(char* args)
     if (Player* pPlayer = m_session->GetPlayer())
     {
         pPlayer->GetRelativePositions(0.0f, 0.0f, add_z, x, y, z);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         pPlayer->NearLandTo(x, y, z, pPlayer->GetOrientation());
-#else
-        pPlayer->NearTeleportTo(x, y, z, pPlayer->GetOrientation());
-#endif
     }
     return true;
 }
@@ -1027,11 +1019,7 @@ bool ChatHandler::HandleGoRelativeCommand(char* args)
     {
         pPlayer->GetRelativePositions(fForwardBackward, fLeftRight, fUpDown, x, y, z);
         PSendSysMessage("Teleportation : Forward-Backward %f Left-Right %f Up-Down %f", fForwardBackward, fLeftRight, fUpDown);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         pPlayer->NearLandTo(x, y, z, pPlayer->GetOrientation());
-#else
-        pPlayer->NearTeleportTo(x, y, z, pPlayer->GetOrientation());
-#endif
     }
     return true;
 }

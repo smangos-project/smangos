@@ -622,7 +622,7 @@ bool OnTrigger_at_antusul(Player* pPlayer, AreaTriggerEntry const *at)
         // World of Warcraft Client Patch 1.12.0 (2006-08-22)
         // - Antu'sul's Sul'lithuz Broodlings now only hatch 4 at a time and are
         //   significantly weaker.
-        uint32 count = sWorld.GetWowPatch() < WOW_PATCH_112 ? 2 : 1;
+        uint32 count = 1;
         for (uint32 i = 0; i < count; ++i)
         {
             if (Creature* pBroodling = pAntusul->SummonCreature(NPS_SULITHUZ_BROODLING, 1823.415161f, 748.297485f, 20.794931f, 3.944444f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN))

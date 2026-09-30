@@ -245,9 +245,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - Fixed a bug where mana was being regenerated while channelling spells
             //   that use mana.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             if (!m_currentSpells[CURRENT_CHANNELED_SPELL] || (m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id != m_lastManaUseSpellId))
-#endif
             {
                 m_lastManaUseTimer = 0;
                 m_lastManaUseSpellId = 0;
@@ -277,10 +275,6 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
                     {
                         // World of Warcraft Client Patch 1.6.1 (2005-08-02)
                         // - Spell casting is no longer interrupted when leaving combat.
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_6_1
-                        if (IsNonMeleeSpellCasted(false))
-                            InterruptNonMeleeSpells(false);
-#endif
 
                         ClearInCombat();
                     }
@@ -587,37 +581,6 @@ void Unit::RemoveSpellsCausingAura(AuraType auraType, SpellAuraHolder const* exc
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-void Unit::RemoveAurasByDamageTaken(uint32 damage, uint32 exceptSpellId)
-{
-    for (SpellAuraHolderMap::iterator iter = m_spellAuraHolders.begin(); iter != m_spellAuraHolders.end();)
-    {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-        if (iter->second->GetSpellProto()->HasAttribute(SPELL_ATTR_HEARTBEAT_RESIST) &&
-            iter->second->GetSpellProto()->procChance < 101)
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-        if (iter->second->GetSpellProto()->HasAttribute(SPELL_ATTR_HEARTBEAT_RESIST))
-#else
-        if (iter->second->GetSpellProto()->HasAttribute(SPELL_ATTR_CAN_BREAK_ON_DAMAGE))
-#endif
-        {
-            if (iter->first != exceptSpellId)
-            {
-                uint32 max_dmg = GetLevel() > 8 ? 25 * GetLevel() - 150 : 50;
-                float chance = float(damage) / max_dmg * 100.0f;
-                if (roll_chance_f(chance))
-                {
-                    RemoveSpellAuraHolder(iter->second);
-                    iter = m_spellAuraHolders.begin();
-                    continue;
-                }
-            }
-        }
-
-        ++iter;
-    }
-}
-#endif
 
 void Unit::DoKillUnit(Unit* pVictim)
 {
@@ -633,20 +596,13 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
     // - Fixed bug where self-inflicted damage, like Poisonous Blood, wouldn't
     //   break stealth.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 #define SKIP_STEALTH false
-#else
-#define SKIP_STEALTH (pVictim == this)
-#endif
 
     // remove affects from attacker at any non-DoT damage (including 0 damage)
     if (damagetype != DOT)
     {
         // World of Warcraft Client Patch 1.6.0 (2005-07-12)
         // - Damage caused by environmental effects will now cancel stealth (e.g. swimming in lava).
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_5_1
-        if (damagetype != SELF_DAMAGE)
-#endif
             RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 
         // feign death does not break from environmental damage, tested on classic
@@ -704,9 +660,6 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
             {
                 // In patch 1.10 proc flags were added to CC auras to make them break on damage.
                 // Before that chance to break on damage was handled by attributes.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-                pVictim->RemoveAurasByDamageTaken(cleanDamage->absorb, spellProto ? spellProto->Id : 0);
-#endif
 
                 pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_DAMAGE_CANCELS, spellProto ? spellProto->Id : 0, true, SKIP_STEALTH);
 
@@ -725,9 +678,6 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
 
     // In patch 1.10 proc flags were added to CC auras to make them break on damage.
     // Before that chance to break on damage was handled by attributes.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    pVictim->RemoveAurasByDamageTaken(damage, spellProto ? spellProto->Id : 0);
-#endif
 
     uint32 health = pVictim->GetHealth();
     // duel ends when player has 1 or less hp
@@ -739,9 +689,7 @@ uint32 Unit::DealDamage(Unit* pVictim, uint32 damage, CleanDamage const* cleanDa
             ((Player*)pVictim)->m_duel->opponent->GetObjectGuid() == GetOwnerGuid()
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - Fixed bug where you could kill someone in a duel with spell reflection.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             || pVictim == this && reflected
-#endif
             )
             damage = health ? health - 1 : 0;
 
@@ -1077,41 +1025,23 @@ void Unit::Kill(Unit* pVictim, SpellEntry const* spellProto, bool durabilityLoss
 
     // handle spirit of redemption talent
     if (spiritOfRedemptionTalentImmune)
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     {
         pVictim->InterruptNonMeleeSpells(false);
 
         // save value before aura remove
         uint32 ressSpellId = 0;
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
         if (!ressSpellId)
             ressSpellId = ((Player*)pVictim)->SelectResurrectionSpellId();
-#else
-        if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT))
-            ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
-#endif
 
         pVictim->RemoveAllAurasOnDeath();
 
         // restore for use at real death
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
-#else
-        pPlayerVictim->SetResurrectionSpellId(ressSpellId);
-        if (ressSpellId)
-            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CAN_SELF_RESURRECT);
-#endif
 
         pVictim->CastCustomSpell(pVictim, 27827, pVictim->GetMaxHealth(), {}, {}, true);
     }
     else
-#else
-    {
-        pVictim->CastSpell(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ(), 20713, true);
-    }
-    // no else
-#endif
     {
         pVictim->SetHealth(0);
         DEBUG_FILTER_LOG(LOG_FILTER_DAMAGE, "SET JUST_DIED");
@@ -1591,11 +1521,6 @@ void Unit::SetDamageDependentHitInfoFlags(uint32& outHitInfo, Unit const* pVicti
        (victimState == VICTIMSTATE_NORMAL && (cleanDamage || blockedDamage)))
         outHitInfo |= HITINFO_AFFECTS_VICTIM;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    // Flag used as animation hint in alpha client, not sure if vanilla client uses it.
-    if (cleanDamage >= pVictim->GetHealth())
-        outHitInfo |= HITINFO_KILLING_BLOW;
-#endif
 
     // Heavy hits on players cause more blood to spurt out.
     if (pVictim->IsPlayer())
@@ -1635,15 +1560,9 @@ void Unit::RollDazeOutcome(CalcDamageInfo* damageInfo)
         if (probability > 40.0f)
             probability = 40.0f;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        damageInfo->HitInfo |= HITINFO_ROLLED_DAZE;
-#endif
 
         if (roll_chance_f(probability))
         {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-            damageInfo->HitInfo |= HITINFO_DAZE;
-#endif
 
             CastSpell(pVictim, SPELL_ID_DAZE, true);
         }
@@ -1955,26 +1874,6 @@ void Unit::CalculateDamageAbsorbAndResist(SpellCaster* pCaster, SpellSchoolMask 
             if (mod->m_amount <= 0)
                 existExpired = true;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-            // Patch 1.11.0 changed Mage talent Improved Frost Ward to Frost Warding.
-            // Improved Frost Ward - 50% of the damage absorbed by your Frost Ward is added to your mana.
-            SpellEntry const* absorbProto = (*i)->GetSpellProto();
-            if (absorbProto->IsFitToFamily<SPELLFAMILY_MAGE, CF_MAGE_FROST_WARD>() && HasAura(11189))
-                CastCustomSpell(this, 27679, currentAbsorb / 2, {}, {}, true);
-            else if (absorbProto->IsFitToFamily<SPELLFAMILY_MAGE, CF_MAGE_FIRE_WARD>())
-            {
-                Unit::AuraList const& mOverrideClassScript = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-                for (const auto i : mOverrideClassScript)
-                    // Patch 1.11.0 changed Mage talent Improved Fire Ward.
-                    // Old effect - Causes your Fire Ward to reflect 20%/35% of the Fire damage absorbed back to the caster.
-                    // The % values don't show up anywhere in dbcs other than the tooltip
-                    if (i->GetModifier()->m_miscvalue == 948)
-                        if (i->GetId() == 11094) // Improved Fire Ward 1
-                            CastCustomSpell(pCaster->ToUnit(), 12559, 0.2f * currentAbsorb, {}, {}, true);
-                        else if (i->GetId() == 13043) // Improved Fire Ward 2
-                            CastCustomSpell(pCaster->ToUnit(), 12559, 0.35f * currentAbsorb, {}, {}, true);
-            }
-#endif
         }
 
         // Remove all expired absorb auras
@@ -2059,19 +1958,8 @@ void Unit::CalculateDamageAbsorbAndResist(SpellCaster* pCaster, SpellSchoolMask 
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - Blessing of Sacrifice no longer shares damage with dead Paladins
             //  (You can no longer kill Paladin Ghosts).
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             if (!reflectTo->IsAlive())
                 continue;
-#else
-            if (reflectTo->GetDeathState() == DEAD && reflectTo->IsPlayer())
-            {
-                // revive the paladin with 1 hp so we can kill him again
-                static_cast<Player*>(reflectTo)->ResurrectPlayer(0);
-                static_cast<Player*>(reflectTo)->SpawnCorpseBones();
-            }
-            else if (reflectTo->GetDeathState() != ALIVE)
-                continue;
-#endif
 
             int32 currentAbsorb;
             if (remainingDamage >= (*i)->GetModifier()->m_amount)
@@ -2121,13 +2009,6 @@ void Unit::CalculateDamageAbsorbAndResist(SpellCaster* pCaster, SpellSchoolMask 
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - Fixed a bug where Soul Link and Power Word: Sheild, when used together,
             //   would heal the Warlock instead of splitting or absorbing damage.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-            if (HasAuraType(SPELL_AURA_SCHOOL_ABSORB))
-            {
-                ModifyHealth(splitted);
-                continue;
-            }
-#endif
 
             pCaster->SendSpellNonMeleeDamageLog(caster, (*i)->GetId(), splitted, schoolMask, split_absorb, 0, (damagetype == DOT), 0, false, true);
 
@@ -2139,21 +2020,11 @@ void Unit::CalculateDamageAbsorbAndResist(SpellCaster* pCaster, SpellSchoolMask 
     // World of Warcraft Client Patch 1.11.0 (2006-06-20)
     // - Mana Shield - Damage taken will now be absorbed by other absorb spells
     //   (e.g. Ice Barrier, Power Word: Shield) before being absorbed by Mana Shield.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     HandleSchoolAbsorb();
     HandleManaShield();
     HandleSplitDamage();
     // World of Warcraft Client Patch 1.7.0 (2005 - 09 - 13)
     // - Damage absorption is now applied before damage splitting effects.
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-    HandleManaShield();
-    HandleSchoolAbsorb();
-    HandleSplitDamage();
-#else
-    HandleSplitDamage();
-    HandleManaShield();
-    HandleSchoolAbsorb();
-#endif
 
     *absorb = damage - remainingDamage - *resist;
 }
@@ -5296,12 +5167,6 @@ float Unit::GetSpellCritChance(Unit const* pVictim, SpellEntry const* spellProto
                 {
                     if (i->GetSpellProto()->SpellFamilyName != spellProto->SpellFamilyName)
                         continue;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-                    // 1.11.0 - Mage talent Shatter was changed to affect all spells, previously limited to Frost spells.
-                    SpellEntry const* modSpellProto = i->GetSpellProto();
-                    if (modSpellProto->EffectItemType[0] && !spellProto->IsFitToFamily(SpellFamily(modSpellProto->SpellFamilyName), modSpellProto->EffectItemType[0]))
-                        continue;
-#endif
                     switch (i->GetModifier()->m_miscvalue)
                     {
                         // Shatter
@@ -6058,10 +5923,6 @@ void Unit::SetInCombatWithAssisted(Unit* pAssisted)
                 // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                 // - Casting spells on your pets and summons will no longer cause guards
                 //   in neutral towns to attack you.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-                else if (pAssisted->IsCreature() && pAssisted->IsPvP())
-                    pThisPlayer->UpdatePvPContested(true);
-#endif
             }
         }
     }
@@ -6825,9 +6686,6 @@ bool Unit::FindPendingMovementFlagChange(uint32 movementCounter, bool applyRecei
     for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
     {
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        movementCounter = pendingChange->movementCounter;
-#endif
 
         if (pendingChange->movementCounter != movementCounter || pendingChange->apply != applyReceived || pendingChange->movementChangeType != changeTypeReceived)
             continue;
@@ -6844,9 +6702,6 @@ bool Unit::FindPendingMovementRootChange(uint32 movementCounter, bool applyRecei
     for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
     {
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        movementCounter = pendingChange->movementCounter;
-#endif
 
         if (pendingChange->movementCounter != movementCounter || pendingChange->apply != applyReceived || pendingChange->movementChangeType != ROOT)
             continue;
@@ -6863,9 +6718,6 @@ bool Unit::FindPendingMovementTeleportChange(uint32 movementCounter)
     for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
     {
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        movementCounter = pendingChange->movementCounter;
-#endif
 
         if (pendingChange->movementCounter != movementCounter || pendingChange->movementChangeType != TELEPORT)
             continue;
@@ -6882,9 +6734,6 @@ bool Unit::FindPendingMovementKnockbackChange(MovementInfo& movementInfo, uint32
     for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
     {
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        movementCounter = pendingChange->movementCounter;
-#endif
 
         if (pendingChange->movementCounter != movementCounter || pendingChange->movementChangeType != KNOCK_BACK
             || std::fabs(pendingChange->knockbackInfo.speedXY - movementInfo.jump.xyspeed) > 0.01f
@@ -6900,7 +6749,6 @@ bool Unit::FindPendingMovementKnockbackChange(MovementInfo& movementInfo, uint32
     return false;
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
 bool Unit::FindPendingMovementSpeedChange(float speedReceived, uint32 movementCounter, UnitMoveType moveType)
 {
     for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
@@ -6919,9 +6767,6 @@ bool Unit::FindPendingMovementSpeedChange(float speedReceived, uint32 movementCo
                 continue;
         }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        movementCounter = pendingChange->movementCounter;
-#endif
 
         if (pendingChange->movementCounter != movementCounter || std::fabs(speedSent - speedReceived) > 0.01f || moveTypeSent != moveType)
             continue;
@@ -6932,35 +6777,6 @@ bool Unit::FindPendingMovementSpeedChange(float speedReceived, uint32 movementCo
 
     return false;
 }
-#else
-bool Unit::FindPendingMovementSpeedChange(float& newSpeed, UnitMoveType moveType)
-{
-    for (auto pendingChange = m_pendingMovementChanges.begin(); pendingChange != m_pendingMovementChanges.end(); pendingChange++)
-    {
-        UnitMoveType moveTypeSent;
-        switch (pendingChange->movementChangeType)
-        {
-            case SPEED_CHANGE_WALK:                 moveTypeSent = MOVE_WALK; break;
-            case SPEED_CHANGE_RUN:                  moveTypeSent = MOVE_RUN; break;
-            case SPEED_CHANGE_RUN_BACK:             moveTypeSent = MOVE_RUN_BACK; break;
-            case SPEED_CHANGE_SWIM:                 moveTypeSent = MOVE_SWIM; break;
-            case SPEED_CHANGE_SWIM_BACK:            moveTypeSent = MOVE_SWIM_BACK; break;
-            case RATE_CHANGE_TURN:                  moveTypeSent = MOVE_TURN_RATE; break;
-            default:
-                continue;
-        }
-
-        if (moveTypeSent != moveType)
-            continue;
-
-        newSpeed = pendingChange->newValue;
-        m_pendingMovementChanges.erase(pendingChange);
-        return true;
-    }
-
-    return false;
-}
-#endif
 
 Player* Unit::GetPlayerMovingMe()
 {
@@ -7095,10 +6911,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, float ratio)
 
     if (IsCreature())
     {
-        // Before patch 1.9 pets should retain their wild speed, after that they are normalised
+        // Pets have normalised speed
         Creature* pCreature = (Creature*)this;
-        if (!(pCreature->IsPet() && pCreature->GetOwnerGuid().IsPlayer()) ||
-            (sWorld.GetWowPatch() < WOW_PATCH_109 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PETS)))
+        if (!(pCreature->IsPet() && pCreature->GetOwnerGuid().IsPlayer()))
         {
             switch (mtype)
             {
@@ -7240,10 +7055,6 @@ void Unit::SetRooted(bool apply)
         // Hackfix: Old clients teleport unit to last point if new spline begins right after unroot.
         // In 1.8 sniffs it appears that the creature only begins chasing on the next world update,
         // but motion is updated right away in our core, so send a sacrificial STOP spline after unroot.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-        if (!apply)
-            StopMoving(true);
-#endif
     }
 }
 
@@ -7959,12 +7770,10 @@ float Unit::GetTotalResistanceValue(SpellSchools school) const
     // World of Warcraft Client Patch 1.9.0 (2006-01-03)
     // - Curse of Shadow and Curse of the Elements - These curses can no
     //   longer cause resistance to become negative.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     // Auras can't cause resistances to dip below 0 since early vanilla
     // PS: Actually, they can, but only visually advertised in the fields, calculations ignore it, we limit both
     if (value < 0 && !vulnerability)
         value = 0;
-#endif
 
     return value;
 }
@@ -8077,22 +7886,14 @@ float Unit::GetTotalAttackPowerValue(WeaponAttackType attType) const
         int32 ap = GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) + GetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 0) + GetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 1);
         if (ap < 0)
             return 0.0f;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         return ap * (1.0f + GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER));
-#else
-        return ap;
-#endif
     }
     else
     {
         int32 ap = GetInt32Value(UNIT_FIELD_ATTACK_POWER) + GetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 0) + GetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 1);
         if (ap < 0)
             return 0.0f;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         return ap * (1.0f + GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER));
-#else
-        return ap;
-#endif
     }
 }
 
@@ -8429,9 +8230,7 @@ void CharmInfo::InitPossessCreateSpells()
             // World of Warcraft Client Patch 1.10.0 (2006-03-28)
             // - Charm spells on charmed creatures are no longer available to the
             //   players that charm them.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
             if (!pSpellEntry->IsCharmSpell())
-#endif
 
                 AddSpellToActionBar(spellSlot->spellId, ACT_PASSIVE);
     }
@@ -8479,10 +8278,8 @@ void CharmInfo::InitCharmCreateSpells()
             // World of Warcraft Client Patch 1.10.0 (2006-03-28)
             // - Charm spells on charmed creatures are no longer available to the
             //   players that charm them.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
             else if (pSpellEntry->IsCharmSpell())
                 continue;
-#endif
 
             for (uint32 i = 0; i < 3 && onlyselfcast; ++i)  //nonexistent spell will not make any problems as onlyselfcast would be false -> break right away
             {
@@ -8886,14 +8683,6 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* pTarget, uint32 procFlag,
             // for victim
             if (isVictim)
             {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-                // if victim and got critted
-                if (procExtra & PROC_EX_CRITICAL_HIT)
-                {
-                    ModifyAuraState(AURA_STATE_BERSERKING, true);
-                    StartReactiveTimer(REACTIVE_CRIT, GetObjectGuid());
-                }
-#endif
                 // if victim and dodged attack
                 if (procExtra & PROC_EX_DODGE)
                 {
@@ -8920,11 +8709,7 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* pTarget, uint32 procFlag,
                     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                     // - Riposte - Fixed a bug where the ability was not usable when a special
                     //   attack(e.g.Gouge) is parried.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     else
-#else
-                    else if (!(GetClass() == CLASS_ROGUE && procSpell))
-#endif
                     {
                         ModifyAuraState(AURA_STATE_DEFENSE, true);
                         StartReactiveTimer(REACTIVE_DEFENSE, pTarget->GetObjectGuid());
@@ -9021,11 +8806,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* pTarget, ProcSystemArgumen
         // "to sit down and force a crit. However, ability crits from physical"
         // "abilities such as Sinister Strike, Hamstring, Auto-shot, Aimed shot,"
         // "etc will generate a charge if you're sitting."
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         auto result = IsTriggeredAtSpellProcEvent(pTarget, itr.second, data.procSpell, procFlag, isVictim && !data.procSpell && !data.pVictim->IsStandingUp() ? data.procExtra & ~PROC_EX_CRITICAL_HIT : data.procExtra, data.attType, isVictim, spellProcEvent, data.isSpellTriggeredByAuraOrItem);
-#else
-        auto result = IsTriggeredAtSpellProcEvent(pTarget, itr.second, data.procSpell, procFlag, data.procExtra, data.attType, isVictim, spellProcEvent, data.isSpellTriggeredByAuraOrItem);
-#endif
         if (result != SPELL_PROC_TRIGGER_OK)
         {
             if (result == SPELL_PROC_TRIGGER_ROLL_FAILED &&
@@ -9463,10 +9244,6 @@ void Unit::ClearAllReactives()
         m_reactiveTarget[i].Clear();
     }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    if (HasAuraState(AURA_STATE_BERSERKING))
-        ModifyAuraState(AURA_STATE_BERSERKING, false);
-#endif
 
     if (HasAuraState(AURA_STATE_DEFENSE))
         ModifyAuraState(AURA_STATE_DEFENSE, false);
@@ -9493,12 +9270,6 @@ void Unit::UpdateReactives(uint32 p_time)
 
             switch (reactive)
             {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-                case REACTIVE_CRIT:
-                    if (HasAuraState(AURA_STATE_BERSERKING))
-                        ModifyAuraState(AURA_STATE_BERSERKING, false);
-                    break;
-#endif
                 case REACTIVE_DEFENSE:
                     if (HasAuraState(AURA_STATE_DEFENSE))
                         ModifyAuraState(AURA_STATE_DEFENSE, false);
@@ -9712,10 +9483,6 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
     }
     else
     {
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_12_1
-        val = -val;
-        apply = !apply;
-#endif
         ApplyPercentModFloatVar(m_modAttackSpeedPct[att], -val, apply);
         ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME + att, -val, apply);
 
@@ -9726,11 +9493,7 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
 
 void Unit::UpdateCastSpeed()
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     float total = 1.0f;
-#else
-    int32 total = 0;
-#endif
 
     AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
     for (auto const& aura : auras)
@@ -9738,23 +9501,14 @@ void Unit::UpdateCastSpeed()
         if (!aura->IsApplied())
             continue;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         float val = aura->GetModifier()->m_amount;
         if (val > 0)
             total *= 100.0f / (100.0f + val);
         else
             total *= (100.0f - val) / 100.0f;
-#else
-        int32 intval = round(aura->GetModifier()->m_amount);
-        total -= intval;
-#endif
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     SetFloatValue(UNIT_MOD_CAST_SPEED, total);
-#else
-    SetInt32Value(UNIT_MOD_CAST_SPEED, total);
-#endif
 }
 
 void Unit::UpdateAuraForGroup(uint8 slot)
@@ -10837,10 +10591,6 @@ bool Unit::HasAuraPetShouldAvoidBreaking(Unit* excludeCasterChannel) const
 {
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Pets no longer break off attacks when their target is affected by Warlock Fear.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-    if (HasAuraType(SPELL_AURA_MOD_FEAR))
-        return true;
-#endif
 
     return HasBreakableByDamageCrowdControlAura(excludeCasterChannel);
 }

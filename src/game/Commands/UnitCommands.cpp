@@ -417,11 +417,7 @@ bool ChatHandler::HandleUnitStatInfoCommand(char* args)
     PSendSysMessage("Max damage: %g", pTarget->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
     PSendSysMessage("Min off hand damage: %g", pTarget->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE));
     PSendSysMessage("Max off hand damage: %g", pTarget->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     PSendSysMessage("Casting speed mod: %g", pTarget->GetFloatValue(UNIT_MOD_CAST_SPEED));
-#else
-    PSendSysMessage("Casting speed mod: %i", pTarget->GetInt32Value(UNIT_MOD_CAST_SPEED));
-#endif
     PSendSysMessage("Base strength: %g", pTarget->GetCreateStat(STAT_STRENGTH));
     PSendSysMessage("Base agility: %g", pTarget->GetCreateStat(STAT_AGILITY));
     PSendSysMessage("Base stamina: %g", pTarget->GetCreateStat(STAT_STAMINA));
@@ -448,17 +444,12 @@ bool ChatHandler::HandleUnitStatInfoCommand(char* args)
     PSendSysMessage("Total arcane resist: %i", pTarget->GetResistance(SPELL_SCHOOL_ARCANE));
     PSendSysMessage("Attack power: %u", pTarget->GetUInt32Value(UNIT_FIELD_ATTACK_POWER));
     PSendSysMessage("Attack power mods: %i / %i", pTarget->GetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 0), pTarget->GetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 1));
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     PSendSysMessage("Attack power multiplier: %u", pTarget->GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER));
-#endif
     PSendSysMessage("Ranged attack power: %u", pTarget->GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER));
     PSendSysMessage("Ranged attack power mods: %i / %i", pTarget->GetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 0), pTarget->GetInt16Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, 1));
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     PSendSysMessage("Ranged attack power multiplier: %u", pTarget->GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER));
-#endif
     PSendSysMessage("Min ranged damage: %g", pTarget->GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE));
     PSendSysMessage("Max ranged damage: %g", pTarget->GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE));
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     PSendSysMessage("Physical power cost modifier: %i", pTarget->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + SPELL_SCHOOL_NORMAL));
     PSendSysMessage("Holy power cost modifier: %i", pTarget->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + SPELL_SCHOOL_HOLY));
     PSendSysMessage("Fire power cost modifier: %i", pTarget->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + SPELL_SCHOOL_FIRE));
@@ -473,7 +464,6 @@ bool ChatHandler::HandleUnitStatInfoCommand(char* args)
     PSendSysMessage("Frost power cost multiplier: %g", pTarget->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + SPELL_SCHOOL_FROST));
     PSendSysMessage("Shadow power cost multiplier: %g", pTarget->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + SPELL_SCHOOL_SHADOW));
     PSendSysMessage("Arcane power cost multiplier: %g", pTarget->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + SPELL_SCHOOL_ARCANE));
-#endif
 
     Player* pPlayer = pTarget->ToPlayer();
     if (!pPlayer)
@@ -2023,7 +2013,6 @@ bool ChatHandler::HandleModifyCastSpeedCommand(char *args)
         return false;
 
     // This field is an Int32 before 1.12.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     if (amount < 0)
     {
         SendSysMessage(LANG_BAD_VALUE);
@@ -2032,9 +2021,6 @@ bool ChatHandler::HandleModifyCastSpeedCommand(char *args)
     }
 
     pTarget->SetFloatValue(UNIT_MOD_CAST_SPEED, amount);
-#else
-    pTarget->SetInt32Value(UNIT_MOD_CAST_SPEED, amount);
-#endif
 
     PSendSysMessage(LANG_YOU_CHANGE_CSPD, pTarget->GetName(), amount);
 

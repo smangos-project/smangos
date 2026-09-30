@@ -27,9 +27,7 @@ struct DruidFerociousBiteScript : SpellScript
             if (!pPlayer)
                 return true;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             // World of Warcraft Client Patch 1.12.0 (2006-08-22)
             // - Ferocious Bite: Book of Ferocious Bite (Rank 5) now drops off The
             //   Beast in Black Rock Spire. In addition, Ferocious Bite now increases
@@ -37,34 +35,9 @@ struct DruidFerociousBiteScript : SpellScript
             // ( AP * 3% * combo + energy * 2,7 + damage )
             if (uint32 combo = ((Player*)pPlayer)->GetComboPoints())
                 spell->damage += pPlayer->GetTotalAttackPowerValue(BASE_ATTACK) * combo * 0.03f;
-#endif
 
             spell->damage += pPlayer->GetPower(POWER_ENERGY) * spell->m_spellInfo->DmgMultiplier[effIdx];
 
-#else
-
-            uint32 damageSpellId;
-            switch (spell->m_spellInfo->Id)
-            {
-                case 22568: // Rank 1
-                    damageSpellId = 22851;
-                    break;
-                case 22827: // Rank 2
-                    damageSpellId = 22853;
-                    break;
-                case 22828: // Rank 3
-                    damageSpellId = 22861;
-                    break;
-                case 22829: // Rank 4
-                    damageSpellId = 22862;
-                    break;
-                default:
-                    return true;
-            }
-
-            int32 dmg = pPlayer->GetPower(POWER_ENERGY) * spell->m_spellInfo->DmgMultiplier[effIdx];
-            pPlayer->CastCustomSpell(spell->GetUnitTarget(), damageSpellId, dmg, {}, {}, true);
-#endif
             pPlayer->SetPower(POWER_ENERGY, 0);
         }
         return true;
@@ -81,14 +54,12 @@ struct DruidEnrageScript : SpellScript
 {
     bool OnEffectExecute(Spell* spell, SpellEffectIndex effIdx) const final
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         if (effIdx == EFFECT_INDEX_1 && spell->GetUnitTarget())
         {
             // Reduce base armor by 27% in Bear Form and 16% in Dire Bear Form
             int32 reductionMod = spell->GetUnitTarget()->HasAura(9634) ? -16 : -27;
             spell->GetUnitTarget()->CastCustomSpell(spell->GetUnitTarget(), 25503, reductionMod, {}, {}, true);
         }
-#endif
         return true;
     }
 };
@@ -103,17 +74,14 @@ struct DruidSwiftmendScript : SpellScript
 {
     SpellCastResult OnCheckCast(Spell* spell, bool /*strict*/) const final
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         if (Unit* target = spell->m_targets.getUnitTarget())
             if (!target->GetAura(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, uint64(0x50)))
                 return SPELL_FAILED_TARGET_AURASTATE;
-#endif
         return SPELL_CAST_OK;
     }
 
     bool OnEffectExecute(Spell* spell, SpellEffectIndex effIdx) const final
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         if (effIdx == EFFECT_INDEX_0 && spell->GetUnitTarget())
         {
             // find shortest duration heal
@@ -157,7 +125,6 @@ struct DruidSwiftmendScript : SpellScript
 
             spell->damage += tickheal * tickcount;
         }
-#endif
         return true;
     }
 };

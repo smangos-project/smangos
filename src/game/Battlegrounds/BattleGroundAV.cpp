@@ -132,7 +132,7 @@ void BattleGroundAV::initializeChallengeInvocationGoals(void)
     // World of Warcraft Client Patch 1.6.0 (2005-07-12)
     // The minimum reputation needed to send a cavalry charge has been
     // reduced to Honored.
-    m_challengeMinReputationNeeded[BG_AV_CAVALRY_ASSAULT]               = sWorld.GetWowPatch() < WOW_PATCH_106 ? REP_REVERED : REP_HONORED;
+    m_challengeMinReputationNeeded[BG_AV_CAVALRY_ASSAULT]               = REP_HONORED;
     m_challengeMinReputationNeeded[BG_AV_GROUND_ASSAULT]                = REP_HONORED;
     m_challengeMinReputationNeeded[BG_AV_WORLDBOSS_ASSAULT]             = REP_NEUTRAL;
     m_challengeMinReputationNeeded[BG_AV_AIR_ASSAULT_BEACON_SOLDIER]    = REP_REVERED;
@@ -966,16 +966,10 @@ void BattleGroundAV::EndBattleGround(Team winner)
         }
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "BattleGroundAV: EndbattleGround: bgteam: %u towers:%u honor:%u rep:%u", i, towersSurvived[i], GetBonusHonorFromKill(towersSurvived[i] * BG_AV_KILL_SURVIVING_TOWER), towersSurvived[i] * BG_AV_REP_SURVIVING_TOWER);
 
-        // World of Warcraft Client Patch 1.7.0 (2005-09-13)
-        // - Alterac Valley now correctly rewards honor for owning graveyards at
-        //   the end of the game.
-        if (sWorld.GetWowPatch() >= WOW_PATCH_107)
+        if (gravesOwned[i])
         {
-            if (gravesOwned[i])
-            {
-                RewardReputationToTeam(faction[i], gravesOwned[i] * m_repOwnedGrave, team[i]);
-                RewardHonorToTeam(uint32(GetBonusHonorFromKill(gravesOwned[i] * BG_AV_KILL_SURVIVING_GRAVE) * GetHonorModifier()), team[i]);
-            }
+            RewardReputationToTeam(faction[i], gravesOwned[i] * m_repOwnedGrave, team[i]);
+            RewardHonorToTeam(uint32(GetBonusHonorFromKill(gravesOwned[i] * BG_AV_KILL_SURVIVING_GRAVE) * GetHonorModifier()), team[i]);
         }
 
         if (minesOwned[i])
@@ -1017,22 +1011,18 @@ bool BattleGroundAV::HandleAreaTrigger(Player* source, uint32 trigger)
             // - Characters that use the Battlemaster to enter a Battleground will
             //   now port back to that Battlemaster when they leave the Battleground
             //   for any reason.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             if (source->GetTeam() == ALLIANCE)
             {
                 source->LeaveBattleground();
                 return true;
             }
-#endif
             return false;
         case 2606: // Alterac Valley - Horde Exit
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             if (source->GetTeam() == HORDE)
             {
                 source->LeaveBattleground();
                 return true;
             }
-#endif
             return false;
         case 3326:
         case 3327:

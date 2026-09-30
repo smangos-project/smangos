@@ -380,16 +380,12 @@ bool MovementAnticheat::IsLoggedOpcode(uint32 opcode)
         case CMSG_MOVE_WATER_WALK_ACK:
         case CMSG_SET_ACTIVE_MOVER:
         case CMSG_MOVE_NOT_ACTIVE_MOVER:
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
         case CMSG_MOVE_START_SWIM_CHEAT:
         case CMSG_MOVE_STOP_SWIM_CHEAT:
         case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:
         case CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK:
         case CMSG_FORCE_TURN_RATE_CHANGE_ACK:
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         case MSG_MOVE_TIME_SKIPPED:
-#endif
             return true;
     }
     return false;
@@ -640,7 +636,6 @@ uint32 MovementAnticheat::HandlePositionTests(Player* pPlayer, MovementInfo& mov
     if (movementInfo.ctime == 0)
         APPEND_CHEAT(CHEAT_TYPE_NULL_CLIENT_TIME);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     // Not allowed to change jump speed while jumping
     if ((movementInfo.moveFlags & (MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR)) &&
         (GetLastMovementInfo().moveFlags & (MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR)) &&
@@ -648,7 +643,6 @@ uint32 MovementAnticheat::HandlePositionTests(Player* pPlayer, MovementInfo& mov
         (GetLastMovementInfo().jump.xyspeed > 0.0001f) &&
         (!IsInKnockBack()))
         APPEND_CHEAT(CHEAT_TYPE_JUMP_SPEED_CHANGE);
-#endif
 
     if (opcode == MSG_MOVE_JUMP && movementInfo.jump.xyspeed > (me->GetSpeed(GetMoveTypeForMovementInfo(GetLastMovementInfo())) + 0.0001f))
         APPEND_CHEAT(CHEAT_TYPE_OVERSPEED_JUMP);

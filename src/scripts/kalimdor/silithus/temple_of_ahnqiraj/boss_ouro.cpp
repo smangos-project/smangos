@@ -103,9 +103,9 @@ struct boss_ouroAI : public ScriptedAI
 
     // Take nerfs into account http://blue.cardplace.com/cache/wow-dungeons/481724.htm for content patch progression
     // Note: Investigate if these timers are 100% accurate.
-    inline uint32_t SandBlastTimerMin() { return sWorld.GetWowPatch() >= WOW_PATCH_110 ? 20000 : 12000; }
-    inline uint32_t SandBlastTimerMax() { return sWorld.GetWowPatch() >= WOW_PATCH_110 ? 25000 : 17000; }
-    inline uint32_t SubmergeTimer() { return sWorld.GetWowPatch() >= WOW_PATCH_110 ? 90000 : 60000; }
+    inline uint32_t SandBlastTimerMin() { return 20000; }
+    inline uint32_t SandBlastTimerMax() { return 25000; }
+    inline uint32_t SubmergeTimer() { return 90000; }
 
     void Reset() override
     {

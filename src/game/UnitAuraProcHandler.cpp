@@ -259,27 +259,12 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
     // Delete all these spells, and manage it via the DB (spell_proc_event)
     if (procSpell && !(procExtra & PROC_EX_CAST_END))
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         // Eye for an Eye
         if (spellProto->Id == 9799 || spellProto->Id == 25988)
         {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-            // World of Warcraft Client Patch 1.10.0 (2006-03-28)
-            // - Eye for an Eye - This talent can now trigger while you are mounted.
-            if (IsMounted())
-                return SPELL_PROC_TRIGGER_FAILED;
-
-            // World of Warcraft Client Patch 1.10.0 (2006-03-28)
-            // - If a paladin avoids damage with Divine Shield, Eye for an Eye will
-            //   not react.
-            if (!((procFlag & PROC_FLAG_TAKE_HARMFUL_SPELL) && (procExtra & (PROC_EX_CRITICAL_HIT | PROC_EX_IMMUNE))))
-                return SPELL_PROC_TRIGGER_FAILED;
-#else
             if (!((procFlag & PROC_FLAG_TAKE_HARMFUL_SPELL) && (procExtra & PROC_EX_CRITICAL_HIT)))
                 return SPELL_PROC_TRIGGER_FAILED;
-#endif
         }
-#endif
         // Improved Lay on Hands
         if (sSpellMgr.GetFirstSpellInChain(spellProto->Id) == 20234)
         {
@@ -353,22 +338,6 @@ SpellProcEventTriggerCheck Unit::IsTriggeredAtSpellProcEvent(Unit* pVictim, Spel
         // - Whirlwind - When this ability is used with Sweeping Strikes, it will
         //   burn only one charge of Sweeping Strikes and will generate only one
         //   additional attack.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        // Sweeping Strikes
-        if (spellProto->Id == 12292 || spellProto->Id == 18765)
-        {
-            // Never proc for Execute.
-            if (procSpell->HasTag(SPELL_TAG_EXECUTE))
-                return SPELL_PROC_TRIGGER_FAILED;
-
-            // Proc for every Whirlwind hit.
-            if (procSpell->HasTag(SPELL_TAG_WHIRLWIND))
-                return SPELL_PROC_TRIGGER_OK;
-
-            if (procSpell->IsDirectDamageSpell() && (procFlag & (PROC_FLAG_DEAL_MELEE_SWING | PROC_FLAG_DEAL_MELEE_ABILITY)))
-                return SPELL_PROC_TRIGGER_OK;
-        }
-#endif
 
         // SHAMAN
         // Elemental Mastery
@@ -566,7 +535,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                         pCreature->DespawnOrUnsummon(1);
                     return SPELL_AURA_PROC_OK;
                 }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                 // Eye for an Eye
                 case 9799:
                 case 25988:
@@ -583,7 +551,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                     triggered_spell_id = 25997;
                     break;
                 }
-#endif
                 // Sweeping Strikes
                 case 12292:
                 case 18765:
@@ -609,11 +576,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                     // - Sweeping Strikes will now ignore dead targets, and will ignore PvP
                     //   enabled targets if you are not PvP enabled.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     target = SelectRandomUnfriendlyTarget(pVictim, radius, false, true, true);
-#else
-                    target = SelectRandomUnfriendlyTarget(pVictim, radius, false, true, false);
-#endif
                     if (!target)
                         return SPELL_AURA_PROC_FAILED;
 
@@ -622,7 +585,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                     //   the second victim is below 20 % health, they will be hit with the full
                     //   Execute amount.If the second victim is not below 20 % health, they
                     //   will be hit with normal melee swing damage.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
                     // Case for Execute. This will only run when procced by Execute
                     if (procSpell && procSpell->Id == 20647)
                     {
@@ -642,7 +604,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                         }
                     }
                     else // Full damage on anything else
-#endif
                     {
                         basepoints[0] = rand_ditheru(amount * 100 / CalcArmorReducedDamage(pVictim, 100));
                         triggered_spell_id = 12723; // Note this SS id deals 1 damage by itself (Cannot crit)
@@ -661,10 +622,8 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
                     // - Retaliation - Will now cause a maximum of 30 retaliatory strikes in
                     //  15 seconds.In addition, retaliatory strikes will not be possible
                     //  while stunned.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     if (HasUnitState(UNIT_STATE_CAN_NOT_REACT))
                         return SPELL_AURA_PROC_FAILED;
-#endif
 
                     triggered_spell_id = 22858;
                     break;
@@ -1342,82 +1301,6 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 a
         }
         case SPELLFAMILY_PALADIN:
         {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-            // Seal of Righteousness - melee proc dummy
-            if (auraSpellInfo->IsFitToFamilyMask<CF_PALADIN_SEALS>())
-            {
-                if (!pVictim || !pVictim->IsAlive())
-                    return SPELL_AURA_PROC_FAILED;
-
-                if (GetTypeId() != TYPEID_PLAYER)
-                    return SPELL_AURA_PROC_FAILED;
-
-                uint32 spellId = 0;
-                switch (auraSpellInfo->Id)
-                {
-                    case 21084:
-                        spellId = 25742;
-                        break; // Rank 1
-                    case 20287:
-                        spellId = 25740;
-                        break; // Rank 2
-                    case 20288:
-                        spellId = 25739;
-                        break; // Rank 3
-                    case 20289:
-                        spellId = 25738;
-                        break; // Rank 4
-                    case 20290:
-                        spellId = 25737;
-                        break; // Rank 5
-                    case 20291:
-                        spellId = 25736;
-                        break; // Rank 6
-                    case 20292:
-                        spellId = 25735;
-                        break; // Rank 7
-                    case 20293:
-                        spellId = 25713;
-                        break; // Rank 8
-                }
-                if (spellId)
-                {
-                    float MAX_WSP = 4.0f;
-                    float MIN_WSP = 1.5f;
-
-                    Item *item = static_cast<Player*>(this)->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                    float speed = (item ? item->GetProto()->Delay : BASE_ATTACK_TIME) / 1000.0f;
-
-                    float minDmg = triggerAmount / 87.0f;
-                    float maxDmg = triggerAmount / 25.0f;
-
-                    float damageBasePoints = (maxDmg - minDmg) * ((speed - MIN_WSP) / (MAX_WSP - MIN_WSP)) + minDmg;
-
-                    // Apply Improved Seal of Rightousness talent
-                    // Modifier is applied on base damage only (changed patch 2.1.0)
-                    uint32 impSoRList[] = { 20224, 20225, 20330, 20331, 20332 };
-                    for (int i = 0; i < 5; ++i) {
-                        SpellModifier *mod = static_cast<Player*>(this)->GetSpellMod(SPELLMOD_ALL_EFFECTS, impSoRList[i]);
-                        if (mod && mod->type == SPELLMOD_PCT && mod->value > 0)
-                            damageBasePoints += damageBasePoints*(float)mod->value / 100.0f;
-                    }
-
-                    float damagePoint = damageBasePoints;
-
-                    // apply damage bonuses manually
-                    if (damagePoint >= 0)
-                    {
-                        damagePoint = SpellDamageBonusDone(pVictim, auraSpellInfo, triggeredByAura->GetEffIndex(), damagePoint, SPELL_DIRECT_DAMAGE);
-                        damagePoint = pVictim->SpellDamageBonusTaken(this, auraSpellInfo, triggeredByAura->GetEffIndex(), damagePoint, SPELL_DIRECT_DAMAGE);
-                    }
-
-                    CastCustomSpell(pVictim, spellId, rand_dither(damagePoint), {}, {}, true, nullptr, triggeredByAura);
-                    // Seal of Righteousness can proc weapon enchants. mechanic removed in 2.1.0
-                    static_cast<Player*>(this)->CastItemCombatSpell(pVictim, BASE_ATTACK);
-                    return SPELL_AURA_PROC_OK;                                // no hidden cooldown
-                }
-            }
-#endif
             // Judgement of Light and Judgement of Wisdom
             if (auraSpellInfo->IsFitToFamilyMask<CF_PALADIN_JUDGEMENT_OF_WISDOM_LIGHT>())
             {
@@ -1634,27 +1517,6 @@ SpellAuraProcResult Unit::HandleProcTriggerDamageAuraProc(Unit* pVictim, uint32 
 
     // World of Warcraft Client Patch 1.9.0 (2006-01-03)
     // - Seal of Righteousness - Now does holy damage on every swing.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    if (spellInfo->IsFitToFamilyMask<CF_PALADIN_SEALS>())
-    {
-        switch (spellInfo->Id)
-        {
-            case 21084: // Rank 1
-            case 20287: // Rank 2
-            case 20288: // Rank 3
-            case 20289: // Rank 4
-            case 20290: // Rank 5
-            case 20291: // Rank 6
-            case 20292: // Rank 7
-            case 20293: // Rank 8
-            {
-                if (!roll_chance_i(75)) // made up value
-                    return SPELL_AURA_PROC_FAILED;
-            }
-            break;
-        }
-    }
-#endif
 
     SpellNonMeleeDamage damageInfo(this, pVictim, spellInfo->Id, static_cast<SpellSchools>(spellInfo->School));
     float fdamage = CalculateSpellEffectValue(pVictim, spellInfo, triggeredByAura->GetEffIndex());
@@ -1857,7 +1719,6 @@ SpellAuraProcResult Unit::HandleModDamageAuraProc(Unit* /*pVictim*/, uint32 /*am
     if (!(schoolMask & triggeredByAura->GetModifier()->m_miscvalue))
         return SPELL_AURA_PROC_FAILED;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     switch (triggeredByAura->GetId())
     {
         case 24659: // Zandalarian Hero Charm - Unstable Power
@@ -1907,7 +1768,6 @@ SpellAuraProcResult Unit::HandleModDamageAuraProc(Unit* /*pVictim*/, uint32 /*am
             return SPELL_AURA_PROC_OK;
         }
     }
-#endif
 
     return SPELL_AURA_PROC_OK;
 }
@@ -1949,27 +1809,16 @@ SpellAuraProcResult Unit::HandleRemoveFearByDamageChanceProc(Unit* pVictim, uint
     uint32 max_dmg = GetLevel() > 8 ? 25 * GetLevel() - 150 : 50;
 
     // Players are 3x more likely to break fears
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     if (IsPlayer())
-#else
-    // World of Warcraft Client Patch 1.11.0 (2006-06-20)
-    // - Fear: The calculations to determine if Fear effects should break due
-    //   to receiving damage have been changed. In addition, Intimidating
-    //   Shout now follows that player versus non - player distinction, while
-    //   previously it did not.
-    if (IsPlayer() && !HasAura(5246))
-#endif
         max_dmg *= 0.333f;
 
     // World of Warcraft Client Patch 1.11.0 (2006-06-20)
     // - Fear: The calculations to determine if Fear effects should break due
     //   to receiving damage have been changed. In addition, the chance for a
     //   damage over time spell to break Fear is now significantly lower.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     // DOT spells are 3x less likely to break fears after 1.11
     if (procFlag & PROC_FLAG_TAKE_HARMFUL_PERIODIC)
         max_dmg *= 3;
-#endif
 
     // for players, this means max_dmg = 450 at level 60, or 1350 if the damage source is a dot
     // for mobs, this means max_dmg = 1350 at level 60, or 4050 if the damage source is a dot
@@ -1979,10 +1828,6 @@ SpellAuraProcResult Unit::HandleRemoveFearByDamageChanceProc(Unit* pVictim, uint
     //   to receiving damage have been changed.The old calculation used the
     //   base damage of the ability.The new calculation uses the final amount
     //   of damage dealt, after all modifiers.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-    if (procSpell && pVictim)
-        originalAmount = pVictim->CalculateSpellEffectValue(this, procSpell, EFFECT_INDEX_0);
-#endif
 
     float chance = float(originalAmount) / float(max_dmg) * 100.0f;
     if (roll_chance_f(chance))

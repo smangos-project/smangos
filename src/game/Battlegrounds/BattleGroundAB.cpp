@@ -29,7 +29,6 @@
 #include "Utilities/Random.h"
 #include "WorldPacket.h"
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 
 BattleGroundAB::BattleGroundAB()
 {
@@ -481,7 +480,7 @@ void BattleGroundAB::Reset()
     m_isInformedNearVictory                 = false;
     bool isBGWeekend = BattleGroundMgr::IsBgWeekend(GetTypeID());
     m_honorTics = (isBGWeekend) ? AB_WEEKEND_HONOR_INTERVAL : AB_NORMAL_HONOR_INTERVAL;
-    m_reputationTics = (isBGWeekend) ? GET_AB_WEEKEND_REP_INTERVAL : GET_AB_NORMAL_REP_INTERVAL;
+    m_reputationTics = (isBGWeekend) ? AB_WEEKEND_REPUTATION_INTERVAL : AB_NORMAL_REPUTATION_INTERVAL;
 
     for (uint8 i = 0; i < BG_AB_NODES_MAX; ++i)
     {
@@ -583,4 +582,3 @@ void BattleGroundAB::UpdatePlayerScore(Player* source, uint32 type, uint32 value
     }
 }
 
-#endif

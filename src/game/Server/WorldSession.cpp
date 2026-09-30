@@ -401,14 +401,10 @@ PacketProcessing GetChatPacketProcessingType(uint32 chatType)
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
         case CHAT_MSG_RAID:
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         case CHAT_MSG_RAID_LEADER:
         case CHAT_MSG_RAID_WARNING:
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         case CHAT_MSG_BATTLEGROUND:
         case CHAT_MSG_BATTLEGROUND_LEADER:
-#endif
         case CHAT_MSG_DND:
             return PACKET_PROCESS_ASYNC;
         // These can be handled on the map thread.
@@ -502,7 +498,6 @@ bool WorldSession::HasTrialRestrictions() const
 
 void WorldSession::CheckPlayedTimeLimit(time_t now)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     time_t const currentPlayed = GetConsecutivePlayTime(now);
 
     if (currentPlayed >= PLAY_TIME_LIMIT_FULL)
@@ -543,17 +538,14 @@ void WorldSession::CheckPlayedTimeLimit(time_t now)
             m_exhaustionState = PLAY_TIME_LIMIT_APPROACHING_PARTIAL;
         }
     }
-#endif
 }
 
 void WorldSession::SendPlayTimeWarning(PlayTimeFlag flag, int32 timeLeftInSeconds)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     auto packet = std::make_unique<WorldPackets::Misc::PlayTimeWarning>();
     packet->flag = static_cast<uint32>(flag);
     packet->timeLeftInSeconds = timeLeftInSeconds;
     SendPacket(std::move(packet));
-#endif
 }
 
 bool WorldSession::ForcePlayerLogoutDelay()

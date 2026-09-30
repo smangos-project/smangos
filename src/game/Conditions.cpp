@@ -115,6 +115,8 @@ uint8 const ConditionTargetsInternal[] =
 // Starts from 4th element so that -3 will return first element.
 uint8 const* ConditionTargets = &ConditionTargetsInternal[3];
 
+uint32 constexpr CONTENT_PATCH = 10;
+
 // Checks if player meets the condition
 bool ConditionEntry::Meets(WorldObject const* target, Map const* map, WorldObject const* source, ConditionSource conditionSourceType) const
 {
@@ -318,11 +320,11 @@ bool inline ConditionEntry::Evaluate(WorldObject const* target, Map const* map, 
             switch (m_value2)
             {
                 case 0:
-                    return sWorld.GetWowPatch() == m_value1;
+                    return CONTENT_PATCH == m_value1;
                 case 1:
-                    return sWorld.GetWowPatch() >= m_value1;
+                    return CONTENT_PATCH >= m_value1;
                 case 2:
-                    return sWorld.GetWowPatch() <= m_value1;
+                    return CONTENT_PATCH <= m_value1;
             }
             return false;
         }

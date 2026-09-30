@@ -161,7 +161,6 @@ inline void MaNGOS::DynamicObjectUpdater::VisitHelper(Unit* target)
     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
     // - Consecration and other similar spells can no longer be used by
     //   non-PvP flagged players to damage PvP flagged enemies.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     if (!i_positive)
     {
         // Negative AoE from non flagged players cannot target other players
@@ -170,7 +169,6 @@ inline void MaNGOS::DynamicObjectUpdater::VisitHelper(Unit* target)
                 if (!attackerPlayer->IsPvP() && !(attackerPlayer->IsFFAPvP() && attackedPlayer->IsFFAPvP()) && !attackerPlayer->IsInDuelWith(attackedPlayer))
                     return;
     }
-#endif
 
     SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(i_dynobject.GetSpellId());
     SpellEffectIndex eff_index  = i_dynobject.GetEffIndex();

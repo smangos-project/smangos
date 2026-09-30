@@ -471,43 +471,20 @@ HonorScores HonorMaintenancer::GenerateScores(HonorStandingList& standingList)
     HonorScores sc;
 
     // initialize the breakpoint values
-    // [-PROGRESSIVE]
-    // 1.11- values (source: http://www.wowwiki.com/Honor_system_%28pre-2.0_formulas%29)
-    if (sWorld.GetWowPatch() < WOW_PATCH_112)
-    {
-        sc.BRK[13] = 0.002f;
-        sc.BRK[12] = 0.007f;
-        sc.BRK[11] = 0.017f;
-        sc.BRK[10] = 0.037f;
-        sc.BRK[9] = 0.077f;
-        sc.BRK[8] = 0.137f;
-        sc.BRK[7] = 0.207f;
-        sc.BRK[6] = 0.287f;
-        sc.BRK[5] = 0.377f;
-        sc.BRK[4] = 0.477f;
-        sc.BRK[3] = 0.587f;
-        sc.BRK[2] = 0.715f;
-        sc.BRK[1] = 0.858f;
-        sc.BRK[0] = 1.000f;
-    }
-    else
-    {
-        // 1.12+
-        sc.BRK[13] = 0.003f;
-        sc.BRK[12] = 0.008f;
-        sc.BRK[11] = 0.020f;
-        sc.BRK[10] = 0.035f;
-        sc.BRK[9] = 0.060f;
-        sc.BRK[8] = 0.100f;
-        sc.BRK[7] = 0.159f;
-        sc.BRK[6] = 0.228f;
-        sc.BRK[5] = 0.327f;
-        sc.BRK[4] = 0.436f;
-        sc.BRK[3] = 0.566f;
-        sc.BRK[2] = 0.697f;
-        sc.BRK[1] = 0.845f;
-        sc.BRK[0] = 1.000f;
-    }
+    sc.BRK[13] = 0.003f;
+    sc.BRK[12] = 0.008f;
+    sc.BRK[11] = 0.020f;
+    sc.BRK[10] = 0.035f;
+    sc.BRK[9] = 0.060f;
+    sc.BRK[8] = 0.100f;
+    sc.BRK[7] = 0.159f;
+    sc.BRK[6] = 0.228f;
+    sc.BRK[5] = 0.327f;
+    sc.BRK[4] = 0.436f;
+    sc.BRK[3] = 0.566f;
+    sc.BRK[2] = 0.697f;
+    sc.BRK[1] = 0.845f;
+    sc.BRK[0] = 1.000f;
 
     uint32 poolSize = sWorld.getConfig(CONFIG_UINT32_PVP_POOL_SIZE_PER_FACTION) == 0 ?
             standingList.size() : sWorld.getConfig(CONFIG_UINT32_PVP_POOL_SIZE_PER_FACTION);
@@ -906,13 +883,11 @@ void HonorMgr::Update()
 
 // World of Warcraft Client Patch 1.6.0 (2005-07-12)
 // - There is now a progress bar on the Honor tab of your character window that displays how close you are to your next rank.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
     uint32 honorBar = uint32(m_rankPoints >= 0.0f ? m_rankPoints : -1 * m_rankPoints);
     honorBar = uint8(((honorBar - m_rank.minRP) / (m_rank.maxRP - m_rank.minRP)) * (m_rank.positive ? 255 : -255));
 
     // PLAYER_FIELD_HONOR_BAR
     m_owner->SetByteValue(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_HONOR_RANK_BAR, honorBar);
-#endif
 
     // TODAY
     m_owner->SetUInt16Value(PLAYER_FIELD_SESSION_KILLS, 0, todayHK);
@@ -924,11 +899,9 @@ void HonorMgr::Update()
 
 // World of Warcraft Client Patch 1.6.0 (2005-07-12)
 // - There is a new "This Week" section of the Honor tab, which will display PvP accomplishments of the current week.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
     // THIS WEEK
     m_owner->SetUInt32Value(PLAYER_FIELD_THIS_WEEK_KILLS, thisWeekKills);
     m_owner->SetUInt32Value(PLAYER_FIELD_THIS_WEEK_CONTRIBUTION, uint32(thisWeekCP > 0.0f ? thisWeekCP : 0.0f));
-#endif
 
     // LAST WEEK
     m_owner->SetUInt32Value(PLAYER_FIELD_LAST_WEEK_KILLS, m_lastWeekHK);

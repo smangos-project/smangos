@@ -93,25 +93,17 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_DESTROYMONSTER,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_CREATEITEM,                   UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_CREATEGAMEOBJECT,             UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(SMSG_CHECK_FOR_BOTS,               UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_MAKEMONSTERATTACKGUID,        UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_BOT_DETECTED2,                UnhandleReason::Unhandled);
-#endif
     INVALID_PACKET(CMSG_FORCEACTION,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_FORCEACTIONONOTHER,           UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_FORCEACTIONSHOW,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FORCEACTIONSHOW,              UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_PETGODMODE,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PETGODMODE,                   UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(SMSG_DEBUGINFOSPELLMISS_OBSOLETE,  UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_WEATHER_SPEED_CHEAT,          UnhandleReason::Unhandled);
-#endif
     INVALID_PACKET(CMSG_UNDRESSPLAYER,                UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_BEASTMASTER,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GODMODE,                      UnhandleReason::Unhandled);
@@ -119,9 +111,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_CHEAT_SETMONEY,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_LEVEL_CHEAT,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_PET_LEVEL_CHEAT,              UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_SET_WORLDSTATE,               UnhandleReason::Unhandled);
-#endif
     INVALID_PACKET(CMSG_COOLDOWN_CHEAT,               UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_USE_SKILL_CHEAT,              UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_FLAG_QUEST,                   UnhandleReason::Unhandled);
@@ -419,10 +409,8 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_DAMAGE_TAKEN_OBSOLETE,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CANCEL_COMBAT,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PLAYER_COMBAT_XP_GAIN_OBSOLETE,UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     INVALID_PACKET(SMSG_SPELLHEALLOG,                 UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELLENERGIZELOG,             UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_SHEATHE_OBSOLETE,             UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_SAVE_PLAYER,                  UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_SETDEATHBINDPOINT,            UnhandleReason::Unhandled);
@@ -430,9 +418,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_GETDEATHBINDZONE,             UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BINDZONEREPLY,                UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PLAYERBOUND,                  UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     INVALID_PACKET(SMSG_CLIENT_CONTROL_UPDATE,        UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_REPOP_REQUEST,                UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_RESURRECT_REQUEST,            UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_RESURRECT_RESPONSE,           UnhandleReason::Unhandled);
@@ -465,9 +451,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_PET_RENAME,                    UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_NAME_INVALID,             UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PET_SPELLS,                   UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_PET_MODE,                     UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_GOSSIP_HELLO,                           UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GOSSIP_SELECT_OPTION,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_GOSSIP_MESSAGE,               UnhandleReason::SendByServer);
@@ -554,9 +538,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_QUERY_TIME,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_QUERY_TIME_RESPONSE,          UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_LOG_XPGAIN,                   UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(SMSG_AURACASTLOG,                  UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_RECLAIM_CORPSE,               UnhandleReason::Unhandled);
     DEFINE_HANDLER(CMSG_WRAP_ITEM,                    STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleWrapItemOpcode);
     INVALID_PACKET(SMSG_LEVELUP_INFO,                 UnhandleReason::SendByServer);
@@ -587,18 +569,14 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_AUTH_SESSION,                 UnhandleReason::AlreadyHandledElsewhere);
     INVALID_PACKET(SMSG_AUTH_RESPONSE,                UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_GM_SHOWLABEL,                  UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_PET_CAST_SPELL,                UnhandleReason::Unhandled);
-#endif
     INVALID_PACKET(MSG_SAVE_GUILD_EMBLEM,             UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_TABARDVENDOR_ACTIVATE,         UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PLAY_SPELL_VISUAL,            UnhandleReason::SendByServer);
     DEFINE_HANDLER(CMSG_ZONEUPDATE,                   STATUS_LOGGEDIN,  PACKET_PROCESS_MAP,           &WorldSession::HandleZoneUpdateOpcode);
     INVALID_PACKET(SMSG_PARTYKILLLOG,                 UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_COMPRESSED_UPDATE_OBJECT,     UnhandleReason::SendByServer);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(SMSG_PLAY_SPELL_IMPACT,            UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(SMSG_EXPLORATION_EXPERIENCE,       UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GM_SET_SECURITY_GROUP,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GM_NUKE,                      UnhandleReason::Unhandled);
@@ -735,11 +713,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_DAMAGE_CALC_LOG,              UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_ENABLE_DAMAGE_LOG,            UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GROUP_CHANGE_SUB_GROUP, UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(CMSG_REQUEST_PARTY_MEMBER_STATS, UnhandleReason::Unhandled);
-#else
-    INVALID_PACKET(SMSG_RAID_MEMBER_STATS, UnhandleReason::SendByServer);
-#endif
     INVALID_PACKET(CMSG_GROUP_SWAP_SUB_GROUP, UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_RESET_FACTION_CHEAT,          UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_AUTOSTORE_BANK_ITEM,          UnhandleReason::Unhandled);
@@ -829,7 +803,6 @@ Handlers BuildOpcodeList()
     // No modern equivalent: honor stats ride on the tail of CLASSIC_SMSG_INSPECT_RESULT instead.
     INVALID_PACKET(MSG_INSPECT_HONOR_STATS,           UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_BATTLEMASTER_HELLO,           UnhandleReason::Unhandled);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(CMSG_MOVE_START_SWIM_CHEAT,        UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_MOVE_STOP_SWIM_CHEAT,         UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_FORCE_WALK_SPEED_CHANGE,      UnhandleReason::SendByServer);
@@ -844,19 +817,11 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_AREA_SPIRIT_HEALER_QUEUE,     UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_AREA_SPIRIT_HEALER_TIME,      UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_GM_UNTEACH,                   UnhandleReason::Unhandled);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_WARDEN_DATA,                  UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_WARDEN_DATA,                  UnhandleReason::Unhandled);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     INVALID_PACKET(SMSG_GROUP_JOINED_BATTLEGROUND,    UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_BATTLEGROUND_PLAYER_POSITIONS, UnhandleReason::Unhandled);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     INVALID_PACKET(SMSG_PARTY_MEMBER_STATS_FULL,      UnhandleReason::SendByServer);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     INVALID_PACKET(CMSG_PET_STOP_ATTACK,               UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_BINDER_CONFIRM,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_BATTLEGROUND_PLAYER_JOINED,   UnhandleReason::SendByServer);
@@ -866,8 +831,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_PET_UNLEARN,                   UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_PET_UNLEARN_CONFIRM,          UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_PET_SPELL_AUTOCAST,            UnhandleReason::Unhandled);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     INVALID_PACKET(SMSG_WEATHER,                      UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_PLAY_TIME_WARNING,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_MINIGAME_SETUP,               UnhandleReason::SendByServer);
@@ -876,8 +839,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_MINIGAME_MOVE_FAILED,         UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_RAID_INSTANCE_MESSAGE,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_COMPRESSED_MOVES,             UnhandleReason::SendByServer);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     INVALID_PACKET(CMSG_GUILD_INFO_TEXT,              UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CHAT_RESTRICTED,              UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPLINE_SET_RUN_SPEED,         UnhandleReason::SendByServer);
@@ -897,8 +858,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SPLINE_MOVE_STOP_SWIM,        UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPLINE_MOVE_SET_RUN_MODE,     UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPLINE_MOVE_SET_WALK_MODE,    UnhandleReason::SendByServer);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     INVALID_PACKET(CMSG_GM_NUKE_ACCOUNT,              UnhandleReason::Unhandled);
     INVALID_PACKET(MSG_GM_DESTROY_CORPSE,             UnhandleReason::Unhandled);
     INVALID_PACKET(CMSG_GM_DESTROY_ONLINE_CORPSE,     UnhandleReason::Unhandled);
@@ -913,8 +872,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_SPLINE_MOVE_ROOT,             UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_SET_EXPLORATION_ALL,          UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_INVALIDATE_PLAYER,            UnhandleReason::SendByServer);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     DEFINE_HANDLER(CMSG_RESET_INSTANCES,              STATUS_LOGGEDIN,  PACKET_PROCESS_WORLD,         &WorldSession::HandleResetInstancesOpcode);
     INVALID_PACKET(SMSG_INSTANCE_RESET,               UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_INSTANCE_RESET_FAILED,        UnhandleReason::SendByServer);
@@ -933,8 +890,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(CMSG_IGNORE_KNOCKBACK_CHEAT,       UnhandleReason::Unhandled);
     INVALID_PACKET(SMSG_CHAT_PLAYER_AMBIGUOUS,        UnhandleReason::SendByServer);
     INVALID_PACKET(MSG_DELAY_GHOST_TELEPORT,          UnhandleReason::Unhandled);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     INVALID_PACKET(SMSG_SPELLINSTAKILLLOG,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_SPELL_UPDATE_CHAIN_TARGETS,   UnhandleReason::SendByServer);
     INVALID_PACKET(CMSG_CHAT_FILTERED,                UnhandleReason::Unhandled);
@@ -947,7 +902,6 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_CHARACTER_PROFILE,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHARACTER_PROFILE_REALM_CONNECTED, UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DEFENSE_MESSAGE,              UnhandleReason::SendByServer);
-#endif
 
     return list;
 }

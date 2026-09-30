@@ -1171,12 +1171,8 @@ enum CorpseDynFlags
 
 // The weapon swap cooldown spells changed in 1.9.
 // The first version was added in 1.7.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s    6119
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s    6123
-#elif SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-#define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s    7155
-#endif
 
 enum WeatherType
 {
@@ -1272,33 +1268,20 @@ enum ChatMsg
     CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE       = 0x4E,
     CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS        = 0x4F,
     CHAT_MSG_SPELL_FAILED_LOCALPLAYER             = 0x50,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_3_1
     CHAT_MSG_COMBAT_HONOR_GAIN                    = 0x51,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     CHAT_MSG_BG_SYSTEM_NEUTRAL                    = 0x52,
     CHAT_MSG_BG_SYSTEM_ALLIANCE                   = 0x53,
     CHAT_MSG_BG_SYSTEM_HORDE                      = 0x54,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     CHAT_MSG_COMBAT_FACTION_CHANGE                = 0x55,
     CHAT_MSG_MONEY                                = 0x56,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     CHAT_MSG_RAID_LEADER                          = 0x57,
     CHAT_MSG_RAID_WARNING                         = 0x58,
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
     CHAT_MSG_RAID_BOSS_WHISPER                    = 0x59, // appears as whisper, yet name is not in client
     CHAT_MSG_RAID_BOSS_EMOTE                      = 0x5A,
     CHAT_MSG_FILTERED                             = 0x5B,
     CHAT_MSG_BATTLEGROUND                         = 0x5C,
     CHAT_MSG_BATTLEGROUND_LEADER                  = 0x5D,
     CHAT_MSG_INSTANCE_CHAT                        = 0x5E, // CLASSIC_CMSG_CHAT_MESSAGE_INSTANCE_CHAT; no vanilla client sends this
-#else
-    CHAT_MSG_RAID_BOSS_WHISPER                    = CHAT_MSG_MONSTER_WHISPER,
-    CHAT_MSG_RAID_BOSS_EMOTE                      = CHAT_MSG_MONSTER_EMOTE, // added in 1.11.2, but is broken, ChatFrame.lua was edited in 1.12 to fix it
-#endif
 };
 
 #define MAX_CHAT_MSG_TYPE 0x5F
@@ -1515,9 +1498,7 @@ enum ResponseCodes
     AUTH_NO_TIME,
     AUTH_DB_BUSY,
     AUTH_SUSPENDED,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     AUTH_PARENTAL_CONTROL,
-#endif
 
     REALM_LIST_IN_PROGRESS,
     REALM_LIST_SUCCESS,
@@ -1542,17 +1523,13 @@ enum ResponseCodes
     CHAR_CREATE_PVP_TEAMS_VIOLATION,
     CHAR_CREATE_SERVER_LIMIT,
     CHAR_CREATE_ACCOUNT_LIMIT,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     CHAR_CREATE_SERVER_QUEUE,
     CHAR_CREATE_ONLY_EXISTING,
-#endif
 
     CHAR_DELETE_IN_PROGRESS,
     CHAR_DELETE_SUCCESS,
     CHAR_DELETE_FAILED,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER,
-#endif
 
     CHAR_LOGIN_IN_PROGRESS,
     CHAR_LOGIN_SUCCESS,
@@ -1562,9 +1539,7 @@ enum ResponseCodes
     CHAR_LOGIN_FAILED,
     CHAR_LOGIN_DISABLED,
     CHAR_LOGIN_NO_CHARACTER,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     CHAR_LOGIN_LOCKED_FOR_TRANSFER,
-#endif
 
     CHAR_NAME_NO_NAME,
     CHAR_NAME_TOO_SHORT,

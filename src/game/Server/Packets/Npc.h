@@ -67,7 +67,6 @@ namespace WorldPackets { namespace Npc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     class BinderConfirm final : public ServerPacket
     {
     public:
@@ -77,7 +76,6 @@ namespace WorldPackets { namespace Npc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
 }} // namespace WorldPackets::Npc
 

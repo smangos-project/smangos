@@ -26,7 +26,6 @@
 #include "BattleGround.h"
 #include "World.h"
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 
 enum BG_AB_WorldStates
 {
@@ -152,15 +151,10 @@ enum BG_AB_NodeOccupiedCredit
     BG_AB_NODE_GOLD_MINE_CREDIT     = 15005,
 };
 
-// [-PROGRESSIVE] Patch 1.9 and less code:
 #define AB_NORMAL_HONOR_INTERVAL                   330
 #define AB_WEEKEND_HONOR_INTERVAL                  200
-#define AB_NORMAL_REPUTATION_INTERVAL_PRE_1_10     330
-#define AB_WEEKEND_REPUTATION_INTERVAL_PRE_1_10    200
-#define AB_NORMAL_REPUTATION_INTERVAL_POST_1_10    200
-#define AB_WEEKEND_REPUTATION_INTERVAL_POST_1_10   150
-#define GET_AB_NORMAL_REP_INTERVAL (sWorld.GetWowPatch() > WOW_PATCH_109 ? AB_NORMAL_REPUTATION_INTERVAL_POST_1_10 : AB_NORMAL_REPUTATION_INTERVAL_PRE_1_10)
-#define GET_AB_WEEKEND_REP_INTERVAL (sWorld.GetWowPatch() > WOW_PATCH_109 ? AB_WEEKEND_REPUTATION_INTERVAL_POST_1_10 : AB_WEEKEND_REPUTATION_INTERVAL_PRE_1_10)
+#define AB_NORMAL_REPUTATION_INTERVAL              200
+#define AB_WEEKEND_REPUTATION_INTERVAL             150
 
 // Tick intervals and given points: case 0,1,2,3,4,5 captured nodes
 uint32 const BG_AB_TickIntervals[6] = {0, 12000, 9000, 6000, 3000, 1000};
@@ -247,5 +241,4 @@ class BattleGroundAB : public BattleGround
         uint32              m_honorTics;
         uint32              m_reputationTics;
 };
-#endif
 #endif

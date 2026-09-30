@@ -44,10 +44,8 @@ void AddItemsSetItem(Player* player, Item* item)
         return;
     }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     if (set->required_skill_id && player->GetSkillValue(set->required_skill_id) < set->required_skill_value)
         return;
-#endif
 
     ItemSetEffect* eff = player->GetItemSetEffect(setid);
 

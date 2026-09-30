@@ -326,7 +326,6 @@ void Aura::Refresh(Unit* caster, Unit* target, SpellAuraHolder* pRefreshWithHold
         // - When an attribute increasing effect (e.g. Arcane Intellect) is
         //   refreshed on a target, it will no longer reset the target's health or
         //   mana and then increase the total.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         bool lockStats = false;
         switch (GetSpellProto()->EffectApplyAuraName[m_effIndex])
         {
@@ -343,7 +342,6 @@ void Aura::Refresh(Unit* caster, Unit* target, SpellAuraHolder* pRefreshWithHold
         }
         if (lockStats)
             target->SetCanModifyStats(false);
-#endif
 
         // unapply with the old modifiers and reapply with the new.
         ApplyModifier(false, true, false);
@@ -353,13 +351,11 @@ void Aura::Refresh(Unit* caster, Unit* target, SpellAuraHolder* pRefreshWithHold
         m_modifier.m_miscvalue = pHolderAura->GetModifier()->m_miscvalue;
         ApplyModifier(true, true, false);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         if (lockStats)
         {
             target->SetCanModifyStats(true);
             target->UpdateAllStats();
         }
-#endif
     }
 }
 
@@ -1486,7 +1482,6 @@ void Aura::TriggerSpell()
                 if (urand(0, 20 * 5 - 1) != 0)
                     return;
                 break;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
             case 9347:                                      // Mortal Strike
             {
                 // expected selection current fight target
@@ -1502,7 +1497,6 @@ void Aura::TriggerSpell()
 
                 break;
             }
-#endif
         }
     }
 
@@ -2030,7 +2024,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
                 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
                 case 24658:                                 // Unstable Power
                 {
                     if (apply)
@@ -2045,7 +2038,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         target->RemoveAurasDueToSpell(24659);
                     return;
                 }
-#endif
                 case 26681:                             // Love is in the Air - Cologne
                 case 26682:                             // Love is in the Air - Perfume
                 {
@@ -2100,7 +2092,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
         case SPELLFAMILY_MAGE:
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
             switch (GetId())
             {
                 // Frost Warding
@@ -2142,7 +2133,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
                 }
             }
-#endif
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -2509,11 +2499,6 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             switch (form)
             {
                 case FORM_CAT:
-#if SUPPORTED_CLIENT_BUILD == CLIENT_BUILD_1_11_2
-                    // World of Warcraft Client Patch 1.12.0 (2006-08-22)
-                    // - Furor: This talent now works correctly with Cat Form again.
-                    break;
-#endif
                 case FORM_BEAR:
                 case FORM_DIREBEAR:
                 {
@@ -2945,23 +2930,6 @@ void Aura::HandleModPossess(bool apply, bool Real)
     if (!pCaster || !pTarget)
         return;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    // Fix issue with control on old clients if player is afflicted by mind control,
-    // while he himself is possessing another unit. Client needs to first be told
-    // he no longer controls the other unit, have time to respond with set active mover,
-    // and only then to be told he is mind controlled in order to have control disabled.
-    if (pTarget->GetCharmGuid())
-    {
-        pTarget->CombatStop(true);
-        AuraRemoveMode removeMode = m_removeMode;
-        SpellEntry const* pSpellProto = GetSpellProto();
-        pTarget->m_Events.AddLambdaEventAtOffset([pTarget, pCaster, apply, removeMode, pSpellProto]
-        {
-            pCaster->ModPossess(pTarget, apply, removeMode, pSpellProto);
-        }, 500);
-    }
-    else
-#endif
     {
         pCaster->ModPossess(pTarget, apply, m_removeMode, GetSpellProto());
     }
@@ -3118,9 +3086,6 @@ void Unit::ModPossess(Unit* pTarget, bool apply, AuraRemoveMode removeMode, Spel
             MovementPacketSender::AddMovementFlagChangeToController(pTarget, MOVEFLAG_ROOT, true);
     }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    pTarget->SendCreateUpdateToPlayer(pCaster);
-#endif
 }
 
 void Aura::HandleModPossessPet(bool apply, bool Real)
@@ -3195,9 +3160,6 @@ void Player::ModPossessPet(Pet* pPet, bool apply, AuraRemoveMode m_removeMode)
         // the pet has the controlled state removed in WorldSession::HandleSetActiveMoverOpcode
     }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-    pPet->SendCreateUpdateToPlayer(pCaster);
-#endif
 }
 
 void Aura::HandleModCharm(bool apply, bool Real)
@@ -3460,13 +3422,11 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
                 // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                 // - Feign death is no longer resisted by players.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                 if (!pCreature || refTarget->GetCharmerOrOwnerGuid().IsPlayer())
                 {
                     pReference = pReference->next();
                     continue;
                 }
-#endif
 
                 float const distance = pCreature ? pCreature->GetAttackDistance(pTarget) : 30.0f;
                 if (refTarget->IsWithinDistInMap(pTarget, distance) &&
@@ -3639,10 +3599,8 @@ void Aura::HandleModStealth(bool apply, bool Real)
         {
             target->SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_VIS_FLAGS_CREEP);
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
             if (target->GetTypeId() == TYPEID_PLAYER)
                 target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_FLAGS, PLAYER_FIELD_BYTE2_STEALTH);
-#endif
 
             // apply only if not in GM invisibility (and overwrite invisibility state)
             if (target->GetVisibility() != VISIBILITY_OFF)
@@ -3674,10 +3632,8 @@ void Aura::HandleModStealth(bool apply, bool Real)
             {
                 target->RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_VIS_FLAGS_CREEP);
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
                 if (target->GetTypeId() == TYPEID_PLAYER)
                     target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_FLAGS, PLAYER_FIELD_BYTE2_STEALTH);
-#endif
 
                 // restore invisibility if any
                 if (target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
@@ -3701,13 +3657,11 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_STEALTH_INVIS_CANCELS);
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
         if (Real && target->GetTypeId() == TYPEID_PLAYER)
         {
             // apply glow vision
             target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_FLAGS, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
         }
-#endif
 
         // apply only if not in GM invisibility and not stealth
         if (target->GetVisibility() == VISIBILITY_ON)
@@ -3728,11 +3682,9 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         // only at real aura remove and if not have different invisibility auras.
         if (Real && target->m_invisibilityMask == 0)
         {
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_6_1
             // remove glow vision
             if (target->GetTypeId() == TYPEID_PLAYER)
                 target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_FLAGS, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
-#endif
             // apply only if not in GM invisibility & not stealthed while invisible
             if (target->GetVisibility() != VISIBILITY_OFF)
             {
@@ -3766,12 +3718,10 @@ void Aura::HandleDetectAmore(bool apply, bool /*real*/)
 {
 // World of Warcraft Client Patch 1.9.3 (2006-02-07)
 // - Love is in the Air added.
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_9_4
     if (!GetTarget()->IsPlayer())
         return;
 
     GetTarget()->ApplyModByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_FLAGS, PLAYER_FIELD_BYTE2_DETECT_AMORE, apply);
-#endif
 }
 
 void Aura::HandleAuraModRoot(bool apply, bool Real)
@@ -4098,9 +4048,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
         // World of Warcraft Client Patch 1.7.0 (2005-09-13)
         // Offensive use of damage immunities no longer causes the flag to drop
         // in Warsong Gulch.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
               && IsPositive()
-#endif
               && target->IsPlayer() && !target->IsCharmed())
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_INVULNERABILITY_BUFF_CANCELS);
 
@@ -4170,22 +4118,6 @@ void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
 
     switch (GetId())
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1 && SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-        case 24658:                                 // Zandalarian Hero Charm - Unstable Power
-        {
-            if (apply)
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                caster->CastSpell(GetTarget(), 24659, true, nullptr, nullptr, GetCasterGuid());
-            }
-            else
-                GetTarget()->RemoveAurasDueToSpell(24659);
-            break;
-        }
-#endif
         // some spell have charges by functionality not have its in spell data
         case 28200:                                         // Ascendance (Talisman of Ascendance trinket)
         {
@@ -4316,9 +4248,7 @@ void Aura::HandlePeriodicHeal(bool apply, bool /*Real*/)
         //   their strength determined at the moment they are cast.Changing the
         //   amount of bonus healing you have during the duration of the periodic
         //   spell will have no impact on how much it heals for.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         m_modifier.m_amount = caster->SpellHealingBonusDone(target, GetSpellProto(), GetEffIndex(), m_modifier.m_amount, DOT, GetStackAmount());
-#endif
     }
 }
 
@@ -4334,7 +4264,6 @@ float Aura::CalculateDotDamage() const
     {
         case SPELLFAMILY_DRUID:
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             // Rip
             if (spellProto->IsFitToFamilyMask<CF_DRUID_RIP_BITE>())
             {
@@ -4347,12 +4276,10 @@ float Aura::CalculateDotDamage() const
                     damage += caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100;
                 }
             }
-#endif
             break;
         }
         case SPELLFAMILY_ROGUE:
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             // World of Warcraft Client Patch 1.12.0 (2006-08-22)
             // - Rupture: Rupture now increases in potency with greater attack power.
             if (spellProto->IsFitToFamilyMask<CF_ROGUE_RUPTURE>())
@@ -4370,7 +4297,6 @@ float Aura::CalculateDotDamage() const
             //   addition, Garrote now increases in potency with greater attack power.
             else if (spellProto->IsFitToFamilyMask<CF_ROGUE_GARROTE>())
                 damage += caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.03f;
-#endif
             break;
         }
         default:
@@ -4404,7 +4330,6 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
     // World of Warcraft Client Patch 1.10.0 (2006-03-28)
     // - Damage over time spells are no longer affected by changes in
     //   equipment after the cast.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     Unit* target = GetTarget();
 
     // For prevent double apply bonuses
@@ -4421,7 +4346,6 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
 
         m_modifier.m_amount = CalculateDotDamage();
     }
-#endif
 }
 
 void Aura::HandlePeriodicDamagePCT(bool apply, bool /*Real*/)
@@ -5192,7 +5116,6 @@ void Aura::HandleAuraModAttackPowerPercent(bool apply, bool /*Real*/)
 
 void Aura::HandleAuraModRangedAttackPowerPercent(bool apply, bool /*Real*/)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     if ((GetTarget()->GetClassMask() & CLASSMASK_WAND_USERS) != 0)
         return;
 
@@ -5205,7 +5128,6 @@ void Aura::HandleAuraModRangedAttackPowerPercent(bool apply, bool /*Real*/)
 
     // UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER = multiplier - 1
     GetTarget()->HandleAttackPowerModifier(RANGED_AP_MODS, AP_MOD_PCT, m_modifier.m_amount, apply);
-#endif
 }
 
 /********************************/
@@ -5374,7 +5296,6 @@ void Aura::HandleModOffhandDamagePercent(bool apply, bool Real)
 
 void Aura::HandleModPowerCostPCT(bool apply, bool Real)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     // spells required only Real aura add/remove
     if (!Real)
         return;
@@ -5383,12 +5304,10 @@ void Aura::HandleModPowerCostPCT(bool apply, bool Real)
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         if (m_modifier.m_miscvalue & (1 << i))
             GetTarget()->SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i, GetTarget()->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT, (1 << i)) / 100.0f);
-#endif
 }
 
 void Aura::HandleModPowerCost(bool apply, bool Real)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     // spells required only Real aura add/remove
     if (!Real)
         return;
@@ -5396,7 +5315,6 @@ void Aura::HandleModPowerCost(bool apply, bool Real)
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         if (m_modifier.m_miscvalue & (1 << i))
             GetTarget()->ApplyModInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + i, m_modifier.m_amount, apply);
-#endif
 }
 
 /*********************************************************/
@@ -5521,22 +5439,6 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             // World of Warcraft Client Patch 1.7.0 (2005-09-13)
             // - Retaliation, Recklessness and Shield Wall will no longer be cancelled
             //   if you switch stances while the effect is active.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-            if (target->GetClass() == CLASS_WARRIOR)
-            {
-                Unit::SpellAuraHolderMap& tAuras = target->GetSpellAuraHolderMap();
-                for (Unit::SpellAuraHolderMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
-                {
-                    if (!itr->second->IsPassive() && itr->second->GetSpellProto()->GetErrorAtShapeshiftedCast(form) != SPELL_CAST_OK)
-                    {
-                        target->RemoveAurasDueToSpell(itr->second->GetId());
-                        itr = tAuras.begin();
-                    }
-                    else
-                        ++itr;
-                }
-            }
-#endif
         }
     }
     else
@@ -5832,11 +5734,7 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
             else
             {
                 if (m_modifier.m_auraname == SPELL_AURA_PERIODIC_DAMAGE)
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
                     fdamage = (m_modifier.m_amount > 0 ? m_modifier.m_amount : 0);
-#else
-                    fdamage = CalculateDotDamage();
-#endif
                 else
                     fdamage = target->GetMaxHealth() * (m_modifier.m_amount > 0 ? m_modifier.m_amount : 0) / 100;
             }
@@ -6009,20 +5907,8 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
                 return;
             }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
             // Ignore non positive values (can be result apply spellmods to aura damage).
             float amount = m_modifier.m_amount > 0 ? m_modifier.m_amount : 0;
-#else
-            // Before 1.11 the heal bonuses were calculated each tick, not upon initial cast.
-            float amount;
-            if (aura_type == SPELL_AURA_PERIODIC_HEAL)
-            {
-                float intAmount = pCaster->SpellHealingBonusDone(target, GetSpellProto(), GetEffIndex(), m_modifier.m_amount, DOT, GetStackAmount());
-                amount = intAmount > 0 ? intAmount : 0;
-            }
-            else
-                amount = m_modifier.m_amount > 0 ? m_modifier.m_amount : 0;
-#endif
 
             if (GetAuraScript())
                 GetAuraScript()->OnPeriodicCalculateAmount(this, amount);
@@ -6223,11 +6109,7 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
             int32 gain = target->ModifyPower(power, fdamage);
 
             // 1.9 - Mana regeneration over time will no longer generate threat.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
             if (pCaster && power != POWER_MANA && power != POWER_HAPPINESS)
-#else
-            if (pCaster && power != POWER_HAPPINESS)
-#endif
                 target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f * sSpellMgr.GetSpellThreatMultiplier(spellProto), spellProto);
 
             break;
@@ -8205,12 +8087,6 @@ bool _IsExclusiveSpellAura(SpellEntry const* spellproto, SpellEffectIndex eff, A
                 return false;
             break;
         case SPELLFAMILY_DRUID:
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-            // World of Warcraft Client Patch 1.8.0 (2005-10-11)
-            // - Multiple Druids casting Hurricane will no longer stack the slowdown effect
-            if (spellproto->IsFitToFamilyMask<CF_DRUID_HURRICANE>())
-                return false;
-#endif
             break;
     }
 

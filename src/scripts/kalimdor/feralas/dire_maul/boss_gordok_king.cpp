@@ -28,9 +28,6 @@ struct boss_king_gordokAI : public ScriptedAI
     uint32 m_uiSunderArmor_Timer;
     uint32 m_uiPhase;
     
-    // World of Warcraft Client Patch 1.9.3 (2006-02-07)
-    // - King Gordok can no longer be seperated from Cho'Rush the Observer in Dire Maul.
-    bool const m_bLinkCheckEnabled = sWorld.GetWowPatch() >= WOW_PATCH_109;
     uint32 m_uiLinkCheckTimer;
     
     
@@ -105,21 +102,18 @@ struct boss_king_gordokAI : public ScriptedAI
 
         DoMeleeAttackIfReady();
         
-        if (m_bLinkCheckEnabled)
+        // Prevent splitting King from the Observer
+        if (m_uiLinkCheckTimer < uiDiff)
         {
-            // Prevent splitting King from the Observer
-            if (m_uiLinkCheckTimer < uiDiff)
+            if (Creature* pChorush = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_CHORUSH)))
             {
-                if (Creature* pChorush = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_CHORUSH)))
-                {
-                    if (pChorush->IsAlive() && !pChorush->IsInCombat())
-                        pChorush->AI()->AttackStart(m_creature->GetVictim());
-                }
-                m_uiLinkCheckTimer = 2500;
+                if (pChorush->IsAlive() && !pChorush->IsInCombat())
+                    pChorush->AI()->AttackStart(m_creature->GetVictim());
             }
-            else
-                m_uiLinkCheckTimer -= uiDiff;
+            m_uiLinkCheckTimer = 2500;
         }
+        else
+            m_uiLinkCheckTimer -= uiDiff;
     }
 };
 
@@ -174,9 +168,6 @@ struct boss_chorushAI : public ScriptedAI
     uint32 m_uiSpellTimers[MAX_SPELLS];
     bool m_bInMeele;
     
-    // World of Warcraft Client Patch 1.9.3 (2006-02-07)
-    // - King Gordok can no longer be seperated from Cho'Rush the Observer in Dire Maul.
-    bool const m_bLinkCheckEnabled = sWorld.GetWowPatch() >= WOW_PATCH_109;
     uint32 m_uiLinkCheckTimer;
 
     void Reset() override
@@ -228,21 +219,18 @@ struct boss_chorushAI : public ScriptedAI
 
         DoMeleeAttackIfReady();
         
-        if (m_bLinkCheckEnabled)
+        // Prevent splitting Observer from the King
+        if (m_uiLinkCheckTimer < uiDiff)
         {
-            // Prevent splitting Observer from the King
-            if (m_uiLinkCheckTimer < uiDiff)
+            if (Creature* pKing = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_KING_GORDOK)))
             {
-                if (Creature* pKing = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_KING_GORDOK)))
-                {
-                    if (!pKing->IsInCombat())
-                        pKing->AI()->AttackStart(m_creature->GetVictim());
-                }
-                m_uiLinkCheckTimer = 2500;
+                if (!pKing->IsInCombat())
+                    pKing->AI()->AttackStart(m_creature->GetVictim());
             }
-            else
-                m_uiLinkCheckTimer -= uiDiff;
+            m_uiLinkCheckTimer = 2500;
         }
+        else
+            m_uiLinkCheckTimer -= uiDiff;
     }
 };
 

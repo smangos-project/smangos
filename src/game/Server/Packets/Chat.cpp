@@ -11,7 +11,6 @@ void WorldPackets::Chat::ChatWrongFaction::AppendBodyTo(ByteBuffer& /*buffer*/) 
 {
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
 size_t WorldPackets::Chat::ChatRestricted::EstimateFinalSize() const
 {
     return 0;
@@ -20,7 +19,6 @@ size_t WorldPackets::Chat::ChatRestricted::EstimateFinalSize() const
 void WorldPackets::Chat::ChatRestricted::AppendBodyTo(ByteBuffer& /*buffer*/) const
 {
 }
-#endif
 
 size_t WorldPackets::Chat::ChatPlayerNotFound::EstimateFinalSize() const
 {

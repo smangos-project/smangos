@@ -278,10 +278,8 @@ float Unit::GetAttackPowerFromStrengthAndAgility(bool ranged, float strength, fl
                     case FORM_CAT:
                        // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                        // - Cat Form - Each point of agility now adds 1 attack power.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                         val2 = GetLevel() * mLevelMult + strength * 2.0f + agility - 20.0f;
                         break;
-#endif
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
                         val2 = GetLevel() * mLevelMult + strength * 2.0f - 20.0f;
@@ -312,17 +310,13 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
     uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
-#endif
 
     if (ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
         index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-#endif
     }
 
     float baseAttackPower = GetAttackPowerFromStrengthAndAgility(ranged, GetStat(STAT_STRENGTH), GetStat(STAT_AGILITY));
@@ -335,10 +329,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     SetInt16Value(index_mod, 0, (int16)attackPowerModPositive); //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field (positive)
     SetInt16Value(index_mod, 1, (int16)attackPowerModNegative); //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field (negative)
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     float attackPowerMultiplier = GetAttackPowerModifierValue(unitMod, AP_MOD_PCT) - 1.0f;
     SetFloatValue(index_mult, attackPowerMultiplier);           //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
-#endif
 
     //automatically update weapon damage after attack power modification
     if (ranged)
@@ -398,34 +390,23 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, fl
             if (lvl > 60)
                 lvl = 60;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 #if COMPILER == COMPILER_MICROSOFT
 #pragma warning( push )
 #pragma warning(disable : 4065) // Has default but no case
-#endif
 #endif
 
             switch (GetShapeshiftForm())
             {
                 // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                 // - Cat Form - The base weapon damage of the form has been increased.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-                case FORM_CAT:
-                    // guessed
-                    weapon_mindamage = lvl * 0.60f * att_speed;
-                    weapon_maxdamage = lvl * 1.00f * att_speed;
-                    break;
-#endif
                 default:
                     weapon_mindamage = lvl * 0.85f * att_speed;
                     weapon_maxdamage = lvl * 1.25f * att_speed;
                     break;
             }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
 #if COMPILER == COMPILER_MICROSOFT
 #pragma warning( pop )
-#endif
 #endif
 
             total_value = 0.0f;                             // remove benefit from weapon enchants
@@ -823,17 +804,13 @@ void Creature::UpdateAttackPowerAndDamage(bool ranged)
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
     uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
-#endif
 
     if (ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
         index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-#endif
     }
 
     CreatureClassLevelStats const* pCLS = GetClassLevelStats();
@@ -862,10 +839,8 @@ void Creature::UpdateAttackPowerAndDamage(bool ranged)
     SetInt16Value(index_mod, 0, (int16)attackPowerModPositive); //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field (positive)
     SetInt16Value(index_mod, 1, (int16)attackPowerModNegative); //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field (negative)
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     float attackPowerMultiplier = GetAttackPowerModifierValue(unitMod, AP_MOD_PCT) - 1.0f;
     SetFloatValue(index_mult, attackPowerMultiplier);           //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
-#endif
 
     //automatically update weapon damage after attack power modification
     if (ranged)
@@ -1042,10 +1017,8 @@ void Pet::UpdateAttackPowerAndDamage(bool ranged)
     SetInt16Value(UNIT_FIELD_ATTACK_POWER_MODS, 1, (int16)attackPowerModNegative); // negative
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     float attackPowerMultiplier = GetAttackPowerModifierValue(unitMod, AP_MOD_PCT) - 1.0f;
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, attackPowerMultiplier);
-#endif
 
     //automatically update weapon damage after attack power modification
     UpdateDamagePhysical(BASE_ATTACK);

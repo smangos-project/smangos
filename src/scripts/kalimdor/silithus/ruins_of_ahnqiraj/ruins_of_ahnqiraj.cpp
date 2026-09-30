@@ -1100,11 +1100,7 @@ struct RajaxxThundercrashScript : public SpellScript
             if (damage < 200)
                 damage = 200;
 
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
             spell->damage = damage;
-#else
-            spell->m_caster->CastCustomSpell(spell->GetUnitTarget(), 25598, damage, {}, {}, true);
-#endif
         }
         return true;
     }

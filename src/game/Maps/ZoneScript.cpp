@@ -27,7 +27,6 @@
 #include "CellImpl.h"
 #include "TemporarySummon.h"
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
 
 OPvPCapturePoint::OPvPCapturePoint(OutdoorPvP* pvp):
     m_capturePointGUID(0), m_capturePoint(nullptr), m_maxValue(0.0f), m_minValue(0.0f), m_maxSpeed(0.0f),
@@ -571,7 +570,6 @@ void OutdoorPvP::OnGameObjectRemove(GameObject* go)
         cp->m_capturePoint = nullptr;
 }
 
-#endif
 
 ZoneScript::ZoneScript() : m_pMap(nullptr)
 {

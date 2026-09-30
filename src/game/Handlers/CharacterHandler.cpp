@@ -504,7 +504,6 @@ void WorldSession::HandleTutorialFlagOpcode(TutorialRequest const& packet)
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
 void WorldSession::HandleSetWatchedFactionOpcode(SetWatchedFaction const& packet)
 {
     GetPlayer()->SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, packet.FactionIndex);
@@ -514,7 +513,6 @@ void WorldSession::HandleSetFactionInactiveOpcode(SetFactionInactive const& pack
 {
     _player->GetReputationMgr().SetInactive(packet.Index, packet.State);
 }
-#endif
 
 void WorldSession::HandleShowingHelmOpcode(NullClientPacket const& /*packet*/)
 {

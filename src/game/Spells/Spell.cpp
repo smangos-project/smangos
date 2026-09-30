@@ -689,19 +689,15 @@ void Spell::prepareDataForTriggerSystem()
                 // Seal of Command (example Vengeance proc) | SPELLFAMILY_PALADIN override in spell_mod
                 if (m_spellInfo->Id == 20424)
                     m_canTrigger = true;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
                 // Seal of Righteousness
                 else if (m_spellInfo->HasTag(SPELL_TAG_SEAL_OF_RIGHTEOUSNESS_DAMAGE))
                     m_canTrigger = true;
-#endif
                 // Holy Shock
                 else if (m_spellInfo->IsFitToFamilyMask<CF_PALADIN_HOLY_SHOCK>())
                     m_canTrigger = true;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
                 // Eye for an Eye triggered spell
                 else if (m_spellInfo->Id == 25997)
                     m_canTrigger = true;
-#endif
                 break;
             case SPELLFAMILY_PRIEST:
                 // Touch of Weakness / Devouring Plague
@@ -957,11 +953,7 @@ void Spell::AddUnitTarget(Unit* pTarget, SpellEffectIndex effIndex)
     {
         // After patch 1.10, hunter trap effects are no longer reflected back.
         // https://classic.wowhead.com/item=18634/gyrofreeze-ice-reflector#comments
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         if (!m_casterUnit || m_originalCasterGUID.IsGameObject())
-#else
-        if (!m_casterUnit)
-#endif
         {
             if (m_casterUnit && !m_spellInfo->HasAttribute(SPELL_ATTR_EX3_SUPPRESS_TARGET_PROCS))
                 m_casterUnit->ProcDamageAndSpell(ProcSystemArguments(pTarget, PROC_FLAG_NONE, PROC_FLAG_TAKE_HARMFUL_SPELL, PROC_EX_REFLECT, 1, 1, BASE_ATTACK, m_spellInfo, this));
@@ -1224,10 +1216,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         {
             // World of Warcraft Client Patch 1.6.0 (2005-07-12)
             // - Spell reflection effects have greatly improved visuals and functionality.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_5_1
-            // client doesn't support SPELL_MISS_REFLECT so we need target to cast on caster
-            unitTarget->SendSpellGo(m_casterUnit, m_spellInfo->Id);
-#endif
 
             isReflected = true;
             DoSpellHitOnUnit(m_casterUnit, effectMask);
@@ -1312,28 +1300,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             procEx |= PROC_EX_CRITICAL_HIT;
             addhealth = rand_ditheru(pCaster->SpellCriticalHealingBonus(m_spellInfo, m_healing, nullptr));
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-            // If healing crits, we need to update the execute log data.
-            for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
-            {
-                if (m_executeLogInfo[i].empty())
-                    continue;
-
-                for (uint32 j = 0; j < m_executeLogInfo[i].size(); ++j)
-                {
-                    switch (m_spellInfo->Effect[i])
-                    {
-                        case SPELL_EFFECT_HEAL:
-                        case SPELL_EFFECT_HEAL_MAX_HEALTH:
-                        {
-                            m_executeLogInfo[i][j].heal.amount = addhealth;
-                            m_executeLogInfo[i][j].heal.critical = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-#endif
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
@@ -1572,11 +1538,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Pets no longer break off attacks when their target is affected by Warlock Fear.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-    if ((m_spellInfo->HasAuraInterruptFlag(AURA_INTERRUPT_DAMAGE_CANCELS) || m_spellInfo->HasAura(SPELL_AURA_MOD_FEAR)) &&
-#else
     if (m_spellInfo->HasAuraInterruptFlag(AURA_INTERRUPT_DAMAGE_CANCELS) &&
-#endif
         m_casterUnit && unit->HasAuraPetShouldAvoidBreaking(m_casterUnit))
     {
         // Tell any pets to stop attacking the target on application of breakable crowd control spells
@@ -2277,13 +2239,8 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 // - Chain targeted spells and abilities (e.g. Multi-shot, Cleave, Chain
                 //   Lightning) will no longer land if target cannot be seen by the caster
                 //   due to stealth or invisibility.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
                 MaNGOS::AnyAoEVisibleTargetUnitInObjectRangeCheck u_check(m_spellInfo->HasAttribute(SPELL_ATTR_EX2_CHAIN_FROM_CASTER) ? m_caster : pUnitTarget, originalCaster, max_range);
                 MaNGOS::UnitListSearcher<MaNGOS::AnyAoEVisibleTargetUnitInObjectRangeCheck> searcher(tempTargetUnitMap, u_check);
-#else
-                MaNGOS::AnyAoETargetUnitInObjectRangeCheck u_check(m_spellInfo->HasAttribute(SPELL_ATTR_EX2_CHAIN_FROM_CASTER) ? m_caster : pUnitTarget, originalCaster, max_range);
-                MaNGOS::UnitListSearcher<MaNGOS::AnyAoETargetUnitInObjectRangeCheck> searcher(tempTargetUnitMap, u_check);
-#endif
                 Cell::VisitAllObjects(m_caster, searcher, max_range);
 
                 tempTargetUnitMap.sort(TargetDistanceOrderNear(pUnitTarget));
@@ -2332,7 +2289,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
             FillAreaTargets(targetUnitMap, radius, PUSH_SRC_CENTER, SPELL_TARGETS_AOE_DAMAGE);
             float minDist = -1;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
             switch (m_spellInfo->Id)
             {
                 // Shadow Storm
@@ -2342,7 +2298,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                     minDist = 25.0f;
                     break;
             }
-#endif
 
             if (minDist > 0)
             {
@@ -3069,11 +3024,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                                 // clear cooldown at fail
                                 if (m_caster->IsPlayer())
                                     m_caster->RemoveSpellCooldown(m_spellInfo, true);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
                                 SendCastResult(SPELL_FAILED_NO_EDIBLE_CORPSES);
-#else
-                                SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-#endif
                                 finish(false);
                             }
                             break;
@@ -3715,11 +3666,7 @@ void Spell::cast(bool skipCheck)
         // - Only spells and abilities that target enemy units will cancel the World Enlarger effect.
         // This aura has auraInterruptFlags = 4096 implying this flag triggers on negative spell casts.
         // Confirmed on classic that its removed at the end of the cast with Aimed Shot.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         if (!Spells::IsPositiveTarget(m_spellInfo->EffectImplicitTargetA[0], m_spellInfo->EffectImplicitTargetB[0]))
-#else
-        if (Spells::IsExplicitlySelectedUnitTarget(m_spellInfo->EffectImplicitTargetA[0]) && m_casterUnit != m_targets.getUnitTarget())
-#endif
             interruptFlags |= AURA_INTERRUPT_ATTACKING_CANCELS;
 
         m_casterUnit->RemoveAurasWithInterruptFlags(interruptFlags, m_spellInfo->Id, false, !ShouldRemoveStealthAuras(), m_spellInfo->HasAttribute(SPELL_ATTR_EX2_ALLOW_WHILE_INVISIBLE));
@@ -4470,12 +4417,8 @@ void Spell::SendCastResult(Player const* caster, SpellEntry const* spellInfo, Sp
             packet.FailedArg1 = sSpellMgr.GetRequiredAreaForSpell(spellInfo->Id);
             break;
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND:
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
-#endif
             packet.FailedArg1 = spellInfo->EquippedItemClass;
             packet.FailedArg2 = spellInfo->EquippedItemSubClassMask;
             break;
@@ -5517,12 +5460,6 @@ SpellCastResult Spell::CheckCast(bool strict)
         if ((m_spellInfo->MaxTargetLevel > 0) && (int32(target->GetLevel()) > m_spellInfo->MaxTargetLevel))
             return SPELL_FAILED_HIGHLEVEL;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_11_2
-        // World of Warcraft Client Patch 1.12.0 (2006-08-22)
-        // - Pickpocket can now be used on targets that are in combat, as long as the rogue remains stealthed.
-        if ((m_spellInfo->AttributesEx & SPELL_ATTR_EX_FAILURE_BREAKS_STEALTH) && target->IsInCombat())
-            return SPELL_FAILED_TARGET_IN_COMBAT;
-#endif
 
         bool non_caster_target = target != m_caster && !m_spellInfo->IsSpellWithCasterSourceTargetsOnly();
 
@@ -5701,11 +5638,9 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
     else if (GameObject* goTarget = m_targets.getGOTarget())
     {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         // Prevent cheating in case the player has an immunity effect and tries to interact with a non-allowed gameobject.
         if (goTarget->GetGOInfo()->CannotBeUsedUnderImmunity() && m_casterUnit && m_casterUnit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE))
             return SPELL_FAILED_DAMAGE_IMMUNE;
-#endif
     }
     else if (m_targets.IsEmpty())
     {
@@ -5870,11 +5805,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_NOT_KNOWN;
 
                 if (!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     return SPELL_FAILED_TOO_MANY_SKILLS;
-#else
-                    return SPELL_FAILED_FIZZLE;
-#endif
 
                 if (m_spellInfo->spellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
@@ -5897,11 +5828,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_NOT_KNOWN;
 
                 if (!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     return SPELL_FAILED_TOO_MANY_SKILLS;
-#else
-                    return SPELL_FAILED_FIZZLE;
-#endif
 
                 if (m_spellInfo->spellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
@@ -6021,10 +5948,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!m_caster->IsPlayer())  // only players can open locks, gather etc.
                     return SPELL_FAILED_BAD_TARGETS;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
                 if (m_caster->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_PLAY_TIME))
                     return SPELL_FAILED_PLAY_TIME;
-#endif
 
                 // we need a go target in case of TARGET_GAMEOBJECT (for other targets acceptable GO and items)
                 if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT)
@@ -6060,11 +5985,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!strict && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE))
                         return SPELL_FAILED_CHEST_IN_USE;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
                     // Prevent looting chests while totally immune
                     if (go->GetGOInfo()->CannotBeUsedUnderImmunity() && m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE))
                         return SPELL_FAILED_DAMAGE_IMMUNE;
-#endif
                 }
                 else if (Item* item = m_targets.getItemTarget())
                 {
@@ -6330,12 +6253,10 @@ SpellCastResult Spell::CheckCast(bool strict)
         //  - All spells / abilities that remove existing effects(e.g.Dispel Magic,
         //    Cleanse, Remove Curse etc...) will now verify that there is an effect
         //    that can be removed before casting.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         if (!bFoundOneDispell)
         {
             return SPELL_FAILED_NOTHING_TO_DISPEL;
         }
-#endif
     }
 
     for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
@@ -6360,11 +6281,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
                     if (m_targets.getUnitTarget()->GetCharmerGuid())
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
                         return SPELL_FAILED_CHARMED;
-#else
-                        return SPELL_FAILED_FIZZLE;
-#endif
 
                     if (int32(m_targets.getUnitTarget()->GetLevel()) > CalculateDamage(SpellEffectIndex(i), m_targets.getUnitTarget()))
                         return SPELL_FAILED_HIGHLEVEL;
@@ -6384,11 +6301,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 if (m_casterUnit->GetCharmerGuid())
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
                     return SPELL_FAILED_CHARMED;
-#else
-                    return SPELL_FAILED_FIZZLE;
-#endif
 
                 break;
             }
@@ -6398,11 +6311,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 if (m_casterUnit->GetCharmerGuid())
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
                     return SPELL_FAILED_CHARMED;
-#else
-                    return SPELL_FAILED_FIZZLE;
-#endif
 
                 Pet* pet = m_casterUnit->GetPet();
                 if (!pet)
@@ -6412,11 +6321,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 if (pet->GetCharmerGuid() && pet->GetCharmerGuid() != m_caster->GetObjectGuid())
-#if SUPPORTED_CLIENT_BUILD >= CLIENT_BUILD_1_11_2
                     return SPELL_FAILED_CHARMED;
-#else
-                    return SPELL_FAILED_FIZZLE;
-#endif
 
                 break;
             }
@@ -6471,9 +6376,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // World of Warcraft Client Patch 1.5.0 (2005-06-07)
                 // - Riposte - Fixed a bug where the ability was not usable against a disarmed or unarmed target.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
                 if (m_spellInfo->GetEffectsCount() == 1)
-#endif
                 {
                     if (m_targets.getUnitTarget() && !m_targets.getUnitTarget()->CanBeDisarmed())
                         return SPELL_FAILED_TARGET_NO_WEAPONS;
@@ -6649,10 +6552,6 @@ SpellCastResult Spell::CheckCasterAuras() const
     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
     // - Fixed a bug where Fear and Curse of Recklessness, when used together,
     //   would prevent targets from casting spells.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_6_1
-    if (m_casterUnit->HasAuraType(SPELL_AURA_MOD_FEAR))
-        unitflag |= UNIT_FLAG_FLEEING;
-#endif
 
     if ((unitflag & UNIT_FLAG_STUNNED) && !(mechanic_immune & (1 << (MECHANIC_STUN - 1u))) &&
         (!m_casttime || m_spellInfo->HasSpellInterruptFlag(SPELL_INTERRUPT_FLAG_STUN)))
@@ -6844,19 +6743,15 @@ bool Spell::CanAutoCast(Unit* target)
 
                     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                     // - Hunter's pets will be smarter about when to use Dash/Dive.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     if (m_spellInfo->EffectApplyAuraName[j] == SPELL_AURA_MOD_INCREASE_SPEED &&
                         m_casterUnit->CanReachWithMeleeAutoAttack(m_casterUnit->GetVictim()))
                         return false;
-#endif
 
                     // World of Warcraft Client Patch 1.7.0 (2005-09-13)
                     // - Succubus pets will be smarter about when to use Seduction.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                     if (m_spellInfo->EffectApplyAuraName[j] == SPELL_AURA_MOD_STUN &&
                         target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                         return false;
-#endif
                 }
             }
             else if (IsAreaAuraEffect(m_spellInfo->Effect[j]))
@@ -7052,10 +6947,8 @@ uint32 Spell::CalculatePowerCost(SpellEntry const* spellInfo, Unit* caster, Spel
 
     SpellSchools school = GetFirstSchoolInMask(spell ? spell->m_spellSchoolMask : spellInfo->GetSpellSchoolMask());
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     // Flat mod from caster auras by spell school
     powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
-#endif
 
     // Apply cost mod by spell
     if (spell)
@@ -7066,9 +6959,7 @@ uint32 Spell::CalculatePowerCost(SpellEntry const* spellInfo, Unit* caster, Spel
         powerCost = int32(powerCost / (1.117f * spellInfo->spellLevel / caster->GetLevel() - 0.1327f));
 
     // PCT mod from user auras by school
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     powerCost = int32(powerCost * (1.0f + caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + school)));
-#endif
 
     if (powerCost < 0)
         powerCost = 0;
@@ -7178,7 +7069,6 @@ SpellCastResult Spell::CheckItems()
         // - Rejuvenation Potions: Any type of potion or consumable that grants
         //   mana and healing will no longer be consumable unless either your
         //   health or your mana are below maximum.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         // consumable cast item checks
         if (proto->Class == ITEM_CLASS_CONSUMABLE && m_targets.getUnitTarget())
         {
@@ -7229,7 +7119,6 @@ SpellCastResult Spell::CheckItems()
             if (failReason != SPELL_CAST_OK)
                 return failReason;
         }
-#endif
     }
 
     // check target item (for triggered case not report error)
@@ -7265,15 +7154,11 @@ SpellCastResult Spell::CheckItems()
             if (m_IsTriggeredSpell)
                 return SPELL_FAILED_DONT_REPORT;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             if (m_spellInfo->HasAttribute(SPELL_ATTR_EX3_REQUIRES_MAIN_HAND_WEAPON))
                 return SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND;
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
             if (m_spellInfo->HasAttribute(SPELL_ATTR_EX3_REQUIRES_OFFHAND_WEAPON))
                 return SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND;
-#endif
 
             return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
 

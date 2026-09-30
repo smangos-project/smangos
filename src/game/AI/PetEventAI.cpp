@@ -47,10 +47,8 @@ void PetEventAI::MoveInLineOfSight(Unit* pWho)
 
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Guardians and pets in aggressive mode no longer attack civilians.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     if (m_creature->IsPet() && pWho->IsCreature() && static_cast<Creature*>(pWho)->IsCivilian())
         return;
-#endif
 
     if (m_creature->CanInitiateAttack() && pWho->IsTargetableBy(m_creature))
     {

@@ -29,11 +29,7 @@ enum Broodlord : uint32
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Fixed a bug that was causing Broodlord Lashlayer to do less damage 
     //   than intended with his Mortal Strike.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     SPELL_MORTAL_STRIKE         = 24573, // added to dbc in 1.7.0
-#else
-    SPELL_MORTAL_STRIKE         = 23847, // added to dbc in 1.6.0, removed in 1.8.0
-#endif
     
 };
 

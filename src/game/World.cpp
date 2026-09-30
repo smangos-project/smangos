@@ -126,7 +126,6 @@ World::World():
     m_allowMovement(true),
     m_gameTime(time(nullptr)),
     m_timeZoneOffset(0),
-    m_wowPatch(WOW_PATCH_102),
     m_defaultDbcLocale(LOCALE_enUS),
     m_timeRate(1.0f),
     m_canProcessAsyncPackets(false)
@@ -473,12 +472,6 @@ void World::LoadConfigSettings(bool reload)
         }
     }
 
-    // Set the available content patch.
-    m_wowPatch = sConfig.GetIntDefault("WowPatch", WOW_PATCH_102);
-
-    if (m_wowPatch > MAX_CONTENT_PATCH)
-        m_wowPatch = MAX_CONTENT_PATCH;
-
     // Read the player limit and the Message of the day from the config file
     SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true);
     SetMotd(sConfig.GetStringDefault("Motd", "Welcome to the Massive Network Game Object Server.") + std::string("\n") + std::string(GetPatchName()) + std::string(" is now live!"));
@@ -639,14 +632,8 @@ void World::LoadConfigSettings(bool reload)
     setConfigMinMax(CONFIG_UINT32_START_PLAYER_MONEY, "StartPlayerMoney", 0, 0, MAX_MONEY_AMOUNT);
     setConfig(CONFIG_UINT32_MIN_HONOR_KILLS, "MinHonorKills", 0);
 
-    // If min honor kills is at 0, decide based on patch.
     if (getConfig(CONFIG_UINT32_MIN_HONOR_KILLS) == 0)
-    {
-        if (GetWowPatch() >= WOW_PATCH_110)
-            setConfig(CONFIG_UINT32_MIN_HONOR_KILLS, MIN_HONOR_KILLS_POST_1_10);
-        else
-            setConfig(CONFIG_UINT32_MIN_HONOR_KILLS, MIN_HONOR_KILLS_PRE_1_10);
-    }
+        setConfig(CONFIG_UINT32_MIN_HONOR_KILLS, MIN_HONOR_KILLS);
 
     setConfigMinMax(CONFIG_FLOAT_RP_DECAY, "RpDecay", 0.2f, 0.0f, 1.0f);
     setConfigMinMax(CONFIG_UINT32_MAINTENANCE_DAY, "MaintenanceDay", 4, 0, 6);
@@ -792,14 +779,8 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_TAG_IN_BATTLEGROUNDS,                        "BattleGround.TagInBattleGrounds", true);
     setConfigMinMax(CONFIG_UINT32_BATTLEGROUND_QUEUES_COUNT,           "BattleGround.QueuesCount", 0, 0, 3);
 
-    // If max bg queues is at 0, decide based on patch.
     if (getConfig(CONFIG_UINT32_BATTLEGROUND_QUEUES_COUNT) == 0)
-    {
-        if (GetWowPatch() >= WOW_PATCH_109)
-            setConfig(CONFIG_UINT32_BATTLEGROUND_QUEUES_COUNT, 3);
-        else
-            setConfig(CONFIG_UINT32_BATTLEGROUND_QUEUES_COUNT, 1);
-    }
+        setConfig(CONFIG_UINT32_BATTLEGROUND_QUEUES_COUNT, 3);
 
     setConfig(CONFIG_BOOL_OUTDOORPVP_EP_ENABLE, "OutdoorPvP.EP.Enable", true);
     setConfig(CONFIG_BOOL_OUTDOORPVP_SI_ENABLE, "OutdoorPvP.SI.Enable", true);
@@ -996,14 +977,8 @@ void World::LoadConfigSettings(bool reload)
     setConfigMinMax(CONFIG_UINT32_SPELL_PROC_DELAY, "Spell.ProcDelay", 400, 0, 1000);
     setConfigMinMax(CONFIG_UINT32_DEBUFF_LIMIT, "DebuffLimit", 0, 0, 40);
 
-    // If max debuff slots is at 0, decide based on patch.
     if (getConfig(CONFIG_UINT32_DEBUFF_LIMIT) == 0)
-    {
-        if (GetWowPatch() >= WOW_PATCH_107)
-            setConfig(CONFIG_UINT32_DEBUFF_LIMIT, 16);
-        else
-            setConfig(CONFIG_UINT32_DEBUFF_LIMIT, 8);
-    }
+        setConfig(CONFIG_UINT32_DEBUFF_LIMIT, 16);
 
     setConfig(CONFIG_UINT32_ANTICRASH_OPTIONS, "Anticrash.Options", 0);
     setConfig(CONFIG_UINT32_ANTICRASH_REARM_TIMER, "Anticrash.Rearm.Timer", 0);
@@ -1085,21 +1060,12 @@ void World::LoadConfigSettings(bool reload)
     }
 
     // PvP options
-    setConfig(CONFIG_BOOL_ACCURATE_PVP_EQUIP_REQUIREMENTS, "PvP.AccurateEquipRequirements", true);
-    setConfig(CONFIG_BOOL_ACCURATE_PVP_PURCHASE_REQUIREMENTS, "PvP.AccuratePurchaseRequirements", true);
-    setConfig(CONFIG_BOOL_ACCURATE_PVP_TIMELINE, "PvP.AccurateTimeline", true);
-    setConfig(CONFIG_BOOL_ACCURATE_PVP_REWARDS, "PvP.AccurateRewards", true);
     setConfig(CONFIG_BOOL_ENABLE_DK, "PvP.DishonorableKills", true);
     setConfig(CONFIG_BOOL_ENABLE_CITY_PROTECTOR, "PvP.CityProtector", false);
 
     // Progression settings
-    setConfig(CONFIG_BOOL_ACCURATE_PETS, "Progression.AccuratePetStatistics", true);
-    setConfig(CONFIG_BOOL_ACCURATE_LFG, "Progression.AccurateLFGAvailability", true);
     setConfig(CONFIG_BOOL_ACCURATE_PVE_EVENTS, "Progression.AccuratePVEEvents", true);
-    setConfig(CONFIG_BOOL_NO_RESPEC_PRICE_DECAY, "Progression.NoRespecPriceDecay", true);
-    setConfig(CONFIG_BOOL_NO_QUEST_XP_TO_GOLD, "Progression.NoQuestXpToGold", true);
     setConfig(CONFIG_BOOL_RESTORE_DELETED_ITEMS, "Progression.RestoreDeletedItems", true);
-    setConfig(CONFIG_BOOL_UNLINKED_AUCTION_HOUSES, "Progression.UnlinkedAuctionHouses", true);
 
     // Movement Anticheat
     setConfig(CONFIG_BOOL_AC_MOVEMENT_ENABLED, "Anticheat.Enable", false);
@@ -1258,33 +1224,7 @@ void CharactersDatabaseWorkerThread()
 
 char const* World::GetPatchName() const
 {
-    switch(GetWowPatch())
-    {
-        case 0:
-            return "Patch 1.2: Mysteries of Maraudon";
-        case 1:
-            return "Patch 1.3: Ruins of the Dire Maul";
-        case 2:
-            return "Patch 1.4: The Call to War";
-        case 3:
-            return "Patch 1.5: Battlegrounds";
-        case 4:
-            return "Patch 1.6: Assault on Blackwing Lair";
-        case 5:
-            return "Patch 1.7: Rise of the Blood God";
-        case 6:
-            return "Patch 1.8: Dragons of Nightmare";
-        case 7:
-            return "Patch 1.9: The Gates of Ahn'Qiraj";
-        case 8:
-            return "Patch 1.10: Storms of Azeroth";
-        case 9:
-            return "Patch 1.11: Shadow of the Necropolis";
-        case 10:
-            return "Patch 1.12: Drums of War";
-    }
-
-    return "Invalid Patch!";
+    return "Patch 1.12: Drums of War";
 }
 
 // Initialize the World
@@ -1873,10 +1813,7 @@ void World::SetInitialWorldSettings()
         sObjectMgr.RestoreDeletedItems();
     }
 
-    if (GetWowPatch() >= WOW_PATCH_103 || !getConfig(CONFIG_BOOL_ACCURATE_LFG))
-    {
-        m_lfgQueueThread = IO::Multithreading::CreateThreadPtr("LfgUpdate", [&] { m_lfgQueue.Update(); });
-    }
+    m_lfgQueueThread = IO::Multithreading::CreateThreadPtr("LfgUpdate", [&] { m_lfgQueue.Update(); });
 
     m_broadcaster =
         std::make_unique<MovementBroadcaster>(getConfig(CONFIG_UINT32_PACKET_BCAST_THREADS),
@@ -2235,11 +2172,7 @@ public:
     {
         char const* text = sObjectMgr.GetBroadcastText(i_textId, loc_idx);
         WorldPacket* data = new WorldPacket();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         ChatHandler::BuildChatPacket(*data, CHAT_MSG_BG_SYSTEM_NEUTRAL, text, LANG_UNIVERSAL, CHAT_TAG_NONE, i_senderGuid);
-#else
-        ChatHandler::BuildChatPacket(*data, CHAT_MSG_SYSTEM, text, LANG_UNIVERSAL, CHAT_TAG_NONE, i_senderGuid);
-#endif
         data_list.push_back(data);
     }
 private:
@@ -3094,11 +3027,9 @@ bool World::configNoReload(bool reload, eConfigBoolValues index, char const* fie
 
 void World::InvalidatePlayerDataToAllClient(ObjectGuid guid)
 {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     auto packet = std::make_unique<WorldPackets::Misc::InvalidatePlayer>();
     packet->playerGuid = guid;
     SendGlobalMessage(std::move(packet));
-#endif
 }
 
 void World::SetSessionDisconnected(WorldSession* sess)

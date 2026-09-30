@@ -654,10 +654,8 @@ class WorldSession
         void HandleAreaTriggerOpcode(AreaTrigger const& packet);
         void HandleSetFactionAtWarOpcode(SetFactionAtWar const& packet);
         void HandleSetFactionNotAtWarOpcode(SetFactionNotAtWar const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         void HandleSetWatchedFactionOpcode(SetWatchedFaction const& packet);
         void HandleSetFactionInactiveOpcode(SetFactionInactive const& packet);
-#endif
 
         void HandleUpdateAccountData(AccountDataUpdate const& packet);
         void HandleRequestAccountData(AccountDataRequest const& packet);
@@ -904,13 +902,9 @@ class WorldSession
         void HandlePetRename(PetRename const& packet);
         void HandlePetCancelAuraOpcode(PetCancelAura const& packet);
         void HandleRequestPetInfoOpcode(RequestPetInfo const& packet);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         void HandlePetStopAttack(PetStopAttack const& packet);
         void HandlePetSpellAutocastOpcode(PetSpellAutocast const& packet);
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         void HandlePetCastSpellOpcode(PetCastSpell const& packet);
-#endif
 
         void HandleCharRenameOpcode(WorldPackets::Character::CharRename const& packet);
         static void HandleChangePlayerNameOpcodeCallBack(std::unique_ptr<QueryResult> result, uint32 accountId, std::string newname);

@@ -305,7 +305,7 @@ bool BattleGroundPersistentState::CanBeUnload() const
 
 bool DungeonResetScheduler::IsRaidResetSchedulingGlobal()
 {
-    return sWorld.GetWowPatch() >= WOW_PATCH_109;
+    return true;
 }
 
 uint32 DungeonResetScheduler::GetMaxResetTimeFor(MapEntry const* temp)

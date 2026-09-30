@@ -298,10 +298,8 @@ void ChargeMovementGenerator<T>::ComputePath(T& attacker, Unit& victim)
         // 3. Time it will take for him to ACK the root (latency)
         m_extrapolateDelay += (WorldTimer::getMSTime() - victimPlayer->m_movementInfo.stime);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         // latency is not part of ping packet in older clients so we cant use it
         m_extrapolateDelay += victimPlayer->GetSession()->GetLatency();
-#endif
 
         if (m_extrapolateDelay > 1500)
             m_extrapolateDelay = 1500;

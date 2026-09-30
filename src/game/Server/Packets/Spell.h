@@ -25,7 +25,6 @@ namespace WorldPackets { namespace Spell
 
     // --- Server Packets ---
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     class PlaySpellImpact final : public ServerPacket
     {
     public:
@@ -36,7 +35,6 @@ namespace WorldPackets { namespace Spell
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
 
 }} // namespace WorldPackets::Spell

@@ -136,14 +136,9 @@ class ObjectGuid
         PackedGuidReader ReadAsPacked() { return PackedGuidReader(*this); }
         PackedGuid WriteAsPacked() const;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
         // TODO: Remove `ReadAsPacked` & `WriteAsPacked` when transformation is done
         PackedGuidReader ReadAsPackedClientBuildAware() { return PackedGuidReader(*this); }
         PackedGuid WriteAsPackedClientBuildAware() const;
-#else
-        ObjectGuid& ReadAsPackedClientBuildAware() { return *this; }
-        uint64 WriteAsPackedClientBuildAware() const { return GetRawValue(); }
-#endif
 
         void Set(uint64 const& guid);
         void Clear() { m_guid = 0; }
@@ -336,8 +331,6 @@ ByteBuffer& operator<< (ByteBuffer& buf, PackedGuid const& guid);
 ByteBuffer& operator>> (ByteBuffer& buf, PackedGuidReader const& guid);
 
 inline PackedGuid ObjectGuid::WriteAsPacked() const { return PackedGuid(*this); }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
 inline PackedGuid ObjectGuid::WriteAsPackedClientBuildAware() const { return WriteAsPacked(); }
-#endif
 
 #endif

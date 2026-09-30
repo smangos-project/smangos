@@ -382,31 +382,19 @@ void BattleGround::Update(uint32 diff)
             SetStartDelayTime(m_startDelayTimes[BG_STARTING_EVENT_FIRST]);
             //first start warning - 2 or 1 minute, only if defined
             if (m_startMessageIds[BG_STARTING_EVENT_FIRST])
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
                 SendMessageToAll(m_startMessageIds[BG_STARTING_EVENT_FIRST], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-#else
-                DoOrSimulateScriptTextForMap(m_startMessageIds[BG_STARTING_EVENT_FIRST], GetHeraldEntry(), GetBgMap());
-#endif
         }
         // After 1 minute or 30 seconds, warning is signalled
         else if (GetStartDelayTime() <= m_startDelayTimes[BG_STARTING_EVENT_SECOND] && !(m_events & BG_STARTING_EVENT_2))
         {
             m_events |= BG_STARTING_EVENT_2;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             SendMessageToAll(m_startMessageIds[BG_STARTING_EVENT_SECOND], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-#else
-            DoOrSimulateScriptTextForMap(m_startMessageIds[BG_STARTING_EVENT_SECOND], GetHeraldEntry(), GetBgMap());
-#endif
         }
         // After 30 or 15 seconds, warning is signalled
         else if (GetStartDelayTime() <= m_startDelayTimes[BG_STARTING_EVENT_THIRD] && !(m_events & BG_STARTING_EVENT_3))
         {
             m_events |= BG_STARTING_EVENT_3;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             SendMessageToAll(m_startMessageIds[BG_STARTING_EVENT_THIRD], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-#else
-            DoOrSimulateScriptTextForMap(m_startMessageIds[BG_STARTING_EVENT_THIRD], GetHeraldEntry(), GetBgMap());
-#endif
         }
         // delay expired (atfer 2 or 1 minute)
         else if (GetStartDelayTime() <= 0 && !(m_events & BG_STARTING_EVENT_4))
@@ -417,11 +405,7 @@ void BattleGround::Update(uint32 diff)
 
             ReturnPlayersToHomeGY();
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             SendMessageToAll(m_startMessageIds[BG_STARTING_EVENT_FOURTH], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-#else
-            DoOrSimulateScriptTextForMap(m_startMessageIds[BG_STARTING_EVENT_FOURTH], GetHeraldEntry(), GetBgMap());
-#endif
             SetStatus(STATUS_IN_PROGRESS);
             SetStartDelayTime(m_startDelayTimes[BG_STARTING_EVENT_FOURTH]);
 
@@ -717,10 +701,8 @@ void BattleGround::EndBattleGround(Team winner)
     SetStatus(STATUS_WAIT_LEAVE);
     SetEndTime(TIME_TO_AUTOREMOVE);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     if (m_finalScore.empty())
         m_finalScore = MakeClassicPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
-#endif
 
     for (const auto& itr : m_players)
     {
@@ -803,11 +785,7 @@ void BattleGround::EndBattleGround(Team winner)
     }
 
     if (int32 winTextId = GetWinnerText(winner))
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         SendMessageToAll(winTextId, CHAT_MSG_BG_SYSTEM_NEUTRAL);
-#else
-        DoOrSimulateScriptTextForMap(winTextId, GetHeraldEntry(), GetBgMap());
-#endif
 
     // remove any invited players from the queue when bg ends
     if (GetInvitedCount(HORDE) || GetInvitedCount(ALLIANCE))
@@ -1023,13 +1001,11 @@ void BattleGround::RemovePlayerAtLeave(ObjectGuid guid, bool transport, bool sen
             sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgTypeId, GetBracketId());
 
             // Let others know
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
             {
                 BattlegroundPlayerLeft left;
                 left.PlayerGuid = ClassicGuidMapping::ToClassic(guid, realmID);
                 SendPacketToTeam(team, left, pPlayer, false);
             }
-#endif
         }
     }
 
@@ -1104,13 +1080,11 @@ void BattleGround::AddPlayer(Player* pPlayer)
 
     UpdatePlayersCountByTeam(team, false);                  // +1 player
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     {
         BattlegroundPlayerJoined joined;
         joined.PlayerGuid = ClassicGuidMapping::ToClassic(pPlayer->GetObjectGuid(), realmID);
         SendPacketToTeam(team, joined, pPlayer, false);
     }
-#endif
 
     // setup BG group membership
     PlayerAddedToBGCheckIfBGIsRunning(pPlayer);
@@ -1610,9 +1584,7 @@ void BattleGround::SpawnBGObject(ObjectGuid guid, uint32 respawnTime)
         if (obj->getLootState() == GO_JUST_DEACTIVATED)
             obj->SetLootState(GO_READY);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         if (obj->GetGOInfo()->type != GAMEOBJECT_TYPE_FLAGSTAND)
-#endif
             obj->SetGoState(GO_STATE_READY);
 
         obj->SetRespawnTime(respawnTime);
@@ -1626,9 +1598,7 @@ void BattleGround::SpawnBGObject(ObjectGuid guid, uint32 respawnTime)
     {
         if (obj)
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
             if (obj->GetGOInfo()->type != GAMEOBJECT_TYPE_FLAGSTAND)
-#endif
                 obj->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
 
             obj->SetRespawnTime(respawnTime);
@@ -1753,10 +1723,8 @@ void BattleGround::EndNow()
     SetStatus(STATUS_WAIT_LEAVE);
     SetEndTime(0);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     if (m_finalScore.empty())
         m_finalScore = MakeClassicPacket(sBattleGroundMgr.BuildPvpLogDataPacket(this));
-#endif
 }
 
 /*
@@ -1868,9 +1836,7 @@ void BattleGround::PlayerAddedToBGCheckIfBGIsRunning(Player* pPlayer)
 
     BlockMovement(pPlayer);
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
     pPlayer->GetSession()->SendClassic(sBattleGroundMgr.BuildPvpLogDataPacket(this));
-#endif
 
     sBattleGroundMgr.SendBattleGroundStatusPacket(pPlayer, this, pPlayer->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, GetEndTime(), GetStartTime());
 }

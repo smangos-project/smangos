@@ -401,17 +401,9 @@ float SpellCaster::GetMeleeMissChance(Unit const* pVictim, WeaponAttackType attT
     // World of Warcraft Client Patch 1.8.0 (2005-10-11)
     // - Items which provide +hit chance will now be allowed to counteract the
     //   increased miss chance penalty of dual - wielding.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-    float const missChanceWithoutDualWieldPenalty = (5.0f - skillDiffBonus) * levelDiffMultiplier;
-    float const adjustedDualWieldPenalty = missChance - std::max(0.0f, missChanceWithoutDualWieldPenalty);
-#endif
 
     missChance -= hitChance;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_7_1
-    if ((hitChance > 0.0f) && (adjustedDualWieldPenalty > 0.0f) && IsPlayer())
-        missChance = std::max(missChance, adjustedDualWieldPenalty);
-#endif
 
     // Hit chance depends from victim auras
     if (attType == RANGED_ATTACK)
@@ -814,13 +806,7 @@ int32 SpellCaster::MagicSpellHitChance(Unit const* pVictim, SpellEntry const* pS
     //   Volley).
     // - The resist rate for hunter traps is now based on the hunter's skill
     //   rather than the level of the trap.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
     int32 leveldif = int32(pVictim->GetLevelForTarget(this)) - int32(GetLevelForTarget(pVictim));
-#else
-    int32 leveldif = (pSpell ? pSpell->GetOriginalCasterGuid().IsGameObject() : pSpellEntry->HasEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA)) ?
-        int32(pVictim->GetLevelForTarget(this)) - std::max<int32>(1, pSpellEntry->spellLevel) :
-        int32(pVictim->GetLevelForTarget(this)) - int32(GetLevelForTarget(pVictim));
-#endif
 
     // Base hit chance from attacker and victim levels
     float modHitChance;
@@ -891,10 +877,8 @@ float SpellCaster::GetSpellResistChance(Unit const* victim, uint32 schoolMask, b
 
     float resistModHitChance = baseResistance + selfResistance;
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     if ((resistModHitChance < 0.0f) && (baseResistance >= 0.0f))
         resistModHitChance = 0.0f;
-#endif
 
     // Magic vulnerability calculation
     if (resistModHitChance < 0.0f)

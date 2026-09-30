@@ -324,12 +324,8 @@ enum PlayerFlags
     PLAYER_FLAGS_PVP_DESIRED            = 0x00000200,       // Stores player's permanent PvP flag preference
     PLAYER_FLAGS_HIDE_HELM              = 0x00000400,
     PLAYER_FLAGS_HIDE_CLOAK             = 0x00000800,
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_6_1
-    PLAYER_FLAGS_CAN_SELF_RESURRECT     = 0x00001000,
-#else
     PLAYER_FLAGS_PARTIAL_PLAY_TIME      = 0x00001000,       // played long time
     PLAYER_FLAGS_NO_PLAY_TIME           = 0x00002000,       // played too long time
-#endif
 };
 
 enum PlayerBytes2Offsets
@@ -381,14 +377,6 @@ enum PlayerFieldByte2Flags
     PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW = 0x40
 };
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-enum WhoListPartyStatus
-{
-    WHO_PARTY_STATUS_NOT_IN_PARTY = 0x0,
-    WHO_PARTY_STATUS_IN_PARTY     = 0x1,
-    WHO_PARTY_STATUS_LFG          = 0x2
-};
-#endif
 
 enum ActivateTaxiReplies : uint32
 {
@@ -522,11 +510,7 @@ enum BuyBackSlots                                           // 12 slots after 1.
 {
     // stored in m_buybackitems
     BUYBACK_SLOT_START          = 69,
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     BUYBACK_SLOT_END            = 81
-#else
-    BUYBACK_SLOT_END            = 70
-#endif
 };
 
 enum KeyRingSlots                                           // 32 slots (only 16 are visible/accessible in UI)
@@ -971,13 +955,8 @@ class Player final: public Unit
         void AddItemToBuyBackSlot(Item* pItem, uint32 money, ObjectGuid vendorGuid);
         Item* GetItemFromBuyBackSlot(uint32 slot);
         void RemoveItemFromBuyBackSlot(uint32 slot, bool del);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         uint32 GetBuyBackItemPrice(uint32 slot) const { return GetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + slot - BUYBACK_SLOT_START); }
-#else
-        uint32 GetBuyBackItemPrice(uint32 /*slot*/) const { return GetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE); }
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         uint32 GetMaxKeyringSize() const
         {
             uint32 level = GetLevel();
@@ -986,9 +965,6 @@ class Player final: public Unit
             if (level >= 40) return 8;
             return 4;
         }
-#else
-        uint32 GetMaxKeyringSize() const { return 0; }
-#endif
         void SendEquipError(InventoryResult msg, Item const* pItem = nullptr, Item const* pItem2 = nullptr, uint8 bagSlot = 0, uint32 itemid = 0) const;
         void SendBuyError(BuyResult msg, Creature const* pCreature, uint32 item, uint32 param) const;
         void SendSellError(SellResult msg, Creature const* pCreature, ObjectGuid itemGuid, uint32 param) const;
@@ -1202,9 +1178,7 @@ class Player final: public Unit
         void _LoadQuestStatus(std::unique_ptr<QueryResult> result);
         void _LoadGroup(std::unique_ptr<QueryResult> result);
         void _LoadSkills(std::unique_ptr<QueryResult> result);
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         void _LoadForgottenSkills(std::unique_ptr<QueryResult> result);
-#endif
         void LoadSkillsFromFields();
         void _LoadSpells(std::unique_ptr<QueryResult> result);
         bool _LoadHomeBind(std::unique_ptr<QueryResult> result);
@@ -1308,9 +1282,6 @@ class Player final: public Unit
         SpellModList m_spellMods[MAX_SPELLMOD];
         uint32 m_lastFromClientCastedSpellID;
         std::map<uint32, ItemSetEffect> m_itemSetEffects;
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_6_1
-        uint32 m_resurrectionSpellId;
-#endif
         bool IsNeedCastPassiveLikeSpellAtLearn(SpellEntry const* spellInfo) const;
         void SendInitialSpells() const;
         bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled);
@@ -1529,9 +1500,7 @@ class Player final: public Unit
         void UpdateOldRidingSkillToNew(bool hasEpicMount);
         void UpdateSkillsForLevel();
         SkillStatusMap m_skillStatusMap;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
         std::unordered_map<uint16, uint16> m_forgottenSkills;
-#endif
     public:
         uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
         void SetFreePrimaryProfessions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2, profs); }
@@ -2064,10 +2033,6 @@ class Player final: public Unit
         void SpawnCorpseBones();
         Corpse* CreateCorpse();
         void KillPlayer();
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_6_1
-        uint32 GetResurrectionSpellId() const { return m_resurrectionSpellId; }
-        void SetResurrectionSpellId(uint32 resurrectionSpellId) { m_resurrectionSpellId = resurrectionSpellId; }
-#endif
         uint32 SelectResurrectionSpellId() const;
         void ResurrectPlayer(float restore_percent, bool applySickness = false);
         void BuildPlayerRepop();
@@ -2473,9 +2438,6 @@ class Player final: public Unit
         void SendUpdateToOutOfRangeGroupMembers();
         void SendDestroyGroupMembers(bool includingSelf = false);
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-        uint32 GetWhoListPartyStatus() const;
-#endif
 
         // LFG
         void SetLFGAreaId(uint32 areaId) { m_LFGAreaId = areaId; }

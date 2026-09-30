@@ -221,9 +221,6 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float
 
     SetObjectScale(goinfo->size);
 
-#if SUPPORTED_CLIENT_BUILD < CLIENT_BUILD_1_12_1
-    SetUInt32Value(GAMEOBJECT_TIMESTAMP, (uint32)time(nullptr));
-#endif
 
     SetFloatValue(GAMEOBJECT_POS_X, x);
     SetFloatValue(GAMEOBJECT_POS_Y, y);
@@ -1835,7 +1832,6 @@ void GameObject::Use(Unit* user)
             // See WorldSession::HandleMeetingStoneJoinOpcode
             return;
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         case GAMEOBJECT_TYPE_FLAGSTAND:                     // 24
         {
             if (user->GetTypeId() != TYPEID_PLAYER)
@@ -1863,8 +1859,6 @@ void GameObject::Use(Unit* user)
             }
             break;
         }
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         case GAMEOBJECT_TYPE_FISHINGHOLE:                   // 25
         {
             if (user->GetTypeId() != TYPEID_PLAYER)
@@ -1875,8 +1869,6 @@ void GameObject::Use(Unit* user)
             player->SendLoot(GetObjectGuid(), LOOT_FISHINGHOLE);
             return;
         }
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
         case GAMEOBJECT_TYPE_FLAGDROP:                      // 26
         {
             if (user->GetTypeId() != TYPEID_PLAYER)
@@ -1899,8 +1891,6 @@ void GameObject::Use(Unit* user)
             }
             break;
         }
-#endif
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
         case GAMEOBJECT_TYPE_CAPTURE_POINT:                 // 29
         {
             // Code here is not even halfway complete, and only added for further development.
@@ -1974,7 +1964,6 @@ void GameObject::Use(Unit* user)
             // Some has spell, need to process those further.
             return;
         }
-#endif
         default:
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "GameObject::Use unhandled GameObject type %u (entry %u).", GetGoType(), GetEntry());
             break;

@@ -141,7 +141,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     class PlayTimeWarning final : public ServerPacket
     {
     public:
@@ -152,7 +151,6 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
     class LogoutResponse final : public ServerPacket
     {
@@ -191,11 +189,7 @@ namespace WorldPackets { namespace Misc
     public:
         uint32 areaId = 0;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-        uint64 idempotencyToken = 0; // Guess: Incrementing counter. Must change for every response. TODO: Maybe use ms timestamp to enforce a new id on every packet
-#else
         uint8 status = 0;
-#endif
 
         explicit MeetingstoneSetQueue() : ServerPacket(SMSG_MEETINGSTONE_SETQUEUE) {}
         size_t EstimateFinalSize() const override;
@@ -258,7 +252,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     /** Tell a client to invalidate all cached entries for a given player (like the name) */
     class InvalidatePlayer final : public ServerPacket
     {
@@ -269,7 +262,6 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
     class ZoneUnderAttack final : public ServerPacket
     {
@@ -302,7 +294,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
     class FactionAtWarChange final : public ServerPacket
     {
     public:
@@ -313,9 +304,7 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     class InstanceReset final : public ServerPacket
     {
     public:
@@ -336,7 +325,6 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
     class RaidGroupOnly final : public ServerPacket
     {
@@ -360,7 +348,6 @@ namespace WorldPackets { namespace Misc
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     class RaidInstanceMessage final : public ServerPacket
     {
     public:
@@ -372,9 +359,7 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_10_2
     class UpdateInstanceOwnership final : public ServerPacket
     {
     public:
@@ -394,7 +379,6 @@ namespace WorldPackets { namespace Misc
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
     class UpdateWorldState final : public ServerPacket
     {

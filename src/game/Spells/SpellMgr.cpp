@@ -2675,10 +2675,8 @@ void SpellMgr::LoadSpellAreas()
 SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const* spellInfo, Unit const* caster, Player const* player)
 {
     // Spell can be casted only in battleground
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
     if (spellInfo->HasAttribute(SPELL_ATTR_EX3_ONLY_BATTLEGROUNDS) && (!player || !player->InBattleGround()))
         return SPELL_FAILED_ONLY_BATTLEGROUNDS;
-#endif
 
     uint32 mapId = caster ? caster->GetMapId() : (player ? player->GetMapId() : 0);
 
@@ -2702,7 +2700,6 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const* spell
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
             return player && player->GetMapId() == MAP_WARSONG_GULCH && player->InBattleGround() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_5_1
         case 2584:                                          // Waiting to Resurrect
         {
             return player && player->InBattleGround() ? SPELL_CAST_OK : SPELL_FAILED_ONLY_BATTLEGROUNDS;
@@ -2716,7 +2713,6 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const* spell
                 return SPELL_FAILED_REQUIRES_AREA;
             return mapEntry->IsBattleGround() ? SPELL_CAST_OK : SPELL_FAILED_ONLY_BATTLEGROUNDS;
         }
-#endif
     }
 
     if (caster)
@@ -3539,163 +3535,6 @@ void SpellMgr::AssignInternalSpellFlags()
     }
 }
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-enum OldProcFlags
-{
-    OLD_PROC_FLAG_DONE_MELEE_HIT      = 0x00000001,   // New value - 20
-    OLD_PROC_FLAG_TAKEN_MELEE_HIT     = 0x00000002,   // New value - 40
-    OLD_PROC_FLAG_KILL                = 0x00000004,   // New value - 2
-    OLD_PROC_FLAG_HEARTBEAT           = 0x00000008,   // New value - 1
-    OLD_PROC_FLAG_DODGE               = 0x00000010,   // New value - 40
-    OLD_PROC_FLAG_PARRY               = 0x00000020,   // New value - 40
-    OLD_PROC_FLAG_BLOCK               = 0x00000040,   // New value - 40
-    OLD_PROC_FLAG_ON_SWING            = 0x00000080,   // New value - 4
-    OLD_PROC_FLAG_MAGIC_SPELL_CAST    = 0x00000100,   // New value - 81920
-    OLD_PROC_FLAG_TAKEN_NON_MELEE_HIT = 0x00000400,   // New value - 139904
-    OLD_PROC_FLAG_TAKEN_HIT           = 0x00000800,   // New value - 139936
-    OLD_PROC_FLAG_DONE_MELEE_CRIT     = 0x00001000,   // New value - 4
-    OLD_PROC_FLAG_TAKEN_MELEE_CRIT    = 0x00002000,   // New value - 8
-    OLD_PROC_FLAG_DONE_ANY_NOT_SWING  = 0x00004000,   // New value - 87376
-    OLD_PROC_FLAG_TAKEN_ANY_DAMAGE    = 0x00008000,   // New value - 1048576
-    OLD_PROC_FLAG_DONE_SPELL_CRIT     = 0x00010000,   // New value - 87376
-    OLD_PROC_FLAG_DONE_SPELL_HIT      = 0x00020000,   // New value - 87376
-    OLD_PROC_FLAG_TAKEN_RANGED_CRIT   = 0x00040000,   // New value - 139936
-    OLD_PROC_FLAG_DONE_RANGED_HIT     = 0x00080000,   // New value - 320
-    OLD_PROC_FLAG_TAKEN_RANGED_HIT    = 0x00100000,   // New value - 640
-};
-
-uint32 ReplaceOldSpellProcFlags(uint32 oldFlags)
-{
-    uint32 newFlags = 0;
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_MELEE_HIT)
-    {
-        newFlags |= PROC_FLAG_DEAL_MELEE_SWING;
-        newFlags |= PROC_FLAG_DEAL_MELEE_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_MELEE_HIT)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_SWING;
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_KILL)
-        newFlags |= PROC_FLAG_KILL;
-
-    if (oldFlags & OLD_PROC_FLAG_HEARTBEAT)
-        newFlags |= PROC_FLAG_HEARTBEAT;
-
-    if (oldFlags & OLD_PROC_FLAG_DODGE)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_SWING;
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_PARRY)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_SWING;
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_BLOCK)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_SWING;
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_ON_SWING)
-        newFlags |= PROC_FLAG_DEAL_MELEE_SWING;
-
-    if (oldFlags & OLD_PROC_FLAG_MAGIC_SPELL_CAST)
-    {
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_SPELL;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_NON_MELEE_HIT)
-    {
-        newFlags |= PROC_FLAG_TAKE_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_HIT)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_MELEE_CRIT)
-        newFlags |= PROC_FLAG_DEAL_MELEE_SWING;
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_MELEE_CRIT)
-        newFlags |= PROC_FLAG_TAKE_MELEE_SWING;
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_ANY_NOT_SWING)
-    {
-        newFlags |= PROC_FLAG_DEAL_MELEE_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_SPELL;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_ANY_DAMAGE)
-        newFlags |= PROC_FLAG_TAKEN_ANY_DAMAGE;
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_SPELL_CRIT)
-    {
-        newFlags |= PROC_FLAG_DEAL_MELEE_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_SPELL;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_SPELL_HIT)
-    {
-        //newFlags |= PROC_FLAG_DEAL_MELEE_ABILITY;
-        //newFlags |= PROC_FLAG_DEAL_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_DEAL_HELPFUL_SPELL;
-        newFlags |= PROC_FLAG_DEAL_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_RANGED_CRIT)
-    {
-        newFlags |= PROC_FLAG_TAKE_MELEE_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_ABILITY;
-        newFlags |= PROC_FLAG_TAKE_HARMFUL_SPELL;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_DONE_RANGED_HIT)
-    {
-        newFlags |= PROC_FLAG_DEAL_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_DEAL_RANGED_ABILITY;
-    }
-
-    if (oldFlags & OLD_PROC_FLAG_TAKEN_RANGED_HIT)
-    {
-        newFlags |= PROC_FLAG_TAKE_RANGED_ATTACK;
-        newFlags |= PROC_FLAG_TAKE_RANGED_ABILITY;
-    }
-
-    return newFlags;
-}
-#endif
 
 void SpellMgr::LoadSpells()
 {
@@ -3741,7 +3580,6 @@ void SpellMgr::LoadSpells()
         LoadSpell(fields);
     } while (result->NextRow());
 
-#if SUPPORTED_CLIENT_BUILD == CLIENT_BUILD_1_12_1
     // Load localized texts (currently we only have 1.12 locales).
     //                                    0        1            2            3            4            5            6            7                   8                   9                   10                  11                  12                  13                  14                  15                  16                  17                  18                  19                      20                      21                      22                      23                      24
     result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6`, `nameSubtext_loc1`, `nameSubtext_loc2`, `nameSubtext_loc3`, `nameSubtext_loc4`, `nameSubtext_loc5`, `nameSubtext_loc6`, `description_loc1`, `description_loc2`, `description_loc3`, `description_loc4`, `description_loc5`, `description_loc6`, `auraDescription_loc1`, `auraDescription_loc2`, `auraDescription_loc3`, `auraDescription_loc4`, `auraDescription_loc5`, `auraDescription_loc6` FROM `locales_spell`");
@@ -3785,7 +3623,6 @@ void SpellMgr::LoadSpells()
 
         } while (result->NextRow());
     }
-#endif
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u spells in %ums.", mSpellEntryMap.size(), WorldTimer::getMSTimeDiffToNow(oldMSTime));
@@ -3980,80 +3817,6 @@ void SpellMgr::LoadSpell(Field* fields)
     if (spell->HasAttribute(SPELL_ATTR_EX2_ENABLE_AFTER_PARRY))
         spell->CasterAuraState = spell->SpellFamilyName == SPELLFAMILY_HUNTER ? AURA_STATE_HUNTER_PARRY : AURA_STATE_DEFENSE;
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_11_2
-    for (int i = EFFECT_INDEX_0; i <= EFFECT_INDEX_2; ++i)
-    {
-        if (IsEffectAppliesAura(spell->Effect[i]))
-        {
-            switch (spell->EffectApplyAuraName[i])
-            {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_10_2
-            // Before 1.11, the spell data specifies TO what percent the speed is reduced, not BY what percent.
-            case SPELL_AURA_MOD_DECREASE_SPEED:
-            {
-                spell->EffectBasePoints[i] = -(100 - spell->EffectBasePoints[i]);
-                break;
-            }
-#endif
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-            // Before 1.9, the creature family is not a mask.
-            case SPELL_AURA_MOD_DAMAGE_DONE_CREATURE:
-            {
-                spell->EffectMiscValue[i] = 1 << (spell->EffectMiscValue[i] - 1);
-                break;
-            }
-            // Before 1.9, value 0 means all schools.
-            case SPELL_AURA_MOD_THREAT:
-            {
-                if (spell->EffectMiscValue[i] == 0)
-                    spell->EffectMiscValue[i] = 127;
-                break;
-            }
-            // Before 1.9, the school is not a mask.
-            case SPELL_AURA_MOD_DAMAGE_DONE:
-            case SPELL_AURA_MOD_DAMAGE_TAKEN:
-            case SPELL_AURA_MOD_RESISTANCE:
-            case SPELL_AURA_SCHOOL_IMMUNITY:
-            case SPELL_AURA_DAMAGE_IMMUNITY:
-            case SPELL_AURA_SCHOOL_ABSORB:
-            case SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL:
-            case SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT:
-            case SPELL_AURA_MOD_POWER_COST_SCHOOL:
-            case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
-            case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
-            case SPELL_AURA_SPLIT_DAMAGE_PCT:
-            case SPELL_AURA_MOD_BASE_RESISTANCE:
-            case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
-            case SPELL_AURA_MOD_RESISTANCE_PCT:
-            case SPELL_AURA_MOD_RANGED_DAMAGE_TAKEN:
-            case SPELL_AURA_MOD_HEALING:
-            case SPELL_AURA_MOD_HEALING_PCT:
-            case SPELL_AURA_MOD_HEALING_DONE:
-            case SPELL_AURA_MOD_HEALING_DONE_PERCENT:
-            case SPELL_AURA_MOD_BASE_RESISTANCE_PCT:
-            case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
-            case SPELL_AURA_SPLIT_DAMAGE_FLAT:
-#endif
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_11_2
-            // School in this effect updated way later for some reason.
-            case SPELL_AURA_MANA_SHIELD:
-            {
-                if (spell->EffectMiscValue[i] == -2)
-                    spell->EffectMiscValue[i] = 127; // all schools
-                else if (spell->EffectMiscValue[i] == -1)
-                    spell->EffectMiscValue[i] = 126; // all magic schools
-                else
-                    spell->EffectMiscValue[i] = 1 << spell->EffectMiscValue[i];
-                break;
-            }
-#endif
-            }
-        }
-    }
-#endif
 
     // Before 1.10, the spell proc flags had completely different meanings.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    spell->procFlags = ReplaceOldSpellProcFlags(spell->procFlags);
-#endif
 }

@@ -473,41 +473,6 @@ Anticrash.Rearm.Timer = 60000
 ###################################################################################################################
 #
 # PROGRESSION CONFIG
-#    NOTE: Generally not applicable to database-set progression fields, except for the WowPatch which
-#          defines which data is loaded from the database.
-#
-#
-#    WowPatch
-#        The current patch the server targets for quest, NPC, dungeon and raid availability.
-#        1.2   = 0
-#        1.3   = 1
-#        1.4   = 2
-#        1.5   = 3
-#        1.6   = 4
-#        1.7   = 5
-#        1.8   = 6
-#        1.9   = 7
-#        1.10  = 8
-#        1.11  = 9
-#        1.12  = 10
-#
-#    PvP.AccurateEquipRequirements
-#        Whether to enforce Blizzlike PVP rank requirements to equip PVP gear before patch 1.6.
-#        Default: 1
-#
-#    PvP.AccuratePurchaseRequirements
-#        Whether to enforce Blizzlike PVP rank requirements to purchase PVP gear (i.e. lifetime or current rank).
-#        Default: 1 (require current rank)
-#
-#    PvP.AccurateTimeline
-#        Whether to enforce accurate PVP timelines. eg. the honour system was not implemented before patch 1.4.
-#        If set, players will be unable to gain rank until the appropriate patch.
-#        Default: 1
-#
-#    PvP.AccurateRewards
-#        Whether to alter PVP reputation and honorable kill rewards based on patch (changed several times).
-#        Default: 1
-#
 #    PvP.DishonorableKills
 #        Whether to give dishonorable kills to players who kill civilians.
 #        Default: 1
@@ -515,14 +480,6 @@ Anticrash.Rearm.Timer = 60000
 #    PvP.CityProtector
 #        Whether to assign City Protector titles on honor update or not.
 #        Default: 0
-#
-#    Progression.AccuratePetStatistics
-#        Whether to allow Blizzlike pet statistic (damage, speed, resists) progression.
-#        Default: 1
-#
-#    Progression.AccurateLFGAvailability
-#        If set, disables the LFG system pre-1.3
-#        Default: 1
 #
 #    Progression.AccuratePVEEvents
 #        Whether to apply progressional changes in PVE events (NOT boss scripts). These are events which
@@ -535,18 +492,6 @@ Anticrash.Rearm.Timer = 60000
 #        added to the game.
 #        Default: 1
 #
-#    Progression.NoRespecPriceDecay
-#        If set, the talent respec cost will not decay until patch 1.11 when the monthly reduction was added.
-#        Default: 1
-#
-#    Progression.NoQuestXpToGold
-#        If set, quest xp gained at max level will not be converted to gold until patch 1.10 when the feature was added.
-#        Default: 1
-#
-#    Progression.UnlinkedAuctionHouses
-#        If set, every auction house is separate until patch 1.9. Does not apply to goblin auction houses.
-#        Default: 1
-#
 #    DebuffLimit
 #        How many debuffs can be present on a target simultaneously
 #        Default: 0  - Decide automatically based on patch
@@ -554,22 +499,11 @@ Anticrash.Rearm.Timer = 60000
 #
 ###################################################################################################################
 
-WowPatch = 10
-
-PvP.AccurateEquipRequirements = 1
-PvP.AccuratePurchaseRequirements = 1
-PvP.AccurateTimeline = 1
-PvP.AccurateRewards = 1
 PvP.DishonorableKills = 1
 PvP.CityProtector = 0
 
 Progression.RestoreDeletedItems = 1
-Progression.AccuratePetStatistics = 1
-Progression.AccurateLFGAvailability = 1
 Progression.AccuratePVEEvents = 1
-Progression.NoRespecPriceDecay = 1
-Progression.NoQuestXpToGold = 1
-Progression.UnlinkedAuctionHouses = 1
 DebuffLimit = 0
 
 ###################################################################################################################

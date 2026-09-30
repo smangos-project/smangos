@@ -156,11 +156,7 @@ class Creature : public Unit
         // World of Warcraft Client Patch 1.10.0 (2006-03-28)
         // - Area effect spells and abilities will no longer consider totems as
         //   valid targets.
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
         bool IsImmuneToAoe() const { return IsTotem() || HasImmunityFlag(CREATURE_IMMUNITY_AOE); }
-#else
-        bool IsImmuneToAoe() const { return HasImmunityFlag(CREATURE_IMMUNITY_AOE); }
-#endif
 
         bool CanWalk() const override { return GetCreatureInfo()->inhabit_type & INHABIT_GROUND; }
         bool CanSwim() const override { return IsPet() || GetCreatureInfo()->inhabit_type & INHABIT_WATER; }

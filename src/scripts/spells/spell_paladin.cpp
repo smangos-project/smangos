@@ -186,15 +186,10 @@ struct PaladinReckoningScript : SpellScript
             // - Fixed a bug where abilities that give extra attacks, like the paladin
             //   Reckoning talent, could cause the following swing to take longer than
             //   it should.
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_2_4
-            spell->GetUnitTarget()->ResetAttackTimer();
-#endif
 
             // It was possible to stack infinite extra attacks in early vanilla.
             // https://www.youtube.com/watch?v=TqPQ4SNmx2c
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_4_2
             if (spell->GetUnitTarget()->GetExtraAttacks() < 4)
-#endif
                 spell->GetUnitTarget()->AddExtraAttack();
 
             return false;

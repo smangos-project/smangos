@@ -23,7 +23,6 @@ struct RogueEviscerateScript : SpellScript
     {
         if (effIdx == EFFECT_INDEX_0 && spell->GetUnitTarget())
         {
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             // World of Warcraft Client Patch 1.12.0 (2006-08-22)
             // - Eviscerate: Manual of Eviscerate (Rank 9) now drops off Blackhand
             //   Assassins in Black Rock Spire.In addition, Eviscerate now increases
@@ -34,7 +33,6 @@ struct RogueEviscerateScript : SpellScript
                     if (uint32 combo = pPlayer->GetComboPoints())
                         spell->damage += pPlayer->GetTotalAttackPowerValue(BASE_ATTACK) * combo * 0.03f;
             }
-#endif
         }
         return true;
     }
@@ -58,9 +56,7 @@ struct RogueVanishScript : SpellScript
             // World of Warcraft Client Patch 1.12.0 (2006-08-22)
             // -  Vanish now removes effects that allow the caster to always remain
             //    aware of their target(currently Hunter's Mark and Mind Vision).
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_11_2
             spell->GetUnitTarget()->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
-#endif
 
             if (Player* pPlayer = spell->GetUnitTarget()->ToPlayer())
                 pPlayer->CastHighestStealthRank();

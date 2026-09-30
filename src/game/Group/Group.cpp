@@ -587,11 +587,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 removeMethod)
                 {
                     auto packet = std::make_unique<WorldPackets::Misc::MeetingstoneSetQueue>();
                     packet->areaId = 0;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-                    packet->idempotencyToken = 0;
-#else
                     packet->status = MEETINGSTONE_STATUS_PARTY_MEMBER_REMOVED_PARTY_REMOVED;
-#endif
                     BroadcastPacket(std::move(packet), true);
 
                     leftGroup = true;
@@ -615,11 +611,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 removeMethod)
                 {
                     auto packet = std::make_unique<WorldPackets::Misc::MeetingstoneSetQueue>();
                     packet->areaId = m_LFGAreaId;
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_4_2
-                    packet->idempotencyToken = 0;
-#else
                     packet->status = MEETINGSTONE_STATUS_PARTY_MEMBER_LEFT_LFG;
-#endif
                     BroadcastPacket(std::move(packet), true);
                 }
             }
@@ -2416,7 +2408,7 @@ static void RewardGroupAtKill_helper(Player* pGroupGuy, Unit* pVictim, uint32 co
         // World of Warcraft Client Patch 1.10.0 (2006-03-28)
         // - Frostwolf and Stormpike faction will now be gained by killing
         //   players of the opposite faction.
-        if (pGroupGuy->GetBattleGround() && (pGroupGuy->GetBattleGround()->GetTypeID() == BATTLEGROUND_AV) && (sWorld.GetWowPatch() >= WOW_PATCH_110))
+        if (pGroupGuy->GetBattleGround() && (pGroupGuy->GetBattleGround()->GetTypeID() == BATTLEGROUND_AV))
         {
             if (Player* pPlayerVictim = ToPlayer(pVictim))
             {

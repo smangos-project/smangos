@@ -538,20 +538,11 @@ enum eConfigBoolValues
     CONFIG_BOOL_ENABLE_MOVEMENT_EXTRAPOLATION_PET,
     CONFIG_BOOL_WHISPER_RESTRICTION,
     CONFIG_BOOL_MAILSPAM_ITEM,
-    CONFIG_BOOL_ACCURATE_PVP_EQUIP_REQUIREMENTS,
-    CONFIG_BOOL_ACCURATE_PVP_PURCHASE_REQUIREMENTS,
-    CONFIG_BOOL_ACCURATE_PVP_TIMELINE,
-    CONFIG_BOOL_ACCURATE_PVP_REWARDS,
     CONFIG_BOOL_BATTLEGROUND_RANDOMIZE,
     CONFIG_BOOL_SEND_LOOT_ROLL_UPON_RECONNECT,
-    CONFIG_BOOL_ACCURATE_PETS,
     CONFIG_BOOL_ACCURATE_PVE_EVENTS,
-    CONFIG_BOOL_ACCURATE_LFG,
-    CONFIG_BOOL_NO_RESPEC_PRICE_DECAY,
-    CONFIG_BOOL_NO_QUEST_XP_TO_GOLD,
     CONFIG_BOOL_AUTO_HONOR_RESTART,
     CONFIG_BOOL_RESTORE_DELETED_ITEMS,
-    CONFIG_BOOL_UNLINKED_AUCTION_HOUSES,
     CONFIG_BOOL_PREVENT_ITEM_DATAMINING,
     CONFIG_BOOL_AC_MOVEMENT_ENABLED,
     CONFIG_BOOL_AC_MOVEMENT_PLAYERS_ONLY,
@@ -705,7 +696,6 @@ class World
         char const* GetMotd() const { return m_motd.c_str(); }
 
         // Get current server's WoW Patch
-        uint8 GetWowPatch() const { return m_wowPatch; }
         char const* GetPatchName() const;
 
         LocaleConstant GetDefaultDbcLocale() const { return m_defaultDbcLocale; }
@@ -943,7 +933,6 @@ class World
         bool m_configBoolValues[CONFIG_BOOL_VALUE_COUNT];
 
         int32 m_playerLimit;
-        uint8 m_wowPatch;
 
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
         uint32 m_availableDbcLocaleMask = 0;                       // by loaded DBC

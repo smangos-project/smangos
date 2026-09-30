@@ -8,8 +8,7 @@
 class DoltLiteDatabase;
 
 // The vanilla version every versioned server table collapses to (stuff-plan.md section 6):
-// build 5875, patch 10. The server itself picks the same values (SUPPORTED_CLIENT_BUILD and the
-// configured WowPatch), so both are parameters rather than literals baked into the SQL.
+// build 5875, patch 10. The server itself picks the same values, so both are parameters rather than literals baked into the SQL.
 struct CollapseTarget
 {
     uint32_t build = 5875;

@@ -212,9 +212,6 @@ public:
             data << uint32(raceId);                             // player race
             data << uint32(pzoneId);                            // player zone id
 
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_8_4
-            data << uint32(pPlayer->GetWhoListPartyStatus());   // not actually displayed anywhere
-#endif
             // 50 is maximum player count sent to client
             if ((++clientCount) == 49)
                 break;
@@ -740,19 +737,6 @@ void WorldSession::HandleAreaTriggerOpcode(AreaTrigger const& packet)
         if (Corpse* corpse = pPlayer->GetCorpse())
             corpseMapId = corpse->GetMapId();
 
-        // Special case prior Patch 1.3 to revive your corpse if dead in Molten Core
-        if (sWorld.GetWowPatch() <= WOW_PATCH_102)
-        {
-            if (corpseMapId == MAP_MOLTEN_CORE && packet.TriggerId == 1466)
-            {
-                pPlayer->ResurrectPlayer(0.5f);
-                pPlayer->SpawnCorpseBones();
-                pPlayer->TeleportTo(MAP_BLACKROCK_DEPTHS, 458.32f, 26.52f, -70.67f, 4.95f); // Blackrock Depths
-                // pPlayer->TeleportTo(MAP_MOLTEN_CORE, 1082.04f, -474.596f, -107.762f, 5.02623f); // Molten Core
-                return;
-            }
-        }
-
         // check back way from corpse to entrance
         uint32 instanceMap = corpseMapId;
         do
@@ -785,7 +769,7 @@ void WorldSession::HandleAreaTriggerOpcode(AreaTrigger const& packet)
         // - Added minimum level requirements to all instances to prevent
         //   exploitive behavior.The minimum levels are very generous and should
         //   not affect the normal course of gameplay.
-        bool const bLevelCheck = pPlayer->GetLevel() < pTeleTrigger->requiredLevel && !sWorld.getConfig(CONFIG_BOOL_INSTANCE_IGNORE_LEVEL) && sWorld.GetWowPatch() >= WOW_PATCH_104;
+        bool const bLevelCheck = pPlayer->GetLevel() < pTeleTrigger->requiredLevel && !sWorld.getConfig(CONFIG_BOOL_INSTANCE_IGNORE_LEVEL);
         bool const bConditionCheck = pTeleTrigger->requiredCondition && !IsConditionSatisfied(pTeleTrigger->requiredCondition, pPlayer, pPlayer->GetMap(), pPlayer, CONDITION_FROM_AREATRIGGER);
 
         if (bLevelCheck || bConditionCheck)

@@ -112,9 +112,6 @@ MailReceiver::MailReceiver(Player* receiver, ObjectGuid receiver_guid) : m_recei
 */
 MailDraft::MailDraft(uint16 mailTemplateId, bool need_items, LocaleConstant locale_idx) : m_mailTemplateId(mailTemplateId), m_mailTemplateItemsNeed(need_items), m_bodyId(0), m_money(0), m_COD(0)
 {
-#if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_9_4
-    m_bodyId = sObjectMgr.CreateItemText(sObjectMgr.GetMailTextTemplate(mailTemplateId, locale_idx));
-#endif
 }
 
 /**

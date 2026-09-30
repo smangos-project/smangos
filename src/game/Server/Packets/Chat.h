@@ -26,7 +26,6 @@ namespace WorldPackets { namespace Chat
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
 
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     class ChatRestricted final : public ServerPacket
     {
     public:
@@ -34,7 +33,6 @@ namespace WorldPackets { namespace Chat
         size_t EstimateFinalSize() const override;
         void AppendBodyTo(ByteBuffer& buffer) const override;
     };
-#endif
 
     class ChatPlayerNotFound final : public ServerPacket
     {

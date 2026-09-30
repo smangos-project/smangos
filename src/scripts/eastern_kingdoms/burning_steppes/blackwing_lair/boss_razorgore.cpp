@@ -282,7 +282,7 @@ struct boss_razorgoreAI : public ScriptedAI
         // World of Warcraft Client Patch 1.8.0 (2005-10-11)
         // - Razorgore now has the ability to summon players to him if he cannot 
         //   reach them for a time.
-        if ((sWorld.GetWowPatch() >= WOW_PATCH_108) && m_creature->CantPathToVictim())
+        if (m_creature->CantPathToVictim())
         {
             if (m_uiOutOfReachTimer < uiDiff)
             {

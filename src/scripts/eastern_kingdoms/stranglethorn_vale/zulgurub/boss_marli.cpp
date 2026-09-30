@@ -111,15 +111,12 @@ struct boss_marliAI : public ScriptedAI
         // World of Warcraft Client Patch 1.8.0 (2005-10-11)
         // - High Priestess Mar'li will now despawn her summoned spiders when 
         //   she returns from combat.
-        if (sWorld.GetWowPatch() >= WOW_PATCH_108)
+        std::list<Creature*> lSummonedSpiders;
+        GetCreatureListWithEntryInGrid(lSummonedSpiders, m_creature, NPC_SPAWN_OF_MARLI, DEFAULT_VISIBILITY_INSTANCE);
+        for (const auto& pSpider : lSummonedSpiders)
         {
-            std::list<Creature*> lSummonedSpiders;
-            GetCreatureListWithEntryInGrid(lSummonedSpiders, m_creature, NPC_SPAWN_OF_MARLI, DEFAULT_VISIBILITY_INSTANCE);
-            for (const auto& pSpider : lSummonedSpiders)
-            {
-                if (pSpider->IsTemporarySummon())
-                    static_cast<TemporarySummon*>(pSpider)->UnSummon();
-            }
+            if (pSpider->IsTemporarySummon())
+                static_cast<TemporarySummon*>(pSpider)->UnSummon();
         }
 
         // Annule les changements de buffs de transition de phases.

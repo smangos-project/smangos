@@ -214,18 +214,9 @@ GuardMgr::GuardMgr() : m_uiRechargeTimer(GUARD_POST_RECHARGE_TIME)
     m_mAreaGuardInfo.insert({ AREA_GADGETZAN,          AreaGuardInfo(NPC_GADGETZAN_BRUISER,       NPC_GADGETZAN_BRUISER) });
     m_mAreaGuardInfo.insert({ AREA_RATCHET,            AreaGuardInfo(NPC_RATCHET_BRUISER,         NPC_RATCHET_BRUISER) });
 
-    if (sWorld.GetWowPatch() >= WOW_PATCH_107)
-    {
-        m_mAreaGuardInfo.insert({ AREA_SEPULCHER, AreaGuardInfo(NPC_NONE, NPC_SILVERPINE_ELITE) });
-        m_mAreaGuardInfo.insert({ AREA_MENETHIL,  AreaGuardInfo(NPC_MENETHIL_ELITE, NPC_NONE) });
-        m_mAreaGuardInfo.insert({ AREA_HAMERFALL, AreaGuardInfo(NPC_NONE, NPC_HAMERFALL_ELITE) });
-    }
-    else
-    {
-        m_mAreaGuardInfo.insert({ AREA_SEPULCHER, AreaGuardInfo(NPC_NONE, NPC_SILVERPINE_DEATHGUARD) });
-        m_mAreaGuardInfo.insert({ AREA_MENETHIL,  AreaGuardInfo(NPC_MENETHIL_GUARD, NPC_NONE) });
-        m_mAreaGuardInfo.insert({ AREA_HAMERFALL, AreaGuardInfo(NPC_NONE, NPC_HAMERFALL_GUARDIAN) });
-    }
+    m_mAreaGuardInfo.insert({ AREA_SEPULCHER, AreaGuardInfo(NPC_NONE, NPC_SILVERPINE_ELITE) });
+    m_mAreaGuardInfo.insert({ AREA_MENETHIL,  AreaGuardInfo(NPC_MENETHIL_ELITE, NPC_NONE) });
+    m_mAreaGuardInfo.insert({ AREA_HAMERFALL, AreaGuardInfo(NPC_NONE, NPC_HAMERFALL_ELITE) });
 }
 
 void GuardMgr::Update(uint32 diff)

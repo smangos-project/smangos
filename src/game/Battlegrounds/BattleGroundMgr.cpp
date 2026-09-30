@@ -1197,7 +1197,6 @@ static void FillPvpMatchPlayerStats(BattleGround const* bg, ObjectGuid playerGui
             entry.Stats.push_back(int32(wsScore->flagReturns));  // PVP_STAT_FLAG_RETURNS = 929
             break;
         }
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         case BATTLEGROUND_AB:
         {
             auto abScore = static_cast<BattleGroundABScore const*>(score);
@@ -1205,7 +1204,6 @@ static void FillPvpMatchPlayerStats(BattleGround const* bg, ObjectGuid playerGui
             entry.Stats.push_back(int32(abScore->basesDefended));  // PVP_STAT_BASES_DEFENDED = 927
             break;
         }
-#endif
         default:
             sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "Unhandled SMSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
             break;
@@ -1380,11 +1378,9 @@ BattleGround* BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeId
         case BATTLEGROUND_WS:
             bg = new BattleGroundWS(*(BattleGroundWS*)bgTemplate);
             break;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         case BATTLEGROUND_AB:
             bg = new BattleGroundAB(*(BattleGroundAB*)bgTemplate);
             break;
-#endif
         default:
             //error, but it is handled few lines above
             return 0;
@@ -1415,11 +1411,9 @@ uint32 BattleGroundMgr::CreateBattleGround(BattleGroundTypeId bgTypeId, uint32 m
         case BATTLEGROUND_WS:
             bg = new BattleGroundWS;
             break;
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
         case BATTLEGROUND_AB:
             bg = new BattleGroundAB;
             break;
-#endif
         default:
             bg = new BattleGround;
             break;                           // placeholder for non implemented BG
