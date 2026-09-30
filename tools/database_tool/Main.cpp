@@ -511,7 +511,7 @@ namespace
         return 0;
     }
 
-    // spec query "<select>"
+    // spec query "<select>" [--world]
     int RunSpecQuery(std::vector<std::string> const& args)
     {
         if (args.empty())
@@ -520,6 +520,7 @@ namespace
             return 1;
         }
 
+        bool const useWorld = args.size() > 1 && args[1] == "--world";
         std::string const& sql = args[0];
         size_t first = sql.find_first_not_of(" \t\n");
         if (first == std::string::npos || (sql.compare(first, 6, "SELECT") != 0 && sql.compare(first, 6, "select") != 0 &&
@@ -531,7 +532,7 @@ namespace
 
         try
         {
-            DoltLiteDatabase db((SourceRoot() / ".world" / "reference.doltlite").string());
+            DoltLiteDatabase db((SourceRoot() / ".world" / (useWorld ? "world.doltlite" : "reference.doltlite")).string());
             DoltLiteStatement stmt = db.Prepare(sql);
             int const count = stmt.ColumnCount();
             while (stmt.Step())
