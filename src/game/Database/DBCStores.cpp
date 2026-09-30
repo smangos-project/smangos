@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 32;
+    uint32 const DBCFilesCount = 30;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -293,7 +293,35 @@ void LoadDBCStores(std::string const& dataPath)
             e.enchant_id[i] = f[2 + i].GetUInt32();
         return e.ID;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sItemSetStore,             dbcPath, "ItemSet.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sItemSetStore, "dbc_itemset", "`ID`, `Name_lang`, `RequiredSkill`, `RequiredSkillRank`", [&](Field* f, ItemSetEntry& e)
+    {
+        FillLocalizedString(sItemSetStore, const_cast<char const**>(e.name), f[1].GetCppString());
+        e.required_skill_id = f[2].GetUInt32();
+        e.required_skill_value = f[3].GetUInt32();
+        return f[0].GetUInt32();
+    });
+
+    // The bonuses live in dbc_itemsetspell, one row each; eight fit a set.
+    if (std::unique_ptr<QueryResult> result{ WorldDatabase.Query("SELECT `ItemSetID`, `SpellID`, `Threshold` FROM `dbc_itemsetspell` ORDER BY `ID`") })
+    {
+        do
+        {
+            Field* f = result->Fetch();
+            if (ItemSetEntry* set = const_cast<ItemSetEntry*>(sItemSetStore.LookupEntry(f[0].GetUInt32())))
+            {
+                for (uint32 i = 0; i < 8; ++i)
+                {
+                    if (!set->spells[i])
+                    {
+                        set->spells[i] = f[1].GetUInt32();
+                        set->items_to_triggerspell[i] = f[2].GetUInt32();
+                        break;
+                    }
+                }
+            }
+        }
+        while (result->NextRow());
+    }
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sLockStore,                dbcPath, "Lock.dbc");
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sNamesProfanityStore,      dbcPath, "NamesProfanity.dbc");
@@ -493,7 +521,15 @@ void LoadDBCStores(std::string const& dataPath)
         }
     }
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sTransportAnimationStore, dbcPath, "TransportAnimation.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sTransportAnimationStore, "dbc_transportanimation", "`ID`, `TransportID`, `TimeIndex`, `Pos1`, `Pos2`, `Pos3`", [&](Field* f, TransportAnimationEntry& e)
+    {
+        e.TransportEntry = f[1].GetUInt32();
+        e.TimeSeg = f[2].GetUInt32();
+        e.X = f[3].GetFloat();
+        e.Y = f[4].GetFloat();
+        e.Z = f[5].GetFloat();
+        return f[0].GetUInt32();
+    });
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sWMOAreaTableStore,        dbcPath, "WMOAreaTable.dbc");
     for (uint32 i = 0; i < sWMOAreaTableStore.GetNumRows(); ++i)
