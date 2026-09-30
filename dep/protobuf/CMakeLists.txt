@@ -33,8 +33,9 @@ set(PROTOBUF_SRC_DIR ${PROTOBUF_SRC} CACHE INTERNAL "")
 
 # Equivalent of what protobuf-2.6.1's `configure` generates into config.h on Linux/gcc;
 # only common.cc includes it (for the HAVE_ZLIB / hash-map-type checks), so this is written
-# by hand rather than run through autoconf.
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config.h [[
+# by hand rather than run through autoconf. Only rewritten when it changes, so a reconfigure
+# does not rebuild the vendored protobuf and regenerate every .pb.cc.
+set(PROTOBUF_CONFIG_H [[
 #define HASH_MAP_CLASS unordered_map
 #define HASH_MAP_H <unordered_map>
 #define HASH_NAMESPACE std
@@ -47,6 +48,14 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config.h [[
 #define PACKAGE_VERSION "2.6.1"
 #define VERSION "2.6.1"
 ]])
+set(PROTOBUF_CONFIG_H_PATH ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+set(PROTOBUF_CONFIG_H_OLD "")
+if(EXISTS ${PROTOBUF_CONFIG_H_PATH})
+  file(READ ${PROTOBUF_CONFIG_H_PATH} PROTOBUF_CONFIG_H_OLD)
+endif()
+if(NOT PROTOBUF_CONFIG_H_OLD STREQUAL PROTOBUF_CONFIG_H)
+  file(WRITE ${PROTOBUF_CONFIG_H_PATH} "${PROTOBUF_CONFIG_H}")
+endif()
 
 set(LIBPROTOBUF_LITE_SRCS
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc
