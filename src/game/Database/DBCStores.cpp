@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 34;
+    uint32 const DBCFilesCount = 32;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -233,7 +233,13 @@ void LoadDBCStores(std::string const& dataPath)
         return e.ID;
     });
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sChatChannelsStore,        dbcPath, "ChatChannels.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sChatChannelsStore, "dbc_chatchannels", "`ID`, `Flags`, `Name_lang`", [&](Field* f, ChatChannelsEntry& e)
+    {
+        e.ChannelID = f[0].GetUInt32();
+        e.flags = f[1].GetUInt32();
+        FillLocalizedString(sChatChannelsStore, const_cast<char const**>(e.pattern), f[2].GetCppString());
+        return e.ChannelID;
+    });
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrClassesStore,          dbcPath, "ChrClasses.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrRacesStore,            dbcPath, "ChrRaces.dbc");
@@ -411,7 +417,13 @@ void LoadDBCStores(std::string const& dataPath)
                 sTalentSpellPosMap[talentInfo->RankID[j]] = TalentSpellPos(i, j);
     }
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sTalentTabStore,           dbcPath, "TalentTab.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sTalentTabStore, "dbc_talenttab", "`ID`, `ClassMask`, `OrderIndex`", [&](Field* f, TalentTabEntry& e)
+    {
+        e.TalentTabID = f[0].GetUInt32();
+        e.ClassMask = f[1].GetUInt32();
+        e.tabpage = f[2].GetUInt32();
+        return e.TalentTabID;
+    });
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sTaxiPathStore,            dbcPath, "TaxiPath.dbc");
     for (uint32 i = 1; i < sTaxiPathStore.GetNumRows(); ++i)
