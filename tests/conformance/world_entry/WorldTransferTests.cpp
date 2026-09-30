@@ -36,30 +36,31 @@ TEST_CASE("world transfer: a far teleport lands the bot on the destination map",
         SayCommand(gm, ".go xyz 1633.75 -4373.39 31.0 1");
 
         auto pending = co_await gm.Packet<TransferPending>(10000);
-        REQUIRE(pending);
-        CHECK(pending->MapId == 1);
-
         auto newWorld = co_await gm.Packet<NewWorld>(20000);
-        REQUIRE(newWorld);
-        CHECK(newWorld->MapId == 1);
-        CHECK(newWorld->X == Catch::Approx(1633.75f).margin(1.0f));
-
-        REQUIRE(co_await TestWaitUntil([&]()
+        bool const arrived = co_await TestWaitUntil([&]()
         {
             std::optional<BotKnownObject> const seen = gm.GetKnownObject(guid);
             return seen && std::fabs(seen->X - 1633.75f) < 5.0f;
-        }, 20000));
+        }, 20000);
 
-        // Back to the starting map and position, so the account is where the next scenario
-        // to use it expects to find it.
+        // Back to the starting map and position before anything is asserted, so a failure here
+        // does not leave the account where the next scenario to use it does not expect it.
         SayCommand(gm, ".go xyz " + std::to_string(start.X) + " " + std::to_string(start.Y) + " " +
                        std::to_string(start.Z) + " 0");
-        REQUIRE(co_await gm.Packet<NewWorld>(20000));
-        REQUIRE(co_await TestWaitUntil([&]()
-        {
-            std::optional<BotKnownObject> const seen = gm.GetKnownObject(guid);
-            return seen && std::fabs(seen->X - start.X) < 5.0f && std::fabs(seen->Y - start.Y) < 5.0f;
-        }, 20000));
+        bool const returned = static_cast<bool>(co_await gm.Packet<NewWorld>(20000)) &&
+            co_await TestWaitUntil([&]()
+            {
+                std::optional<BotKnownObject> const seen = gm.GetKnownObject(guid);
+                return seen && std::fabs(seen->X - start.X) < 5.0f && std::fabs(seen->Y - start.Y) < 5.0f;
+            }, 20000);
+
+        REQUIRE(pending);
+        CHECK(pending->MapId == 1);
+        REQUIRE(newWorld);
+        CHECK(newWorld->MapId == 1);
+        CHECK(newWorld->X == Catch::Approx(1633.75f).margin(1.0f));
+        REQUIRE(arrived);
+        REQUIRE(returned);
     });
 }
 
@@ -84,23 +85,27 @@ TEST_CASE("world transfer: a bystander already on the destination map sees the a
 
         // The bystander (the GM) arrives at the destination map first.
         SayCommand(gm, ".go xyz 1633.75 -4373.39 31.0 1");
-        REQUIRE(co_await gm.Packet<NewWorld>(20000));
+        bool const gmArrived = static_cast<bool>(co_await gm.Packet<NewWorld>(20000));
 
         // Summons the traveler to the bystander's new location: a far teleport from the
         // traveler's point of view, landing right where the bystander already stands.
         SayCommand(gm, ".namego " + travelerName);
 
-        REQUIRE(co_await TestWaitUntil([&]()
+        bool const seenArriving = co_await TestWaitUntil([&]()
         {
             std::optional<BotKnownObject> const seen = gm.GetKnownObject(travelerGuid);
             return seen && std::fabs(seen->X - 1633.75f) < 5.0f;
-        }, 20000));
+        }, 20000);
 
-        // Both back where they started, so the accounts are where the next scenario expects to
-        // find them.
+        // Both back where they started before anything is asserted, so a failure does not leave
+        // the accounts where the next scenario does not expect them.
         SayCommand(gm, ".recall " + travelerName);
         SayCommand(gm, ".go xyz " + std::to_string(gmStart.X) + " " + std::to_string(gmStart.Y) + " " +
                        std::to_string(gmStart.Z) + " 0");
-        REQUIRE(co_await gm.Packet<NewWorld>(20000));
+        bool const gmReturned = static_cast<bool>(co_await gm.Packet<NewWorld>(20000));
+
+        REQUIRE(gmArrived);
+        REQUIRE(seenArriving);
+        REQUIRE(gmReturned);
     });
 }

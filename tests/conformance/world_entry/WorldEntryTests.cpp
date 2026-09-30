@@ -214,10 +214,10 @@ TEST_CASE("world_entry: a bot sees a nearby game object, its stationary position
         go.Language = 7; // LANG_COMMON
         go.Message = ".go xyz 1633.75 -4373.39 31.0 1";
         gm.Send(go);
-        REQUIRE(co_await gm.Packet<NewWorld>(20000));
+        bool const arrived = static_cast<bool>(co_await gm.Packet<NewWorld>(20000));
 
         bool sawStationaryPosition = false;
-        REQUIRE(co_await TestWaitUntil([&]()
+        bool const sawObject = arrived && co_await TestWaitUntil([&]()
         {
             for (BotKnownObject const& object : gm.GetKnownObjects())
             {
@@ -230,17 +230,21 @@ TEST_CASE("world_entry: a bot sees a nearby game object, its stationary position
                 }
             }
             return false;
-        }, 20000));
-        CHECK(sawStationaryPosition);
+        }, 20000);
 
-        // Back to the starting map and position, so the account is where the next scenario to use
-        // it expects to find it.
+        // Back to the starting map and position before anything is asserted, so a failure does not
+        // leave the account where the next scenario does not expect it.
         ChatMessageSay back;
         back.Language = 7;
         back.Message = ".go xyz " + std::to_string(start.X) + " " + std::to_string(start.Y) + " " +
                        std::to_string(start.Z) + " 0";
         gm.Send(back);
-        REQUIRE(co_await gm.Packet<NewWorld>(20000));
+        bool const returned = static_cast<bool>(co_await gm.Packet<NewWorld>(20000));
+
+        REQUIRE(arrived);
+        REQUIRE(sawObject);
+        CHECK(sawStationaryPosition);
+        REQUIRE(returned);
     });
 }
 
