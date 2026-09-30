@@ -681,6 +681,24 @@ void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*pa
     SendClassic(response);
 }
 
+void WorldSession::HandleGetUndeleteCharacterCooldownStatusOpcode(GetUndeleteCharacterCooldownStatus const& /*packet*/)
+{
+    // Restoring deleted characters is not offered, so there is never a cooldown to report.
+    SendClassic(UndeleteCooldownStatusResponse{});
+}
+
+void WorldSession::HandleSocialContractRequestOpcode(SocialContractRequest const& /*packet*/)
+{
+    SendClassic(SocialContractRequestResponse{});
+}
+
+void WorldSession::HandleServerTimeOffsetRequestOpcode(ServerTimeOffsetRequest const& /*packet*/)
+{
+    ServerTimeOffset response;
+    response.Time = int64(time(nullptr));
+    SendClassic(response);
+}
+
 void WorldSession::HandleCharCreateOpcode(CharCreate const& packet)
 {
     auto sendResponse = [this](uint8 result, ClassicGuid const& guid = ClassicGuid{})

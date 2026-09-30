@@ -577,6 +577,9 @@ class WorldSession
         void HandleClassicConnectToFailedOpcode(ConnectToFailed const& packet);
         void HandleClassicLogoutRequestOpcode(ClassicLogoutRequest const& packet);
         void HandleClassicTimeSyncResponseOpcode(TimeSyncResponse const& packet);
+        void HandleGetUndeleteCharacterCooldownStatusOpcode(GetUndeleteCharacterCooldownStatus const& packet);
+        void HandleSocialContractRequestOpcode(SocialContractRequest const& packet);
+        void HandleServerTimeOffsetRequestOpcode(ServerTimeOffsetRequest const& packet);
         void HandlePlayedTime(RequestPlayedTime const& packet);
 
         // Movement

@@ -956,6 +956,13 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_TIME_SYNC_RESPONSE_FAILED,   UnhandleReason::Unhandled);
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_DISCARDED_TIME_SYNC_ACKS,    UnhandleReason::Unhandled);
     CLASSIC_INVALID_PACKET(CLASSIC_CMSG_TIME_ADJUSTMENT_RESPONSE,    UnhandleReason::Unhandled);
+    // The Battle.net shop and value-added-service requests the character screen sends: there is no
+    // shop here, and the client does not wait for an answer. CMSG_BATTLENET_REQUEST is only used to
+    // change realm from the character screen.
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_BATTLE_PAY_GET_PRODUCT_LIST,  UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_BATTLE_PAY_GET_PURCHASE_LIST, UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_UPDATE_VAS_PURCHASE_STATES,   UnhandleReason::Unhandled);
+    CLASSIC_INVALID_PACKET(CLASSIC_CMSG_BATTLENET_REQUEST,            UnhandleReason::Unhandled);
 
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ENUM_CHARACTERS,     STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicCharEnumOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CREATE_CHARACTER,    STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleCharCreateOpcode);
@@ -964,6 +971,9 @@ std::unordered_map<uint32, OpcodeHandler> BuildClassicOpcodeList()
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_CONNECT_TO_FAILED,   STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicConnectToFailedOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_LOGOUT_REQUEST,      STATUS_LOGGEDIN, PACKET_PROCESS_WORLD, &WorldSession::HandleClassicLogoutRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_TIME_SYNC_RESPONSE,  STATUS_AUTHED,   PACKET_PROCESS_WORLD, &WorldSession::HandleClassicTimeSyncResponseOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS, STATUS_AUTHED, PACKET_PROCESS_WORLD, &WorldSession::HandleGetUndeleteCharacterCooldownStatusOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SOCIAL_CONTRACT_REQUEST,                STATUS_AUTHED, PACKET_PROCESS_WORLD, &WorldSession::HandleSocialContractRequestOpcode);
+    DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SERVER_TIME_OFFSET_REQUEST,             STATUS_AUTHED, PACKET_PROCESS_WORLD, &WorldSession::HandleServerTimeOffsetRequestOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SEND_CONTACT_LIST,   STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleFriendListOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_SET_CONTACT_NOTES,   STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleSetContactNotesOpcode);
     DEFINE_CLASSIC_HANDLER(CLASSIC_CMSG_ADD_FRIEND,          STATUS_LOGGEDIN, PACKET_PROCESS_MAP,   &WorldSession::HandleAddFriendOpcode);

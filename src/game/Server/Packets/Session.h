@@ -159,4 +159,97 @@ struct LogoutComplete
     void Write(ByteBuffer&) const {}
 };
 
+// Empty body; asked for by the character screen.
+struct GetUndeleteCharacterCooldownStatus
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS;
+
+    bool Read(ByteBuffer&) { return true; }
+    void Write(ByteBuffer&) const {}
+};
+
+struct UndeleteCooldownStatusResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_UNDELETE_COOLDOWN_STATUS_RESPONSE;
+
+    bool OnCooldown = false;
+    uint32 MaxCooldown = 0;
+    uint32 CurrentCooldown = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(OnCooldown);
+        data.FlushBits();
+        data << MaxCooldown;
+        data << CurrentCooldown;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1 + sizeof(uint32) * 2)
+            return false;
+        OnCooldown = data.ReadBit();
+        data.ResetBitPos();
+        data >> MaxCooldown >> CurrentCooldown;
+        return true;
+    }
+};
+
+// Empty body.
+struct SocialContractRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SOCIAL_CONTRACT_REQUEST;
+
+    bool Read(ByteBuffer&) { return true; }
+    void Write(ByteBuffer&) const {}
+};
+
+struct SocialContractRequestResponse
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SOCIAL_CONTRACT_REQUEST_RESPONSE;
+
+    bool ShowSocialContract = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        data.WriteBit(ShowSocialContract);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < 1)
+            return false;
+        ShowSocialContract = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// Empty body.
+struct ServerTimeOffsetRequest
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_SERVER_TIME_OFFSET_REQUEST;
+
+    bool Read(ByteBuffer&) { return true; }
+    void Write(ByteBuffer&) const {}
+};
+
+struct ServerTimeOffset
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_SERVER_TIME_OFFSET;
+
+    int64 Time = 0; // unix time
+
+    void Write(ByteBuffer& data) const { data << Time; }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int64))
+            return false;
+        data >> Time;
+        return true;
+    }
+};
+
 #endif
