@@ -196,11 +196,20 @@ static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStora
         errlist.push_back(table);
 }
 
+// The world database holds the enUS text only; other locales stay empty.
+template<class T>
+static void FillLocalizedString(DBCStorage<T>& storage, char const** out, std::string const& enUS)
+{
+    out[0] = storage.InternString(enUS);
+    for (uint32 i = 1; i < 8; ++i)
+        out[i] = "";
+}
+
 void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 38;
+    uint32 const DBCFilesCount = 34;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -244,8 +253,21 @@ void LoadDBCStores(std::string const& dataPath)
     });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityCostsStore,     dbcPath, "DurabilityCosts.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityQualityStore,   dbcPath, "DurabilityQuality.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sEmotesStore,              dbcPath, "Emotes.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sEmotesTextStore,          dbcPath, "EmotesText.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sEmotesStore, "dbc_emotes", "`ID`, `EmoteSlashCommand`, `EmoteFlags`, `EmoteSpecProc`, `EmoteSpecProcParam`", [&](Field* f, EmotesEntry& e)
+    {
+        e.Id = f[0].GetUInt32();
+        e.Name = const_cast<char*>(sEmotesStore.InternString(f[1].GetCppString()));
+        e.Flags = f[2].GetUInt32();
+        e.EmoteType = f[3].GetUInt32();
+        e.UnitStandState = f[4].GetUInt32();
+        return e.Id;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sEmotesTextStore, "dbc_emotestext", "`ID`, `EmoteID`", [&](Field* f, EmotesTextEntry& e)
+    {
+        e.Id = f[0].GetUInt32();
+        e.textid = f[1].GetUInt32();
+        return e.Id;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sGameObjectDisplayInfoStore, dbcPath, "GameObjectDisplayInfo.dbc");
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
     LoadDBCFromWorld(bar, badDbcFiles, sItemBagFamilyStore, "dbc_itembagfamily", "`ID`", [](Field* f, ItemBagFamilyEntry& e)
@@ -255,7 +277,16 @@ void LoadDBCStores(std::string const& dataPath)
     });
 #endif
     //LoadDBC(availableDbcLocales,bar,badDbcFiles,sItemDisplayInfoStore,     dbcPath,"ItemDisplayInfo.dbc");     -- not used currently
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sItemRandomPropertiesStore, dbcPath, "ItemRandomProperties.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sItemRandomPropertiesStore, "dbc_itemrandomproperties", "`ID`, `Name_lang`, `Enchantment1`, `Enchantment2`, `Enchantment3`", [&](Field* f, ItemRandomPropertiesEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        std::string const name = f[1].GetCppString();
+        e.internalName = const_cast<char*>(sItemRandomPropertiesStore.InternString(name));
+        FillLocalizedString(sItemRandomPropertiesStore, const_cast<char const**>(e.nameSuffix), name);
+        for (uint32 i = 0; i < 3; ++i)
+            e.enchant_id[i] = f[2 + i].GetUInt32();
+        return e.ID;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sItemSetStore,             dbcPath, "ItemSet.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sLockStore,                dbcPath, "Lock.dbc");
 
@@ -356,7 +387,19 @@ void LoadDBCStores(std::string const& dataPath)
         e.Price = f[1].GetUInt32();
         return e.Slot;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sTalentStore,              dbcPath, "Talent.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sTalentStore, "dbc_talent", "`ID`, `TabID`, `TierID`, `ColumnIndex`, `SpellRank1`, `SpellRank2`, `SpellRank3`, `SpellRank4`, `SpellRank5`, `PrereqTalent1`, `PrereqRank1`, `RequiredSpellID`", [&](Field* f, TalentEntry& e)
+    {
+        e.TalentID = f[0].GetUInt32();
+        e.TalentTab = f[1].GetUInt32();
+        e.Row = f[2].GetUInt32();
+        e.Col = f[3].GetUInt32();
+        for (uint32 i = 0; i < MAX_TALENT_RANK; ++i)
+            e.RankID[i] = f[4 + i].GetUInt32();
+        e.DependsOn = f[9].GetUInt32();
+        e.DependsOnRank = f[10].GetUInt32();
+        e.DependsOnSpell = f[11].GetUInt32();
+        return e.TalentID;
+    });
 
     // create talent spells set
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
