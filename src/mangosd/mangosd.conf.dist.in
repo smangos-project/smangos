@@ -494,8 +494,7 @@ Anticrash.Rearm.Timer = 60000
 #
 #    DebuffLimit
 #        How many debuffs can be present on a target simultaneously
-#        Default: 0  - Decide automatically based on patch
-#                      In patch 1.7 the limit was increased from 8 to 16
+#        Default: 0  - 16 (0 uses the default)
 #
 ###################################################################################################################
 

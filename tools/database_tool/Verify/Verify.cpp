@@ -333,6 +333,7 @@ static VerifySpecColumns ReadSpecColumns(std::filesystem::path const& specDir)
 }
 
 // V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
+// A table whose columns are all `drop` needs no mapping.
 static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& specDir,
                                std::filesystem::path const& verifyDir, VerifySpecColumns const& spec,
                                VerifyOptions const& options, VerifyResult& result)
@@ -352,7 +353,12 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
         std::filesystem::path mappingPath = verifyDir / "srv" / (table + ".sql");
         if (!std::filesystem::exists(mappingPath))
         {
-            result.problems.push_back({ "V1", originalTable, "no mapping file srv/" + table + ".sql" });
+            auto columns = spec.rows.find("srv:" + table);
+            bool keepsData = columns == spec.rows.end() ||
+                             std::any_of(columns->second.begin(), columns->second.end(),
+                                         [](SpecColumnRow const& row) { return row.disposition != "drop"; });
+            if (keepsData)
+                result.problems.push_back({ "V1", originalTable, "no mapping file srv/" + table + ".sql" });
             continue;
         }
 
