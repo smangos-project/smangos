@@ -11,6 +11,7 @@ add_executable(tests-shared
   TlsStreamTests.cpp
   PacketFramingTests.cpp
   BnetRpcFramingTests.cpp
+  ConfigTests.cpp
   TestMain.cpp
 )
 

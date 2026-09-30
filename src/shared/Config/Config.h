@@ -23,6 +23,7 @@
 #include "Policies/ThreadingModel.h"
 #include <shared_mutex>
 #include <unordered_map>
+#include <vector>
 
 class Config
 {
@@ -30,6 +31,10 @@ class Config
     using Lock = MaNGOS::ClassLevelLockable<Config, std::shared_timed_mutex>;
 
     bool LoadFromFile(std::string const& filename);
+    /// Reads the files in order into one map. A key set by two files is an error naming both.
+    /// On failure the previously loaded settings stay as they were.
+    bool LoadLayers(std::vector<std::string> const& files, std::string& error);
+    /// Re-reads every loaded file; on failure prints the error and keeps the old settings.
     bool Reload();
 
     bool IsSet(char const* name) const;
@@ -39,15 +44,18 @@ class Config
     int32 GetIntDefault(char const* name, int32 def) const;
     float GetFloatDefault(char const* name, float def) const;
 
+    /// The loaded files joined by ", ".
     std::string GetFilename() const;
     bool GetValueHelper(char const* name, std::string& result) const;
 
  private:
     friend class MaNGOS::Singleton<Config, Lock>;
 
-    bool ProcessLine(char const* line);
+    using ConfigMap = std::unordered_map<std::string, std::string>;
 
-    std::string m_fileName;
+    static bool ProcessLine(char const* line, ConfigMap& map);
+
+    std::vector<std::string> m_files;
     std::unordered_map<std::string, std::string> m_configMap;
 
     using LockType = std::shared_timed_mutex;
