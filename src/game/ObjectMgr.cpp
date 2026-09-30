@@ -9979,14 +9979,14 @@ void ObjectMgr::LoadSkillLineAbility()
 
 void ObjectMgr::LoadSoundEntries()
 {
-    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT * FROM `sound_entries`"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `ID` FROM `dbc_soundkit`"));
 
     if (!result)
     {
         BarGoLink bar(1);
         bar.step();
 
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 sounds. DB table `sound_entries` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 sounds. DB table `dbc_soundkit` is empty.");
         return;
     }
 
@@ -9995,20 +9995,11 @@ void ObjectMgr::LoadSoundEntries()
     do
     {
         bar.step();
-        auto fields = result->Fetch();
-
-        SoundEntriesEntry sound;
-        uint32 soundId = fields[0].GetUInt32();
-
-        sound.Id = soundId;
-        sound.Name = fields[1].GetCppString();
-
-        m_SoundEntriesMap[soundId] = sound;
-
+        m_soundEntryIds.insert(result->Fetch()[0].GetUInt32());
     } while (result->NextRow());
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u sound entries.", (uint32)m_SoundEntriesMap.size());
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u sound entries.", (uint32)m_soundEntryIds.size());
 }
 
 void ObjectMgr::LoadBroadcastTexts()
@@ -10063,7 +10054,7 @@ void ObjectMgr::LoadBroadcastTexts()
 
         if (bct.soundId)
         {
-            if (!GetSoundEntry(bct.soundId))
+            if (!HasSoundEntry(bct.soundId))
             {
                 sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "BroadcastText (Id: %u) in table `broadcast_text` has SoundId %u but sound does not exist.", bct.entry, bct.soundId);
                 bct.soundId = 0;
@@ -10342,7 +10333,7 @@ bool ObjectMgr::LoadMangosStrings(Database& db, char const* table, int32 min_val
             data.LanguageId  = Language(fields[12].GetUInt32());
             data.Emote       = fields[13].GetUInt32();
 
-            if (data.SoundId && !GetSoundEntry(data.SoundId))
+            if (data.SoundId && !HasSoundEntry(data.SoundId))
             {
                 sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Entry %i in table `%s` has soundId %u but sound does not exist.", entry, table, data.SoundId);
                 data.SoundId = 0;

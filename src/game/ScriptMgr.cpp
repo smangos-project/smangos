@@ -2169,7 +2169,7 @@ void ScriptMgr::LoadScriptTexts()
 
             if (pTemp.SoundId)
             {
-                if (!sObjectMgr.GetSoundEntry(pTemp.SoundId))
+                if (!sObjectMgr.HasSoundEntry(pTemp.SoundId))
                     sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Entry %i in table `script_texts` has soundId %u but sound does not exist.", iId, pTemp.SoundId);
             }
 
@@ -2229,7 +2229,7 @@ void ScriptMgr::LoadScriptTextsCustom()
 
             if (pTemp.SoundId)
             {
-                if (!sObjectMgr.GetSoundEntry(pTemp.SoundId))
+                if (!sObjectMgr.HasSoundEntry(pTemp.SoundId))
                     sLog.Out(LOG_DBERROR, LOG_LVL_MINIMAL, "Entry %i in table `custom_texts` has soundId %u but sound does not exist.", iId, pTemp.SoundId);
             }
 
@@ -2629,7 +2629,7 @@ void DoScriptText(int32 textId, WorldObject* pSource, Unit* pTarget, int32 chatT
 
     if (soundId)
     {
-        if (sObjectMgr.GetSoundEntry(soundId))
+        if (sObjectMgr.HasSoundEntry(soundId))
         {
             if (chatType == CHAT_TYPE_ZONE_YELL || chatType == CHAT_TYPE_ZONE_EMOTE)
             {

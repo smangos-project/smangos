@@ -139,12 +139,6 @@ struct BroadcastText
 
 typedef std::unordered_map<uint32, BroadcastText> BroadcastTextLocaleMap;
 
-struct SoundEntriesEntry
-{
-    uint32          Id;
-    std::string     Name;
-};
-
 typedef std::unordered_map<uint32, CreatureSpellsList> CreatureSpellsMap;
 typedef std::unordered_map<uint32, std::vector<CreatureClassLevelStats>> CreatureCLSMap;
 typedef std::unordered_map<uint32, EquipmentTemplate> CreatureEquipmentMap;
@@ -221,7 +215,6 @@ class FindCreatureData
 
 typedef std::unordered_map<uint32, FactionEntry> FactionsMap;
 typedef std::unordered_map<uint32, FactionTemplateEntry> FactionTemplatesMap;
-typedef std::unordered_map<uint32, SoundEntriesEntry> SoundEntryMap;
 typedef std::unordered_map<uint32, ItemPrototype> ItemPrototypeMap;
 typedef std::unordered_map<uint32, std::unique_ptr<CreatureInfo>> CreatureInfoMap;
 typedef std::unordered_map<uint32, std::unique_ptr<GameObjectInfo>> GameObjectInfoMap;
@@ -1396,19 +1389,8 @@ class ObjectMgr
 
         // Sound Entries
         void LoadSoundEntries();
-        SoundEntriesEntry const* GetSoundEntry(uint32 id) const
-        {
-            auto iter = m_SoundEntriesMap.find(id);
-            if (iter == m_SoundEntriesMap.end())
-                return nullptr;
-
-            return &iter->second;
-        }
-
-        SoundEntryMap const& GetSoundEntriesMap() const
-        {
-            return m_SoundEntriesMap;
-        }
+        bool HasSoundEntry(uint32 id) const { return m_soundEntryIds.find(id) != m_soundEntryIds.end(); }
+        std::unordered_set<uint32> const& GetSoundEntryIds() const { return m_soundEntryIds; }
 
         // Factions
         void LoadFactions();
@@ -1656,7 +1638,7 @@ class ObjectMgr
         FactionsMap m_FactionsMap;
         FactionTemplatesMap m_FactionTemplatesMap;
 
-        SoundEntryMap m_SoundEntriesMap;
+        std::unordered_set<uint32> m_soundEntryIds;
         CreatureInfoMap m_creatureInfoMap;
         GameObjectInfoMap m_gameObjectInfoMap;
         ItemPrototypeMap m_itemPrototypesMap;

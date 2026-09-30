@@ -1,4 +1,3 @@
 -- key: id
-SELECT "id",
-       "name"
-FROM "sound_entries"
+SELECT "ID" AS "id"
+FROM "dbc_soundkit"

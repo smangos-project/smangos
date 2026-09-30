@@ -1,4 +1,3 @@
--- key:
-SELECT "ID",
-       "icon"
-FROM "item_display_info"
+-- key: ID
+SELECT "ID" AS "ID"
+FROM "dbc_itemdisplayinfo"

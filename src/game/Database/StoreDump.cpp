@@ -645,14 +645,13 @@ static bool DumpSkillLineAbilities(std::string const& dir)
 static bool DumpSoundEntries(std::string const& dir)
 {
     DumpTable table(dir, "sound_entries");
-    table.AddColumns({{"Id"}, {"Name"}});
+    table.AddColumns({{"Id"}});
     table.EndHeader();
 
-    auto const& map = sObjectMgr.GetSoundEntriesMap();
-    for (uint32 id : SortedKeys(map))
+    std::set<uint32> ids(sObjectMgr.GetSoundEntryIds().begin(), sObjectMgr.GetSoundEntryIds().end());
+    for (uint32 id : ids)
     {
-        SoundEntriesEntry const& s = map.at(id);
-        table << s.Id << s.Name;
+        table << id;
         table.EndRow();
     }
     return table.Close();

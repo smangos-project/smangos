@@ -1336,40 +1336,21 @@ bool ChatHandler::HandleLookupGuildCommand(char* args)
 
 bool ChatHandler::HandleLookupSoundCommand(char* args)
 {
-    if (!*args)
+    uint32 id;
+    if (!ExtractUInt32(&args, id))
         return false;
 
-    std::string namepart = args;
-
-    // converting string that we try to find to lower case
-    strToLower(namepart);
-
-    uint32 counter = 0;                                     // Counter for figure out that we found smth.
-
-    for (auto const& itr : sObjectMgr.GetSoundEntriesMap())
+    if (!sObjectMgr.HasSoundEntry(id))
     {
-        uint32 id = itr.first;
-        SoundEntriesEntry const& soundEntry = itr.second;
-        std::string name = soundEntry.Name;
-
-        if (name.empty())
-            continue;
-
-        strToLower(name);
-
-        if (name.find(namepart) == std::string::npos)
-            continue;
-
-        if (m_session)
-            PSendSysMessage(LANG_COMMAND_SOUND_LIST, id, id, soundEntry.Name.c_str());
-        else
-            PSendSysMessage("%u - %s", id, soundEntry.Name.c_str());
-
-        counter++;
+        SendSysMessage(LANG_COMMAND_SOUND_NOT_FOUND);
+        return true;
     }
 
-    if (counter == 0)
-        SendSysMessage(LANG_COMMAND_SOUND_NOT_FOUND);
+    std::string idText = std::to_string(id);
+    if (m_session)
+        PSendSysMessage(LANG_COMMAND_SOUND_LIST, id, id, idText.c_str());
+    else
+        PSendSysMessage("%u - %s", id, idText.c_str());
 
     return true;
 }
