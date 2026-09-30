@@ -1750,7 +1750,7 @@ srv	skill_line_ability	spell_id	dbc	dbc_skilllineability.Spell	identity	0 differ
 srv	skill_line_ability	race_mask	dbc	dbc_skilllineability.RaceMask	identity	0 differences (data-plan.md 3.1)	yes
 srv	skill_line_ability	class_mask	dbc	dbc_skilllineability.ClassMask	identity	1 difference (data-plan.md 3.1)	yes
 srv	skill_line_ability	req_skill_value	dbc	dbc_skilllineability.MinSkillLineRank	identity	3 differences (data-plan.md 3.1); overriding evidence.tsv's spurious NumSkillUps coincidence	yes
-srv	skill_line_ability	superseded_by_spell	dbc	dbc_skilllineability.SupercedesSpell	superseded_by_spell_inverse	inverse of the next rank's SupercedesSpell; 9 real differences, the other 664 are id-collision mapping errors (data-plan.md 3.1); not evaluated by spec evidence yet (rules.tsv known gap)	yes
+srv	skill_line_ability	superseded_by_spell	dbc	dbc_skilllineability.SupercedesSpell	superseded_by_spell_inverse	inverse of the next rank's SupercedesSpell; 9 real differences, the other 664 are id-collision mapping errors (data-plan.md 3.1); not evaluated by spec evidence yet (rules.tsv known gap); 18 rows the client cannot express are kept in skill_line_ability_extra	yes
 srv	skill_line_ability	learn_on_get_skill	dbc	dbc_skilllineability.AcquireMethod	identity	5 differences (data-plan.md 3.1)	yes
 srv	skill_line_ability	max_value	dbc	dbc_skilllineability.TrivialSkillLineRankHigh	identity	1 difference total between max/min (data-plan.md 3.1)	yes
 srv	skill_line_ability	min_value	dbc	dbc_skilllineability.TrivialSkillLineRankLow	identity	1 difference total between max/min (data-plan.md 3.1)	yes
@@ -4160,3 +4160,5 @@ new	areatrigger_extra	cooldown	server			seconds between script runs (ObjectMgr::
 new	areatrigger_extra	condition_id	server			condition checked before the script runs (ObjectMgr::LoadAreaTriggers)	yes
 new	areatrigger_extra	script_id	server			areatrigger_scripts id (ObjectMgr::LoadAreaTriggers)	yes
 new	areatrigger_extra	script_name	server			core script name (ObjectMgr::LoadAreaTriggers)	yes
+new	skill_line_ability_extra	id	server			key: the skill_line_ability id the exception applies to	yes
+new	skill_line_ability_extra	superseded_by_spell	server			next-rank spell read by ObjectMgr::LoadSkillLineAbility when no row of the skill supersedes this spell	yes

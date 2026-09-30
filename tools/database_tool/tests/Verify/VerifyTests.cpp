@@ -91,6 +91,19 @@ TEST_CASE("ReadVerifyMapping reads the key line and the SELECT", "[Verify]")
     CHECK(reread.select == mapping.select);
 }
 
+TEST_CASE("ReadVerifyMapping reads the where line", "[Verify]")
+{
+    VerifyTempDir dir("mapping-where");
+    std::filesystem::path path = dir.path / "t.sql";
+    WriteVerifyTestFile(path, "-- key: a\n-- where: \"build\" = 5875\nSELECT a FROM t;\n");
+
+    VerifyMapping mapping = ReadVerifyMapping(path);
+    CHECK(mapping.originalWhere == "\"build\" = 5875");
+
+    WriteVerifyMapping(path, {}, mapping);
+    CHECK(ReadVerifyMapping(path).originalWhere == mapping.originalWhere);
+}
+
 TEST_CASE("V1 rebuilds each srv_ table from its mapping and honours dropped columns", "[Verify]")
 {
     VerifyTempDir dir("v1");

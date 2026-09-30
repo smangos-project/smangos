@@ -146,6 +146,7 @@ script_waypoint	server	entry, pointid	srv:script_waypoint
 scripted_event_id	server	id	srv:scripted_event_id			
 skill_fishing_base_level	server	entry	srv:skill_fishing_base_level			
 skill_line_ability	gone			dbc_skilllineability		every column is a SkillLineAbility column; superseded_by is the inverse of SupercedesSpell (plan.md 10.2)
+skill_line_ability_extra	server	id				next rank of the 7 abilities whose next-rank spell has no row in the same skill, so the client's SupercedesSpell cannot express it
 skinning_loot_template	server	entry, item	srv:skinning_loot_template			
 sound_entries	gone			dbc_soundkit		ids are SoundKit ids; names have no reader (plan.md 10.2)
 spell_area	server	spell, area, quest_start, quest_start_active, aura_spell, racemask, gender	srv:spell_area			

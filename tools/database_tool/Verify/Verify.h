@@ -12,9 +12,11 @@ struct VerifyMapping
 {
     std::vector<std::string> key;
     std::string select;
+    std::string originalWhere; // limits the original's rows, for rows the server never loaded
 };
 
-// A "-- key: a, b" line names the key (empty or absent: every column); other "--" lines are
+// A "-- key: a, b" line names the key (empty or absent: every column), a "-- where: <condition>" line
+// limits the original's rows; other "--" lines are
 // comments; the rest is the SELECT. Throws when the file can't be read.
 VerifyMapping ReadVerifyMapping(std::filesystem::path const& path);
 void WriteVerifyMapping(std::filesystem::path const& path, std::string const& header, VerifyMapping const& mapping);

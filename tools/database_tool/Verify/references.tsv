@@ -84,7 +84,7 @@ dbc_playercondition	PowerType	dbc_powertype.PowerTypeEnum		380
 dbc_relicslottierrequirement	PlayerConditionID	dbc_playercondition.ID		9	
 dbc_relictalent	ArtifactPowerID	dbc_artifactpower.ID		13	
 dbc_skillline	CategoryID	dbc_skilllinecategory.ID		1	
-dbc_skilllineability	Spell	dbc_spell.ID		90	
+dbc_skilllineability	Spell	dbc_spell.ID		92	
 dbc_skillraceclassinfo	SkillID	dbc_skillline.ID		53	
 dbc_soundambience	AmbienceStartID1	dbc_soundkit.ID		1	
 dbc_soundambience	AmbienceStartID2	dbc_soundkit.ID		1	

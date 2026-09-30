@@ -9922,61 +9922,57 @@ void ObjectMgr::LoadGameObjectForQuests()
 
 void ObjectMgr::LoadSkillLineAbility()
 {
-    // Getting the maximum ID.
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT MAX(`id`) FROM `skill_line_ability` WHERE `build`=%u", SUPPORTED_CLIENT_BUILD));
+    // The next rank is the spell of the row in the same skill that supersedes this one.
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query(
+        "SELECT a.`ID`, a.`SkillLine`, a.`Spell`, a.`RaceMask`, a.`ClassMask`, a.`MinSkillLineRank`, "
+        "COALESCE(e.`superseded_by_spell`, n.`next_spell`, 0), a.`AcquireMethod`, "
+        "a.`TrivialSkillLineRankHigh`, a.`TrivialSkillLineRankLow`, a.`CharacterPoints2` "
+        "FROM `dbc_skilllineability` a "
+        "LEFT JOIN `skill_line_ability_extra` e ON e.`id` = a.`ID` "
+        "LEFT JOIN (SELECT `SkillLine`, `SupercedesSpell`, MIN(`Spell`) AS `next_spell` FROM `dbc_skilllineability` "
+        "WHERE `SupercedesSpell` <> 0 GROUP BY `SkillLine`, `SupercedesSpell`) n "
+        "ON n.`SkillLine` = a.`SkillLine` AND n.`SupercedesSpell` = a.`Spell` "
+        "ORDER BY a.`ID`"));
 
     if (!result)
     {
         BarGoLink bar(1);
         bar.step();
 
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 skill line abilities. DB table `skill_line_ability` is empty.");
-        return;
-    }
-    auto fields = result->Fetch();
-    uint32 maxSkillLineAbilityId = fields[0].GetUInt32() + 1;
-
-    // Actually loading the skills.
-    result = WorldDatabase.PQuery("SELECT * FROM `skill_line_ability` WHERE `build`=%u", SUPPORTED_CLIENT_BUILD);
-
-    if (!result)
-    {
-        BarGoLink bar(1);
-        bar.step();
-
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 skill line abilities. DB table `skill_line_ability` is empty.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 skill line abilities. DB table `dbc_skilllineability` is empty.");
         return;
     }
 
     BarGoLink bar(result->GetRowCount());
-    m_SkillLineAbilities.resize(maxSkillLineAbilityId);
 
     do
     {
         bar.step();
-        fields = result->Fetch();
+        auto fields = result->Fetch();
 
         std::unique_ptr<SkillLineAbilityEntry> skill = std::make_unique<SkillLineAbilityEntry>();
         uint32 id = fields[0].GetUInt32();
 
         skill->id = id;
-        skill->skillId = fields[2].GetUInt32();
-        skill->spellId = fields[3].GetUInt32();
-        skill->racemask = fields[4].GetUInt32();
-        skill->classmask = fields[5].GetUInt32();
-        skill->req_skill_value = fields[6].GetUInt32();
-        skill->forward_spellid = fields[7].GetUInt32();
-        skill->learnOnGetSkill = fields[8].GetUInt32();
-        skill->max_value = fields[9].GetUInt32();
-        skill->min_value = fields[10].GetUInt32();
-        skill->reqtrainpoints = fields[11].GetUInt32();
+        skill->skillId = fields[1].GetUInt32();
+        skill->spellId = fields[2].GetUInt32();
+        skill->racemask = fields[3].GetUInt32();
+        skill->classmask = fields[4].GetUInt32();
+        skill->req_skill_value = fields[5].GetUInt32();
+        skill->forward_spellid = fields[6].GetUInt32();
+        skill->learnOnGetSkill = fields[7].GetUInt32();
+        skill->max_value = fields[8].GetUInt32();
+        skill->min_value = fields[9].GetUInt32();
+        skill->reqtrainpoints = fields[10].GetUInt32();
 
+        if (id >= m_SkillLineAbilities.size())
+            m_SkillLineAbilities.resize(id + 1);
         m_SkillLineAbilities[id] = std::move(skill);
 
     } while (result->NextRow());
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u skill line abilities.", maxSkillLineAbilityId);
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u skill line abilities.", (uint32)m_SkillLineAbilities.size());
 }
 
 void ObjectMgr::LoadSoundEntries()

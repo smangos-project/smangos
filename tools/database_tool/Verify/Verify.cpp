@@ -58,6 +58,8 @@ VerifyMapping ReadVerifyMapping(std::filesystem::path const& path)
             std::string comment = Trim(trimmed.substr(2));
             if (comment.rfind("key:", 0) == 0)
                 mapping.key = SplitTrimmed(comment.substr(4), ',');
+            else if (comment.rfind("where:", 0) == 0)
+                mapping.originalWhere = Trim(comment.substr(6));
             continue;
         }
         if (!trimmed.empty())
@@ -79,7 +81,10 @@ void WriteVerifyMapping(std::filesystem::path const& path, std::string const& he
     out << "-- key:";
     for (size_t i = 0; i < mapping.key.size(); ++i)
         out << (i ? ", " : " ") << mapping.key[i];
-    out << "\n" << mapping.select << "\n";
+    out << "\n";
+    if (!mapping.originalWhere.empty())
+        out << "-- where: " << mapping.originalWhere << "\n";
+    out << mapping.select << "\n";
 }
 
 struct VerifyTableColumn
@@ -270,6 +275,8 @@ static void VerifyMappedTable(DoltLiteDatabase& db, VerifyResult& result, std::s
     for (size_t i = 0; i < mappingColumns.size(); ++i)
         expected += (i ? ", " : "") + Quote(mappingColumns[i]);
     expected += " FROM ref." + Quote(originalTable);
+    if (!mapping.originalWhere.empty())
+        expected += " WHERE " + mapping.originalWhere;
 
     try
     {
