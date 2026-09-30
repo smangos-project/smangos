@@ -11,6 +11,10 @@ ConfVersion=2025040601
 #    RealmID
 #        RealmID must match the realmlist inside the realmd database
 #
+#    RealmName
+#        Name of the realm row mangosd adds to realmlist when RealmID has none. Ignored when the row exists.
+#        Default: "Classic"
+#
 #    DataDir
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
@@ -72,6 +76,7 @@ ConfVersion=2025040601
 ###################################################################################################################
 
 RealmID = 1
+RealmName = "Classic"
 DataDir = "data"
 LogsDir = "logs"
 HonorDir = ""

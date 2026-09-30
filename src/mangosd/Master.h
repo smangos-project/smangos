@@ -51,6 +51,8 @@ class Master
         void clearOnlineAccounts();
 };
 
+bool EnsureRealmRow(uint32 id);
+
 #define sMaster MaNGOS::Singleton<Master>::Instance()
 #endif
 // @}

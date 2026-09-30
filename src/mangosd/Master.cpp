@@ -157,15 +157,10 @@ int Master::Run(std::string const& dumpStoresDir)
         return 1;
     }
 
+    if (!EnsureRealmRow(realmID))
     {
-        std::unique_ptr<QueryResult> result{LoginDatabase.PQuery("SELECT `name` FROM `realmlist` WHERE `id` = %d", realmID)};
-        if (!result)
-        {
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Config contains invalid realmID %d, make sure its set in the `realmlist` table", realmID);
-            Log::WaitBeforeContinueIfNeed();
-            return 1;
-        }
-        realmName = (*result)[0].GetCppString();
+        Log::WaitBeforeContinueIfNeed();
+        return 1;
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "World server is running realm ID: %d Name: \"%s\"", realmID, realmName.c_str());
@@ -433,6 +428,33 @@ int Master::Run(std::string const& dumpStoresDir)
 
     // Exit the process with specified return value
     return World::GetExitCode();
+}
+
+// Reads the realm's name, adding a `realmlist` row from config when the id has none.
+bool EnsureRealmRow(uint32 id)
+{
+    {
+        std::unique_ptr<QueryResult> result{LoginDatabase.PQuery("SELECT `name` FROM `realmlist` WHERE `id` = %u", id)};
+        if (result)
+        {
+            realmName = (*result)[0].GetCppString();
+            return true;
+        }
+    }
+
+    std::string name = sConfig.GetStringDefault("RealmName", "Classic");
+    uint32 const port = sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
+    LoginDatabase.escape_string(name);
+    if (!LoginDatabase.DirectPExecute("INSERT INTO `realmlist` (`id`, `name`, `address`, `localAddress`, `localSubnetMask`, `port`, `icon`, `realmflags`, `timezone`, `allowedSecurityLevel`, `population`) "
+        "VALUES (%u, '%s', '127.0.0.1', '127.0.0.1', '255.255.255.0', %u, 0, 2, 1, 0, 0)", id, name.c_str(), port))
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "realmlist has no row %u and adding one failed; is RealmName '%s' used by another realm?", id, name.c_str());
+        return false;
+    }
+
+    realmName = sConfig.GetStringDefault("RealmName", "Classic");
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Added realm %u \"%s\" on port %u to realmlist", id, realmName.c_str(), port);
+    return true;
 }
 
 bool StartDB(const std::string& name, Database& database, char const** migrations)
