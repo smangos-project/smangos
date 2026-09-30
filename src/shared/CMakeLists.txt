@@ -298,6 +298,7 @@ target_include_directories(shared PUBLIC
 )
 target_compile_definitions(shared PUBLIC OPENSSL_NO_DEPRECATED) # Disable the usage of deprecated OpenSSL functions
 target_compile_definitions(shared PUBLIC SERVER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+set_property(GLOBAL APPEND PROPERTY SERVER_SETUP_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/common.conf.dist.in|common.conf")
 
 if(WIN32)
   target_include_directories(shared PUBLIC

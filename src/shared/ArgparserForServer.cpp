@@ -1,5 +1,7 @@
 #include "ArgparserForServer.h"
 #include "SystemConfig.h"
+#include "Config/Config.h"
+#include "Log.h"
 
 #include <filesystem>
 
@@ -180,4 +182,28 @@ bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfi
         fprintf(stderr, "server: %s\n", e.what());
         return false;
     }
+}
+
+bool LoadServerConfig(ServerStartupArguments const& args)
+{
+    std::string const commonFile = (std::filesystem::path(args.serverDir) / "config" / "common.conf").string();
+    std::string error;
+    if (sConfig.LoadLayers({ commonFile, args.configFilePath }, error))
+        return true;
+
+    fprintf(stderr, "server: %s\n", error.c_str());
+    return false;
+}
+
+void CheckCommonConfVersion()
+{
+    if (sConfig.GetIntDefault("Common.ConfVersion", 0) >= _COMMONCONFVERSION)
+        return;
+
+    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
+    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, " WARNING: Your common.conf version indicates your conf file is out of date!");
+    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "          Please check for updates, as your current default values may cause");
+    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "          unexpected behavior.");
+    sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
+    Log::WaitBeforeContinueIfNeed();
 }

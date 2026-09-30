@@ -449,11 +449,11 @@ void World::LoadConfigSettings(bool reload)
     }
 
     // Read the version of the configuration file and warn the user in case of emptiness or mismatch
-    uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
+    uint32 confVersion = sConfig.GetIntDefault("Mangosd.ConfVersion", 0);
     if (!confVersion)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, " WARNING: mangosd.conf does not include a ConfVersion variable.");
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, " WARNING: mangosd.conf does not include a Mangosd.ConfVersion variable.");
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "          Your configuration file may be out of date!");
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
         Log::WaitBeforeContinueIfNeed();

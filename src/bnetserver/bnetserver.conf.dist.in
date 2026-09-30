@@ -3,19 +3,10 @@
 ############################################
 
 [BnetserverConf]
-ConfVersion=2026092501
+Bnet.ConfVersion=2026100101
 
 ###################################################################################################################
 # BNETSERVER SETTINGS
-#
-#    LoginDatabaseInfo
-#        Database connection settings for the realm server.
-#        Default: hostname;port;username;password;database
-#
-#    LogsDir
-#         Logs directory setting.
-#         Important: Logs dir must exists, or all logs be disable
-#         Default: "" - no log directory prefix.
 #
 #    LoginREST.Port
 #        Port of the HTTPS login portal.
@@ -25,7 +16,7 @@ ConfVersion=2026092501
 #        Port of the Battle.net RPC service (TLS).
 #        Default: 1119
 #
-#    BindIP
+#    Bnet.BindIP
 #        Bind both ports to this IP/hostname.
 #        Default: "0.0.0.0"
 #
@@ -56,15 +47,6 @@ ConfVersion=2026092501
 #        Seconds an RPC connection may stay silent before it is closed. 0 = no limit.
 #        Default: 600
 #
-#    Bnet.Region
-#    Bnet.Battlegroup
-#        The region and battlegroup numbers that go into every realm address.
-#        Default: 1 and 1
-#
-#    RealmsStateUpdateDelay
-#        Seconds between re-reads of the realm list. 0 = read once at startup.
-#        Default: 20
-#
 #    MaxPingTime
 #        Minutes between database keep-alive pings.
 #        Default: 30
@@ -72,37 +54,6 @@ ConfVersion=2026092501
 #    TrustedProxyServers
 #        Peers that send a Proxy Protocol v2 header with the real client address, separated by ','.
 #        Default: "" - no proxy
-#
-#    PidFile
-#        Default: "" - do not create PID file
-#
-#    LogLevel.Console
-#    LogLevel.File
-#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
-#        Default: 2
-#
-#    LogTime
-#        Include time in console output. Default: 0
-#
-#    LogFile
-#        Logfile name. Default: "Bnetserver.log", "" = no file
-#
-#    LogTimestamp
-#        Add the server start time to the log file name. Default: 0
-#
-#    LogFileLevel
-#        0 = Minimum; 1 = Error; 2 = Detail; 3 = Full/Debug
-#        Default: 0
-#
-#    UseProcessors
-#        Used processors mask for multi-processors system (Windows only). Default: 0 (selected by OS)
-#
-#    ProcessPriority
-#        Process priority (Windows only). Default: 1 (HIGH), 0 (Normal)
-#
-#    WaitAtStartupError
-#        After a startup error wait <Enter> or some time before continuing.
-#        -1 (wait until <Enter> press), 0 (no wait), N (>0, wait N secs). Default: 5
 #
 #    WrongPass.MaxAttempts
 #        Failed logins from one IP inside the window before that IP is refused. 0 = no limit.
@@ -113,11 +64,9 @@ ConfVersion=2026092501
 #
 ###################################################################################################################
 
-LoginDatabaseInfo = "127.0.0.1;3306;mangos;mangos;realmd"
-LogsDir = "logs"
 LoginREST.Port = 8081
 BattlenetPort = 1119
-BindIP = "0.0.0.0"
+Bnet.BindIP = "0.0.0.0"
 LoginREST.ExternalAddress = "127.0.0.1"
 LoginREST.LocalAddress = "127.0.0.1"
 CertificatesFile = "config/bnetserver.cert.pem"
@@ -126,20 +75,7 @@ LoginREST.TicketDuration = 3600
 LoginREST.SessionDuration = 300
 Battlenet.LoginTimeout = 60
 Battlenet.IdleTimeout = 600
-Bnet.Region = 1
-Bnet.Battlegroup = 1
-RealmsStateUpdateDelay = 20
 MaxPingTime = 30
 TrustedProxyServers = ""
-PidFile = ""
-LogLevel.Console = 2
-LogLevel.File = 2
-LogTime = 0
-LogFile = "Bnetserver.log"
-LogTimestamp = 0
-LogFileLevel = 0
-UseProcessors = 0
-ProcessPriority = 1
-WaitAtStartupError = 5 # consider fixing your actual problem before changing this value!
 WrongPass.MaxAttempts = 10
 WrongPass.ThrottleWindowDurationSec = 60

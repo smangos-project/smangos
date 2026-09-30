@@ -81,12 +81,8 @@ extern int main(int argc, char** argv)
     if (!EnterServerDirectory(args, "bnetserver.conf"))
         return EXIT_FAILURE;
 
-    if (!sConfig.LoadFromFile(args.configFilePath)) // must be done before (linux) service init
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Could not find or parse configuration file %s", args.configFilePath.c_str());
-        Log::WaitBeforeContinueIfNeed();
+    if (!LoadServerConfig(args)) // must be done before (linux) service init
         return EXIT_FAILURE;
-    }
 
     switch (args.inputServiceMode)
     {
@@ -113,6 +109,7 @@ extern int main(int argc, char** argv)
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Core revision: %s [bnet-server]", _FULLVERSION);
+    CheckCommonConfVersion();
     if (!Crypto::InitializeCryptoAndPrintVersion())
     {
         sLog.WaitBeforeContinueIfNeed();
@@ -120,9 +117,9 @@ extern int main(int argc, char** argv)
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "<Ctrl-C> to stop.");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using configuration file %s.", sConfig.GetFilename().c_str());
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using configuration files %s.", sConfig.GetFilename().c_str());
 
-    uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
+    uint32 confVersion = sConfig.GetIntDefault("Bnet.ConfVersion", 0);
     if (confVersion < _BNETSERVERCONFVERSION)
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "*****************************************************************************");
@@ -193,7 +190,7 @@ extern int main(int argc, char** argv)
     LoginDatabase.Execute("DELETE FROM `ip_banned` WHERE `unbandate`<=UNIX_TIMESTAMP() AND `unbandate`<>`bandate`");
     LoginDatabase.CommitTransaction();
 
-    std::string const bindIp = sConfig.GetStringDefault("BindIP", "0.0.0.0");
+    std::string const bindIp = sConfig.GetStringDefault("Bnet.BindIP", "0.0.0.0");
     std::vector<std::string> const trustedProxyIps = SplitStringByDelimiter(sConfig.GetStringDefault("TrustedProxyServers", ""), ',');
 
     std::unique_ptr<IO::IoContext> ioCtx = IO::IoContext::CreateIoContext();
@@ -350,7 +347,7 @@ void OnSignal(int s)
 
 bool StartDB()
 {
-    std::string dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    std::string dbstring = sConfig.GetStringDefault("LoginDatabase.Info", "");
     if (dbstring.empty())
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Database not specified");
@@ -388,7 +385,7 @@ bool StartDB()
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Database: %s", dbStringLog.c_str());
-    if (!LoginDatabase.Initialize(dbstring.c_str()))
+    if (!LoginDatabase.Initialize(dbstring.c_str(), sConfig.GetIntDefault("LoginDatabase.Connections", 1), sConfig.GetIntDefault("LoginDatabase.WorkerThreads", 1)))
     {
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Cannot connect to database");
         return false;

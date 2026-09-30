@@ -77,12 +77,8 @@ extern int main(int argc, char **argv)
     if (!EnterServerDirectory(args, "mangosd.conf"))
         return EXIT_FAILURE;
 
-    if (!sConfig.LoadFromFile(args.configFilePath)) // must be done before (linux) service init
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Could not find or parse configuration file %s", args.configFilePath.c_str());
-        Log::WaitBeforeContinueIfNeed();
+    if (!LoadServerConfig(args)) // must be done before (linux) service init
         return EXIT_FAILURE;
-    }
 
     sLog.OpenWorldLogFiles();
 
@@ -125,6 +121,7 @@ extern int main(int argc, char **argv)
         "                  MMMMMM\n"
         "                          https://github.com/vmangos\n\n");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Core revision: %s [world-daemon]", _FULLVERSION);
+    CheckCommonConfVersion();
     if (!Crypto::InitializeCryptoAndPrintVersion())
     {
         sLog.WaitBeforeContinueIfNeed();
@@ -132,7 +129,7 @@ extern int main(int argc, char **argv)
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "<Ctrl-C> to stop.");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using configuration file %s", sConfig.GetFilename().c_str());
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using configuration files %s", sConfig.GetFilename().c_str());
 
     // Set progress bars show mode
     BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", true));

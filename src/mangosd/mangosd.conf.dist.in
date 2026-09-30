@@ -3,10 +3,10 @@
 #####################################
 
 [MangosdConf]
-ConfVersion=2025040601
+Mangosd.ConfVersion=2026100101
 
 ###################################################################################################################
-# CONNECTIONS AND DIRECTORIES
+# REALM AND NETWORK
 #
 #    RealmID
 #        RealmID must match the realmlist inside the realmd database
@@ -14,51 +14,6 @@ ConfVersion=2025040601
 #    RealmName
 #        Name of the realm row mangosd adds to realmlist when RealmID has none. Ignored when the row exists.
 #        Default: "Classic"
-#
-#    DataDir
-#        Data directory setting.
-#        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
-#        Example: "@CMAKE_INSTALL_PREFIX@/share/mangos"
-#
-#    LogsDir
-#        Logs directory setting.
-#        Important: Logs dir must exist, or all logs need to be disabled
-#        Default: "" - no log directory prefix. if used log names aren't absolute paths
-#                      then logs will be stored in the current directory of the running program.
-#
-#	   HonorDir
-#		     Folder to store HCR files. These are logs of weekly honor calculation.
-#		     By default logs are stored in the current directory of the running program.
-#
-#    LoginDatabase.Info
-#    CharacterDatabase.Info
-#    LogsDatabase.Info
-#        Database connection settings for the world server.
-#        (WorldDatabase.Info is different: the path of the DoltLite world database file, see below.)
-#        Default:
-#                ---MYSQL---
-#                    hostname;port;username;password;database
-#                    .;somenumber;username;password;database - use named pipes at Windows
-#                        Named pipes: mySQL required adding "enable-named-pipe" to [mysqld] section my.ini
-#                    .;/path/to/unix_socket;username;password;database - use Unix sockets at Unix/Linux
-#
-#	   LoginDatabase.Connections
-#	   WorldDatabase.Connections
-#	   CharacterDatabase.Connections
-#    LogsDatabase.Connections
-#		     Amount of connections to database which will be used for SELECT queries. Maximum 16 connections per database.
-#		     Default: 1 connection for SELECT statements
-#
-#    LoginDatabase.WorkerThreads
-#    WorldDatabase.WorkerThreads
-#    CharacterDatabase.WorkerThreads
-#    LogsDatabase.WorkerThreads
-#        Amount of async threads (with dedicated connection) which will be used for async SELECT, executes, and transactions.
-#        Default: 1 async worker
-#
-#    Database.AliveCheckInternal - in seconds
-#        The interval in seconds to check the reachability of the database
-#        Default: 600 (10 min)
 #
 #    WorldServerPort
 #        Port on which the server will listen for the Realm connection (character screen)
@@ -77,42 +32,12 @@ ConfVersion=2025040601
 
 RealmID = 1
 RealmName = "Classic"
-DataDir = "data"
-LogsDir = "logs"
-HonorDir = ""
-LoginDatabase.Info = "127.0.0.1;3306;mangos;mangos;realmd"
-LoginDatabase.Connections = 1
-LoginDatabase.WorkerThreads = 1
-# WorldDatabase.Info
-#        Path of the DoltLite world database file built by database_tool.
-#        Default: "../.world/world.doltlite"
-
-WorldDatabase.Info = "../.world/world.doltlite"
-WorldDatabase.Connections = 1
-WorldDatabase.WorkerThreads = 1
-CharacterDatabase.Info = "127.0.0.1;3306;mangos;mangos;characters"
-CharacterDatabase.Connections = 1
-CharacterDatabase.WorkerThreads = 1
-LogsDatabase.Info = "127.0.0.1;3306;mangos;mangos;logs"
-LogsDatabase.Connections = 1
-LogsDatabase.WorkerThreads = 1
-Database.AliveCheckInternal = 600
 WorldServerPort = 8085
 InstanceServerPort = 8086
 BindIP = "0.0.0.0"
 
 ###################################################################################################################
 # PERFORMANCE SETTINGS
-#
-#    UseProcessors
-#        Used processors mask for multi-processors system (Used only on Windows)
-#        Default: 0 (selected by OS)
-#                 number (bitmask value of selected processors)
-#
-#    ProcessPriority
-#        Process priority setting (Used only on Windows)
-#        Default: 1 (HIGH)
-#                 0 (Normal)
 #
 #    Compression.Level
 #        Compression level for update packets sent to client (1..9)
@@ -389,8 +314,6 @@ BindIP = "0.0.0.0"
 #
 ###################################################################################################################
 
-UseProcessors = 0
-ProcessPriority = 1
 Compression.Level = 1
 Compression.Update.Size = 128
 PlayerLimit = 100
@@ -520,143 +443,9 @@ DebuffLimit = 0
 #        Default: 1 - Write SQL code to logfile
 #                 0 - Do not log
 #
-#    PidFile
-#        World daemon PID file
-#        Default: ""             - do not create PID file
-#                 "./worldd.pid" - create PID file (recommended name)
-#
-#    LogLevel.Console
-#        Server console level of logging
-#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
-#        Default: 2
-#
-#    LogLevel.File
-#        Server file level of logging
-#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
-#        Default: 2
-#
-#    LogLevel.DB
-#        Database level of logging
-#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
-#        Default: 2
-#
-#    LogTime
-#        Include time in server console output [hh:mm:ss]
-#        Default: 0 (no time)
-#                 1 (print time)
-#
-#    LogFile.TimeStamp
-#        Include startup timestamp in log file names
-#        Default: 0 - no timestamp in name
-#                 1 - add timestamp in name in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
-#
-#    LogFilter_TransportMoves
-#    LogFilter_CreatureMoves
-#    LogFilter_VisibilityChanges
-#    LogFilter_Weather
-#    LogFilter_DbStrictedCheck
-#    LogFilter_Honor
-#        Log filters (active by default)
-#        Default: 1 - not include with any log level
-#                 0 - include in log if log level permit
-#
-#    LogFilter_PeriodicAffects
-#    LogFilter_PlayerMoves
-#    LogFilter_SQLText
-#    LogFilter_AIAndMovegens
-#    LogFilter_PlayerStats
-#    LogFilter_Damage
-#    LogFilter_Combat
-#    LogFilter_SpellCast
-#        Log filters (disabled by default, mostly debug only output affected cases)
-#        Default: 0 - include in log if log level permit
-#                 1 - not include with any log level
-#
-#    LogFile.Basic
-#        Basic log file name
-#        Default: "Server.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Anticheat
-#        Log file for anticheat check results
-#        Default: "Anticheat.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Scripts
-#        Log file for script errors and debug info
-#        Default: "Scripts.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Movement
-#        Log file for movement errors and debug info
-#        Default: "Movement.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Chat
-#        Log file for player chat.
-#        Default: "Chat.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Bg
-#        Log file for battlegrounds system.
-#        Default: "Bg.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Char
-#        Character operations logfile name
-#        Default: "Char.log"
-#                 "" - Empty name disable creating log file
-#
-#    LogFile.Honor
-#        Honor information logfile name
-#        Default: "" - Empty name disable creating log file
-#
-#    LogFile.Ra
-#        Log file of RA commands
-#        Default: "Ra.log"
-#                 "" - Empty name for disable
-#
 #    Logfile.DBError
 #        Log file of DB errors detected at server run
 #        Default: "DBErrors.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.DBErrorFix
-#        Log file of SQL requests to apply to fix detected database errors
-#        Default: ""
-#
-#    LogFile.Loot
-#        Log file of loot related messages
-#        Default: "Loot.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.LevelUp
-#        Log file of levelup related messages
-#        Default: "LevelUp.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.Performance
-#        Log file of performance related messages
-#        Default: "Perf.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.Gm
-#        GM Log file of gm commands
-#        Default: "" (Disable)
-#
-#    LogFile.GmCriticalCommands
-#        Log file for commands marked as critical, when used on own character (same IP for example)
-#        Default: "gm_critical.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.Trades
-#        Log file of trade related messages
-#        Default: "Trades.log"
-#                 "" - Empty name for disable
-#
-#    LogFile.Network
-#        Log file of network related messages
-#        Default: "Network.log"
 #                 "" - Empty name for disable
 #
 #    CharLogDump
@@ -709,30 +498,6 @@ DebuffLimit = 0
 #        Enable or disable database battleground logs.
 #        Default: 0
 #
-#    Smartlog.Death
-#        Emit smartlog entries on player deaths of interest.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-#
-#    Smartlog.LongCombat
-#        Emit smartlog entries for unusually long combats.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-#
-#    Smartlog.LongCombatDuration
-#        Combat duration in seconds that counts as "long" for Smartlog.LongCombat.
-#        Default:     1800 - (30 minutes)
-#
-#    Smartlog.ExtraEntries
-#        Extra creature/spell entries (comma-separated) always included in smartlog.
-#        Default:     ""
-#        Example:     "12345,67890"
-#
-#    Smartlog.ExtraGuids
-#        Extra object GUIDs (comma-separated) always included in smartlog.
-#        Default:     ""
-#        Example:     "100001,100002"
-#
 #    PerformanceLog.SlowWorldUpdate
 #        Log world update if it exceeds this many milliseconds.
 #        Default:     100
@@ -773,46 +538,7 @@ DebuffLimit = 0
 ###################################################################################################################
 
 LogSQL = 1
-PidFile = ""
-LogLevel.Console = 2
-LogLevel.File = 2
-LogLevel.DB = 2
-LogTime = 0
-LogFilter_TransportMoves = 1
-LogFilter_CreatureMoves = 1
-LogFilter_VisibilityChanges = 1
-LogFilter_Weather = 1
-LogFilter_PlayerStats = 0
-LogFilter_SQLText = 0
-LogFilter_PlayerMoves = 0
-LogFilter_PeriodicAffects = 0
-LogFilter_AIAndMovegens = 0
-LogFilter_Damage = 0
-LogFilter_Combat = 0
-LogFilter_SpellCast = 0
-LogFilter_DbStrictedCheck = 1
-LogFilter_Pathfinding = 0
-LogFilter_Honor = 1
 
-LogFile.Timestamp = 0
-LogFile.Basic = "Server.log"
-LogFile.Anticheat = "Anticheat.log"
-LogFile.Scripts = "Scripts.log"
-LogFile.Movement = "Movement.log"
-LogFile.Chat = "Chat.log"
-LogFile.Bg = "Bg.log"
-LogFile.Char = "Char.log"
-LogFile.Honor = ""
-LogFile.Ra = "Ra.log"
-LogFile.DBError = "DBErrors.log"
-LogFile.DBErrorFix = ""
-LogFile.Loot = "Loot.log"
-LogFile.LevelUp = "LevelUp.log"
-LogFile.Performance = "Perf.log"
-LogFile.Gm = ""
-LogFile.GmCriticalCommands = "gm_critical.log"
-LogFile.Trades = "Trades.log"
-LogFile.Network = "Network.log"
 
 LogMoneyThreshold = 10000
 CharLogDump = 0
@@ -827,9 +553,6 @@ LogsDB.Loot = 0
 LogsDB.Trades = 0
 LogsDB.Transactions = 0
 LogsDB.Battlegrounds = 0
-Smartlog.Death = 0
-Smartlog.LongCombat = 0
-Smartlog.LongCombatDuration = 1800
 
 PerformanceLog.SlowWorldUpdate = 100
 PerformanceLog.SlowMapSystemUpdate = 100
@@ -1206,18 +929,6 @@ PerformanceLog.SlowPacketBroadcast = 0
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    ShowProgressBars
-#        Controls whether progress bars are shown when loading things at server startup.
-#        Default: 1 (true)
-#                 0 (false)
-#
-#    WaitAtStartupError
-#        After startup error report wait for <Enter> or some time before continuing (and possibly close console window)
-#                 -1 (wait until <Enter> press)
-#                  0 (no wait)
-#         Default: 5 (wait 5 sec)
-#                  N (>0, wait N secs)
-#
 #    Motd
 #        Message of the Day. Displayed at world login for every user ('@' for a newline).
 #
@@ -1288,8 +999,6 @@ AutoBroadcast.Timer = 1800000
 Spell.EffectDelay = 400
 Spell.ProcDelay = 800
 BeepAtStart = 1
-ShowProgressBars = 0
-WaitAtStartupError = 5 # consider fixing your actual problem before changing this value!
 Motd = "Welcome to World of Warcraft!"
 
 ###################################################################################################################
