@@ -1,7 +1,7 @@
 table	column	target	where	dangling	reason
-creature_template	display_id1	dbc_creaturedisplayinfo.ID		16	creature model
+creature_template	display_id1	dbc_creaturedisplayinfo.ID		0	creature model
 creature_template	display_id2	dbc_creaturedisplayinfo.ID		2	creature model
-creature_template	display_id3	dbc_creaturedisplayinfo.ID		2	creature model
+creature_template	display_id3	dbc_creaturedisplayinfo.ID		1	creature model
 creature_template	display_id4	dbc_creaturedisplayinfo.ID		0	creature model
 creature_template	pet_family	dbc_creaturefamily.ID		0	pet family
 dbc_achievement	Instance_ID	dbc_map.ID		32	
