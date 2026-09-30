@@ -75,8 +75,19 @@ EncryptMessageFn OriginalEncryptMessage = nullptr;
 QueryContextAttributesAFn OriginalQueryContextAttributesA = nullptr;
 QueryContextAttributesWFn OriginalQueryContextAttributesW = nullptr;
 
+using InitializeSecurityContextFn = SECURITY_STATUS(SEC_ENTRY*)(PCredHandle, PCtxtHandle, void*, ULONG, ULONG, ULONG, PSecBufferDesc, ULONG, PCtxtHandle, PSecBufferDesc, PULONG, PTimeStamp);
+using DecryptMessageFn = SECURITY_STATUS(SEC_ENTRY*)(PCtxtHandle, PSecBufferDesc, ULONG, PULONG);
+using ApplyControlTokenFn = SECURITY_STATUS(SEC_ENTRY*)(PCtxtHandle, PSecBufferDesc);
+using DeleteSecurityContextFn = SECURITY_STATUS(SEC_ENTRY*)(PCtxtHandle);
+
+InitializeSecurityContextFn OriginalInitializeSecurityContextA = nullptr;
+InitializeSecurityContextFn OriginalInitializeSecurityContextW = nullptr;
+DecryptMessageFn OriginalDecryptMessage = nullptr;
+ApplyControlTokenFn OriginalApplyControlToken = nullptr;
+DeleteSecurityContextFn OriginalDeleteSecurityContext = nullptr;
+
 std::mutex TrackedSocketsMutex;
-std::unordered_set<SOCKET> TrackedSockets; // sockets connect()ed to port 8081
+std::unordered_set<SOCKET> TrackedSockets; // sockets connect()ed to a loopback address
 
 void LogHexPreview(const char* label, const void* data, int len)
 {
@@ -119,10 +130,10 @@ int WSAAPI DetourConnect(SOCKET s, const sockaddr* name, int namelen)
                       result,
                       lastError);
 
-        if (port == 8081) {
+        if ((ntohl(in->sin_addr.s_addr) >> 24) == 127) {
             std::lock_guard<std::mutex> lock(TrackedSocketsMutex);
             TrackedSockets.insert(s);
-            LogCallerInModule("connect(:8081)");
+            LogCallerInModule("connect(loopback)");
         }
     }
 
@@ -171,7 +182,7 @@ int WSAAPI DetourCloseSocket(SOCKET s)
 {
     if (IsTracked(s)) {
         HOOK_LOG_INFO("net diag: closesocket(sock=%p)", reinterpret_cast<void*>(s));
-        LogCallerInModule("closesocket(:8081)");
+        LogCallerInModule("closesocket(loopback)");
         std::lock_guard<std::mutex> lock(TrackedSocketsMutex);
         TrackedSockets.erase(s);
     }
@@ -189,6 +200,41 @@ SECURITY_STATUS SEC_ENTRY DetourEncryptMessage(PCtxtHandle phContext, ULONG fQOP
     }
 
     return OriginalEncryptMessage(phContext, fQOP, pMessage, MessageSeqNo);
+}
+
+SECURITY_STATUS SEC_ENTRY DetourInitializeSecurityContextA(PCredHandle phCredential, PCtxtHandle phContext, void* pszTargetName, ULONG fContextReq, ULONG Reserved1, ULONG TargetDataRep, PSecBufferDesc pInput, ULONG Reserved2, PCtxtHandle phNewContext, PSecBufferDesc pOutput, PULONG pfContextAttr, PTimeStamp ptsExpiry)
+{
+    SECURITY_STATUS result = OriginalInitializeSecurityContextA(phCredential, phContext, pszTargetName, fContextReq, Reserved1, TargetDataRep, pInput, Reserved2, phNewContext, pOutput, pfContextAttr, ptsExpiry);
+    HOOK_LOG_INFO("net diag: InitializeSecurityContextA(target='%s', req=0x%08lx) -> 0x%08lx", pszTargetName ? static_cast<char const*>(pszTargetName) : "(null)", fContextReq, static_cast<unsigned long>(result));
+    return result;
+}
+
+SECURITY_STATUS SEC_ENTRY DetourInitializeSecurityContextW(PCredHandle phCredential, PCtxtHandle phContext, void* pszTargetName, ULONG fContextReq, ULONG Reserved1, ULONG TargetDataRep, PSecBufferDesc pInput, ULONG Reserved2, PCtxtHandle phNewContext, PSecBufferDesc pOutput, PULONG pfContextAttr, PTimeStamp ptsExpiry)
+{
+    SECURITY_STATUS result = OriginalInitializeSecurityContextW(phCredential, phContext, pszTargetName, fContextReq, Reserved1, TargetDataRep, pInput, Reserved2, phNewContext, pOutput, pfContextAttr, ptsExpiry);
+    HOOK_LOG_INFO("net diag: InitializeSecurityContextW(req=0x%08lx) -> 0x%08lx", fContextReq, static_cast<unsigned long>(result));
+    return result;
+}
+
+SECURITY_STATUS SEC_ENTRY DetourDecryptMessage(PCtxtHandle phContext, PSecBufferDesc pMessage, ULONG MessageSeqNo, PULONG pfQOP)
+{
+    SECURITY_STATUS result = OriginalDecryptMessage(phContext, pMessage, MessageSeqNo, pfQOP);
+    HOOK_LOG_INFO("net diag: DecryptMessage -> 0x%08lx", static_cast<unsigned long>(result));
+    return result;
+}
+
+SECURITY_STATUS SEC_ENTRY DetourApplyControlToken(PCtxtHandle phContext, PSecBufferDesc pInput)
+{
+    HOOK_LOG_INFO("net diag: ApplyControlToken");
+    LogCallerInModule("ApplyControlToken");
+    return OriginalApplyControlToken(phContext, pInput);
+}
+
+SECURITY_STATUS SEC_ENTRY DetourDeleteSecurityContext(PCtxtHandle phContext)
+{
+    HOOK_LOG_INFO("net diag: DeleteSecurityContext");
+    LogCallerInModule("DeleteSecurityContext");
+    return OriginalDeleteSecurityContext(phContext);
 }
 
 void LogAttributeQuery(char const* apiName, ULONG ulAttribute, SECURITY_STATUS result, PVOID pBuffer)
@@ -304,7 +350,21 @@ bool InstallNetDiagnosticsHooks()
     queryContextAttributesWHook.Detour = reinterpret_cast<void*>(&DetourQueryContextAttributesW);
     queryContextAttributesWHook.Original = reinterpret_cast<void**>(&OriginalQueryContextAttributesW);
 
+    auto makeHook = [&](char const* name, char const* exportName, void* detour, void** original) {
+        HookRegistration hook;
+        hook.Name = name;
+        hook.Target = reinterpret_cast<Address>(GetProcAddress(secur32, exportName));
+        hook.Detour = detour;
+        hook.Original = original;
+        return hook.Target ? InstallHook(hook) : false;
+    };
+
     bool ok = InstallHook(connectHook);
+    ok = makeHook("InitializeSecurityContextA", "InitializeSecurityContextA", reinterpret_cast<void*>(&DetourInitializeSecurityContextA), reinterpret_cast<void**>(&OriginalInitializeSecurityContextA)) && ok;
+    ok = makeHook("InitializeSecurityContextW", "InitializeSecurityContextW", reinterpret_cast<void*>(&DetourInitializeSecurityContextW), reinterpret_cast<void**>(&OriginalInitializeSecurityContextW)) && ok;
+    ok = makeHook("DecryptMessage", "DecryptMessage", reinterpret_cast<void*>(&DetourDecryptMessage), reinterpret_cast<void**>(&OriginalDecryptMessage)) && ok;
+    ok = makeHook("ApplyControlToken", "ApplyControlToken", reinterpret_cast<void*>(&DetourApplyControlToken), reinterpret_cast<void**>(&OriginalApplyControlToken)) && ok;
+    ok = makeHook("DeleteSecurityContext", "DeleteSecurityContext", reinterpret_cast<void*>(&DetourDeleteSecurityContext), reinterpret_cast<void**>(&OriginalDeleteSecurityContext)) && ok;
     ok = InstallHook(sendHook) && ok;
     ok = InstallHook(wsaSendHook) && ok;
     ok = InstallHook(closeSocketHook) && ok;
