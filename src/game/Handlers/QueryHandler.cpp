@@ -275,6 +275,8 @@ void WorldSession::HandleDbQueryBulkOpcode(DbQueryBulk const& packet)
     // One reply per requested record, in order.
     constexpr uint32 broadcastTextHash = 0x021826BB;
 
+    sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "CMSG_DB_QUERY_BULK: table hash 0x%08X, %u records", packet.TableHash, uint32(packet.RecordIds.size()));
+
     for (uint32 recordId : packet.RecordIds)
     {
         DbReply reply;

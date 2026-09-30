@@ -7,7 +7,7 @@ srv	area_template	flags	dbc	dbc_areatable.Flags1	area_flag_added_bit	the client 
 srv	area_template	area_level	dbc	dbc_areatable.ExplorationLevel	identity	0 differences (data-plan.md 3.1)	yes
 srv	area_template	name	dbc	dbc_areatable.AreaName_lang	identity	0 differences (data-plan.md 3.1)	yes
 srv	area_template	team	dbc	dbc_areatable.FactionGroupMask	identity	0 differences (data-plan.md 3.1)	yes
-srv	area_template	liquid_type	dbc	dbc_areatable.LiquidTypeID1	identity	1 difference (data-plan.md 3.1); DB2 splits liquid into 4 slots, vanilla's single value maps to the first	yes
+srv	area_template	liquid_type	dbc	dbc_areatable.LiquidTypeID4	identity	all 1,081 vanilla values equal LiquidTypeID4 (client data kept, user 2026-09-30)	yes
 srv	areatrigger_bg_entrance	id	server			fully read by ObjectMgr::LoadBattlegroundEntranceTriggers (ObjectMgr.cpp:7274)	yes
 srv	areatrigger_bg_entrance	name	drop			not selected by ObjectMgr::LoadBattlegroundEntranceTriggers's query (ObjectMgr.cpp:7274); a label only, no reader	yes
 srv	areatrigger_bg_entrance	team	server			fully read by ObjectMgr::LoadBattlegroundEntranceTriggers (ObjectMgr.cpp:7274)	yes

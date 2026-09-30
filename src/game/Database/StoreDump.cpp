@@ -734,7 +734,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpSQLStore(dir, sPageTextStore);
     ok &= DumpSQLStore(dir, sMapStorage, -1, "map_template");
     ok &= DumpSQLStore(dir, sConditionStorage);
-    ok &= DumpSQLStore(dir, sAreaStorage);
+    ok &= DumpSQLStore(dir, sAreaStorage, -1, "area_template");
     ok &= DumpSQLStore(dir, sMailTemplateStorage, -1, "mail_text_template");
     ok &= DumpSQLStore(dir, sCreatureSpellDataStorage, -1, "pet_spell_data");
 

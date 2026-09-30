@@ -48,10 +48,10 @@ dbc_areatable	WildBattlePetLevelMax		client
 dbc_areatable	WindSettingsID		client
 dbc_areatable	Flags1		
 dbc_areatable	Flags2		client
-dbc_areatable	LiquidTypeID1		
+dbc_areatable	LiquidTypeID1		client
 dbc_areatable	LiquidTypeID2		client
 dbc_areatable	LiquidTypeID3		client
-dbc_areatable	LiquidTypeID4		client
+dbc_areatable	LiquidTypeID4		
 dbc_areatrigger	Message_lang		
 dbc_areatrigger	Pos1		
 dbc_areatrigger	Pos2		
