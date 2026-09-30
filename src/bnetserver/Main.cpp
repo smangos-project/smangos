@@ -20,27 +20,18 @@
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 
-#include "Auth/LoginThrottle.h"
-#include "BnetListener.h"
-#include "BnetLoginPortal.h"
-#include "BnetLoginTickets.h"
+#include "BnetServer.h"
 #include "Bnet/BnetRealmList.h"
-#include "BnetRestSession.h"
-#include "BnetRpcSession.h"
-#include "BnetSslContext.h"
 #include "Config/Config.h"
 #include "Crypto/InitializeCrypto.h"
-#include "Errors.h"
 #include "IO/Multithreading/CreateThread.h"
 #include "IO/Timer/AsyncSystemTimer.h"
 #include "Log.h"
 #include "SystemConfig.h"
-#include "ArgparserForServer.h"
 #include "Util.h"
+#include "ArgparserForServer.h"
 #include "migrations_list.h"
 #include "revision.h"
-
-#include <openssl/ssl.h>
 
 #ifdef WIN32
 #include "ServiceWin32.h"
@@ -154,79 +145,12 @@ extern int main(int argc, char** argv)
         uint8(sConfig.GetIntDefault("Bnet.Region", 1)),
         uint8(sConfig.GetIntDefault("Bnet.Battlegroup", 1)),
         sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
-    if (sBnetRealmList.GetRealms().empty())
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "No valid realms specified.");
-        Log::WaitBeforeContinueIfNeed();
-        return 1;
-    }
-
-    uint16 const restPort = uint16(sConfig.GetIntDefault("LoginREST.Port", 8081));
-    uint16 const rpcPort = uint16(sConfig.GetIntDefault("BattlenetPort", 1119));
-
-    BnetPortalSettings portalSettings;
-    portalSettings.externalHostname = sConfig.GetStringDefault("LoginREST.ExternalAddress", "127.0.0.1");
-    portalSettings.localHostname = sConfig.GetStringDefault("LoginREST.LocalAddress", "127.0.0.1");
-    portalSettings.restPort = restPort;
-    portalSettings.rpcPort = rpcPort;
-    BnetLoginPortal::Configure(portalSettings);
-    sBnetLoginTickets.SetDuration(sConfig.GetIntDefault("LoginREST.TicketDuration", 3600));
-
-    SSL_CTX* sslCtx = BnetCreateServerSslContext(
-        sConfig.GetStringDefault("CertificatesFile", "config/bnetserver.cert.pem"),
-        sConfig.GetStringDefault("PrivateKeyFile", "config/bnetserver.key.pem"));
-    if (!sslCtx)
+    if (!BnetServerStart())
     {
         Log::WaitBeforeContinueIfNeed();
+        LoginDatabase.HaltDelayThread();
         return 1;
     }
-
-    (void)sAsyncSystemTimer;
-    IO::Multithreading::RenameCurrentThread("bnetserver-main");
-
-    LoginDatabase.BeginTransaction();
-    LoginDatabase.Execute("UPDATE `account_banned` SET `active` = 0 WHERE `unbandate`<=UNIX_TIMESTAMP() AND `unbandate`<>`bandate`");
-    LoginDatabase.Execute("UPDATE `battlenet_account_bans` SET `active` = 0 WHERE `unbandate`<=UNIX_TIMESTAMP() AND `unbandate`<>`bandate`");
-    LoginDatabase.Execute("DELETE FROM `ip_banned` WHERE `unbandate`<=UNIX_TIMESTAMP() AND `unbandate`<>`bandate`");
-    LoginDatabase.CommitTransaction();
-
-    std::string const bindIp = sConfig.GetStringDefault("Bnet.BindIP", "0.0.0.0");
-    std::vector<std::string> const trustedProxyIps = SplitStringByDelimiter(sConfig.GetStringDefault("TrustedProxyServers", ""), ',');
-
-    std::unique_ptr<IO::IoContext> ioCtx = IO::IoContext::CreateIoContext();
-    if (ioCtx == nullptr)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Failed to create IoContext");
-        Log::WaitBeforeContinueIfNeed();
-        return 1;
-    }
-
-    auto restListener = BnetStartListener(ioCtx.get(), bindIp, restPort, trustedProxyIps,
-        [sslCtx](std::unique_ptr<IO::Networking::AsyncSocket> socket, std::string clientIp)
-        {
-            BnetRestSession::Create(std::move(socket), sslCtx, std::move(clientIp))->Start();
-        });
-    if (!restListener)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "bnetserver cannot bind the login portal to %s:%u - is the port already in use?", bindIp.c_str(), uint32(restPort));
-        Log::WaitBeforeContinueIfNeed();
-        return 1;
-    }
-
-    auto rpcListener = BnetStartListener(ioCtx.get(), bindIp, rpcPort, trustedProxyIps,
-        [sslCtx](std::unique_ptr<IO::Networking::AsyncSocket> socket, std::string clientIp)
-        {
-            BnetRpcSession::Create(std::move(socket), sslCtx, std::move(clientIp))->Start();
-        });
-    if (!rpcListener)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "bnetserver cannot bind the RPC port to %s:%u - is the port already in use?", bindIp.c_str(), uint32(rpcPort));
-        restListener->ClosePortAndStopAcceptingNewConnections();
-        Log::WaitBeforeContinueIfNeed();
-        return 1;
-    }
-
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Login portal on %s:%u, RPC on %s:%u", bindIp.c_str(), uint32(restPort), bindIp.c_str(), uint32(rpcPort));
 
     HookSignals();
 
@@ -271,37 +195,12 @@ extern int main(int argc, char** argv)
 
     LoginDatabase.AllowAsyncTransactions();
 
-    uint32 const numLoops = sConfig.GetIntDefault("MaxPingTime", 30) * 60;
-    uint32 loopCounter = 0;
-    uint32 cleanupCounter = 0;
-
-    auto ioThread = IO::Multithreading::CreateThread("MainIoCtx", [&ioCtx]()
-    {
-        ioCtx->RunUntilShutdown();
-    });
-
 #ifndef WIN32
     detachDaemon();
 #endif
     while (!stopEvent)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-        constexpr uint32 kCleanupIntervalSecs = 60;
-        if (++cleanupCounter >= kCleanupIntervalSecs)
-        {
-            cleanupCounter = 0;
-            CleanupStaleLoginThrottles();
-            sBnetLoginTickets.CleanupExpired();
-            BnetLoginPortal::CleanupSessions();
-        }
-
-        if ((++loopCounter) == numLoops)
-        {
-            loopCounter = 0;
-            sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "Ping MySQL to keep connection alive");
-            LoginDatabase.Ping();
-        }
 
 #ifdef WIN32
         if (m_ServiceStatus == 0) stopEvent = true;
@@ -311,15 +210,9 @@ extern int main(int argc, char** argv)
 
     sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "Waiting for IO thread to finish");
 
-    restListener->ClosePortAndStopAcceptingNewConnections();
-    rpcListener->ClosePortAndStopAcceptingNewConnections();
+    BnetServerStop();
     sAsyncSystemTimer.RemoveAllTimersAndStopThread();
-
-    ioCtx->Shutdown();
-    ioThread.join();
-
     LoginDatabase.HaltDelayThread();
-    SSL_CTX_free(sslCtx);
 
     UnhookSignals();
 

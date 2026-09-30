@@ -332,7 +332,7 @@ add_custom_target(server_setup
   USES_TERMINAL
   VERBATIM
   COMMENT "Setting up .server")
-add_dependencies(server_setup mangosd bnetserver)
+add_dependencies(server_setup mangosd bnetserver_exe)
 
 if (BUILD_TESTING)
   enable_testing()

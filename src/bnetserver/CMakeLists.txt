@@ -1,5 +1,8 @@
-set(EXECUTABLE_NAME bnetserver)
-set(EXECUTABLE_SRCS
+set(LIBRARY_NAME bnetserver)
+set(EXECUTABLE_NAME bnetserver_exe)
+set(LIBRARY_SRCS
+  BnetServer.h
+  BnetServer.cpp
   BnetAccountStore.h
   BnetAccountStore.cpp
   BnetListener.h
@@ -16,7 +19,6 @@ set(EXECUTABLE_SRCS
   BnetServices.cpp
   BnetSslContext.h
   BnetSslContext.cpp
-  Main.cpp
 )
 
 include_directories(
@@ -34,19 +36,26 @@ if(WIN32)
   )
 endif()
 
-add_executable(${EXECUTABLE_NAME}
-  ${EXECUTABLE_SRCS}
+add_library(${LIBRARY_NAME} STATIC
+  ${LIBRARY_SRCS}
 )
-mangos_target_flags(${EXECUTABLE_NAME})
+mangos_target_flags(${LIBRARY_NAME})
 
-target_link_libraries(${EXECUTABLE_NAME}
+add_executable(${EXECUTABLE_NAME}
+  Main.cpp
+)
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME bnetserver)
+mangos_target_flags(${EXECUTABLE_NAME})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+
+target_link_libraries(${LIBRARY_NAME}
   shared
   framework
   bnetproto
 )
 
 if(WIN32)
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     optimized ${MYSQL_LIBRARY}
     optimized ${OPENSSL_LIBRARIES}
     debug ${MYSQL_DEBUG_LIBRARY}
@@ -55,14 +64,14 @@ if(WIN32)
     $<$<NOT:$<CONFIG:Debug>>:${OPENSSL_SSL_LIBRARIES}>
   )
   if(MINGW)
-    target_link_libraries(${EXECUTABLE_NAME}
+    target_link_libraries(${LIBRARY_NAME}
       -lws2_32
     )
   endif()
 endif()
 
 if(UNIX)
-  target_link_libraries(${EXECUTABLE_NAME}
+  target_link_libraries(${LIBRARY_NAME}
     ${MYSQL_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${OPENSSL_EXTRA_LIBRARIES}
