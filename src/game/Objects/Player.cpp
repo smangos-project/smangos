@@ -19028,9 +19028,7 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
 
         m_Events.AddLambdaEventAtOffset([this]
         {
-            ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(GetRace());
-            uint32 const spellId = raceEntry ? raceEntry->loginSpellId : SPELL_ID_LOGIN_EFFECT;
-            CastSpell(this, spellId, true); // LOGINEFFECT
+            CastSpell(this, SPELL_ID_LOGIN_EFFECT, true);
         }, 1);
     }
 

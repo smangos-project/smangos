@@ -1645,13 +1645,7 @@ void Unit::RollDazeOutcome(CalcDamageInfo* damageInfo)
             damageInfo->HitInfo |= HITINFO_DAZE;
 #endif
 
-            uint32 spellId = SPELL_ID_DAZE;
-
-            if (pVictim->IsPlayer())
-                if (ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(pVictim->GetRace()))
-                    spellId = raceEntry->dazeSpellId;
-
-            CastSpell(pVictim, spellId, true);
+            CastSpell(pVictim, SPELL_ID_DAZE, true);
         }
     }
 }

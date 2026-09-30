@@ -209,7 +209,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 30;
+    uint32 const DBCFilesCount = 26;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -241,8 +241,28 @@ void LoadDBCStores(std::string const& dataPath)
         return e.ChannelID;
     });
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrClassesStore,          dbcPath, "ChrClasses.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrRacesStore,            dbcPath, "ChrRaces.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sChrClassesStore, "dbc_chrclasses", "`ID`, `DisplayPower`, `Name_lang`, `SpellClassSet`", [&](Field* f, ChrClassesEntry& e)
+    {
+        e.ClassID = f[0].GetUInt32();
+        e.powerType = f[1].GetUInt32();
+        FillLocalizedString(sChrClassesStore, const_cast<char const**>(e.name), f[2].GetCppString());
+        e.spellfamily = f[3].GetUInt32();
+        return e.ClassID;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sChrRacesStore, "dbc_chrraces", "`ID`, `Flags`, `FactionID`, `MaleDisplayID`, `FemaleDisplayID`, `BaseLanguage`, `CreatureType`, `ResSicknessSpellID`, `CinematicSequenceID`, `Name_lang`", [&](Field* f, ChrRacesEntry& e)
+    {
+        e.RaceID = f[0].GetUInt32();
+        e.Flags = f[1].GetUInt32();
+        e.FactionID = f[2].GetUInt32();
+        e.model_m = f[3].GetUInt32();
+        e.model_f = f[4].GetUInt32();
+        e.TeamID = f[5].GetUInt32();
+        e.creatureType = f[6].GetUInt32();
+        e.resSicknessSpellId = f[7].GetUInt32();
+        e.CinematicSequence = f[8].GetUInt32();
+        FillLocalizedString(sChrRacesStore, const_cast<char const**>(e.name), f[9].GetCppString());
+        return e.RaceID;
+    });
     LoadDBCFromWorld(bar, badDbcFiles, sCinematicSequencesStore, "dbc_cinematicsequences", "`ID`", [](Field* f, CinematicSequencesEntry& e)
     {
         e.Id = f[0].GetUInt32();
@@ -257,8 +277,19 @@ void LoadDBCStores(std::string const& dataPath)
         e.ID = f[0].GetUInt32();
         return e.ID;
     });
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityCostsStore,     dbcPath, "DurabilityCosts.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityQualityStore,   dbcPath, "DurabilityQuality.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sDurabilityCostsStore, "dbc_durabilitycosts", "`ID`, `WeaponSubClassCost1`, `WeaponSubClassCost2`, `WeaponSubClassCost3`, `WeaponSubClassCost4`, `WeaponSubClassCost5`, `WeaponSubClassCost6`, `WeaponSubClassCost7`, `WeaponSubClassCost8`, `WeaponSubClassCost9`, `WeaponSubClassCost10`, `WeaponSubClassCost11`, `WeaponSubClassCost12`, `WeaponSubClassCost13`, `WeaponSubClassCost14`, `WeaponSubClassCost15`, `WeaponSubClassCost16`, `WeaponSubClassCost17`, `WeaponSubClassCost18`, `WeaponSubClassCost19`, `WeaponSubClassCost20`, `WeaponSubClassCost21`, `ArmorSubClassCost1`, `ArmorSubClassCost2`, `ArmorSubClassCost3`, `ArmorSubClassCost4`, `ArmorSubClassCost5`, `ArmorSubClassCost6`, `ArmorSubClassCost7`, `ArmorSubClassCost8`", [](Field* f, DurabilityCostsEntry& e)
+    {
+        e.Itemlvl = f[0].GetUInt32();
+        for (uint32 i = 0; i < 29; ++i)
+            e.multiplier[i] = f[1 + i].GetUInt32();
+        return e.Itemlvl;
+    });
+    LoadDBCFromWorld(bar, badDbcFiles, sDurabilityQualityStore, "dbc_durabilityquality", "`ID`, `Data`", [](Field* f, DurabilityQualityEntry& e)
+    {
+        e.Id = f[0].GetUInt32();
+        e.quality_mod = f[1].GetFloat();
+        return e.Id;
+    });
     LoadDBCFromWorld(bar, badDbcFiles, sEmotesStore, "dbc_emotes", "`ID`, `EmoteSlashCommand`, `EmoteFlags`, `EmoteSpecProc`, `EmoteSpecProcParam`", [&](Field* f, EmotesEntry& e)
     {
         e.Id = f[0].GetUInt32();

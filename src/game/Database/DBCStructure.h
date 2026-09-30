@@ -117,8 +117,8 @@ struct ChrRacesEntry
                                                             // 7        unused
     uint32      TeamID;                                     // 8        m_BaseLanguage (7-Alliance 1-Horde)
     uint32      creatureType;                               // 9        m_creatureType (blizzlike always 7-humanoid)
-    uint32      loginSpellId;                               // 10       all 836
-    uint32      dazeSpellId;                                // 11       all 1604
+                                                            // 10       m_LoginEffectSpellID, all 836
+                                                            // 11       m_CombatStunSpellID, all 1604
     uint32      resSicknessSpellId;                         // 12       m_ResSicknessSpellId (blizzlike always 15007)
                                                             // 13       m_SplashSoundID
                                                             // 14       m_startingTaxiNodes
