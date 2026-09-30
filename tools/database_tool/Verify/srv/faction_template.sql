@@ -1,2 +1,16 @@
 -- key: id
-SELECT "id", "build", "faction_id", "faction_flags", "our_mask", "friendly_mask", "hostile_mask", "enemy_faction1", "enemy_faction2", "enemy_faction3", "enemy_faction4", "friend_faction1", "friend_faction2", "friend_faction3", "friend_faction4" FROM (SELECT "id", "build", "faction_id", "faction_flags", "our_mask", "friendly_mask", "hostile_mask", "enemy_faction1", "enemy_faction2", "enemy_faction3", "enemy_faction4", "friend_faction1", "friend_faction2", "friend_faction3", "friend_faction4", ROW_NUMBER() OVER (PARTITION BY "id" ORDER BY "build" DESC, rowid DESC) AS __rn FROM "faction_template" WHERE "build" <= 5875) WHERE __rn = 1
+SELECT "ID" AS "id",
+       "Faction" AS "faction_id",
+       "Flags" AS "faction_flags",
+       "FactionGroup" AS "our_mask",
+       "FriendGroup" AS "friendly_mask",
+       "EnemyGroup" AS "hostile_mask",
+       "Enemies1" AS "enemy_faction1",
+       "Enemies2" AS "enemy_faction2",
+       "Enemies3" AS "enemy_faction3",
+       "Enemies4" AS "enemy_faction4",
+       "Friend1" AS "friend_faction1",
+       "Friend2" AS "friend_faction2",
+       "Friend3" AS "friend_faction3",
+       "Friend4" AS "friend_faction4"
+FROM "dbc_factiontemplate"

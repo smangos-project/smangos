@@ -1,2 +1,23 @@
 -- key: id
-SELECT "id", "build", "reputation_list_id", "base_rep_race_mask1", "base_rep_race_mask2", "base_rep_race_mask3", "base_rep_race_mask4", "base_rep_class_mask1", "base_rep_class_mask2", "base_rep_class_mask3", "base_rep_class_mask4", "base_rep_value1", "base_rep_value2", "base_rep_value3", "base_rep_value4", "reputation_flags1", "reputation_flags2", "reputation_flags3", "reputation_flags4", "team", "name", "description" FROM (SELECT "id", "build", "reputation_list_id", "base_rep_race_mask1", "base_rep_race_mask2", "base_rep_race_mask3", "base_rep_race_mask4", "base_rep_class_mask1", "base_rep_class_mask2", "base_rep_class_mask3", "base_rep_class_mask4", "base_rep_value1", "base_rep_value2", "base_rep_value3", "base_rep_value4", "reputation_flags1", "reputation_flags2", "reputation_flags3", "reputation_flags4", "team", "name", "description", ROW_NUMBER() OVER (PARTITION BY "id" ORDER BY "build" DESC, rowid DESC) AS __rn FROM "faction" WHERE "build" <= 5875) WHERE __rn = 1
+SELECT "ID" AS "id",
+       "ReputationIndex" AS "reputation_list_id",
+       "ReputationRaceMask1" AS "base_rep_race_mask1",
+       "ReputationRaceMask2" AS "base_rep_race_mask2",
+       "ReputationRaceMask3" AS "base_rep_race_mask3",
+       "ReputationRaceMask4" AS "base_rep_race_mask4",
+       "ReputationClassMask1" AS "base_rep_class_mask1",
+       "ReputationClassMask2" AS "base_rep_class_mask2",
+       "ReputationClassMask3" AS "base_rep_class_mask3",
+       "ReputationClassMask4" AS "base_rep_class_mask4",
+       CASE WHEN "ReputationBase1" > 2147483647 THEN "ReputationBase1" - 4294967296 ELSE "ReputationBase1" END AS "base_rep_value1",
+       CASE WHEN "ReputationBase2" > 2147483647 THEN "ReputationBase2" - 4294967296 ELSE "ReputationBase2" END AS "base_rep_value2",
+       CASE WHEN "ReputationBase3" > 2147483647 THEN "ReputationBase3" - 4294967296 ELSE "ReputationBase3" END AS "base_rep_value3",
+       CASE WHEN "ReputationBase4" > 2147483647 THEN "ReputationBase4" - 4294967296 ELSE "ReputationBase4" END AS "base_rep_value4",
+       "ReputationFlags1" AS "reputation_flags1",
+       "ReputationFlags2" AS "reputation_flags2",
+       "ReputationFlags3" AS "reputation_flags3",
+       "ReputationFlags4" AS "reputation_flags4",
+       "ParentFactionID" AS "team",
+       "Name_lang" AS "name",
+       "Description_lang" AS "description"
+FROM "dbc_faction"

@@ -44,4 +44,4 @@ SQLStorage sMapStorage(MapEntrysrcfmt, MapEntrydstfmt, "entry", "map_template");
 SQLStorage sConditionStorage(ConditionsSrcFmt, ConditionsDstFmt, "condition_entry", "conditions");
 SQLStorage sAreaStorage(AreaEntryfmt, "entry", "area_template");
 SQLStorage sMailTemplateStorage(MailTemplatefmt, "entry", "mail_text_template");
-SQLStorage sCreatureSpellDataStorage(CreatureSpellDatafmt, "entry", "pet_spell_data");
+SQLStorage sCreatureSpellDataStorage(CreatureSpellDatafmt, "entry", "(SELECT `ID` AS `entry`, `Spells1`, `Spells2`, `Spells3`, `Spells4` FROM `dbc_creaturespelldata`)");

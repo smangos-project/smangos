@@ -6622,7 +6622,7 @@ void ObjectMgr::LoadPetCreateSpells()
 
 void ObjectMgr::LoadPetSpellData()
 {
-    sCreatureSpellDataStorage.LoadProgressive(SUPPORTED_CLIENT_BUILD, "build");
+    sCreatureSpellDataStorage.Load();
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u pet spell lists", sCreatureSpellDataStorage.GetRecordCount());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 }
@@ -8840,7 +8840,7 @@ void ObjectMgr::LoadFactions()
     {
         m_FactionsMap.clear();
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading factions ...");
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction` t1 WHERE `build`=(SELECT max(`build`) FROM `faction` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+        std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `ID`, `ReputationIndex`, `ReputationRaceMask1`, `ReputationRaceMask2`, `ReputationRaceMask3`, `ReputationRaceMask4`, `ReputationClassMask1`, `ReputationClassMask2`, `ReputationClassMask3`, `ReputationClassMask4`, `ReputationBase1`, `ReputationBase2`, `ReputationBase3`, `ReputationBase4`, `ReputationFlags1`, `ReputationFlags2`, `ReputationFlags3`, `ReputationFlags4`, `ParentFactionID`, `Name_lang` FROM `dbc_faction`"));
 
         if (!result)
         {
@@ -8848,7 +8848,7 @@ void ObjectMgr::LoadFactions()
             bar.step();
 
             sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 factions. DB table `faction` is empty.");
+            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 factions. DB table `dbc_faction` is empty.");
             return;
         }
 
@@ -8864,29 +8864,16 @@ void ObjectMgr::LoadFactions()
             uint32 factionId = fields[0].GetUInt32();
 
             faction.ID = factionId;
-            faction.reputationListID = fields[2].GetInt32();
-            faction.BaseRepRaceMask[0] = fields[3].GetUInt32();
-            faction.BaseRepRaceMask[1] = fields[4].GetUInt32();
-            faction.BaseRepRaceMask[2] = fields[5].GetUInt32();
-            faction.BaseRepRaceMask[3] = fields[6].GetUInt32();
-            faction.BaseRepClassMask[0] = fields[7].GetUInt32();
-            faction.BaseRepClassMask[1] = fields[8].GetUInt32();
-            faction.BaseRepClassMask[2] = fields[9].GetUInt32();
-            faction.BaseRepClassMask[3] = fields[10].GetUInt32();
-            faction.BaseRepValue[0] = fields[11].GetInt32();
-            faction.BaseRepValue[1] = fields[12].GetInt32();
-            faction.BaseRepValue[2] = fields[13].GetInt32();
-            faction.BaseRepValue[3] = fields[14].GetInt32();
-            faction.ReputationFlags[0] = fields[15].GetUInt32();
-            faction.ReputationFlags[1] = fields[16].GetUInt32();
-            faction.ReputationFlags[2] = fields[17].GetUInt32();
-            faction.ReputationFlags[3] = fields[18].GetUInt32();
-            faction.team = fields[19].GetUInt32();
-            faction.name[0] = fields[20].GetCppString();
-            /*
-            unused
-            faction.description[0] = fields[21].GetCppString();
-            */
+            faction.reputationListID = fields[1].GetInt32();
+            for (int i = 0; i < 4; ++i)
+            {
+                faction.BaseRepRaceMask[i] = fields[2 + i].GetUInt32();
+                faction.BaseRepClassMask[i] = fields[6 + i].GetUInt32();
+                faction.BaseRepValue[i] = fields[10 + i].GetInt32();
+                faction.ReputationFlags[i] = fields[14 + i].GetUInt32();
+            }
+            faction.team = fields[18].GetUInt32();
+            faction.name[0] = fields[19].GetCppString();
 
             m_FactionsMap[factionId] = faction;
 
@@ -8933,7 +8920,7 @@ void ObjectMgr::LoadFactions()
     {
         m_FactionTemplatesMap.clear();
         sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading faction tamplates ...");
-        std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT * FROM `faction_template` t1 WHERE `build`=(SELECT max(`build`) FROM `faction_template` t2 WHERE t1.`id`=t2.`id` AND `build` <= %u)", SUPPORTED_CLIENT_BUILD));
+        std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `ID`, `Faction`, `Flags`, `FactionGroup`, `FriendGroup`, `EnemyGroup`, `Enemies1`, `Enemies2`, `Enemies3`, `Enemies4`, `Friend1`, `Friend2`, `Friend3`, `Friend4` FROM `dbc_factiontemplate`"));
 
         if (!result)
         {
@@ -8941,7 +8928,7 @@ void ObjectMgr::LoadFactions()
             bar.step();
 
             sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 faction templates. DB table `faction_template` is empty.");
+            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded 0 faction templates. DB table `dbc_factiontemplate` is empty.");
             return;
         }
 
@@ -8959,14 +8946,14 @@ void ObjectMgr::LoadFactions()
             uint32 factionId = fields[0].GetUInt32();
 
             faction.ID = factionId;
-            faction.faction = fields[2].GetUInt32();
-            faction.factionFlags = fields[3].GetUInt32();
-            faction.ourMask = fields[4].GetUInt32();
-            faction.friendlyMask = fields[5].GetUInt32();
-            faction.hostileMask = fields[6].GetUInt32();
+            faction.faction = fields[1].GetUInt32();
+            faction.factionFlags = fields[2].GetUInt32();
+            faction.ourMask = fields[3].GetUInt32();
+            faction.friendlyMask = fields[4].GetUInt32();
+            faction.hostileMask = fields[5].GetUInt32();
             for (int i = 0; i < 4; ++i)
             {
-                if (faction.enemyFaction[i] = fields[7 + i].GetUInt32())
+                if (faction.enemyFaction[i] = fields[6 + i].GetUInt32())
                 {
                     if (faction.factionFlags & (FACTION_TEMPLATE_SEARCH_FOR_ENEMIES_LOW_PRIO | FACTION_TEMPLATE_SEARCH_FOR_ENEMIES_MED_PRIO | FACTION_TEMPLATE_SEARCH_FOR_ENEMIES_HIG_PRIO))
                         factionsWithEnemies.insert(faction.enemyFaction[i]);
@@ -8974,7 +8961,7 @@ void ObjectMgr::LoadFactions()
             }
             for (int i = 0; i < 4; ++i)
             {
-                faction.friendFaction[i] = fields[11 + i].GetUInt32();
+                faction.friendFaction[i] = fields[10 + i].GetUInt32();
             }
 
             m_FactionTemplatesMap[factionId] = faction;

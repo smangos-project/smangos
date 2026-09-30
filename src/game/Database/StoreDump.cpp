@@ -250,10 +250,10 @@ static bool DumpDBCStore(std::string const& dir, char const* name, DBCStorage<T>
 }
 
 // Columns are named f<position in the destination format>. auraColumn holds a converted aura list.
-static bool DumpSQLStore(std::string const& dir, SQLStorage const& store, int32 auraColumn = -1)
+static bool DumpSQLStore(std::string const& dir, SQLStorage const& store, int32 auraColumn = -1, char const* name = nullptr)
 {
     char const* fmt = store.GetDstFormat();
-    DumpTable table(dir, store.GetTableName());
+    DumpTable table(dir, name ? name : store.GetTableName());
     for (uint32 x = 0; fmt[x]; ++x)
         table.AddColumn("f" + std::to_string(x));
     table.EndHeader();
@@ -737,7 +737,7 @@ bool DumpStores(std::string const& dir)
     ok &= DumpSQLStore(dir, sConditionStorage);
     ok &= DumpSQLStore(dir, sAreaStorage);
     ok &= DumpSQLStore(dir, sMailTemplateStorage);
-    ok &= DumpSQLStore(dir, sCreatureSpellDataStorage);
+    ok &= DumpSQLStore(dir, sCreatureSpellDataStorage, -1, "pet_spell_data");
 
     ok &= DumpSpells(dir);
     ok &= DumpSpellPairs(dir);

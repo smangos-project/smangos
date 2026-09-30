@@ -303,9 +303,16 @@ static VerifySpecColumns ReadSpecColumns(std::filesystem::path const& specDir)
 }
 
 // V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
-static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
-                               VerifySpecColumns const& spec, VerifyOptions const& options, VerifyResult& result)
+static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& specDir,
+                               std::filesystem::path const& verifyDir, VerifySpecColumns const& spec,
+                               VerifyOptions const& options, VerifyResult& result)
 {
+    // Rows only the dbc_ tables have (the client's) are fine for a table whose data moved there.
+    std::set<std::string> movedTables;
+    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
+        if (row.kind == "gone")
+            movedTables.insert(row.table);
+
     for (std::string const& originalTable : TablesWithPrefix(db, "ref", "srv_"))
     {
         std::string table = originalTable.substr(4);
@@ -323,7 +330,7 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
         if (auto it = spec.dropped.find("srv:" + table); it != spec.dropped.end())
             rules.dropped = it->second;
         // mangosd saves its runtime state here.
-        rules.allowExtraRows = table == "variables";
+        rules.allowExtraRows = table == "variables" || movedTables.count(table);
         VerifyMappedTable(db, result, "V1", originalTable, mappingPath, rules);
     }
 }
@@ -838,7 +845,7 @@ VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::
         if (Wants(options, "V0"))
             VerifySchema(db, specDir, spec, options, result);
         if (Wants(options, "V1"))
-            VerifyServerTables(db, verifyDir, spec, options, result);
+            VerifyServerTables(db, specDir, verifyDir, spec, options, result);
         if (Wants(options, "V2"))
             VerifyVanillaTables(db, verifyDir, spec, options, result);
         if (Wants(options, "V3"))
