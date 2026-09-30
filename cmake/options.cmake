@@ -12,6 +12,7 @@ option(BUILD_TESTING                  "Build unit and conformance test suites"  
 option(BUILD_REALBOT_RUNNER           "Build the RealBots console host (contrib/realbotrunner)"                                       OFF)
 option(ENABLE_ASAN                    "Build the whole tree with AddressSanitizer (MSVC /fsanitize=address, clang -fsanitize=address)" OFF)
 option(BUILD_DB_SCHEMA_SETUP          "Build the WoWDBDefs schema reader (contrib/db_schema_setup)"                                    OFF)
+option(BUILD_CLIENT                   "Build the client loader and library (Windows only, client/)"                                    ON)
 option(BUILD_DATABASE_TOOL            "Build the database setup tool (tools/database_tool)"                                            OFF)
 
 if (BUILD_REALBOT_RUNNER AND NOT ENABLE_REALBOTS)

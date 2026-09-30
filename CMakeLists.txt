@@ -332,3 +332,7 @@ endif()
 if (BUILD_DATABASE_TOOL)
     add_subdirectory(tools/database_tool)
 endif()
+
+if (BUILD_CLIENT AND WIN32)
+    add_subdirectory(client)
+endif()
