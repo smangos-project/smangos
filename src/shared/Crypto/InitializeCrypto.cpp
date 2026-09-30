@@ -10,6 +10,13 @@
 
 #include <openssl/crypto.h>
 
+#include <filesystem>
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
 #include <openssl/provider.h>
 #endif
@@ -142,6 +149,22 @@ static char const* GetOpenSslRuntimeVersion()
 #endif
 }
 
+// The legacy provider sits next to the executable, which is not the working directory when running from .server.
+static std::string GetExecutableDirectory()
+{
+#ifdef WIN32
+    char buffer[MAX_PATH];
+    DWORD length = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+    if (length == 0 || length == MAX_PATH)
+        return "";
+    return std::filesystem::path(std::string(buffer, length)).parent_path().string();
+#else
+    std::error_code error;
+    std::filesystem::path path = std::filesystem::read_symlink("/proc/self/exe", error);
+    return error ? "" : path.parent_path().string();
+#endif
+}
+
 bool Crypto::InitializeCryptoAndPrintVersion()
 {
     sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "OpenSSL Headers: %s | OpenSSL Library: %s", OPENSSL_VERSION_TEXT, GetOpenSslRuntimeVersion());
@@ -152,15 +175,20 @@ bool Crypto::InitializeCryptoAndPrintVersion()
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "OpenSSL: legacy provider is not available. Trying to load it...");
         if (!OSSL_PROVIDER_load(nullptr, "legacy"))
         {
-            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "OpenSSL: legacy provider load failed. Retrying after setting CWD...");
-            std::string cwd = IO::Filesystem::ToAbsolutePath(".");
-
-            if (!OSSL_PROVIDER_set_default_search_path(nullptr, cwd.c_str()))
+            sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "OpenSSL: legacy provider load failed. Retrying with CWD and executable directory...");
+            bool loaded = false;
+            for (std::string const& dir : { IO::Filesystem::ToAbsolutePath("."), GetExecutableDirectory() })
             {
-                sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "OpenSSL: failed to set provider default search path to CWD");
+                if (dir.empty() || !OSSL_PROVIDER_set_default_search_path(nullptr, dir.c_str()))
+                    continue;
+                if (OSSL_PROVIDER_load(nullptr, "legacy"))
+                {
+                    loaded = true;
+                    break;
+                }
             }
 
-            if (!OSSL_PROVIDER_load(nullptr, "legacy"))
+            if (!loaded)
             {
                 sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "OpenSSL: Failed to load openssl legacy provider.");
                 return false;
