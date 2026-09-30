@@ -37,7 +37,7 @@ char const MailTemplatefmt[] = "issssssss";
 char const CreatureSpellDatafmt[] = "iiiii";
 
 SQLStorage sCreatureDataAddonStorage(CreatureDataAddonInfofmt, "guid", "creature_addon");
-SQLStorage sCreatureDisplayInfoAddonStorage(CreatureDisplayInfoAddonfmt, "display_id", "creature_display_info_addon");
+SQLStorage sCreatureDisplayInfoAddonStorage(CreatureDisplayInfoAddonfmt, "display_id", "(SELECT a.`display_id`, a.`build`, a.`bounding_radius`, a.`combat_reach`, a.`speed_walk`, a.`speed_run`, d.`Gender` AS `gender`, a.`display_id_other_gender` FROM `creature_display_info_addon` a JOIN `dbc_creaturedisplayinfo` d ON d.`ID` = a.`display_id`)");
 SQLStorage sGameObjectDisplayInfoAddonStorage(GameObjectDisplayInfoAddonfmt, "display_id", "(SELECT `ID` AS `display_id`, `GeoBox1` AS `min_x`, `GeoBox2` AS `min_y`, `GeoBox3` AS `min_z`, `GeoBox4` AS `max_x`, `GeoBox5` AS `max_y`, `GeoBox6` AS `max_z` FROM `dbc_gameobjectdisplayinfo`)");
 SQLStorage sPageTextStore(PageTextfmt, "entry", "page_text");
 SQLStorage sMapStorage(MapEntrysrcfmt, MapEntrydstfmt, "entry", "map_template");

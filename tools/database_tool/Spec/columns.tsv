@@ -224,7 +224,7 @@ srv	creature_display_info_addon	bounding_radius	server			reach, speed and boundi
 srv	creature_display_info_addon	combat_reach	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
 srv	creature_display_info_addon	speed_walk	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
 srv	creature_display_info_addon	speed_run	server			reach, speed and bounding radius stay server-side (stuff-plan.md 8.2)	yes
-srv	creature_display_info_addon	gender	dbc	dbc_creaturedisplayinfo.Gender	creature_gender_none	546 differences; vmangos gender 2 (none) = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
+srv	creature_display_info_addon	gender	dbc	dbc_creaturedisplayinfo.Gender	identity	546 differences; vmangos gender 2 (none) = DB2 0 (data-plan.md 3.1, data-plan.md 5)	yes
 srv	creature_display_info_addon	display_id_other_gender	server			server-side cross-reference to the opposite-gender display row, no DB2 field, overriding evidence.tsv's spurious ParticleColorID coincidence	yes
 srv	creature_equip_template	entry	server			fully read by ObjectMgr::LoadEquipmentTemplates (ObjectMgr.cpp:1734)	yes
 srv	creature_equip_template	probability	server			fully read by ObjectMgr::LoadEquipmentTemplates (ObjectMgr.cpp:1734)	yes
