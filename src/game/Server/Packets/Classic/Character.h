@@ -5,6 +5,7 @@
 #include "Guid.h"
 #include "ChrCustomizationChoice.h"
 #include "ClassicOpcodes.h"
+#include <array>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,13 @@ struct ClassicEnumCharacters
 // One entry of SMSG_ENUM_CHARACTERS_RESULT: the fields a bot or scenario wants of a character, out of
 // the fixed-layout CharacterInfoBasic block (everything after them -- equipment visuals, tabard,
 // professions, ... -- is parsed past and dropped).
+// What the character screen draws of one equipment slot.
+struct ClassicEquipmentVisual
+{
+    uint32 DisplayId = 0;
+    uint8 InventoryType = 0;
+};
+
 struct ClassicCharacterInfo
 {
     ClassicGuid Guid;
@@ -59,6 +67,7 @@ struct ClassicCharacterInfo
     bool FirstLogin = false;
     std::string Name;
     std::vector<ChrCustomizationChoice> Customizations;
+    std::array<ClassicEquipmentVisual, 19> Equipment; // equipment slots in order
 };
 
 // Read parses every character's fixed-layout block into Characters when the body matches it exactly
@@ -184,7 +193,7 @@ struct ClassicEnumCharactersResult
             data << uint32(0) << uint32(0) << uint32(0); // pet display, level, family
             for (uint32 slot = 0; slot < EQUIPMENT_SLOTS; ++slot)
             {
-                data << uint32(0) << uint8(0) << uint32(0) << uint8(0) << int32(0) << uint32(0) << uint32(0);
+                data << c.Equipment[slot].DisplayId << c.Equipment[slot].InventoryType << uint32(0) << uint8(0) << int32(0) << uint32(0) << uint32(0);
             }
             data << int32(0);                  // Unknown703
             data << uint64(0);                 // LastPlayedTime

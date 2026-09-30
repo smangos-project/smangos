@@ -650,6 +650,18 @@ void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*pa
     std::vector<PlayerCacheData const*> accountCharacters;
     sObjectMgr.GetPlayerDataForAccount(GetAccountId(), accountCharacters);
 
+    // The item ids of each character's worn equipment: two numbers per slot (entry, enchantment).
+    std::map<uint32, std::string> equipmentCaches;
+    if (std::unique_ptr<QueryResult> result = CharacterDatabase.PQuery("SELECT `guid`, `equipment_cache` FROM `characters` WHERE `account` = '%u'", GetAccountId()))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            equipmentCaches[fields[0].GetUInt32()] = fields[1].GetCppString();
+        }
+        while (result->NextRow());
+    }
+
     ClassicEnumCharactersResult response;
     uint8 listPosition = 1; // 0 is treated as unset by the client; hand out 1-based positions
     for (PlayerCacheData const* cacheData : accountCharacters)
@@ -668,6 +680,20 @@ void WorldSession::HandleClassicCharEnumOpcode(ClassicEnumCharacters const& /*pa
         info.Z = cacheData->fPosZ;
         info.Customizations = cacheData->customizations;
         info.ListPosition = listPosition++;
+
+        auto const equipment = equipmentCaches.find(cacheData->uiGuid);
+        if (equipment != equipmentCaches.end())
+        {
+            Tokens const tokens = StrSplit(equipment->second, " ");
+            for (uint32 slot = 0; slot < info.Equipment.size(); ++slot)
+            {
+                ItemPrototype const* proto = sObjectMgr.GetItemPrototype(slot * 2 < tokens.size() ? uint32(strtoul(tokens[slot * 2].c_str(), nullptr, 10)) : 0);
+                if (!proto)
+                    continue;
+                info.Equipment[slot].DisplayId = proto->DisplayInfoID;
+                info.Equipment[slot].InventoryType = uint8(proto->InventoryType);
+            }
+        }
 
         if (info.Level > m_characterMaxLevel)
             m_characterMaxLevel = info.Level;
