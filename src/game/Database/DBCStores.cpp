@@ -200,7 +200,7 @@ void LoadDBCStores(std::string const& dataPath)
 {
     std::string dbcPath = dataPath + "dbc/";
 
-    uint32 const DBCFilesCount = 43;
+    uint32 const DBCFilesCount = 38;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -228,19 +228,31 @@ void LoadDBCStores(std::string const& dataPath)
 
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrClassesStore,          dbcPath, "ChrClasses.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sChrRacesStore,            dbcPath, "ChrRaces.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCinematicSequencesStore,  dbcPath, "CinematicSequences.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sCinematicSequencesStore, "dbc_cinematicsequences", "`ID`", [](Field* f, CinematicSequencesEntry& e)
+    {
+        e.Id = f[0].GetUInt32();
+        return e.Id;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureDisplayInfoStore, dbcPath, "CreatureDisplayInfo.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureDisplayInfoExtraStore, dbcPath, "CreatureDisplayInfoExtra.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureModelDataStore,   dbcPath, "CreatureModelData.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureFamilyStore,      dbcPath, "CreatureFamily.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sCreatureTypeStore,        dbcPath, "CreatureType.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sCreatureTypeStore, "dbc_creaturetype", "`ID`", [](Field* f, CreatureTypeEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        return e.ID;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityCostsStore,     dbcPath, "DurabilityCosts.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sDurabilityQualityStore,   dbcPath, "DurabilityQuality.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sEmotesStore,              dbcPath, "Emotes.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sEmotesTextStore,          dbcPath, "EmotesText.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sGameObjectDisplayInfoStore, dbcPath, "GameObjectDisplayInfo.dbc");
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sItemBagFamilyStore,       dbcPath, "ItemBagFamily.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sItemBagFamilyStore, "dbc_itembagfamily", "`ID`", [](Field* f, ItemBagFamilyEntry& e)
+    {
+        e.ID = f[0].GetUInt32();
+        return e.ID;
+    });
 #endif
     //LoadDBC(availableDbcLocales,bar,badDbcFiles,sItemDisplayInfoStore,     dbcPath,"ItemDisplayInfo.dbc");     -- not used currently
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sItemRandomPropertiesStore, dbcPath, "ItemRandomProperties.dbc");
@@ -290,7 +302,11 @@ void LoadDBCStores(std::string const& dataPath)
         NamesReservedValidators.emplace_back(wname, std::regex::icase | std::regex::optimize);
     }
 
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sQuestSortStore,           dbcPath, "QuestSort.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sQuestSortStore, "dbc_questsort", "`ID`", [](Field* f, QuestSortEntry& e)
+    {
+        e.id = f[0].GetUInt32();
+        return e.id;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sSkillLineStore,           dbcPath, "SkillLine.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sSkillRaceClassInfoStore,  dbcPath, "SkillRaceClassInfo.dbc");
     for (uint32 i = 1; i < sSpellMgr.GetMaxSpellId(); ++i)
@@ -334,7 +350,12 @@ void LoadDBCStores(std::string const& dataPath)
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellRadiusStore,         dbcPath, "SpellRadius.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellRangeStore,          dbcPath, "SpellRange.dbc");
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sSpellShapeshiftFormStore, dbcPath, "SpellShapeshiftForm.dbc");
-    LoadDBC(availableDbcLocales, bar, badDbcFiles, sStableSlotPricesStore,    dbcPath, "StableSlotPrices.dbc");
+    LoadDBCFromWorld(bar, badDbcFiles, sStableSlotPricesStore, "dbc_stableslotprices", "`ID`, `Cost`", [](Field* f, StableSlotPricesEntry& e)
+    {
+        e.Slot = f[0].GetUInt32();
+        e.Price = f[1].GetUInt32();
+        return e.Slot;
+    });
     LoadDBC(availableDbcLocales, bar, badDbcFiles, sTalentStore,              dbcPath, "Talent.dbc");
 
     // create talent spells set
