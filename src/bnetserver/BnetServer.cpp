@@ -101,6 +101,11 @@ bool BnetServerStart()
         return false;
     }
 
+    s_ioThread = IO::Multithreading::CreateThread("MainIoCtx", []()
+    {
+        s_ioCtx->RunUntilShutdown();
+    });
+
     SSL_CTX* sslCtx = s_sslCtx;
     s_restListener = BnetStartListener(s_ioCtx.get(), bindIp, restPort, trustedProxyIps,
         [sslCtx](std::unique_ptr<IO::Networking::AsyncSocket> socket, std::string clientIp)
@@ -128,10 +133,6 @@ bool BnetServerStart()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Login portal on %s:%u, RPC on %s:%u", bindIp.c_str(), uint32(restPort), bindIp.c_str(), uint32(rpcPort));
 
-    s_ioThread = IO::Multithreading::CreateThread("MainIoCtx", []()
-    {
-        s_ioCtx->RunUntilShutdown();
-    });
     s_housekeepingThread = IO::Multithreading::CreateThread("BnetHousekeeping", RunHousekeeping);
     return true;
 }
@@ -147,10 +148,11 @@ void BnetServerStop()
     if (s_rpcListener)
         s_rpcListener->ClosePortAndStopAcceptingNewConnections();
 
-    if (s_ioCtx)
-        s_ioCtx->Shutdown();
     if (s_ioThread.joinable())
+    {
+        s_ioCtx->Shutdown();
         s_ioThread.join();
+    }
 
     s_restListener.reset();
     s_rpcListener.reset();

@@ -27,6 +27,7 @@ add_subdirectory(framework)
 add_subdirectory(bnetserver)
 add_subdirectory(game)
 add_subdirectory(mangosd)
+add_subdirectory(server)
 
 if(USE_SCRIPTS)
   add_subdirectory(scripts)

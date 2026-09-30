@@ -38,11 +38,6 @@
 // Target server framerate is 1000/WORLD_SLEEP_CONST
 #define WORLD_SLEEP_CONST 50
 
-#ifdef WIN32
-#include "ServiceWin32.h"
-extern volatile int m_ServiceStatus;
-#endif
-
 // Heartbeat for the World
 void WorldRunnable::operator()()
 {
@@ -107,11 +102,6 @@ void WorldRunnable::operator()()
 
         if (updateTime < WORLD_SLEEP_CONST)
             std::this_thread::sleep_for(std::chrono::milliseconds(WORLD_SLEEP_CONST - updateTime));
-
-        #ifdef WIN32
-            if (m_ServiceStatus == 0) World::StopNow(SHUTDOWN_EXIT_CODE);
-            while (m_ServiceStatus == 2) Sleep(1000);
-        #endif
     }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Shutting down world...");

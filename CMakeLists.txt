@@ -71,11 +71,9 @@ endif()
 # If win32 put it in the bin dir not lib
 if(WIN32)
   set(BIN_DIR ${CMAKE_INSTALL_PREFIX})
-  set(CONF_DIR ${CMAKE_INSTALL_PREFIX})
   set(LIBS_DIR ${CMAKE_INSTALL_PREFIX})
 else()
   set(BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
-  set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/etc CACHE PATH "Set custom configuration directory")
   set(LIBS_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 endif()
 
@@ -295,8 +293,6 @@ set(DEFINITIONS
 if(WIN32)
   set(DEFINITIONS ${DEFINITIONS} WIN32 _WIN32)
   set(DEFINITIONS_RELEASE ${DEFINITIONS_RELEASE} _CRT_SECURE_NO_WARNINGS)
-else()
-  set(DEFINITIONS ${DEFINITIONS} SYSCONFDIR="${CONF_DIR}/")
 endif()
 
 if (ENABLE_MAILSENDER)
@@ -332,7 +328,7 @@ add_custom_target(server_setup
   USES_TERMINAL
   VERBATIM
   COMMENT "Setting up .server")
-add_dependencies(server_setup mangosd_exe bnetserver_exe)
+add_dependencies(server_setup server)
 
 if (BUILD_TESTING)
   enable_testing()

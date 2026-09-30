@@ -54,16 +54,10 @@
 #include "migrations_list.h"
 
 #ifndef WIN32
-#include "PosixDaemon.h"
 #include <unistd.h>
 #endif
 
 #include <signal.h>
-
-#ifdef WIN32
-#include "ServiceWin32.h"
-extern volatile int m_ServiceStatus;
-#endif
 
 INSTANTIATE_SINGLETON_1(Master);
 
@@ -210,11 +204,7 @@ bool Master::Start(std::string const& dumpStoresDir)
         LoginDatabase.PExecute("UPDATE `realmlist` SET `realmflags` = `realmflags` & ~(%u), `population` = 0, `realmbuilds` = '%s'  WHERE `id` = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
-#ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
-#else
     if (sConfig.GetBoolDefault("Console.Enable", true))
-#endif
     {
         // Launch CliRunnable thread
         m_cliThread = IO::Multithreading::CreateThreadPtr("CLI", CliRunnable());

@@ -25,12 +25,10 @@ set (shared_SRCS
     LockedQueue.h
     Log.h
     migrations_list.h
-    PosixDaemon.h
     ProgressBar.h
     Progression.h
     RealmZone.h
     revision.h
-    ServiceWin32.h
     SystemConfig.h
     ThreadPool.h
     ThreadSpecificPtr.h
@@ -123,9 +121,7 @@ set (shared_SRCS
     ByteBuffer.cpp
     Common.cpp
     Log.cpp
-    PosixDaemon.cpp
     ProgressBar.cpp
-    ServiceWin32.cpp
     ThreadPool.cpp
     Util.cpp
     Utilities/Random.cpp
@@ -190,8 +186,6 @@ set (shared_SRCS
     IO/Filesystem/impl/unix/FileHandle.cpp
     ProxyProtocol/ProxyV2Reader.h
     ProxyProtocol/ProxyV2Reader.cpp
-    ArgparserForServer.h
-    ArgparserForServer.cpp
     Memory/ArrayDeleter.h
     Memory/NoDeleter.h
     TimePeriod.cpp
@@ -219,8 +213,6 @@ endif()
 
 if(WIN32) # For window build: Exclude Unix/MacOS files
   list(REMOVE_ITEM shared_SRCS
-    PosixDaemon.h
-    PosixDaemon.cpp
     revision.h
     migrations_list.h
     IO/Utils_Unix.h
@@ -235,8 +227,6 @@ if(WIN32) # For window build: Exclude Unix/MacOS files
   )
 else()
   list(REMOVE_ITEM shared_SRCS
-    ServiceWin32.cpp
-    ServiceWin32.h
     revision.h
     migrations_list.h
     IO/Context/IoContext_windows.cpp

@@ -4,31 +4,28 @@
 #include <string>
 #include "nonstd/expected.hpp"
 
-enum class ServiceDaemonAction
+struct ServerServices
 {
-    NotSet,
-    Start,
-#ifdef WIN32
-    Install,
-    Uninstall,
-#else
-    Stop,
-#endif
+    bool mangosd = false;
+    bool bnetserver = false;
 };
 
 struct ServerStartupArguments
 {
-    ServiceDaemonAction inputServiceMode; // will be empty when no mode was set
-    std::string configFilePath;
+    std::string configFilePath; // common.conf
     std::string dumpStoresDir; // mangosd: write the loaded world stores here, then exit
     std::string serverDir;
+    std::string services; // comma-separated list, empty when not given
 };
 
 /// Makes the paths absolute, fills defaults and changes into the server directory.
-bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfigName);
+bool EnterServerDirectory(ServerStartupArguments& args);
 
-/// Loads <server dir>/config/common.conf, then the service's own file (args.configFilePath).
-bool LoadServerConfig(ServerStartupArguments const& args);
+/// Picks the services from --services, else Server.Services of common.conf (default: both).
+bool ResolveServices(ServerStartupArguments const& args, ServerServices& services);
+
+/// Loads common.conf, then the file of each selected service from <server dir>/config.
+bool LoadServerConfig(ServerStartupArguments const& args, ServerServices const& services);
 
 /// Warns when common.conf is older than this build expects. Needs the config loaded.
 void CheckCommonConfVersion();

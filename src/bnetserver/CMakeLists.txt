@@ -1,5 +1,4 @@
 set(LIBRARY_NAME bnetserver)
-set(EXECUTABLE_NAME bnetserver_exe)
 set(LIBRARY_SRCS
   BnetServer.h
   BnetServer.cpp
@@ -41,13 +40,6 @@ add_library(${LIBRARY_NAME} STATIC
 )
 mangos_target_flags(${LIBRARY_NAME})
 
-add_executable(${EXECUTABLE_NAME}
-  Main.cpp
-)
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME bnetserver)
-mangos_target_flags(${EXECUTABLE_NAME})
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
-
 target_link_libraries(${LIBRARY_NAME}
   shared
   framework
@@ -78,26 +70,4 @@ if(UNIX)
   )
 endif()
 
-set(EXECUTABLE_LINK_FLAGS "")
-
-if(UNIX)
-  set(EXECUTABLE_LINK_FLAGS "-pthread ${EXECUTABLE_LINK_FLAGS}")
-endif()
-
-if(APPLE)
-  set(EXECUTABLE_LINK_FLAGS "-framework Carbon ${EXECUTABLE_LINK_FLAGS}")
-endif()
-
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
-  "${EXECUTABLE_LINK_FLAGS}"
-)
-
-mangos_copy_openssl_dlls(${EXECUTABLE_NAME})
-
-install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
 set_property(GLOBAL APPEND PROPERTY SERVER_SETUP_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/bnetserver.conf.dist.in|bnetserver.conf")
-install(FILES bnetserver.conf.dist.in DESTINATION ${CONF_DIR} RENAME bnetserver.conf.dist)
-
-if(WIN32 AND MSVC)
-  install(FILES $<TARGET_PDB_FILE:${EXECUTABLE_NAME}> DESTINATION ${BIN_DIR} OPTIONAL)
-endif()

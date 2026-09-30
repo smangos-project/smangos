@@ -16,7 +16,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 set(LIBRARY_NAME mangosd)
-set(EXECUTABLE_NAME mangosd_exe)
 set(LIBRARY_SRCS
   CliRunnable.h
   Master.h
@@ -76,17 +75,6 @@ add_library(${LIBRARY_NAME} STATIC
 )
 mangos_target_flags(${LIBRARY_NAME})
 
-set(EXECUTABLE_SRCS Main.cpp)
-if(WIN32)
-  list(APPEND EXECUTABLE_SRCS mangosd.rc)
-endif()
-add_executable(${EXECUTABLE_NAME}
-  ${EXECUTABLE_SRCS}
-)
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME mangosd)
-mangos_target_flags(${EXECUTABLE_NAME})
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
-
 if(USE_SCRIPTS)
   target_link_libraries(${LIBRARY_NAME}
     game
@@ -106,8 +94,6 @@ else()
     gsoap
   )
 endif()
-
-doltlite_copy_runtime(${EXECUTABLE_NAME})
 
 if(WIN32)
   target_link_libraries(${LIBRARY_NAME}
@@ -136,27 +122,5 @@ if(UNIX)
   )
 endif()
 
-set(EXECUTABLE_LINK_FLAGS "")
-
-if(UNIX)
-  set(EXECUTABLE_LINK_FLAGS "-pthread ${EXECUTABLE_LINK_FLAGS} -rdynamic")
-endif()
-
-if(APPLE)
-  set(EXECUTABLE_LINK_FLAGS "-framework Carbon ${EXECUTABLE_LINK_FLAGS}")
-endif()
-
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
-  "${EXECUTABLE_LINK_FLAGS}"
-)
-
-install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
-mangos_copy_openssl_dlls(${EXECUTABLE_NAME})
 set_property(GLOBAL APPEND PROPERTY SERVER_SETUP_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/mangosd.conf.dist.in|mangosd.conf")
-install(FILES run-mangosd DESTINATION ${BIN_DIR})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mangosd.conf.dist.in ${CMAKE_CURRENT_BINARY_DIR}/mangosd.conf.dist)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mangosd.conf.dist DESTINATION ${CONF_DIR})
 
-if(WIN32 AND MSVC)
-  install(FILES $<TARGET_PDB_FILE:${EXECUTABLE_NAME}> DESTINATION ${BIN_DIR} OPTIONAL)
-endif()

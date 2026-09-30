@@ -7,30 +7,40 @@
 #include <filesystem>
 
 // Print out the usage string for this program on the console.
-void printUsage(char const* thisExecutableName)
+static void printUsage(char const* thisExecutableName)
 {
-#if defined(WIN32)
     printf(R"END(Usage: %s [<options>]
-    -v, --version               print version and exist
-    -c, --config <config_file>  use config_file as configuration file
+    -v, --version               print version and exit
+    -c, --config <config_file>  use config_file as common.conf
     --server-dir <dir>          run from dir (default: <source root>/.server)
-    --dump-stores <dir>         write the loaded world stores to dir and exit
-  Running as service functions:
-    -s run                      run as service
-    -s install                  install service
-    -s uninstall                uninstall service
+    --services <list>           comma-separated: mangosd, bnetserver (default: Server.Services of common.conf)
+    --dump-stores <dir>         write the loaded world stores to dir and exit (runs mangosd only)
 )END", thisExecutableName);
-#else
-    printf(R"END(Usage: %s [<options>]
-    -v, --version               print version and exist
-    -c, --config <config_file>  use config_file as configuration file
-    --server-dir <dir>          run from dir (default: <source root>/.server)
-    --dump-stores <dir>         write the loaded world stores to dir and exit
-  Running as daemon functions:
-    -s run                      run as daemon
-    -s stop                     stop daemon
-)END", thisExecutableName);
-#endif
+}
+
+// Fills the flags from a comma-separated list; false with a message on an unknown or empty list.
+static bool ParseServiceList(std::string const& list, ServerServices& services, std::string& error)
+{
+    services = ServerServices();
+    for (std::string const& name : SplitStringByDelimiter(list, ','))
+    {
+        if (name == "mangosd")
+            services.mangosd = true;
+        else if (name == "bnetserver")
+            services.bnetserver = true;
+        else
+        {
+            error = "Unknown service '" + name + "' (use mangosd, bnetserver)";
+            return false;
+        }
+    }
+
+    if (!services.mangosd && !services.bnetserver)
+    {
+        error = "No service selected (use mangosd, bnetserver)";
+        return false;
+    }
+    return true;
 }
 
 nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartupArguments(int /*MUTABLE*/ argc, char** /*MUTABLE*/ argv) // we are changing the meaning of argc and argv
@@ -39,12 +49,21 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
     argv++; // skip the first argument, since it's just the executable name
     argc--;
 
-    ServerStartupArguments args
+    ServerStartupArguments args;
+
+    auto nextValue = [&](char const* missingMessage, std::string& value) -> bool
     {
-        ServiceDaemonAction::NotSet,
-        "",
-        "",
-        ""
+        if (argc == 0)
+        {
+            printf("Error: %s\n", missingMessage);
+            printUsage(thisExecutableName);
+            return false;
+        }
+
+        value = std::string(*argv);
+        argv++;
+        argc--;
+        return true;
     };
 
     while (argc > 0)
@@ -65,83 +84,23 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
         }
         else if (part == "-c" || part == "--config")
         {
-            if (argc == 0)
-            {
-                printf("Error: Config filename required\n");
-                printUsage(thisExecutableName);
+            if (!nextValue("Config filename required", args.configFilePath))
                 return nonstd::make_unexpected(EXIT_FAILURE);
-            }
-
-            std::string nextPart = std::string(*argv);
-            argv++;
-            argc--;
-
-            args.configFilePath = nextPart;
         }
         else if (part == "--server-dir")
         {
-            if (argc == 0)
-            {
-                printf("Error: Server directory required\n");
-                printUsage(thisExecutableName);
+            if (!nextValue("Server directory required", args.serverDir))
                 return nonstd::make_unexpected(EXIT_FAILURE);
-            }
-
-            args.serverDir = std::string(*argv);
-            argv++;
-            argc--;
+        }
+        else if (part == "--services")
+        {
+            if (!nextValue("Service list required", args.services))
+                return nonstd::make_unexpected(EXIT_FAILURE);
         }
         else if (part == "--dump-stores")
         {
-            if (argc == 0)
-            {
-                printf("Error: Dump directory required\n");
-                printUsage(thisExecutableName);
+            if (!nextValue("Dump directory required", args.dumpStoresDir))
                 return nonstd::make_unexpected(EXIT_FAILURE);
-            }
-
-            args.dumpStoresDir = std::string(*argv);
-            argv++;
-            argc--;
-        }
-        else if (part == "-s")
-        {
-            if (argc == 0)
-            {
-                printf("Error: Config filename required\n");
-                printUsage(thisExecutableName);
-                return nonstd::make_unexpected(EXIT_FAILURE);
-            }
-
-            std::string nextPart = std::string(*argv);
-            argv++;
-            argc--;
-
-            if (nextPart == "run")
-            {
-                args.inputServiceMode = ServiceDaemonAction::Start;
-            }
-#ifdef WIN32
-            else if (nextPart == "install")
-            {
-                args.inputServiceMode = ServiceDaemonAction::Install;
-            }
-            else if (nextPart == "uninstall")
-            {
-                args.inputServiceMode = ServiceDaemonAction::Uninstall;
-            }
-#else
-            else if (nextPart == "stop")
-            {
-                args.inputServiceMode = ServiceDaemonAction::Stop;
-            }
-#endif
-            else
-            {
-                printf("Error: Unknown service mode\n");
-                printUsage(thisExecutableName);
-                return nonstd::make_unexpected(EXIT_FAILURE);
-            }
         }
         else
         {
@@ -151,10 +110,27 @@ nonstd::expected<ServerStartupArguments, int /* exit value */> ParseServerStartu
         }
     }
 
+    if (!args.services.empty())
+    {
+        ServerServices services;
+        std::string error;
+        if (!ParseServiceList(args.services, services, error))
+        {
+            printf("Error: %s\n", error.c_str());
+            return nonstd::make_unexpected(EXIT_FAILURE);
+        }
+
+        if (!args.dumpStoresDir.empty() && services.bnetserver)
+        {
+            printf("Error: --dump-stores runs mangosd only\n");
+            return nonstd::make_unexpected(EXIT_FAILURE);
+        }
+    }
+
     return args;
 }
 
-bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfigName)
+bool EnterServerDirectory(ServerStartupArguments& args)
 {
     try
     {
@@ -166,7 +142,7 @@ bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfi
         }
 
         if (args.configFilePath.empty())
-            args.configFilePath = (serverDir / "config" / defaultConfigName).string();
+            args.configFilePath = (serverDir / "config" / "common.conf").string();
         else
             args.configFilePath = std::filesystem::absolute(args.configFilePath).string();
 
@@ -185,11 +161,43 @@ bool EnterServerDirectory(ServerStartupArguments& args, char const* defaultConfi
     }
 }
 
-bool LoadServerConfig(ServerStartupArguments const& args)
+bool ResolveServices(ServerStartupArguments const& args, ServerServices& services)
 {
-    std::string const commonFile = (std::filesystem::path(args.serverDir) / "config" / "common.conf").string();
+    std::string list = args.services;
+    if (list.empty())
+        list = args.dumpStoresDir.empty() ? "" : "mangosd";
+
+    if (list.empty())
+    {
+        std::string error;
+        if (!sConfig.LoadLayers({ args.configFilePath }, error))
+        {
+            fprintf(stderr, "server: %s\n", error.c_str());
+            return false;
+        }
+        list = sConfig.GetStringDefault("Server.Services", "mangosd,bnetserver");
+    }
+
     std::string error;
-    if (sConfig.LoadLayers({ commonFile, args.configFilePath }, error))
+    if (!ParseServiceList(list, services, error))
+    {
+        fprintf(stderr, "server: %s\n", error.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool LoadServerConfig(ServerStartupArguments const& args, ServerServices const& services)
+{
+    std::filesystem::path const configDir = std::filesystem::path(args.serverDir) / "config";
+    std::vector<std::string> files = { args.configFilePath };
+    if (services.mangosd)
+        files.push_back((configDir / "mangosd.conf").string());
+    if (services.bnetserver)
+        files.push_back((configDir / "bnetserver.conf").string());
+
+    std::string error;
+    if (sConfig.LoadLayers(files, error))
         return true;
 
     fprintf(stderr, "server: %s\n", error.c_str());
@@ -255,9 +263,9 @@ void ApplyProcessSettings()
     if (sConfig.GetBoolDefault("ProcessPriority", false))
     {
         if (::SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
-            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "process priority class set to HIGH");
+            sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "server process priority class set to HIGH");
         else
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set process priority class.");
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Can't set server process priority class.");
     }
 #endif
 }

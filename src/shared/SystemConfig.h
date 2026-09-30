@@ -56,19 +56,12 @@
 # define ARCHITECTURE "x32"
 #endif
 
-// The path to config files
-#ifndef SYSCONFDIR
-#  define SYSCONFDIR        ""
-#endif
-
 #if PLATFORM == PLATFORM_WINDOWS
 # ifdef _WIN64
 #  define _ENDIAN_PLATFORM "Win64 (" _ENDIAN_STRING ")"
 # else
 #  define _ENDIAN_PLATFORM "Win32 (" _ENDIAN_STRING ")"
 # endif
-# define _MANGOSD_CONFIG  SYSCONFDIR "mangosd.conf"
-# define _BNETSERVER_CONFIG SYSCONFDIR "bnetserver.conf"
 #else
 # if defined  (__FreeBSD__)
 #  define _ENDIAN_PLATFORM "FreeBSD_" ARCHITECTURE " (" _ENDIAN_STRING ")"
@@ -85,8 +78,6 @@
 # else
 #  define _ENDIAN_PLATFORM "Unix_" ARCHITECTURE " (" _ENDIAN_STRING ")"
 # endif
-# define _MANGOSD_CONFIG  SYSCONFDIR "mangosd.conf"
-# define _BNETSERVER_CONFIG SYSCONFDIR "bnetserver.conf"
 #endif
 
 #ifndef SERVER_SOURCE_DIR
