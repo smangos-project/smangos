@@ -7,6 +7,7 @@
 #include "Packets/Classic/Guid.h"
 #include "Packets/CharScreen.h"
 #include "Packets/Classic/Character.h"
+#include "Packets/QueryMessages.h"
 #include "Packets/Session.h"
 #include "TestBot.h"
 #include "TestRoutine.h"
@@ -280,6 +281,32 @@ TEST_CASE("char_screen: creating a character with an invalid name fails with a n
             CHECK(response->Result != CLASSIC_CHAR_CREATE_SUCCESS);
             CHECK(ClassicIsCharNameResult(response->Result));
             CHECK(response->Guid.IsEmpty());
+        }
+    });
+}
+
+TEST_CASE("char_screen: a bulk table query from the character screen is answered, one reply per record", "[protocol]")
+{
+    RunTest([]() -> TestRoutine
+    {
+        // A client with a cold cache asks for rows here and waits for every one before it goes on.
+        TestBot bot(TestBotOptions().StopAt(BotStage::CharSelect));
+        REQUIRE(co_await bot.Held(BotStage::CharSelect, 30000));
+
+        constexpr uint32 unknownTableHash = 0x12345678;
+        DbQueryBulk query;
+        query.TableHash = unknownTableHash;
+        query.RecordIds = { 1, 2, 3 };
+        bot.Send(query);
+
+        // The replies arrive together, so they are read from the history rather than awaited one by one.
+        for (uint32 recordId : query.RecordIds)
+        {
+            REQUIRE(co_await bot.WaitReceived<DbReply>(10000, [recordId](DbReply const& r) { return r.RecordId == recordId; }));
+            auto reply = bot.FindReceived<DbReply>([recordId](DbReply const& r) { return r.RecordId == recordId; });
+            REQUIRE(reply);
+            CHECK(reply->TableHash == unknownTableHash);
+            CHECK(reply->Status == CLASSIC_DB_REPLY_INVALID);
         }
     });
 }
