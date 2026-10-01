@@ -206,6 +206,26 @@ void WorldSocket::ReadBody(uint32 bodySize, std::array<uint8, 12> tag)
     });
 }
 
+namespace
+{
+// Packets up to this many body bytes are logged with their contents when LogNetworkPackets is on.
+constexpr size_t LoggedPacketBodyBytes = 1024;
+
+std::string PacketBodyHex(uint8 const* body, size_t size)
+{
+    static char const digits[] = "0123456789abcdef";
+    std::string out;
+    if (size > LoggedPacketBodyBytes)
+        return out;
+    for (size_t i = 0; i < size; ++i)
+    {
+        out += digits[body[i] >> 4];
+        out += digits[body[i] & 0xF];
+    }
+    return out;
+}
+}
+
 WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> plaintext)
 {
     if (IsClosing())
@@ -220,6 +240,9 @@ WorldSocket::HandlerResult WorldSocket::HandleCompletePacket(std::vector<uint8> 
         CloseSocket();
         return HandlerResult::Fail;
     }
+
+    if (sWorld.getConfig(CONFIG_BOOL_LOG_NETWORK_PACKETS))
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: received opcode 0x%X (%s), %zu bytes %s", GetRemoteIpString().c_str(), opcode, ClassicOpcodeName(opcode), bodySize, PacketBodyHex(bodyStart, bodySize).c_str());
 
     ByteBuffer data;
     if (bodySize)
@@ -667,6 +690,9 @@ void WorldSocket::SendPacket(WorldPacket packet)
 {
     if (IsClosing())
         return;
+
+    if (sWorld.getConfig(CONFIG_BOOL_LOG_NETWORK_PACKETS))
+        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] WorldSocket: sending opcode 0x%X (%s), %zu bytes %s", GetRemoteIpString().c_str(), packet.GetOpcode(), ClassicOpcodeName(packet.GetOpcode()), packet.size(), PacketBodyHex(packet.contents(), packet.size()).c_str());
 
     // We don't want to allocate or encrypt anything inside the world thread, so we move everything to the IO thread.
     m_sendQueueLock.lock();

@@ -90,10 +90,19 @@ void UpdateData::BuildPacket(UpdateObject& packet, uint32 mapId, UpdateDataBlock
     }
 
     // Only the first physical packet of a split send carries the destroy/out-of-range lists.
+    bool const logGuids = sWorld.getConfig(CONFIG_BOOL_LOG_NETWORK_PACKETS);
     for (ObjectGuid const& guid : m_destroyGUIDs)
+    {
+        if (logGuids)
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "UpdateBlock: destroy %s", guid.GetString().c_str());
         packet.DestroyGUIDs.push_back(ClassicGuidMapping::ToClassic(guid, realmID));
+    }
     for (ObjectGuid const& guid : m_outOfRangeGUIDs)
+    {
+        if (logGuids)
+            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "UpdateBlock: out of range %s", guid.GetString().c_str());
         packet.OutOfRangeGUIDs.push_back(ClassicGuidMapping::ToClassic(guid, realmID));
+    }
     m_destroyGUIDs.clear();
     m_outOfRangeGUIDs.clear();
 }

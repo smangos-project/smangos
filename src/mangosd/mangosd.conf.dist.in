@@ -443,6 +443,12 @@ DebuffLimit = 0
 #        Default: 1 - Write SQL code to logfile
 #                 0 - Do not log
 #
+#    LogNetworkPackets
+#        Write one line per world packet received from or sent to a client (opcode, name, body size)
+#        to Network.log. For debugging what the client does around a disconnect; the file grows fast.
+#        Default: 0 - Do not log
+#                 1 - Log every packet
+#
 #    Logfile.DBError
 #        Log file of DB errors detected at server run
 #        Default: "DBErrors.log"
@@ -538,6 +544,7 @@ DebuffLimit = 0
 ###################################################################################################################
 
 LogSQL = 1
+LogNetworkPackets = 0
 
 
 LogMoneyThreshold = 10000

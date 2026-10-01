@@ -478,6 +478,16 @@ bool IsUnsentTransport(Object const& object)
     return info && info->type == GAMEOBJECT_TYPE_MO_TRANSPORT;
 }
 
+// Under LogNetworkPackets, one Network.log line per object block written into an update, so a
+// client that rejects the update (CMSG_LOG_DISCONNECT) can be matched to the object that did it.
+void LogUpdateBlock(char const* kind, Object const& object)
+{
+    if (!sWorld.getConfig(CONFIG_BOOL_LOG_NETWORK_PACKETS))
+        return;
+    GameObject const* gameObject = object.ToGameObject();
+    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "UpdateBlock: %s %s entry %u goType %d", kind, object.GetObjectGuid().GetString().c_str(), object.GetEntry(), gameObject && gameObject->GetGOInfo() ? int(gameObject->GetGOInfo()->type) : -1);
+}
+
 void CloseValuesBlock(ByteBuffer& buf, std::size_t sizePos)
 {
     buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
@@ -503,6 +513,7 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     uint8 const objectType = ToWireTypeId(object.GetTypeId(), static_cast<Object const*>(target) == &object);
 
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    LogUpdateBlock("create", object);
 
     buf << uint8(updateType);
     buf << ToClassic(object.GetObjectGuid());
@@ -547,6 +558,7 @@ void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 
     EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(object, target);
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    LogUpdateBlock("values", object);
     std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectChangedMask);
     BuildValuesUpdate(object, buf, fieldFlags, target, changedMask, isSelf);
     CloseValuesBlock(buf, sizePos);
@@ -560,6 +572,7 @@ void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& d
     FillUpdateFieldData(const_cast<Object&>(object));
 
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    LogUpdateBlock("values", object);
     std::size_t sizePos = OpenValuesBlock(buf, object, flags, CGObjectActiveMask | CGObjectChangedMask);
 
     Unit const* unit = object.ToUnit();
@@ -606,6 +619,7 @@ void BuildDynamicFlagsUpdateBlockForPlayer(Object const& object, UpdateData& dat
 
     EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(object, target);
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    LogUpdateBlock("dynamic flags", object);
     std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectActiveMask | CGObjectChangedMask);
 
     UFObjectData::Mask mask;
@@ -625,6 +639,7 @@ void BuildUnitFlagsUpdateBlockForPlayer(Unit const& unit, UpdateData& data, Play
 
     EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(unit, target);
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
+    LogUpdateBlock("unit flags", unit);
     std::size_t sizePos = OpenValuesBlock(buf, unit, fieldFlags, CGObjectActiveMask | CGObjectChangedMask);
 
     UFUnitData::Mask mask;
