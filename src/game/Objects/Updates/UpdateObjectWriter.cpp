@@ -467,6 +467,17 @@ std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<Upda
     return sizePos;
 }
 
+// Ships and zeppelins display a WMO (GameObjectDisplayInfo.FileDataID) and need the transport
+// section of the create block, which the movement frame does not write yet ("no transport
+// support yet"). Without it the client loads the WMO as an M2 and crashes on entering the world,
+// so they stay unsent, and so does every update about them, until that section exists.
+bool IsUnsentTransport(Object const& object)
+{
+    GameObject const* gameObject = object.ToGameObject();
+    GameObjectInfo const* info = gameObject ? gameObject->GetGOInfo() : nullptr;
+    return info && info->type == GAMEOBJECT_TYPE_MO_TRANSPORT;
+}
+
 void CloseValuesBlock(ByteBuffer& buf, std::size_t sizePos)
 {
     buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
@@ -476,6 +487,9 @@ void CloseValuesBlock(ByteBuffer& buf, std::size_t sizePos)
 void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
     if (!target)
+        return;
+
+    if (IsUnsentTransport(object))
         return;
 
     // The typed structs are a derived cache of the flat values array (decision 5); refreshing it
@@ -523,7 +537,7 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 
 void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
-    if (!target)
+    if (!target || IsUnsentTransport(object))
         return;
 
     bool const isSelf = static_cast<Object const*>(target) == &object;
@@ -540,7 +554,7 @@ void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 
 void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& data, EnumFlag<UpdateFieldFlag> flags, Player* target)
 {
-    if (!target)
+    if (!target || IsUnsentTransport(object))
         return;
 
     FillUpdateFieldData(const_cast<Object&>(object));
@@ -585,7 +599,7 @@ void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& d
 
 void BuildDynamicFlagsUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
-    if (!target)
+    if (!target || IsUnsentTransport(object))
         return;
 
     FillUpdateFieldData(const_cast<Object&>(object));
