@@ -467,15 +467,18 @@ std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<Upda
     return sizePos;
 }
 
-// Ships and zeppelins display a WMO (GameObjectDisplayInfo.FileDataID) and need the transport
-// section of the create block, which the movement frame does not write yet ("no transport
-// support yet"). Without it the client loads the WMO as an M2 and crashes on entering the world,
-// so they stay unsent, and so does every update about them, until that section exists.
+// Ships and zeppelins (MO_TRANSPORT) display a WMO (GameObjectDisplayInfo.FileDataID) and need the
+// transport section of the create block, which the movement frame does not write yet ("no
+// transport support yet"). Without it the client loads the WMO as an M2 and crashes on entering the
+// world. Elevators and the like (TRANSPORT, guid prefix Transport) need the ServerTime and
+// GameObject sections of the create block, which are not written either; the client reads the
+// create out of step and drops the connection (CMSG_LOG_DISCONNECT reason 7). Both kinds stay
+// unsent, and so does every update about them, until those sections exist.
 bool IsUnsentTransport(Object const& object)
 {
     GameObject const* gameObject = object.ToGameObject();
     GameObjectInfo const* info = gameObject ? gameObject->GetGOInfo() : nullptr;
-    return info && info->type == GAMEOBJECT_TYPE_MO_TRANSPORT;
+    return info && (info->type == GAMEOBJECT_TYPE_MO_TRANSPORT || info->type == GAMEOBJECT_TYPE_TRANSPORT);
 }
 
 // Under LogNetworkPackets, one Network.log line per object block written into an update, so a
