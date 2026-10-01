@@ -14,4 +14,4 @@ Part of the root CMake project (Windows only, `BUILD_CLIENT`, on by default):
     cmake --build build --config Release --target client_library client_loader
 
 Outputs land in `bin/<Config>`. Copy `custom_launcher.exe` and `custom.dll` next to `WowClassic.exe` and run the launcher; `WowClassic.exe.custom.log` is written next to the client.
-See `client_library/docs/CascBypass.md` for the CASC bypass details.
+See `client_library/docs/CascBypass.md` for the CASC bypass details, and `client_library/docs/ControlServer.md` for the optional `--control` HTTP server (screenshots and input).

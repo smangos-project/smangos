@@ -9,3 +9,6 @@
 // and stacks) and deletes the trigger. Read it with
 // `cdb -z WowClassic.custom.dmp -c "~*k; q"`.
 void StartDumpTrigger();
+
+// Writes the dump immediately on the calling thread.
+void WriteDumpNow();

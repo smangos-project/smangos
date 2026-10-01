@@ -37,7 +37,14 @@ inline bool IsDllOption(std::wstring_view argument, bool& takesValue)
         { L"--staticauthseed", false },
         { L"--contentdir", true },
         { L"-contentdir", true },
+        { L"--control", false },
     };
+
+    // --control takes its port as --control=PORT, so a bare --control can't swallow the next argument.
+    if (argument.size() > 9 && _wcsnicmp(argument.data(), L"--control=", 10) == 0) {
+        takesValue = false;
+        return true;
+    }
 
     for (Option const& option : Options) {
         if (argument.size() == std::wcslen(option.name) &&

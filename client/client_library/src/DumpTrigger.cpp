@@ -52,6 +52,11 @@ void WriteDump(std::wstring const& dumpPath)
 }
 
 
+void WriteDumpNow()
+{
+    WriteDump(ExeDirectory() + L"\\WowClassic.custom.dmp");
+}
+
 void StartDumpTrigger()
 {
     std::wstring const directory = ExeDirectory();

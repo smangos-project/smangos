@@ -12,6 +12,7 @@
 #include "CascBypass.hpp"
 #include "CertBypass.hpp"
 #include "ClientPatches.hpp"
+#include "ControlServer.hpp"
 #include "DumpTrigger.hpp"
 #include "NetDiagnostics.hpp"
 
@@ -53,6 +54,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
         InstallNetDiagnosticsHooks();
         ok = EnableAllHooks() && ok;
         StartDumpTrigger();
+        StartControlServerIfRequested();
 
         FlushLog();
 
