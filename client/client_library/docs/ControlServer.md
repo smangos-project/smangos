@@ -46,14 +46,26 @@ Every input endpoint also takes:
 `post` sends window messages to the client's window: no focus change, doesn't touch your mouse. `sendinput` brings the
 window to the front and uses real input (moves the real cursor); use it for anything `post` doesn't get through.
 
-Verified on the login screen with `post`: `/type`, `/key` (tab), `/click` (field focus, checkbox).
-Not verified yet: character screen and in-world input (chat, camera drag, movement, modifiers), and the login batch.
+Measured with `post` (login screen, realm list, character screen): `/type`, `/key` (enter, tab, backspace), `/click`
+and screenshots work, including a full login through to the character screen and the "Enter World" click.
+
+Known gaps with `post`:
+- `ctrl+a` does not select all: the client reads modifier state from the real keyboard, so use `backspace` with
+  `repeat` to clear a field. Other modifier combos likely behave the same; retry with `"method":"sendinput"`.
+- A posted double click only selects a list row; click the confirm button instead.
+- In-world input (chat, camera drag, movement) is not measured yet.
 
 ## Login
 
-No login endpoint; send a batch with your own credentials: click the account field, `ctrl+a`, type the name, `tab`,
-type the password, `enter`. On the login screen at 1680x1050 the account field is at about (840, 549) and the
-password field at about (840, 651) in client pixels.
+No login endpoint; send a batch with your own credentials. At 1680x1050 the account field is at about (840, 549) and
+the password field at (840, 651) in client pixels. A dialog on screen (e.g. a disconnect notice) must be dismissed first.
+
+    {"actions":[{"click":{"x":840,"y":549}},{"key":{"keys":"backspace","repeat":20}},{"type":"ACCOUNT"},
+                {"click":{"x":840,"y":651}},{"key":{"keys":"backspace","repeat":20}},{"type":"PASSWORD"},
+                {"key":"enter"}]}
+
+Then pick the realm in the list and click Okay, and click "Enter World" on the character screen
+(positions vary with the window size; take a screenshot and use `"space":"screenshot"`).
 
 ## Screenshots
 
