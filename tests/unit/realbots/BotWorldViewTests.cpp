@@ -279,6 +279,73 @@ TEST_CASE("BotWorldView: a values block bumps ValuesUpdates", "[realbots]")
     CHECK(view.Get(target)->ValuesUpdates == 2);
 }
 
+TEST_CASE("BotWorldView: a values block gives the fragment mask, dynamic flags and health", "[realbots]")
+{
+    BotWorldView view;
+
+    ClassicGuid const target = TestGuid(0x41);
+    MovementFrameOptions opt;
+    ByteBuffer createBlocks;
+    WriteCreateBlock(createBlocks, target, BOT_TYPEID_UNIT, opt);
+    view.OnUpdateObject(MakePacket(createBlocks, 1));
+
+    // Laid out as UpdateObjectWriter.cpp's OpenValuesBlock and BuildValuesUpdate write it.
+    ByteBuffer payload;
+    payload << uint8(0) << uint8(0) << uint8(0x03); // isOwner, IdsChanged, contentsChangedMask
+    payload << uint32((1u << 0) | (1u << 5));       // Object and Unit fragments
+    payload.WriteBits(0x1 | 0x4, 4);                // ObjectData: DynamicFlags
+    payload.FlushBits();
+    payload << uint32(0x4);
+    payload.WriteBits(0x1, 8);                      // UnitData: block 0 only
+    payload.WriteBits(0x1 | 0x20 | 0x40, 32);       // Health, MaxHealth
+    payload.FlushBits();
+    payload << int64(42) << int64(100);
+    payload << int32(1234);                         // a later field the reader ignores
+
+    ClassicGuid const other = TestGuid(0x42);
+    ByteBuffer blocks;
+    WriteValuesBlock(blocks, target, std::vector<uint8>(payload.contents(), payload.contents() + payload.size()));
+    WriteCreateBlock(blocks, other, BOT_TYPEID_UNIT, opt);
+    view.OnUpdateObject(MakePacket(blocks, 2));
+
+    std::optional<BotKnownObject> const known = view.Get(target);
+    REQUIRE(known);
+    CHECK(known->LastFragmentMask == 0x03);
+    CHECK(known->DynamicFlags == 0x4u);
+    CHECK(known->Health == 42);
+    CHECK(known->MaxHealth == 100);
+    CHECK(view.Get(other));
+}
+
+TEST_CASE("BotWorldView: a values block with only some unit fields keeps the others", "[realbots]")
+{
+    BotWorldView view;
+
+    ClassicGuid const target = TestGuid(0x43);
+    MovementFrameOptions opt;
+    ByteBuffer createBlocks;
+    WriteCreateBlock(createBlocks, target, BOT_TYPEID_UNIT, opt);
+    view.OnUpdateObject(MakePacket(createBlocks, 1));
+
+    ByteBuffer payload;
+    payload << uint8(0) << uint8(0) << uint8(0x03);
+    payload << uint32(1u << 5);                     // Unit fragment only
+    payload.WriteBits(0x1, 8);
+    payload.WriteBits(0x1 | 0x20, 32);              // Health only
+    payload.FlushBits();
+    payload << int64(0);
+
+    ByteBuffer blocks;
+    WriteValuesBlock(blocks, target, std::vector<uint8>(payload.contents(), payload.contents() + payload.size()));
+    view.OnUpdateObject(MakePacket(blocks, 1));
+
+    std::optional<BotKnownObject> const known = view.Get(target);
+    REQUIRE(known);
+    CHECK(known->Health == 0);
+    CHECK_FALSE(known->MaxHealth);
+    CHECK_FALSE(known->DynamicFlags);
+}
+
 TEST_CASE("BotWorldView: MoveUpdate and MonsterMove update the position and bump their counters", "[realbots]")
 {
     BotWorldView view;

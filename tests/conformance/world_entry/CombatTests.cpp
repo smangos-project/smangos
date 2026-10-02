@@ -62,6 +62,83 @@ TEST_CASE("combat: a GM bot attacks a spawned creature and a bystander sees the 
     });
 }
 
+TEST_CASE("combat: a bystander sees a creature's health drop, its tap and its death through values updates", "[gameplay]")
+{
+    if (ConformanceRun::GmTarget().empty())
+        SKIP("the target has no game master accounts (" << ConformanceRun::Target() << "-gm)");
+
+    RunTest([]() -> TestRoutine
+    {
+        TestBot gm(TestBotOptions().Gm());
+        TestBot watcher;
+        REQUIRE(co_await gm.Stage(BotStage::InWorld, 30000));
+        REQUIRE(co_await watcher.Stage(BotStage::InWorld, 30000));
+
+        ClassicGuid const gmGuid = gm.GetCharacterGuid();
+        REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(gmGuid).has_value(); }, 10000));
+
+        std::vector<ClassicGuid> const before = KnownUnits(gm);
+
+        SayCommand(gm, ".npc spawn add 6");
+
+        std::optional<ClassicGuid> victim;
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            victim = FindNewUnit(gm, before);
+            return victim.has_value();
+        }, 10000));
+        REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(*victim).has_value(); }, 10000));
+
+        SetSelection select;
+        select.Target = *victim;
+        gm.Send(select);
+
+        AttackSwing swing;
+        swing.Victim = *victim;
+        gm.Send(swing);
+
+        // The client ignores values blocks without the CGObject fragment marked active (0x01).
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            std::optional<BotKnownObject> const known = watcher.GetKnownObject(*victim);
+            return known && known->Health && known->MaxHealth && *known->Health < *known->MaxHealth;
+        }, 15000));
+        std::optional<BotKnownObject> hit = watcher.GetKnownObject(*victim);
+        REQUIRE(hit);
+        CHECK((hit->LastFragmentMask & 0x01) != 0);
+
+        // Modern dynamic flags: tapped by someone else is 0x10, which the vanilla layout put at 0x4.
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            std::optional<BotKnownObject> const known = watcher.GetKnownObject(*victim);
+            return known && known->DynamicFlags && (*known->DynamicFlags & 0x10);
+        }, 10000));
+
+        SayCommand(gm, ".die");
+
+        REQUIRE(co_await TestWaitUntil([&]()
+        {
+            std::optional<BotKnownObject> const known = watcher.GetKnownObject(*victim);
+            return known && known->Health == 0;
+        }, 10000));
+
+        std::optional<BotKnownObject> const dead = watcher.GetKnownObject(*victim);
+        REQUIRE(dead);
+        REQUIRE(dead->DynamicFlags);
+        CHECK((*dead->DynamicFlags & 0x1) == 0);  // not a modern flag
+        CHECK((*dead->DynamicFlags & 0x4) == 0);  // lootable only for the looter
+        CHECK((*dead->DynamicFlags & 0x10) != 0);
+
+        std::optional<BotKnownObject> const deadForGm = gm.GetKnownObject(*victim);
+        REQUIRE(deadForGm);
+        CHECK(deadForGm->Health == 0);
+        if (deadForGm->DynamicFlags)
+            CHECK((*deadForGm->DynamicFlags & (0x1 | 0x10)) == 0);
+
+        SayCommand(gm, ".npc despawn");
+    });
+}
+
 TEST_CASE("combat: a bot sitting down and standing up is told each new stand state", "[protocol]")
 {
     RunTest([]() -> TestRoutine

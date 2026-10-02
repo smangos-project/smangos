@@ -33,7 +33,8 @@ struct BotAura
 
 // One object as this bot currently knows it, from parsing SMSG_UPDATE_OBJECT itself -- written
 // from the wire layout, not by sharing the server's serializer (bot-phase-4.md's decision 5 risk
-// note). A create block gives guid, type and position; values blocks are only counted.
+// note). A create block gives guid, type and position; values blocks are counted and give the
+// ObjectData fields and unit health they carry.
 struct BotKnownObject
 {
     ClassicGuid Guid;
@@ -43,6 +44,11 @@ struct BotKnownObject
     float Z = 0.0f;
     float O = 0.0f;
     uint32_t ValuesUpdates = 0;
+    // contentsChangedMask of the last values block.
+    uint8_t LastFragmentMask = 0;
+    std::optional<uint32_t> DynamicFlags;
+    std::optional<int64_t> Health;
+    std::optional<int64_t> MaxHealth;
     uint32_t MoveUpdates = 0;
     uint32_t MonsterMoves = 0;
     std::vector<BotAura> Auras;

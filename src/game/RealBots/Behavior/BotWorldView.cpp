@@ -13,6 +13,10 @@ constexpr uint8_t BOT_UPDATETYPE_VALUES = 0;
 constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT = 1;
 constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT2 = 2;
 
+// Fragment bits of a values block's type mask.
+constexpr uint32_t BOT_WIRETYPE_OBJECT = 1u << 0;
+constexpr uint32_t BOT_WIRETYPE_UNIT = 1u << 5;
+
 // Steps over the spline section of a unit's create block: the spline id and destination, then,
 // if the unit is on a path, its flags, timing, facing and nodes. The optional extras the server
 // never sends are not understood.
@@ -207,6 +211,90 @@ bool ParseMovementFrame(ByteBuffer& data, float& x, float& y, float& z, float& o
 
     return true;
 }
+
+// Reads the header of a values block and, when present, the ObjectData fields and the unit's
+// health. Stops at the first field whose size depends on data this reader doesn't track.
+void ParseValuesPayload(ByteBuffer& data, std::size_t end, BotKnownObject& obj)
+{
+    auto remaining = [&]() { return data.rpos() <= end ? end - data.rpos() : 0; };
+
+    if (remaining() < 3 + sizeof(uint32_t))
+        return;
+    uint8_t isOwner, idsChanged, contentsChangedMask;
+    uint32_t typeMask;
+    data >> isOwner >> idsChanged >> contentsChangedMask >> typeMask;
+    obj.LastFragmentMask = contentsChangedMask;
+
+    if (typeMask & BOT_WIRETYPE_OBJECT)
+    {
+        if (remaining() < 1)
+            return;
+        uint32_t const mask = data.ReadBits(4);
+        data.ResetBitPos();
+        if (mask & 0x1)
+        {
+            if (mask & 0x2)
+            {
+                if (remaining() < sizeof(int32_t))
+                    return;
+                int32_t entry;
+                data >> entry;
+            }
+            if (mask & 0x4)
+            {
+                if (remaining() < sizeof(uint32_t))
+                    return;
+                uint32_t dynamicFlags;
+                data >> dynamicFlags;
+                obj.DynamicFlags = dynamicFlags;
+            }
+            if (mask & 0x8)
+            {
+                if (remaining() < sizeof(float))
+                    return;
+                float scale;
+                data >> scale;
+            }
+        }
+    }
+
+    if (!(typeMask & BOT_WIRETYPE_UNIT))
+        return;
+
+    if (remaining() < 1)
+        return;
+    uint32_t const blocksMask = data.ReadBits(8);
+    uint32_t blocks[8] = {};
+    for (uint32_t i = 0; i < 8; ++i)
+    {
+        if (!(blocksMask & (1u << i)))
+            continue;
+        if (remaining() < sizeof(uint32_t))
+            return;
+        blocks[i] = data.ReadBits(32);
+    }
+    data.ResetBitPos();
+
+    // Bits 1-4 are the world-effect and passive-spell lists, which come before health.
+    if (!(blocks[0] & 0x1) || (blocks[0] & 0x1E))
+        return;
+    if (blocks[0] & 0x20)
+    {
+        if (remaining() < sizeof(int64_t))
+            return;
+        int64_t health;
+        data >> health;
+        obj.Health = health;
+    }
+    if (blocks[0] & 0x40)
+    {
+        if (remaining() < sizeof(int64_t))
+            return;
+        int64_t maxHealth;
+        data >> maxHealth;
+        obj.MaxHealth = maxHealth;
+    }
+}
 }
 
 void BotWorldView::OnUpdateObject(UpdateObject const& packet)
@@ -240,10 +328,15 @@ void BotWorldView::OnUpdateObject(UpdateObject const& packet)
             data >> size;
             if (data.size() - data.rpos() < size)
                 break;
-            data.rpos(data.rpos() + size);
+            std::size_t const end = data.rpos() + size;
             for (BotKnownObject& existing : m_objects)
-                if (existing.Guid == guid)
-                    ++existing.ValuesUpdates;
+            {
+                if (existing.Guid != guid)
+                    continue;
+                ++existing.ValuesUpdates;
+                ParseValuesPayload(data, end, existing);
+            }
+            data.rpos(end);
             continue;
         }
 
