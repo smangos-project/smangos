@@ -3212,10 +3212,6 @@ void UFActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag>
     data << uint32(CategoryCooldownMods.size());
     data << uint32(WeeklySpellUses.size());
     data << uint8(NumStableSlots);
-    for (uint32 i = 0; i < 13; ++i)
-    {
-        data << uint64(Field_4348[i]);
-    }
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -3323,8 +3319,8 @@ void UFActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, 
 {
     for (uint32 i = 0; i < 1; ++i)
         data << uint32(changesMask.GetBlocksMask(i));
-    data.WriteBits(changesMask.GetBlocksMask(1), 14);
-    for (uint32 i = 0; i < 46; ++i)
+    data.WriteBits(changesMask.GetBlocksMask(1), 13);
+    for (uint32 i = 0; i < 45; ++i)
         if (changesMask.GetBlock(i))
             data.WriteBits(changesMask.GetBlock(i), 32);
 
@@ -4338,16 +4334,6 @@ void UFActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, 
             }
         }
     }
-    if (changesMask[1429])
-    {
-        for (uint32 i = 0; i < 13; ++i)
-        {
-            if (changesMask[1430 + i])
-            {
-                data << uint64(Field_4348[i]);
-            }
-        }
-    }
     if (changesMask[378])
     {
         for (uint32 i = 0; i < 9; ++i)
@@ -4507,7 +4493,6 @@ void UFActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(QuestCompleted);
     Base::ClearChangesMask(GlyphSlots);
     Base::ClearChangesMask(Glyphs);
-    Base::ClearChangesMask(Field_4348);
     _changesMask.ResetAll();
 }
 

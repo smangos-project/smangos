@@ -823,7 +823,7 @@ struct UFBankTabSettings : public IsUpdateFieldStructureTag, public HasChangesMa
     void ClearChangesMask();
 };
 
-struct UFActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1443>
+struct UFActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1429>
 {
     UpdateField<bool, 0, 1> SortBagsRightToLeft;
     UpdateField<bool, 0, 2> InsertItemsLeftToRight;
@@ -969,7 +969,6 @@ struct UFActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesM
     UpdateFieldArray<uint64, 1000, 409, 410> QuestCompleted;
     UpdateFieldArray<uint32, 9, 1410, 1411> GlyphSlots;
     UpdateFieldArray<uint32, 9, 1410, 1420> Glyphs;
-    UpdateFieldArray<uint64, 13, 1429, 1430> Field_4348;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
