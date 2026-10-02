@@ -8,10 +8,22 @@
       "problemMatcher": []
     },
     {
+      "label": "client: configure",
+      "type": "shell",
+      "command": "cmake -S . -B build",
+      "linux": {
+        "command": "cmake -S client -B build-client -DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/toolchain-mingw-w64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "client: build",
       "type": "shell",
       "command": "cmake --build build --config Release --target client_library client_loader",
-      "dependsOn": "configure",
+      "linux": {
+        "command": "cmake --build build-client -j"
+      },
+      "dependsOn": "client: configure",
       "problemMatcher": "$msCompile",
       "group": {
         "kind": "build",
@@ -22,6 +34,9 @@
       "label": "client: deploy",
       "type": "shell",
       "command": "Copy-Item bin/Release/custom.dll, bin/Release/custom_launcher.exe .client/_classic_era_ -Force",
+      "linux": {
+        "command": "cp -f build-client/bin/custom.dll build-client/bin/custom_launcher.exe .client/_classic_era_/"
+      },
       "dependsOn": "client: build",
       "problemMatcher": []
     },
@@ -29,6 +44,9 @@
       "label": "client: launch",
       "type": "shell",
       "command": "Start-Process -FilePath .client/_classic_era_/custom_launcher.exe -WorkingDirectory .client/_classic_era_",
+      "linux": {
+        "command": "client/launch-wine-detached.sh ${workspaceFolder}/.client/_classic_era_"
+      },
       "dependsOn": "client: deploy",
       "problemMatcher": []
     },
