@@ -80,6 +80,7 @@ for _ in $(seq 120); do
 done
 [[ -n "$ticket" ]] || { log "no login ticket (server down, realm offline or wrong password)"; exit 1; }
 
+world_port=$(sql "SELECT port FROM realmd.realmlist WHERE id = 1")
 online_query="SELECT COUNT(*) FROM characters.characters WHERE account = $account_id AND online = 1"
 
 # A character of a client that just quit stays online until the server drops its session.
@@ -101,14 +102,30 @@ WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/classic-client-wine}" WINEDEBUG=-al
     wine reg add 'HKCU\Software\Custom Game Server Dev\Battle.net\Launch Options\WoW' \
     /v CONNECTION_STRING /t REG_SZ /d "${portal%%:*}" /f >/dev/null 2>&1
 
-setsid "$root/client/launch-wine.sh" "$client_dir" --control="${CONTROL_PORT:-8790}" --webtoken="$ticket" \
-    >/tmp/client.out 2>&1 </dev/null &
+world_connected() { [[ -n "$(ss -Htn state established "( dport = :$world_port )" 2>/dev/null)" ]]; }
 
-for _ in $(seq 90); do
-    curl -s -m 2 "$control/status" 2>/dev/null | grep -q '"window":true' && break
-    sleep 2
+# Launches the client and waits for the launcher login to reach the realm. Now and then the
+# client sits on an empty login screen without ever connecting; the caller then relaunches it.
+launch_client() {
+    setsid "$root/client/launch-wine.sh" "$client_dir" --control="${CONTROL_PORT:-8790}" --webtoken="$ticket" \
+        >/tmp/client.out 2>&1 </dev/null &
+    for _ in $(seq 90); do
+        curl -s -m 2 "$control/status" 2>/dev/null | grep -q '"window":true' && break
+        sleep 2
+    done
+    log "client window up"
+    for _ in $(seq 40); do
+        world_connected && return 0
+        sleep 1
+    done
+    return 1
+}
+
+for attempt in 1 2 3; do
+    launch_client && break
+    log "no realm connection after launch (attempt $attempt)"
+    quit_client
 done
-log "client window up"
 
 deadline=$((SECONDS + timeout))
 while ((SECONDS < deadline)); do
@@ -118,9 +135,15 @@ while ((SECONDS < deadline)); do
         log "in world"
         exit 0
     fi
-    # Enter picks the preselected realm/character; before the screens are up it does nothing.
-    curl -s -m 5 -X POST "$control/key" -d '{"keys":"enter"}' >/dev/null 2>&1
-    sleep 4
+    # Enter during "Connecting" cancels the login, so only press it on the character screen,
+    # where the client holds a world connection.
+    if world_connected; then
+        sleep 2
+        curl -s -m 5 -X POST "$control/key" -d '{"keys":"enter"}' >/dev/null 2>&1
+        sleep 2
+    else
+        sleep 1
+    fi
 done
 
 screenshot
