@@ -158,10 +158,12 @@ SelfSignedCert GenerateSelfSignedCert()
     return out;
 }
 
-std::vector<uint8> HexDecode(std::string const& hex)
+std::vector<uint8> HexDecode(std::string hex)
 {
-    if (hex.empty() || (hex.size() % 2) != 0)
+    if (hex.empty())
         return {};
+    if (hex.size() % 2)
+        hex.insert(hex.begin(), '0');
     std::vector<uint8> out(hex.size() / 2);
     HexStrToByteArray(hex, out.data());
     return out;

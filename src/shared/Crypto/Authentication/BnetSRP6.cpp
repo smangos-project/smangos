@@ -219,8 +219,11 @@ std::vector<uint8> BnetSRP6::GetHostPublicEphemeral() const
 
 bool BnetSRP6::VerifyClientEvidence(std::vector<uint8> const& A, std::vector<uint8> const& clientEvidenceM1)
 {
-    if (clientEvidenceM1.size() != EVIDENCE_SIZE)
+    // M1 is a number; the client drops its leading zero bytes.
+    if (clientEvidenceM1.empty() || clientEvidenceM1.size() > EVIDENCE_SIZE)
         return false;
+    std::vector<uint8> m1(EVIDENCE_SIZE - clientEvidenceM1.size(), 0);
+    m1.insert(m1.end(), clientEvidenceM1.begin(), clientEvidenceM1.end());
 
     BigNumber N = GetN();
     BigNumber a = BigNumberFromBigEndianBytes(A);
@@ -240,12 +243,12 @@ bool BnetSRP6::VerifyClientEvidence(std::vector<uint8> const& A, std::vector<uin
     BigNumber S = aTimesVu.ModExp(m_b, N);
 
     SHA256::Digest ourM1 = ComputeEvidence(a, m_B, S);
-    if (!std::equal(ourM1.begin(), ourM1.end(), clientEvidenceM1.begin()))
+    if (!std::equal(ourM1.begin(), ourM1.end(), m1.begin()))
         return false;
 
     m_A = a;
     m_S = S;
-    m_clientM1 = BigNumberFromBigEndianBytes(clientEvidenceM1);
+    m_clientM1 = BigNumberFromBigEndianBytes(m1);
     return true;
 }
 

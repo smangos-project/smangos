@@ -83,7 +83,7 @@ class BnetSRP6
         void CalculateHostPublicEphemeral();
         std::vector<uint8> GetHostPublicEphemeral() const; // B, fixed N_BYTE_SIZE bytes
 
-        //! Verifies the client's public ephemeral (A) and evidence (M1, EVIDENCE_SIZE
+        //! Verifies the client's public ephemeral (A) and evidence (M1, up to EVIDENCE_SIZE
         //! bytes). Returns false if the exchange is invalid (degenerate A/u, or M1
         //! mismatch) -- do not call CalculateServerEvidence() in that case.
         bool VerifyClientEvidence(std::vector<uint8> const& A, std::vector<uint8> const& clientEvidenceM1);

@@ -178,6 +178,38 @@ TEST_CASE("BnetSRP6 rejects a wrong password", "[crypto]")
     CHECK_FALSE(host.VerifyClientEvidence(client.GetClientPublicEphemeral(), clientM1));
 }
 
+TEST_CASE("BnetSRP6 accepts M1 with its leading zero bytes stripped", "[crypto]")
+{
+    std::string username = "BOT1";
+    std::string password = "hunter2";
+
+    BnetSRP6 registration;
+    registration.CalculateVerifier(username, password);
+
+    // Retry until M1 starts with a zero byte (about 1 in 256 handshakes).
+    for (int attempt = 0; attempt < 8192; ++attempt)
+    {
+        BnetSRP6 host;
+        host.Initialize(registration.GetSalt(), registration.GetVerifier());
+        host.CalculateHostPublicEphemeral();
+
+        BnetSRP6 client;
+        client.CalculateClientPublicEphemeral();
+
+        std::vector<uint8> clientM1 = client.CalculateClientEvidence(
+            username, password, registration.GetSalt(), host.GetHostPublicEphemeral());
+        REQUIRE_FALSE(clientM1.empty());
+        if (clientM1[0] != 0)
+            continue;
+
+        clientM1.erase(clientM1.begin());
+        REQUIRE(host.VerifyClientEvidence(client.GetClientPublicEphemeral(), clientM1));
+        CHECK(client.VerifyServerEvidence(host.CalculateServerEvidence()));
+        return;
+    }
+    FAIL("no handshake produced an M1 with a leading zero byte");
+}
+
 TEST_CASE("SessionKeyGenerator512 is deterministic and fills the requested length", "[crypto]")
 {
     std::vector<uint8> seed(64);

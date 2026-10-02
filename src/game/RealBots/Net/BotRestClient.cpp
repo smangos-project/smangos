@@ -23,11 +23,19 @@ std::vector<uint8> HexDecode(std::string const& hex)
     return out;
 }
 
+// Minimal lowercase hex without leading zeros, the way the real client writes SRP values.
 std::string HexEncode(std::vector<uint8> const& bytes)
 {
+    static char const digits[] = "0123456789abcdef";
     std::string hex;
-    hexEncodeByteArray(const_cast<uint8*>(bytes.data()), uint32(bytes.size()), hex);
-    return hex;
+    for (uint8 byte : bytes)
+    {
+        if (!hex.empty() || (byte >> 4))
+            hex += digits[byte >> 4];
+        if (!hex.empty() || (byte & 0xF))
+            hex += digits[byte & 0xF];
+    }
+    return hex.empty() ? "0" : hex;
 }
 
 // Battle.net clients uppercase (Latin-only) both the account name and password before any SRP

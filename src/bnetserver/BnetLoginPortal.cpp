@@ -106,10 +106,13 @@ std::string HexEncode(std::vector<uint8> const& bytes)
     return ByteArrayToHexStr(bytes.data(), uint32(bytes.size()));
 }
 
-std::vector<uint8> HexDecode(std::string const& hex)
+// The client writes SRP values as minimal hex, dropping a leading zero nibble, so odd lengths are valid.
+std::vector<uint8> HexDecode(std::string hex)
 {
-    if (hex.empty() || (hex.size() % 2) != 0 || hex.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
+    if (hex.empty() || hex.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
         return {};
+    if (hex.size() % 2)
+        hex.insert(hex.begin(), '0');
     std::vector<uint8> out(hex.size() / 2);
     HexStrToByteArray(hex, out.data());
     return out;
