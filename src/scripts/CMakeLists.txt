@@ -331,6 +331,9 @@ target_link_libraries(scripts
   game
 )
 
+# game and scripts reference each other; make the linker scan them repeatedly
+target_link_libraries(game scripts)
+
 #add_dependencies(${LIBRARY_NAME} revision.h)
 
 if((${CMAKE_VERSION} VERSION_LESS "3.16") OR USE_PCH_OLD)

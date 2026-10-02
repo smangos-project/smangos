@@ -232,7 +232,7 @@ struct UFItemData : public IsUpdateFieldStructureTag, public HasChangesMask<43>
     UpdateField<uint8, 0, 18> ItemAppearanceModID;
     UpdateField<UFItemModList, 0, 19> Modifiers;
     UpdateField<uint32, 0, 20> ZoneFlags;
-    UpdateField<ItemBonusKey, 0, 21> ItemBonusKey;
+    UpdateField<::ItemBonusKey, 0, 21> ItemBonusKey;
     UpdateField<uint16, 0, 22> DEBUGItemLevel;
     UpdateFieldArray<int32, 5, 23, 24> SpellCharges;
     UpdateFieldArray<UFItemEnchantment, 13, 29, 30> Enchantment;
