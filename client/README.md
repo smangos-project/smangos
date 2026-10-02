@@ -25,3 +25,11 @@ The client is still a Windows exe, so on Linux the library and launcher are cros
     client/launch-wine.sh /path/to/_classic_era_ [client args...]
 
 `client/` builds standalone (no server dependencies). `launch-wine.sh` copies `custom_launcher.exe` and `custom.dll` from `build-client/bin` next to `WowClassic.exe` and starts the launcher in a wine prefix (`~/.local/share/classic-client-wine` by default, `WINEPREFIX` to override; it must not be under a directory you don't own, e.g. `/tmp`). Needs `mingw-w64-gcc` and `wine` (with vkd3d for the client's D3D12 renderer). Verified: custom.dll loads, applies its patches and the client renders under wine 11.
+
+## Automatic login (Linux)
+
+    client/autologin.sh [--restart-server] [ACCOUNT [PASSWORD [CHARACTER]]]
+
+Gets the client into the world without the login screen (defaults: CLAUDE / claude, the last played character). It asks the server's REST portal for a login ticket, starts the client with `custom_launcher.exe --webtoken=TICKET` and presses Enter until the server reports the character online. A screenshot is saved to `/tmp/autologin.jpg`.
+
+`--webtoken=TICKET` (launcher only) stores the ticket the way the Battle.net launcher does (DPAPI-encrypted `WEB_TOKEN` under `HKCU\Software\Custom Game Server Dev\Battle.net\Launch Options\WoW`) and adds `-launcherlogin`. Launcher login connects to the `CONNECTION_STRING` value in that key, not the `portal` cvar. The server preselects the account's last played realm and character, so the realm list is skipped.

@@ -58,7 +58,7 @@ if ((restart)); then
     done
     rm -f /tmp/srv.in
     mkfifo /tmp/srv.in
-    (tail -f /tmp/srv.in | build/src/server/server >/tmp/srv.out 2>&1 &)
+    (tail -f /tmp/srv.in | build/src/server/server >/tmp/srv.out 2>&1 &) </dev/null >/dev/null 2>&1
     log "server started"
 fi
 
