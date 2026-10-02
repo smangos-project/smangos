@@ -3,6 +3,7 @@
 #include "hook_lib/ProcessImage.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <span>
 #include <type_traits>

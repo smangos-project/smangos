@@ -4,3 +4,6 @@
 add_executable(client_loader src/main.cpp)
 set_target_properties(client_loader PROPERTIES OUTPUT_NAME "custom_launcher")
 target_link_libraries(client_loader PRIVATE client_common)
+if(MINGW)
+    target_link_options(client_loader PRIVATE -municode -static)
+endif()

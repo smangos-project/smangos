@@ -40,6 +40,9 @@
 
 #include <windows.h>
 #include <intrin.h>
+#ifdef __GNUC__
+#define _ReturnAddress() __builtin_return_address(0)
+#endif
 #include <shellapi.h>
 
 #include <algorithm>
