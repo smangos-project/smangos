@@ -1,6 +1,7 @@
 #include "MovementInfoWire.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "World.h"
+#include "Geometry.h"
 
 bool MovementInfoFromWire(ClassicMovementInfo const& wire, MovementInfo& info)
 {
@@ -57,7 +58,7 @@ ClassicMovementInfo MovementInfoToWire(MovementInfo const& info, ObjectGuid cons
     wire.X = info.pos.x;
     wire.Y = info.pos.y;
     wire.Z = info.pos.z;
-    wire.O = info.pos.o;
+    wire.O = Geometry::NormalizeOrientation(info.pos.o);
     wire.Pitch = info.s_pitch;
 
     if (info.HasMovementFlag(MOVEFLAG_ONTRANSPORT) && !info.t_guid.IsEmpty())
@@ -67,7 +68,7 @@ ClassicMovementInfo MovementInfoToWire(MovementInfo const& info, ObjectGuid cons
         transport.X = info.t_pos.x;
         transport.Y = info.t_pos.y;
         transport.Z = info.t_pos.z;
-        transport.O = info.t_pos.o;
+        transport.O = Geometry::NormalizeOrientation(info.t_pos.o);
         wire.TransportInfo = transport;
     }
 

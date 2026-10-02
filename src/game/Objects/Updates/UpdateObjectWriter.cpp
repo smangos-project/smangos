@@ -21,6 +21,7 @@
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Server/Packets/PlayerSetup.h"
 #include "World.h"
+#include "Geometry.h"
 
 namespace
 {
@@ -205,7 +206,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data << float(unit.GetPositionX());
         data << float(unit.GetPositionY());
         data << float(unit.GetPositionZ());
-        data << float(unit.GetOrientation());
+        data << float(Geometry::NormalizeOrientation(unit.GetOrientation()));   // the client rejects creates outside [0, 2pi)
 
         data << float(mi.s_pitch);
         data << float(0.0f);                                     // StepUpStartElevation: no 1.12 source
@@ -228,7 +229,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         if (hasTransport)
         {
             ToClassic(mi.GetTransportGuid()).Write(data);
-            data << mi.GetTransportPos().x << mi.GetTransportPos().y << mi.GetTransportPos().z << mi.GetTransportPos().o;
+            data << mi.GetTransportPos().x << mi.GetTransportPos().y << mi.GetTransportPos().z << Geometry::NormalizeOrientation(mi.GetTransportPos().o);
             data << int8(-1) << uint32(0);                       // Seat, Time: no 1.12 source
             data.WriteBit(false);                                // HasPrevTime
             data.WriteBit(false);                                // HasVehicleId
@@ -282,7 +283,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
             data << float(gameObject->GetStationaryX());
             data << float(gameObject->GetStationaryY());
             data << float(gameObject->GetStationaryZ());
-            data << float(gameObject->GetStationaryO());
+            data << float(Geometry::NormalizeOrientation(gameObject->GetStationaryO()));
         }
         else
         {
@@ -290,7 +291,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
             data << float(worldObject.GetPositionX());
             data << float(worldObject.GetPositionY());
             data << float(worldObject.GetPositionZ());
-            data << float(worldObject.GetOrientation());
+            data << float(Geometry::NormalizeOrientation(worldObject.GetOrientation()));
         }
     }
 
