@@ -1,6 +1,8 @@
 #define NOMINMAX
 #include "ControlCapture.hpp"
 
+#include "SwapChainCapture.hpp"
+
 #include <wincodec.h>
 #include <wrl/client.h>
 
@@ -24,6 +26,11 @@ static bool IsBlack(std::vector<std::uint8_t> const& pixels, int width, int heig
 // Top-down BGRX pixels of the whole client area.
 static bool GrabClient(HWND window, int width, int height, std::vector<std::uint8_t>& pixels)
 {
+    int frameWidth = 0;
+    int frameHeight = 0;
+    if (CaptureSwapChain(frameWidth, frameHeight, pixels) && frameWidth == width && frameHeight == height)
+        return true;
+
     HDC screen = GetDC(nullptr);
     HDC dc = CreateCompatibleDC(screen);
     BITMAPINFO info = {};

@@ -35,6 +35,7 @@ static bool ParseKey(std::string const& rawName, Key& key)
         {"down", VK_DOWN, true}, {"left", VK_LEFT, true}, {"right", VK_RIGHT, true},
         {"plus", VK_OEM_PLUS, false}, {"minus", VK_OEM_MINUS, false}, {"comma", VK_OEM_COMMA, false},
         {"period", VK_OEM_PERIOD, false}, {"slash", VK_OEM_2, false}, {"grave", VK_OEM_3, false},
+        {"printscreen", VK_SNAPSHOT, false},
     };
     for (Named const& named : Names) {
         if (name == named.name) {
