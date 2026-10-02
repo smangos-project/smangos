@@ -84,6 +84,12 @@ set_target_properties(doltlite PROPERTIES
 )
 
 set(DOLTLITE_RUNTIME_DLLS)
+if (UNIX AND NOT APPLE)
+  # The library's SONAME is libdoltlite.so.0 but the package ships it as
+  # libdoltlite.so, so the loader needs a copy under the SONAME next to the
+  # executable (found through the $ORIGIN rpath set in doltlite_copy_runtime).
+  set(DOLTLITE_RUNTIME_DLLS "${DOLTLITE_LIBRARY_FILE}")
+endif()
 if (WIN32)
   # An MSVC-ABI linker -- MSVC's own, clang-cl, or plain clang++ targeting
   # the MSVC ABI and linked with lld-link -- can't link a MinGW-built DLL
@@ -154,6 +160,13 @@ set(DOLTLITE_RUNTIME_DLLS "${DOLTLITE_RUNTIME_DLLS}" CACHE INTERNAL "")
 # Copies doltlite's runtime DLLs next to TARGET's output. Every executable
 # that links doltlite, directly or through a static library, must call this.
 function(doltlite_copy_runtime TARGET)
+  if(UNIX AND NOT APPLE)
+    set_property(TARGET ${TARGET} APPEND PROPERTY INSTALL_RPATH "\$ORIGIN")
+    add_custom_command(TARGET ${TARGET} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DOLTLITE_RUNTIME_DLLS}" "$<TARGET_FILE_DIR:${TARGET}>/libdoltlite.so.0"
+    )
+    return()
+  endif()
   foreach(_dll ${DOLTLITE_RUNTIME_DLLS})
     add_custom_command(TARGET ${TARGET} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_dll}" "$<TARGET_FILE_DIR:${TARGET}>"
