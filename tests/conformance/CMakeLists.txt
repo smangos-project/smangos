@@ -92,7 +92,7 @@ target_include_directories(tests-conformance PRIVATE
   ${CMAKE_SOURCE_DIR}/src/shared
 )
 
-target_link_libraries(tests-conformance PRIVATE shared framework Catch2NoMain zlib bnetproto)
+target_link_libraries(tests-conformance PRIVATE shared framework Catch2NoMain bnetproto)
 
 if (WIN32)
   target_link_libraries(tests-conformance PRIVATE
@@ -111,6 +111,7 @@ if (UNIX)
 endif()
 
 mangos_copy_openssl_dlls(tests-conformance)
+doltlite_copy_runtime(tests-conformance)
 
 # Never part of `ctest -L unit` (bot-plan.md's testing model: conformance talks to the network,
 # unit doesn't) -- no catch_discover_tests call here at all. Run by hand:

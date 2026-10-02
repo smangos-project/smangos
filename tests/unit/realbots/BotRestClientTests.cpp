@@ -191,7 +191,7 @@ bool ReadHttpRequest(SSL* ssl, HttpRequest& request)
     std::string line;
     while (ReadLine(ssl, line) && !line.empty())
     {
-        if (line.size() > 15 && _strnicmp(line.c_str(), "Content-Length:", 15) == 0)
+        if (line.size() > 15 && StringStartsWithCaseInsensitive(line, "Content-Length:"))
         {
             size_t valueStart = line.find_first_not_of(" \t", 15);
             if (valueStart != std::string::npos)

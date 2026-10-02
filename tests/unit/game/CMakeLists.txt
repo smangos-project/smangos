@@ -50,5 +50,6 @@ endif()
 
 set_target_properties(tests-game PROPERTIES FOLDER "Tests")
 mangos_copy_openssl_dlls(tests-game)
+doltlite_copy_runtime(tests-game)
 
 catch_discover_tests(tests-game TEST_PREFIX "game: " PROPERTIES LABELS "unit")

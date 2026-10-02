@@ -101,7 +101,7 @@ target_include_directories(tests-realbots PRIVATE
   ${CMAKE_SOURCE_DIR}/src/shared
 )
 
-target_link_libraries(tests-realbots PRIVATE shared framework Catch2 zlib bnetproto)
+target_link_libraries(tests-realbots PRIVATE shared framework Catch2 bnetproto)
 
 if (WIN32)
   target_link_libraries(tests-realbots PRIVATE
@@ -121,6 +121,7 @@ endif()
 
 set_target_properties(tests-realbots PROPERTIES FOLDER "Tests")
 mangos_copy_openssl_dlls(tests-realbots)
+doltlite_copy_runtime(tests-realbots)
 
 # [live]-tagged tests (BotLoginLiveTests.cpp) need a reachable real server and aren't part of
 # the hermetic "unit" suite (bot-plan.md's testing model: unit tests make no network calls to a

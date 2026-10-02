@@ -44,5 +44,6 @@ endif()
 
 set_target_properties(tests-shared PROPERTIES FOLDER "Tests")
 mangos_copy_openssl_dlls(tests-shared)
+doltlite_copy_runtime(tests-shared)
 
 catch_discover_tests(tests-shared TEST_PREFIX "shared: " PROPERTIES LABELS "unit")

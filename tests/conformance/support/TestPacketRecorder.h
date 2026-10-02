@@ -31,7 +31,7 @@ class TestPacketRecorder
                     m_history.pop_front();
                 for (auto it = m_pending.begin(); it != m_pending.end();)
                 {
-                    if (it->Predicate(packet))
+                    if (it->Match(packet))
                     {
                         toFire.push_back(std::move(it->Ready));
                         it = m_pending.erase(it);
@@ -100,7 +100,7 @@ class TestPacketRecorder
         struct Pending
         {
             uint64_t Id;
-            Predicate Predicate;
+            Predicate Match;
             OnReady Ready;
         };
 
