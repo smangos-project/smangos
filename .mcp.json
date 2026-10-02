@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ghidra": {
+      "type": "stdio",
+      "command": "/home/ihm/ghidra-mcp/venv/bin/bridge-mcp-ghidra",
+      "args": [],
+      "env": {}
+    }
+  }
+}
