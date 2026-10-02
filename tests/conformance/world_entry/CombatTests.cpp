@@ -82,9 +82,12 @@ TEST_CASE("combat: a bystander sees a creature's health drop, its tap and its de
         SayCommand(gm, ".npc spawn add 6");
 
         std::optional<ClassicGuid> victim;
+        // The guid carries the entry, so wandering wildlife isn't taken for the spawn.
         REQUIRE(co_await TestWaitUntil([&]()
         {
-            victim = FindNewUnit(gm, before);
+            for (ClassicGuid const& guid : KnownUnits(gm))
+                if (((guid.High >> 6) & 0x7FFFFF) == 6 && std::find(before.begin(), before.end(), guid) == before.end())
+                    victim = guid;
             return victim.has_value();
         }, 10000));
         REQUIRE(co_await TestWaitUntil([&]() { return watcher.GetKnownObject(*victim).has_value(); }, 10000));
@@ -135,7 +138,7 @@ TEST_CASE("combat: a bystander sees a creature's health drop, its tap and its de
         if (deadForGm->DynamicFlags)
             CHECK((*deadForGm->DynamicFlags & (0x1 | 0x10)) == 0);
 
-        SayCommand(gm, ".npc despawn");
+        SayCommand(gm, ".npc spawn delete");
     });
 }
 
