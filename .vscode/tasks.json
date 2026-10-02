@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "configure",
+      "type": "shell",
+      "command": "cmake -S . -B build",
+      "problemMatcher": []
+    },
+    {
+      "label": "client: build",
+      "type": "shell",
+      "command": "cmake --build build --config Release --target client_library client_loader",
+      "dependsOn": "configure",
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "client: deploy",
+      "type": "shell",
+      "command": "Copy-Item bin/Release/custom.dll, bin/Release/custom_launcher.exe .client/_classic_era_ -Force",
+      "dependsOn": "client: build",
+      "problemMatcher": []
+    },
+    {
+      "label": "client: launch",
+      "type": "shell",
+      "command": "Start-Process -FilePath .client/_classic_era_/custom_launcher.exe -WorkingDirectory .client/_classic_era_",
+      "dependsOn": "client: deploy",
+      "problemMatcher": []
+    },
+    {
+      "label": "server: setup",
+      "type": "shell",
+      "command": "cmake --build build --config RelWithDebInfo --target server_setup",
+      "dependsOn": "configure",
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "server: run",
+      "type": "shell",
+      "command": "bin/RelWithDebInfo/server.exe",
+      "dependsOn": "server: setup",
+      "problemMatcher": []
+    },
+    {
+      "label": "server: run mangosd",
+      "type": "shell",
+      "command": "bin/RelWithDebInfo/server.exe --services mangosd",
+      "dependsOn": "server: setup",
+      "problemMatcher": []
+    },
+    {
+      "label": "server: run bnetserver",
+      "type": "shell",
+      "command": "bin/RelWithDebInfo/server.exe --services bnetserver",
+      "dependsOn": "server: setup",
+      "problemMatcher": []
+    }
+  ]
+}

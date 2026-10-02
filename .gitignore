@@ -101,9 +101,6 @@ cmake_install.cmake
 .idea/*
 !.idea/codeStyles/
 
-# VSCode
-.vscode
-
 # Nostalrius
 newsletter
 patch
