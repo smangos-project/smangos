@@ -563,7 +563,7 @@ void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     EnumFlag<UpdateFieldFlag> fieldFlags = GetUpdateFieldFlagsFor(object, target);
     ByteBuffer& buf = data.AddUpdateBlockAndGetBuffer();
     LogUpdateBlock("values", object);
-    std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectChangedMask);
+    std::size_t sizePos = OpenValuesBlock(buf, object, fieldFlags, CGObjectActiveMask | CGObjectChangedMask);
     BuildValuesUpdate(object, buf, fieldFlags, target, changedMask, isSelf);
     CloseValuesBlock(buf, sizePos);
 }
