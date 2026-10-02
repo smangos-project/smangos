@@ -6,6 +6,10 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/RelWithDebInfo/server.exe",
+      "linux": {
+        "type": "cppdbg",
+        "program": "${workspaceFolder}/build/src/server/server"
+      },
       "args": [],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -16,6 +20,10 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/RelWithDebInfo/server.exe",
+      "linux": {
+        "type": "cppdbg",
+        "program": "${workspaceFolder}/build/src/server/server"
+      },
       "args": ["--services", "mangosd"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -26,6 +34,10 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/RelWithDebInfo/server.exe",
+      "linux": {
+        "type": "cppdbg",
+        "program": "${workspaceFolder}/build/src/server/server"
+      },
       "args": ["--services", "bnetserver"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

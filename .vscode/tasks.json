@@ -54,6 +54,9 @@
       "label": "server: setup",
       "type": "shell",
       "command": "cmake --build build --config RelWithDebInfo --target server_setup",
+      "linux": {
+        "command": "cmake --build build -j --target server_setup"
+      },
       "dependsOn": "configure",
       "problemMatcher": "$gcc"
     },
@@ -61,6 +64,9 @@
       "label": "server: run",
       "type": "shell",
       "command": "bin/RelWithDebInfo/server.exe",
+      "linux": {
+        "command": "build/src/server/server"
+      },
       "dependsOn": "server: setup",
       "problemMatcher": []
     },
@@ -68,6 +74,9 @@
       "label": "server: run mangosd",
       "type": "shell",
       "command": "bin/RelWithDebInfo/server.exe --services mangosd",
+      "linux": {
+        "command": "build/src/server/server --services mangosd"
+      },
       "dependsOn": "server: setup",
       "problemMatcher": []
     },
@@ -75,6 +84,9 @@
       "label": "server: run bnetserver",
       "type": "shell",
       "command": "bin/RelWithDebInfo/server.exe --services bnetserver",
+      "linux": {
+        "command": "build/src/server/server --services bnetserver"
+      },
       "dependsOn": "server: setup",
       "problemMatcher": []
     }
