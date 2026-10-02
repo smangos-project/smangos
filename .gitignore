@@ -118,16 +118,16 @@ migrations_list.h
 Progression.h
 
 # local
-.local/*
+.local
 
 # client
-.client/*
+.client
 
 # database_tool world database and download cache
-.world/*
+.world
 
 # runnable server: configs, map data links, logs
-.server/*
+.server
 
 # sanitizer builds (ENABLE_ASAN)
 /build-asan/
