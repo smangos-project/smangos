@@ -152,7 +152,7 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::FactionTemplate, int32(unit.GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::Flags, unit.GetUInt32Value(UNIT_FIELD_FLAGS));
     FillField(unit, &Unit::m_unitData, &UFUnitData::AuraState, unit.GetUInt32Value(UNIT_FIELD_AURASTATE));
-    FillField(unit, &Unit::m_unitData, &UFUnitData::RangedAttackRoundBaseTime, unit.GetUInt32Value(UNIT_FIELD_RANGEDATTACKTIME));
+    FillField(unit, &Unit::m_unitData, &UFUnitData::RangedAttackRoundBaseTime, uint32(unit.GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::BoundingRadius, unit.GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS));
     FillField(unit, &Unit::m_unitData, &UFUnitData::CombatReach, unit.GetFloatValue(UNIT_FIELD_COMBATREACH));
     FillField(unit, &Unit::m_unitData, &UFUnitData::NativeDisplayID, int32(unit.GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID)));
@@ -263,9 +263,9 @@ void FillUnitData(Unit& unit)
         FillField(unit, &Unit::m_unitData, &UFUnitData::PowerCostMultiplier, i, unit.GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i));
     }
 
-    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 0, unit.GetUInt32Value(UNIT_FIELD_BASEATTACKTIME + 0));
-    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 1, unit.GetUInt32Value(UNIT_FIELD_BASEATTACKTIME + 1));
-    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 2, unit.GetUInt32Value(UNIT_FIELD_RANGEDATTACKTIME));
+    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 0, uint32(unit.GetFloatValue(UNIT_FIELD_BASEATTACKTIME + 0)));
+    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 1, uint32(unit.GetFloatValue(UNIT_FIELD_BASEATTACKTIME + 1)));
+    FillField(unit, &Unit::m_unitData, &UFUnitData::AttackRoundBaseTime, 2, uint32(unit.GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME)));
 
     // UNIT_VIRTUAL_ITEM_SLOT_DISPLAY holds a display id (Creature::SetVirtualItem); the modern
     // field wants the item id itself, cached separately since nothing else on the flat side keeps
