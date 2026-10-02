@@ -25,7 +25,7 @@ Coordinates are client-area pixels of the WoW window.
 |---|---|
 | `GET /status` | pid, window found, title, client size, foreground, minimized, uptime |
 | `GET /screenshot` | `max_width` (1280), `format=png\|jpeg`, `region=x,y,w,h`, `raw=1` (image bytes, use `curl -o`), `save=<path>` (writes the file); default is base64 JSON. Replies with width, height, `scale` (encoded px per client px) |
-| `POST /key` | `{"keys":"ctrl+a","repeat":1,"hold_ms":0}`; names: letters, digits, `f1`-`f12`, `enter`, `tab`, `esc`, `space`, `backspace`, `delete`, arrows, `home`, `end`, `pageup`, `pagedown`, `shift`, `ctrl`, `alt`, `plus`, `minus`, `comma`, `period`, `slash`, `grave` |
+| `POST /key` | `{"keys":"ctrl+a","repeat":1,"hold_ms":0}`; names: letters, digits, `f1`-`f12`, `enter`, `tab`, `esc`, `space`, `backspace`, `delete`, arrows, `home`, `end`, `pageup`, `pagedown`, `shift`, `ctrl`, `alt`, `plus`, `minus`, `comma`, `period`, `slash`, `grave`, `printscreen` |
 | `POST /type` | `{"text":"..."}` (UTF-8, sent as `WM_CHAR`) |
 | `POST /click` | `{"x":..,"y":..,"button":"left","double":false}` |
 | `POST /move` | `{"x":..,"y":..}` |
@@ -69,5 +69,6 @@ Then pick the realm in the list and click Okay, and click "Enter World" on the c
 
 ## Screenshots
 
-`PrintWindow` with full-content rendering is tried first (works when the window is covered); if that comes back black,
-the screen is copied instead, which needs the window uncovered.
+The next presented D3D12 frame is copied from the swap chain first (works under wine and when the window is covered;
+hooks Present on the first request). If that fails, `PrintWindow` with full-content rendering is tried, then a copy of
+the screen, which needs the window uncovered. Under wine, `save` paths go through the `Z:` drive (`Z:/tmp/shot.jpg`).
