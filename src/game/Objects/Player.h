@@ -936,6 +936,7 @@ class Player final: public Unit
             return StoreItem(dest, pItem, update);
         }
         void RemoveItem(uint8 bag, uint8 slot, bool update);
+        void SendItemToClient(Item* pItem);
         void MoveItemFromInventory(uint8 bag, uint8 slot, bool update);
         // in trade, auction, guild bank, mail....
         void MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool update, bool in_characterInventoryDB = false);
