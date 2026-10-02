@@ -44,6 +44,7 @@
 #include "MapManager.h"
 #include "AccountMgr.h"
 #include "Packets/Auth.h"
+#include "Bnet/BnetRealmList.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "Packets/GuildMessages.h"
 
@@ -362,6 +363,18 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
 
     stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE `account` SET current_realm = ?, online = 1 WHERE id = ?");
     stmt.PExecute(realmID, GetAccountId());
+
+    // The bnet login preselects this realm and character next time.
+    static SqlStatementID updLastPlayed;
+    stmt = LoginDatabase.CreateStatement(updLastPlayed, "REPLACE INTO `account_last_played_character` (`accountId`, `region`, `battlegroup`, `realmId`, `characterName`, `characterGuid`, `lastPlayedTime`) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    stmt.addUInt32(GetAccountId());
+    stmt.addUInt8(sBnetRealmList.GetRegion());
+    stmt.addUInt8(sBnetRealmList.GetBattlegroup());
+    stmt.addUInt32(realmID);
+    stmt.addString(pCurrChar->GetName());
+    stmt.addUInt64(pCurrChar->GetGUIDLow());
+    stmt.addUInt32(uint32(time(nullptr)));
+    stmt.Execute();
 
     pCurrChar->SetInGameTime(WorldTimer::getMSTime());
 

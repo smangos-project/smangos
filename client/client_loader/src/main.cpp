@@ -16,10 +16,15 @@
 //
 // kernel32.dll is mapped at the same address in every process of a boot
 // session, so this process's LoadLibraryW address is valid in the client.
+//
+// --webtoken=TICKET (launcher only): stores a login portal ticket where the
+// client's -launcherlogin reads it and adds -launcherlogin, so the client logs
+// in without the login screen.
 
 #include "custom/LaunchProtocol.hpp"
 
 #include <windows.h>
+#include <dpapi.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -41,8 +46,9 @@ std::wstring ModuleDirectory()
 }
 
 struct Arguments {
-    std::wstring client; // for WowClassic.exe
-    std::wstring dll;    // custom.dll's own options, see IsDllOption
+    std::wstring client;   // for WowClassic.exe
+    std::wstring dll;      // custom.dll's own options, see IsDllOption
+    std::wstring webToken; // --webtoken
 };
 
 // The launcher's command line minus the program path, split into what goes to
@@ -75,8 +81,14 @@ Arguments SplitArguments()
     Arguments arguments;
     std::size_t i = 1; // tokens[0] is the launcher itself
     while (i < tokens.size()) {
+        std::wstring const argument = unquoted(tokens[i]);
+        if (argument.rfind(L"--webtoken=", 0) == 0) {
+            arguments.webToken = argument.substr(11);
+            ++i;
+            continue;
+        }
         bool takesValue = false;
-        std::wstring& target = IsDllOption(unquoted(tokens[i]), takesValue) ? arguments.dll : arguments.client;
+        std::wstring& target = IsDllOption(argument, takesValue) ? arguments.dll : arguments.client;
         auto take = [&] {
             if (!target.empty())
                 target += L' ';
@@ -93,6 +105,35 @@ bool Fail(wchar_t const* what)
 {
     fwprintf(stderr, L"custom_launcher: %ls (error %lu)\n", what, GetLastError());
     return false;
+}
+
+// Writes the ticket as the Battle.net launcher would: DPAPI-encrypted with the
+// client's entropy, REG_BINARY WEB_TOKEN under the (patched) Launch Options key.
+bool StoreWebToken(std::wstring const& ticket)
+{
+    static BYTE entropyBytes[] = { 0xC8, 0x76, 0xF4, 0xAE, 0x4C, 0x95, 0x2E, 0xFE,
+                                   0xF2, 0xFA, 0x0F, 0x54, 0x19, 0xC0, 0x9C, 0x43 };
+    std::string const plain(ticket.begin(), ticket.end());
+    DATA_BLOB input = { static_cast<DWORD>(plain.size()), reinterpret_cast<BYTE*>(const_cast<char*>(plain.data())) };
+    DATA_BLOB entropy = { sizeof(entropyBytes), entropyBytes };
+    DATA_BLOB output = {};
+    if (!CryptProtectData(&input, nullptr, &entropy, nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &output))
+        return Fail(L"could not encrypt the web token");
+
+    HKEY key = nullptr;
+    LSTATUS status = RegCreateKeyExW(HKEY_CURRENT_USER,
+                                     L"Software\\Custom Game Server Dev\\Battle.net\\Launch Options\\WoW",
+                                     0, nullptr, 0, KEY_SET_VALUE, nullptr, &key, nullptr);
+    if (status == ERROR_SUCCESS) {
+        status = RegSetValueExW(key, L"WEB_TOKEN", 0, REG_BINARY, output.pbData, output.cbData);
+        RegCloseKey(key);
+    }
+    LocalFree(output.pbData);
+    if (status != ERROR_SUCCESS) {
+        SetLastError(status);
+        return Fail(L"could not store the web token");
+    }
+    return true;
 }
 
 bool Launch()
@@ -112,6 +153,11 @@ bool Launch()
 
     Arguments const arguments = SplitArguments();
     std::wstring commandLine = L"\"" + clientPath + L"\" " + arguments.client;
+    if (!arguments.webToken.empty()) {
+        if (!StoreWebToken(arguments.webToken))
+            return false;
+        commandLine += L" -launcherlogin";
+    }
 
     // Inherited by the client, which is created with this process's environment.
     SetEnvironmentVariableW(DllArgumentsVariable, arguments.dll.empty() ? nullptr : arguments.dll.c_str());
