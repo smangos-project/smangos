@@ -20,7 +20,7 @@ ClassicGuid TestGuid(uint64 low, uint64 high = 0x0400000000000000ULL)
 }
 
 constexpr uint8 UPDATETYPE_VALUES = 0;
-constexpr uint8 UPDATETYPE_CREATE_OBJECT = 2;
+constexpr uint8 UPDATETYPE_CREATE_OBJECT = 1;
 
 struct MovementFrameOptions
 {

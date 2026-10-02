@@ -37,8 +37,8 @@ class WorldObject;
 enum ObjectUpdateType
 {
     UPDATETYPE_VALUES               = 0,
-    UPDATETYPE_CREATE_OBJECT        = 2,
-    UPDATETYPE_CREATE_OBJECT2       = 3,
+    UPDATETYPE_CREATE_OBJECT        = 1,
+    UPDATETYPE_CREATE_OBJECT2       = 2,
 };
 
 // One physical SMSG_UPDATE_OBJECT's worth of already-serialized create/values/movement blocks.

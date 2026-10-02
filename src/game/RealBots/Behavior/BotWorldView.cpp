@@ -10,8 +10,8 @@ namespace
 // Named separately from Objects/UpdateData.h's ObjectUpdateType (visible here too when RealBots is
 // compiled into `game`): this reader must not depend on the server's own enum.
 constexpr uint8_t BOT_UPDATETYPE_VALUES = 0;
-constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT = 2;
-constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT2 = 3;
+constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT = 1;
+constexpr uint8_t BOT_UPDATETYPE_CREATE_OBJECT2 = 2;
 
 // Steps over the spline section of a unit's create block: the spline id and destination, then,
 // if the unit is on a path, its flags, timing, facing and nodes. The optional extras the server
