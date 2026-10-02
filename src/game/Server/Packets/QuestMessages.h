@@ -765,11 +765,12 @@ struct QuestGiverQuestDetails
         }
 
         data.WriteBits(uint32(Title.length()), 9);
-        data.FlushBits();
         data.WriteBits(uint32(DescriptionText.length()), 12);
-        data.FlushBits();
         data.WriteBits(uint32(LogDescription.length()), 12);
-        data.FlushBits();
+        data.WriteBits(0, 10);  // PortraitGiverText
+        data.WriteBits(0, 8);   // PortraitGiverName
+        data.WriteBits(0, 10);  // PortraitTurnInText
+        data.WriteBits(0, 8);   // PortraitTurnInName
         data.WriteBit(AutoLaunched);
         data.WriteBit(false);  // FromContentPush
         data.WriteBit(false);  // ReplayQuest
@@ -832,19 +833,12 @@ struct QuestGiverQuestDetails
             data >> obj.Type >> obj.ObjectId >> obj.Amount;
         }
 
-        if (data.size() - data.rpos() < 2)
+        if (data.size() - data.rpos() < 10)
             return false;
         uint32 const titleLength = data.ReadBits(9);
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 2)
-            return false;
         uint32 const descLength = data.ReadBits(12);
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 2)
-            return false;
         uint32 const logDescLength = data.ReadBits(12);
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 1)
+        if (data.ReadBits(10) || data.ReadBits(8) || data.ReadBits(10) || data.ReadBits(8))
             return false;
         AutoLaunched = data.ReadBit();
         bool const fromContentPush = data.ReadBit();
@@ -914,8 +908,11 @@ struct QuestGiverOfferReward
         data << uint32(0);  // ConditionalRewardText.size()
 
         data.WriteBits(uint32(Title.length()), 9);
-        data.FlushBits();
         data.WriteBits(uint32(OfferRewardText.length()), 12);
+        data.WriteBits(0, 10);  // PortraitGiverText
+        data.WriteBits(0, 8);   // PortraitGiverName
+        data.WriteBits(0, 10);  // PortraitTurnInText
+        data.WriteBits(0, 8);   // PortraitTurnInName
         data.FlushBits();
 
         data.WriteString(Title);
@@ -973,13 +970,12 @@ struct QuestGiverOfferReward
         if (questPackage || portraitGiver || portraitMount || portraitScene || portraitTurnIn || giverCreatureId2 || conditionalCount)
             return false;
 
-        if (data.size() - data.rpos() < 2)
+        if (data.size() - data.rpos() < 8)
             return false;
         uint32 const titleLength = data.ReadBits(9);
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 2)
-            return false;
         uint32 const textLength = data.ReadBits(12);
+        if (data.ReadBits(10) || data.ReadBits(8) || data.ReadBits(10) || data.ReadBits(8))
+            return false;
         data.ResetBitPos();
 
         if (data.size() - data.rpos() < titleLength + textLength)
@@ -1040,7 +1036,6 @@ struct QuestGiverRequestItems
         data << uint32(0);  // ConditionalCompletionText.size()
 
         data.WriteBits(uint32(Title.length()), 9);
-        data.FlushBits();
         data.WriteBits(uint32(RequestItemsText.length()), 12);
         data.FlushBits();
 
@@ -1102,12 +1097,9 @@ struct QuestGiverRequestItems
         if (giverCreatureId2 || conditionalCount)
             return false;
 
-        if (data.size() - data.rpos() < 2)
+        if (data.size() - data.rpos() < 3)
             return false;
         uint32 const titleLength = data.ReadBits(9);
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 2)
-            return false;
         uint32 const textLength = data.ReadBits(12);
         data.ResetBitPos();
 
