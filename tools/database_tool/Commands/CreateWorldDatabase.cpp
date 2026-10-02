@@ -53,13 +53,6 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
         return result;
     }
 
-    result.update = UpdateWorldDatabase(world, migrationsDirectory);
-    if (!result.update.error.empty())
-    {
-        result.error = result.update.failedFile + ": " + result.update.error;
-        return result;
-    }
-
     result.dbcSchema = CreateDbcTables(world,
         std::string("world: create dbc tables (") + GetWowDbDefsCommit() + ")");
     if (!result.dbcSchema.error.empty())
@@ -72,7 +65,18 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
     {
         result.dbcImport = ImportDb2Files(world, dbfilesclientDir);
         if (!result.dbcImport.error.empty())
+        {
             result.error = result.dbcImport.error;
+            return result;
+        }
+    }
+
+    // Last: migrations may edit dbc_* rows, so the tables and their rows must already exist.
+    result.update = UpdateWorldDatabase(world, migrationsDirectory);
+    if (!result.update.error.empty())
+    {
+        result.error = result.update.failedFile + ": " + result.update.error;
+        return result;
     }
 
     return result;

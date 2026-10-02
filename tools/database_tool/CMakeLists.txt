@@ -48,7 +48,7 @@ target_compile_features(database_tool_lib PUBLIC cxx_std_20)
 # executable's link step, in a release/debug split this tool doesn't need.
 # db_schema_setup: Spec/GapAnalysis.cpp (4.5.1) reuses its WoWDBDefs resolver to diff the
 # vanilla and client layouts -- see contrib/db_schema_setup/CMakeLists.txt's own pin.
-target_link_libraries(database_tool_lib PUBLIC doltlite lzmasdk shared framework db_schema_setup ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES})
+target_link_libraries(database_tool_lib PUBLIC doltlite lzmasdk shared framework db_schema_setup ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${OPENSSL_EXTRA_LIBRARIES})
 
 # mangosd/bnetserver only get these via `cmake --install` (see the root
 # CMakeLists.txt install() rules); a standalone tool needs its own copy next
