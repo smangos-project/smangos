@@ -95,6 +95,12 @@ void BnetRealmList::UpdateIfNeeded()
     Reload();
 }
 
+void BnetRealmList::Invalidate()
+{
+    std::lock_guard<std::mutex> lock(m_lock);
+    m_nextUpdate = 0;
+}
+
 void BnetRealmList::Reload()
 {
     m_nextUpdate = time(nullptr) + m_updateInterval;

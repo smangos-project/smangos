@@ -58,6 +58,9 @@ class BnetRealmList
 
         static uint8 PopulationState(BnetRealm const& realm);
 
+        // Re-read on the next access, e.g. after this process changed its own realm row.
+        void Invalidate();
+
     private:
         void UpdateIfNeeded();
         void Reload();
