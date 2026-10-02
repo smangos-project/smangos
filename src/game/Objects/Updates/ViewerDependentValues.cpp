@@ -50,35 +50,31 @@ uint32 ViewerGameObjectDynamicFlags(GameObject const& gameObject, uint32 stored,
     return flags;
 }
 
-uint32 ViewerUnitDynamicFlags(Unit const& unit, uint32 flags, Player const& receiver)
+// Modern UnitDynFlags bits (TrinityCore SharedDefines.h); the 1.12 values array keeps the old layout.
+constexpr uint32 MODERN_UNIT_DYNFLAG_LOOTABLE    = 0x0004;
+constexpr uint32 MODERN_UNIT_DYNFLAG_TRACK_UNIT  = 0x0008;
+constexpr uint32 MODERN_UNIT_DYNFLAG_TAPPED      = 0x0010;
+constexpr uint32 MODERN_UNIT_DYNFLAG_SPECIALINFO = 0x0020;
+
+uint32 ViewerUnitDynamicFlags(Unit const& unit, uint32 stored, Player const& receiver)
 {
-    if (flags & UNIT_DYNFLAG_TRACK_UNIT)
-    {
-        if (!unit.HasAuraTypeByCaster(SPELL_AURA_MOD_STALKED, receiver.GetObjectGuid()))
-            flags &= ~UNIT_DYNFLAG_TRACK_UNIT;
-    }
+    uint32 flags = 0;
+
+    if ((stored & UNIT_DYNFLAG_TRACK_UNIT) && unit.HasAuraTypeByCaster(SPELL_AURA_MOD_STALKED, receiver.GetObjectGuid()))
+        flags |= MODERN_UNIT_DYNFLAG_TRACK_UNIT;
 
     if (Creature const* creature = unit.ToCreature())
     {
-        if (creature->HasLootRecipient())
-        {
-            if (creature->IsTappedBy(&receiver))
-                flags |= (UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
-            else
-            {
-                flags |= UNIT_DYNFLAG_TAPPED;
-                flags &= ~UNIT_DYNFLAG_TAPPED_BY_PLAYER;
-            }
-        }
-        else
-            flags &= ~(UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
+        // TAPPED means tapped by someone other than the receiver.
+        if (creature->HasLootRecipient() && !creature->IsTappedBy(&receiver))
+            flags |= MODERN_UNIT_DYNFLAG_TAPPED;
 
-        if (!const_cast<Player&>(receiver).IsAllowedToLoot(creature))
-            flags &= ~UNIT_DYNFLAG_LOOTABLE;
+        if ((stored & UNIT_DYNFLAG_LOOTABLE) && const_cast<Player&>(receiver).IsAllowedToLoot(creature))
+            flags |= MODERN_UNIT_DYNFLAG_LOOTABLE;
     }
 
-    if (receiver.HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
-        flags |= UNIT_DYNFLAG_SPECIALINFO;
+    if ((stored & UNIT_DYNFLAG_SPECIALINFO) || receiver.HasCheatOption(PLAYER_CHEAT_DEBUG_TARGET_INFO))
+        flags |= MODERN_UNIT_DYNFLAG_SPECIALINFO;
 
     return flags;
 }

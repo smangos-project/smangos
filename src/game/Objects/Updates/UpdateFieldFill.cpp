@@ -31,6 +31,7 @@ ClassicGuid ToClassic(ObjectGuid const& guid)
 
 // TrinityCore UnitDefines.h; 1.12 has no equivalent flag, so this stays a local literal rather
 // than pulling in a game-side enum this file doesn't otherwise need.
+constexpr uint32 MODERN_UNIT_FLAG2_FEIGN_DEATH      = 0x00000001;
 constexpr uint32 MODERN_UNIT_FLAG2_REGENERATE_POWER = 0x00000800;
 
 // TrinityCore Player.h PlayerDataFlagConstants: which of ActivePlayerData::BitVectors's 13 slots
@@ -206,9 +207,12 @@ void FillUnitData(Unit& unit)
     // 1.15 has no flat home for a fixed hover height; 0 would sink every model into the ground.
     FillField(unit, &Unit::m_unitData, &UFUnitData::HoverHeight, 1.0f);
 
+    // The modern client shows a living unit as dead through Flags2, not through a dynamic flag.
+    FillField(unit, &Unit::m_unitData, &UFUnitData::Flags2, MODERN_UNIT_FLAG2_REGENERATE_POWER |
+        (unit.HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD) ? MODERN_UNIT_FLAG2_FEIGN_DEATH : 0u));
+
     // Client-required non-zero placeholders with no 1.12 flat source (decision 5 rule 1): a 0
     // haste/time-rate multiplier renders as "does nothing", not "no bonus applied".
-    FillField(unit, &Unit::m_unitData, &UFUnitData::Flags2, MODERN_UNIT_FLAG2_REGENERATE_POWER);
     FillField(unit, &Unit::m_unitData, &UFUnitData::DisplayScale, 1.0f);
     FillField(unit, &Unit::m_unitData, &UFUnitData::NativeXDisplayScale, 1.0f);
     FillField(unit, &Unit::m_unitData, &UFUnitData::ModHaste, 1.0f);
