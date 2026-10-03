@@ -502,7 +502,7 @@ class WorldSession
         void SendAuctionOwnerBidNotification(AuctionEntry* auction);
         void SendAuctionOwnerNotification(AuctionEntry* auction, bool sold);
         void SendAuctionRemovedNotification(AuctionEntry* auction);
-        void SendAuctionOutbiddedMail(AuctionEntry* auction);
+        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint32 oldBidder, uint32 oldBid);
         void SendAuctionCancelledToBidderMail(AuctionEntry* auction);
         AuctionHouseEntry const* GetCheckedAuctionHouseForAuctioneer(ObjectGuid guid);
 
