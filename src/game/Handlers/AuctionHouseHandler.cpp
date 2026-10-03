@@ -254,6 +254,30 @@ AuctionHouseEntry const* WorldSession::GetCheckedAuctionHouseForAuctioneer(Objec
 }
 
 // this void creates new auction and adds auction to some auctionhouse
+// The client asks for its owner/bidder lists only when the AH opens, so changes are pushed.
+static void SendAuctionListRefresh(WorldSession* session, AuctionHouseObject* auctionHouse, bool owner)
+{
+    std::vector<AuctionItem> items;
+    uint32 count = 0;
+    uint32 totalcount = 0;
+    if (owner)
+    {
+        auctionHouse->BuildListOwnerItems(items, session->GetPlayer(), 0, count, totalcount);
+        AuctionListOwnerItemsResult result;
+        result.Items = std::move(items);
+        result.TotalCount = int32(totalcount);
+        session->SendClassic(result);
+    }
+    else
+    {
+        auctionHouse->BuildListBidderItems(items, session->GetPlayer(), 0, count, totalcount);
+        AuctionListBidderItemsResult result;
+        result.Items = std::move(items);
+        result.TotalCount = int32(totalcount);
+        session->SendClassic(result);
+    }
+}
+
 void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
 {
     if (!packet.Bid || !packet.Etime)
@@ -471,6 +495,7 @@ void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
     CharacterDatabase.CommitTransaction();
 
     SendAuctionCommandResult(AH, AUCTION_STARTED, AUCTION_OK);
+    SendAuctionListRefresh(this, auctionHouse, true);
 }
 
 // this function is called when client bids or buys out auction
@@ -629,6 +654,7 @@ void WorldSession::HandleAuctionPlaceBid(AuctionPlaceBid const& packet)
     CharacterDatabase.BeginTransaction(pl->GetGUIDLow());
     pl->SaveInventoryAndGoldToDB();
     CharacterDatabase.CommitTransaction();
+    SendAuctionListRefresh(this, auctionHouse, false);
 }
 
 // this void is called when auction_owner cancels his auction
@@ -696,6 +722,7 @@ void WorldSession::HandleAuctionRemoveItem(AuctionRemoveItem const& packet)
     sAuctionMgr.RemoveAItem(auction->itemGuidLow);
     auctionHouse->RemoveAuction(auction);
     delete auction;
+    SendAuctionListRefresh(this, auctionHouse, true);
 }
 
 class AuctionHouseClientQueryTask : public AuctionHouseClientQuery

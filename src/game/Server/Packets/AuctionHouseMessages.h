@@ -113,16 +113,18 @@ struct AuctionRemoveItem
     {
         AuctioneerGuid.Write(data);
         data << AuctionId;
+        data.WriteBit(false); // TaintedBy
+        data.FlushBits();
     }
 
     bool Read(ByteBuffer& data)
     {
         if (!AuctioneerGuid.Read(data))
             return false;
-        if (data.size() - data.rpos() < sizeof(uint32))
+        if (data.size() - data.rpos() < sizeof(uint32) + 1)
             return false;
         data >> AuctionId;
-        return true;
+        return !data.ReadBit() || SkipAuctionTaintedBy(data);
     }
 };
 
@@ -164,16 +166,18 @@ struct AuctionPlaceBid
     {
         AuctioneerGuid.Write(data);
         data << AuctionId << Price;
+        data.WriteBit(false); // TaintedBy
+        data.FlushBits();
     }
 
     bool Read(ByteBuffer& data)
     {
         if (!AuctioneerGuid.Read(data))
             return false;
-        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint64))
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint64) + 1)
             return false;
         data >> AuctionId >> Price;
-        return true;
+        return !data.ReadBit() || SkipAuctionTaintedBy(data);
     }
 };
 
