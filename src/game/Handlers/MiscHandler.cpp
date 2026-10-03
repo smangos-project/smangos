@@ -653,6 +653,9 @@ void WorldSession::HandleAreaTriggerOpcode(AreaTrigger const& packet)
         return;
     }
 
+    if (!packet.Entered)
+        return;
+
     AreaTriggerEntry const* pTrigger = sObjectMgr.GetAreaTrigger(packet.TriggerId);
     if (!pTrigger)
     {

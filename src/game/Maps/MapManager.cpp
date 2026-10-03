@@ -895,20 +895,23 @@ void MapManager::ScheduleFarTeleport(Player* player, ScheduledTeleportData* data
     {
         std::unique_lock<std::mutex> guard(m_scheduledFarTeleportsLock);
         player->SetPendingFarTeleport(true);
-        m_scheduledFarTeleports[player] = data;
+        ScheduledTeleportData*& slot = m_scheduledFarTeleports[player];
+        delete slot;
+        slot = data;
     }
 }
 
 // Execute all delayed teleports at the end of a map update
 void MapManager::ExecuteDelayedPlayerTeleports()
 {
-    ScheduledTeleportMap::iterator iter;
-    for (iter = m_scheduledFarTeleports.begin(); iter != m_scheduledFarTeleports.end(); ++iter)
+    ScheduledTeleportMap pending;
     {
-        ExecuteSingleDelayedTeleport(iter);
+        std::unique_lock<std::mutex> guard(m_scheduledFarTeleportsLock);
+        pending.swap(m_scheduledFarTeleports);
     }
 
-    m_scheduledFarTeleports.clear();
+    for (ScheduledTeleportMap::iterator iter = pending.begin(); iter != pending.end(); ++iter)
+        ExecuteSingleDelayedTeleport(iter);
 }
 
 // Execute a single delayed teleport for the given player (if there are any). It should
