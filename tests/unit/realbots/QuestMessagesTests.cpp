@@ -556,8 +556,8 @@ TEST_CASE("QueryQuestInfo and its response round-trip", "[packets]")
     info.Factions[2] = { 72, 250 };
     info.TimeAllowed = 3600;
     info.Objectives.resize(2);
-    info.Objectives[0] = { 0, 0, 6, 8, "Kobolds slain" };
-    info.Objectives[1] = { 1, 1, 750, 4, "" };
+    info.Objectives[0] = { 0, 0, 6, 8, "Kobolds slain", 0 };
+    info.Objectives[1] = { 1, 1, 750, 4, "", 4 };
     info.LogTitle = "Kobold Camp Cleanup";
     info.LogDescription = "Kill eight kobolds";
     info.QuestDescription = "They are stealing my candles.";
@@ -593,6 +593,7 @@ TEST_CASE("QueryQuestInfo and its response round-trip", "[packets]")
             CHECK(a.Objectives[i].ObjectId == b.Objectives[i].ObjectId);
             CHECK(a.Objectives[i].Amount == b.Objectives[i].Amount);
             CHECK(a.Objectives[i].Description == b.Objectives[i].Description);
+            CHECK(a.Objectives[i].StorageIndex == b.Objectives[i].StorageIndex);
         }
         CHECK(a.LogTitle == b.LogTitle);
         CHECK(a.LogDescription == b.LogDescription);

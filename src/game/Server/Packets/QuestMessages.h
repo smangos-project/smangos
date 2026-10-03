@@ -1292,6 +1292,7 @@ struct QuestInfoObjective
     int32 ObjectId = 0;
     int32 Amount = 0;
     std::string Description;
+    int8 StorageIndex = 0;  // QuestLog ObjectiveProgress slot the client reads the count from
 };
 
 struct QuestInfoRewardItem
@@ -1410,7 +1411,7 @@ struct QueryQuestInfoResponse
 
         for (QuestInfoObjective const& objective : Objectives)
         {
-            data << objective.Id << int32(objective.Type) << int8(0);  // StorageIndex
+            data << objective.Id << int32(objective.Type) << objective.StorageIndex;
             data << objective.ObjectId << objective.Amount;
             data << uint32(0) << uint32(0) << 0.0f;  // Flags, Flags2, ProgressBarWeight
             data << int32(0);                        // VisualEffects.size()
@@ -1532,11 +1533,10 @@ struct QueryQuestInfoResponse
             if (data.size() - data.rpos() < 34)
                 return false;
             int32 type;
-            int8 storageIndex;
             uint32 flags, flags2;
             float progressBarWeight;
             int32 visualEffects;
-            data >> objective.Id >> type >> storageIndex >> objective.ObjectId >> objective.Amount;
+            data >> objective.Id >> type >> objective.StorageIndex >> objective.ObjectId >> objective.Amount;
             data >> flags >> flags2 >> progressBarWeight >> visualEffects;
             if (type < 0 || type > 255 || visualEffects != 0)
                 return false;

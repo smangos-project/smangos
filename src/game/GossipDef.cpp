@@ -493,6 +493,7 @@ void PlayerMenu::SendQuestInfo(uint32 questId) const
             QuestInfoObjective& objective = packet.Objectives.emplace_back();
             objective.Id = uint32(packet.Objectives.size() - 1);
             objective.Type = raw > 0 ? 0 : 2;
+            objective.StorageIndex = int8(i);
             objective.ObjectId = raw > 0 ? raw : -raw;
             objective.Amount = int32(pQuest->ReqCreatureOrGOCount[i]);
             objective.Description = ql ? localized(ql->ObjectiveText[i], pQuest->ObjectiveText[i]) : pQuest->ObjectiveText[i];
@@ -504,6 +505,7 @@ void PlayerMenu::SendQuestInfo(uint32 questId) const
             QuestInfoObjective& objective = packet.Objectives.emplace_back();
             objective.Id = uint32(packet.Objectives.size() - 1);
             objective.Type = 1;
+            objective.StorageIndex = int8(QUEST_OBJECTIVES_COUNT + i);
             objective.ObjectId = int32(pQuest->ReqItemId[i]);
             objective.Amount = int32(pQuest->ReqItemCount[i]);
         }
