@@ -38,8 +38,17 @@
 #include "Policies/SingletonImp.h"
 #include "Packets/AuctionHouseMessages.h"
 #include "Packets/Classic/GuidMapping.h"
+#include <cstdio>
 
 INSTANTIATE_SINGLETON_1(AuctionHouseMgr);
+
+// The client reads the player in an auction mail body as a guid string ("Player-<realm>-<low>").
+static std::string AuctionMailPlayerGuid(uint32 lowGuid)
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Player-%u-%08X", realmID, lowGuid);
+    return buf;
+}
 
 bool AuctionHouseObject::RemoveAuction(AuctionEntry* entry)
 {
@@ -170,9 +179,8 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction)
         msgAuctionWonSubject << auction->itemTemplate << ":0:" << AUCTION_WON;
 
         std::ostringstream msgAuctionWonBody;
-        msgAuctionWonBody.width(16);
-        msgAuctionWonBody << std::right << std::hex << auction->owner;
-        msgAuctionWonBody << std::dec << ":" << auction->bid << ":" << auction->buyout;
+        msgAuctionWonBody << AuctionMailPlayerGuid(auction->owner);
+        msgAuctionWonBody << ":" << auction->bid << ":" << auction->buyout << ":0";
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "AuctionWon body string : %s", msgAuctionWonBody.str().c_str());
 
         // set owner to bidder (to prevent delete item with sender char deleting)
@@ -218,10 +226,9 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(AuctionEntry* auction)
         std::ostringstream auctionSuccessfulBody;
         uint32 auctionCut = auction->GetAuctionCut();
 
-        auctionSuccessfulBody.width(16);
-        auctionSuccessfulBody << std::right << std::hex << auction->bidder;
-        auctionSuccessfulBody << std::dec << ":" << auction->bid << ":" << auction->buyout;
-        auctionSuccessfulBody << ":" << auction->deposit << ":" << auctionCut;
+        auctionSuccessfulBody << AuctionMailPlayerGuid(auction->bidder);
+        auctionSuccessfulBody << ":" << auction->bid << ":" << auction->buyout;
+        auctionSuccessfulBody << ":" << auction->deposit << ":" << auctionCut << ":0";
 
         sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, "AuctionSuccessful body string : %s", auctionSuccessfulBody.str().c_str());
 
