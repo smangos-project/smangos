@@ -1367,6 +1367,7 @@ class Player final: public Unit
         mutable uint32 m_resetTalentsMultiplier;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;
+        bool m_talentDataDirty;
 
         void UpdateFreeTalentPoints(bool resetIfNeed = true);
         uint32 GetResetTalentsCost() const;
@@ -1375,7 +1376,8 @@ class Player final: public Unit
         void SendTalentWipeConfirm(ObjectGuid trainerGuid) const;
     public:
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
-        void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1, points); }
+        void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1, points); m_talentDataDirty = true; }
+        void SendTalentsInfoData();
         bool ResetTalents(bool noCost = false);
         void InitTalentForLevel();
         bool LearnTalent(uint32 talentId, uint32 talentRank);

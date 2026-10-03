@@ -555,4 +555,52 @@ struct LearnTalent
     }
 };
 
+// The talent groups (specs) and their learned ranks. The talent UI reads its group count and
+// ranks from this; until it arrives the client shows no usable spec.
+struct UpdateTalentData
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_UPDATE_TALENT_DATA;
+
+    struct TalentInfo
+    {
+        uint32 TalentID = 0;
+        uint32 Rank = 0; // 0-based
+    };
+
+    struct TalentGroupInfo
+    {
+        uint8 SpecID = 0;
+        uint32 PrimarySpecialization = 0;
+        std::vector<TalentInfo> Talents;
+        std::vector<uint16> Glyphs;
+    };
+
+    uint32 UnspentTalentPoints = 0;
+    uint8 ActiveGroup = 0;
+    bool IsPetTalents = false;
+    std::vector<TalentGroupInfo> TalentGroups;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << UnspentTalentPoints;
+        data << ActiveGroup;
+        data << uint32(TalentGroups.size());
+        for (TalentGroupInfo const& group : TalentGroups)
+        {
+            data << uint8(group.Talents.size());
+            data << uint32(group.Talents.size());
+            data << uint8(group.Glyphs.size());
+            data << uint32(group.Glyphs.size());
+            data << group.SpecID;
+            data << group.PrimarySpecialization;
+            for (TalentInfo const& talent : group.Talents)
+                data << talent.TalentID << talent.Rank;
+            for (uint16 glyph : group.Glyphs)
+                data << glyph;
+        }
+        data.WriteBit(IsPetTalents);
+        data.FlushBits();
+    }
+};
+
 #endif

@@ -148,6 +148,7 @@ Player::Player(WorldSession* session) : Unit(),
     m_comboPoints = 0;
 
     m_usedTalentCount = 0;
+    m_talentDataDirty = false;
 
     m_modManaRegen = 0;
     m_modManaRegenInterrupt = 0;
@@ -1065,6 +1066,9 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     SetCanDelayTeleport(false);
 
     time_t now = time(nullptr);
+
+    if (m_talentDataDirty)
+        SendTalentsInfoData();
 
     UpdatePvPFlagTimer(update_diff);
 
@@ -18795,6 +18799,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendBindPointUpdate();
 
     SendInitialSpells();
+    SendTalentsInfoData();
 
     if (MasterPlayer* masterPlayer = GetSession()->GetMasterPlayer())
         masterPlayer->SendInitialActionButtons();
@@ -20377,6 +20382,31 @@ InventoryResult Player::CanEquipUniqueItem(ItemPrototype const* itemProto, uint8
     }
 
     return EQUIP_ERR_OK;
+}
+
+void Player::SendTalentsInfoData()
+{
+    m_talentDataDirty = false;
+
+    std::map<uint32, uint32> ranks;
+    for (auto const& [spellId, spell] : m_spells)
+    {
+        if (spell.state == PLAYERSPELL_REMOVED || spell.disabled)
+            continue;
+        if (TalentSpellPos const* pos = GetTalentSpellPos(spellId))
+        {
+            auto [itr, inserted] = ranks.try_emplace(pos->talent_id, pos->rank);
+            if (!inserted && itr->second < pos->rank)
+                itr->second = pos->rank;
+        }
+    }
+
+    UpdateTalentData packet;
+    packet.UnspentTalentPoints = GetFreeTalentPoints();
+    UpdateTalentData::TalentGroupInfo& group = packet.TalentGroups.emplace_back();
+    for (auto const& [talentId, rank] : ranks)
+        group.Talents.push_back({ talentId, rank });
+    GetSession()->SendClassic(packet);
 }
 
 bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
