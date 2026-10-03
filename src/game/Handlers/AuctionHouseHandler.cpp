@@ -593,6 +593,9 @@ void WorldSession::HandleAuctionPlaceBid(AuctionPlaceBid const& packet)
         return;
     }
 
+    Player* outbidPlayer = auction->bidder && auction->bidder != pl->GetGUIDLow()
+        ? sObjectMgr.GetPlayer(ObjectGuid(HIGHGUID_PLAYER, auction->bidder)) : nullptr;
+
     if ((price < auction->buyout) || (auction->buyout == 0))// bid
     {
         if (pl->GetGUIDLow() == auction->bidder)
@@ -655,6 +658,8 @@ void WorldSession::HandleAuctionPlaceBid(AuctionPlaceBid const& packet)
     pl->SaveInventoryAndGoldToDB();
     CharacterDatabase.CommitTransaction();
     SendAuctionListRefresh(this, auctionHouse, false);
+    if (outbidPlayer)
+        SendAuctionListRefresh(outbidPlayer->GetSession(), auctionHouse, false);
 }
 
 // this void is called when auction_owner cancels his auction
