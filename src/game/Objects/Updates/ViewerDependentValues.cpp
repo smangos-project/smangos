@@ -93,12 +93,42 @@ uint32 GetViewerDynamicFlags(UFObjectData const* data, Object const* owner, Play
     return stored;
 }
 
+namespace
+{
+uint32 ToClientNpcFlags(uint32 flags)
+{
+    static constexpr std::pair<uint32, uint32> map[] =
+    {
+        { UNIT_NPC_FLAG_GOSSIP,         0x00000001 },
+        { UNIT_NPC_FLAG_QUESTGIVER,     0x00000002 },
+        { UNIT_NPC_FLAG_VENDOR,         0x00000080 },
+        { UNIT_NPC_FLAG_FLIGHTMASTER,   0x00002000 },
+        { UNIT_NPC_FLAG_TRAINER,        0x00000010 },
+        { UNIT_NPC_FLAG_SPIRITHEALER,   0x00004000 },
+        { UNIT_NPC_FLAG_SPIRITGUIDE,    0x00008000 },
+        { UNIT_NPC_FLAG_INNKEEPER,      0x00010000 },
+        { UNIT_NPC_FLAG_BANKER,         0x00020000 },
+        { UNIT_NPC_FLAG_PETITIONER,     0x00040000 },
+        { UNIT_NPC_FLAG_TABARDDESIGNER, 0x00080000 },
+        { UNIT_NPC_FLAG_BATTLEMASTER,   0x00100000 },
+        { UNIT_NPC_FLAG_AUCTIONEER,     0x00200000 },
+        { UNIT_NPC_FLAG_STABLEMASTER,   0x00400000 },
+        { UNIT_NPC_FLAG_REPAIR,         0x00001000 },
+    };
+    uint32 out = 0;
+    for (auto const& [vanilla, client] : map)
+        if (flags & vanilla)
+            out |= client;
+    return out;
+}
+}
+
 uint32 GetViewerNpcFlags(UFUnitData const* data, Unit const* owner, Player const* receiver)
 {
     uint32 flags = data->NpcFlags;
     Creature const* creature = owner ? owner->ToCreature() : nullptr;
     if (!creature || !receiver)
-        return flags;
+        return ToClientNpcFlags(flags);
 
     if ((flags & UNIT_NPC_FLAG_TRAINER) && !creature->IsTrainerOf(const_cast<Player*>(receiver), false))
         flags &= ~UNIT_NPC_FLAG_TRAINER;
@@ -132,7 +162,7 @@ uint32 GetViewerNpcFlags(UFUnitData const* data, Unit const* owner, Player const
         }
     }
 
-    return flags;
+    return ToClientNpcFlags(flags);
 }
 
 ClassicGuid GetViewerTarget(UFUnitData const* data, Unit const* owner, Player const* /*receiver*/)

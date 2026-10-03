@@ -334,12 +334,14 @@ struct AuctionHelloResponse
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_HELLO_RESPONSE;
 
     ClassicGuid AuctioneerGuid;
+    uint32 PurchaseDeliveryDelay = 0;
+    uint32 CancelDeliveryDelay = 0;
     uint32 HouseId = 0;
 
     void Write(ByteBuffer& data) const
     {
         AuctioneerGuid.Write(data);
-        data << HouseId;
+        data << PurchaseDeliveryDelay << CancelDeliveryDelay << HouseId;
         data.WriteBit(true); // OpenForBusiness -- this engine has no "AH closed" concept
         data.FlushBits();
     }
@@ -348,9 +350,9 @@ struct AuctionHelloResponse
     {
         if (!AuctioneerGuid.Read(data))
             return false;
-        if (data.size() - data.rpos() < sizeof(uint32) + 1)
+        if (data.size() - data.rpos() < 3 * sizeof(uint32) + 1)
             return false;
-        data >> HouseId;
+        data >> PurchaseDeliveryDelay >> CancelDeliveryDelay >> HouseId;
         data.ReadBit();
         data.ResetBitPos();
         return true;
