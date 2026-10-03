@@ -631,9 +631,9 @@ struct AuctionListItemsResult
     }
 };
 
-struct AuctionListBiddedItemsResult
+struct AuctionListBidderItemsResult
 {
-    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_BIDDED_ITEMS_RESULT;
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_BIDDER_ITEMS_RESULT;
 
     std::vector<AuctionItem> Items;
     int32 TotalCount = 0;
@@ -663,9 +663,9 @@ struct AuctionListBiddedItemsResult
     }
 };
 
-struct AuctionListOwnedItemsResult
+struct AuctionListOwnerItemsResult
 {
-    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_OWNED_ITEMS_RESULT;
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_OWNER_ITEMS_RESULT;
 
     std::vector<AuctionItem> Items;
     int32 TotalCount = 0;

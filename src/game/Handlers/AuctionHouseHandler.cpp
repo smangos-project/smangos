@@ -751,7 +751,7 @@ public:
                     }
 
                     auctionHouse->BuildListBidderItems(items, player, listfrom, count, totalcount);
-                    AuctionListBiddedItemsResult result;
+                    AuctionListBidderItemsResult result;
                     result.Items = std::move(items);
                     result.TotalCount = int32(totalcount);
                     sess->SendClassic(result);
@@ -760,7 +760,7 @@ public:
                 case AUCTION_QUERY_LIST_OWNER:
                 {
                     auctionHouse->BuildListOwnerItems(items, player, listfrom, count, totalcount);
-                    AuctionListOwnedItemsResult result;
+                    AuctionListOwnerItemsResult result;
                     result.Items = std::move(items);
                     result.TotalCount = int32(totalcount);
                     sess->SendClassic(result);

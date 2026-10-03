@@ -289,11 +289,11 @@ TEST_CASE("AuctionItem round-trips with no bidder, a bidder, and an enchant", "[
     RejectsEveryTruncation(withBidder);
 }
 
-TEST_CASE("AuctionListBiddedItemsResult round-trips empty", "[packets]")
+TEST_CASE("AuctionListBidderItemsResult round-trips empty", "[packets]")
 {
-    AuctionListBiddedItemsResult packet;
+    AuctionListBidderItemsResult packet;
     packet.TotalCount = 0;
-    RoundTrip(packet, [](AuctionListBiddedItemsResult const& a, AuctionListBiddedItemsResult const& b)
+    RoundTrip(packet, [](AuctionListBidderItemsResult const& a, AuctionListBidderItemsResult const& b)
     {
         CHECK(a.Items.empty());
         CHECK(b.Items.empty());
@@ -302,7 +302,7 @@ TEST_CASE("AuctionListBiddedItemsResult round-trips empty", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
-TEST_CASE("AuctionListOwnedItemsResult round-trips one posting", "[packets]")
+TEST_CASE("AuctionListOwnerItemsResult round-trips one posting", "[packets]")
 {
     AuctionItem item;
     item.Item.ItemId = 2589;
@@ -314,10 +314,10 @@ TEST_CASE("AuctionListOwnedItemsResult round-trips one posting", "[packets]")
     item.OwnerAccountGuid = { 1, 0 };
     item.EndTime = 5000;
 
-    AuctionListOwnedItemsResult packet;
+    AuctionListOwnerItemsResult packet;
     packet.Items.push_back(item);
     packet.TotalCount = 1;
-    RoundTrip(packet, [](AuctionListOwnedItemsResult const& a, AuctionListOwnedItemsResult const& b)
+    RoundTrip(packet, [](AuctionListOwnerItemsResult const& a, AuctionListOwnerItemsResult const& b)
     {
         REQUIRE(a.Items.size() == b.Items.size());
         CHECK(a.Items[0].AuctionId == b.Items[0].AuctionId);
