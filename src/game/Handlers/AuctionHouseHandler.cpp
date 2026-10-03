@@ -890,7 +890,5 @@ void WorldSession::HandleAuctionListItems(AuctionListItems const& packet)
 
 void WorldSession::HandleAuctionListPendingSales(AuctionListPendingSales const& /*packet*/)
 {
-    // This engine resolves auctions immediately and has no pending-sales mailbox, so an empty
-    // reply would be correct anyway -- but CLASSIC_SMSG_AUCTION_LIST_PENDING_SALES_RESULT does not
-    // exist on the modern wire at all, so sending nothing is the only wire-legal answer.
+    SendClassic(AuctionListPendingSalesResult());
 }

@@ -336,8 +336,6 @@ struct AuctionListItems
     }
 };
 
-// Vanilla/TC 3.3.5 send this query empty-bodied ("give me my pending sales") -- this engine
-// resolves auctions immediately, has no pending-sales mailbox, and never replies to it.
 struct AuctionListPendingSales
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_PENDING_SALES;
@@ -696,6 +694,26 @@ struct AuctionListOwnerItemsResult
             Items.push_back(item);
         }
         return true;
+    }
+};
+
+// Mail-list shaped (count, total, mails). Auctions resolve immediately here, so it is always empty.
+struct AuctionListPendingSalesResult
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_PENDING_SALES_RESULT;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << uint32(0) << int32(0);
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(uint32) + sizeof(int32))
+            return false;
+        uint32 count; int32 total;
+        data >> count >> total;
+        return count == 0;
     }
 };
 
