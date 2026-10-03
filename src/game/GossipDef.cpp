@@ -404,7 +404,7 @@ void PlayerMenu::SendQuestGiverQuestList(QuestNpcEmoteInfo fallbackEmote, std::s
         if (!pQuest)
             continue;
 
-        QuestGiverQuestListEntry& entry = packet.Quests.emplace_back();
+        GossipQuestEntry& entry = packet.Quests.emplace_back();
         entry.QuestId = pQuest->GetQuestId();
         entry.QuestType = GossipQuestTypeForDialogStatus(qmi.m_qIcon);
         entry.QuestLevel = int32(pQuest->GetQuestLevel());

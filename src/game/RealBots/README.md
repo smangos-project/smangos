@@ -577,16 +577,10 @@ None of these is proven against a real 1.15.6 client yet.
   real modern flag). **Followed: TrinityCore** for the shape (`u64` bitmask via `ToModernQuestGiverStatus`,
   GossipDef.cpp), with vibemangos's already-derived bit values, since the two are only a shape
   disagreement, not a value one. Unverified against a real client.
-- **The quest-giver quest list.** TrinityCore's `SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE` (`QuestPackets.cpp`)
-  carries only greeting text variants (`NPC::ClientGossipText` entries) and no per-quest fields at all --
-  the quest list itself appears to always ride the gossip window there (`SMSG_GOSSIP_MESSAGE`'s own
-  `GossipQuestEntry` list, already used for every gossip-flagged NPC in this tree). vibemangos's version
-  instead carries a real per-quest list (id, type, level, flags, repeatable, title), cross-checked against
-  HermesProxy's translation of this exact opcode. **Followed: vibemangos**, kept for the "no gossip flag,
-  several quests to hand out" case `Player::SendPreparedQuest` already special-cases (a single quest goes
-  straight to `QuestGiverQuestDetails` either way). Not live-tested this slice -- the turn-in scenario uses
-  single-quest questgivers throughout. If a real client rejects this body, the fallback is routing that case
-  through `SendGossipMenu` instead, the way TrinityCore's shape implies.
+- **The quest-giver quest list.** `SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE` carries one `NPC::ClientGossipText`
+  entry per quest (TrinityCore `QuestPackets.cpp`), the same layout as `SMSG_GOSSIP_MESSAGE`'s quests, so both
+  use `GossipQuestEntry`. **Followed: TrinityCore.** vibemangos's shorter entry (no max scaling level, unused
+  field or extra bits; written for an older client) shifted every title by 8 bytes in the 1.15 client.
 - **Quest giver request items / offer reward / details.** Bit-packing in these three (and the nested
   `QuestRewards` block) follows TrinityCore's field order but flushes bits after each field group instead
   of packing every adjacent bit-field from a whole section into one region before a byte-aligned flush.

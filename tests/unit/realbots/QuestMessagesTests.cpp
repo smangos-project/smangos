@@ -204,7 +204,7 @@ TEST_CASE("QuestGiverQuestList round-trips several quests and a greeting", "[pac
     list.GreetEmoteType = 5;
     list.Greeting = "Welcome, traveler.";
 
-    QuestGiverQuestListEntry& first = list.Quests.emplace_back();
+    GossipQuestEntry& first = list.Quests.emplace_back();
     first.QuestId = 783;
     first.QuestType = 2;
     first.QuestLevel = 12;
@@ -212,7 +212,7 @@ TEST_CASE("QuestGiverQuestList round-trips several quests and a greeting", "[pac
     first.Repeatable = false;
     first.Title = "A Threat Within";
 
-    QuestGiverQuestListEntry& second = list.Quests.emplace_back();
+    GossipQuestEntry& second = list.Quests.emplace_back();
     second.QuestId = 784;
     second.QuestType = 4;
     second.QuestLevel = 13;

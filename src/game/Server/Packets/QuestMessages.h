@@ -15,6 +15,7 @@
 #include "ClassicOpcodes.h"
 #include "Packets/Classic/Guid.h"
 #include "Packets/ItemMessages.h"
+#include "Packets/NpcMessages.h"
 #include <array>
 #include <cstring>
 #include <string>
@@ -461,54 +462,7 @@ struct QuestUpdateAddCredit
     }
 };
 
-// One quest offered by a pure quest-giver (no gossip options) with more than one quest to hand
-// out. TrinityCore's own SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE carries only greeting text variants,
-// not per-quest fields -- the quest list itself seems to always ride the gossip window there
-// (Packets/NpcMessages.h's GossipMessage/GossipQuestEntry, already used for every gossip-flagged
-// NPC). This struct instead follows vibemangos's shape (cross-checked against HermesProxy's
-// QuestGiverQuestListMessage.Write()), kept for the "no gossip flag, several quests" case this
-// engine's Player::SendPreparedQuest already special-cases. README dispute: TrinityCore vs
-// vibemangos on what this opcode actually carries.
-struct QuestGiverQuestListEntry
-{
-    uint32 QuestId = 0;
-    int32 QuestType = 0;   // 0 auto-complete, 2 not taken, 4 already in the log
-    int32 QuestLevel = 0;
-    int32 QuestFlags[3] = {};
-    bool Repeatable = false;
-    std::string Title;
-
-    void Write(ByteBuffer& data) const
-    {
-        data << QuestId;
-        data << int32(0);  // content tuning
-        data << QuestType << QuestLevel;
-        data << QuestFlags[0] << QuestFlags[1] << QuestFlags[2];
-        data.WriteBit(Repeatable);
-        data.WriteBits(uint32(Title.length()), 9);
-        data.FlushBits();
-        data.WriteString(Title);
-    }
-
-    bool Read(ByteBuffer& data)
-    {
-        if (data.size() - data.rpos() < 30)
-            return false;
-        int32 contentTuning;
-        data >> QuestId >> contentTuning >> QuestType >> QuestLevel;
-        data >> QuestFlags[0] >> QuestFlags[1] >> QuestFlags[2];
-        Repeatable = data.ReadBit();
-        uint32 const length = data.ReadBits(9);
-        data.ResetBitPos();
-        if (contentTuning)
-            return false;
-        if (data.size() - data.rpos() < length)
-            return false;
-        Title = data.ReadString(length);
-        return true;
-    }
-};
-
+// A pure quest-giver's (no gossip flag) list of several quests; entries share the gossip window's layout.
 struct QuestGiverQuestList
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE;
@@ -517,7 +471,7 @@ struct QuestGiverQuestList
     uint32 GreetEmoteDelay = 0;
     uint32 GreetEmoteType = 0;
     std::string Greeting;
-    std::vector<QuestGiverQuestListEntry> Quests;
+    std::vector<GossipQuestEntry> Quests;
 
     void Write(ByteBuffer& data) const
     {
@@ -526,7 +480,7 @@ struct QuestGiverQuestList
         data << int32(Quests.size());
         data.WriteBits(uint32(Greeting.length()), 11);
         data.FlushBits();
-        for (QuestGiverQuestListEntry const& quest : Quests)
+        for (GossipQuestEntry const& quest : Quests)
             quest.Write(data);
         data.WriteString(Greeting);
     }
@@ -543,8 +497,8 @@ struct QuestGiverQuestList
         data.ResetBitPos();
         if (count < 0 || uint32(count) > CLASSIC_MAX_QUEST_LIST_ENTRIES)
             return false;
-        Quests.assign(uint32(count), QuestGiverQuestListEntry());
-        for (QuestGiverQuestListEntry& quest : Quests)
+        Quests.assign(uint32(count), GossipQuestEntry());
+        for (GossipQuestEntry& quest : Quests)
             if (!quest.Read(data))
                 return false;
         if (data.size() - data.rpos() < greetingLength)
