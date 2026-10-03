@@ -39,6 +39,7 @@
 #include "Geometry.h"
 #include "MovementInfoWire.h"
 #include "Packets/Classic/GuidMapping.h"
+#include "VMapFactory.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPortResponse const& /*packet*/)
 {
@@ -1085,12 +1086,14 @@ void WorldSession::HandleMoverRelocation(Unit* pMover, MovementInfo& movementInf
         pPlayerMover->SetPosition(pMover->m_movementInfo.GetPos().x, pMover->m_movementInfo.GetPos().y, pMover->m_movementInfo.GetPos().z, pMover->m_movementInfo.GetPos().o);
 
         // Nostalrius - antiundermap1
+        // terrain-only heights are meaningless below WMOs such as Undercity
         if (pMover->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR))
         {
+            bool const vmapHeight = VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled();
             float hauteur = pPlayerMover->GetMap()->GetHeight(pPlayerMover->GetPositionX(), pPlayerMover->GetPositionY(), pPlayerMover->GetPositionZ(), true);
             bool undermap = false;
             // Undermap
-            if ((pPlayerMover->GetPositionZ() + 100.0f) < hauteur)
+            if (vmapHeight && (pPlayerMover->GetPositionZ() + 100.0f) < hauteur)
                 undermap = true;
             if (pPlayerMover->GetPositionZ() < 250.0f && pPlayerMover->GetMapId() == MAP_WARSONG_GULCH)
                 undermap = true;
