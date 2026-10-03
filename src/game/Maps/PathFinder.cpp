@@ -552,6 +552,7 @@ static constexpr float ORIENTATION_OFFSETS[] =
 };
 
 static constexpr float STEP_SIZE = 3.0f;
+static constexpr uint32 MAX_PATH_STEPS = 300; // BuildPathStep recurses once per step
 
 bool BuildPathStep(Vector3 const& currentPos, Vector3 const& targetPos, Map const* pMap, std::vector<Vector3>& fullPath, std::vector<Vector3>& checkedPositions, uint32& stepsRemaining, float angle)
 {
@@ -569,6 +570,8 @@ bool BuildPathStep(Vector3 const& currentPos, Vector3 const& targetPos, Map cons
         Vector3 newPos;
         Geometry::GetNearPoint2DAroundPosition(currentPos.x, currentPos.y, newPos.x, newPos.y, STEP_SIZE, Geometry::NormalizeOrientation(angle + ORIENTATION_OFFSETS[i]));
         newPos.z = pMap->GetHeight(newPos.x, newPos.y, currentPos.z + 0.1f, true);
+        if (newPos.z <= INVALID_HEIGHT)
+            continue;
 
         float const zdiff = newPos.z - currentPos.z;
         if (((zdiff < -0.0f) ? (-zdiff > STEP_SIZE) : (zdiff > STEP_SIZE * 0.9f)))
@@ -601,6 +604,15 @@ bool BuildPathStep(Vector3 const& currentPos, Vector3 const& targetPos, Map cons
 
 void PathInfo::BuildPathWithoutMMaps(Vector3 const& start, Vector3 const& dest)
 {
+    if (start.z <= INVALID_HEIGHT || dest.z <= INVALID_HEIGHT)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "PathInfo::BuildPathWithoutMMaps: invalid height for %s on map %u, start (%f, %f, %f), dest (%f, %f, %f)",
+            m_sourceUnit->GetGuidStr().c_str(), m_sourceUnit->GetMapId(), start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        BuildShortcut();
+        m_type = PathType(PATHFIND_NOPATH);
+        return;
+    }
+
     bool const destInWater = m_sourceUnit->CanSwimAtPosition(dest);
 
     if (!m_sourceUnit->CanSwim() && destInWater)
@@ -640,7 +652,7 @@ void PathInfo::BuildPathWithoutMMaps(Vector3 const& start, Vector3 const& dest)
     m_pathPoints.reserve(maxSteps);
     m_pathPoints.push_back(start);
 
-    maxSteps *= 2;
+    maxSteps = std::min(maxSteps * 2, MAX_PATH_STEPS);
 
     if (BuildPathStep(dest, start, m_sourceUnit->FindMap(), m_pathPoints, checkedPositions, maxSteps, Geometry::GetAngle(start, dest)))
     {
