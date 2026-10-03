@@ -29,7 +29,7 @@ dbc_areatable	ZoneName		client
 dbc_areatable	AreaName_lang		
 dbc_areatable	ContinentID		
 dbc_areatable	ParentAreaID		
-dbc_areatable	AreaBit		
+dbc_areatable	AreaBit		client
 dbc_areatable	SoundProviderPref		client
 dbc_areatable	SoundProviderPrefUnderwater		client
 dbc_areatable	AmbienceID		client
