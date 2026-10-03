@@ -101,9 +101,6 @@ struct MapEntry
     bool IsContinent() const { return id == 0 || id == 1; }
 };
 
-typedef std::unordered_map<uint32, uint32> AreaFlagByMapId;
-static AreaFlagByMapId sAreaFlagByMapId;
-
 struct AreaEntry
 {
     uint32 Id;
@@ -117,6 +114,7 @@ struct AreaEntry
     uint32 LiquidTypeId;
 
     bool IsZone() const { return ZoneId == 0; }
+    uint32 GetZoneIdOrSelf() const { return IsZone() ? Id : ZoneId; }
 
     static int32 GetFlagById(uint32 id)
     {
@@ -127,40 +125,17 @@ struct AreaEntry
         return areaEntry->ExploreFlag;
     }
 
-    static uint32 GetFlagByMapId(uint32 mapId)
-    {
-        auto itr = sAreaFlagByMapId.find(mapId);
-        if (itr == sAreaFlagByMapId.end())
-            return 0;
-        return itr->second;
-    }
 
     static const AreaEntry* GetById(uint32 id)
     {
         return sAreaStorage.LookupEntry<AreaEntry>(id);
     }
 
-    static const AreaEntry* GetByAreaFlagAndMap(uint32 areaFlag, uint32 mapId)
+    // Fallback for map points without area data
+    static const AreaEntry* GetDefaultForMap(uint32 mapId)
     {
-        AreaEntry const* areaEntry = nullptr;
-        // 1.12.1 areatable have duplicates for areaflag
-        for (auto itr = sAreaStorage.begin<AreaEntry>(); itr < sAreaStorage.end<AreaEntry>(); ++itr)
-        {
-            if (areaFlag && areaFlag == itr->ExploreFlag)
-            {
-                if (itr->MapId == mapId)
-                    return *itr;
-
-                areaEntry = *itr;
-            }
-        }
-
-        if (areaEntry)
-            return areaEntry;
-
         if (const auto *mapEntry = sMapStorage.LookupEntry<MapEntry>(mapId))
             return sAreaStorage.LookupEntry<AreaEntry>(mapEntry->linkedZone);
-
         return nullptr;
     }
 };

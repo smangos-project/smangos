@@ -11001,10 +11001,6 @@ char const* ObjectMgr::GetMailTextTemplate(uint32 id, LocaleConstant locale_idx)
 void ObjectMgr::LoadAreaTemplate()
 {
     sAreaStorage.Load();
-
-    for (auto itr = sAreaStorage.begin<AreaEntry>(); itr != sAreaStorage.end<AreaEntry>(); ++itr)
-        if (itr->IsZone() && itr->MapId != MAP_EASTERN_KINGDOMS && itr->MapId != MAP_KALIMDOR)
-            sAreaFlagByMapId.insert(AreaFlagByMapId::value_type(itr->MapId, itr->ExploreFlag));
 }
 
 void ObjectMgr::LoadAreaLocales()

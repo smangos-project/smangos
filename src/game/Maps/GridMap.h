@@ -44,6 +44,7 @@ class Unit;
 class WorldPacket;
 class InstanceData;
 class Group;
+struct AreaEntry;
 class BattleGround;
 class Map;
 struct LiquidTypeEntry;
@@ -159,7 +160,7 @@ class TerrainInfo : public Referencable<AtomicLong>
 
         GridMapLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData* data = 0) const;
 
-        uint16 GetAreaFlag(float x, float y, float z, bool* isOutdoors = 0) const;
+        AreaEntry const* GetAreaEntry(float x, float y, float z, bool* isOutdoors = nullptr) const;
         uint8 GetTerrainType(float x, float y) const;
 
         uint32 GetAreaId(float x, float y, float z) const;
@@ -223,27 +224,18 @@ class TerrainManager : public MaNGOS::Singleton<TerrainManager, MaNGOS::ClassLev
         LiquidTypeEntry const* GetLiquidType(uint32 id) const { return id < GetMaxLiquidType() ? mLiquidTypes[id].get() : nullptr; }
         uint32 GetMaxLiquidType() const { return mLiquidTypes.size(); }
 
-        uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
-        {
-            TerrainInfo* pData = const_cast<TerrainManager*>(this)->LoadTerrain(mapid);
-            return pData->GetAreaFlag(x, y, z);
-        }
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
         {
-            return GetAreaIdByAreaFlag(GetAreaFlag(mapid, x, y, z), mapid);
+            return const_cast<TerrainManager*>(this)->LoadTerrain(mapid)->GetAreaId(x, y, z);
         }
         uint32 GetZoneId(uint32 mapid, float x, float y, float z) const
         {
-            return GetZoneIdByAreaFlag(GetAreaFlag(mapid, x, y, z), mapid);
+            return const_cast<TerrainManager*>(this)->LoadTerrain(mapid)->GetZoneId(x, y, z);
         }
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
         {
-            GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(mapid, x, y, z), mapid);
+            LoadTerrain(mapid)->GetZoneAndAreaId(zoneid, areaid, x, y, z);
         }
-
-        static uint32 GetAreaIdByAreaFlag(uint16 areaflag, uint32 map_id);
-        static uint32 GetZoneIdByAreaFlag(uint16 areaflag, uint32 map_id);
-        static void GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag, uint32 map_id);
 
     private:
         TerrainManager();

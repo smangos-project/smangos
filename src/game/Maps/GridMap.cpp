@@ -911,33 +911,27 @@ bool TerrainInfo::GetAreaInfo(float x, float y, float z, uint32& flags, int32& a
     return false;
 }
 
-uint16 TerrainInfo::GetAreaFlag(float x, float y, float z, bool* isOutdoors) const
+AreaEntry const* TerrainInfo::GetAreaEntry(float x, float y, float z, bool* isOutdoors) const
 {
     uint32 mogpFlags = 0;
     int32 adtId, rootId, groupId;
-    WMOAreaTableEntry const* wmoEntry = nullptr;
     AreaEntry const* atEntry = nullptr;
     bool haveAreaInfo = false;
 
     if (GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
     {
         haveAreaInfo = true;
-        wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
-        if (wmoEntry)
+        if (WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
             atEntry = AreaEntry::GetById(wmoEntry->areaId);
     }
 
-    uint16 areaflag;
-    if (atEntry)
-        areaflag = atEntry->ExploreFlag;
-    else
-    {
+    // .map files store AreaTable ids
+    if (!atEntry)
         if (GridMap* gmap = const_cast<TerrainInfo*>(this)->GetGrid(x, y))
-            areaflag = gmap->getArea(x, y);
-        // this used while not all *.map files generated (instances)
-        else
-            areaflag = AreaEntry::GetFlagByMapId(GetMapId());
-    }
+            atEntry = AreaEntry::GetById(gmap->getArea(x, y));
+
+    if (!atEntry)
+        atEntry = AreaEntry::GetDefaultForMap(GetMapId());
 
     if (isOutdoors)
     {
@@ -946,7 +940,7 @@ uint16 TerrainInfo::GetAreaFlag(float x, float y, float z, bool* isOutdoors) con
         else
             *isOutdoors = true;
     }
-    return areaflag;
+    return atEntry;
 }
 
 uint8 TerrainInfo::GetTerrainType(float x, float y) const
@@ -958,17 +952,21 @@ uint8 TerrainInfo::GetTerrainType(float x, float y) const
 
 uint32 TerrainInfo::GetAreaId(float x, float y, float z) const
 {
-    return TerrainManager::GetAreaIdByAreaFlag(GetAreaFlag(x, y, z), m_mapId);
+    AreaEntry const* entry = GetAreaEntry(x, y, z);
+    return entry ? entry->Id : 0;
 }
 
 uint32 TerrainInfo::GetZoneId(float x, float y, float z) const
 {
-    return TerrainManager::GetZoneIdByAreaFlag(GetAreaFlag(x, y, z), m_mapId);
+    AreaEntry const* entry = GetAreaEntry(x, y, z);
+    return entry ? entry->GetZoneIdOrSelf() : 0;
 }
 
 void TerrainInfo::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const
 {
-    TerrainManager::GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(x, y, z), m_mapId);
+    AreaEntry const* entry = GetAreaEntry(x, y, z);
+    areaid = entry ? entry->Id : 0;
+    zoneid = entry ? entry->GetZoneIdOrSelf() : 0;
 }
 
 GridMapLiquidStatus TerrainInfo::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData* data) const
@@ -994,7 +992,7 @@ GridMapLiquidStatus TerrainInfo::getLiquidStatus(float x, float y, float z, uint
 
                 if (liquid_type && liquid_type < 21)
                 {
-                    if (AreaEntry const* area = AreaEntry::GetByAreaFlagAndMap(GetAreaFlag(x, y, z), GetMapId()))
+                    if (AreaEntry const* area = GetAreaEntry(x, y, z))
                     {
                         uint32 overrideLiquid = area->LiquidTypeId;
                         if (!overrideLiquid && area->ZoneId)
@@ -1287,28 +1285,3 @@ void TerrainManager::UnloadAll()
     i_TerrainMap.clear();
 }
 
-uint32 TerrainManager::GetAreaIdByAreaFlag(uint16 areaflag, uint32 map_id)
-{
-    const auto *entry = AreaEntry::GetByAreaFlagAndMap(areaflag, map_id);
-
-    if (entry)
-        return entry->Id;
-    return 0;
-}
-
-uint32 TerrainManager::GetZoneIdByAreaFlag(uint16 areaflag, uint32 map_id)
-{
-    const auto *entry = AreaEntry::GetByAreaFlagAndMap(areaflag, map_id);
-
-    if (entry)
-        return !entry->IsZone() ? entry->ZoneId : entry->Id;
-    return 0;
-}
-
-void TerrainManager::GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag, uint32 map_id)
-{
-    const auto *entry = AreaEntry::GetByAreaFlagAndMap(areaflag, map_id);
-
-    areaid = entry ? entry->Id : 0;
-    zoneid = entry ? (!entry->IsZone() ? entry->ZoneId : entry->Id) : 0;
-}

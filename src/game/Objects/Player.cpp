@@ -5875,7 +5875,7 @@ void Player::CheckAreaExploreAndOutdoor()
         return;
 
     bool isOutdoor;
-    uint16 areaFlag = GetTerrain()->GetAreaFlag(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
+    AreaEntry const* p = GetTerrain()->GetAreaEntry(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
 
     if (GetTransport())
         isOutdoor = IsOutdoorOnTransport();
@@ -5922,9 +5922,10 @@ void Player::CheckAreaExploreAndOutdoor()
     else if (sWorld.getConfig(CONFIG_BOOL_VMAP_INDOOR_CHECK) && !IsGameMaster())
         RemoveAurasWithAttribute(SPELL_ATTR_ONLY_OUTDOORS);
 
-    if (areaFlag == 0xffff)
+    if (!p || !p->ExploreFlag || p->ExploreFlag == 0xffff)
         return;
 
+    uint32 const areaFlag = p->ExploreFlag;
     int offset = areaFlag / 32;
 
     if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
@@ -5940,40 +5941,34 @@ void Player::CheckAreaExploreAndOutdoor()
     {
         SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset, (uint32)(currFields | val));
 
-        const auto* p = AreaEntry::GetByAreaFlagAndMap(areaFlag, GetMapId());
-        if (!p)
-            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "PLAYER: Player %u discovered unknown area (x: %f y: %f map: %u", GetGUIDLow(), GetPositionX(), GetPositionY(), GetMapId());
-        else
+        GetCheatData()->OnExplore(p);
+        uint32 area = p->Id;
+        uint32 xp = 0;
+        if (p->AreaLevel > 0 && GetLevel() < sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
         {
-            GetCheatData()->OnExplore(p);
-            uint32 area = p->Id;
-            uint32 xp = 0;
-            if (p->AreaLevel > 0 && GetLevel() < sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
+            float const explorationRate = sWorld.getConfig(CONFIG_FLOAT_RATE_XP_EXPLORE);
+            int32 const diff = int32(GetLevel()) - p->AreaLevel;
+            if (diff < -5)
+                xp = uint32(sObjectMgr.GetBaseXP(GetLevel() + 5) * explorationRate);
+            else if (diff > 5)
             {
-                float const explorationRate = sWorld.getConfig(CONFIG_FLOAT_RATE_XP_EXPLORE);
-                int32 const diff = int32(GetLevel()) - p->AreaLevel;
-                if (diff < -5)
-                    xp = uint32(sObjectMgr.GetBaseXP(GetLevel() + 5) * explorationRate);
-                else if (diff > 5)
-                {
-                    int32 exploration_percent = (100 - ((diff - 5) * 5));
-                    if (exploration_percent > 100)
-                        exploration_percent = 100;
-                    else if (exploration_percent < 0)
-                        exploration_percent = 0;
+                int32 exploration_percent = (100 - ((diff - 5) * 5));
+                if (exploration_percent > 100)
+                    exploration_percent = 100;
+                else if (exploration_percent < 0)
+                    exploration_percent = 0;
 
-                    xp = uint32(sObjectMgr.GetBaseXP(p->AreaLevel) * exploration_percent / 100 * explorationRate);
-                }
-                else
-                    xp = uint32(sObjectMgr.GetBaseXP(p->AreaLevel) * explorationRate);
-
-                GiveXP(xp, nullptr);
+                xp = uint32(sObjectMgr.GetBaseXP(p->AreaLevel) * exploration_percent / 100 * explorationRate);
             }
+            else
+                xp = uint32(sObjectMgr.GetBaseXP(p->AreaLevel) * explorationRate);
 
-            // Exploration packet should be sent even if no XP is gained.
-            SendExplorationExperience(area, xp);
-            sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "PLAYER: Player %u discovered a new area: %u", GetGUIDLow(), area);
+            GiveXP(xp, nullptr);
         }
+
+        // Exploration packet should be sent even if no XP is gained.
+        SendExplorationExperience(area, xp);
+        sLog.Out(LOG_BASIC, LOG_LVL_DETAIL, "PLAYER: Player %u discovered a new area: %u", GetGUIDLow(), area);
     }
 }
 
