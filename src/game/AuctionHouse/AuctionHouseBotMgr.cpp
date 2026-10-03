@@ -157,7 +157,7 @@ void AuctionHouseBotMgr::AddItem(AuctionHouseBotEntry e, AuctionHouseObject *auc
     }
     item->SetCount(e.stack);
 
-    uint32 dep = sAuctionMgr.GetAuctionDeposit(m_auctionHouseEntry, etime, item);
+    uint32 dep = sAuctionMgr.GetAuctionDeposit(m_auctionHouseEntry, etime, item->GetProto(), item->GetCount());
 
     AuctionEntry* auctionEntry       = new AuctionEntry;
     auctionEntry->Id                 = sObjectMgr.GenerateAuctionID();

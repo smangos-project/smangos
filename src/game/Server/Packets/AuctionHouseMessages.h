@@ -25,32 +25,60 @@ struct AuctionHelloRequest
     bool Read(ByteBuffer& data) { return AuctioneerGuid.Read(data); }
 };
 
+struct AuctionItemForSale
+{
+    ClassicGuid ItemGuid;
+    uint32 UseCount = 0;
+};
+
+// Runtime is in minutes. Each item entry is a bag item and how many of its stack go up for sale.
 struct AuctionSellItem
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_SELL_ITEM;
 
     ClassicGuid AuctioneerGuid;
-    ClassicGuid ItemGuid;
     uint64 Bid = 0;
     uint64 Buyout = 0;
     uint32 Etime = 0;
+    std::vector<AuctionItemForSale> Items;
 
     void Write(ByteBuffer& data) const
     {
         AuctioneerGuid.Write(data);
-        ItemGuid.Write(data);
         data << Bid << Buyout << Etime;
+        data.WriteBit(false); // TaintedBy
+        data.WriteBits(uint32(Items.size()), 5);
+        data.FlushBits();
+        for (AuctionItemForSale const& item : Items)
+        {
+            item.ItemGuid.Write(data);
+            data << item.UseCount;
+        }
     }
 
     bool Read(ByteBuffer& data)
     {
         if (!AuctioneerGuid.Read(data))
             return false;
-        if (!ItemGuid.Read(data))
-            return false;
-        if (data.size() - data.rpos() < 2 * sizeof(uint64) + sizeof(uint32))
+        if (data.size() - data.rpos() < 2 * sizeof(uint64) + sizeof(uint32) + 1)
             return false;
         data >> Bid >> Buyout >> Etime;
+        if (data.ReadBit()) // TaintedBy, only set for addon-initiated posts
+            return false;
+        uint32 const count = data.ReadBits(5);
+        data.ResetBitPos();
+
+        Items.clear();
+        for (uint32 i = 0; i < count; ++i)
+        {
+            AuctionItemForSale item;
+            if (!item.ItemGuid.Read(data))
+                return false;
+            if (data.size() - data.rpos() < sizeof(uint32))
+                return false;
+            data >> item.UseCount;
+            Items.push_back(item);
+        }
         return true;
     }
 };

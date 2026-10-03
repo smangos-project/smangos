@@ -32,6 +32,7 @@
 #include "Packets/AuctionHouseMessages.h"
 
 class Item;
+struct ItemPrototype;
 class Player;
 class Unit;
 class WorldPacket;
@@ -175,7 +176,7 @@ class AuctionHouseMgr
         void SendAuctionWonMail(AuctionEntry* auction);
         void SendAuctionSuccessfulMail(AuctionEntry* auction);
         void SendAuctionExpiredMail(AuctionEntry* auction);
-        static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem);
+        static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, ItemPrototype const* proto, uint32 count);
 
         static uint32 GetAuctionHouseId(uint32 factionTemplateId);
         static uint32 GetAuctionHouseTeam(AuctionHouseEntry const* house);

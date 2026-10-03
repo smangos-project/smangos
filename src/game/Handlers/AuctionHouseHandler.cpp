@@ -327,7 +327,14 @@ void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
     if (GetPlayer()->HasUnitState(UNIT_STATE_FEIGN_DEATH))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    nonstd::optional<ObjectGuid> const itemGuid = ClassicGuidMapping::FromClassic(packet.ItemGuid);
+    // one auction per listed stack; the client sends one packet per stack when posting several
+    if (packet.Items.size() != 1 || !packet.Items[0].UseCount)
+    {
+        SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_ITEM_NOT_FOUND);
+        return;
+    }
+
+    nonstd::optional<ObjectGuid> const itemGuid = ClassicGuidMapping::FromClassic(packet.Items[0].ItemGuid);
     if (!itemGuid)
     {
         SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_ITEM_NOT_FOUND);
@@ -370,8 +377,15 @@ void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
         return;
     }
 
+    uint32 const count = packet.Items[0].UseCount;
+    if (count > it->GetCount())
+    {
+        SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_INVENTORY, EQUIP_ERR_ITEM_NOT_FOUND);
+        return;
+    }
+
     // check money for deposit
-    uint32 deposit = AuctionHouseMgr::GetAuctionDeposit(auctionHouseEntry, etime, it);
+    uint32 deposit = AuctionHouseMgr::GetAuctionDeposit(auctionHouseEntry, etime, it->GetProto(), count);
 
     if (pl->GetMoney() < deposit)
     {
@@ -387,6 +401,23 @@ void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
         sLog.Player(GetAccountId(), LOG_GM, LOG_LVL_BASIC,
             "GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(), GetAccountId(), it->GetProto()->Name1, it->GetEntry(), it->GetCount());
+    }
+
+    bool const splitStack = count < it->GetCount();
+    if (splitStack)
+    {
+        Item* stack = it;
+        it = stack->CloneItem(count, pl);
+        if (!it)
+        {
+            SendAuctionCommandResult(nullptr, AUCTION_STARTED, AUCTION_ERR_DATABASE);
+            return;
+        }
+        stack->SetCount(stack->GetCount() - count);
+        pl->ItemRemovedQuestCheck(stack->GetEntry(), count);
+        if (pl->IsInWorld())
+            stack->SendCreateUpdateToPlayer(pl);
+        stack->SetState(ITEM_CHANGED, pl);
     }
 
     pl->ModifyMoney(-int32(deposit));
@@ -428,10 +459,12 @@ void WorldSession::HandleAuctionSellItem(AuctionSellItem const& packet)
     auctionHouse->AddAuction(AH);
 
     sAuctionMgr.AddAItem(it);
-    pl->MoveItemFromInventory(it->GetBagSlot(), it->GetSlot(), true);
+    if (!splitStack)
+        pl->MoveItemFromInventory(it->GetBagSlot(), it->GetSlot(), true);
 
     CharacterDatabase.BeginTransaction(pl->GetGUIDLow());
-    it->DeleteFromInventoryDB();
+    if (!splitStack)
+        it->DeleteFromInventoryDB();
     it->SaveToDB();                                         // recursive and not have transaction guard into self, not in inventiory and can be save standalone
     AH->SaveToDB();
     pl->SaveInventoryAndGoldToDB();

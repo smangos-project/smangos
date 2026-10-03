@@ -64,7 +64,7 @@ TEST_CASE("auction house: an item is sold, listed and bought out live", "[gamepl
 
         AuctionSellItem sell;
         sell.AuctioneerGuid = *auctioneer;
-        sell.ItemGuid = push->ItemGuid;
+        sell.Items.push_back({ push->ItemGuid, uint32(push->Quantity) });
         sell.Bid = 100;
         sell.Buyout = 500;
         sell.Etime = SHORTEST_AUCTION_MINUTES;

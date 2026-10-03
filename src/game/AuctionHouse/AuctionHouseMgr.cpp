@@ -97,9 +97,9 @@ AuctionHouseObject * AuctionHouseMgr::GetAuctionsMap(AuctionHouseEntry const* ho
     return nullptr;
 }
 
-uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item *pItem)
+uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, ItemPrototype const* proto, uint32 count)
 {
-    float deposit = float(pItem->GetProto()->SellPrice * pItem->GetCount() * (time / MIN_AUCTION_TIME));
+    float deposit = float(proto->SellPrice * count * (time / MIN_AUCTION_TIME));
 
     deposit = deposit * entry->depositPercent / 100.0f;
 

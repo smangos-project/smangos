@@ -15,19 +15,38 @@ TEST_CASE("AuctionSellItem round-trips", "[packets]")
 {
     AuctionSellItem packet;
     packet.AuctioneerGuid = { 1, 0 };
-    packet.ItemGuid = { 99, 0 };
+    packet.Items.push_back({ { 99, 0 }, 3 });
     packet.Bid = 1000;
     packet.Buyout = 5000;
     packet.Etime = 720;
     RoundTrip(packet, [](AuctionSellItem const& a, AuctionSellItem const& b)
     {
         CHECK(a.AuctioneerGuid == b.AuctioneerGuid);
-        CHECK(a.ItemGuid == b.ItemGuid);
+        REQUIRE(b.Items.size() == 1);
+        CHECK(a.Items[0].ItemGuid == b.Items[0].ItemGuid);
+        CHECK(a.Items[0].UseCount == b.Items[0].UseCount);
         CHECK(a.Bid == b.Bid);
         CHECK(a.Buyout == b.Buyout);
         CHECK(a.Etime == b.Etime);
     });
     RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("AuctionSellItem reads a real 1.15 client post", "[packets]")
+{
+    // 2 Ruined Pelts, 1 silver starting bid, no buyout, 8 hours
+    std::string const hex = "03a79831c08308042064000000000000000000000000000000e00100000401a01d040c02000000";
+    ByteBuffer data;
+    for (size_t i = 0; i < hex.size(); i += 2)
+        data << uint8(std::stoul(hex.substr(i, 2), nullptr, 16));
+    AuctionSellItem packet;
+    REQUIRE(packet.Read(data));
+    CHECK(data.rpos() == data.size());
+    CHECK(packet.Bid == 100);
+    CHECK(packet.Buyout == 0);
+    CHECK(packet.Etime == 480);
+    REQUIRE(packet.Items.size() == 1);
+    CHECK(packet.Items[0].UseCount == 2);
 }
 
 TEST_CASE("AuctionRemoveItem round-trips", "[packets]")
