@@ -2803,8 +2803,12 @@ bool Unit::ExtrapolateMovement(MovementInfo const& mi, uint32 diffMs, float &x, 
     if (!MaNGOS::IsValidMapCoord(x, y, z, o))
         return false;
 
-    if (!(mi.moveFlags & (MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING)))
-        z = GetMap()->GetHeight(x, y, z);
+    if (!(mi.moveFlags & (MOVEFLAG_JUMPING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)))
+    {
+        float const groundZ = GetMap()->GetHeight(x, y, z);
+        if (groundZ > INVALID_HEIGHT)
+            z = groundZ;
+    }
 
     return GetMap()->isInLineOfSight(mi.pos.x, mi.pos.y, mi.pos.z + 0.5f, x, y, z + 0.5f);
 }
