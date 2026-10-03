@@ -417,6 +417,8 @@ using MoveSetRunBackSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_RUN_BACK_SPEED>;
 using MoveSetSwimSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_SWIM_SPEED>;
 using MoveSetSwimBackSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_SWIM_BACK_SPEED>;
 using MoveSetTurnRate = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_TURN_RATE>;
+using MoveSetFlightSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_FLIGHT_SPEED>;
+using MoveSetFlightBackSpeed = MoveSetSpeed<CLASSIC_SMSG_MOVE_SET_FLIGHT_BACK_SPEED>;
 
 // The same speed change for a unit no client is moving.
 template<ClassicOpcodes Op>
@@ -450,6 +452,8 @@ using MoveSplineSetRunBackSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SE
 using MoveSplineSetSwimSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_SWIM_SPEED>;
 using MoveSplineSetSwimBackSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED>;
 using MoveSplineSetTurnRate = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_TURN_RATE>;
+using MoveSplineSetFlightSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED>;
+using MoveSplineSetFlightBackSpeed = MoveSplineSetSpeed<CLASSIC_SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED>;
 
 // A player-moved unit's speed change, relayed to the players who see it.
 template<ClassicOpcodes Op>
@@ -483,6 +487,8 @@ using MoveUpdateRunBackSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_RUN_BACK
 using MoveUpdateSwimSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_SWIM_SPEED>;
 using MoveUpdateSwimBackSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_SWIM_BACK_SPEED>;
 using MoveUpdateTurnRate = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_TURN_RATE>;
+using MoveUpdateFlightSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_FLIGHT_SPEED>;
+using MoveUpdateFlightBackSpeed = MoveUpdateSpeed<CLASSIC_SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED>;
 
 // Root, water walk, hover and feather fall (and their opposites) each have a message of this shape.
 template<ClassicOpcodes Op>
@@ -761,6 +767,8 @@ using MoveForceRunBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_
 using MoveForceSwimSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK>;
 using MoveForceSwimBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK>;
 using MoveForceTurnRateChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK>;
+using MoveForceFlightSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK>;
+using MoveForceFlightBackSpeedChangeAck = ClientMovementSpeedAck<CLASSIC_CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK>;
 
 // The answer to a model-scale-driven collision height change (SMSG_MOVE_SET_COLLISION_HEIGHT).
 // This engine never sends that SMSG (no scale-driven collision height feature), so nothing ever

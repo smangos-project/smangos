@@ -318,6 +318,8 @@ static uint32 ToInternalMovementOpcode(ClassicOpcodes opcode)
         case CLASSIC_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK:     return CMSG_FORCE_SWIM_SPEED_CHANGE_ACK;
         case CLASSIC_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK: return CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK;
         case CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK:      return CMSG_FORCE_TURN_RATE_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK:   return CMSG_FORCE_RUN_SPEED_CHANGE_ACK;
+        case CLASSIC_CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK: return CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK;
         case CLASSIC_CMSG_MOVE_FORCE_ROOT_ACK:      return CMSG_FORCE_MOVE_ROOT_ACK;
         case CLASSIC_CMSG_MOVE_FORCE_UNROOT_ACK:    return CMSG_FORCE_MOVE_UNROOT_ACK;
         case CLASSIC_CMSG_MOVE_WATER_WALK_ACK:      return CMSG_MOVE_WATER_WALK_ACK;
@@ -435,6 +437,8 @@ CMSG_FORCE_SWIM_SPEED_CHANGE_ACK
 CMSG_FORCE_WALK_SPEED_CHANGE_ACK
 CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK
 CMSG_FORCE_TURN_RATE_CHANGE_ACK
+CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK
+CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK
 */
 void WorldSession::HandleForceSpeedChangeAck(ClassicOpcodes classicOpcode, ClassicMovementAck const& ack, float newSpeed)
 {
@@ -466,6 +470,12 @@ void WorldSession::HandleForceSpeedChangeAck(ClassicOpcodes classicOpcode, Class
             break;
         case CLASSIC_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK:
             move_type = MOVE_TURN_RATE;
+            break;
+        case CLASSIC_CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK:
+            move_type = MOVE_FLIGHT;
+            break;
+        case CLASSIC_CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK:
+            move_type = MOVE_FLIGHT_BACK;
             break;
         default:
             sLog.Out(LOG_MOVEMENT, LOG_LVL_ERROR, "WorldSession::HandleForceSpeedChangeAck: Unknown move type opcode: %u", uint32(classicOpcode));

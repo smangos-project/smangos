@@ -514,6 +514,8 @@ void RealBot::ApplyDefaultHandling(BotPacket const& packet, BotPacketDir dir)
         BOT_ACK_SPEED(MoveSetSwimSpeed, MoveForceSwimSpeedChangeAck)
         BOT_ACK_SPEED(MoveSetSwimBackSpeed, MoveForceSwimBackSpeedChangeAck)
         BOT_ACK_SPEED(MoveSetTurnRate, MoveForceTurnRateChangeAck)
+        BOT_ACK_SPEED(MoveSetFlightSpeed, MoveForceFlightSpeedChangeAck)
+        BOT_ACK_SPEED(MoveSetFlightBackSpeed, MoveForceFlightBackSpeedChangeAck)
 #undef BOT_ACK_SPEED
         case CLASSIC_SMSG_ON_MONSTER_MOVE:
         {

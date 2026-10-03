@@ -381,6 +381,8 @@ bool ChatHandler::HandleUnitSpeedInfoCommand(char* args)
     PSendSysMessage("Swim: %g", pTarget->GetSpeed(MOVE_SWIM));
     PSendSysMessage("Swim Back: %g", pTarget->GetSpeed(MOVE_SWIM_BACK));
     PSendSysMessage("Turn: %g", pTarget->GetSpeed(MOVE_TURN_RATE));
+    PSendSysMessage("Flight: %g", pTarget->GetSpeed(MOVE_FLIGHT));
+    PSendSysMessage("Flight Back: %g", pTarget->GetSpeed(MOVE_FLIGHT_BACK));
 
     return true;
 }
@@ -2224,6 +2226,7 @@ bool ChatHandler::HandleModifyASpeedCommand(char* args)
     chr->UpdateSpeed(MOVE_WALK, false, modSpeed);
     chr->UpdateSpeed(MOVE_RUN, false, modSpeed);
     chr->UpdateSpeed(MOVE_SWIM, false, modSpeed);
+    chr->UpdateSpeed(MOVE_FLIGHT, false, modSpeed);
 
     return true;
 }

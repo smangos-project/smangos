@@ -66,6 +66,12 @@ void WithSpeedMessages(UnitMoveType type, Func&& func)
         case MOVE_TURN_RATE:
             func(SpeedMessages<MoveSetTurnRate, MoveUpdateTurnRate, MoveSplineSetTurnRate>());
             break;
+        case MOVE_FLIGHT:
+            func(SpeedMessages<MoveSetFlightSpeed, MoveUpdateFlightSpeed, MoveSplineSetFlightSpeed>());
+            break;
+        case MOVE_FLIGHT_BACK:
+            func(SpeedMessages<MoveSetFlightBackSpeed, MoveUpdateFlightBackSpeed, MoveSplineSetFlightBackSpeed>());
+            break;
         default:
             break;
     }
@@ -168,6 +174,8 @@ MovementChangeType MovementPacketSender::GetChangeTypeByMoveType(UnitMoveType mo
         case MOVE_SWIM:         return SPEED_CHANGE_SWIM;
         case MOVE_SWIM_BACK:    return SPEED_CHANGE_SWIM_BACK;
         case MOVE_TURN_RATE:    return RATE_CHANGE_TURN;
+        case MOVE_FLIGHT:       return SPEED_CHANGE_FLIGHT;
+        case MOVE_FLIGHT_BACK:  return SPEED_CHANGE_FLIGHT_BACK;
         default:
             ASSERT(false && "MovementPacketSender::GetChangeTypeByMoveType Unsupported UnitMoveType");
     }
@@ -183,6 +191,8 @@ UnitMoveType MovementPacketSender::GetMoveTypeByChangeType(MovementChangeType mo
         case SPEED_CHANGE_SWIM:         return MOVE_SWIM;
         case SPEED_CHANGE_SWIM_BACK:    return MOVE_SWIM_BACK;
         case RATE_CHANGE_TURN:          return MOVE_TURN_RATE;
+        case SPEED_CHANGE_FLIGHT:       return MOVE_FLIGHT;
+        case SPEED_CHANGE_FLIGHT_BACK:  return MOVE_FLIGHT_BACK;
         default:
             ASSERT(false && "MovementPacketSender::GetMoveTypeByChangeType Unsupported MovementChangeType");
     }

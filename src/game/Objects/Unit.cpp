@@ -79,6 +79,8 @@ float baseMoveSpeed[MAX_MOVE_TYPE] =
     4.722222f,                                              // MOVE_SWIM
     2.5f,                                                   // MOVE_SWIM_BACK
     3.141594f,                                              // MOVE_TURN_RATE
+    7.0f,                                                   // MOVE_FLIGHT
+    4.5f,                                                   // MOVE_FLIGHT_BACK
 };
 
 ////////////////////////////////////////////////////////////
@@ -6668,6 +6670,16 @@ void Unit::ResolvePendingMovementChange(PlayerMovementPendingChange& change, boo
             if (sendToClient)
                 MovementPacketSender::SendSpeedChangeToAll(this, MOVE_TURN_RATE, change.newValue / baseMoveSpeed[MOVE_TURN_RATE]);
             break;
+        case SPEED_CHANGE_FLIGHT:
+            SetSpeedRateReal(MOVE_FLIGHT, change.newValue / baseMoveSpeed[MOVE_FLIGHT]);
+            if (sendToClient)
+                MovementPacketSender::SendSpeedChangeToAll(this, MOVE_FLIGHT, change.newValue / baseMoveSpeed[MOVE_FLIGHT]);
+            break;
+        case SPEED_CHANGE_FLIGHT_BACK:
+            SetSpeedRateReal(MOVE_FLIGHT_BACK, change.newValue / baseMoveSpeed[MOVE_FLIGHT_BACK]);
+            if (sendToClient)
+                MovementPacketSender::SendSpeedChangeToAll(this, MOVE_FLIGHT_BACK, change.newValue / baseMoveSpeed[MOVE_FLIGHT_BACK]);
+            break;
         case TELEPORT:
             if (Player* pPlayer = ToPlayer())
             {
@@ -6763,6 +6775,8 @@ bool Unit::FindPendingMovementSpeedChange(float speedReceived, uint32 movementCo
             case SPEED_CHANGE_SWIM:                 moveTypeSent = MOVE_SWIM; break;
             case SPEED_CHANGE_SWIM_BACK:            moveTypeSent = MOVE_SWIM_BACK; break;
             case RATE_CHANGE_TURN:                  moveTypeSent = MOVE_TURN_RATE; break;
+            case SPEED_CHANGE_FLIGHT:               moveTypeSent = MOVE_FLIGHT; break;
+            case SPEED_CHANGE_FLIGHT_BACK:          moveTypeSent = MOVE_FLIGHT_BACK; break;
             default:
                 continue;
         }
@@ -6859,6 +6873,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, float ratio)
         }
         case MOVE_SWIM_BACK:
             return;
+        case MOVE_FLIGHT:
+        case MOVE_FLIGHT_BACK:
+            break;
         default:
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
             return;
@@ -6963,6 +6980,9 @@ float Unit::GetXZFlagBasedSpeed(uint32 moveFlags) const
     // not moving laterally? zero!
     if (!(moveFlags & MOVEFLAG_MASK_XZ))
         return 0.f;
+
+    if (!!(moveFlags & MOVEFLAG_FLYING))
+        return GetSpeed(!!(moveFlags & MOVEFLAG_BACKWARD) ? MOVE_FLIGHT_BACK : MOVE_FLIGHT);
 
     // swimming?
     if (!!(moveFlags & MOVEFLAG_SWIMMING))

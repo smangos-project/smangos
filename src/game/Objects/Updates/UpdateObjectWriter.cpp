@@ -241,8 +241,8 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         data << float(unit.GetSpeed(MOVE_RUN_BACK));
         data << float(unit.GetSpeed(MOVE_SWIM));
         data << float(unit.GetSpeed(MOVE_SWIM_BACK));
-        data << float(7.0f);                                     // MOVE_FLIGHT: no 1.12 concept, retail default
-        data << float(4.5f);                                     // MOVE_FLIGHT_BACK: retail default
+        data << float(unit.GetSpeed(MOVE_FLIGHT));
+        data << float(unit.GetSpeed(MOVE_FLIGHT_BACK));
         data << float(unit.GetSpeed(MOVE_TURN_RATE));
         data << float(unit.GetSpeed(MOVE_TURN_RATE));            // MOVE_PITCH_RATE: same default as turn rate
 
