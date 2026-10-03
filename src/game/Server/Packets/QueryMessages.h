@@ -244,7 +244,7 @@ struct CreatureDisplayEntry
 };
 
 // A creature template. Only the first name slot is used; a body that fills another name, the
-// alternate title or the cursor name is rejected on read, as are quest items and currencies.
+// alternate title or the cursor name is rejected on read, as are quest currencies.
 struct QueryCreatureResponse
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUERY_CREATURE_RESPONSE;
@@ -267,6 +267,7 @@ struct QueryCreatureResponse
     std::vector<CreatureDisplayEntry> Displays;
     float HealthMultiplier = 1.0f;
     float EnergyMultiplier = 1.0f;
+    std::vector<int32> QuestItems;
     int32 UnitClass = 0;
 
     void Write(ByteBuffer& data) const
@@ -300,7 +301,7 @@ struct QueryCreatureResponse
         for (CreatureDisplayEntry const& display : Displays)
             data << display.DisplayId << display.Scale << display.Probability;
         data << HealthMultiplier << EnergyMultiplier;
-        data << uint32(0);  // quest items
+        data << uint32(QuestItems.size());
         data << uint32(0);  // quest currencies
         data << int32(0);   // movement info
         data << int32(0);   // health scaling expansion
@@ -312,6 +313,8 @@ struct QueryCreatureResponse
         data << int32(0);   // widget set unit condition
 
         ClassicWriteCStringBytes(data, Title);
+        for (int32 item : QuestItems)
+            data << item;
     }
 
     bool Read(ByteBuffer& data)
@@ -364,7 +367,7 @@ struct QueryCreatureResponse
         uint32 questItems, questCurrencies;
         int32 ignored;
         data >> HealthMultiplier >> EnergyMultiplier >> questItems >> questCurrencies;
-        if (questItems || questCurrencies)
+        if (questCurrencies)
             return false;
         for (int i = 0; i < 4; ++i)
             data >> ignored;
@@ -372,7 +375,14 @@ struct QueryCreatureResponse
         for (int i = 0; i < 3; ++i)
             data >> ignored;
 
-        return ClassicReadCStringBytes(data, titleLength, Title);
+        if (!ClassicReadCStringBytes(data, titleLength, Title))
+            return false;
+        if (questItems > (data.size() - data.rpos()) / sizeof(int32))
+            return false;
+        QuestItems.resize(questItems);
+        for (int32& item : QuestItems)
+            data >> item;
+        return true;
     }
 };
 
@@ -398,8 +408,7 @@ struct QueryGameObject
     }
 };
 
-// A game object template. The body is a length-prefixed sub-blob; a body with quest items is
-// rejected on read.
+// A game object template. The body is a length-prefixed sub-blob.
 struct QueryGameObjectResponse
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_QUERY_GAME_OBJECT_RESPONSE;
@@ -414,6 +423,7 @@ struct QueryGameObjectResponse
     std::string IconName;
     std::array<int32, CLASSIC_MAX_GAMEOBJECT_DATA> Data{};
     float Size = 1.0f;
+    std::vector<int32> QuestItems;
 
     void Write(ByteBuffer& data) const
     {
@@ -433,7 +443,9 @@ struct QueryGameObjectResponse
             for (int32 value : Data)
                 stats << value;
             stats << Size;
-            stats << uint8(0);  // quest items
+            stats << uint8(QuestItems.size());
+            for (int32 item : QuestItems)
+                stats << item;
             stats << int32(0);  // content tuning
         }
 
@@ -488,7 +500,12 @@ struct QueryGameObjectResponse
             stats >> value;
         uint8 questItems;
         stats >> Size >> questItems;
-        return questItems == 0 && stats.size() - stats.rpos() == sizeof(int32);
+        if (stats.size() - stats.rpos() != (questItems + 1) * sizeof(int32))
+            return false;
+        QuestItems.resize(questItems);
+        for (int32& item : QuestItems)
+            stats >> item;
+        return true;
     }
 };
 

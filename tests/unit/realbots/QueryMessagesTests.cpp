@@ -97,6 +97,7 @@ TEST_CASE("QueryCreatureResponse round-trips an allowed and a missing entry", "[
     found.HealthMultiplier = 2.0f;
     found.EnergyMultiplier = 0.5f;
     found.UnitClass = 4;
+    found.QuestItems = { 752, 772 };
     RoundTrip(found, [](QueryCreatureResponse const& a, QueryCreatureResponse const& b)
     {
         CHECK(a.Entry == b.Entry);
@@ -121,6 +122,7 @@ TEST_CASE("QueryCreatureResponse round-trips an allowed and a missing entry", "[
         CHECK(a.HealthMultiplier == b.HealthMultiplier);
         CHECK(a.EnergyMultiplier == b.EnergyMultiplier);
         CHECK(a.UnitClass == b.UnitClass);
+        CHECK(a.QuestItems == b.QuestItems);
     });
     RejectsEveryTruncation(found);
 
@@ -169,6 +171,7 @@ TEST_CASE("QueryGameObjectResponse round-trips an allowed and a missing entry", 
     found.Data[0] = 43;
     found.Data[23] = -7;
     found.Size = 1.25f;
+    found.QuestItems = { 11119 };
     RoundTrip(found, [](QueryGameObjectResponse const& a, QueryGameObjectResponse const& b)
     {
         CHECK(a.Entry == b.Entry);
@@ -180,6 +183,7 @@ TEST_CASE("QueryGameObjectResponse round-trips an allowed and a missing entry", 
         CHECK(a.IconName == b.IconName);
         CHECK(a.Data == b.Data);
         CHECK(a.Size == b.Size);
+        CHECK(a.QuestItems == b.QuestItems);
     });
     RejectsEveryTruncation(found);
 

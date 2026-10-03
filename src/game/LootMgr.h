@@ -193,6 +193,8 @@ class LootStore
         bool HaveLootFor(uint32 loot_id) const { return m_LootTemplates.find(loot_id) != m_LootTemplates.end(); }
         bool HaveQuestLootFor(uint32 loot_id) const;
         bool HaveQuestLootForPlayer(uint32 loot_id, Player const* player) const;
+        // Sorted ids of the quest drop items, for the client's query responses
+        std::vector<uint32> GetQuestDrops(uint32 loot_id) const;
 
         LootTemplate const* GetLootFor(uint32 loot_id) const;
 
@@ -224,6 +226,7 @@ class LootTemplate
         bool HasQuestDrop(uint8 groupId = 0) const;
         // True if template includes at least 1 quest drop for an active quest of the player
         bool HasQuestDropForPlayer(Player const* player, uint8 groupId = 0) const;
+        void CollectQuestDrops(std::vector<uint32>& items, uint8 groupId = 0) const;
 
         // Checks integrity of the template
         void Verify(LootStore const& store, uint32 Id) const;

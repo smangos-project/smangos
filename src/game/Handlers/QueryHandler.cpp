@@ -33,6 +33,7 @@
 #include "Packets/QueryMessages.h"
 #include "Packets/Classic/GuidMapping.h"
 #include "NPCHandler.h"
+#include "LootMgr.h"
 
 namespace
 {
@@ -162,6 +163,9 @@ void WorldSession::HandleCreatureQueryOpcode(QueryCreature const& packet)
     if (response.Displays.empty())
         response.Displays.emplace_back().DisplayId = ci->display_id[0];
 
+    for (uint32 item : LootTemplates_Creature.GetQuestDrops(ci->loot_id))
+        response.QuestItems.push_back(int32(item));
+
     SendClassic(response);
 }
 
@@ -199,6 +203,10 @@ void WorldSession::HandleGameObjectQueryOpcode(QueryGameObject const& packet)
     int32 const* rawData = reinterpret_cast<int32 const*>(info->raw.data);
     for (size_t i = 0; i < sizeof(info->raw.data) / sizeof(int32); ++i)
         response.Data[i] = rawData[i];
+
+    for (uint32 item : LootTemplates_Gameobject.GetQuestDrops(info->GetLootId()))
+        if (response.QuestItems.size() < UINT8_MAX)
+            response.QuestItems.push_back(int32(item));
 
     SendClassic(response);
 }

@@ -59,6 +59,7 @@ public:
     void AddEntry(LootStoreItem& item);                 // Adds an entry to the group (at loading stage)
     bool HasQuestDrop() const;                          // True if group includes at least 1 quest drop entry
     bool HasQuestDropForPlayer(Player const* player) const;
+    void CollectQuestDrops(std::vector<uint32>& items) const;
     // The same for active quests of the player
     void Process(Loot& loot) const;                     // Rolls an item from the group (if any) and adds the item to the loot
     float RawTotalChance() const;                       // Overall chance for the group (without equal chanced items)
@@ -207,6 +208,16 @@ bool LootStore::HaveQuestLootForPlayer(uint32 loot_id, Player const* player) con
             return true;
 
     return false;
+}
+
+std::vector<uint32> LootStore::GetQuestDrops(uint32 loot_id) const
+{
+    std::vector<uint32> items;
+    if (LootTemplate const* loot = GetLootFor(loot_id))
+        loot->CollectQuestDrops(items);
+    std::sort(items.begin(), items.end());
+    items.erase(std::unique(items.begin(), items.end()), items.end());
+    return items;
 }
 
 LootTemplate const* LootStore::GetLootFor(uint32 loot_id) const
@@ -1115,6 +1126,16 @@ bool LootTemplate::LootGroup::HasQuestDrop() const
     return false;
 }
 
+void LootTemplate::LootGroup::CollectQuestDrops(std::vector<uint32>& items) const
+{
+    for (const auto& i : ExplicitlyChanced)
+        if (i.needs_quest)
+            items.push_back(i.itemid);
+    for (const auto& i : EqualChanced)
+        if (i.needs_quest)
+            items.push_back(i.itemid);
+}
+
 // True if group includes at least 1 quest drop entry for active quests of the player
 bool LootTemplate::LootGroup::HasQuestDropForPlayer(Player const* player) const
 {
@@ -1255,6 +1276,30 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, Player* lootOwner
 }
 
 // True if template includes at least 1 quest drop entry
+void LootTemplate::CollectQuestDrops(std::vector<uint32>& items, uint8 groupId) const
+{
+    if (groupId)
+    {
+        if (groupId <= Groups.size())
+            Groups[groupId - 1].CollectQuestDrops(items);
+        return;
+    }
+
+    for (const auto& itr : Entries)
+    {
+        if (itr.mincountOrRef < 0)
+        {
+            if (LootTemplate const* loot = LootTemplates_Reference.GetLootFor(-itr.mincountOrRef))
+                loot->CollectQuestDrops(items, itr.group);
+        }
+        else if (itr.needs_quest)
+            items.push_back(itr.itemid);
+    }
+
+    for (const auto& group : Groups)
+        group.CollectQuestDrops(items);
+}
+
 bool LootTemplate::HasQuestDrop(uint8 groupId) const
 {
     if (groupId)                                            // Group reference
