@@ -132,6 +132,11 @@ ClassicGuid ClassicGuidMapping::MakeAccount(uint32 accountId)
     return ClassicGuid{ accountId, uint64(CLASSIC_GUID_WOW_ACCOUNT) << TYPE_SHIFT };
 }
 
+uint32 ClassicGuidMapping::VirtualRealmAddress(uint32 realmId)
+{
+    return (uint32(1) << 24) | (uint32(1) << 16) | uint16(realmId);
+}
+
 ClassicGuid ClassicGuidMapping::MakeBnetAccount(uint32 accountId)
 {
     return ClassicGuid{ accountId, uint64(CLASSIC_GUID_BNET_ACCOUNT) << TYPE_SHIFT };

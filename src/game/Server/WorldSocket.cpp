@@ -30,6 +30,7 @@
 #include "Protocol/ClassicOpcodes.h"
 #include "Protocol/Opcodes.h"
 #include "Packets/Auth.h"
+#include "Packets/Classic/GuidMapping.h"
 #include "Packets/Session.h"
 #include "Crypto/Authentication/WorldHandshakeCrypto.h"
 #include "Crypto/BigNumber.h"
@@ -488,7 +489,7 @@ void WorldSocket::SendAuthResponseAndGlueScreen()
         realmName = result->Fetch()[0].GetCppString();
 
     AuthSuccessInfo info;
-    info.RealmAddress = (uint32(1) << 24) | (uint32(1) << 16) | uint16(realmID);
+    info.RealmAddress = ClassicGuidMapping::VirtualRealmAddress(realmID);
     info.RealmName = realmName;
     info.Time = int64(time(nullptr));
     info.RaceClasses =

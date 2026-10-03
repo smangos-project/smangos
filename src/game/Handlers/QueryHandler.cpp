@@ -45,6 +45,7 @@ void FillPlayerName(PlayerNameLookup& lookup, ObjectGuid guid, uint32 accountId,
     data.AccountId = ClassicGuidMapping::MakeAccount(accountId);
     data.BnetAccountId = ClassicGuidMapping::MakeBnetAccount(accountId);
     data.PlayerGuid = lookup.Player;
+    data.VirtualRealmAddress = ClassicGuidMapping::VirtualRealmAddress(realmID);
     data.Name = name;
     data.Race = uint8(race);
     data.Sex = uint8(gender);

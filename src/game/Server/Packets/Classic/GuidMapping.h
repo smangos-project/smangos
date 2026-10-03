@@ -23,6 +23,9 @@ class ClassicGuidMapping
         static ClassicGuid MakeAccount(uint32 accountId);
         static ClassicGuid MakeBnetAccount(uint32 accountId);
 
+        // The virtual realm address of `realmId`; the client resolves a player guid's realm through it.
+        static uint32 VirtualRealmAddress(uint32 realmId);
+
         // A party guid carries nothing but the group's id.
         static ClassicGuid MakeParty(uint32 groupId);
 
