@@ -15,6 +15,24 @@
 
 // --- Client packets ---
 
+// Addon taint info the client attaches to actions started from addon or /run code.
+inline bool SkipAuctionTaintedBy(ByteBuffer& data)
+{
+    data.ResetBitPos();
+    if (data.size() - data.rpos() < 3)
+        return false;
+    uint32 const nameLength = data.ReadBits(10);
+    uint32 const versionLength = data.ReadBits(10);
+    data.ReadBit(); // Loaded
+    data.ReadBit(); // Disabled
+    data.ResetBitPos();
+    if (data.size() - data.rpos() < nameLength + versionLength)
+        return false;
+    data.read_skip(nameLength);
+    data.read_skip(versionLength);
+    return true;
+}
+
 struct AuctionHelloRequest
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_HELLO_REQUEST;
@@ -63,9 +81,10 @@ struct AuctionSellItem
         if (data.size() - data.rpos() < 2 * sizeof(uint64) + sizeof(uint32) + 1)
             return false;
         data >> Bid >> Buyout >> Etime;
-        if (data.ReadBit()) // TaintedBy, only set for addon-initiated posts
-            return false;
+        bool const tainted = data.ReadBit();
         uint32 const count = data.ReadBits(5);
+        if (tainted && !SkipAuctionTaintedBy(data))
+            return false;
         data.ResetBitPos();
 
         Items.clear();
@@ -241,9 +260,7 @@ struct AuctionListItems
         data << uint8(0);  // MaxPetLevel
 
         data.WriteBit(false); // TaintedBy
-        data.WriteBits(uint32(SearchedName.length()), 8);
-        data.FlushBits();
-        data.append(SearchedName.data(), SearchedName.length());
+        data.WriteSizedString(SearchedName, 8);
 
         data.WriteBits(uint32(ClassFilters.size()), 3);
         data.WriteBit(OnlyUsable);
@@ -276,8 +293,7 @@ struct AuctionListItems
         data.read_skip(knownPetsCount);
 
         data.ResetBitPos();
-        if (data.ReadBit()) // TaintedBy, only set for addon-initiated queries
-            return false;
+        bool const tainted = data.ReadBit();
         uint32 const nameLen = data.ReadBits(8);
         data.ResetBitPos();
         if (data.size() - data.rpos() < nameLen + 1)
@@ -287,6 +303,8 @@ struct AuctionListItems
         uint32 const classFiltersCount = data.ReadBits(3);
         OnlyUsable = data.ReadBit();
         ExactMatch = data.ReadBit();
+        if (tainted && !SkipAuctionTaintedBy(data))
+            return false;
         data.ResetBitPos();
 
         ClassFilters.resize(classFiltersCount);

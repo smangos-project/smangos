@@ -168,6 +168,22 @@ TEST_CASE("AuctionListItems reads a real 1.15 client search", "[packets]")
     CHECK(packet.ClassFilters[0].SubClassFilters[0].ItemSubclass == 0);
 }
 
+TEST_CASE("AuctionListItems reads a tainted 1.15 client search", "[packets]")
+{
+    // empty name and no filters, started from /run so the addon taint info is attached
+    std::string const hex =
+        "03a79831c083080420000000000000ffffffff070000000001800000064008756e6b6e6f776e206f72206578706c6f6974206164646f6e00"
+        "0e0000000100000105000600090108000300";
+    ByteBuffer data;
+    for (size_t i = 0; i < hex.size(); i += 2)
+        data << uint8(std::stoul(hex.substr(i, 2), nullptr, 16));
+    AuctionListItems packet;
+    REQUIRE(packet.Read(data));
+    CHECK(data.rpos() == data.size());
+    CHECK(packet.SearchedName.empty());
+    CHECK(packet.ClassFilters.empty());
+}
+
 TEST_CASE("AuctionListPendingSales round-trips", "[packets]")
 {
     RoundTrip(AuctionListPendingSales(), [](AuctionListPendingSales const&, AuctionListPendingSales const&) {});
