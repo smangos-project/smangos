@@ -43,12 +43,12 @@ TEST_CASE("AuctionRemoveItem round-trips", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
-TEST_CASE("AuctionListOwnedItems round-trips", "[packets]")
+TEST_CASE("AuctionListOwnerItems round-trips", "[packets]")
 {
-    AuctionListOwnedItems packet;
+    AuctionListOwnerItems packet;
     packet.AuctioneerGuid = { 1, 0 };
     packet.ListFrom = 50;
-    RoundTrip(packet, [](AuctionListOwnedItems const& a, AuctionListOwnedItems const& b)
+    RoundTrip(packet, [](AuctionListOwnerItems const& a, AuctionListOwnerItems const& b)
     {
         CHECK(a.AuctioneerGuid == b.AuctioneerGuid);
         CHECK(a.ListFrom == b.ListFrom);
@@ -71,12 +71,12 @@ TEST_CASE("AuctionPlaceBid round-trips", "[packets]")
     RejectsEveryTruncation(packet);
 }
 
-TEST_CASE("AuctionListBiddedItems round-trips with and without refresh ids", "[packets]")
+TEST_CASE("AuctionListBidderItems round-trips with and without refresh ids", "[packets]")
 {
-    AuctionListBiddedItems packet;
+    AuctionListBidderItems packet;
     packet.AuctioneerGuid = { 1, 0 };
     packet.Offset = 0;
-    RoundTrip(packet, [](AuctionListBiddedItems const& a, AuctionListBiddedItems const& b)
+    RoundTrip(packet, [](AuctionListBidderItems const& a, AuctionListBidderItems const& b)
     {
         CHECK(a.AuctioneerGuid == b.AuctioneerGuid);
         CHECK(a.Offset == b.Offset);
@@ -86,55 +86,67 @@ TEST_CASE("AuctionListBiddedItems round-trips with and without refresh ids", "[p
     RejectsEveryTruncation(packet);
 
     packet.AuctionIdsToRefresh = { 7, 42, 100 };
-    RoundTrip(packet, [](AuctionListBiddedItems const& a, AuctionListBiddedItems const& b)
+    RoundTrip(packet, [](AuctionListBidderItems const& a, AuctionListBidderItems const& b)
     {
         CHECK(a.AuctionIdsToRefresh == b.AuctionIdsToRefresh);
     });
     RejectsEveryTruncation(packet);
 }
 
-TEST_CASE("AuctionListItems round-trips with no filter and with a class/subclass filter", "[packets]")
+TEST_CASE("AuctionListItems round-trips with no filter and with class/subclass filters", "[packets]")
 {
     AuctionListItems packet;
     packet.AuctioneerGuid = { 1, 0 };
-    packet.ListFrom = 0;
-    packet.SearchedName = "";
-    packet.LevelMin = 0;
-    packet.LevelMax = 0;
-    packet.Quality = AuctionListItems::NoFilter;
-    packet.Usable = 0;
     RoundTrip(packet, [](AuctionListItems const& a, AuctionListItems const& b)
     {
         CHECK(a.AuctioneerGuid == b.AuctioneerGuid);
         CHECK(a.ListFrom == b.ListFrom);
         CHECK(a.SearchedName == b.SearchedName);
-        CHECK(a.LevelMin == b.LevelMin);
-        CHECK(a.LevelMax == b.LevelMax);
         CHECK(a.Quality == b.Quality);
-        CHECK(a.Usable == b.Usable);
-        CHECK(a.AuctionMainCategory == AuctionListItems::NoFilter);
-        CHECK(b.AuctionMainCategory == AuctionListItems::NoFilter);
-        CHECK(a.AuctionSubCategory == AuctionListItems::NoFilter);
-        CHECK(b.AuctionSubCategory == AuctionListItems::NoFilter);
+        CHECK(b.ClassFilters.empty());
     });
     RejectsEveryTruncation(packet);
 
     packet.SearchedName = "Cloth";
     packet.LevelMin = 1;
     packet.LevelMax = 60;
-    packet.Usable = 1;
-    packet.AuctionMainCategory = 4; // ITEM_CLASS_ARMOR
-    packet.AuctionSubCategory = 1;
+    packet.OnlyUsable = true;
+    packet.ClassFilters = { { 4, { { 1, 0xFFFFFFFF } } }, { 2, {} } };
     RoundTrip(packet, [](AuctionListItems const& a, AuctionListItems const& b)
     {
         CHECK(a.SearchedName == b.SearchedName);
         CHECK(a.LevelMin == b.LevelMin);
         CHECK(a.LevelMax == b.LevelMax);
-        CHECK(a.Usable == b.Usable);
-        CHECK(b.AuctionMainCategory == 4);
-        CHECK(b.AuctionSubCategory == 1);
+        CHECK(b.OnlyUsable);
+        REQUIRE(b.ClassFilters.size() == 2);
+        CHECK(b.ClassFilters[0].ItemClass == 4);
+        REQUIRE(b.ClassFilters[0].SubClassFilters.size() == 1);
+        CHECK(b.ClassFilters[0].SubClassFilters[0].ItemSubclass == 1);
+        CHECK(b.ClassFilters[0].SubClassFilters[0].InvTypeMask == 0xFFFFFFFF);
+        CHECK(b.ClassFilters[1].SubClassFilters.empty());
     });
     RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("AuctionListItems reads a real 1.15 client search", "[packets]")
+{
+    // name "abc", usable only, Weapons / One-Handed Axes, 7 sort columns
+    std::string const hex =
+        "03a79831c083080420000000000000ffffffff070100000001000180616263300200000008"
+        "ffffffff00000000000000000e0000000100000105000600090108000300";
+    ByteBuffer data;
+    for (size_t i = 0; i < hex.size(); i += 2)
+        data << uint8(std::stoul(hex.substr(i, 2), nullptr, 16));
+    AuctionListItems packet;
+    REQUIRE(packet.Read(data));
+    CHECK(data.rpos() == data.size());
+    CHECK(packet.SearchedName == "abc");
+    CHECK(packet.OnlyUsable);
+    CHECK(packet.Quality == 0xFFFFFFFF);
+    REQUIRE(packet.ClassFilters.size() == 1);
+    CHECK(packet.ClassFilters[0].ItemClass == 2);
+    REQUIRE(packet.ClassFilters[0].SubClassFilters.size() == 1);
+    CHECK(packet.ClassFilters[0].SubClassFilters[0].ItemSubclass == 0);
 }
 
 TEST_CASE("AuctionListPendingSales round-trips", "[packets]")

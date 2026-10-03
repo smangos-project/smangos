@@ -79,9 +79,9 @@ struct AuctionRemoveItem
     }
 };
 
-struct AuctionListOwnedItems
+struct AuctionListOwnerItems
 {
-    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_OWNED_ITEMS;
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_OWNER_ITEMS;
 
     ClassicGuid AuctioneerGuid;
     uint32 ListFrom = 0;
@@ -90,15 +90,17 @@ struct AuctionListOwnedItems
     {
         AuctioneerGuid.Write(data);
         data << ListFrom;
+        data << uint8(0);
     }
 
     bool Read(ByteBuffer& data)
     {
         if (!AuctioneerGuid.Read(data))
             return false;
-        if (data.size() - data.rpos() < sizeof(uint32))
+        if (data.size() - data.rpos() < sizeof(uint32) + 1)
             return false;
         data >> ListFrom;
+        data.rpos(data.size()); // trailing bit block, always zero
         return true;
     }
 };
@@ -131,9 +133,9 @@ struct AuctionPlaceBid
 // The refresh-id count is a bits<7> bit-packed value on the wire, not a plain uint32 -- reading it
 // as one misreads the first byte of the (usually absent) refresh-id list as a huge count and
 // desyncs trying to read that many nonexistent uint32s.
-struct AuctionListBiddedItems
+struct AuctionListBidderItems
 {
-    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_BIDDED_ITEMS;
+    static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_BIDDER_ITEMS;
 
     ClassicGuid AuctioneerGuid;
     uint32 Offset = 0;
@@ -175,144 +177,111 @@ struct AuctionListBiddedItems
     }
 };
 
-// This engine's filtering (AuctionHouseObject::BuildListAuctionItems) understands only one flat
-// class/subclass pair, not the modern client's per-class array of subclass filters -- only the
-// first class filter's class, and its first subclass filter's subclass, are kept; any further
-// filters are parsed (to stay stream-aligned) and discarded, same for known-pet filters and sort
-// criteria (no pet-auction or server-side-sort system here).
+struct AuctionListFilterSubClass
+{
+    int32 ItemSubclass = 0;
+    uint64 InvTypeMask = 0;
+};
+
+struct AuctionListFilterClass
+{
+    int32 ItemClass = 0;
+    std::vector<AuctionListFilterSubClass> SubClassFilters;
+};
+
+// Sort criteria are skipped; results are always returned in the engine's own order.
 struct AuctionListItems
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_CMSG_AUCTION_LIST_ITEMS;
 
-    static constexpr uint32 NoFilter = 0xFFFFFFFF;
-
     ClassicGuid AuctioneerGuid;
     uint32 ListFrom = 0;
-    std::string SearchedName;
     uint8 LevelMin = 0;
     uint8 LevelMax = 0;
-    uint32 AuctionSlotId = NoFilter;
-    uint32 AuctionMainCategory = NoFilter;
-    uint32 AuctionSubCategory = NoFilter;
-    uint32 Quality = NoFilter;
-    uint8 Usable = 0;
+    uint32 Quality = 0xFFFFFFFF;
+    std::string SearchedName;
+    std::vector<AuctionListFilterClass> ClassFilters;
+    bool OnlyUsable = false;
+    bool ExactMatch = false;
 
     void Write(ByteBuffer& data) const
     {
-        data << ListFrom;
         AuctioneerGuid.Write(data);
-        data << LevelMin << LevelMax << Quality;
-        data << uint8(0); // SortCount
-        data << uint32(0); // KnownPetsCount
-        data << uint8(0); // MaxPetLevel
+        data << ListFrom << LevelMin << LevelMax << Quality;
+        data << uint8(0);  // SortCount
+        data << uint32(0); // KnownPets
+        data << uint8(0);  // MaxPetLevel
 
+        data.WriteBit(false); // TaintedBy
         data.WriteBits(uint32(SearchedName.length()), 8);
         data.FlushBits();
-        data.WriteString(SearchedName);
+        data.append(SearchedName.data(), SearchedName.length());
 
-        bool const hasFilter = AuctionMainCategory != NoFilter;
-        data.WriteBits(hasFilter ? 1 : 0, 3); // ClassFiltersCount
-        data.WriteBit(Usable != 0);
-        data.WriteBit(false); // ExactMatch
+        data.WriteBits(uint32(ClassFilters.size()), 3);
+        data.WriteBit(OnlyUsable);
+        data.WriteBit(ExactMatch);
         data.FlushBits();
-
-        if (hasFilter)
+        for (AuctionListFilterClass const& filter : ClassFilters)
         {
-            data.ResetBitPos();
-            data << int32(AuctionMainCategory);
-            data.ResetBitPos();
-            bool const hasSubFilter = AuctionSubCategory != NoFilter;
-            data.WriteBits(hasSubFilter ? 1 : 0, 5);
+            data << filter.ItemClass;
+            data.WriteBits(uint32(filter.SubClassFilters.size()), 5);
             data.FlushBits();
-            if (hasSubFilter)
-            {
-                data << int32(AuctionSubCategory);
-                data << uint64(0); // InvTypeMask
-            }
+            for (AuctionListFilterSubClass const& sub : filter.SubClassFilters)
+                data << sub.InvTypeMask << sub.ItemSubclass;
         }
 
-        data << uint32(0); // sort criteria sub-block length
+        data << uint32(0); // sort data size
     }
 
     bool Read(ByteBuffer& data)
     {
-        if (data.size() - data.rpos() < sizeof(uint32))
-            return false;
-        data >> ListFrom;
         if (!AuctioneerGuid.Read(data))
             return false;
-
-        if (data.size() - data.rpos() < 2 * sizeof(uint8) + sizeof(uint32))
+        if (data.size() - data.rpos() < 2 * sizeof(uint32) + 2 * sizeof(uint8) + sizeof(uint8) + sizeof(uint32) + sizeof(uint8))
             return false;
-        data >> LevelMin >> LevelMax >> Quality;
-
-        if (data.size() - data.rpos() < sizeof(uint8) + sizeof(uint32) + sizeof(uint8))
-            return false;
+        data >> ListFrom >> LevelMin >> LevelMax >> Quality;
         uint8 sortCount; data >> sortCount;
         uint32 knownPetsCount; data >> knownPetsCount;
         uint8 maxPetLevel; data >> maxPetLevel;
-        if (data.size() - data.rpos() < knownPetsCount)
+        if (data.size() - data.rpos() < knownPetsCount + 2)
             return false;
-        for (uint32 i = 0; i < knownPetsCount; ++i)
-        {
-            uint8 petSpecies;
-            data >> petSpecies;
-        }
+        data.read_skip(knownPetsCount);
 
         data.ResetBitPos();
-        if (data.size() - data.rpos() < 1)
+        if (data.ReadBit()) // TaintedBy, only set for addon-initiated queries
             return false;
         uint32 const nameLen = data.ReadBits(8);
         data.ResetBitPos();
-        if (data.size() - data.rpos() < nameLen)
+        if (data.size() - data.rpos() < nameLen + 1)
             return false;
         SearchedName = data.ReadString(nameLen);
 
-        data.ResetBitPos();
-        if (data.size() - data.rpos() < 1)
-            return false;
         uint32 const classFiltersCount = data.ReadBits(3);
-        bool const onlyUsable = data.ReadBit();
-        data.ReadBit(); // ExactMatch -- no exact-vs-partial name match distinction here
+        OnlyUsable = data.ReadBit();
+        ExactMatch = data.ReadBit();
         data.ResetBitPos();
-        Usable = onlyUsable ? 1 : 0;
 
-        AuctionMainCategory = NoFilter;
-        AuctionSubCategory = NoFilter;
-        AuctionSlotId = NoFilter;
-
-        for (uint32 i = 0; i < classFiltersCount; ++i)
+        ClassFilters.resize(classFiltersCount);
+        for (AuctionListFilterClass& filter : ClassFilters)
         {
-            data.ResetBitPos();
-            if (data.size() - data.rpos() < sizeof(int32))
+            if (data.size() - data.rpos() < sizeof(int32) + 1)
                 return false;
-            int32 itemClass; data >> itemClass;
+            data >> filter.ItemClass;
+            uint32 const subCount = data.ReadBits(5);
             data.ResetBitPos();
-            if (data.size() - data.rpos() < 1)
+            if (data.size() - data.rpos() < subCount * (sizeof(uint64) + sizeof(int32)))
                 return false;
-            uint32 const subClassFiltersCount = data.ReadBits(5);
-            data.ResetBitPos();
-
-            if (i == 0)
-                AuctionMainCategory = uint32(itemClass);
-
-            for (uint32 j = 0; j < subClassFiltersCount; ++j)
-            {
-                if (data.size() - data.rpos() < sizeof(int32) + sizeof(uint64))
-                    return false;
-                int32 itemSubclass; data >> itemSubclass;
-                uint64 invTypeMask; data >> invTypeMask;
-                if (i == 0 && j == 0)
-                    AuctionSubCategory = uint32(itemSubclass);
-            }
+            filter.SubClassFilters.resize(subCount);
+            for (AuctionListFilterSubClass& sub : filter.SubClassFilters)
+                data >> sub.InvTypeMask >> sub.ItemSubclass;
         }
 
         if (data.size() - data.rpos() < sizeof(uint32))
             return false;
-        uint32 sortBlockSize; data >> sortBlockSize;
-        if (data.size() - data.rpos() < sortBlockSize)
+        uint32 sortDataSize; data >> sortDataSize;
+        if (data.size() - data.rpos() < sortDataSize)
             return false;
-        data.read_skip(sortBlockSize);
+        data.read_skip(sortDataSize);
         return true;
     }
 };

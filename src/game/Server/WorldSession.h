@@ -365,9 +365,10 @@ class WorldSession
         bool ReceivedWhoRequest() const { return m_who_recvd; }
         bool m_who_recvd;
 
-        void SetReceivedAHListRequest(bool v) { m_ah_list_recvd = v; }
-        bool ReceivedAHListRequest() const { return m_ah_list_recvd; }
-        bool m_ah_list_recvd;
+        // One in-flight request per AuctionClientQueryType; the client sends several at once on hello.
+        void SetReceivedAHListRequest(uint32 type, bool v) { if (v) m_ah_list_recvd |= 1 << type; else m_ah_list_recvd &= ~(1 << type); }
+        bool ReceivedAHListRequest(uint32 type) const { return m_ah_list_recvd & (1 << type); }
+        uint8 m_ah_list_recvd;
 
         bool Update(PacketFilter& updater, uint32 diff = 0);
         void QueuePacket(std::unique_ptr<ClientPacket const> packet);
@@ -768,10 +769,10 @@ class WorldSession
 
         void HandleAuctionHelloOpcode(AuctionHelloRequest const& packet);
         void HandleAuctionListItems(AuctionListItems const& packet);
-        void HandleAuctionListBidderItems(AuctionListBiddedItems const& packet);
+        void HandleAuctionListBidderItems(AuctionListBidderItems const& packet);
         void HandleAuctionSellItem(AuctionSellItem const& packet);
         void HandleAuctionRemoveItem(AuctionRemoveItem const& packet);
-        void HandleAuctionListOwnerItems(AuctionListOwnedItems const& packet);
+        void HandleAuctionListOwnerItems(AuctionListOwnerItems const& packet);
         void HandleAuctionPlaceBid(AuctionPlaceBid const& packet);
         void HandleAuctionListPendingSales(AuctionListPendingSales const& packet);
 

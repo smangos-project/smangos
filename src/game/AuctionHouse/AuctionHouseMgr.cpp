@@ -710,12 +710,29 @@ void AuctionHouseObject::BuildListOwnerItems(std::vector<AuctionItem>& items, Pl
     }
 }
 
+static bool MatchesClassFilters(std::vector<AuctionListFilterClass> const& filters, ItemPrototype const* proto)
+{
+    // robes are listed under chest
+    uint32 const invType = proto->InventoryType == INVTYPE_ROBE ? INVTYPE_CHEST : proto->InventoryType;
+    for (AuctionListFilterClass const& filter : filters)
+    {
+        if (uint32(filter.ItemClass) != proto->Class)
+            continue;
+        if (filter.SubClassFilters.empty())
+            return true;
+        for (AuctionListFilterSubClass const& sub : filter.SubClassFilters)
+            if (uint32(sub.ItemSubclass) == proto->SubClass && (sub.InvTypeMask & (uint64(1) << invType)))
+                return true;
+    }
+    return false;
+}
+
 void AuctionHouseObject::BuildListAuctionItems(std::vector<AuctionItem>& items, Player* player,
         AuctionHouseClientQuery const& query,
         uint32& count, uint32& totalcount)
 {
     // Happening often, and easy to deal with
-    if (query.auctionMainCategory == 0xffffffff && query.auctionSubCategory == 0xffffffff && query.auctionSlotID == 0xffffffff &&
+    if (query.classFilters.empty() &&
         query.quality == 0xffffffff && query.levelmin == 0x00 && query.levelmax == 0x00 && query.usable == 0x00 && query.wsearchedname.empty())
     {
         totalcount = OrderedAuctionMap.size();
@@ -755,14 +772,7 @@ void AuctionHouseObject::BuildListAuctionItems(std::vector<AuctionItem>& items, 
         {
             ItemPrototype const* proto = item->GetProto();
 
-            if (query.auctionMainCategory != 0xffffffff && proto->Class != query.auctionMainCategory)
-                continue;
-
-            if (query.auctionSubCategory != 0xffffffff && proto->SubClass != query.auctionSubCategory)
-                continue;
-
-            if (query.auctionSlotID != 0xffffffff && proto->InventoryType != query.auctionSlotID &&
-                    (query.auctionSlotID != INVTYPE_CHEST || (query.auctionSlotID == INVTYPE_CHEST && proto->InventoryType != INVTYPE_ROBE)))
+            if (!query.classFilters.empty() && !MatchesClassFilters(query.classFilters, proto))
                 continue;
 
             if (query.quality != 0xffffffff && proto->Quality < query.quality)

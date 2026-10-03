@@ -29,6 +29,7 @@
 #include "SharedDefines.h"
 #include "Policies/Singleton.h"
 #include "DBCStructure.h"
+#include "Packets/AuctionHouseMessages.h"
 
 class Item;
 class Player;
@@ -100,7 +101,8 @@ struct AuctionHouseClientQuery
     uint8 levelmin;
     uint8 levelmax;
     uint8 usable;
-    uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
+    uint32 listfrom, quality;
+    std::vector<AuctionListFilterClass> classFilters;
     std::vector<uint32> outbiddedAuctionIds;
 };
 

@@ -675,7 +675,7 @@ public:
     {
         if (WorldSession* sess = sWorld.FindSession(accountId))
         {
-            sess->SetReceivedAHListRequest(false);
+            sess->SetReceivedAHListRequest(_queryType, false);
 
             Player* player = sess->GetPlayer();
             if (!player || !player->IsInWorld())
@@ -747,9 +747,9 @@ public:
 };
 
 // called when player lists his bids
-void WorldSession::HandleAuctionListBidderItems(AuctionListBiddedItems const& packet)
+void WorldSession::HandleAuctionListBidderItems(AuctionListBidderItems const& packet)
 {
-    if (ReceivedAHListRequest())
+    if (ReceivedAHListRequest(AUCTION_QUERY_LIST_BIDDER))
         return; // Only one AH request at a time is allowed
 
     nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
@@ -766,14 +766,14 @@ void WorldSession::HandleAuctionListBidderItems(AuctionListBiddedItems const& pa
     task.accountId = GetAccountId();
     task.listfrom = packet.Offset;
     task.outbiddedAuctionIds = packet.AuctionIdsToRefresh;
-    SetReceivedAHListRequest(true);
+    SetReceivedAHListRequest(AUCTION_QUERY_LIST_BIDDER, true);
     sWorld.AddAsyncTask(std::move(task));
 }
 
 // this void sends player info about his auctions
-void WorldSession::HandleAuctionListOwnerItems(AuctionListOwnedItems const& packet)
+void WorldSession::HandleAuctionListOwnerItems(AuctionListOwnerItems const& packet)
 {
-    if (ReceivedAHListRequest())
+    if (ReceivedAHListRequest(AUCTION_QUERY_LIST_OWNER))
         return;
 
     nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
@@ -789,13 +789,13 @@ void WorldSession::HandleAuctionListOwnerItems(AuctionListOwnedItems const& pack
     task.auctionHouse = sAuctionMgr.GetAuctionsMap(auctionHouseEntry);
     task.accountId = GetAccountId();
     task.listfrom = packet.ListFrom;
-    SetReceivedAHListRequest(true);
+    SetReceivedAHListRequest(AUCTION_QUERY_LIST_OWNER, true);
     sWorld.AddAsyncTask({std::move(task)});
 }
 
 void WorldSession::HandleAuctionListItems(AuctionListItems const& packet)
 {
-    if (ReceivedAHListRequest())
+    if (ReceivedAHListRequest(AUCTION_QUERY_LIST))
         return;
 
     AuctionHouseClientQueryTask task(AUCTION_QUERY_LIST);
@@ -804,11 +804,9 @@ void WorldSession::HandleAuctionListItems(AuctionListItems const& packet)
     task.listfrom = packet.ListFrom;
     task.levelmin = packet.LevelMin;
     task.levelmax = packet.LevelMax;
-    task.auctionSlotID = packet.AuctionSlotId;
-    task.auctionMainCategory = packet.AuctionMainCategory;
-    task.auctionSubCategory = packet.AuctionSubCategory;
+    task.classFilters = packet.ClassFilters;
     task.quality = packet.Quality;
-    task.usable = packet.Usable;
+    task.usable = packet.OnlyUsable ? 1 : 0;
 
     nonstd::optional<ObjectGuid> const auctioneerGuid = ClassicGuidMapping::FromClassic(packet.AuctioneerGuid);
     AuctionHouseEntry const* auctionHouseEntry = auctioneerGuid ? GetCheckedAuctionHouseForAuctioneer(*auctioneerGuid) : nullptr;
@@ -827,7 +825,7 @@ void WorldSession::HandleAuctionListItems(AuctionListItems const& packet)
         return;
 
     wstrToLower(task.wsearchedname);
-    SetReceivedAHListRequest(true);
+    SetReceivedAHListRequest(AUCTION_QUERY_LIST, true);
     sWorld.AddAsyncTask(std::move(task));
 }
 
