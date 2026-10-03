@@ -34,10 +34,10 @@ ClassicGuid ToClassic(ObjectGuid const& guid)
 constexpr uint32 MODERN_UNIT_FLAG2_FEIGN_DEATH      = 0x00000001;
 constexpr uint32 MODERN_UNIT_FLAG2_REGENERATE_POWER = 0x00000800;
 
-// TrinityCore Player.h PlayerDataFlagConstants: which of ActivePlayerData::BitVectors's 13 slots
-// is the world-map explored-zones bitmap. The other slots (account-wide quest data, taxi nodes,
-// ...) have no 1.12 source and stay at their empty default.
+// TrinityCore Player.h PlayerDataFlagConstants: slots of ActivePlayerData::BitVectors. The other
+// slots (account-wide quest data, taxi nodes, ...) have no 1.12 source and stay at their empty default.
 constexpr uint32 PLAYER_DATA_FLAG_EXPLORED_ZONES_INDEX = 1;
+constexpr uint32 PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX = 9;
 
 // UNIT_FIELD_POWER/UNIT_FIELD_MAXPOWER are indexed by a per-class wire slot in the modern client
 // (ChrClassesXPowerTypes.db2), not by this engine's own vanilla Powers ordinal -- e.g. a Rogue's
@@ -392,8 +392,21 @@ void FillActivePlayerData(Player& player)
             if (player.GetQuestRewardStatus(questId))
                 questCompletedBits[slot] |= uint64(1) << ((uniqueBit - 1) % 64);
         }
+        // The client reads BitVectors unless SMSG_FEATURE_SYSTEM_STATUS sets
+        // UseActivePlayerDataQuestCompleted; both are kept in step like TrinityCore.
+        UFBitVector const& current = player.m_activePlayerData->BitVectors->Values[PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX];
         for (uint32 slot = 0; slot < questCompletedBits.size(); ++slot)
-            FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::QuestCompleted, slot, questCompletedBits[slot]);
+        {
+            uint64 const value = questCompletedBits[slot];
+            FillField(player, &Player::m_activePlayerData, &UFActivePlayerData::QuestCompleted, slot, value);
+            if (slot < current.Values.size() ? uint64(current.Values[slot]) != value : value != 0)
+            {
+                SetUpdateFieldValue(player.m_values.ModifyValue(&Player::m_activePlayerData)
+                    .ModifyValue(&UFActivePlayerData::BitVectors)
+                    .ModifyValue(&UFBitVectors::Values, PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX)
+                    .ModifyValue(&UFBitVector::Values, slot), value);
+            }
+        }
     }
 
     // World-map exploration (PLAYER_EXPLORED_ZONES_1..64, one bit per AreaTable.dbc AreaBit,
