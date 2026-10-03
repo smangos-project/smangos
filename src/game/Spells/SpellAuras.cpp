@@ -7342,7 +7342,7 @@ void SpellAuraHolder::BuildAuraInfo(AuraInfo& info) const
 
     Unit const* caster = GetCaster();
     aura.CastLevel = caster ? caster->GetLevel() : GetAuraLevel();
-    uint32 const applications = m_spellProto->StackAmount > 1 ? m_stackAmount : std::max(m_procCharges, 1u);
+    uint32 const applications = m_spellProto->StackAmount > 1 ? m_stackAmount : m_procCharges;
     aura.Applications = uint8(std::min<uint32>(applications, 255));
 
     if (GetCasterGuid() == m_target->GetObjectGuid())
