@@ -539,47 +539,48 @@ struct AuctionItem
     }
 };
 
-// No bucket/commodity envelope (ListType, BucketKey, HasMoreResults, TotalCount) -- the 1.15
-// client's plain item-list query never asks for one. OnlyUsable is only sent once, and only when
-// the result isn't empty, matching this engine's own "usable" filter round trip.
+// Body layout is TrinityCore's AuctionListItemsResult; not yet verified against the client with a non-empty list.
 struct AuctionListItemsResult
 {
-    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_ITEMS_RESULT;
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_AUCTION_LIST_RESULT;
 
     std::vector<AuctionItem> Items;
     int32 TotalCount = 0;
-    bool OnlyUsable = false;
 
     void Write(ByteBuffer& data) const
     {
-        data << int32(Items.size()) << TotalCount << uint32(300); // DesiredDelay
-        if (!Items.empty())
-            data << uint8(OnlyUsable ? 1 : 0);
+        data << uint32(Items.size()) << uint32(TotalCount) << uint32(300); // DesiredDelay
         for (AuctionItem const& item : Items)
             item.Write(data);
+        data.WriteBits(0, 2); // ListType
+        data.WriteBit(false); // HasMoreResults
+        data.FlushBits();
+        data.WriteBits(0, 20); // BucketKey: ItemID
+        data.WriteBit(false);  // BattlePetSpeciesID
+        data.WriteBits(0, 11); // ItemLevel
+        data.WriteBit(false);  // ItemSuffix
+        data.FlushBits();
+        data << uint32(TotalCount);
     }
 
     bool Read(ByteBuffer& data)
     {
-        if (data.size() - data.rpos() < 2 * sizeof(int32) + sizeof(uint32))
+        if (data.size() - data.rpos() < 3 * sizeof(uint32))
             return false;
-        int32 count; uint32 desiredDelay;
+        uint32 count; uint32 desiredDelay;
         data >> count >> TotalCount >> desiredDelay;
-        if (count > 0)
-        {
-            if (data.size() - data.rpos() < sizeof(uint8))
-                return false;
-            uint8 onlyUsable; data >> onlyUsable;
-            OnlyUsable = onlyUsable != 0;
-        }
         Items.clear();
-        for (int32 i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count; ++i)
         {
             AuctionItem item;
             if (!item.Read(data))
                 return false;
             Items.push_back(item);
         }
+        if (data.size() - data.rpos() < 6 + sizeof(uint32))
+            return false;
+        data.read_skip(6);
+        data >> TotalCount;
         return true;
     }
 };

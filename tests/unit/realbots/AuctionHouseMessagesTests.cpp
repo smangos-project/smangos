@@ -217,7 +217,6 @@ TEST_CASE("AuctionItem round-trips with no bidder, a bidder, and an enchant", "[
     AuctionListItemsResult packet;
     packet.Items.push_back(item);
     packet.TotalCount = 1;
-    packet.OnlyUsable = false;
     RoundTrip(packet, [](AuctionListItemsResult const& a, AuctionListItemsResult const& b)
     {
         REQUIRE(a.Items.size() == b.Items.size());
@@ -233,7 +232,6 @@ TEST_CASE("AuctionItem round-trips with no bidder, a bidder, and an enchant", "[
         CHECK(a.Items[0].Bidder == b.Items[0].Bidder);
         CHECK(a.Items[0].BidAmount == b.Items[0].BidAmount);
         CHECK(a.TotalCount == b.TotalCount);
-        CHECK(a.OnlyUsable == b.OnlyUsable);
     });
     RejectsEveryTruncation(packet);
 
@@ -245,7 +243,6 @@ TEST_CASE("AuctionItem round-trips with no bidder, a bidder, and an enchant", "[
     AuctionListItemsResult withBidder;
     withBidder.Items.push_back(item);
     withBidder.TotalCount = 1;
-    withBidder.OnlyUsable = true;
     RoundTrip(withBidder, [](AuctionListItemsResult const& a, AuctionListItemsResult const& b)
     {
         REQUIRE(a.Items.size() == b.Items.size());
@@ -253,7 +250,6 @@ TEST_CASE("AuctionItem round-trips with no bidder, a bidder, and an enchant", "[
         CHECK(a.Items[0].BidAmount == b.Items[0].BidAmount);
         CHECK(a.Items[0].MinIncrement == b.Items[0].MinIncrement);
         CHECK(a.Items[0].PermanentEnchantId == b.Items[0].PermanentEnchantId);
-        CHECK(a.OnlyUsable == b.OnlyUsable);
     });
     RejectsEveryTruncation(withBidder);
 }

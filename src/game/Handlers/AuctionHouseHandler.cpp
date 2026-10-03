@@ -693,7 +693,6 @@ public:
                     AuctionListItemsResult result;
                     result.Items = std::move(items);
                     result.TotalCount = int32(totalcount);
-                    result.OnlyUsable = usable != 0;
                     sess->SendClassic(result);
                     break;
                 }
