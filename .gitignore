@@ -134,3 +134,4 @@ Progression.h
 /bin-asan/
 /lib-asan/
 /build-client/
+/build-casc/
