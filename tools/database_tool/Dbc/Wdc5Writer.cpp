@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <map>
 #include <numeric>
 
 namespace
@@ -116,11 +117,14 @@ namespace
         }
     }
 
+    enum class FieldStorage { None, Immediate, PalletArray };
+
     struct InRecordField
     {
         uint32_t fieldIndex;
         size_t byteOffset;
         int width; // per element
+        FieldStorage storage = FieldStorage::None;
     };
 
     // A compressed source field (Immediate/Pallet/CommonData) is not bound to its nominal
@@ -155,30 +159,43 @@ namespace
         return width;
     }
 
+    // The client misreads scalar fields stored without compression, and its files only ever
+    // put uncompressed fields before compressed ones. So numeric scalars are Immediate, numeric
+    // arrays after a compressed field are PalletArray, and the rest stays uncompressed.
     std::vector<InRecordField> ComputeInRecordFields(DbcTableMeta const& table, FieldLookup const& lookup,
                                                        std::vector<Wdc5Row> const& rows, size_t& recordSize)
     {
         std::vector<InRecordField> fields;
         size_t offset = 0;
+        bool compressedSeen = false;
         for (uint32_t i = 0; i < table.fieldCount; ++i)
         {
             DbcFieldMeta const& field = table.fields[i];
             if (field.isNonInline)
                 continue;
             int width = EffectiveWidthBytes(field, rows, lookup.flattenedStart[i]);
-            fields.push_back({ i, offset, width });
-            offset += static_cast<size_t>(width) * field.arrayLength;
+            bool numeric = (field.type == DbcFieldType::Int || field.type == DbcFieldType::Float) && width <= 4;
+            FieldStorage storage = FieldStorage::None;
+            if (numeric && field.arrayLength == 1)
+                storage = FieldStorage::Immediate;
+            else if (numeric && compressedSeen)
+                storage = FieldStorage::PalletArray;
+            compressedSeen |= storage != FieldStorage::None;
+            fields.push_back({ i, offset, width, storage });
+            offset += storage == FieldStorage::PalletArray ? 4 : static_cast<size_t>(width) * field.arrayLength;
         }
         recordSize = offset;
         return fields;
     }
 
-    // The client misreads scalar fields stored without compression, so ints and floats are
-    // written as Immediate (bit-packed); arrays and strings stay uncompressed.
-    bool IsImmediateField(DbcFieldMeta const& field, int width)
+    uint32_t RawBits(DbcFieldMeta const& field, Wdc5Value const& value)
     {
-        bool numeric = field.type == DbcFieldType::Int || field.type == DbcFieldType::Float;
-        return numeric && field.arrayLength == 1 && width <= 4;
+        if (field.type != DbcFieldType::Float)
+            return static_cast<uint32_t>(value.intValue);
+        float f = static_cast<float>(value.floatValue);
+        uint32_t raw;
+        std::memcpy(&raw, &f, 4);
+        return raw;
     }
 
     Wdc5WriteResult WriteRegular(DbcTableMeta const& table, Wdc5FileInfo const& info, std::vector<Wdc5Row> const& rows)
@@ -192,15 +209,29 @@ namespace
         std::vector<uint8_t> recordArea(recordSize * rows.size(), 0);
         std::string stringTable;
         size_t recordAreaSize = recordArea.size();
+        std::vector<std::map<std::vector<uint32_t>, uint32_t>> palletIndex(inRecordFields.size());
+        std::vector<std::vector<uint32_t>> palletData(inRecordFields.size());
 
         for (size_t r = 0; r < order.size(); ++r)
         {
             Wdc5Row const& row = rows[order[r]];
             uint8_t* record = recordArea.data() + r * recordSize;
             std::vector<uint8_t> recordBuf(record, record + recordSize);
-            for (InRecordField const& f : inRecordFields)
+            for (size_t k = 0; k < inRecordFields.size(); ++k)
             {
+                InRecordField const& f = inRecordFields[k];
                 DbcFieldMeta const& field = table.fields[f.fieldIndex];
+                if (f.storage == FieldStorage::PalletArray)
+                {
+                    std::vector<uint32_t> tuple;
+                    for (uint16_t a = 0; a < field.arrayLength; ++a)
+                        tuple.push_back(RawBits(field, row[lookup.flattenedStart[f.fieldIndex] + a]));
+                    auto [it, added] = palletIndex[k].try_emplace(tuple, static_cast<uint32_t>(palletIndex[k].size()));
+                    if (added)
+                        palletData[k].insert(palletData[k].end(), tuple.begin(), tuple.end());
+                    std::memcpy(recordBuf.data() + f.byteOffset, &it->second, 4);
+                    continue;
+                }
                 for (uint16_t a = 0; a < field.arrayLength; ++a)
                 {
                     size_t elementOffset = f.byteOffset + static_cast<size_t>(f.width) * a;
@@ -229,7 +260,7 @@ namespace
 
         size_t packedStart = recordSize;
         for (InRecordField const& f : inRecordFields)
-            if (IsImmediateField(table.fields[f.fieldIndex], f.width))
+            if (f.storage != FieldStorage::None)
                 packedStart = std::min(packedStart, f.byteOffset);
 
         std::vector<uint8_t> file;
@@ -255,7 +286,10 @@ namespace
         PutU32(file, hasParentLookup ? 1u : 0u); // parentLookupCount
         PutU32(file, fieldCount * 24);        // columnMetaSize
         PutU32(file, 0);                      // commonDataSize
-        PutU32(file, 0);                      // palletDataSize
+        size_t palletDataSize = 0;
+        for (std::vector<uint32_t> const& pallet : palletData)
+            palletDataSize += pallet.size() * 4;
+        PutU32(file, static_cast<uint32_t>(palletDataSize));
         PutU32(file, 1);                      // sectionCount
 
         uint32_t idTableSize = lookup.idNonInline ? static_cast<uint32_t>(4 * rows.size()) : 0;
@@ -276,8 +310,7 @@ namespace
 
         for (InRecordField const& f : inRecordFields)
         {
-            DbcFieldMeta const& field = table.fields[f.fieldIndex];
-            if (IsImmediateField(field, f.width))
+            if (f.storage != FieldStorage::None)
             {
                 PutI16(file, 32);
                 PutU16(file, static_cast<uint16_t>(packedStart));
@@ -289,13 +322,24 @@ namespace
             }
         }
 
-        for (InRecordField const& f : inRecordFields)
+        for (size_t k = 0; k < inRecordFields.size(); ++k)
         {
+            InRecordField const& f = inRecordFields[k];
             DbcFieldMeta const& field = table.fields[f.fieldIndex];
             PutU16(file, static_cast<uint16_t>(f.byteOffset * 8));
+            if (f.storage == FieldStorage::PalletArray)
+            {
+                PutU16(file, 32);
+                PutU32(file, static_cast<uint32_t>(palletData[k].size() * 4)); // additionalDataSize
+                PutU32(file, 4); // compressionType: PalletArray
+                PutU32(file, static_cast<uint32_t>((f.byteOffset - packedStart) * 8));
+                PutU32(file, 32);
+                PutU32(file, field.arrayLength);
+                continue;
+            }
             PutU16(file, static_cast<uint16_t>(f.width * 8 * field.arrayLength));
             PutU32(file, 0); // additionalDataSize
-            if (IsImmediateField(field, f.width))
+            if (f.storage == FieldStorage::Immediate)
             {
                 PutU32(file, 1); // compressionType: Immediate
                 PutU32(file, static_cast<uint32_t>((f.byteOffset - packedStart) * 8));
@@ -310,6 +354,10 @@ namespace
                 PutU32(file, 0);
             }
         }
+
+        for (std::vector<uint32_t> const& pallet : palletData)
+            for (uint32_t v : pallet)
+                PutU32(file, v);
 
         uint32_t fileOffset = static_cast<uint32_t>(file.size());
         PatchU32(file, sectionPos + 8, fileOffset);
