@@ -345,31 +345,45 @@ namespace
                     }
                 }
             }
+            record.push_back(0); // the client's records end in a padding byte
         }
 
         uint32_t minId = rows.empty() ? 0 : RowId(rows[order.front()], lookup);
         uint32_t maxId = rows.empty() ? 0 : RowId(rows[order.back()], lookup);
         uint32_t fieldCount = static_cast<uint32_t>(inRecordFields.size());
+        uint32_t rowCount = static_cast<uint32_t>(rows.size());
+
+        // Slot width of each field in the client's own sparse files: strings and floats take 32
+        // bits, integers their real width; fields are packed back to back.
+        std::vector<uint32_t> slotBits;
+        uint32_t slotBytes = 0;
+        for (InRecordField const& f : inRecordFields)
+        {
+            DbcFieldMeta const& field = table.fields[f.fieldIndex];
+            bool const wide = field.type != DbcFieldType::Int;
+            slotBits.push_back(wide ? 32 : f.width * 8);
+            slotBytes += slotBits.back() / 8;
+        }
 
         std::vector<uint8_t> file;
         PutU32(file, 0x35434457u);
         PutU32(file, 5);
         AppendHeaderSchema(file, info.schema);
-        PutU32(file, static_cast<uint32_t>(rows.size()));
+        PutU32(file, rowCount);
         PutU32(file, fieldCount);
-        PutU32(file, 0);   // recordSize: unused for sparse
-        PutU32(file, 0);   // stringTableSize: unused for sparse (strings are inline)
+        PutU32(file, slotBytes + 1); // recordSize
+        PutU32(file, 0);             // stringTableSize: strings are inline
         PutU32(file, info.tableHash);
         PutU32(file, info.layoutHash);
         PutU32(file, minId);
         PutU32(file, maxId);
         PutU32(file, info.locale);
         PutU16(file, info.flags); // already has the sparse bit set
-        PutI16(file, -1);         // indexField: unused for sparse
+        PutI16(file, 0);          // indexField
         PutU32(file, fieldCount);
-        PutU32(file, 0); // packedDataOffset
-        PutU32(file, 0); // parentLookupCount
-        PutU32(file, 0); // columnMetaSize: sparse never uses columnMeta
+        PutU32(file, slotBytes);  // packedDataOffset
+        PutU32(file, 0);          // parentLookupCount
+        PutU32(file, fieldCount * 24); // fieldStorageInfoSize
         PutU32(file, 0);
         PutU32(file, 0);
         PutU32(file, 1); // sectionCount
@@ -377,30 +391,37 @@ namespace
         size_t sectionPos = file.size();
         PutU64(file, 0); // tactId
         PutU32(file, 0); // fileOffset, patched below
-        PutU32(file, static_cast<uint32_t>(rows.size()));
+        PutU32(file, rowCount);
         PutU32(file, 0); // stringTableSize
-        PutU32(file, 0); // catalogDataOffset, patched below
-        PutU32(file, 0); // idTableSize: sparse carries ids via the catalog, not this
+        PutU32(file, 0); // offsetRecordsEndOffset, patched below
+        PutU32(file, rowCount * 4); // idListSize
         PutU32(file, 0); // parentLookupDataSize
-        PutU32(file, static_cast<uint32_t>(rows.size())); // catalogDataCount
+        PutU32(file, rowCount); // offsetMapIdCount
         PutU32(file, 0); // copyTableCount
 
-        for (InRecordField const& f : inRecordFields)
+        uint32_t byteOffset = 0;
+        for (size_t i = 0; i < inRecordFields.size(); ++i)
         {
-            DbcFieldMeta const& field = table.fields[f.fieldIndex];
-            // UnusedBits: how many of the top bits of a 32-bit slot this field's real width
-            // doesn't use -- the only FieldEntry member any sparse reader (this tool's, and
-            // TrinityCore's) actually consults.
-            int bits = field.type == DbcFieldType::Float ? 32 : f.width * 8;
-            PutI16(file, static_cast<int16_t>(32 - bits));
-            PutU16(file, 0); // offset: unused by every known sparse reader
+            PutI16(file, static_cast<int16_t>(32 - slotBits[i]));
+            PutU16(file, static_cast<uint16_t>(byteOffset));
+            byteOffset += slotBits[i] / 8;
+        }
+
+        uint32_t bitOffset = 0;
+        for (size_t i = 0; i < inRecordFields.size(); ++i)
+        {
+            PutU16(file, static_cast<uint16_t>(bitOffset));
+            PutU16(file, static_cast<uint16_t>(slotBits[i]));
+            for (int k = 0; k < 5; ++k)
+                PutU32(file, 0); // additionalDataSize, storageType (none), three unused
+            bitOffset += slotBits[i];
         }
 
         uint32_t recordsStart = static_cast<uint32_t>(file.size());
         for (std::vector<uint8_t> const& record : records)
             file.insert(file.end(), record.begin(), record.end());
 
-        uint32_t catalogDataOffset = static_cast<uint32_t>(file.size());
+        uint32_t recordsEnd = static_cast<uint32_t>(file.size());
         for (uint32_t index : order)
             PutU32(file, RowId(rows[index], lookup));
 
@@ -412,8 +433,11 @@ namespace
             recordFileOffset += record.size();
         }
 
+        for (uint32_t index : order)
+            PutU32(file, RowId(rows[index], lookup));
+
         PatchU32(file, sectionPos + 8, recordsStart);
-        PatchU32(file, sectionPos + 8 + 12, catalogDataOffset);
+        PatchU32(file, sectionPos + 8 + 12, recordsEnd);
 
         Wdc5WriteResult result;
         result.bytes = std::move(file);

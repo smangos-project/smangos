@@ -163,9 +163,10 @@ namespace
         return PrintDbcImportSummary(format.c_str(), result) ? 1 : 0;
     }
 
-    // export --format db2|dbc [--tables A,B] [--dir D]
+    // export --format db2|dbc [--tables A,B] [--dir D] [--client]
     int RunExport(std::vector<std::string> const& args)
     {
+        bool toClient = false;
         std::string format;
         std::vector<std::string> onlyTables;
         std::filesystem::path directory = SourceRoot() / ".world" / "dbfilesclient";
@@ -177,6 +178,17 @@ namespace
                 onlyTables = SplitCsv(args[++i]);
             else if (args[i] == "--dir" && i + 1 < args.size())
                 directory = args[++i];
+            else if (args[i] == "--client")
+            {
+                toClient = true;
+                directory = DbfilesclientDir();
+            }
+        }
+
+        if (toClient && format != "db2")
+        {
+            std::printf("export: --client needs --format db2\n");
+            return 1;
         }
 
         if (format != "db2" && format != "dbc")
@@ -201,8 +213,14 @@ namespace
         }
 
         DoltLiteDatabase world(worldPath.string());
+        ExportDb2Options options;
+        if (toClient)
+        {
+            options.onlyChanged = true;
+            options.backupDir = SourceRoot() / ".world" / "dbfilesclient-stock";
+        }
         DbcExportResult result = format == "db2"
-            ? ExportDb2Files(world, directory, onlyTables)
+            ? ExportDb2Files(world, directory, onlyTables, GetDbcTables(), options)
             : ExportDbcFiles(world, directory, onlyTables);
         if (!result.error.empty())
         {
@@ -210,10 +228,12 @@ namespace
             return 1;
         }
 
-        uint32_t exported = 0, missing = 0, failed = 0;
+        uint32_t exported = 0, missing = 0, failed = 0, unchanged = 0;
         for (DbcExportTableResult const& table : result.tables)
         {
-            if (!table.hasFilesRow)
+            if (table.unchanged)
+                ++unchanged;
+            else if (!table.hasFilesRow)
                 ++missing;
             else if (!table.error.empty())
             {
@@ -223,8 +243,8 @@ namespace
             else
                 ++exported;
         }
-        std::printf("export %s: %u tables exported, %u with no dbc_files row, %u failed\n",
-            format.c_str(), exported, missing, failed);
+        std::printf("export %s: %u tables exported, %u unchanged, %u with no dbc_files row, %u failed\n",
+            format.c_str(), exported, unchanged, missing, failed);
         return failed ? 1 : 0;
     }
 

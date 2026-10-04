@@ -1,11 +1,13 @@
 #include "DbcExport.h"
 
 #include "Dbc/Wdbc.h"
+#include "Dbc/Wdc5Reader.h"
 #include "Dbc/Wdc5Writer.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <fstream>
 
 namespace
@@ -82,10 +84,41 @@ namespace
         }
         return rows;
     }
+
+    std::string RowKey(Wdc5Row const& row)
+    {
+        std::string key;
+        for (Wdc5Value const& value : row)
+        {
+            float const f = static_cast<float>(value.floatValue);
+            key.append(reinterpret_cast<char const*>(&value.intValue), sizeof(value.intValue));
+            key.append(reinterpret_cast<char const*>(&f), sizeof(f));
+            key.append(value.stringValue);
+            key.push_back('\0');
+        }
+        return key;
+    }
+
+    bool SameRows(std::vector<Wdc5Row> const& a, std::vector<Wdc5Row> const& b)
+    {
+        if (a.size() != b.size())
+            return false;
+        std::vector<std::string> keysA, keysB;
+        keysA.reserve(a.size());
+        keysB.reserve(b.size());
+        for (Wdc5Row const& row : a)
+            keysA.push_back(RowKey(row));
+        for (Wdc5Row const& row : b)
+            keysB.push_back(RowKey(row));
+        std::sort(keysA.begin(), keysA.end());
+        std::sort(keysB.begin(), keysB.end());
+        return keysA == keysB;
+    }
 }
 
 DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,
-                                std::vector<std::string> const& onlyTables, std::span<DbcTableMeta const> tables)
+                                std::vector<std::string> const& onlyTables, std::span<DbcTableMeta const> tables,
+                                ExportDb2Options const& options)
 {
     DbcExportResult result;
 
@@ -106,6 +139,34 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         tableResult.hasFilesRow = true;
 
         std::vector<Wdc5Row> rows = LoadRows(world, table);
+        std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".db2");
+
+        std::error_code ec;
+        bool const exists = std::filesystem::exists(filePath, ec);
+        if (options.onlyChanged && exists)
+        {
+            Wdc5ReadResult existing = ReadWdc5File(filePath, table);
+            if (existing.error.empty() && SameRows(existing.rows, rows))
+            {
+                tableResult.unchanged = true;
+                result.tables.push_back(std::move(tableResult));
+                continue;
+            }
+        }
+
+        if (exists && !options.backupDir.empty())
+        {
+            std::filesystem::path const backup = options.backupDir / filePath.filename();
+            std::filesystem::create_directories(options.backupDir, ec);
+            if (!std::filesystem::exists(backup, ec))
+                std::filesystem::copy_file(filePath, backup, ec);
+            if (ec)
+            {
+                tableResult.error = "failed to back up " + filePath.string() + ": " + ec.message();
+                result.tables.push_back(std::move(tableResult));
+                continue;
+            }
+        }
 
         Wdc5WriteResult written = WriteWdc5File(table, info, rows);
         if (!written.error.empty())
@@ -115,7 +176,6 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
             continue;
         }
 
-        std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".db2");
         std::ofstream out(filePath, std::ios::binary | std::ios::trunc);
         if (!out)
         {
