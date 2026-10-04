@@ -474,6 +474,19 @@ TranslatedTable TranslateMysqlCreateTable(std::string const& statementText)
         if (col.autoIncrement)
             autoIncrementColumn = &col;
 
+    // A table with no primary key whose AUTO_INCREMENT column has a sole unique key (`UNIQUE KEY
+    // id (id)`) is effectively keyed by that column.
+    if (autoIncrementColumn && !primaryKey && !autoIncrementColumn->primaryKeyInline)
+    {
+        for (KeyDef& key : keys)
+            if (key.unique && key.columns.size() == 1 && key.columns[0] == autoIncrementColumn->name)
+            {
+                key.isPrimary = true;
+                primaryKey = &key;
+                break;
+            }
+    }
+
     bool inlineIntegerPrimaryKey = false;
     if (autoIncrementColumn)
     {

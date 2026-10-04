@@ -43,8 +43,11 @@ TEST_CASE("ParseMysqlInsert reports an unrecognized value", "[MysqlInsertParser]
     CHECK_FALSE(result.error.empty());
 }
 
-TEST_CASE("ParseMysqlInsert requires an explicit column list", "[MysqlInsertParser]")
+TEST_CASE("ParseMysqlInsert accepts a positional INSERT with an empty column list", "[MysqlInsertParser]")
 {
-    ParsedInsert result = ParseMysqlInsert("INSERT INTO `t` VALUES (1,2)");
-    CHECK_FALSE(result.error.empty());
+    ParsedInsert result = ParseMysqlInsert("INSERT INTO `t` VALUES (1,'a'),(2,'b')");
+    INFO(result.error);
+    REQUIRE(result.error.empty());
+    CHECK(result.columns.empty());
+    CHECK(result.rows.size() == 2);
 }

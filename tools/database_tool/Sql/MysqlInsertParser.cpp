@@ -132,14 +132,17 @@ namespace
                 ExpectWord("into");
                 result.tableName = StripBackticks(ExpectIdent());
 
-                ExpectKind(LexemeKind::LParen);
-                while (!PeekIsKind(LexemeKind::RParen))
+                if (PeekIsKind(LexemeKind::LParen))
                 {
-                    result.columns.push_back(StripBackticks(ExpectIdent()));
-                    if (PeekIsKind(LexemeKind::Comma))
-                        Advance();
+                    Advance();
+                    while (!PeekIsKind(LexemeKind::RParen))
+                    {
+                        result.columns.push_back(StripBackticks(ExpectIdent()));
+                        if (PeekIsKind(LexemeKind::Comma))
+                            Advance();
+                    }
+                    Advance(); // ")"
                 }
-                Advance(); // ")"
 
                 ExpectWord("values");
 
@@ -155,7 +158,7 @@ namespace
                     }
                     Advance(); // ")"
 
-                    if (row.size() != result.columns.size())
+                    if (!result.columns.empty() && row.size() != result.columns.size())
                         throw std::runtime_error("row has " + std::to_string(row.size()) +
                             " values but the column list has " + std::to_string(result.columns.size()));
                     result.rows.push_back(std::move(row));

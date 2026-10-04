@@ -27,7 +27,8 @@ namespace
     // "connection/session setup this tool doesn't need" (world-sql.md).
     bool IsSkippableStatement(std::string_view text)
     {
-        return text.rfind("/*!", 0) == 0 || StartsWithMysqlKeyword(text, "SET");
+        return text.empty() || text.rfind("/*!", 0) == 0 || StartsWithMysqlKeyword(text, "SET")
+            || StartsWithMysqlKeyword(text, "LOCK TABLES") || StartsWithMysqlKeyword(text, "UNLOCK TABLES");
     }
 
     struct PreparedInsert
@@ -124,6 +125,15 @@ DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path con
                 ParsedInsert parsed = ParseMysqlInsert(text);
                 if (!parsed.error.empty())
                     throw std::runtime_error(parsed.error);
+
+                if (parsed.columns.empty())
+                {
+                    DoltLiteStatement info = db.Prepare("SELECT name FROM pragma_table_info('" + parsed.tableName + "')");
+                    while (info.Step())
+                        parsed.columns.push_back(info.ColumnText(0));
+                    if (parsed.columns.empty() || parsed.rows.empty() || parsed.rows.front().size() != parsed.columns.size())
+                        throw std::runtime_error("positional insert does not match the columns of `" + parsed.tableName + "`");
+                }
 
                 auto it = preparedInserts.find(parsed.tableName);
                 if (it == preparedInserts.end() || it->second.columns != parsed.columns)

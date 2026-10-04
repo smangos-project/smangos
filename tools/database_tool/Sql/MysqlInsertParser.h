@@ -20,16 +20,15 @@ struct MysqlValue
 struct ParsedInsert
 {
     std::string tableName;                          // without backticks
-    std::vector<std::string> columns;                // without backticks, in the statement's own order
+    std::vector<std::string> columns;                // without backticks, in the statement's own order; empty for a positional insert
     std::vector<std::vector<MysqlValue>> rows;
     std::string error;                               // empty on success
 };
 
 // Parses one already-split `INSERT INTO `t` (`c1`,`c2`,...) VALUES (...),(...)`
 // statement (see SqlStatementSplitter; the trailing `;` is expected to
-// already be gone) into typed values. Only the explicit-column-list form the
-// base dump uses (world-sql.md) is supported: a positional INSERT with no
-// column list is a parse error.
+// already be gone) into typed values. A positional INSERT with no column
+// list yields empty `columns`; the caller supplies the table's own order.
 ParsedInsert ParseMysqlInsert(std::string const& statementText);
 
 #endif
