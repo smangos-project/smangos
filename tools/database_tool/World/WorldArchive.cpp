@@ -76,6 +76,7 @@ WorldArchiveSpec const& WorldBaseDumpArchiveSpec()
     // one (`database_tool pin-base-dump`) or point --base-dump at a mirrored copy.
     static WorldArchiveSpec const spec{
         "https://github.com/vmangos/core/releases/download/db_latest/db-4641790.zip",
+        "http://127.0.0.1:3000/smangos-project/smangos/releases/download/vmangos-db-4641790/db-4641790.zip",
         "db-4641790.zip",
         "mangos.sql",
         "mysql-dump/mangos.sql",
@@ -98,7 +99,11 @@ WorldArchiveResult FetchAndUnpackWorldArchive(WorldArchiveSpec const& spec, std:
     if (!std::filesystem::exists(archivePath))
     {
         if (!DownloadFile(spec.url, archivePath, result.error))
-            return result;
+        {
+            if (spec.mirrorUrl.empty() || !DownloadFile(spec.mirrorUrl, archivePath, result.error))
+                return result;
+            result.error.clear();
+        }
         result.downloaded = true;
     }
 

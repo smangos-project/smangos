@@ -10,6 +10,7 @@
 struct WorldArchiveSpec
 {
     std::string url;
+    std::string mirrorUrl; // tried when url fails; may be empty
     std::string archiveFileName;
     std::string unpackedFileName;
     std::string entryName; // zip entry to extract; empty for a single-file 7z
