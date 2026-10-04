@@ -70,7 +70,6 @@ void PrintUsage()
         "  --precise-vmaps      keep every vmap model detail (no triangle pruning)\n"
         "  --mmap-config FILE   per map/tile mmap overrides (json)\n"
         "  --offmesh FILE       off-mesh connections for mmaps\n"
-        "  --max-angle DEG      mmap walkable slope (default 60)\n"
         "  --skip-liquid        mmaps without liquid\n"
         "  --debug-mmap         write debug obj meshes next to mmaps\n");
 }
@@ -104,7 +103,7 @@ std::string ParseOptions(int argc, char** argv, Options& o, bool& help)
         else if (a == "--skip-liquid") o.skipLiquid = true;
         else if (a == "--debug-mmap") o.debugMmap = true;
         else if (a == "--input" || a == "--output" || a == "--world" || a == "--stages" || a == "--map" || a == "--tile" ||
-                 a == "--tiles" || a == "--around" || a == "--threads" || a == "--mmap-config" || a == "--offmesh" || a == "--max-angle")
+                 a == "--tiles" || a == "--around" || a == "--threads" || a == "--mmap-config" || a == "--offmesh")
         {
             if (!value(v))
                 return a + " needs a value";
@@ -146,13 +145,6 @@ std::string ParseOptions(int argc, char** argv, Options& o, bool& help)
                 if (!ParseInt(v, t) || t < 1)
                     return "bad --threads";
                 o.threads = unsigned(t);
-            }
-            else if (a == "--max-angle")
-            {
-                double d;
-                if (!ParseFloat(v, d))
-                    return "bad --max-angle";
-                o.maxAngle = float(d);
             }
             else if (a == "--tile")
             {

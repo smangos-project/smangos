@@ -34,8 +34,6 @@ struct Options
     std::filesystem::path mmapConfig;
     std::filesystem::path offmesh;
     bool debugMmap = false;
-    float maxAngle = 60.0f;
-    float maxAngleNotSteep = 55.0f;
     bool skipLiquid = false;
     bool skipContinents = false;
     bool skipJunkMaps = true;
