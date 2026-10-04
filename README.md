@@ -30,8 +30,10 @@ The server runs from `.server` (git-ignored): `config/` holds `common.conf` (dat
 
 1. Configure once with `-DSERVER_MAP_DATA_DIR=<your maps folder>` (`vmaps` and `mmaps` next to it are linked too).
 2. Build the `server_setup` target. It builds `server` and creates whatever of `.server` is missing; it never overwrites.
-3. Edit the database strings in `.server/config/common.conf`.
-4. Run `bin/<config>/server` from anywhere. `--services mangosd` or `--services bnetserver` runs only one
+3. Build the world database with `database_tool create` (see `tools/database_tool/README.md`). It writes
+   `.world/world.doltlite`; the world is not a MySQL database.
+4. Edit the database strings in `.server/config/common.conf`.
+5. Run `bin/<config>/server` from anywhere. `--services mangosd` or `--services bnetserver` runs only one
    (default: `Server.Services` in `common.conf`); `--server-dir <dir>` uses another server directory.
 
 ### Running the bot tests
@@ -43,7 +45,6 @@ afterwards; a server that is already running is used as it is. Extra switches (`
 
 ### Downloads
 - [![Development Release](https://github.com/vmangos/core/actions/workflows/development-release.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/latest) Latest development build (Linux, macOS, and Windows)
-- [![Development Database Dump](https://github.com/vmangos/core/actions/workflows/development-db-dump.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/db_latest) Latest MySQL 5.6 development database snapshot; no updates required
 
 ### Useful Links
 - [Wiki](https://github.com/vmangos/wiki)
