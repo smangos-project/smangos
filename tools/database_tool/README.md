@@ -106,6 +106,8 @@ existing WDC5 import, untouched). Refuses if `reference.doltlite` already exists
 table that fails to build is reported per-table rather than failing the whole run (exit `1` if any
 did).
 
+`tools/database_tool/rebuild-check.sh` runs the whole clean-room sequence (base world, reference, create, `verify --final`).
+
 ### spec
 
 Inventories the reference database's columns into
