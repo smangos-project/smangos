@@ -142,10 +142,10 @@ namespace
                 int64_t v = row[flatColumn + a].intValue;
                 while (width < 8)
                 {
+                    // Either signedness fits: the db can hold a signed column's bits as unsigned
+                    // (0xFFFFFFFF for -1) and the low bytes are what the client reads.
                     int bits = width * 8;
-                    bool fits = field.isSigned
-                        ? (v >= -(int64_t(1) << (bits - 1)) && v < (int64_t(1) << (bits - 1)))
-                        : (v >= 0 && v < (int64_t(1) << bits));
+                    bool fits = v >= -(int64_t(1) << (bits - 1)) && v < (int64_t(1) << bits);
                     if (fits)
                         break;
                     width *= 2;
