@@ -78,12 +78,11 @@ uint32 maxAreaId = 0;
 enum Extract
 {
     EXTRACT_MAP = 1,
-    EXTRACT_DBC = 2,
     EXTRACT_CAMERA = 4
 };
 
 // Select data for extract
-int   CONF_extract = EXTRACT_MAP | EXTRACT_DBC | EXTRACT_CAMERA;
+int   CONF_extract = EXTRACT_MAP | EXTRACT_CAMERA;
 // Skip all interactive prompts (for scripted runs)
 bool  CONF_silent = false;
 // This option allow limit minimum height to some value (Allow save some memory)
@@ -136,7 +135,7 @@ void Usage(char* prg)
         "%s -[var] [value]\n"\
         "-i set input path\n"\
         "-o set output path\n"\
-        "-e extract only MAP(1)/DBC(2)/Camera(4) - standard: all(7)\n"\
+        "-e extract only MAP(1)/Camera(4) - standard: all(5)\n"\
         "-f height stored as int (less map size but lost some accuracy) 1 by default\n"\
         "-h allow to limit minimum height (less map size) 1 by default\n"\
         "--silent skip all interactive prompts (for scripted runs)\n"\
@@ -150,7 +149,7 @@ void HandleArgs(int argc, char* arg[])
     {
         // i - input path
         // o - output path
-        // e - extract only MAP(1)/DBC(2) - standard both(3)
+        // e - extract only MAP(1)/Camera(4) - standard both(5)
         // f - use float to int conversion
         // h - limit minimum height
         if (strcmp(arg[c], "--silent") == 0)
@@ -192,7 +191,7 @@ void HandleArgs(int argc, char* arg[])
                 if (c + 1 < argc)                           // all ok
                 {
                     CONF_extract = atoi(arg[(c++) + 1]);
-                    if (!(CONF_extract > 0 && CONF_extract < 8))
+                    if (!(CONF_extract > 0 && (CONF_extract & ~(EXTRACT_MAP | EXTRACT_CAMERA)) == 0))
                         Usage(arg[0]);
                 }
                 else
@@ -884,39 +883,6 @@ bool ExtractFile(char const* mpq_name, std::string const& filename)
     return true;
 }
 
-void ExtractDBCFiles()
-{
-    printf("Extracting dbc files...\n");
-
-    std::set<std::string> dbcfiles;
-
-    // get DBC file list
-    for (ArchiveSet::iterator i = gOpenArchives.begin(); i != gOpenArchives.end(); ++i)
-    {
-        vector<string> files;
-        (*i)->GetFileListTo(files);
-        for (vector<string>::iterator iter = files.begin(); iter != files.end(); ++iter)
-            if (iter->rfind(".dbc") == iter->length() - strlen(".dbc"))
-                dbcfiles.insert(*iter);
-    }
-
-    std::string path = output_path;
-    path += "/dbc/";
-    CreateDir(path);
-
-    // extract DBCs
-    int count = 0;
-    for (set<string>::iterator iter = dbcfiles.begin(); iter != dbcfiles.end(); ++iter)
-    {
-        string filename = path;
-        filename += (iter->c_str() + strlen("DBFilesClient\\"));
-
-        if (ExtractFile(iter->c_str(), filename))
-            ++count;
-    }
-    printf("Extracted %u DBC files\n\n", count);
-}
-
 void ExtractCameraFiles()
 {
     printf("Extracting camera files...\n");
@@ -1023,9 +989,6 @@ int main(int argc, char* arg[])
     LoadCommonMPQFiles();
 
     // Extract dbc
-    if (CONF_extract & EXTRACT_DBC)
-        ExtractDBCFiles();
-
     if (CONF_extract & EXTRACT_CAMERA)
         ExtractCameraFiles();
 

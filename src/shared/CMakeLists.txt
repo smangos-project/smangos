@@ -101,8 +101,8 @@ set (shared_SRCS
     Database/DatabaseImpl.h
     Database/DatabaseDoltLite.h
     Database/DatabaseMysql.h
-    Database/DBCFileLoader.h
     Database/DBCStore.h
+    Database/FieldFormat.h
     Database/Field.h
     Database/MySQLDelayThread.h
     Database/QueryResult.h
@@ -132,7 +132,6 @@ set (shared_SRCS
     Database/Database.cpp
     Database/DatabaseDoltLite.cpp
     Database/DatabaseMysql.cpp
-    Database/DBCFileLoader.cpp
     Database/Field.cpp
     Database/QueryResultMysql.cpp
     Database/SqlDelayThread.cpp

@@ -22,8 +22,6 @@
 #ifndef MANGOS_DBCSFRM_H
 #define MANGOS_DBCSFRM_H
 
-char const AreaTableEntryfmt[]="niiiixxxxxissssssssxixxxi";
-char const AreaTriggerEntryfmt[]="niffffffff";
 char const AuctionHouseEntryfmt[]="niiixxxxxxxxx";
 char const BankBagSlotPricesEntryfmt[]="ni";
 char const ChrClassesEntryfmt[]="nxxixssssssssxxix";
@@ -42,18 +40,13 @@ char const EmotesEntryfmt[]="nsxiiix";
 char const EmotesTextEntryfmt[]="nxixxxxxxxxxxxxxxxx";
 char const GameObjectDisplayInfofmt[]="nsxxxxxxxxxx";
 char const ItemBagFamilyfmt[]="nxxxxxxxxx";
-//char const ItemDisplayTemplateEntryfmt[]="nxxxxxxxxxxixxxxxxxxxxx";
 char const ItemRandomPropertiesfmt[]="nsiiixxssssssssx";
 char const ItemSetEntryfmt[]="dssssssssxxxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiiiii";
-char const LiquidTypefmt[]="niii";
 char const LockEntryfmt[]="niiiiiiiiiiiiiiiiiiiiiiiixxxxxxxx";
-char const MailTemplateEntryfmt[]="nxxxxxxxxx";
-char const MapEntryfmt[]="nxixssssssssxxxxxxxixxxxxxxxxxxxxxxxxxixxx";
 char const NamesProfanityEntryfmt[] = "ds";
 char const NamesReservedEntryfmt[] = "ds";
 char const QuestSortEntryfmt[]="nxxxxxxxxx";
 char const SkillLinefmt[]="nixssssssssxxxxxxxxxxx";
-char const SkillLineAbilityfmt[]="niiiixxiiiiixxi";
 char const SkillRaceClassInfofmt[]="diiiiiix";
 char const SpellCategoryfmt[] = "ni";
 char const SpellCastTimefmt[]="niii";
@@ -67,11 +60,9 @@ char const StableSlotPricesfmt[] = "ni";
 char const SummonPropertiesfmt[] = "niiiii";
 char const TalentEntryfmt[]="niiiiiiiixxxxixxixxxi";
 char const TalentTabEntryfmt[]="nxxxxxxxxxxxiix";
-char const TaxiNodesEntryfmt[]="nifffssssssssxii";
 char const TaxiPathEntryfmt[]="niii";
 char const TaxiPathNodeEntryfmt[]="diiifffii";
 char const WMOAreaTableEntryfmt[]="niiixxxxxiixxxxxxxxx";
 char const TransportAnimationfmt[]="diifffx";
-//char const WorldMapOverlayEntryfmt[]="nxiiiixxxxxxxxxxx";
 
 #endif

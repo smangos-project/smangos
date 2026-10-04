@@ -21,7 +21,7 @@
 
 #include "ProgressBar.h"
 #include "Log.h"
-#include "DBCFileLoader.h"
+#include "FieldFormat.h"
 
 template<class DerivedLoader, class StorageClass>
 template<class S, class D>                                  // S source-type, D destination-type

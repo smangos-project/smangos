@@ -699,7 +699,8 @@ class World
         // Get current server's WoW Patch
         char const* GetPatchName() const;
 
-        LocaleConstant GetDefaultDbcLocale() const { return m_defaultDbcLocale; }
+        // The world database holds enUS client text only.
+        LocaleConstant GetDefaultDbcLocale() const { return LOCALE_enUS; }
 
         // Get the path where data (dbc, maps) are stored on disk
         std::string GetDataPath() const { return m_dataPath; }
@@ -815,7 +816,7 @@ class World
 
         void UpdateRealmCharCount(uint32 accountId);
 
-        LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if (m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
+        LocaleConstant GetAvailableDbcLocale(LocaleConstant /*locale*/) const { return LOCALE_enUS; }
 
         // Nostalrius
         MovementBroadcaster* GetBroadcaster() const { return m_broadcaster.get(); }
@@ -935,9 +936,6 @@ class World
 
         int32 m_playerLimit;
 
-        LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
-        uint32 m_availableDbcLocaleMask = 0;                       // by loaded DBC
-        void DetectDBCLang();
         bool m_allowMovement;
         std::string m_motd;
         std::string m_dataPath;

@@ -21,7 +21,7 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
-#include "DBCFileLoader.h"
+#include "FieldFormat.h"
 
 class SQLStorageBase
 {

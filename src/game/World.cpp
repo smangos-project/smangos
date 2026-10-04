@@ -125,7 +125,6 @@ World::World():
     m_allowMovement(true),
     m_gameTime(time(nullptr)),
     m_timeZoneOffset(0),
-    m_defaultDbcLocale(LOCALE_enUS),
     m_timeRate(1.0f),
     m_canProcessAsyncPackets(false)
 {
@@ -138,9 +137,6 @@ World::World():
     m_maxQueuedSessionCount = 0;
     m_MaintenanceTimeChecker = 0;
     m_anticrashRearmTimer = 0;
-
-    m_defaultDbcLocale = LOCALE_enUS;
-    m_availableDbcLocaleMask = 0;
 
     for (uint32 & value : m_configUint32Values)
         value = 0;
@@ -1321,7 +1317,6 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Initialize data stores...");
 
     LoadDBCStores();
-    DetectDBCLang();
     sObjectMgr.SetDBCLocaleIndex(GetDefaultDbcLocale());    // Get once for all the locale index of DBC language (console/broadcasts)
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading MapTemplate...");
@@ -1838,50 +1833,6 @@ void World::SetInitialWorldSettings()
 
     uint32 uStartInterval = WorldTimer::getMSTimeDiff(uStartTime, WorldTimer::getMSTime());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "SERVER STARTUP TIME: %i minutes %i seconds", uStartInterval / 60000, (uStartInterval % 60000) / 1000);
-}
-
-void World::DetectDBCLang()
-{
-    uint32 m_lang_confid = sConfig.GetIntDefault("DBC.Locale", 255);
-
-    if (m_lang_confid != 255 && m_lang_confid >= MAX_DBC_LOCALE)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Incorrect DBC.Locale! Must be >= 0 and < %d (set to 0)", MAX_DBC_LOCALE);
-        m_lang_confid = LOCALE_enUS;
-    }
-
-    ChrRacesEntry const* race = sChrRacesStore.LookupEntry(RACE_HUMAN);
-    MANGOS_ASSERT(race);
-
-    std::string availableLocalsStr;
-
-    uint32 default_locale = MAX_DBC_LOCALE;
-    for (int i = MAX_DBC_LOCALE - 1; i >= 0; --i)
-    {
-        if (strlen(race->name[i]) > 0)                      // check by race names
-        {
-            default_locale = i;
-            m_availableDbcLocaleMask |= (1 << i);
-            availableLocalsStr += localeNames[i];
-            availableLocalsStr += " ";
-        }
-    }
-
-    if (default_locale != m_lang_confid && m_lang_confid < MAX_DBC_LOCALE &&
-            (m_availableDbcLocaleMask & (1 << m_lang_confid)))
-        default_locale = m_lang_confid;
-
-    if (default_locale >= MAX_DBC_LOCALE)
-    {
-        sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "Unable to determine your DBC Locale! (corrupt DBC?)");
-        Log::WaitBeforeContinueIfNeed();
-        exit(1);
-    }
-
-    m_defaultDbcLocale = LocaleConstant(default_locale);
-
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Using %s DBC Locale as default. All available DBC locales: %s", localeNames[m_defaultDbcLocale], availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 }
 
 // Only processes packets while session update, the messager, and cli commands processing are NOT running

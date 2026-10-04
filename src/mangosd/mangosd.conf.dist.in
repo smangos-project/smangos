@@ -618,11 +618,6 @@ PerformanceLog.SlowPacketBroadcast = 0
 #        Time zone offset in hours
 #        0 - UTC (default)
 #
-#    DBC.Locale
-#        DBC Language Settings
-#        0 = English; 1 = Korean; 2 = French; 3 = German; 4 = Chinese; 5 = Taiwanese; 6 = Spanish;
-#        255 = Auto Detect (Default)
-#
 #    DeclinedNames
 #        Enable Russian declined character names support.
 #        Default:     0 - (Disabled)
@@ -944,7 +939,6 @@ PerformanceLog.SlowPacketBroadcast = 0
 GameType = 1
 RealmZone = 1
 TimeZoneOffset = 0
-DBC.Locale = 255
 DeclinedNames = 0
 StrictPlayerNames = 0
 StrictCharterNames = 0
