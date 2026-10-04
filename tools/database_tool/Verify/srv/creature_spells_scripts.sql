@@ -19,6 +19,5 @@ SELECT "id",
        "y",
        "z",
        "o",
-       "condition_id",
-       "comments"
+       "condition_id"
 FROM "creature_spells_scripts"

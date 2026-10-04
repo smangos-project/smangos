@@ -19,6 +19,5 @@ SELECT "id",
        "y",
        "z",
        "o",
-       "condition_id",
-       "comments"
+       "condition_id"
 FROM "event_scripts"

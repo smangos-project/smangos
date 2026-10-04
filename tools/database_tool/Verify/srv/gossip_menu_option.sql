@@ -10,7 +10,6 @@ SELECT "menu_id",
        "action_poi_id",
        "action_script_id",
        "box_coded",
-       "box_money",
        "box_text",
        "box_broadcast_text",
        "condition_id"

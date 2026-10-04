@@ -1,4 +1,3 @@
 -- key: id
-SELECT "id",
-       "name"
+SELECT "id"
 FROM "areatrigger_tavern"

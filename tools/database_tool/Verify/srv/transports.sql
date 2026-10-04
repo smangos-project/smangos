@@ -1,2 +1,2 @@
 -- key: entry
-SELECT "entry", "name", "period" FROM "transports"
+SELECT "entry", "period" FROM "transports"

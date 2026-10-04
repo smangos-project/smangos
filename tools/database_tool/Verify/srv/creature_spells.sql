@@ -1,6 +1,5 @@
 -- key: entry
 SELECT "entry",
-       "name",
        "spellId_1",
        "probability_1",
        "castTarget_1",

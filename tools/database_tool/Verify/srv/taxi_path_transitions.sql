@@ -2,6 +2,5 @@
 SELECT "in_path",
        "out_path",
        "in_node",
-       "out_node",
-       "comment"
+       "out_node"
 FROM "taxi_path_transitions"

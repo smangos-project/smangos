@@ -12,6 +12,5 @@ SELECT "entry",
        "sound",
        "type",
        "language",
-       "emote",
-       "comment"
+       "emote"
 FROM "script_texts"

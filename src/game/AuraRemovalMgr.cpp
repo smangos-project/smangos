@@ -31,7 +31,7 @@ void AuraRemovalManager::LoadFromDB()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "> Loading table `instance_buff_removal`");
     uint32 count = 0;
-    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT map_id, spell_id, enabled, flags, comment FROM instance_buff_removal");
+    std::unique_ptr<QueryResult> result = WorldDatabase.Query("SELECT map_id, spell_id, enabled, flags FROM instance_buff_removal");
     if (!result)
     {
         BarGoLink bar(1);

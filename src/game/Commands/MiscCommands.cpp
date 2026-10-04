@@ -1648,16 +1648,15 @@ bool ChatHandler::HandleCinematicAddWpCommand(char *args)
 {
     uint32 cinematic_id = 0;
     uint32 timer = 0;
-    char comment[100];
 
-    sscanf(args, "%u %u %s", &cinematic_id, &timer, comment);
+    sscanf(args, "%u %u", &cinematic_id, &timer);
 
     Player* me = m_session->GetPlayer();
     WorldDatabase.PExecute(
-        "INSERT INTO `cinematic_waypoints` (`cinematic`, `timer`, `position_x`, `position_y`, `position_z`, `comment`) VALUES "
-        "(%u, %u, %f, %f, %f, '%s')",
+        "INSERT INTO `cinematic_waypoints` (`cinematic`, `timer`, `position_x`, `position_y`, `position_z`) VALUES "
+        "(%u, %u, %f, %f, %f)",
         cinematic_id, timer,
-        ceil(me->GetPositionX()), ceil(me->GetPositionY()), ceil(me->GetPositionZ()), comment
+        ceil(me->GetPositionX()), ceil(me->GetPositionY()), ceil(me->GetPositionZ())
     );
 
     PSendSysMessage("Added new waypoint at %u ms for cinematic %u.", timer, cinematic_id);

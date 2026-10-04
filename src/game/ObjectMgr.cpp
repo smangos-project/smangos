@@ -9915,7 +9915,7 @@ void ObjectMgr::LoadGossipMenuItems(std::set<uint32>& gossipScriptSet)
 
     std::unique_ptr<QueryResult> result(WorldDatabase.Query(
                               "SELECT `menu_id`, `id`, `option_icon`, `option_text`, `option_broadcast_text`, `option_id`, `npc_option_npcflag`, "
-                              "`action_menu_id`, `action_poi_id`, `action_script_id`, `box_coded`, `box_money`, `box_text`, `box_broadcast_text`, "
+                              "`action_menu_id`, `action_poi_id`, `action_script_id`, `box_coded`, `box_text`, `box_broadcast_text`, "
                               "`condition_id` "
                               "FROM `gossip_menu_option` ORDER BY `menu_id`, `id`"));
 
@@ -9972,10 +9972,9 @@ void ObjectMgr::LoadGossipMenuItems(std::set<uint32>& gossipScriptSet)
         gMenuItem.action_poi_id         = fields[8].GetUInt32();
         gMenuItem.action_script_id      = fields[9].GetUInt32();
         gMenuItem.box_coded             = fields[10].GetUInt8() != 0;
-        //gMenuItem.box_money             = fields[11].GetUInt32();
-        gMenuItem.box_text              = fields[12].GetCppString();
-        gMenuItem.box_broadcast_text    = fields[13].GetUInt32();
-        gMenuItem.condition_id          = fields[14].GetUInt32();
+        gMenuItem.box_text              = fields[11].GetCppString();
+        gMenuItem.box_broadcast_text    = fields[12].GetUInt32();
+        gMenuItem.condition_id          = fields[13].GetUInt32();
 
         if (gMenuItem.menu_id)                              // == 0 id is special and not have menu_id data
         {

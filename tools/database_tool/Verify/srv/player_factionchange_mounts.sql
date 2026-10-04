@@ -1,6 +1,5 @@
 -- key: RaceId, MountNum
 SELECT "RaceId",
        "MountNum",
-       "ItemEntry",
-       "Comment"
+       "ItemEntry"
 FROM "player_factionchange_mounts"

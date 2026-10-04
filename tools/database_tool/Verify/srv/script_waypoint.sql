@@ -4,6 +4,5 @@ SELECT "entry",
        "location_x",
        "location_y",
        "location_z",
-       "waittime",
-       "point_comment"
+       "waittime"
 FROM "script_waypoint"

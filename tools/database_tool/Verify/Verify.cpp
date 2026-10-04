@@ -725,10 +725,15 @@ static void VerifySchema(DoltLiteDatabase& db, std::filesystem::path const& spec
                          VerifyOptions const& options, VerifyResult& result)
 {
     std::map<std::string, std::string> kinds;
-    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
-        kinds[row.table] = row.kind;
-
     std::map<std::string, std::set<std::string>> expected;
+    for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
+    {
+        kinds[row.table] = row.kind;
+        if (row.kind == "server")
+            for (std::string const& column : SplitTrimmed(row.key, ','))
+                expected[row.table].insert(column);
+    }
+
     for (auto const& [key, rows] : spec.rows)
     {
         for (SpecColumnRow const& row : rows)

@@ -1,2 +1,2 @@
 -- key: race, class, spell
-SELECT "race", "class", "spell", "note" FROM "playercreateinfo_spell"
+SELECT "race", "class", "spell" FROM "playercreateinfo_spell"

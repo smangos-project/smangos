@@ -12,6 +12,5 @@ SELECT "id",
        "event_param4",
        "action1_script",
        "action2_script",
-       "action3_script",
-       "comment"
+       "action3_script"
 FROM "creature_ai_events"

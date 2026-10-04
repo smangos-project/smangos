@@ -1,6 +1,5 @@
 -- key: id
 SELECT "id",
-       "name",
        "team",
        "bg_template",
        "exit_map",

@@ -33,6 +33,8 @@
 
 #include <cmath>
 #include <map>
+#include <functional>
+#include <tuple>
 
 using namespace Spells;
 
@@ -1637,7 +1639,7 @@ void SpellMgr::LoadSpellChains()
     }
 
     // load custom case
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `spell_id`, `prev_spell`, `first_spell`, `rank`, `req_spell` FROM `spell_chain`"));
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `spell_id`, `prev_spell`, `req_spell` FROM `spell_chain`"));
     if (!result)
     {
         BarGoLink bar(1);
@@ -1653,19 +1655,53 @@ void SpellMgr::LoadSpellChains()
     uint32 new_count = 0;
     uint32 req_count = 0;
 
-    BarGoLink bar(result->GetRowCount());
+    std::vector<std::pair<uint32, SpellChainNode>> rows;
+    std::unordered_map<uint32, uint32> tablePrev;
     do
     {
-        bar.step();
         Field* fields = result->Fetch();
-
-        uint32 spell_id = fields[0].GetUInt32();
-
         SpellChainNode node;
         node.prev  = fields[1].GetUInt32();
-        node.first = fields[2].GetUInt32();
-        node.rank  = fields[3].GetUInt8();
-        node.req   = fields[4].GetUInt32();
+        node.first = 0;
+        node.rank  = 0;
+        node.req   = fields[2].GetUInt32();
+        rows.emplace_back(fields[0].GetUInt32(), node);
+        tablePrev[fields[0].GetUInt32()] = node.prev;
+    }
+    while (result->NextRow());
+
+    // First rank and rank number follow the prev links, into the Talent/SkillLineAbility chains where they continue one.
+    SpellChainMap const dbcChains = mSpellChains;
+    std::unordered_map<uint32, std::pair<uint32, uint8>> derived;
+    std::function<std::pair<uint32, uint8>(uint32, uint32)> derive = [&](uint32 spellId, uint32 depth) -> std::pair<uint32, uint8>
+    {
+        auto dbcItr = dbcChains.find(spellId);
+        if (dbcItr != dbcChains.end())
+            return { dbcItr->second.first, dbcItr->second.rank };
+        auto derivedItr = derived.find(spellId);
+        if (derivedItr != derived.end())
+            return derivedItr->second;
+        auto prevItr = tablePrev.find(spellId);
+        std::pair<uint32, uint8> value = { spellId, 1 };
+        if (prevItr == tablePrev.end() || depth == 0)
+            value = { 0, 0 };
+        else if (prevItr->second)
+        {
+            std::pair<uint32, uint8> const prev = derive(prevItr->second, depth - 1);
+            value = prev.first ? std::make_pair(prev.first, uint8(prev.second + 1)) : prev;
+        }
+        derived[spellId] = value;
+        return value;
+    };
+
+    BarGoLink bar(rows.size());
+    for (auto& [spell_id, node] : rows)
+    {
+        bar.step();
+
+        std::tie(node.first, node.rank) = derive(node.prev ? node.prev : spell_id, 30);
+        if (node.prev && node.first)
+            ++node.rank;
 
         if (!sSpellMgr.GetSpellEntry(spell_id))
         {
@@ -1781,7 +1817,6 @@ void SpellMgr::LoadSpellChains()
 
         ++new_count;
     }
-    while (result->NextRow());
 
     // additional integrity checks
     for (const auto& itr : mSpellChains)

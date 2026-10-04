@@ -2,6 +2,5 @@
 SELECT "map_id",
        "spell_id",
        "enabled",
-       "flags",
-       "comment"
+       "flags"
 FROM "instance_buff_removal"
