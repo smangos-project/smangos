@@ -51,6 +51,16 @@
       "problemMatcher": []
     },
     {
+      "label": "client: launch 2",
+      "type": "shell",
+      "command": "Start-Process -FilePath .client/_classic_era_/custom_launcher.exe -WorkingDirectory .client/_classic_era_",
+      "linux": {
+        "command": "client/launch-wine-detached.sh ${workspaceFolder}/.client/_classic_era_ & sleep 20; KEEP_RUNNING=1 client/launch-wine-detached.sh ${workspaceFolder}/.client/_classic_era_; wait"
+      },
+      "dependsOn": "client: deploy",
+      "problemMatcher": []
+    },
+    {
       "label": "server: setup",
       "type": "shell",
       "command": "cmake --build build --config RelWithDebInfo --target server_setup",
