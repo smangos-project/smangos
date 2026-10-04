@@ -7085,7 +7085,7 @@ static DbcFieldMeta const g_dbcFields_SpellMisc[] = {
     { "CastingTimeIndex", DbcFieldType::Int, 16, false, 1, false, false, false, "SpellCastTimes", "ID" },
     { "DurationIndex", DbcFieldType::Int, 16, false, 1, false, false, false, "SpellDuration", "ID" },
     { "RangeIndex", DbcFieldType::Int, 16, false, 1, false, false, false, "SpellRange", "ID" },
-    { "SchoolMask", DbcFieldType::Int, 8, false, 1, false, false, false, nullptr, nullptr },
+    { "SchoolMask", DbcFieldType::Int, 16, false, 1, false, false, false, nullptr, nullptr },
     { "Speed", DbcFieldType::Float, 0, true, 1, false, false, false, nullptr, nullptr },
     { "LaunchDelay", DbcFieldType::Float, 0, true, 1, false, false, false, nullptr, nullptr },
     { "MinDuration", DbcFieldType::Float, 0, true, 1, false, false, false, nullptr, nullptr },

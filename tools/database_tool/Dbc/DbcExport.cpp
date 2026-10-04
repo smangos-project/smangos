@@ -9,6 +9,7 @@
 #include <cctype>
 #include <cstring>
 #include <fstream>
+#include <string_view>
 
 namespace
 {
@@ -85,6 +86,24 @@ namespace
         return rows;
     }
 
+    // Every client SpellMisc row carries bit 0x200 in SchoolMask; without it the client plays the wrong cast animation.
+    void SetClientSchoolMaskFlag(DbcTableMeta const& table, std::vector<Wdc5Row>& rows)
+    {
+        if (std::string_view(table.name) != "SpellMisc")
+            return;
+        uint32_t column = 0;
+        for (uint32_t i = 0; i < table.fieldCount; ++i)
+        {
+            if (std::string_view(table.fields[i].name) == "SchoolMask")
+            {
+                for (Wdc5Row& row : rows)
+                    row[column].intValue |= 0x200;
+                return;
+            }
+            column += table.fields[i].arrayLength;
+        }
+    }
+
     std::string RowKey(Wdc5Row const& row)
     {
         std::string key;
@@ -139,6 +158,7 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         tableResult.hasFilesRow = true;
 
         std::vector<Wdc5Row> rows = LoadRows(world, table);
+        SetClientSchoolMaskFlag(table, rows);
         std::filesystem::path filePath = dbfilesclientDir / (std::string(table.fileStem) + ".db2");
 
         std::error_code ec;
