@@ -46,7 +46,7 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
     }
 
     DoltLiteDatabase world(worldPath.string());
-    result.dumpImport = ImportMysqlDump(world, result.archive.sqlPath, "world: import world_full_14_june_2021");
+    result.dumpImport = ImportMysqlDump(world, result.archive.sqlPath, "world: import vmangos mangos.sql");
     if (!result.dumpImport.ok)
     {
         result.error = result.dumpImport.error;

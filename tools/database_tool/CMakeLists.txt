@@ -3,6 +3,7 @@ add_library(database_tool_lib STATIC
   ToolConfig.cpp
   World/DoltLiteDatabase.cpp
   World/WorldArchive.cpp
+  World/ZipExtract.cpp
   World/WorldCompare.cpp
   World/VersionCollapse.cpp
   Reference/ReferenceBuild.cpp

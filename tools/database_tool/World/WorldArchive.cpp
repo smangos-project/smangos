@@ -1,5 +1,7 @@
 #include "WorldArchive.h"
 
+#include "ZipExtract.h"
+
 #include "Extract7z.h"
 
 #include "Crypto/Hash/SHA256.h"
@@ -70,12 +72,15 @@ namespace
 
 WorldArchiveSpec const& WorldBaseDumpArchiveSpec()
 {
+    // db_latest is replaced on every upstream push; when the asset below is gone, pin the new
+    // one (`database_tool pin-base-dump`) or point --base-dump at a mirrored copy.
     static WorldArchiveSpec const spec{
-        "https://github.com/brotalnia/database/raw/master/world_full_14_june_2021.7z",
-        "world_full_14_june_2021.7z",
-        "world_full_14_june_2021.sql",
-        16898241,
-        "56040a3edecd9a9dabe328ba368f609933a2501a3ecabe68080892266f8c4212"
+        "https://github.com/vmangos/core/releases/download/db_latest/db-4641790.zip",
+        "db-4641790.zip",
+        "mangos.sql",
+        "mysql-dump/mangos.sql",
+        30511447,
+        "9e178f1d70363e92a7b8c259000102dc9739333d79ca00c99ea32dd1fb43e904"
     };
     return spec;
 }
@@ -109,6 +114,15 @@ WorldArchiveResult FetchAndUnpackWorldArchive(WorldArchiveSpec const& spec, std:
     if (actualHash != spec.expectedSha256Hex)
     {
         result.error = "archive SHA256 mismatch: expected " + spec.expectedSha256Hex + ", got " + actualHash;
+        return result;
+    }
+
+    if (!spec.entryName.empty())
+    {
+        result.error = ExtractZipEntry(archivePath, spec.entryName, sqlPath);
+        if (!result.error.empty())
+            return result;
+        result.sqlPath = sqlPath;
         return result;
     }
 

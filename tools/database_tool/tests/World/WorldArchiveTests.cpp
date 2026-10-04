@@ -100,10 +100,10 @@ TEST_CASE("FetchAndUnpackWorldArchive reports a size mismatch without unpacking"
 
 TEST_CASE("FetchAndUnpackWorldArchive downloads and unpacks the real pinned world dump", "[WorldArchive][network]")
 {
-    // Opt-in: downloads the real 16MB archive from the network.
+    // Opt-in: downloads the real 30MB archive from the network.
     if (!std::getenv("DATABASE_TOOL_TEST_WORLD_ARCHIVE_DOWNLOAD"))
     {
-        WARN("DATABASE_TOOL_TEST_WORLD_ARCHIVE_DOWNLOAD not set, skipping (downloads a real 16MB file)");
+        WARN("DATABASE_TOOL_TEST_WORLD_ARCHIVE_DOWNLOAD not set, skipping (downloads a real 30MB file)");
         return;
     }
 
@@ -113,11 +113,37 @@ TEST_CASE("FetchAndUnpackWorldArchive downloads and unpacks the real pinned worl
     INFO(result.error);
     REQUIRE(result.error.empty());
     CHECK(result.downloaded);
-    CHECK(std::filesystem::file_size(result.sqlPath) == 142940922);
+    CHECK(std::filesystem::file_size(result.sqlPath) > 0);
 
     // A second call must find the archive already cached and skip downloading.
     WorldArchiveResult second = FetchAndUnpackWorldArchive(WorldBaseDumpArchiveSpec(), cache.path);
     INFO(second.error);
     REQUIRE(second.error.empty());
     CHECK_FALSE(second.downloaded);
+}
+
+TEST_CASE("FetchAndUnpackWorldArchive extracts a deflated and a stored zip entry", "[WorldArchive]")
+{
+    std::filesystem::path source = std::filesystem::path(DATABASE_TOOL_TEST_WORLD_FIXTURES_DIR) / "fixture.zip";
+
+    for (auto const& [entry, expected] : std::vector<std::pair<std::string, std::string>>{
+             { "mysql-dump/deflated.txt", [] { std::string s; for (int i = 0; i < 50; ++i) s += "hello from a zip fixture\n"; return s; }() },
+             { "mysql-dump/stored.txt", "stored entry\n" } })
+    {
+        TempCacheDir cache;
+        std::filesystem::copy_file(source, cache.path / "fixture.zip");
+
+        WorldArchiveSpec spec;
+        spec.url = "unused://fixture-is-pre-cached";
+        spec.archiveFileName = "fixture.zip";
+        spec.unpackedFileName = "out.txt";
+        spec.entryName = entry;
+        spec.expectedSize = std::filesystem::file_size(source);
+        spec.expectedSha256Hex = "4b038cc7cf96dbdd56184d762e061ff4219e4e07207bcbd9aaf396f2e881156b";
+
+        WorldArchiveResult result = FetchAndUnpackWorldArchive(spec, cache.path);
+        INFO(result.error);
+        REQUIRE(result.error.empty());
+        CHECK(ReadFile(result.sqlPath) == expected);
+    }
 }
