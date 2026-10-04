@@ -26,8 +26,9 @@ class ChrCustomizationStore
         uint32 GetOptionCount() const;
 
         bool Validate(uint8 race, uint8 playerClass, uint8 sex, ChrCustomizationList const& list) const;
-        // Drops invalid pairs and fills missing options with their first valid choice. Returns whether the list changed.
+        // Drops invalid pairs and fills missing options with their first valid player choice. Returns whether the list changed.
         bool Complete(uint8 race, uint8 playerClass, uint8 sex, ChrCustomizationList& list) const;
+        // Picks only choices players can pick at creation.
         void SelectRandom(uint8 race, uint8 playerClass, uint8 sex, ChrCustomizationList& list) const;
         bool MeetsReq(uint32 reqId, uint8 race, uint8 playerClass, ChrCustomizationList const* chosen) const;
 
@@ -55,6 +56,8 @@ class ChrCustomizationStore
 
         std::vector<uint32> const* GetOptions(uint8 race, uint8 sex) const;
         bool PairValid(uint8 race, uint8 playerClass, uint32 optionId, uint32 choiceId, ChrCustomizationList const* chosen) const;
+        // A choice behind a requirement without the requirements bit: the client hides it at creation (NPC-only looks).
+        bool IsNpcOnly(uint32 choiceId) const;
         bool OptionMeetsReq(uint32 optionId, uint8 race, uint8 playerClass) const;
 
         std::unordered_map<uint32, uint32> m_raceModels;                       // (race << 8 | sex) -> model

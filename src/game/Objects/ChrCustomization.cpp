@@ -147,6 +147,15 @@ bool ChrCustomizationStore::PairValid(uint8 race, uint8 playerClass, uint32 opti
     return MeetsReq(choice->second.reqId, race, playerClass, chosen);
 }
 
+bool ChrCustomizationStore::IsNpcOnly(uint32 choiceId) const
+{
+    uint32 reqId = m_choices.at(choiceId).reqId;
+    if (!reqId)
+        return false;
+    auto itr = m_reqs.find(reqId);
+    return itr != m_reqs.end() && !(itr->second.type & 0x1);
+}
+
 bool ChrCustomizationStore::Validate(uint8 race, uint8 playerClass, uint8 sex, ChrCustomizationList const& list) const
 {
     std::vector<uint32> const* options = GetOptions(race, sex);
@@ -192,7 +201,7 @@ bool ChrCustomizationStore::Complete(uint8 race, uint8 playerClass, uint8 sex, C
                 continue;
             for (uint32 choiceId : m_choicesByOption.at(optionId))
             {
-                if (PairValid(race, playerClass, optionId, choiceId, &result))
+                if (!IsNpcOnly(choiceId) && PairValid(race, playerClass, optionId, choiceId, &result))
                 {
                     result.push_back({ optionId, choiceId });
                     break;
@@ -221,7 +230,7 @@ void ChrCustomizationStore::SelectRandom(uint8 race, uint8 playerClass, uint8 se
         std::vector<uint32> candidates;
         for (uint32 choiceId : m_choicesByOption.at(optionId))
         {
-            if (MeetsReq(m_choices.at(choiceId).reqId, race, playerClass, &list))
+            if (!IsNpcOnly(choiceId) && MeetsReq(m_choices.at(choiceId).reqId, race, playerClass, &list))
                 candidates.push_back(choiceId);
         }
         if (!candidates.empty())

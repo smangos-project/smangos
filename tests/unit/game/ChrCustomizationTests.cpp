@@ -109,6 +109,12 @@ TEST_CASE("Customization completion", "[customization]")
         CHECK_FALSE(store.Complete(1, 1, 0, full));
         CHECK(full == ChrCustomizationList{ { 1, 101 }, { 2, 202 }, { 3, 301 } });
     }
+    SECTION("never fills an NPC-only choice but keeps a set one")
+    {
+        ChrCustomizationList list = { { 1, 101 }, { 2, 203 } };
+        CHECK(store.Complete(1, 6, 0, list));
+        CHECK(list == ChrCustomizationList{ { 1, 101 }, { 2, 203 }, { 3, 301 } });
+    }
     SECTION("unknown race and sex give an empty list")
     {
         ChrCustomizationList list = { { 1, 101 } };
@@ -117,7 +123,7 @@ TEST_CASE("Customization completion", "[customization]")
     }
 }
 
-TEST_CASE("Random customization always validates", "[customization]")
+TEST_CASE("Random customization always validates and skips NPC-only choices", "[customization]")
 {
     ChrCustomizationStore store = MakeStore();
     for (int i = 0; i < 200; ++i)
@@ -126,6 +132,7 @@ TEST_CASE("Random customization always validates", "[customization]")
         store.SelectRandom(1, 6, 0, list);
         CHECK(list.size() >= 2);
         CHECK(store.Validate(1, 6, 0, list));
+        CHECK(list[1].ChoiceID == 201);
         store.SelectRandom(2, 1, 0, list);
         CHECK(list.size() == 1);
         CHECK(store.Validate(2, 1, 0, list));
