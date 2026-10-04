@@ -35,7 +35,7 @@ directory options:
 database_tool create   [--databases world] [--no-dbc-import]
 database_tool update   [--databases world]
 database_tool import   --format db2|dbc [--tables A,B] [--dir D]
-database_tool export   --format db2|dbc [--tables A,B] [--dir D]
+database_tool export   --format db2|dbc [--tables A,B] [--dir D] [--client]
 database_tool port-migration <file>...
 database_tool compare-world --mysql "<host;port;user;pass;db>"
 database_tool reference
@@ -69,10 +69,19 @@ with a resolved WoWDBDefs definition (or just the ones named in `--tables`, comm
 recreating and repopulating that table's `dbc_<name>` and its `dbc_files` bookkeeping row;
 `--dir` reads another directory. `export` does the reverse, writing each file from `dbc_<name>`
 into `.world/dbfilesclient/` (or `--dir`). `--format db2` always writes
-WDC5, one section, every field uncompressed at its natural width, sorted by id (dbc-formats.md);
-sparse layout is kept for the four tables that need it. `--format dbc` writes plain WDBC (no
+WDC5 with one section, sorted by id (dbc-formats.md), laid out the way the client's own files
+are: numeric scalars Immediate, numeric arrays after a compressed field PalletArray, everything
+else uncompressed (the client misreads uncompressed fields placed after compressed ones). Int
+fields keep their declared width unless a value doesn't fit it signed or unsigned. Any relation
+field gets a parent lookup, inline or not. Sparse layout is kept for the four tables that need
+it. `--format dbc` writes plain WDBC (no
 compression or sections at all). A table with no file (`import`) or no `dbc_files` row (`export`)
 is reported, not an error.
+
+`export --format db2 --client` writes straight into the client's `.client/Content/dbfilesclient/`
+(where `import` reads from) and only touches files whose rows differ from what the file already
+holds, so stock files keep their bytes. Before overwriting a file for the first time it copies the
+original to `.world/dbfilesclient-stock/`; copy those back to restore the stock client.
 
 ### port-migration
 
