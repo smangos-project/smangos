@@ -91,10 +91,17 @@ namespace MMAP
             void buildSingleMap(uint32 mapID);
             void processQueuedTiles();
 
+            // fixes the tile list that defines the navmesh params of a map
+            void setTileList(uint32 mapID, std::set<uint32> tiles);
+            // builds (always rebuilding) the given packed tiles of a map
+            void buildTiles(uint32 mapID, std::vector<uint32> const& tiles);
+
             void buildGameObject(std::string modelName, uint32 displayId);
             void buildTransports();
 
             bool IsBusy();
+
+            bool shouldSkipMap(uint32 mapID);
 
             // true if any tile failed to build - lets the process exit non-zero
             // instead of pretending the run succeeded
@@ -114,7 +121,6 @@ namespace MMAP
             void getTileBounds(uint32 tileX, uint32 tileY, float* verts, int vertCount, float* bmin, float* bmax);
             void getGridBounds(uint32 mapID, uint32& minX, uint32& minY, uint32& maxX, uint32& maxY);
 
-            bool shouldSkipMap(uint32 mapID);
             bool isTransportMap(uint32 mapID);
 
             TerrainBuilder* m_terrainBuilder;

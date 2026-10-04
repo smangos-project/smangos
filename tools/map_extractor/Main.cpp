@@ -2,6 +2,7 @@
 
 #include "Client/Options.h"
 #include "Map/MapStage.h"
+#include "Mmap/MmapStage.h"
 #include "Vmap/VmapStage.h"
 #include "World/DoltLiteDatabase.h"
 
@@ -150,6 +151,15 @@ int main(int argc, char** argv)
     {
         StageStats s = RunVmapStage(ctx, selected, ctx.Region());
         std::printf("vmap stage: %u %s, %u up to date, %u failed, %u models unreadable\n", s.done, o.dryRun ? "to do" : "done",
+            s.upToDate, s.failed, s.missingInput);
+        if (s.failed)
+            exitCode = 1;
+    }
+
+    if (o.stageMmap)
+    {
+        StageStats s = RunMmapStage(ctx, selected, ctx.Region());
+        std::printf("mmap stage: %u %s, %u up to date, %u failed, %u missing input\n", s.done, o.dryRun ? "to do" : "done",
             s.upToDate, s.failed, s.missingInput);
         if (s.failed)
             exitCode = 1;

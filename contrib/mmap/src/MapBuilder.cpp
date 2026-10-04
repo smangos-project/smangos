@@ -369,6 +369,41 @@ namespace MMAP
         printf("[Map %03i] Generated file: mmaps/%03u%02u%02u.mmtile\n", mapID, mapID, tileY, tileX);
     }
 
+    void MapBuilder::setTileList(uint32 mapID, std::set<uint32> tiles)
+    {
+        std::lock_guard<std::mutex> lock(m_tilesMutex);
+        m_tiles[mapID] = std::move(tiles);
+    }
+
+    void MapBuilder::buildTiles(uint32 mapID, std::vector<uint32> const& tiles)
+    {
+        m_cancel.store(false);
+
+        dtNavMesh* navMesh = nullptr;
+        buildNavMesh(mapID, navMesh);
+        if (!navMesh)
+        {
+            m_anyError.store(true);
+            return;
+        }
+
+        uint32 current = 0;
+        for (uint32 packed : tiles)
+        {
+            TileInfo tileInfo;
+            StaticMapTree::unpackTileID(packed, tileInfo.m_tileX, tileInfo.m_tileY);
+            tileInfo.m_mapId = mapID;
+            tileInfo.m_curTile = ++current;
+            tileInfo.m_tileCount = uint32(tiles.size());
+            tileInfo.m_forceRebuild = true;
+            memcpy(&tileInfo.m_navMeshParams, navMesh->getParams(), sizeof(dtNavMeshParams));
+            m_tileQueue.Push(tileInfo);
+        }
+
+        dtFreeNavMesh(navMesh);
+        processQueuedTiles();
+    }
+
     void MapBuilder::buildMap(uint32 mapID)
     {
         printf("Building map %03u:                                    \n", mapID);
