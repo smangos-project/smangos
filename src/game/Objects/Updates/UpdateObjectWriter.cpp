@@ -508,14 +508,6 @@ std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<Upda
     return sizePos;
 }
 
-// The client still crashes (null read) on entering the world once a ship or zeppelin create is
-// sent, so they stay unsent, and so does every update about them, until that is found.
-bool IsUnsentTransport(Object const& object)
-{
-    GameObject const* gameObject = object.ToGameObject();
-    return gameObject && gameObject->IsMoTransport();
-}
-
 // Under LogNetworkPackets, one Network.log line per object block written into an update, so a
 // client that rejects the update (CMSG_LOG_DISCONNECT) can be matched to the object that did it.
 void LogUpdateBlock(char const* kind, Object const& object)
@@ -535,8 +527,6 @@ void CloseValuesBlock(ByteBuffer& buf, std::size_t sizePos)
 void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
     if (!target)
-        return;
-    if (IsUnsentTransport(object))
         return;
 
     // The typed structs are a derived cache of the flat values array (decision 5); refreshing it
@@ -585,7 +575,7 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 
 void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
-    if (!target || IsUnsentTransport(object))
+    if (!target)
         return;
 
     bool const isSelf = static_cast<Object const*>(target) == &object;
@@ -603,7 +593,7 @@ void BuildValuesUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 
 void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& data, EnumFlag<UpdateFieldFlag> flags, Player* target)
 {
-    if (!target || IsUnsentTransport(object))
+    if (!target)
         return;
 
     FillUpdateFieldData(const_cast<Object&>(object));
@@ -649,7 +639,7 @@ void BuildValuesUpdateBlockForPlayerWithFlag(Object const& object, UpdateData& d
 
 void BuildDynamicFlagsUpdateBlockForPlayer(Object const& object, UpdateData& data, Player* target)
 {
-    if (!target || IsUnsentTransport(object))
+    if (!target)
         return;
 
     FillUpdateFieldData(const_cast<Object&>(object));

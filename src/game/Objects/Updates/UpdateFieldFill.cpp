@@ -20,8 +20,11 @@
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Server/Packets/Classic/InventorySlots.h"
 #include "World.h"
+#include "Database/DBCStores.h"
 #include <algorithm>
 #include <array>
+#include <cctype>
+#include <string_view>
 
 namespace
 {
@@ -42,6 +45,19 @@ constexpr uint32 PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX = 9;
 
 // GameObject State of an elevator moving through its animation without stopping.
 constexpr int8 GO_STATE_TRANSPORT_ACTIVE = 24;
+
+// The client loads a gameobject's model as a WMO only with this flag set, otherwise as an M2.
+constexpr uint32 MODERN_GO_FLAG_MAP_OBJECT = 0x00100000;
+
+bool IsMapObjectDisplay(uint32 displayId)
+{
+    GameObjectDisplayInfoEntry const* info = sGameObjectDisplayInfoStore.LookupEntry(displayId);
+    if (!info || !info->filename)
+        return false;
+    std::string_view const name(info->filename);
+    return name.size() >= 4 && std::equal(name.end() - 4, name.end(), ".wmo",
+        [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == b; });
+}
 
 // UNIT_FIELD_POWER/UNIT_FIELD_MAXPOWER are indexed by a per-class wire slot in the modern client
 // (ChrClassesXPowerTypes.db2), not by this engine's own vanilla Powers ordinal -- e.g. a Rogue's
@@ -552,7 +568,10 @@ void FillGameObjectData(GameObject& gameObject)
     FillObjectData(gameObject, gameObject.GetUInt32Value(GAMEOBJECT_DYN_FLAGS));
 
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::DisplayID, int32(gameObject.GetDisplayId()));
-    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Flags, gameObject.GetUInt32Value(GAMEOBJECT_FLAGS));
+    uint32 flags = gameObject.GetUInt32Value(GAMEOBJECT_FLAGS);
+    if (IsMapObjectDisplay(gameObject.GetDisplayId()))
+        flags |= MODERN_GO_FLAG_MAP_OBJECT;
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Flags, flags);
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::ParentRotation, gameObject.GetLocalRotation());
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::FactionTemplate, int32(gameObject.GetUInt32Value(GAMEOBJECT_FACTION)));
     // Ships carry their path period in Level; elevators only animate in the transport-active state.
