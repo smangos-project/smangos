@@ -26,6 +26,12 @@ The client is still a Windows exe, so on Linux the library and launcher are cros
 
 `client/` builds standalone (no server dependencies). `launch-wine.sh` copies `custom_launcher.exe` and `custom.dll` from `build-client/bin` next to `WowClassic.exe` and starts the launcher in a wine prefix (`~/.local/share/classic-client-wine` by default, `WINEPREFIX` to override; it must not be under a directory you don't own, e.g. `/tmp`). Needs `mingw-w64-gcc` and `wine` (with vkd3d for the client's D3D12 renderer). Verified: custom.dll loads, applies its patches and the client renders under wine 11.
 
+## Extracting a CASC client into Content/
+
+    client/extract-casc.py --listfile LISTFILE [--client .client] [--locale enUS]
+
+Reads the local CASC storage (`.client/.build.info`, `Data/`) and writes every file named in the listfile (`<fileDataId>;<path>` per line, or bare paths) under `.client/Content/`, lowercased. It also writes `fdid.index` and `root.hashes`, which the CASC bypass reads, and lists what it could not extract (encrypted or missing entries) in `Content/_dump_failed.log`. Files already present with the right size are skipped, so an interrupted run can be resumed (`--force` to redo). Python 3 standard library only; `python3 client/test_extract_casc.py` runs its tests.
+
 ## Automatic login (Linux)
 
     client/autologin.sh [--restart-server] [ACCOUNT [PASSWORD [CHARACTER]]]
