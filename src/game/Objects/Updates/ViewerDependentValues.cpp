@@ -119,6 +119,8 @@ uint32 ToClientNpcFlags(uint32 flags)
     for (auto const& [vanilla, client] : map)
         if (flags & vanilla)
             out |= client;
+    if (flags & ~(UNIT_NPC_FLAG_QUESTGIVER | UNIT_NPC_FLAG_REPAIR))
+        out |= 0x00000001;
     return out;
 }
 }
