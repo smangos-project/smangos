@@ -206,7 +206,7 @@ namespace
         uint32_t minId = rows.empty() ? 0 : RowId(rows[order.front()], lookup);
         uint32_t maxId = rows.empty() ? 0 : RowId(rows[order.back()], lookup);
 
-        int16_t indexField = -1; // -1 when the id is non-inline (or there is no id field)
+        int16_t indexField = lookup.idNonInline ? 0 : -1; // the client's files write 0 for a non-inline id
         if (!lookup.idNonInline && lookup.idFieldIndex >= 0)
             for (size_t i = 0; i < inRecordFields.size(); ++i)
                 if (inRecordFields[i].fieldIndex == static_cast<uint32_t>(lookup.idFieldIndex))
