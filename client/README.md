@@ -28,9 +28,11 @@ The client is still a Windows exe, so on Linux the library and launcher are cros
 
 ## Extracting a CASC client into Content/
 
-    client/extract-casc.py --listfile LISTFILE [--client .client] [--locale enUS]
+    cmake -S . -B build -DBUILD_CASC_EXTRACTOR=ON
+    cmake --build build --target casc_extractor
+    build/tools/casc_extractor/casc_extractor --listfile LISTFILE [--client .client] [--locale enUS]
 
-The listfile is not in the repo; provide your own (e.g. as `.local/listfile.txt`, which is gitignored). Reads the local CASC storage (`.client/.build.info`, `Data/`) and writes every file named in the listfile (`<fileDataId>;<path>` per line, or bare paths) under `.client/Content/`, lowercased. It also writes `fdid.index` and `root.hashes`, which the CASC bypass reads, and lists what it could not extract (encrypted or missing entries) in `Content/_dump_failed.log`. Files already present with the right size are skipped, so an interrupted run can be resumed (`--force` to redo). Python 3 standard library only; `python3 client/test_extract_casc.py` runs its tests.
+`casc_extractor` (`tools/casc_extractor`, links `dep/CascLib`) reads the CASC storage next to `.client/.build.info` and writes every file named in the listfile (`<fileDataId>;<path>` per line, or bare paths) under `.client/Content/`, lowercased. The listfile is not in the repo; provide your own (e.g. `.local/listfile.txt`, which is gitignored). It also updates `fdid.index` and `root.hashes`, which the CASC bypass reads, and lists what it could not extract in `Content/_dump_failed.log`. Files already present with the right size are skipped, so an interrupted run resumes (`--force` to redo). `--tact-keys FILE` imports encryption keys for encrypted files.
 
 ## Automatic login (Linux)
 

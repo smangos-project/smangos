@@ -99,6 +99,12 @@ else()
   message(STATUS "Build database_tool   : No (default)")
 endif()
 
+if(BUILD_CASC_EXTRACTOR)
+  message(STATUS "Build casc_extractor  : Yes")
+else()
+  message(STATUS "Build casc_extractor  : No (default)")
+endif()
+
 if(UNIX)
   if(DEBUG_SYMBOLS)
     message(STATUS "Debug symbols         : Included")

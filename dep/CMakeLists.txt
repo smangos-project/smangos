@@ -25,6 +25,10 @@ endif()
 
 add_subdirectory(doltlite)
 
+if (BUILD_CASC_EXTRACTOR)
+  add_subdirectory(CascLib)
+endif()
+
 if (BUILD_DATABASE_TOOL)
   add_subdirectory(lzmasdk)
 endif()

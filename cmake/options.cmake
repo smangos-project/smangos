@@ -14,6 +14,7 @@ option(ENABLE_ASAN                    "Build the whole tree with AddressSanitize
 option(BUILD_DB_SCHEMA_SETUP          "Build the WoWDBDefs schema reader (contrib/db_schema_setup)"                                    OFF)
 option(BUILD_CLIENT                   "Build the client loader and library (Windows only, client/)"                                    ON)
 option(BUILD_DATABASE_TOOL            "Build the database setup tool (tools/database_tool)"                                            OFF)
+option(BUILD_CASC_EXTRACTOR           "Build the CASC client extractor (tools/casc_extractor)"                                          OFF)
 
 if (BUILD_REALBOT_RUNNER AND NOT ENABLE_REALBOTS)
   message(FATAL_ERROR "BUILD_REALBOT_RUNNER requires ENABLE_REALBOTS to be ON")
@@ -87,6 +88,7 @@ message(STATUS
     ENABLE_ASAN               Build the whole tree with AddressSanitizer
     BUILD_DB_SCHEMA_SETUP     Build the WoWDBDefs schema reader (contrib/db_schema_setup)
     BUILD_DATABASE_TOOL       Build the database setup tool (tools/database_tool)
+    BUILD_CASC_EXTRACTOR      Build the CASC client extractor (tools/casc_extractor)
 
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
