@@ -544,6 +544,8 @@ TEST_CASE("QueryQuestInfo and its response round-trip", "[packets]")
     info.SortId = 9;
     info.SuggestedGroupNum = 3;
     info.RewardNextQuest = 7;
+    info.RewardXPDifficulty = 3;
+    info.RewardXPMultiplier = 1.25f;
     info.RewardMoney = 500;
     info.RewardSpell = 1234;
     info.Flags = 0x8;
@@ -572,6 +574,8 @@ TEST_CASE("QueryQuestInfo and its response round-trip", "[packets]")
         CHECK(a.SortId == b.SortId);
         CHECK(a.SuggestedGroupNum == b.SuggestedGroupNum);
         CHECK(a.RewardNextQuest == b.RewardNextQuest);
+        CHECK(a.RewardXPDifficulty == b.RewardXPDifficulty);
+        CHECK(a.RewardXPMultiplier == b.RewardXPMultiplier);
         CHECK(a.RewardMoney == b.RewardMoney);
         CHECK(a.RewardSpell == b.RewardSpell);
         CHECK(a.Flags == b.Flags);

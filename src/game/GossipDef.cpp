@@ -458,6 +458,8 @@ void PlayerMenu::SendQuestInfo(uint32 questId) const
         packet.SortId = pQuest->GetZoneOrSort();
         packet.SuggestedGroupNum = int32(pQuest->GetSuggestedPlayers());
         packet.RewardNextQuest = int32(pQuest->GetNextQuestInChain());
+        packet.RewardXPDifficulty = int32(pQuest->GetRewXPDifficulty());
+        packet.RewardXPMultiplier = pQuest->GetRewXPMultiplier();
         packet.RewardMoney = pQuest->GetRewOrReqMoney();
         packet.RewardSpell = int32(pQuest->GetRewSpell());
         packet.Flags = pQuest->GetQuestFlags();

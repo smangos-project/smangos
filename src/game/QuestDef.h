@@ -256,6 +256,8 @@ class Quest
         int32 GetRewMoneyMaxLevelAtComplete() const;
         uint8 GetRewRepSpilloverMask() const { return RewRepSpilloverMask; }
         uint32 GetRewXP() const { return RewXP; }
+        uint8 GetRewXPDifficulty() const { return RewXPDifficulty; }
+        float GetRewXPMultiplier() const { return RewXPMultiplier; }
                                                             // use in XP calculation at client
         uint32 GetRewSpell() const { return RewSpell; }
         uint32 GetRewSpellCast() const { return RewSpellCast; }
@@ -357,6 +359,9 @@ class Quest
         std::string EndText;
         uint8  RewRepSpilloverMask = 0;
         uint32 RewXP = 0;
+        // dbc_questxp column and factor through which the client shows RewXP
+        uint8  RewXPDifficulty = 0;
+        float  RewXPMultiplier = 1.0f;
         int32  RewOrReqMoney = 0;
         uint32 RewMoneyMaxLevel = 0;
         uint32 RewSpell = 0;

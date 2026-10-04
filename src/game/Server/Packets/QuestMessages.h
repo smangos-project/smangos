@@ -1330,6 +1330,8 @@ struct QueryQuestInfoResponse
     int32 SortId = 0;
     int32 SuggestedGroupNum = 0;
     int32 RewardNextQuest = 0;
+    int32 RewardXPDifficulty = 0;
+    float RewardXPMultiplier = 1.0f;
     int32 RewardMoney = 0;
     int32 RewardSpell = 0;
     uint32 Flags = 0;
@@ -1360,7 +1362,7 @@ struct QueryQuestInfoResponse
         data << MinLevel << SortId;
         data << int32(0);  // QuestInfoID
         data << SuggestedGroupNum << RewardNextQuest;
-        data << int32(0) << 1.0f;  // RewardXPDifficulty, RewardXPMultiplier
+        data << RewardXPDifficulty << RewardXPMultiplier;
         data << RewardMoney;
         data << int32(0) << 1.0f;  // RewardMoneyDifficulty, RewardMoneyMultiplier
         data << int32(0);          // RewardBonusMoney
@@ -1460,8 +1462,8 @@ struct QueryQuestInfoResponse
         zero(1);                   // QuestInfoID
         SuggestedGroupNum = word();
         RewardNextQuest = word();
-        zero(1);
-        word();                    // RewardXPMultiplier
+        RewardXPDifficulty = word();
+        data >> RewardXPMultiplier;
         RewardMoney = word();
         zero(1);
         word();                    // RewardMoneyMultiplier

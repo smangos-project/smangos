@@ -5084,6 +5084,37 @@ void ObjectMgr::LoadQuests()
         }
     }
 
+    std::map<uint32, std::array<uint32, 10>> questXp;
+    if (std::unique_ptr<QueryResult> xpResult{ WorldDatabase.Query("SELECT `ID`, `Difficulty1`, `Difficulty2`, `Difficulty3`, `Difficulty4`, `Difficulty5`, "
+        "`Difficulty6`, `Difficulty7`, `Difficulty8`, `Difficulty9`, `Difficulty10` FROM `dbc_questxp`") })
+    {
+        do
+        {
+            Field* fields = xpResult->Fetch();
+            std::array<uint32, 10>& row = questXp[fields[0].GetUInt32()];
+            for (uint32 i = 0; i < row.size(); ++i)
+                row[i] = fields[i + 1].GetUInt32();
+        } while (xpResult->NextRow());
+    }
+
+    for (auto const& itr : m_QuestTemplatesMap)
+    {
+        Quest* qinfo = itr.second.get();
+        auto xpRow = questXp.find(qinfo->QuestLevel);
+        if (!qinfo->RewXP || xpRow == questXp.end())
+            continue;
+
+        // The nearest client value, scaled to the exact one.
+        uint8 best = 0;
+        for (uint8 i = 1; i < xpRow->second.size(); ++i)
+            if (std::abs(int64(xpRow->second[i]) - qinfo->RewXP) < std::abs(int64(xpRow->second[best]) - qinfo->RewXP))
+                best = i;
+        if (!xpRow->second[best])
+            continue;
+        qinfo->RewXPDifficulty = best;
+        qinfo->RewXPMultiplier = float(qinfo->RewXP) / xpRow->second[best];
+    }
+
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %lu quests definitions", (unsigned long)m_QuestTemplatesMap.size());
 }
