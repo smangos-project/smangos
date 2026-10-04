@@ -12,6 +12,7 @@
 #include "custom/LaunchProtocol.hpp"
 
 #include "hook_lib/Log.hpp"
+#include "hook_lib/ProcessImage.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -20,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -423,6 +425,40 @@ static Response HandleQuit()
     return JsonResponse(200, Json{{"ok", true}});
 }
 
+// Debug read of client memory. `addr` is a Ghidra address (image base 0x140000000); `follow` is a comma list applied in order:
+// `*` dereferences the pointer at the current address, a hex number is added to it.
+static Response HandleMem(Json const& params)
+{
+    auto const base = reinterpret_cast<std::uintptr_t>(GetProcessImage().BaseAddress);
+    std::uintptr_t address = base + (std::strtoull(GetString(params, "addr").c_str(), nullptr, 16) - 0x140000000ull);
+    int const length = std::clamp(GetInt(params, "len", 64), 1, 4096);
+
+    std::stringstream offsets(GetString(params, "follow"));
+    std::string item;
+    while (std::getline(offsets, item, ',')) {
+        if (item != "*") {
+            address += std::strtoull(item.c_str(), nullptr, 16);
+            continue;
+        }
+        std::uintptr_t pointer = 0;
+        if (!ReadProcessMemory(GetCurrentProcess(), reinterpret_cast<void const*>(address), &pointer, sizeof(pointer), nullptr))
+            return ErrorResponse(400, "unreadable pointer");
+        address = pointer;
+    }
+
+    std::string bytes(length, '\0');
+    SIZE_T read = 0;
+    ReadProcessMemory(GetCurrentProcess(), reinterpret_cast<void const*>(address), bytes.data(), length, &read);
+    char const* digits = "0123456789abcdef";
+    std::string hex;
+    for (SIZE_T i = 0; i < read; ++i) {
+        auto const byte = static_cast<unsigned char>(bytes[i]);
+        hex += digits[byte >> 4];
+        hex += digits[byte & 15];
+    }
+    return JsonResponse(200, Json{{"address", address}, {"base", base}, {"hex", hex}});
+}
+
 static Response Route(Request const& request)
 {
     Json query = Json::object();
@@ -435,6 +471,8 @@ static Response Route(Request const& request)
         return HandleStatus();
     if (get && request.path == "/screenshot")
         return HandleScreenshot(query);
+    if (get && request.path == "/mem")
+        return HandleMem(query);
     if (post) {
         for (char const* action : {"key", "type", "click", "move", "drag", "scroll", "batch"})
             if (request.path == std::string("/") + action)
