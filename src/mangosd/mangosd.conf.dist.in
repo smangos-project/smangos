@@ -705,11 +705,6 @@ PerformanceLog.SlowPacketBroadcast = 0
 #        Default: 0 (Disabled)
 #                 1 (Enabled)
 #
-#    SkipCinematics
-#        Disable in-game intro cinematic on first login of character (allows to prevent buggy intro when using custom start location)
-#        Default: 0 - show intro for each new character
-#                 1 - intro cinematics are disabled
-#
 #    ShowHealthValues
 #        Show real unit health values instead of percentages (client still requires an addon to display it on unit frame)
 #        Default: 0 (hide values)
@@ -952,7 +947,6 @@ CharactersPerAccount = 50
 CharactersPerRealm = 10
 LimitPlayTime = 0
 RestrictUnverifiedAccounts = 0
-SkipCinematics = 0
 ShowHealthValues = 0
 MaxPlayerLevel = 60
 StartPlayerLevel = 1
