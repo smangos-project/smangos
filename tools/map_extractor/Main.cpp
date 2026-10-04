@@ -2,6 +2,7 @@
 
 #include "Client/Options.h"
 #include "Map/MapStage.h"
+#include "Vmap/VmapStage.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <algorithm>
@@ -9,6 +10,8 @@
 #include <cstdio>
 #include <set>
 #include <thread>
+
+char const* g_mainLogFileName = "map_extractor.log";
 
 void ParallelFor(size_t count, unsigned threads, std::function<void(size_t)> const& fn)
 {
@@ -114,11 +117,13 @@ int main(int argc, char** argv)
     Options const& o = ctx.options;
     std::printf("%zu known maps\n", ctx.maps.size());
     int exitCode = 0;
+    std::vector<KnownMap const*> selected;
     for (KnownMap const& map : ctx.maps)
     {
         if (!o.maps.empty() && std::find(o.maps.begin(), o.maps.end(), map.record.id) == o.maps.end())
             continue;
 
+        selected.push_back(&map);
         TileRect region = ctx.Region();
         size_t tileCount = 0;
         for (int r = region.rowMin; r <= region.rowMax; ++r)
@@ -139,6 +144,15 @@ int main(int argc, char** argv)
             if (s.failed)
                 exitCode = 1;
         }
+    }
+
+    if (o.stageVmap)
+    {
+        StageStats s = RunVmapStage(ctx, selected, ctx.Region());
+        std::printf("vmap stage: %u %s, %u up to date, %u failed, %u models unreadable\n", s.done, o.dryRun ? "to do" : "done",
+            s.upToDate, s.failed, s.missingInput);
+        if (s.failed)
+            exitCode = 1;
     }
     return exitCode;
 }

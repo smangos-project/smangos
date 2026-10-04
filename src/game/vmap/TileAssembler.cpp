@@ -66,7 +66,7 @@ namespace VMAP
         // delete iCoordModelMapping;
     }
 
-    bool TileAssembler::convertWorld2()
+    bool TileAssembler::convertWorld2(bool convertModels)
     {
         bool success = readMapSpawns();
         if (!success)
@@ -189,19 +189,22 @@ namespace VMAP
             // break; // test, extract only first map; TODO: remvoe this line
         }
 
-        // add an object models, listed in temp_gameobject_models file
-        exportGameobjectModels();
-
-        // export objects
-        std::cout << "\nConverting Model Files" << std::endl;
-        for (const auto& spawnedModelFile : spawnedModelFiles)
+        if (convertModels)
         {
-            std::cout << "Converting " << spawnedModelFile << std::endl;
-            if (!convertRawFile(spawnedModelFile))
+            // add an object models, listed in temp_gameobject_models file
+            exportGameobjectModels();
+
+            // export objects
+            std::cout << "\nConverting Model Files" << std::endl;
+            for (const auto& spawnedModelFile : spawnedModelFiles)
             {
-                std::cout << "error converting " << spawnedModelFile << std::endl;
-                success = false;
-                break;
+                std::cout << "Converting " << spawnedModelFile << std::endl;
+                if (!convertRawFile(spawnedModelFile))
+                {
+                    std::cout << "error converting " << spawnedModelFile << std::endl;
+                    success = false;
+                    break;
+                }
             }
         }
 
@@ -213,7 +216,7 @@ namespace VMAP
 
     bool TileAssembler::readMapSpawns()
     {
-        std::string fname = iSrcDir + "/dir_bin";
+        std::string fname = iSpawnFile.empty() ? iSrcDir + "/dir_bin" : iSpawnFile;
         FILE* dirf = fopen(fname.c_str(), "rb");
         if (!dirf)
         {

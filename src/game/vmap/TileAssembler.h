@@ -95,12 +95,15 @@ namespace VMAP
             std::string iSrcDir;
             MapData mapData;
             std::set<std::string> spawnedModelFiles;
+            std::string iSpawnFile;
 
         public:
             TileAssembler(std::string const& pSrcDirName, std::string const& pDestDirName);
             virtual ~TileAssembler();
 
-            bool convertWorld2();
+            // Reads spawns from this file instead of <src>/dir_bin.
+            void setSpawnFile(std::string const& path) { iSpawnFile = path; }
+            bool convertWorld2(bool convertModels = true);
             bool readMapSpawns();
             bool calculateTransformedBound(ModelSpawn& spawn);
 
