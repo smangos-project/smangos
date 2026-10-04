@@ -140,10 +140,14 @@ namespace
             return 1;
         }
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        bool const baseOnly = HasFlag(args, "--base-only");
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / (baseOnly ? "base.doltlite" : "world.doltlite");
         std::filesystem::path const cacheDirectory = SourceRoot() / ".world" / "cache";
-        std::filesystem::path const migrationsDirectory = SourceRoot() / "sql" / "migrations";
-        bool const importDbc = !HasFlag(args, "--no-dbc-import");
+        std::filesystem::path const emptyMigrations = SourceRoot() / ".world" / "no-migrations";
+        if (baseOnly)
+            std::filesystem::create_directories(emptyMigrations);
+        std::filesystem::path const migrationsDirectory = baseOnly ? emptyMigrations : SourceRoot() / "sql" / "migrations";
+        bool const importDbc = !baseOnly && !HasFlag(args, "--no-dbc-import");
 
         std::string inputError;
         std::filesystem::path const clientDir = StockDbfilesclientDir(inputError);
@@ -161,7 +165,7 @@ namespace
         }
 
         WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir, importDbc,
-            VanillaDbcDir());
+            baseOnly ? std::filesystem::path() : VanillaDbcDir());
         if (!result.error.empty())
         {
             std::printf("create world: %s\n", result.error.c_str());
@@ -214,7 +218,7 @@ namespace
         std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
-            std::printf("import: %s does not exist (run create first)\n", worldPath.string().c_str());
+            std::printf("import: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
             return 1;
         }
 
@@ -268,7 +272,7 @@ namespace
         std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
-            std::printf("export: %s does not exist (run create first)\n", worldPath.string().c_str());
+            std::printf("export: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
             return 1;
         }
 
@@ -329,7 +333,7 @@ namespace
 
         if (!std::filesystem::exists(worldPath))
         {
-            std::printf("update world: %s does not exist (run create first)\n", worldPath.string().c_str());
+            std::printf("update world: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
             return 1;
         }
 
@@ -362,7 +366,7 @@ namespace
         std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
-            std::printf("compare-world: %s does not exist (run create first)\n", worldPath.string().c_str());
+            std::printf("compare-world: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
             return 1;
         }
 
@@ -423,13 +427,13 @@ namespace
     {
         (void)args;
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / "base.doltlite";
         std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
         std::filesystem::path const vanillaDbcDir = SourceRoot() / ".client" / "vanilla" / "dbc";
 
         if (!std::filesystem::exists(worldPath))
         {
-            std::printf("reference: %s does not exist (run create first)\n", worldPath.string().c_str());
+            std::printf("reference: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
             return 1;
         }
 

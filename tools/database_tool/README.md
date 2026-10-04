@@ -32,7 +32,7 @@ directory options:
 ## Commands
 
 ```
-database_tool create   [--databases world] [--no-dbc-import]
+database_tool create   [--databases world] [--no-dbc-import] [--base-only]
 database_tool update   [--databases world]
 database_tool import   --format db2|dbc [--tables A,B] [--dir D]
 database_tool export   --format db2|dbc [--tables A,B] [--dir D] [--client]
@@ -99,7 +99,7 @@ column if a table has none). Floats are compared as float32. Exit `0` only if id
 ### reference
 
 Builds `.world/reference.doltlite` from three pinned,
-never-edited inputs: `.world/world.doltlite` (must exist; every non-`dbc_`/bookkeeping table
+never-edited inputs: `.world/base.doltlite` (the pristine pinned dump, made by `create --base-only`, which applies no migrations and writes no dbc; every non-`dbc_`/bookkeeping table
 renamed `srv_<table>`, collapsed to the vanilla build/patch), `.client/vanilla/dbc/*.dbc`
 (`vdbc_<table>`, read with the 1.12 WDBC layout) and `dbfilesclient/*.db2` (`cdbc_<table>`, the
 existing WDC5 import, untouched). Refuses if `reference.doltlite` already exists, like `create`. A
