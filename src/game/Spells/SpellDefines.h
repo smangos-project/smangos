@@ -993,6 +993,8 @@ enum SpellTag
     SPELL_TAG_OLD_JUDGEMENT_OF_COMMAND,
     SPELL_TAG_JUDGEMENT_OF_COMMAND,
     SPELL_TAG_KEEPS_STEALTH,                    // Casting doesn't remove stealth
+    SPELL_TAG_PASSIVE_AURA_SLOT,                // Passive aura takes an aura slot without a client visual
+    SPELL_TAG_PASSIVE_NO_AURA_SLOT,             // Passive aura with a client visual takes no aura slot
     SPELL_TAG_PREDATORY_STRIKES,
     SPELL_TAG_PYROBLAST,                        // Pyroblast ranks that stack with Fireball
     SPELL_TAG_SAP,

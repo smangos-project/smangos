@@ -6921,7 +6921,7 @@ bool SpellAuraHolder::IsNeedVisibleSlot(Unit const* caster) const
     }
 
     // necessary for some spells, e.g. Immolate visual passive 28330
-    if (m_spellProto->ClientVisualId)
+    if (m_spellProto->ClientVisualId ? !m_spellProto->HasTag(SPELL_TAG_PASSIVE_NO_AURA_SLOT) : m_spellProto->HasTag(SPELL_TAG_PASSIVE_AURA_SLOT))
         return true;
 
     // passive auras (except totem auras) do not get placed in the slots
