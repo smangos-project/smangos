@@ -392,7 +392,8 @@ void ElevatorTransport::Update(uint32 /*update_diff*/, uint32 /*time_diff*/)
     if (!m_animationInfo)
         return;
 
-    m_pathProgress = GetTimeSinceCreation() % m_animationInfo->TotalTime;
+    // Clients animate elevators from their own copy of the server clock, so the loop is anchored to it.
+    m_pathProgress = sWorld.GetCurrentMSTime() % m_animationInfo->TotalTime;
     TransportAnimationEntry const* nodeNext = m_animationInfo->GetNextAnimNode(m_pathProgress);
     TransportAnimationEntry const* nodePrev = m_animationInfo->GetPrevAnimNode(m_pathProgress);
     if (nodeNext && nodePrev)

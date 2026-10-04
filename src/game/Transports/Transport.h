@@ -85,6 +85,7 @@ public:
         float rotation0 = 0.0f, float rotation1 = 0.0f, float rotation2 = 0.0f, float rotation3 = 0.0f, uint32 animprogress = GO_ANIMPROGRESS_DEFAULT, GOState go_state = GO_STATE_READY) override;
     void Update(uint32 update_diff, uint32 /*time_diff*/) override;
 
+    uint32 GetPeriod() const { return m_animationInfo ? m_animationInfo->TotalTime : 0; }
 private:
     TransportAnimation const* m_animationInfo;
     uint32 m_currentSeg;

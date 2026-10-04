@@ -15,6 +15,7 @@
 #include "Objects/GameObject.h"
 #include "Objects/Corpse.h"
 #include "Objects/DynamicObject.h"
+#include "Transports/Transport.h"
 #include "Objects/UnitDefines.h"
 #include "Server/Packets/Classic/GuidMapping.h"
 #include "Server/Packets/Classic/InventorySlots.h"
@@ -38,6 +39,9 @@ constexpr uint32 MODERN_UNIT_FLAG2_REGENERATE_POWER = 0x00000800;
 // slots (account-wide quest data, taxi nodes, ...) have no 1.12 source and stay at their empty default.
 constexpr uint32 PLAYER_DATA_FLAG_EXPLORED_ZONES_INDEX = 1;
 constexpr uint32 PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX = 9;
+
+// GameObject State of an elevator moving through its animation without stopping.
+constexpr int8 GO_STATE_TRANSPORT_ACTIVE = 24;
 
 // UNIT_FIELD_POWER/UNIT_FIELD_MAXPOWER are indexed by a per-class wire slot in the modern client
 // (ChrClassesXPowerTypes.db2), not by this engine's own vanilla Powers ordinal -- e.g. a Rogue's
@@ -551,8 +555,15 @@ void FillGameObjectData(GameObject& gameObject)
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Flags, gameObject.GetUInt32Value(GAMEOBJECT_FLAGS));
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::ParentRotation, gameObject.GetLocalRotation());
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::FactionTemplate, int32(gameObject.GetUInt32Value(GAMEOBJECT_FACTION)));
-    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Level, int32(gameObject.GetUInt32Value(GAMEOBJECT_LEVEL)));
-    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::State, int8(gameObject.GetGoState()));
+    // Ships carry their path period in Level; elevators only animate in the transport-active state.
+    int32 level = int32(gameObject.GetUInt32Value(GAMEOBJECT_LEVEL));
+    int8 state = int8(gameObject.GetGoState());
+    if (gameObject.IsMoTransport())
+        level = int32(static_cast<ShipTransport&>(gameObject).GetPeriod());
+    else if (gameObject.IsTransport())
+        state = GO_STATE_TRANSPORT_ACTIVE;
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::Level, level);
+    FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::State, state);
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::TypeID, int8(gameObject.GetGoType()));
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::PercentHealth, uint8(gameObject.GetGoAnimProgress()));
     FillField(gameObject, &GameObject::m_gameObjectData, &UFGameObjectData::ArtKit, gameObject.GetGoArtKit());

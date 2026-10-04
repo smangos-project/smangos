@@ -10,6 +10,7 @@
 #include "Objects/Item.h"
 #include "Objects/Bag.h"
 #include "Objects/GameObject.h"
+#include "Transports/Transport.h"
 #include "Objects/Corpse.h"
 #include "Objects/DynamicObject.h"
 #include "Objects/UpdateData.h"
@@ -71,8 +72,15 @@ CreateObjectBits ComputeCreateObjectBits(Object const& object, Player const* tar
         // Items carry no position (not a WorldObject); everything else that isn't a unit is a
         // fixed-position object whose transform rides the movement frame's stationary section.
         flags.Stationary = true;
-        if (object.GetTypeId() == TYPEID_GAMEOBJECT)
+        if (GameObject const* gameObject = object.ToGameObject())
+        {
             flags.Rotation = true;
+            if (gameObject->IsTransport())
+            {
+                flags.ServerTime = true;
+                flags.GameObject = true;
+            }
+        }
     }
 
     if (target && static_cast<Object const*>(target) == &object)
@@ -274,7 +282,7 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
             Movement::PacketBuilder::WriteCreateSpline(*unit.movespline, data);
     }
 
-    data << uint32(0);                                           // PauseTimes.size(): no transport support yet
+    data << uint32(0);                                           // PauseTimes.size(): elevators run their full animation loop
 
     if (flags.Stationary)
     {
@@ -295,8 +303,40 @@ void BuildMovementUpdate(Object const& object, ByteBuffer& data, CreateObjectBit
         }
     }
 
+    if (flags.ServerTime)
+        data << uint32(World::GetCurrentMSTime());
+
     if (flags.Rotation)
         data << uint64(static_cast<GameObject const&>(object).GetRotation());
+
+    if (flags.GameObject)
+    {
+        GenericTransport const* transport = static_cast<GameObject const&>(object).ToTransport();
+        ShipTransport const* ship = static_cast<GameObject const&>(object).IsMoTransport() ? static_cast<ShipTransport const*>(transport) : nullptr;
+        ElevatorTransport const* elevator = ship ? nullptr : static_cast<ElevatorTransport const*>(transport);
+        uint32 const elevatorPeriod = elevator ? elevator->GetPeriod() : 0;
+
+        data << uint32(0);                                       // WorldEffectID
+        data.WriteBit(false);
+        data.WriteBit(ship != nullptr);
+        data.WriteBit(elevatorPeriod != 0);                      // HasPathProgress
+        data.FlushBits();
+
+        if (ship)
+        {
+            // The client places the ship at (its server time + TimeOffset) % period along the path.
+            int64 const period = ship->GetPeriod();
+            data << uint32(((int64(ship->GetPathProgress()) - int64(World::GetCurrentMSTime())) % period + period) % period);
+            data << uint32(0);                                   // NextStopTimestamp
+            data.WriteBit(false);                                // HasNextStopTimestamp
+            data.WriteBit(false);                                // IsStopped
+            data.WriteBit(false);
+            data.FlushBits();
+        }
+
+        if (elevatorPeriod)
+            data << float(float(elevator->GetPathProgress()) / float(elevatorPeriod));
+    }
 
     if (flags.ActivePlayer)
     {
@@ -468,18 +508,12 @@ std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<Upda
     return sizePos;
 }
 
-// Ships and zeppelins (MO_TRANSPORT) display a WMO (GameObjectDisplayInfo.FileDataID) and need the
-// transport section of the create block, which the movement frame does not write yet ("no
-// transport support yet"). Without it the client loads the WMO as an M2 and crashes on entering the
-// world. Elevators and the like (TRANSPORT, guid prefix Transport) need the ServerTime and
-// GameObject sections of the create block, which are not written either; the client reads the
-// create out of step and drops the connection (CMSG_LOG_DISCONNECT reason 7). Both kinds stay
-// unsent, and so does every update about them, until those sections exist.
+// The client still crashes (null read) on entering the world once a ship or zeppelin create is
+// sent, so they stay unsent, and so does every update about them, until that is found.
 bool IsUnsentTransport(Object const& object)
 {
     GameObject const* gameObject = object.ToGameObject();
-    GameObjectInfo const* info = gameObject ? gameObject->GetGOInfo() : nullptr;
-    return info && (info->type == GAMEOBJECT_TYPE_MO_TRANSPORT || info->type == GAMEOBJECT_TYPE_TRANSPORT);
+    return gameObject && gameObject->IsMoTransport();
 }
 
 // Under LogNetworkPackets, one Network.log line per object block written into an update, so a
@@ -502,7 +536,6 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
 {
     if (!target)
         return;
-
     if (IsUnsentTransport(object))
         return;
 
