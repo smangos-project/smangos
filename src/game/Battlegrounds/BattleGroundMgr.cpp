@@ -1446,8 +1446,8 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
 {
     uint32 count = 0;
 
-    //                                                                0     1                       2                       3            4            5                     6                      7                  8                   9                          10                      11
-    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT `id`, `min_players_per_team`, `max_players_per_team`, `min_level`, `max_level`, `alliance_win_spell`, `alliance_lose_spell`, `horde_win_spell`, `horde_lose_spell`, `alliance_start_location`, `horde_start_location`, `player_loot_id` FROM `battleground_template`"));
+    //                                                                0       1               2               3             4             5                       6                        7                    8                     9                            10                        11
+    std::unique_ptr<QueryResult> result(WorldDatabase.PQuery("SELECT b.`id`, d.`MinPlayers`, d.`MaxPlayers`, d.`MinLevel`, d.`MaxLevel`, b.`alliance_win_spell`, b.`alliance_lose_spell`, b.`horde_win_spell`, b.`horde_lose_spell`, b.`alliance_start_location`, b.`horde_start_location`, b.`player_loot_id` FROM `battleground_template` b JOIN `dbc_battlemasterlist` d ON d.`ID` = b.`id`"));
 
     if (!result)
     {
