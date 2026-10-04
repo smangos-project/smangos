@@ -223,6 +223,10 @@ namespace
                 if (inRecordFields[i].fieldIndex == static_cast<uint32_t>(lookup.idFieldIndex))
                     indexField = static_cast<int16_t>(i);
 
+        // The client's files carry a parent lookup for every relation, inline or not; its
+        // per-parent row index is built from it.
+        bool const hasParentLookup = lookup.relationFieldIndex >= 0 && !rows.empty();
+
         size_t packedStart = recordSize;
         for (InRecordField const& f : inRecordFields)
             if (IsImmediateField(table.fields[f.fieldIndex], f.width))
@@ -248,14 +252,14 @@ namespace
         PutI16(file, indexField);
         PutU32(file, fieldCount);            // totalFieldCount
         PutU32(file, static_cast<uint32_t>(packedStart)); // packedDataOffset
-        PutU32(file, lookup.relationNonInline ? 1u : 0u); // parentLookupCount
+        PutU32(file, hasParentLookup ? 1u : 0u); // parentLookupCount
         PutU32(file, fieldCount * 24);        // columnMetaSize
         PutU32(file, 0);                      // commonDataSize
         PutU32(file, 0);                      // palletDataSize
         PutU32(file, 1);                      // sectionCount
 
         uint32_t idTableSize = lookup.idNonInline ? static_cast<uint32_t>(4 * rows.size()) : 0;
-        uint32_t parentLookupDataSize = lookup.relationNonInline
+        uint32_t parentLookupDataSize = hasParentLookup
             ? static_cast<uint32_t>(12 + 8 * rows.size())
             : 0;
 
@@ -316,7 +320,7 @@ namespace
             for (uint32_t index : order)
                 PutU32(file, RowId(rows[index], lookup));
 
-        if (lookup.relationNonInline)
+        if (hasParentLookup)
         {
             std::vector<uint32_t> parents;
             for (uint32_t index : order)
