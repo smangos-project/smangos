@@ -66,10 +66,10 @@ TEST_CASE("Every guid type in use round-trips", "[classicguid]")
     }
 }
 
-TEST_CASE("A mo-transport guid comes back as a plain transport", "[classicguid]")
+TEST_CASE("A mo-transport guid round-trips so the server can find the ship", "[classicguid]")
 {
     ObjectGuid const back = Roundtrip(ObjectGuid(HIGHGUID_MO_TRANSPORT, 3u));
-    CHECK(back.GetHigh() == HIGHGUID_TRANSPORT);
+    CHECK(back.GetHigh() == HIGHGUID_MO_TRANSPORT);
     CHECK(back.GetCounter() == 3);
 }
 

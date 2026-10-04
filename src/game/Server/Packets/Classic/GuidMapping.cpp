@@ -102,8 +102,12 @@ nonstd::optional<ObjectGuid> ClassicGuidMapping::FromClassic(ClassicGuid const& 
 
     if (type == CLASSIC_GUID_TRANSPORT)
     {
-        return ObjectGuid(high, uint32(guid.High & ENTRY_MASK),
-            uint32((guid.High >> TRANSPORT_COUNTER_SHIFT) & TRANSPORT_COUNTER_MASK));
+        uint32 const entry = uint32(guid.High & ENTRY_MASK);
+        uint32 const counter = uint32((guid.High >> TRANSPORT_COUNTER_SHIFT) & TRANSPORT_COUNTER_MASK);
+        // Map object transports (ships, zeppelins) carry no entry
+        if (!entry)
+            return ObjectGuid(HIGHGUID_MO_TRANSPORT, counter);
+        return ObjectGuid(high, entry, counter);
     }
 
     uint64 const counter = guid.Low & COUNTER_MASK;
