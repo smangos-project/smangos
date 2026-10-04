@@ -10519,10 +10519,9 @@ void Unit::SendSpellGo(Unit* target, uint32 spellId) const
 
 void Unit::SendPlaySpellVisualKit(uint32 id) const
 {
-    PlaySpellVisual packet;
-    packet.Source = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
-    packet.Target = packet.Source; // detonates at the caster: no real travel/target for a kit visual
-    packet.SpellVisualId = id;
+    PlaySpellVisualKit packet;
+    packet.Unit = ClassicGuidMapping::ToClassic(GetObjectGuid(), realmID);
+    packet.KitRecId = int32(id);
     WorldPacket data = MakeClassicPacket(packet);
     SendMessageToSet(&data, true);
 }

@@ -229,12 +229,8 @@ struct CancelGrowthAura
     bool Read(ByteBuffer&) { return true; }
 };
 
-// A standalone visual effect: eat/drink kits and a channeled spell's beam refresh (this engine's
-// only two callers -- see Unit::SendPlaySpellVisualKit). Field order per TrinityCore's
-// PlaySpellVisual::Write() (SpellPackets.cpp), the full projectile-visual shape retail casts use;
-// this engine has no travel/target data for either caller, so every field past Source/Target/
-// SpellVisualId is a "detonate instantly at the caster" default (Target = Source, zero position,
-// zero travel speed), unverified against a real client.
+// A SpellVisual played between two points. Fields past Source/Target/SpellVisualId default to
+// "detonate instantly at the caster".
 struct PlaySpellVisual
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAY_SPELL_VISUAL;
@@ -272,6 +268,38 @@ struct PlaySpellVisual
         data >> TargetPosX >> TargetPosY >> TargetPosZ;
         data >> SpellVisualId >> TravelSpeed >> HitReason >> MissReason >> ReflectStatus >> LaunchDelay >> MinDuration;
         SpeedAsTime = data.ReadBit();
+        data.ResetBitPos();
+        return true;
+    }
+};
+
+// Plays a SpellVisualKit (not a SpellVisual id) on a unit, e.g. the eat/drink kits.
+struct PlaySpellVisualKit
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAY_SPELL_VISUAL_KIT;
+
+    ClassicGuid Unit;
+    int32 KitRecId = 0;
+    int32 KitType = 0;
+    uint32 Duration = 0;
+    bool MountedVisual = false;
+
+    void Write(ByteBuffer& data) const
+    {
+        Unit.Write(data);
+        data << KitRecId << KitType << Duration;
+        data.WriteBit(MountedVisual);
+        data.FlushBits();
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (!Unit.Read(data))
+            return false;
+        if (data.size() - data.rpos() < 3 * sizeof(uint32) + 1)
+            return false;
+        data >> KitRecId >> KitType >> Duration;
+        MountedVisual = data.ReadBit();
         data.ResetBitPos();
         return true;
     }

@@ -113,7 +113,7 @@ TEST_CASE("PlaySpellVisual round-trips", "[packets]")
     PlaySpellVisual packet;
     packet.Source = { 5, 0x0800000000000000ULL };
     packet.Target = packet.Source;
-    packet.SpellVisualId = 168; // SPELL_VISUAL_KIT_FOOD
+    packet.SpellVisualId = 168;
     RoundTrip(packet, [](PlaySpellVisual const& a, PlaySpellVisual const& b)
     {
         CHECK(a.Source == b.Source);
@@ -130,6 +130,24 @@ TEST_CASE("PlaySpellVisual round-trips", "[packets]")
         CHECK(a.LaunchDelay == b.LaunchDelay);
         CHECK(a.MinDuration == b.MinDuration);
         CHECK(a.SpeedAsTime == b.SpeedAsTime);
+    });
+    RejectsEveryTruncation(packet);
+}
+
+TEST_CASE("PlaySpellVisualKit round-trips", "[packets]")
+{
+    PlaySpellVisualKit packet;
+    packet.Unit = { 5, 0x0800000000000000ULL };
+    packet.KitRecId = 406; // SPELL_VISUAL_KIT_FOOD
+    packet.Duration = 1000;
+    packet.MountedVisual = true;
+    RoundTrip(packet, [](PlaySpellVisualKit const& a, PlaySpellVisualKit const& b)
+    {
+        CHECK(a.Unit == b.Unit);
+        CHECK(a.KitRecId == b.KitRecId);
+        CHECK(a.KitType == b.KitType);
+        CHECK(a.Duration == b.Duration);
+        CHECK(a.MountedVisual == b.MountedVisual);
     });
     RejectsEveryTruncation(packet);
 }
