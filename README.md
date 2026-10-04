@@ -11,6 +11,17 @@ Put a stock 1.15 Classic Era client in `.client/_classic_era_/` (the folder with
 - `Content/dbfilesclient/`: the client's `.db2` files.
 - `vanilla/dbc/`: the vanilla 1.12 `.dbc` files.
 
+If your client still has its CASC storage (`.build.info` and `Data/` next to `_classic_era_/` in `.client/`), `casc_extractor` fills `.client/Content/` from it:
+
+    cmake -S . -B build -DBUILD_CASC_EXTRACTOR=ON
+    cmake --build build --target casc_extractor
+    build/tools/casc_extractor/casc_extractor --listfile LISTFILE [--cdn HOSTS] [--zero-encrypted]
+
+- `LISTFILE` is a file with one `<fileDataId>;<path>` per line naming the files to extract. It is not part of the repo; you need to provide your own.
+- Files that are not in your local storage are listed in `.client/Content/_dump_failed.log`. Pass `--cdn` with one or more comma-separated CDN hosts (`https://host1,https://host2`) to download them instead.
+- `--zero-encrypted` zero-fills the few encrypted db2 sections whose key is unknown instead of failing.
+- Files that are already extracted are skipped, so you can rerun it. See `client/README.md` for details.
+
 `database_tool` checks both against the hashes in `tools/database_tool/Inputs/` and refuses to run on anything else.
 
 ### 2. Map data
