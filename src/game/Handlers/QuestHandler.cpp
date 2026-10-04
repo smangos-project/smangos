@@ -34,6 +34,11 @@
 #include "Group.h"
 #include "Packets/Classic/GuidMapping.h"
 
+namespace
+{
+constexpr int32 SOUND_QUEST_ACCEPTED = 618;
+}
+
 uint8 WorldSession::GetQuestGiverStatus(Object* questgiver)
 {
     uint8 dialogStatus = DIALOG_STATUS_NONE;
@@ -213,6 +218,10 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(QuestgiverAcceptQuest const
         if (_player->CanAddQuest(qInfo, true))
         {
             _player->AddQuest(qInfo, pObject);              // pObject (if it item) can be destroyed at call
+
+            PlaySound questSound;
+            questSound.SoundKitId = SOUND_QUEST_ACCEPTED;
+            SendClassic(questSound);
 
             if (qInfo->HasQuestFlag(QUEST_FLAGS_PARTY_ACCEPT))
             {

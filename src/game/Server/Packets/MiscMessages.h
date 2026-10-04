@@ -869,4 +869,28 @@ struct PlayedTimeResult
     }
 };
 
+struct PlaySound
+{
+    static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_PLAY_SOUND;
+
+    int32 SoundKitId = 0;
+    ClassicGuid SourceGuid;
+    int32 BroadcastTextId = 0;
+
+    void Write(ByteBuffer& data) const
+    {
+        data << SoundKitId;
+        SourceGuid.Write(data);
+        data << BroadcastTextId;
+    }
+
+    bool Read(ByteBuffer& data)
+    {
+        if (data.size() - data.rpos() < sizeof(int32))
+            return false;
+        data >> SoundKitId;
+        return SourceGuid.Read(data) && data.size() - data.rpos() >= sizeof(int32) && (data >> BroadcastTextId, true);
+    }
+};
+
 #endif
