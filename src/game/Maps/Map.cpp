@@ -386,9 +386,6 @@ bool Map::EnsureGridLoaded(Cell const& cell)
         grid->setGridObjectDataLoaded(true);
         ObjectGridLoader loader(*grid, this, cell);
         loader.LoadN();
-
-        // Add resurrectable corpses to world object list in grid
-        sObjectAccessor.AddCorpsesToGrid(GridPair(cell.GridX(), cell.GridY()), (*grid)(cell.CellX(), cell.CellY()), this);
         //Balance();
         return true;
     }

@@ -222,28 +222,6 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
     sObjectMgr.AddCorpseCellData(corpse->GetMapId(), cell_id, corpse->GetOwnerGuid().GetCounter(), corpse->GetInstanceId());
 }
 
-void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair, GridType& grid, Map const* map)
-{
-    Guard guard(i_corpseGuard);
-    for (const auto& iter : i_player2corpse)
-    {
-        if (!iter.first.IsPlayer())
-            continue;
-
-        if (iter.second->GetGrid() == gridpair)
-        {
-            // verify, if the corpse in our instance (add only corpses which are)
-            if (map->Instanceable())
-            {
-                if (iter.second->GetInstanceId() == map->GetInstanceId())
-                    grid.AddWorldObject(iter.second);
-            }
-            else
-                grid.AddWorldObject(iter.second);
-        }
-    }
-}
-
 void ObjectAccessor::ConvertCorpseForPlayer(ObjectGuid player_guid, Player const* looter)
 {
     ASSERT(player_guid.IsPlayer());

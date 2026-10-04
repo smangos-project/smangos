@@ -137,7 +137,6 @@ class ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, MaNGOS::ClassLev
         static Corpse* GetCorpseInMap(ObjectGuid guid, uint32 mapid);
         void RemoveCorpse(Corpse* corpse);
         void AddCorpse(Corpse* corpse);
-        void AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map const* map);
         void ConvertCorpseForPlayer(ObjectGuid player_guid, Player const* looter = nullptr);
         void RemoveOldCorpses();
 
