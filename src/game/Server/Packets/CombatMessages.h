@@ -136,21 +136,21 @@ struct StandStateUpdate
 {
     static constexpr ClassicOpcodes Opcode = CLASSIC_SMSG_STAND_STATE_UPDATE;
 
-    uint32 AnimKitId = 0;
     uint8 StandState = 0;
+    uint32 AnimKitId = 0;
 
     void Write(ByteBuffer& data) const
     {
-        data << AnimKitId;
         data << StandState;
+        data << AnimKitId;
     }
 
     bool Read(ByteBuffer& data)
     {
         if (data.size() - data.rpos() < sizeof(uint32) + sizeof(uint8))
             return false;
-        data >> AnimKitId;
         data >> StandState;
+        data >> AnimKitId;
         return true;
     }
 };
