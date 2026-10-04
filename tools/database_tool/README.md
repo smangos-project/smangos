@@ -128,7 +128,7 @@ Checks `.world/world.doltlite` against `.world/reference.doltlite` and the spec 
   `Verify/references.tsv` resolves, up to the dangling counts listed there.
 - V5: no server column equals a `dbc_` column in every row of a `pairs.tsv` id join.
 
-V0 and V5 describe the finished database: without `--final` they only print a count. `--update`
+V0 describes the finished database: without `--final` it only prints a count. `--update`
 rewrites the measured lists (`client-delta.tsv`, `references.tsv`) instead of checking them.
 
 A mapping file is one SELECT with a `-- key: a, b` line (absent: rows match on every column).

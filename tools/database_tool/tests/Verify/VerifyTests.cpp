@@ -306,7 +306,7 @@ TEST_CASE("V4 counts dangling client foreign keys and declared server references
                      "thing\tnode\tdbc_taxinodes.ID\tkind = 0\t1\ttest\n");
 }
 
-TEST_CASE("V0 and V5 compare the world with the finished database, gated by --final", "[Verify]")
+TEST_CASE("V0 compares the world with the finished database, gated by --final; V5 always gates", "[Verify]")
 {
     VerifyTempDir dir("v0v5");
     std::filesystem::path worldPath = dir.path / "world.doltlite";
@@ -340,10 +340,9 @@ TEST_CASE("V0 and V5 compare the world with the finished database, gated by --fi
     VerifyOptions options{ false, false, { "V0", "V5" }, {} };
     VerifyResult progress = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);
     REQUIRE(progress.error.empty());
-    CHECK(progress.problems.empty());
-    CHECK(progress.notes == std::vector<std::string>{
-                                "V0: 4 differences from the finished schema (--final lists them)",
-                                "V5: 1 server columns repeat a dbc_ column (--final lists them)" });
+    REQUIRE(progress.problems.size() == 1);
+    CHECK(progress.problems[0].message == "copy repeats dbc_thing.Copy in all 2 joined rows");
+    CHECK(progress.notes == std::vector<std::string>{ "V0: 4 differences from the finished schema (--final lists them)" });
 
     options.final = true;
     VerifyResult final = RunVerify(worldPath, referencePath, dir.path, verifyDir, options);

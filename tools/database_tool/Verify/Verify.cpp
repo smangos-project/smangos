@@ -801,7 +801,6 @@ static void VerifyRedundancy(DoltLiteDatabase& db, std::filesystem::path const& 
             worldTables.insert(stmt.ColumnText(0));
     }
 
-    uint32_t count = 0;
     for (SpecPairRow const& pair : ReadPairsTsv(specDir / "pairs.tsv"))
     {
         std::string dbcTable = "dbc_" + pair.cdbcTable;
@@ -848,14 +847,10 @@ static void VerifyRedundancy(DoltLiteDatabase& db, std::filesystem::path const& 
 
         for (size_t column = 0; column < server.columns.size(); ++column)
             for (std::string const& target : repeats[column])
-                ReportFinal(result, options, "V5", pair.table,
-                            server.columns[column].name + " repeats " + dbcTable + "." + target + " in all " +
-                                std::to_string(join.sourceRows.size()) + " joined rows",
-                            count);
+                result.problems.push_back({ "V5", pair.table,
+                                            server.columns[column].name + " repeats " + dbcTable + "." + target +
+                                                " in all " + std::to_string(join.sourceRows.size()) + " joined rows" });
     }
-
-    if (count && !options.final)
-        result.notes.push_back("V5: " + std::to_string(count) + " server columns repeat a dbc_ column (--final lists them)");
 }
 
 VerifyResult RunVerify(std::filesystem::path const& worldPath, std::filesystem::path const& referencePath,
