@@ -205,7 +205,8 @@ void WorldSession::SendTrainerList(ObjectGuid guid)
 
             uint32 triggerSpell = sSpellMgr.GetSpellEntry(tSpell->spell)->EffectTriggerSpell[0];
 
-            if (!_player->IsSpellFitByClassAndRace(triggerSpell))
+            uint32 reqLevel = 0;
+            if (!_player->IsSpellFitByClassAndRace(triggerSpell, &reqLevel))
                 continue;
 
             TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
