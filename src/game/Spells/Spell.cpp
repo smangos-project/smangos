@@ -7640,7 +7640,7 @@ bool Spell::CheckTarget(Unit* target, SpellEffectIndex eff)
 bool Spell::IsNeedSendToClient() const
 {
     return !IsChannelingVisual() && m_caster->IsInWorld() && (m_spellInfo->ClientVisualId != 0 || m_channeled ||
-           m_spellInfo->speed > 0.0f || (!m_triggeredByAuraSpell && !m_IsTriggeredSpell));
+           m_spellInfo->AuraPointsOnClient || m_spellInfo->speed > 0.0f || (!m_triggeredByAuraSpell && !m_IsTriggeredSpell));
 }
 
 bool Spell::IsTriggeredSpellWithRedundentData() const
