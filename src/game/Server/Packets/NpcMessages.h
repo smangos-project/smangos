@@ -302,22 +302,23 @@ struct TrainerListSpell
     uint32 ReqSkillLine = 0;
     uint32 ReqSkillRank = 0;
     uint32 ReqAbility[3] = {};
+    uint32 Unknown = 0;
     uint8 Usable = 0;   // 0 known, 1 available, 2 unavailable
     uint8 ReqLevel = 0;
 
     void Write(ByteBuffer& data) const
     {
         data << SpellId << MoneyCost << ReqSkillLine << ReqSkillRank;
-        data << ReqAbility[0] << ReqAbility[1] << ReqAbility[2];
+        data << ReqAbility[0] << ReqAbility[1] << ReqAbility[2] << Unknown;
         data << Usable << ReqLevel;
     }
 
     bool Read(ByteBuffer& data)
     {
-        if (data.size() - data.rpos() < 7 * sizeof(uint32) + 2)
+        if (data.size() - data.rpos() < 8 * sizeof(uint32) + 2)
             return false;
         data >> SpellId >> MoneyCost >> ReqSkillLine >> ReqSkillRank;
-        data >> ReqAbility[0] >> ReqAbility[1] >> ReqAbility[2];
+        data >> ReqAbility[0] >> ReqAbility[1] >> ReqAbility[2] >> Unknown;
         data >> Usable >> ReqLevel;
         return true;
     }
@@ -341,7 +342,7 @@ struct TrainerSpellList
 
     ClassicGuid TrainerGuid;
     int32 TrainerType = 0;
-    uint32 TrainerId = 0;   // HARDCODE: no id distinct from the trainer's own guid/entry
+    uint32 TrainerId = 1;   // HARDCODE: no id distinct from the trainer's own guid/entry
     std::vector<TrainerListSpell> Spells;
     std::string Greeting;
 
@@ -364,7 +365,7 @@ struct TrainerSpellList
             return false;
         int32 count;
         data >> TrainerType >> TrainerId >> count;
-        if (count < 0 || uint32(count) > (data.size() - data.rpos()) / 30)
+        if (count < 0 || uint32(count) > (data.size() - data.rpos()) / 34)
             return false;
         Spells.assign(uint32(count), TrainerListSpell());
         for (TrainerListSpell& spell : Spells)
