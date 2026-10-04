@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class DoltLiteDatabase;
+
 // One populated reference table.
 struct ReferenceTableInfo
 {
@@ -21,6 +23,9 @@ struct ReferenceBuildResult
     std::string error;                    // a fatal, non-per-table failure
     bool alreadyExisted = false;
 };
+
+// Reads every vanilla .dbc in `vanillaDbcDir` into "vdbc_*" tables of `db`, appending to `result`.
+void LoadVanillaDbcTables(DoltLiteDatabase& db, std::filesystem::path const& vanillaDbcDir, ReferenceBuildResult& result);
 
 // Builds `referencePath` (typically .world/reference.doltlite) from three pinned inputs
 // (phase0-plan.md step 2.2): `worldPath`, an existing .world/world.doltlite, becomes every

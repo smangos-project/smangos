@@ -8,6 +8,7 @@
 #include "World/VersionCollapse.h"
 
 #include <algorithm>
+#include <cctype>
 #include <sstream>
 #include <string_view>
 
@@ -214,12 +215,28 @@ namespace
             BindDbcRow(insert, table, row, locStringSlots);
     }
 
+    std::filesystem::path FindDbcFile(std::filesystem::path const& dir, std::string_view stem)
+    {
+        auto lower = [](std::string text)
+        {
+            for (char& c : text)
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            return text;
+        };
+
+        std::string const wanted = lower(std::string(stem) + ".dbc");
+        for (std::filesystem::directory_entry const& entry : std::filesystem::directory_iterator(dir))
+            if (lower(entry.path().filename().string()) == wanted)
+                return entry.path();
+        return {};
+    }
+
     void BuildOneVdbcTable(DoltLiteDatabase& reference, DbcTableMeta const& table,
                             std::filesystem::path const& vanillaDbcDir, WdbcLayout const& layout,
                             ReferenceBuildResult& result)
     {
-        std::filesystem::path filePath = vanillaDbcDir / (std::string(table.fileStem) + ".dbc");
-        if (!std::filesystem::exists(filePath))
+        std::filesystem::path filePath = FindDbcFile(vanillaDbcDir, table.fileStem);
+        if (filePath.empty())
         {
             result.tableErrors.push_back(std::string(table.name) + ": file not found");
             return;
@@ -374,6 +391,11 @@ namespace
         }
         reference.Commit();
     }
+}
+
+void LoadVanillaDbcTables(DoltLiteDatabase& db, std::filesystem::path const& vanillaDbcDir, ReferenceBuildResult& result)
+{
+    BuildVdbcTables(db, vanillaDbcDir, result);
 }
 
 ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referencePath,

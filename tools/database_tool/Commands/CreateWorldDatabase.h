@@ -34,6 +34,7 @@ struct WorldCreateResult
     WorldUpdateResult update;
     DbcSchemaResult dbcSchema;
     DbcImportResult dbcImport; // untouched (default-constructed) when importDbc is false
+    std::vector<std::string> stagingErrors; // vdbc tables that could not be staged
     std::string error; // empty on success; sourced from whichever step failed
 };
 
@@ -43,7 +44,10 @@ struct WorldCreateResult
 // (UpdateWorldDatabase) -- vmangos' own recipe, in SQLite (world-sql.md) --
 // creates the dbc_* tables (CreateDbcTables), then, unless importDbc is
 // false, imports every resolved dbfilesclientDir/*.db2 (ImportDb2Files).
+// A non-empty vanillaDbcDir is loaded as vdbc_* staging tables for the migrations
+// and dropped once they have run.
 WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
-    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc = true);
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc = true,
+    std::filesystem::path const& vanillaDbcDir = {});
 
 #endif
