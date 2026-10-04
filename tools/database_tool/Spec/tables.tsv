@@ -176,7 +176,6 @@ transports	server	entry	srv:transports
 variables	server	index	srv:variables			
 warden_scans	gone					no mangosd reader: vmangos has no Warden implementation
 world_safe_locs_facing	gone			world_safe_locs		merged into world_safe_locs with the vanilla WorldSafeLocs rows (plan.md 10.3)
-creature_quest_item	server	CreatureEntry, Idx				quest items a creature drops, for the creature query reply (plan.md 10.4)
 dbc_areatable	dbc	ID	srv:area_template			
 dbc_areatrigger	dbc	ID	srv:areatrigger_template			
 dbc_auctionhouse	dbc	ID	vdbc:auctionhouse			
@@ -253,7 +252,6 @@ dbc_taxipath	dbc	ID	vdbc:taxipath
 dbc_taxipathnode	dbc	ID	vdbc:taxipathnode			
 dbc_transportanimation	dbc	ID	vdbc:transportanimation			
 dbc_wmoareatable	dbc	ID	vdbc:wmoareatable			
-gameobject_quest_item	server	GameObjectEntry, Idx				quest items a game object holds, for the game object query reply (plan.md 10.4)
 race_taxi_mask	server	race	vdbc:chrraces			vanilla ChrRaces.StartingTaxiNodes, which the client's ChrRaces lacks (plan.md 10.3)
 skill_tiers	server	id	vdbc:skilltiers			vanilla SkillTiers (no 1.15 twin); SkillRaceClassInfo.SkillTierID points at it (plan.md 10.3)
 spell_extra	server	spell_id	srv:spell_effect_mod, srv:spell_mod, srv:spell_template			per-spell server data no client table holds, rows only for spells that have some: the slim spell_template (plan.md 11.5)
