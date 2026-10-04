@@ -1,6 +1,8 @@
 // Extracts the files named in a listfile from a client's CASC storage into
 // the loose-file Content/ tree.
 
+#include "Cdn.h"
+
 #include <CascLib.h>
 
 extern "C"
@@ -17,6 +19,7 @@ extern "C"
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,9 +34,11 @@ namespace
         fs::path listfile;
         fs::path output;
         fs::path tactKeys;
+        std::string cdn;
         std::string product;
         DWORD localeMask = CASC_LOCALE_ENUS;
         bool force = false;
+        bool zeroEncrypted = false;
     };
 
     struct ListEntry
@@ -168,10 +173,12 @@ namespace
     void Usage()
     {
         std::puts("usage: casc_extractor --listfile FILE [--client DIR] [--output DIR] [--locale enUS]\n"
-                  "                      [--product CODE] [--tact-keys FILE] [--force]\n"
+                  "                      [--product CODE] [--tact-keys FILE] [--cdn URLS] [--zero-encrypted] [--force]\n"
                   "\n"
                   "Extracts every file in the listfile (<fileDataId>;<path> or <path> per line) from the\n"
-                  "CASC storage in --client (default .client) to --output (default <client>/Content).");
+                  "CASC storage in --client (default .client) to --output (default <client>/Content).\n"
+                  "--zero-encrypted zero-fills encrypted sections whose key is unknown instead of failing.\n"
+                  "--cdn URL[,URL...] (e.g. https://host) fetches files missing from the local storage from those CDNs.");
     }
 
     bool ParseLocale(std::string_view name, DWORD& mask)
@@ -200,6 +207,8 @@ namespace
             char const* v = nullptr;
             if (arg == "--force")
                 options.force = true;
+            else if (arg == "--zero-encrypted")
+                options.zeroEncrypted = true;
             else if (arg == "--listfile" && (v = value()))
                 options.listfile = v;
             else if (arg == "--client" && (v = value()))
@@ -208,6 +217,8 @@ namespace
                 options.output = v;
             else if (arg == "--tact-keys" && (v = value()))
                 options.tactKeys = v;
+            else if (arg == "--cdn" && (v = value()))
+                options.cdn = v;
             else if (arg == "--product" && (v = value()))
                 options.product = v;
             else if (arg == "--locale" && (v = value()))
@@ -267,6 +278,33 @@ int main(int argc, char** argv)
             std::fprintf(stderr, "warning: could not import tact keys from %s\n", options.tactKeys.string().c_str());
     }
 
+    std::unique_ptr<CdnFetcher> cdn;
+    if (!options.cdn.empty())
+    {
+        std::vector<std::string> hosts;
+        for (std::size_t start = 0; start < options.cdn.size();)
+        {
+            std::size_t end = std::min(options.cdn.find(',', start), options.cdn.size());
+            if (end > start)
+            {
+                std::string host = options.cdn.substr(start, end - start);
+                while (host.back() == '/')
+                    host.pop_back();
+                hosts.push_back(host.find("://") == std::string::npos ? "http://" + host : host);
+            }
+            start = end + 1;
+        }
+        try
+        {
+            cdn = std::make_unique<CdnFetcher>(options.client, std::move(hosts));
+        }
+        catch (std::exception const& e)
+        {
+            std::fprintf(stderr, "cdn unavailable: %s\n", e.what());
+            return 1;
+        }
+    }
+
     fs::create_directories(options.output);
     fs::path indexPath = options.output / "fdid.index";
     fs::path hashesPath = options.output / "root.hashes";
@@ -282,19 +320,15 @@ int main(int argc, char** argv)
         if (n && n % 5000 == 0)
             std::printf("  %zu/%zu\n", n, entries.size());
 
-        auto fail = [&](DWORD error)
-        {
-            failures.push_back((entry.fileDataId ? std::to_string(entry.fileDataId) : std::string()) + ';' + entry.path
-                               + ';' + ErrorName(error));
-        };
-
         HANDLE file = nullptr;
+        DWORD openFlags = options.zeroEncrypted ? CASC_OVERCOME_ENCRYPTED : 0;
         bool opened = entry.fileDataId
-            ? CascOpenFile(storage, CASC_FILE_DATA_ID(entry.fileDataId), options.localeMask, CASC_OPEN_BY_FILEID, &file)
-            : CascOpenFile(storage, entry.path.c_str(), options.localeMask, CASC_OPEN_BY_NAME, &file);
+            ? CascOpenFile(storage, CASC_FILE_DATA_ID(entry.fileDataId), options.localeMask, CASC_OPEN_BY_FILEID | openFlags, &file)
+            : CascOpenFile(storage, entry.path.c_str(), options.localeMask, CASC_OPEN_BY_NAME | openFlags, &file);
         if (!opened)
         {
-            fail(GetCascError());
+            failures.push_back((entry.fileDataId ? std::to_string(entry.fileDataId) : std::string()) + ';' + entry.path
+                               + ';' + ErrorName(GetCascError()));
             continue;
         }
 
@@ -302,47 +336,54 @@ int main(int argc, char** argv)
         ULONGLONG size = 0;
         CascGetFileSize64(file, &size);
 
-        CASC_FILE_FULL_INFO info = {};
+        CdnFetcher::Key ckey = {}, ekey = {};
         size_t needed = 0;
+        bool haveCKey = CascGetFileInfo(file, CascFileContentKey, ckey.data(), ckey.size(), &needed);
+        bool haveEKey = CascGetFileInfo(file, CascFileEncodedKey, ekey.data(), ekey.size(), &needed);
+        CASC_FILE_FULL_INFO info = {};
         bool haveInfo = CascGetFileInfo(file, CascFileFullInfo, &info, sizeof(info), &needed);
         DWORD fileDataId = entry.fileDataId ? entry.fileDataId : haveInfo ? info.FileDataId : CASC_INVALID_ID;
 
         std::error_code ec;
-        if (!options.force && fs::is_regular_file(dest, ec) && fs::file_size(dest, ec) == size)
-            ++upToDate;
-        else if (!ReadWhole(file, data))
+        bool current = !options.force && fs::is_regular_file(dest, ec) && fs::file_size(dest, ec) == size;
+        std::string failure;
+        if (!current && !ReadWhole(file, data))
         {
-            fail(GetCascError());
-            CascCloseFile(file);
-            continue;
+            DWORD error = GetCascError();
+            failure = ErrorName(error);
+            if (cdn && error == ERROR_FILE_OFFLINE && haveCKey && haveEKey)
+                failure = cdn->Fetch(ekey, ckey, data, failure) ? std::string() : failure;
         }
-        else
+        if (failure.empty() && !current)
         {
             fs::create_directories(dest.parent_path(), ec);
             fs::path part = dest;
             part += ".part";
-            {
-                std::ofstream out(part, std::ios::binary | std::ios::trunc);
-                out.write(data.data(), static_cast<std::streamsize>(data.size()));
-                if (!out)
-                {
-                    failures.push_back(std::to_string(fileDataId) + ';' + entry.path + ";write failed");
-                    CascCloseFile(file);
-                    continue;
-                }
-            }
-            fs::rename(part, dest);
-            ++extracted;
+            std::ofstream out(part, std::ios::binary | std::ios::trunc);
+            out.write(data.data(), static_cast<std::streamsize>(data.size()));
+            out.close();
+            if (!out)
+                failure = "write failed";
+            else
+                fs::rename(part, dest);
         }
+        if (!failure.empty())
+        {
+            failures.push_back((fileDataId != CASC_INVALID_ID ? std::to_string(fileDataId) : std::string()) + ';'
+                               + entry.path + ';' + failure);
+            CascCloseFile(file);
+            continue;
+        }
+        ++(current ? upToDate : extracted);
 
         if (fileDataId != CASC_INVALID_ID && fileDataId != 0)
         {
             index[fileDataId] = entry.path;
-            if (haveInfo)
+            if (haveCKey)
             {
                 char line[128];
                 std::snprintf(line, sizeof(line), "%016llx;%s;%llu", static_cast<unsigned long long>(NameHash(entry.path)),
-                              Hex(info.CKey, sizeof(info.CKey)).c_str(), static_cast<unsigned long long>(size));
+                              Hex(ckey.data(), ckey.size()).c_str(), static_cast<unsigned long long>(size));
                 hashes[fileDataId] = line;
             }
         }
