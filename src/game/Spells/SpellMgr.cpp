@@ -3572,7 +3572,7 @@ void SpellMgr::LoadSpells()
             }
             spell->Id = id;
             spell->procChance = 101;
-            spell->SpellName[0] = f[1].GetCppString();
+            spell->SpellName = f[1].GetCppString();
         } while (result->NextRow());
     }
 
@@ -3602,7 +3602,7 @@ void SpellMgr::LoadSpells()
     });
     forEachRow("dbc_spell", "SELECT `ID`, `NameSubtext_lang` FROM `dbc_spell`", [](SpellEntry& s, Field* f)
     {
-        s.Rank[0] = f[1].GetCppString();
+        s.Rank = f[1].GetCppString();
     });
     forEachRow("dbc_spellcategories", "SELECT `SpellID`, `Category`, `DispelType`, `Mechanic`, `DefenseType`, `PreventionType`, `StartRecoveryCategory` FROM `dbc_spellcategories` WHERE `DifficultyID` = 0",
         [](SpellEntry& s, Field* f)
@@ -3777,24 +3777,6 @@ void SpellMgr::LoadSpells()
                 s.EffectBonusCoefficient[i] = -1.0f;
         }
     });
-
-    result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6`, `nameSubtext_loc1`, `nameSubtext_loc2`, `nameSubtext_loc3`, `nameSubtext_loc4`, `nameSubtext_loc5`, `nameSubtext_loc6` FROM `locales_spell`");
-    if (result)
-    {
-        do
-        {
-            Field* f = result->Fetch();
-            uint32 const spellId = f[0].GetUInt32();
-            if (spellId >= mSpellEntryMap.size() || !mSpellEntryMap[spellId])
-                continue;
-
-            for (uint32 i = 0; i < 6; ++i)
-            {
-                mSpellEntryMap[spellId]->SpellName[1 + i] = f[1 + i].GetCppString();
-                mSpellEntryMap[spellId]->Rank[1 + i] = f[7 + i].GetCppString();
-            }
-        } while (result->NextRow());
-    }
 
     std::map<std::string, uint32> clamped;
     for (std::unique_ptr<SpellEntry> const& spell : mSpellEntryMap)

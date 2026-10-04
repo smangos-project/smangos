@@ -159,7 +159,7 @@ class Item : public Object
         bool HasGeneratedLootSecondary() const {  return generatedLoot; } // todo, remove and add condition to HasGeneratedLoot
 
         bool IsCharter() const { return GetEntry() == 5863u; }
-        static void GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* proto, ItemRandomPropertiesEntry const* randomProp, int dbLocale, LocaleConstant dbcLocale);
+        static void GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* proto, ItemRandomPropertiesEntry const* randomProp, int dbLocale);
 
         Bag* ToBag();
         Bag const* ToBag() const;

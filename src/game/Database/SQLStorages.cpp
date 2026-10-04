@@ -33,7 +33,7 @@ char const MapEntrydstfmt[] = "iiiiiiiffsi";
 char const ConditionsSrcFmt[] = "iiiiiii";
 char const ConditionsDstFmt[] = "iiiiiii";
 char const AreaEntryfmt[] = "iiiiiisii";
-char const MailTemplatefmt[] = "issssssss";
+char const MailTemplatefmt[] = "is";
 char const CreatureSpellDatafmt[] = "iiiii";
 
 SQLStorage sCreatureDataAddonStorage(CreatureDataAddonInfofmt, "guid", "creature_addon");
@@ -43,5 +43,5 @@ SQLStorage sPageTextStore(PageTextfmt, "entry", "page_text");
 SQLStorage sMapStorage(MapEntrysrcfmt, MapEntrydstfmt, "entry", "(SELECT m.`entry`, CASE WHEN d.`ParentMapID` = -1 THEN 0 ELSE d.`ParentMapID` END AS `parent`, d.`InstanceType` AS `map_type`, m.`linked_zone`, d.`MaxPlayers` AS `player_limit`, m.`reset_delay`, d.`CorpseMapID` AS `ghost_entrance_map`, m.`ghost_entrance_x`, m.`ghost_entrance_y`, d.`MapName_lang` AS `map_name`, m.`script_name` FROM `map_template` m JOIN `dbc_map` d ON d.`ID` = m.`entry`)");
 SQLStorage sConditionStorage(ConditionsSrcFmt, ConditionsDstFmt, "condition_entry", "conditions");
 SQLStorage sAreaStorage(AreaEntryfmt, "entry", "(SELECT `ID` AS `entry`, `ContinentID` AS `map_id`, `ParentAreaID` AS `zone_id`, `AreaBit` AS `explore_flag`, `Flags1` & ~1073741824 AS `flags`, `ExplorationLevel` AS `area_level`, `AreaName_lang` AS `name`, `FactionGroupMask` AS `team`, `LiquidTypeID4` AS `liquid_type` FROM `dbc_areatable`)");
-SQLStorage sMailTemplateStorage(MailTemplatefmt, "entry", "(SELECT d.`ID` AS `entry`, d.`Body_lang` AS `content_default`, IFNULL(l.`content_loc1`, '') AS `content_loc1`, IFNULL(l.`content_loc2`, '') AS `content_loc2`, IFNULL(l.`content_loc3`, '') AS `content_loc3`, IFNULL(l.`content_loc4`, '') AS `content_loc4`, IFNULL(l.`content_loc5`, '') AS `content_loc5`, IFNULL(l.`content_loc6`, '') AS `content_loc6`, IFNULL(l.`content_loc7`, '') AS `content_loc7` FROM `dbc_mailtemplate` d LEFT JOIN `mail_text_template` l ON l.`entry` = d.`ID`)");
+SQLStorage sMailTemplateStorage(MailTemplatefmt, "entry", "(SELECT `ID` AS `entry`, `Body_lang` AS `content_default` FROM `dbc_mailtemplate`)");
 SQLStorage sCreatureSpellDataStorage(CreatureSpellDatafmt, "entry", "(SELECT `ID` AS `entry`, `Spells1`, `Spells2`, `Spells3`, `Spells4` FROM `dbc_creaturespelldata`)");

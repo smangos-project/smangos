@@ -132,15 +132,6 @@ static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStora
         errlist.push_back(table);
 }
 
-// The world database holds the enUS text only; other locales stay empty.
-template<class T>
-static void FillLocalizedString(DBCStorage<T>& storage, char const** out, std::string const& enUS)
-{
-    out[0] = storage.InternString(enUS);
-    for (uint32 i = 1; i < 8; ++i)
-        out[i] = "";
-}
-
 void LoadDBCStores()
 {
     uint32 const DBCFilesCount = 41;
@@ -168,7 +159,7 @@ void LoadDBCStores()
     {
         e.ChannelID = f[0].GetUInt32();
         e.flags = f[1].GetUInt32();
-        FillLocalizedString(sChatChannelsStore, const_cast<char const**>(e.pattern), f[2].GetCppString());
+        e.pattern = sChatChannelsStore.InternString(f[2].GetCppString());
         return e.ChannelID;
     });
 
@@ -176,7 +167,7 @@ void LoadDBCStores()
     {
         e.ClassID = f[0].GetUInt32();
         e.powerType = f[1].GetUInt32();
-        FillLocalizedString(sChrClassesStore, const_cast<char const**>(e.name), f[2].GetCppString());
+        e.name = sChrClassesStore.InternString(f[2].GetCppString());
         e.spellfamily = f[3].GetUInt32();
         return e.ClassID;
     });
@@ -191,7 +182,7 @@ void LoadDBCStores()
         e.creatureType = f[6].GetUInt32();
         e.resSicknessSpellId = f[7].GetUInt32();
         e.CinematicSequence = f[8].GetUInt32();
-        FillLocalizedString(sChrRacesStore, const_cast<char const**>(e.name), f[9].GetCppString());
+        e.name = sChrRacesStore.InternString(f[9].GetCppString());
         return e.RaceID;
     });
     LoadDBCFromWorld(bar, badDbcFiles, sCinematicSequencesStore, "dbc_cinematicsequences", "`ID`", [](Field* f, CinematicSequencesEntry& e)
@@ -232,7 +223,7 @@ void LoadDBCStores()
         e.skillLine[0] = f[5].GetUInt32();
         e.skillLine[1] = f[6].GetUInt32();
         e.petFoodMask = f[7].GetUInt32();
-        FillLocalizedString(sCreatureFamilyStore, const_cast<char const**>(e.Name), f[8].GetCppString());
+        e.Name = sCreatureFamilyStore.InternString(f[8].GetCppString());
         return e.ID;
     });
     LoadDBCFromWorld(bar, badDbcFiles, sCreatureTypeStore, "dbc_creaturetype", "`ID`", [](Field* f, CreatureTypeEntry& e)
@@ -284,14 +275,14 @@ void LoadDBCStores()
         e.ID = f[0].GetUInt32();
         std::string const name = f[1].GetCppString();
         e.internalName = const_cast<char*>(sItemRandomPropertiesStore.InternString(name));
-        FillLocalizedString(sItemRandomPropertiesStore, const_cast<char const**>(e.nameSuffix), name);
+        e.nameSuffix = sItemRandomPropertiesStore.InternString(name);
         for (uint32 i = 0; i < 3; ++i)
             e.enchant_id[i] = f[2 + i].GetUInt32();
         return e.ID;
     });
     LoadDBCFromWorld(bar, badDbcFiles, sItemSetStore, "dbc_itemset", "`ID`, `Name_lang`, `RequiredSkill`, `RequiredSkillRank`", [&](Field* f, ItemSetEntry& e)
     {
-        FillLocalizedString(sItemSetStore, const_cast<char const**>(e.name), f[1].GetCppString());
+        e.name = sItemSetStore.InternString(f[1].GetCppString());
         e.required_skill_id = f[2].GetUInt32();
         e.required_skill_value = f[3].GetUInt32();
         return f[0].GetUInt32();
@@ -396,7 +387,7 @@ void LoadDBCStores()
     {
         e.id = f[0].GetUInt32();
         e.categoryId = f[1].GetInt32();
-        FillLocalizedString(sSkillLineStore, const_cast<char const**>(e.name), f[2].GetCppString());
+        e.name = sSkillLineStore.InternString(f[2].GetCppString());
         return e.id;
     });
     {
@@ -480,7 +471,7 @@ void LoadDBCStores()
             e.amount[i] = f[4 + i].GetUInt32();
             e.spellid[i] = f[7 + i].GetUInt32();
         }
-        FillLocalizedString(sSpellItemEnchantmentStore, const_cast<char const**>(e.description), f[10].GetCppString());
+        e.description = sSpellItemEnchantmentStore.InternString(f[10].GetCppString());
         e.aura_id = static_cast<uint32>(f[11].GetInt32());
         e.slot = f[12].GetUInt32();
         return e.ID;
@@ -511,7 +502,7 @@ void LoadDBCStores()
     LoadDBCFromWorld(bar, badDbcFiles, sSpellShapeshiftFormStore, "dbc_spellshapeshiftform", "`ID`, `Name_lang`, `Flags`, `CreatureType`", [&](Field* f, SpellShapeshiftFormEntry& e)
     {
         e.ID = f[0].GetUInt32();
-        FillLocalizedString(sSpellShapeshiftFormStore, const_cast<char const**>(e.Name), f[1].GetCppString());
+        e.Name = sSpellShapeshiftFormStore.InternString(f[1].GetCppString());
         e.flags1 = f[2].GetUInt32();
         e.creatureType = f[3].GetInt32();
         return e.ID;
@@ -689,14 +680,14 @@ void LoadDBCStores()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Initialized %d data stores", DBCFilesCount);
 }
 
-char const* GetPetName(uint32 petfamily, uint32 dbclang)
+char const* GetPetName(uint32 petfamily)
 {
     if (!petfamily)
         return nullptr;
     CreatureFamilyEntry const* pet_family = sCreatureFamilyStore.LookupEntry(petfamily);
     if (!pet_family)
         return nullptr;
-    return pet_family->Name[dbclang] ? pet_family->Name[dbclang] : nullptr;
+    return pet_family->Name;
 }
 
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId)
@@ -748,24 +739,20 @@ ChatChannelsEntry const* GetChannelEntryFor(std::string const& name)
     for (uint32 i = 0; i < sChatChannelsStore.GetNumRows(); ++i)
     {
         ChatChannelsEntry const* ch = sChatChannelsStore.LookupEntry(i);
-        if (ch)
-        {
-            // need to remove %s from entryName if it exists before we match
-            for (const auto loc : ch->pattern)
-            {
-                std::string entryName(loc);
-                std::size_t removeString = entryName.find("%s");
-                // Not loaded locale
-                if (entryName.empty())
-                    continue;
+        if (!ch)
+            continue;
 
-                if (removeString != std::string::npos)
-                    entryName.replace(removeString, 2, "");
+        // need to remove %s from entryName if it exists before we match
+        std::string entryName(ch->pattern);
+        if (entryName.empty())
+            continue;
 
-                if (name.find(entryName) != std::string::npos)
-                    return ch;
-            }
-        }
+        std::size_t removeString = entryName.find("%s");
+        if (removeString != std::string::npos)
+            entryName.replace(removeString, 2, "");
+
+        if (name.find(entryName) != std::string::npos)
+            return ch;
     }
     return nullptr;
 }
@@ -816,16 +803,16 @@ SkillRaceClassInfoEntry const* GetSkillRaceClassInfo(uint32 skill, uint8 race, u
     return nullptr;
 }
 
-char const* GetUnitRaceName(uint8 race, uint8 locale)
+char const* GetUnitRaceName(uint8 race)
 {
     ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race);
-    return raceEntry ? raceEntry->name[locale] : nullptr;
+    return raceEntry ? raceEntry->name : nullptr;
 }
 
-char const* GetUnitClassName(uint8 class_, uint8 locale)
+char const* GetUnitClassName(uint8 class_)
 {
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(class_);
-    return classEntry ? classEntry->name[locale] : nullptr;
+    return classEntry ? classEntry->name : nullptr;
 }
 
 uint8 ValidateName(std::wstring const& name)

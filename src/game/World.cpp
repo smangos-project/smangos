@@ -1318,7 +1318,7 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Initialize data stores...");
 
     LoadDBCStores();
-    sObjectMgr.SetDBCLocaleIndex(GetDefaultDbcLocale());    // Get once for all the locale index of DBC language (console/broadcasts)
+    sObjectMgr.SetDBCLocaleIndex(LOCALE_enUS);              // locale index for console and broadcasts
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading MapTemplate...");
     sObjectMgr.LoadMapTemplate();

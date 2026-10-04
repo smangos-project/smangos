@@ -881,7 +881,7 @@ bool ChatHandler::HandleSetSkillCommand(char* args)
 
     if (!target->GetSkillValue(skill))
     {
-        PSendSysMessage(LANG_SET_SKILL_ERROR, tNameLink.c_str(), skill, sl->name[GetSessionDbcLocale()]);
+        PSendSysMessage(LANG_SET_SKILL_ERROR, tNameLink.c_str(), skill, sl->name);
         SetSentErrorMessage(true);
         return false;
     }
@@ -890,7 +890,7 @@ bool ChatHandler::HandleSetSkillCommand(char* args)
         return false;
 
     target->SetSkill(skill, level, maxskill);
-    PSendSysMessage(LANG_SET_SKILL, skill, sl->name[GetSessionDbcLocale()], tNameLink.c_str(), level, maxskill);
+    PSendSysMessage(LANG_SET_SKILL, skill, sl->name, tNameLink.c_str(), level, maxskill);
 
     return true;
 }
@@ -1955,14 +1955,12 @@ bool ChatHandler::HandleCharacterReputationCommand(char* args)
     if (!ExtractPlayerTarget(&args, &target))
         return false;
 
-    LocaleConstant loc = GetSessionDbcLocale();
-
     FactionStateList const& targetFSL = target->GetReputationMgr().GetStateList();
     for (const auto& itr : targetFSL)
     {
         FactionEntry const* factionEntry = sObjectMgr.GetFactionEntry(itr.second.ID);
 
-        ShowFactionListHelper(factionEntry, loc, &itr.second, target);
+        ShowFactionListHelper(factionEntry, &itr.second, target);
     }
     return true;
 }
@@ -3100,33 +3098,12 @@ SkillLineEntry const* ChatHandler::FindSkillLineEntryFromProfessionName(char* ar
         if (skillInfo->categoryId != SKILL_CATEGORY_PROFESSION && skillInfo->categoryId != SKILL_CATEGORY_SECONDARY)
             continue;
 
-        int loc = GetSessionDbcLocale();
-        nameOut = skillInfo->name[loc];
-        if (nameOut.empty())
+        nameOut = skillInfo->name;
+        if (nameOut.empty() || !Utf8FitTo(nameOut, wnamepart))
             continue;
 
-        if (!Utf8FitTo(nameOut, wnamepart))
-        {
-            loc = 0;
-            for (; loc < MAX_DBC_LOCALE; ++loc)
-            {
-                if (loc == GetSessionDbcLocale())
-                    continue;
-
-                nameOut = skillInfo->name[loc];
-                if (nameOut.empty())
-                    continue;
-
-                if (Utf8FitTo(nameOut, wnamepart))
-                    break;
-            }
-        }
-
-        if (loc < MAX_DBC_LOCALE)
-        {
-            targetSkillInfo = skillInfo;
-            break;
-        }
+        targetSkillInfo = skillInfo;
+        break;
     }
 
     return targetSkillInfo;
@@ -3767,7 +3744,7 @@ bool ChatHandler::HandleListTalentsCommand(char* /*args*/)
         if (!spellEntry)
             continue;
 
-        ShowSpellListHelper(player, spellEntry, GetSessionDbcLocale());
+        ShowSpellListHelper(player, spellEntry);
         ++count;
         cost += cost_itr;
     }
@@ -4408,13 +4385,13 @@ bool ChatHandler::HandleModifyRepCommand(char* args)
 
     if (factionEntry->reputationListID < 0)
     {
-        PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name[GetSessionDbcLocale()].c_str(), factionId);
+        PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name.c_str(), factionId);
         SetSentErrorMessage(true);
         return false;
     }
 
     target->GetReputationMgr().SetReputation(factionEntry, amount);
-    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()].c_str(), factionId,
+    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name.c_str(), factionId,
                     GetNameLink(target).c_str(), target->GetReputationMgr().GetReputation(factionEntry));
     return true;
 }

@@ -7565,7 +7565,7 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
     if (list0.empty() || list1.empty())
     {
         CreatureInfo const* cinfo = GetCreatureTemplate(entry);
-        char const* petname = GetPetName(cinfo->pet_family, sWorld.GetDefaultDbcLocale());
+        char const* petname = GetPetName(cinfo->pet_family);
         if (!petname)
             petname = cinfo->name.c_str();
         return std::string(petname);
@@ -7674,45 +7674,11 @@ void ObjectMgr::LoadFactions()
                 faction.ReputationFlags[i] = fields[14 + i].GetUInt32();
             }
             faction.team = fields[18].GetUInt32();
-            faction.name[0] = fields[19].GetCppString();
+            faction.name = fields[19].GetCppString();
 
             m_FactionsMap[factionId] = faction;
 
         } while (result->NextRow());
-
-        // Load localized texts (currently we only have 1.12 locales).
-        //                                    0        1            2            3            4            5            6            7                   8                   9                   10                  11                  12
-        result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6`, `description_loc1`, `description_loc2`, `description_loc3`, `description_loc4`, `description_loc5`, `description_loc6` FROM `locales_faction`");
-        if (result)
-        {
-            do
-            {
-                auto fields = result->Fetch();
-                uint32 factionId = fields[0].GetUInt32();
-                auto itr = m_FactionsMap.find(factionId);
-                if (itr == m_FactionsMap.end())
-                    continue;
-                FactionEntry& faction = itr->second;
-
-                faction.name[1] = fields[1].GetCppString();
-                faction.name[2] = fields[2].GetCppString();
-                faction.name[3] = fields[3].GetCppString();
-                faction.name[4] = fields[4].GetCppString();
-                faction.name[5] = fields[5].GetCppString();
-                faction.name[6] = fields[6].GetCppString();
-
-                /*
-                unused
-                faction.description[1] = fields[7].GetCppString();
-                faction.description[2] = fields[8].GetCppString();
-                faction.description[3] = fields[9].GetCppString();
-                faction.description[4] = fields[10].GetCppString();
-                faction.description[5] = fields[11].GetCppString();
-                faction.description[6] = fields[12].GetCppString();
-                */
-
-            } while (result->NextRow());
-        }
     }
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u factions.", m_FactionsMap.size());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
@@ -8276,35 +8242,13 @@ void ObjectMgr::LoadTaxiNodes()
         taxiNode->x = fields[2].GetFloat();
         taxiNode->y = fields[3].GetFloat();
         taxiNode->z = fields[4].GetFloat();
-        taxiNode->name[0] = fields[5].GetCppString();
+        taxiNode->name = fields[5].GetCppString();
         taxiNode->MountCreatureID[0] = fields[6].GetUInt32();
         taxiNode->MountCreatureID[1] = fields[7].GetUInt32();
 
         m_TaxiNodes[nodeId] = std::move(taxiNode);
 
     } while (result->NextRow());
-
-    // Load localized texts (currently we only have 1.12 locales).
-    //                                    0        1            2            3            4            5            6
-    result = WorldDatabase.Query("SELECT `entry`, `name_loc1`, `name_loc2`, `name_loc3`, `name_loc4`, `name_loc5`, `name_loc6` FROM `locales_taxi_node`");
-    if (result)
-    {
-        do
-        {
-            fields = result->Fetch();
-            uint32 nodeId = fields[0].GetUInt32();
-            if ((nodeId > maxTaxiNodeEntry) || (!m_TaxiNodes[nodeId]))
-                continue;
-
-            m_TaxiNodes[nodeId]->name[1] = fields[1].GetCppString();
-            m_TaxiNodes[nodeId]->name[2] = fields[2].GetCppString();
-            m_TaxiNodes[nodeId]->name[3] = fields[3].GetCppString();
-            m_TaxiNodes[nodeId]->name[4] = fields[4].GetCppString();
-            m_TaxiNodes[nodeId]->name[5] = fields[5].GetCppString();
-            m_TaxiNodes[nodeId]->name[6] = fields[6].GetCppString();
-
-        } while (result->NextRow());
-    }
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u taxi nodes.", maxTaxiNodeEntry);
@@ -10987,15 +10931,6 @@ void ObjectMgr::LoadMailTemplate()
     sMailTemplateStorage.Load();
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> Loaded %u mail text templates", sMailTemplateStorage.GetRecordCount());
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
-}
-
-char const* ObjectMgr::GetMailTextTemplate(uint32 id, LocaleConstant locale_idx)
-{
-    if (MailTemplateEntry const* pTemplate = sMailTemplateStorage.LookupEntry<MailTemplateEntry>(id))
-        if (locale_idx < (sizeof(pTemplate->subject) / sizeof(char*)))
-            return pTemplate->subject[locale_idx];
-
-    return "Missing mail text template!";
 }
 
 void ObjectMgr::LoadAreaTemplate()

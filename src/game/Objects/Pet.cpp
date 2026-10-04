@@ -2203,7 +2203,7 @@ void Pet::InitializeDefaultName()
             {
                 if (CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(GetCreatureInfo()->pet_family))
                 {
-                    SetName(cFamily->Name[sWorld.GetDefaultDbcLocale()]);
+                    SetName(cFamily->Name);
                     break;
                 }
             }

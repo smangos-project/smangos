@@ -51,7 +51,7 @@ void PInfoHandler::HandlePInfoCommand(WorldSession* session, Player* target, Obj
         data->m_totalPlayedTime = target->GetTotalPlayedTime();
         data->m_accountId = target->GetSession()->GetAccountId();
         data->m_latency = target->GetSession()->GetLatency();
-        data->m_locale = target->GetSession()->GetSessionDbcLocale();
+        data->m_locale = GetDbcLocaleFromDbLocale(DBLocaleConstant(target->GetSession()->GetSessionDbLocaleIndex()));
         data->m_online = true;
 
         HandleDataAfterPlayerLookup(data);
@@ -165,8 +165,8 @@ void PInfoHandler::HandleAccountInfoResult(std::unique_ptr<QueryResult> result, 
 // Not threadsafe, executed in thread unsafe callback
 void PInfoHandler::HandleResponse(WorldSession* session, PInfoData* data)
 {
-    char const* raceName = GetUnitRaceName(data->m_race, session->GetSessionDbcLocale());
-    char const* className = GetUnitClassName(data->m_class, session->GetSessionDbcLocale());
+    char const* raceName = GetUnitRaceName(data->m_race);
+    char const* className = GetUnitClassName(data->m_class);
     if (!raceName)
         raceName = "";
     if (!className)
@@ -327,7 +327,6 @@ void PlayerSearchHandler::ShowPlayerListHelper(std::unique_ptr<QueryResult> resu
 
     if (result)
     {
-        LocaleConstant locale = chatHandler.GetSession() ? chatHandler.GetSession()->GetSessionDbcLocale() : LOCALE_enUS;
         // Circle through them. Display username and GM level
         do
         {
@@ -345,8 +344,8 @@ void PlayerSearchHandler::ShowPlayerListHelper(std::unique_ptr<QueryResult> resu
             ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race);
             ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(class_);
 
-            char const* race_name = raceEntry ? raceEntry->name[locale] : "<?>";
-            char const* class_name = classEntry ? classEntry->name[locale] : "<?>";
+            char const* race_name = raceEntry ? raceEntry->name : "<?>";
+            char const* class_name = classEntry ? classEntry->name : "<?>";
 
             if (!chatHandler.GetSession())
             {

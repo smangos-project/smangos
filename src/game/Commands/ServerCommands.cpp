@@ -600,8 +600,7 @@ bool ChatHandler::HandleGroupAddSpellCommand(char *args)
         SetSentErrorMessage(true);
         return false;
     }
-    LocaleConstant loc = GetSessionDbcLocale();
-    ShowSpellListHelper(nullptr, pSpell, loc);
+    ShowSpellListHelper(nullptr, pSpell);
 
     WorldDatabase.PExecute("INSERT INTO `spell_group` SET id=%u, spell_id=%u", groupId, spellId);
     PSendSysMessage("Spell added to group %u in DB.", groupId);

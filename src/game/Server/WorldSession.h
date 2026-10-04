@@ -334,7 +334,6 @@ class WorldSession
         time_t m_lastPubChannelMsgTime;
 
         // Locales
-        LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
         int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
         char const* GetMangosString(int32 entry) const;
 
@@ -979,7 +978,6 @@ class WorldSession
         std::string m_username;
         AccountTypes m_security;
         uint32 m_accountFlags;
-        LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         ClientOSType m_clientOS;
         ClientPlatformType m_clientPlatform;

@@ -2426,16 +2426,7 @@ bool ChatHandler::isValidChatMessage(std::string const& msg)
                     // verify the link name
                     if (linkedSpell)
                     {
-                        bool foundName = false;
-                        for (uint8 i = 0; i < MAX_DBC_LOCALE; ++i)
-                        {
-                            if (!linkedSpell->SpellName[i].empty() && strcmp(linkedSpell->SpellName[i].c_str(), buffer) == 0)
-                            {
-                                foundName = true;
-                                break;
-                            }
-                        }
-                        if (!foundName)
+                        if (linkedSpell->SpellName != buffer)
                             return false;
                     }
                     else if (linkedItem)
@@ -2475,7 +2466,7 @@ bool ChatHandler::isValidChatMessage(std::string const& msg)
                                     for (int localeIndex = DB_LOCALE_enUS; localeIndex <= DB_LOCALE_ruRU; ++localeIndex)
                                     {
                                         std::string expectedName = linkedItem->Name1;
-                                        Item::GetLocalizedNameWithSuffix(expectedName, linkedItem, iProp, localeIndex, GetDbcLocaleFromDbLocale(DBLocaleConstant(localeIndex)));
+                                        Item::GetLocalizedNameWithSuffix(expectedName, linkedItem, iProp, localeIndex);
                                         if (expectedName == buffer)
                                         {
                                             hasValidRandomProperty = true;
@@ -2508,7 +2499,7 @@ bool ChatHandler::isValidChatMessage(std::string const& msg)
                             for (int localeIndex = DB_LOCALE_enUS; localeIndex <= DB_LOCALE_ruRU; ++localeIndex)
                             {
                                 std::string expectedName = linkedItem->Name1;
-                                Item::GetLocalizedNameWithSuffix(expectedName, linkedItem, nullptr, localeIndex, GetDbcLocaleFromDbLocale(DBLocaleConstant(localeIndex)));
+                                Item::GetLocalizedNameWithSuffix(expectedName, linkedItem, nullptr, localeIndex);
                                 if (expectedName == buffer)
                                 {
                                     validName = true;
@@ -3993,11 +3984,6 @@ bool ChatHandler::needReportToTarget(Player* chr) const
     return pl != chr && pl->IsVisibleGloballyFor(chr);
 }
 
-LocaleConstant ChatHandler::GetSessionDbcLocale() const
-{
-    return m_session->GetSessionDbcLocale();
-}
-
 int ChatHandler::GetSessionDbLocaleIndex() const
 {
     return m_session->GetSessionDbLocaleIndex();
@@ -4042,11 +4028,6 @@ std::string CliHandler::GetNameLink() const
 bool CliHandler::needReportToTarget(Player* /*chr*/) const
 {
     return true;
-}
-
-LocaleConstant CliHandler::GetSessionDbcLocale() const
-{
-    return sWorld.GetDefaultDbcLocale();
 }
 
 int CliHandler::GetSessionDbLocaleIndex() const
@@ -4130,11 +4111,6 @@ template void ChatHandler::ShowNpcOrGoSpawnInformation<GameObject>(uint32 guid);
 template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<Creature>(uint32 guid);
 template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<GameObject>(uint32 guid);
 
-
-LocaleConstant NullChatHandler::GetSessionDbcLocale() const
-{
-    return sWorld.GetDefaultDbcLocale();
-}
 
 int NullChatHandler::GetSessionDbLocaleIndex() const
 {

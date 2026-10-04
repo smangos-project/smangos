@@ -757,13 +757,13 @@ uint16 SpellEntry::GetAuraMaxTicks() const
 
 uint32 SpellEntry::GetRank() const
 {
-    if (Rank[0].length() > 5 &&
-        Rank[0][0] == 'R' &&
-        Rank[0][1] == 'a' &&
-        Rank[0][2] == 'n' &&
-        Rank[0][3] == 'k' &&
-        Rank[0][4] == ' ')
-        return strtoul(Rank[0].c_str() + 5, NULL, 10);
+    if (Rank.length() > 5 &&
+        Rank[0] == 'R' &&
+        Rank[1] == 'a' &&
+        Rank[2] == 'n' &&
+        Rank[3] == 'k' &&
+        Rank[4] == ' ')
+        return strtoul(Rank.c_str() + 5, NULL, 10);
 
     return 0;
 }

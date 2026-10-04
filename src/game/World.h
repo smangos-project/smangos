@@ -699,9 +699,6 @@ class World
         // Get current server's WoW Patch
         char const* GetPatchName() const;
 
-        // The world database holds enUS client text only.
-        LocaleConstant GetDefaultDbcLocale() const { return LOCALE_enUS; }
-
         // Get the path where data (dbc, maps) are stored on disk
         std::string GetDataPath() const { return m_dataPath; }
 
@@ -815,8 +812,6 @@ class World
         void InitResultQueue();
 
         void UpdateRealmCharCount(uint32 accountId);
-
-        LocaleConstant GetAvailableDbcLocale(LocaleConstant /*locale*/) const { return LOCALE_enUS; }
 
         // Nostalrius
         MovementBroadcaster* GetBroadcaster() const { return m_broadcaster.get(); }

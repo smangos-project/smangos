@@ -144,12 +144,6 @@ bool ChatHandler::HandleGPSCommand(char* args)
               (obj->GetTypeId() == TYPEID_PLAYER ? "player" : "creature"), obj->GetName(),
               (obj->GetTypeId() == TYPEID_PLAYER ? "GUID" : "Entry"), (obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry()));
 
-    if (zoneEntry)
-        sObjectMgr.GetAreaLocaleString(zoneEntry->Id, sWorld.GetDefaultDbcLocale(), &zoneName);
-
-    if (areaEntry)
-        sObjectMgr.GetAreaLocaleString(areaEntry->Id, sWorld.GetDefaultDbcLocale(), &areaName);
-
     sLog.Out(LOG_BASIC, LOG_LVL_DEBUG, GetMangosString(LANG_MAP_POSITION),
               obj->GetMapId(), (mapEntry ? mapEntry->name : "<unknown>"),
               zone_id, zoneName.c_str(), area_id, areaName.c_str(),
@@ -282,7 +276,7 @@ bool ChatHandler::HandleUnitInfoCommand(char* args)
     if (auto pFactionTemplate = pTarget->GetFactionTemplateEntry())
     {
         if (auto pFaction = sObjectMgr.GetFactionEntry(pFactionTemplate->faction))
-            PSendSysMessage("Faction template: %u - %s", pTarget->GetFactionTemplateId(), pFaction->name[0].c_str());
+            PSendSysMessage("Faction template: %u - %s", pTarget->GetFactionTemplateId(), pFaction->name.c_str());
     }
     else
         PSendSysMessage("Faction template: %u", pTarget->GetFactionTemplateId());
@@ -302,11 +296,11 @@ bool ChatHandler::HandleUnitInfoCommand(char* args)
     PSendSysMessage("Vis flags: %hhu", pTarget->GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG));
     PSendSysMessage("Dynamic flags: %u", pTarget->GetUInt32Value(UNIT_DYNAMIC_FLAGS));
     if (auto pSpellEntry = sSpellMgr.GetSpellEntry(pTarget->GetUInt32Value(UNIT_CHANNEL_SPELL)))
-        PSendSysMessage("Channel spell: %u - %s", pTarget->GetUInt32Value(UNIT_CHANNEL_SPELL), pSpellEntry->SpellName[0].c_str());
+        PSendSysMessage("Channel spell: %u - %s", pTarget->GetUInt32Value(UNIT_CHANNEL_SPELL), pSpellEntry->SpellName.c_str());
     else
         PSendSysMessage("Channel spell: %u", pTarget->GetUInt32Value(UNIT_CHANNEL_SPELL));
     if (auto pSpellEntry = sSpellMgr.GetSpellEntry(pTarget->GetUInt32Value(UNIT_CREATED_BY_SPELL)))
-        PSendSysMessage("Created by spell: %u - %s", pTarget->GetUInt32Value(UNIT_CREATED_BY_SPELL), pSpellEntry->SpellName[0].c_str());
+        PSendSysMessage("Created by spell: %u - %s", pTarget->GetUInt32Value(UNIT_CREATED_BY_SPELL), pSpellEntry->SpellName.c_str());
     else
         PSendSysMessage("Created by spell: %u", pTarget->GetUInt32Value(UNIT_CREATED_BY_SPELL));
     PSendSysMessage("NPC flags: %u", pTarget->GetUInt32Value(UNIT_NPC_FLAGS));
@@ -572,7 +566,7 @@ bool ChatHandler::HandleUnitFactionInfoCommand(char* args)
     FactionEntry const* pFaction = sObjectMgr.GetFactionEntry(pFactionTemplate->faction);
 
     PSendSysMessage("Faction info for %s:", pTarget->GetObjectGuid().GetString().c_str());
-    PSendSysMessage("Faction Id: %s (%u)", pFaction->name[0].c_str(), pFaction->ID);
+    PSendSysMessage("Faction Id: %s (%u)", pFaction->name.c_str(), pFaction->ID);
     PSendSysMessage("Faction Template Id: %u", pFactionTemplate->ID);
     PSendSysMessage("Faction Template Flags: %s", FlagsToString(pFactionTemplate->factionFlags, FactionTemplateFlagToString).c_str());
     PSendSysMessage("Own Mask: %s", FlagsToString(pFactionTemplate->ourMask, FactionMaskToString).c_str());
@@ -588,7 +582,7 @@ bool ChatHandler::HandleUnitFactionInfoCommand(char* args)
             {
                 if (!enemies.empty())
                     enemies += ", ";
-                enemies += pEnemyFaction->name[0] + " (" + std::to_string(pEnemyFaction->ID) + ")";
+                enemies += pEnemyFaction->name + " (" + std::to_string(pEnemyFaction->ID) + ")";
             }
         }
     }
@@ -606,7 +600,7 @@ bool ChatHandler::HandleUnitFactionInfoCommand(char* args)
             {
                 if (!friends.empty())
                     friends += ", ";
-                friends += pFriendFaction->name[0] + " (" + std::to_string(pFriendFaction->ID) + ")";
+                friends += pFriendFaction->name + " (" + std::to_string(pFriendFaction->ID) + ")";
             }
         }
     }
@@ -633,7 +627,7 @@ bool ChatHandler::HandleUnitShowRaceCommand(char* args)
     ChrRacesEntry const* pRaceEntry = sChrRacesStore.LookupEntry(raceId);
 
     PSendSysMessage("Race for %s:", pTarget->GetObjectGuid().GetString().c_str());
-    PSendSysMessage("%s (%u)", pRaceEntry ? pRaceEntry->name[0] : "Unknown", raceId);
+    PSendSysMessage("%s (%u)", pRaceEntry ? pRaceEntry->name : "Unknown", raceId);
 
     return true;
 }
@@ -653,7 +647,7 @@ bool ChatHandler::HandleUnitShowClassCommand(char* args)
     ChrClassesEntry const* pClassEntry = sChrClassesStore.LookupEntry(classId);
 
     PSendSysMessage("Class for %s:", pTarget->GetObjectGuid().GetString().c_str());
-    PSendSysMessage("%s (%u)", pClassEntry ? pClassEntry->name[0] : "Unknown", classId);
+    PSendSysMessage("%s (%u)", pClassEntry ? pClassEntry->name : "Unknown", classId);
 
     return true;
 }
@@ -711,7 +705,7 @@ bool ChatHandler::HandleUnitShowFormCommand(char* args)
     SpellShapeshiftFormEntry const* pFormEntry = sSpellShapeshiftFormStore.LookupEntry(form);
 
     PSendSysMessage("Form for %s:", pTarget->GetObjectGuid().GetString().c_str());
-    PSendSysMessage("%s (%u)", pFormEntry ? pFormEntry->Name[0] : "Unknown", form);
+    PSendSysMessage("%s (%u)", pFormEntry ? pFormEntry->Name : "Unknown", form);
 
     return true;
 }
@@ -891,7 +885,7 @@ bool ChatHandler::HandleUnitShowCreateSpellCommand(char* args)
     SpellEntry const* pSpellEntry = sSpellMgr.GetSpellEntry(createdBySpell);
 
     PSendSysMessage("Create spell for %s:", pTarget->GetObjectGuid().GetString().c_str());
-    PSendSysMessage("%s (%u)", pSpellEntry ? pSpellEntry->SpellName[0].c_str() : "Unknown", createdBySpell);
+    PSendSysMessage("%s (%u)", pSpellEntry ? pSpellEntry->SpellName.c_str() : "Unknown", createdBySpell);
 
     return true;
 }
@@ -1089,7 +1083,7 @@ bool ChatHandler::HandleListAurasCommand(char* /*args*/)
         bool talent = GetTalentSpellCost(aura.second->GetId()) > 0;
 
         SpellAuraHolder* holder = aura.second;
-        char const* name = holder->GetSpellProto()->SpellName[GetSessionDbcLocale()].c_str();
+        char const* name = holder->GetSpellProto()->SpellName.c_str();
 
         for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
         {

@@ -30,7 +30,7 @@
 #include <list>
 
 
-char const* GetPetName(uint32 petfamily, uint32 dbclang);
+char const* GetPetName(uint32 petfamily);
 uint32 GetTalentSpellCost(uint32 spellId);
 uint32 GetTalentSpellCost(TalentSpellPos const* pos);
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
@@ -99,7 +99,7 @@ extern DBCStorage <WMOAreaTableEntry>            sWMOAreaTableStore;
 
 void LoadDBCStores();
 
-char const* GetUnitRaceName(uint8 race, uint8 locale);
-char const* GetUnitClassName(uint8 class_, uint8 locale);
+char const* GetUnitRaceName(uint8 race);
+char const* GetUnitClassName(uint8 class_);
 
 #endif

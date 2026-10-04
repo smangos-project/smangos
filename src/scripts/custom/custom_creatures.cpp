@@ -910,10 +910,7 @@ void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
 
 bool LearnAllRecipesInProfession(Player *pPlayer, SkillType skill)
 {
-    char* skill_name;
-
     SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
-    skill_name = SkillInfo->name[sWorld.GetDefaultDbcLocale()];
 
     if (!SkillInfo)
     {
@@ -923,7 +920,7 @@ bool LearnAllRecipesInProfession(Player *pPlayer, SkillType skill)
 
     pPlayer->SetSkill(SkillInfo->id, 300, 300);
     LearnSkillRecipesHelper(pPlayer, SkillInfo->id);
-    pPlayer->GetSession()->SendNotification("All recipes for %s learned", skill_name);
+    pPlayer->GetSession()->SendNotification("All recipes for %s learned", SkillInfo->name);
     return true;
 }
 

@@ -654,9 +654,9 @@ class SpellEntry
         uint32    EffectTriggerSpell[MAX_EFFECT_INDEX] = {};       // 112-114
         float     EffectPointsPerComboPoint[MAX_EFFECT_INDEX] = {};// 115-117
       //uint32    SpellVisual2;                                    // 119 not used
-        std::array<std::string, MAX_DBC_LOCALE> SpellName{};       // 123-130
+        std::string SpellName;                                     // 123-130
       //uint32    SpellNameFlag;                                   // 131     not used
-        std::array<std::string, MAX_DBC_LOCALE> Rank{};            // 132-139
+        std::string Rank;                                          // 132-139
       //uint32    RankFlags;                                       // 140     not used
       //char*     Description[8];                                  // 141-148 not used
       //uint32    DescriptionFlags;                                // 149     not used

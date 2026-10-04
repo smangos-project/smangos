@@ -279,37 +279,16 @@ bool ChatHandler::HandleLookupItemSetCommand(char* args)
         ItemSetEntry const* set = sItemSetStore.LookupEntry(id);
         if (set)
         {
-            int loc = GetSessionDbcLocale();
-            std::string name = set->name[loc];
-            if (name.empty())
+            std::string name = set->name;
+            if (name.empty() || !Utf8FitTo(name, wnamepart))
                 continue;
 
-            if (!Utf8FitTo(name, wnamepart))
-            {
-                loc = 0;
-                for (; loc < MAX_DBC_LOCALE; ++loc)
-                {
-                    if (loc == GetSessionDbcLocale())
-                        continue;
-
-                    name = set->name[loc];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, wnamepart))
-                        break;
-                }
-            }
-
-            if (loc < MAX_DBC_LOCALE)
-            {
-                // send item set in "id - [namedlink locale]" format
-                if (m_session)
-                    PSendSysMessage(LANG_ITEMSET_LIST_CHAT, id, id, name.c_str(), localeNames[loc]);
-                else
-                    PSendSysMessage(LANG_ITEMSET_LIST_CONSOLE, id, name.c_str(), localeNames[loc]);
-                ++counter;
-            }
+            // send item set in "id - [namedlink locale]" format
+            if (m_session)
+                PSendSysMessage(LANG_ITEMSET_LIST_CHAT, id, id, name.c_str(), localeNames[LOCALE_enUS]);
+            else
+                PSendSysMessage(LANG_ITEMSET_LIST_CONSOLE, id, name.c_str(), localeNames[LOCALE_enUS]);
+            ++counter;
         }
     }
     if (counter == 0)                                       // if counter == 0 then we found nth
@@ -342,52 +321,31 @@ bool ChatHandler::HandleLookupSkillCommand(char* args)
         SkillLineEntry const* skillInfo = sSkillLineStore.LookupEntry(id);
         if (skillInfo)
         {
-            int loc = GetSessionDbcLocale();
-            std::string name = skillInfo->name[loc];
-            if (name.empty())
+            std::string name = skillInfo->name;
+            if (name.empty() || !Utf8FitTo(name, wnamepart))
                 continue;
 
-            if (!Utf8FitTo(name, wnamepart))
+            char valStr[50] = "";
+            char const* knownStr = "";
+            if (target && target->HasSkill(id))
             {
-                loc = 0;
-                for (; loc < MAX_DBC_LOCALE; ++loc)
-                {
-                    if (loc == GetSessionDbcLocale())
-                        continue;
+                knownStr = GetMangosString(LANG_KNOWN);
+                uint32 curValue = target->GetSkillValuePure(id);
+                uint32 maxValue  = target->GetSkillMaxPure(id);
+                uint32 permValue = target->GetSkillBonusPermanent(id);
+                uint32 tempValue = target->GetSkillBonusTemporary(id);
 
-                    name = skillInfo->name[loc];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, wnamepart))
-                        break;
-                }
+                char const* valFormat = GetMangosString(LANG_SKILL_VALUES);
+                snprintf(valStr, 50, valFormat, curValue, maxValue, permValue, tempValue);
             }
 
-            if (loc < MAX_DBC_LOCALE)
-            {
-                char valStr[50] = "";
-                char const* knownStr = "";
-                if (target && target->HasSkill(id))
-                {
-                    knownStr = GetMangosString(LANG_KNOWN);
-                    uint32 curValue = target->GetSkillValuePure(id);
-                    uint32 maxValue  = target->GetSkillMaxPure(id);
-                    uint32 permValue = target->GetSkillBonusPermanent(id);
-                    uint32 tempValue = target->GetSkillBonusTemporary(id);
+            // send skill in "id - [namedlink locale]" format
+            if (m_session)
+                PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[LOCALE_enUS], knownStr, valStr);
+            else
+                PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[LOCALE_enUS], knownStr, valStr);
 
-                    char const* valFormat = GetMangosString(LANG_SKILL_VALUES);
-                    snprintf(valStr, 50, valFormat, curValue, maxValue, permValue, tempValue);
-                }
-
-                // send skill in "id - [namedlink locale]" format
-                if (m_session)
-                    PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[loc], knownStr, valStr);
-                else
-                    PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[loc], knownStr, valStr);
-
-                ++counter;
-            }
+            ++counter;
         }
     }
     if (counter == 0)                                       // if counter == 0 then we found nth
@@ -395,7 +353,7 @@ bool ChatHandler::HandleLookupSkillCommand(char* args)
     return true;
 }
 
-void ChatHandler::ShowSpellListHelper(Player* target, SpellEntry const* spellInfo, LocaleConstant loc)
+void ChatHandler::ShowSpellListHelper(Player* target, SpellEntry const* spellInfo)
 {
     uint32 id = spellInfo->Id;
 
@@ -415,18 +373,18 @@ void ChatHandler::ShowSpellListHelper(Player* target, SpellEntry const* spellInf
     // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
     std::ostringstream ss;
     if (m_session)
-        ss << id << " - |cffffffff|Hspell:" << id << "|h[" << spellInfo->SpellName[loc];
+        ss << id << " - |cffffffff|Hspell:" << id << "|h[" << spellInfo->SpellName;
     else
-        ss << id << " - " << spellInfo->SpellName[loc];
+        ss << id << " - " << spellInfo->SpellName;
 
     // include rank in link name
     if (rank)
         ss << GetMangosString(LANG_SPELL_RANK) << rank;
 
     if (m_session)
-        ss << " " << localeNames[loc] << "]|h|r";
+        ss << " " << localeNames[LOCALE_enUS] << "]|h|r";
     else
-        ss << " " << localeNames[loc];
+        ss << " " << localeNames[LOCALE_enUS];
 
     if (talent)
         ss << GetMangosString(LANG_TALENT);
@@ -467,33 +425,12 @@ bool ChatHandler::HandleLookupSpellCommand(char* args)
         SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(id);
         if (spellInfo)
         {
-            int loc = GetSessionDbcLocale();
-            std::string name = spellInfo->SpellName[loc];
-            if (name.empty())
+            std::string name = spellInfo->SpellName;
+            if (name.empty() || !Utf8FitTo(name, wnamepart))
                 continue;
 
-            if (!Utf8FitTo(name, wnamepart))
-            {
-                loc = 0;
-                for (; loc < MAX_DBC_LOCALE; ++loc)
-                {
-                    if (loc == GetSessionDbcLocale())
-                        continue;
-
-                    name = spellInfo->SpellName[loc];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, wnamepart))
-                        break;
-                }
-            }
-
-            if (loc < MAX_DBC_LOCALE)
-            {
-                ShowSpellListHelper(target, spellInfo, LocaleConstant(loc));
-                ++counter;
-            }
+            ShowSpellListHelper(target, spellInfo);
+            ++counter;
         }
     }
     if (counter == 0)                                       // if counter == 0 then we found nth
@@ -871,39 +808,18 @@ bool ChatHandler::HandleLookupTaxiNodeCommand(char * args)
         TaxiNodesEntry const* nodeEntry = sObjectMgr.GetTaxiNodeEntry(id);
         if (nodeEntry)
         {
-            int loc = GetSessionDbcLocale();
-            std::string name = nodeEntry->name[loc];
-            if (name.empty())
+            std::string name = nodeEntry->name;
+            if (name.empty() || !Utf8FitTo(name, wnamepart))
                 continue;
 
-            if (!Utf8FitTo(name, wnamepart))
-            {
-                loc = 0;
-                for (; loc < MAX_DBC_LOCALE; ++loc)
-                {
-                    if (loc == GetSessionDbcLocale())
-                        continue;
-
-                    name = nodeEntry->name[loc];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, wnamepart))
-                        break;
-                }
-            }
-
-            if (loc < MAX_DBC_LOCALE)
-            {
-                // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
-                if (m_session)
-                    PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[loc],
-                                    nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
-                else
-                    PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[loc],
-                                    nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
-                ++counter;
-            }
+            // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
+            if (m_session)
+                PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[LOCALE_enUS],
+                                nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
+            else
+                PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[LOCALE_enUS],
+                                nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
+            ++counter;
         }
     }
     if (counter == 0)                                       // if counter == 0 then we found nth
@@ -1361,16 +1277,16 @@ static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
     LANG_REP_FRIENDLY, LANG_REP_HONORED, LANG_REP_REVERED,    LANG_REP_EXALTED
 };
 
-void ChatHandler::ShowFactionListHelper(FactionEntry const*  factionEntry, LocaleConstant loc, FactionState const* repState /*= nullptr*/, Player* target /*= nullptr */)
+void ChatHandler::ShowFactionListHelper(FactionEntry const*  factionEntry, FactionState const* repState /*= nullptr*/, Player* target /*= nullptr */)
 {
-    std::string name = factionEntry->name[loc];
+    std::string name = factionEntry->name;
     // send faction in "id - [faction] rank reputation [visible] [at war] [own team] [unknown] [invisible] [inactive]" format
     // or              "id - [faction] [no reputation]" format
     std::ostringstream ss;
     if (m_session)
-        ss << factionEntry->ID << " - |cffffffff|Hfaction:" << factionEntry->ID << "|h[" << name << " " << localeNames[loc] << "]|h|r";
+        ss << factionEntry->ID << " - |cffffffff|Hfaction:" << factionEntry->ID << "|h[" << name << " " << localeNames[LOCALE_enUS] << "]|h|r";
     else
-        ss << factionEntry->ID << " - " << name << " " << localeNames[loc];
+        ss << factionEntry->ID << " - " << name << " " << localeNames[LOCALE_enUS];
 
     if (repState)                               // and then target!=nullptr also
     {
@@ -1422,34 +1338,13 @@ bool ChatHandler::HandleLookupFactionCommand(char* args)
         FactionEntry const* factionEntry = &itr.second;
         if (factionEntry)
         {
-            int loc = GetSessionDbcLocale();
-            std::string name = factionEntry->name[loc];
-            if (name.empty())
+            std::string name = factionEntry->name;
+            if (name.empty() || !Utf8FitTo(name, wnamepart))
                 continue;
 
-            if (!Utf8FitTo(name, wnamepart))
-            {
-                loc = 0;
-                for (; loc < MAX_DBC_LOCALE; ++loc)
-                {
-                    if (loc == GetSessionDbcLocale())
-                        continue;
-
-                    name = factionEntry->name[loc];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, wnamepart))
-                        break;
-                }
-            }
-
-            if (loc < MAX_DBC_LOCALE)
-            {
-                FactionState const* repState = target ? target->GetReputationMgr().GetState(factionEntry) : nullptr;
-                ShowFactionListHelper(factionEntry, LocaleConstant(loc), repState, target);
-                counter++;
-            }
+            FactionState const* repState = target ? target->GetReputationMgr().GetState(factionEntry) : nullptr;
+            ShowFactionListHelper(factionEntry, repState, target);
+            counter++;
         }
     }
 

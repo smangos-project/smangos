@@ -158,7 +158,6 @@ enum RealmFlags
     REALM_FLAG_FULL         = 0x80
 };
 
-// Index returned by GetSessionDbcLocale.
 enum LocaleConstant
 {
     LOCALE_enUS = 0, // also enGB
@@ -189,7 +188,6 @@ enum DBLocaleConstant : int
     DB_LOCALE_ruRU = 7
 };
 
-#define MAX_DBC_LOCALE 8
 #define MAX_LOCALE 9
 
 LocaleConstant GetLocaleByName(std::string const& name);

@@ -763,7 +763,6 @@ void AuctionHouseObject::BuildListAuctionItems(std::vector<AuctionItem>& items, 
     }
 
     int loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-    LocaleConstant dbc_loc = player->GetSession()->GetSessionDbcLocale();
 
     // Micro opt on name/suffix initialization
     std::string name;
@@ -811,7 +810,7 @@ void AuctionHouseObject::BuildListAuctionItems(std::vector<AuctionItem>& items, 
                 if (propertyId > 0)
                      randomProperty = sItemRandomPropertiesStore.LookupEntry(static_cast<uint32>(propertyId));
 
-                Item::GetLocalizedNameWithSuffix(name, proto, randomProperty, loc_idx, dbc_loc);
+                Item::GetLocalizedNameWithSuffix(name, proto, randomProperty, loc_idx);
 
                 if (!Utf8FitTo(name, query.wsearchedname))
                     continue;

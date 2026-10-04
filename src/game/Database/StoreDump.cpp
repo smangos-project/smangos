@@ -315,7 +315,7 @@ static bool DumpSpells(std::string const& dir)
         {"EffectChainTarget", MAX_EFFECT_INDEX}, {"EffectItemType", MAX_EFFECT_INDEX},
         {"EffectMiscValue", MAX_EFFECT_INDEX}, {"EffectMiscValueB", MAX_EFFECT_INDEX}, {"EffectSummonKind", MAX_EFFECT_INDEX}, {"EffectTriggerSpell", MAX_EFFECT_INDEX},
         {"EffectPointsPerComboPoint", MAX_EFFECT_INDEX},
-        {"SpellName", MAX_DBC_LOCALE}, {"Rank", MAX_DBC_LOCALE}, {"ManaCostPercentage"},
+        {"SpellName"}, {"Rank"}, {"ManaCostPercentage"},
         {"StartRecoveryCategory"}, {"StartRecoveryTime"}, {"MaxTargetLevel"}, {"SpellFamilyName"},
         {"SpellFamilyFlags"}, {"MaxAffectedTargets"}, {"DmgClass"}, {"PreventionType"},
         {"DmgMultiplier", MAX_EFFECT_INDEX}, {"MinTargetLevel"}, {"Custom"}, {"Internal"}, {"AllowedTargetMask"},
@@ -624,7 +624,7 @@ static bool DumpFactions(std::string const& dir)
 {
     DumpTable table(dir, "faction");
     table.AddColumns({{"ID"}, {"reputationListID"}, {"BaseRepRaceMask", 4}, {"BaseRepClassMask", 4},
-        {"BaseRepValue", 4}, {"ReputationFlags", 4}, {"team"}, {"name", 8}});
+        {"BaseRepValue", 4}, {"ReputationFlags", 4}, {"team"}, {"name"}});
     table.EndHeader();
 
     FactionsMap const& map = sObjectMgr.GetFactionMap();
@@ -659,7 +659,7 @@ static bool DumpFactionTemplates(std::string const& dir)
 static bool DumpTaxiNodes(std::string const& dir)
 {
     DumpTable table(dir, "taxi_nodes");
-    table.AddColumns({{"ID"}, {"map_id"}, {"x"}, {"y"}, {"z"}, {"name", MAX_DBC_LOCALE}, {"MountCreatureID", 2}});
+    table.AddColumns({{"ID"}, {"map_id"}, {"x"}, {"y"}, {"z"}, {"name"}, {"MountCreatureID", 2}});
     table.EndHeader();
 
     for (uint32 id = 0; id < sObjectMgr.GetMaxTaxiNodeId(); ++id)

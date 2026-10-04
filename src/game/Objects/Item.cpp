@@ -1281,7 +1281,7 @@ bool Item::ChangeEntry(ItemPrototype const* pNewProto)
     return true;
 }
 
-void Item::GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* proto, ItemRandomPropertiesEntry const* randomProp, int dbLocale, LocaleConstant dbcLocale)
+void Item::GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* proto, ItemRandomPropertiesEntry const* randomProp, int dbLocale)
 {
     // local name
     if (dbLocale >= 0)
@@ -1294,38 +1294,6 @@ void Item::GetLocalizedNameWithSuffix(std::string& name, ItemPrototype const* pr
         }
     }
 
-    if (randomProp)
-    {
-        std::string nameSuffix(randomProp->internalName);
-        if (dbcLocale < MAX_DBC_LOCALE)
-        {
-            std::string localeSuffix = randomProp->nameSuffix[dbcLocale];
-            if (localeSuffix.length() > 0)
-                nameSuffix = localeSuffix;
-        }
-
-        if (!nameSuffix.empty())
-        {
-            // sentence order is different in some languages
-            switch (dbcLocale)
-            {
-                case LOCALE_koKR:
-                {
-                    name = nameSuffix + " " + name;
-                    break;
-                }
-                case LOCALE_zhCN:
-                case LOCALE_zhTW:
-                {
-                    name = nameSuffix + name;
-                    break;
-                }
-                default:
-                {
-                    name += " " + nameSuffix;
-                }
-            }
-        }
-            
-    }
+    if (randomProp && *randomProp->nameSuffix)
+        name += std::string(" ") + randomProp->nameSuffix;
 }

@@ -78,8 +78,7 @@ bool ChatHandler::HandleSpellEffectsCommand(char *args)
         SetSentErrorMessage(true);
         return false;
     }
-    LocaleConstant loc = GetSessionDbcLocale();
-    ShowSpellListHelper(nullptr, pSpell, loc);
+    ShowSpellListHelper(nullptr, pSpell);
     for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
     {
         if (pSpell->Effect[i] == 0)
@@ -117,7 +116,7 @@ bool ChatHandler::HandleSpellEffectsCommand(char *args)
         }
 
         if (SpellEntry const* pTriggered = sSpellMgr.GetSpellEntry(pSpell->EffectTriggerSpell[i]))
-            ShowSpellListHelper(nullptr, pTriggered, loc);
+            ShowSpellListHelper(nullptr, pTriggered);
         else
             PSendSysMessage("(existe pas)");
     }
@@ -136,8 +135,7 @@ bool ChatHandler::HandleSpellInfosCommand(char *args)
         SetSentErrorMessage(true);
         return false;
     }
-    LocaleConstant loc = GetSessionDbcLocale();
-    ShowSpellListHelper(nullptr, pSpell, loc);
+    ShowSpellListHelper(nullptr, pSpell);
 
     PSendSysMessage("School%u:Category%u:Dispel%u:Mechanic%u", pSpell->School, pSpell->Category, pSpell->Dispel, pSpell->Mechanic);
     PSendSysMessage("Attributes0x%x:Ex[0x%x:0x%x:0x%x:0x%x]", pSpell->Attributes, pSpell->AttributesEx, pSpell->AttributesEx2, pSpell->AttributesEx3, pSpell->AttributesEx4);
@@ -164,7 +162,6 @@ bool ChatHandler::HandleSpellSearchCommand(char *args)
     if (!familyFlags)
         return false;
     PSendSysMessage("* Results for SpellFamilyName %u and SpellFamilyFlags & 0x%x", familyName, familyFlags);
-    LocaleConstant const loc = GetSessionDbcLocale();
     SpellEntry const* pSpell = nullptr;
     for (uint32 id = 0; id < sSpellMgr.GetMaxSpellId(); ++id)
     {
@@ -173,7 +170,7 @@ bool ChatHandler::HandleSpellSearchCommand(char *args)
             continue;
         if (pSpell->SpellFamilyName == familyName && pSpell->SpellFamilyFlags & familyFlags)
         {
-            ShowSpellListHelper(nullptr, pSpell, loc);
+            ShowSpellListHelper(nullptr, pSpell);
             ++results;
         }
     }
@@ -250,7 +247,7 @@ bool ChatHandler::HandleDebugSendNextChannelSpellVisualCommand(char *args)
         packet.ChannelDuration = 60000;
         m_session->SendClassic(packet);
         m_session->GetPlayer()->SetUInt32Value(UNIT_CHANNEL_SPELL, id);
-        PSendSysMessage("Playing channel visual of spell %u %s %s", id, spellInfo->SpellName[0].c_str(), spellInfo->Rank[0].c_str());
+        PSendSysMessage("Playing channel visual of spell %u %s %s", id, spellInfo->SpellName.c_str(), spellInfo->Rank.c_str());
         return true;
     }
     PSendSysMessage("Spell Id range 0 to %u, -1 to stop animation", sSpellMgr.GetMaxSpellId());
@@ -273,7 +270,7 @@ bool ChatHandler::HandleSendSpellChannelVisualCommand(char *args)
         m_session->SendClassic(packet);
         m_session->GetPlayer()->SetUInt32Value(UNIT_CHANNEL_SPELL, uiPlayId);
         SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(uiPlayId);
-        PSendSysMessage("Playing channel visual of spell %u %s %s", uiPlayId, spellInfo->SpellName[0].c_str(), spellInfo->Rank[0].c_str());
+        PSendSysMessage("Playing channel visual of spell %u %s %s", uiPlayId, spellInfo->SpellName.c_str(), spellInfo->Rank.c_str());
         return true;
     }
     else if (!uiPlayId)

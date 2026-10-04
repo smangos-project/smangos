@@ -179,7 +179,6 @@ class ChatHandler
         virtual bool isAvailable(ChatCommand const& cmd) const;
         virtual std::string GetNameLink() const;
         virtual bool needReportToTarget(Player* chr) const;
-        virtual LocaleConstant GetSessionDbcLocale() const;
         virtual int GetSessionDbLocaleIndex() const;
 
         bool HasLowerSecurity(Player* target, ObjectGuid guid = ObjectGuid(), bool strong = false);
@@ -1088,10 +1087,10 @@ class ChatHandler
 
         // Utility methods for commands
         bool ShowAccountIpListHelper(char* args, bool onlineonly);
-        void ShowFactionListHelper(FactionEntry const* factionEntry, LocaleConstant loc, FactionState const* repState = nullptr, Player* target = nullptr);
+        void ShowFactionListHelper(FactionEntry const* factionEntry, FactionState const* repState = nullptr, Player* target = nullptr);
         void ShowItemListHelper(uint32 itemId, int loc_idx, Player* target = nullptr);
         void ShowQuestListHelper(uint32 questId, int32 loc_idx, Player* target = nullptr);
-        void ShowSpellListHelper(Player* target, SpellEntry const* spellInfo, LocaleConstant loc);
+        void ShowSpellListHelper(Player* target, SpellEntry const* spellInfo);
         void ShowPoolListHelper(uint16 pool_id);
         void ShowTriggerListHelper(AreaTriggerEntry const* atEntry);
         void ShowTriggerTargetListHelper(uint32 id, AreaTriggerTeleport const* at, bool subpart = false);
@@ -1170,7 +1169,6 @@ class CliHandler : public ChatHandler
         void SendSysMessage(char const* str) override;
         std::string GetNameLink() const override;
         bool needReportToTarget(Player* chr) const override;
-        LocaleConstant GetSessionDbcLocale() const override;
         int GetSessionDbLocaleIndex() const override;
 
     private:
@@ -1192,7 +1190,6 @@ class NullChatHandler : public ChatHandler
         bool isAvailable(ChatCommand const& cmd) const override { return false; }
         void SendSysMessage(char const* str) override {}
         std::string GetNameLink() const override { return ""; }
-        LocaleConstant GetSessionDbcLocale() const override;
         int GetSessionDbLocaleIndex() const override;
 };
 

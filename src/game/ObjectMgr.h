@@ -1168,7 +1168,6 @@ class ObjectMgr
                     break;
         }
 
-        char const* GetMailTextTemplate(uint32 id, LocaleConstant locale_idx = LOCALE_enUS);
 
         BroadcastText const* GetBroadcastTextLocale(uint32 id) const
         {
