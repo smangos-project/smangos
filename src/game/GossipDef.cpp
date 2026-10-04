@@ -49,20 +49,19 @@ int32 GossipQuestTypeForDialogStatus(uint8 dialogStatus)
     }
 }
 
-// The modern client's quest-giver status is a bitmask (TrinityCore's QuestGiverStatus: Future=0x2,
-// Trivial=0x4, Reward=0x20, RepeatableTurnin=0x100, Quest=0x400, RewardCompleteNoPOI=0x800,
-// RewardCompletePOI=0x1000), not this engine's sequential 0-7 DIALOG_STATUS_* enum (QuestDef.h).
+// The modern client's quest-giver status is a bitmask (TrinityCore's QuestGiverStatus), not this
+// engine's sequential 0-7 DIALOG_STATUS_* enum (QuestDef.h).
 uint64 ToModernQuestGiverStatus(uint8 dialogStatus)
 {
     switch (dialogStatus)
     {
-        case DIALOG_STATUS_UNAVAILABLE: return 0x000002;  // Future
-        case DIALOG_STATUS_CHAT:        return 0x000004;  // Trivial
-        case DIALOG_STATUS_INCOMPLETE:  return 0x000020;  // Reward
-        case DIALOG_STATUS_REWARD_REP:  return 0x000100;  // RepeatableTurnin
-        case DIALOG_STATUS_AVAILABLE:   return 0x000400;  // Quest
-        case DIALOG_STATUS_REWARD_OLD:  return 0x000800;  // RewardCompleteNoPOI (never produced by GetDialogStatus)
-        case DIALOG_STATUS_REWARD2:     return 0x001000;  // RewardCompletePOI -- ready to turn in, show map marker
+        case DIALOG_STATUS_UNAVAILABLE: return 0x000000000002;  // Future
+        case DIALOG_STATUS_CHAT:        return 0x000000000040;  // Trivial
+        case DIALOG_STATUS_INCOMPLETE:  return 0x000000002000;  // Reward
+        case DIALOG_STATUS_REWARD_REP:  return 0x000000100000;  // RepeatableTurnin
+        case DIALOG_STATUS_AVAILABLE:   return 0x000000400000;  // Quest
+        case DIALOG_STATUS_REWARD_OLD:  return 0x000200000000;  // RewardCompleteNoPOI (never produced by GetDialogStatus)
+        case DIALOG_STATUS_REWARD2:     return 0x000400000000;  // RewardCompletePOI
         default:                        return 0x000000;
     }
 }
