@@ -1,5 +1,5 @@
 # DoltLite: SQLite fork with Git-style version control, used for the world
-# database (see .local/plan/wms/database_tool/plan.md). Version control is
+# database. Version control is
 # plain SQL on an ordinary sqlite3 connection (dolt_commit, dolt_log, ...),
 # so this target is just the sqlite3 C API plus a couple of doltlite_*
 # extras, backed by DoltLite's native engine instead of stock SQLite.

@@ -5,8 +5,7 @@ database, which is a DoltLite (versioned SQLite) file at `.world/world.doltlite`
 MySQL schema. The server reads it through `WorldDatabase.Info` in `common.conf`; this tool builds
 and validates it. `logon`, `characters` and `logs` stay ordinary MySQL databases.
 
-See `.local/plan/wms/database_tool/plan.md`, `world-sql.md` and `dbc-formats.md` for the full
-design. This file is just the command reference.
+This file is the command reference.
 
 ## Building
 
@@ -89,7 +88,7 @@ column if a table has none). Floats are compared as float32. Exit `0` only if id
 
 ### reference
 
-Builds `.world/reference.doltlite` (`.local/plan/bot/phase0-plan.md` step 2) from three pinned,
+Builds `.world/reference.doltlite` from three pinned,
 never-edited inputs: `.world/world.doltlite` (must exist; every non-`dbc_`/bookkeeping table
 renamed `srv_<table>`, collapsed to the vanilla build/patch), `.client/vanilla/dbc/*.dbc`
 (`vdbc_<table>`, read with the 1.12 WDBC layout) and `dbfilesclient/*.db2` (`cdbc_<table>`, the
@@ -99,7 +98,7 @@ did).
 
 ### spec
 
-`.local/plan/bot/phase0-plan.md` step 3: inventories the reference database's columns into
+Inventories the reference database's columns into
 `Spec/columns.tsv` and `Spec/dbc-columns.tsv` (checked into the repo and hand-reviewed over time,
 unlike everything else this tool writes), then helps fill them in bulk.
 

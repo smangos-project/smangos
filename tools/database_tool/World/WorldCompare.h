@@ -53,7 +53,6 @@ struct WorldCompareResult
 // in order, row count, and rows compared in primary-key order (or by every
 // column if the table has none). Floats are compared as float32 (MySQL FLOAT
 // is single precision; SQLite REAL is a double) and everything else as text.
-// See .local/plan/wms/database_tool/world-sql.md ("Verifying the port").
 WorldCompareResult CompareWorldWithMysql(DoltLiteDatabase& world, Database& mysql);
 
 #endif

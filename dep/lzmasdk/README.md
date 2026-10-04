@@ -1,7 +1,6 @@
 # LZMA SDK
 
-Igor Pavlov's public-domain LZMA SDK, used to unpack the pinned world base dump
-(`.local/plan/wms/database_tool/world-sql.md`). Only the files reachable from the SDK's own
+Igor Pavlov's public-domain LZMA SDK, used to unpack the pinned world base dump. Only the files reachable from the SDK's own
 `C/Util/7z/7zMain.c` ("7zDec", a reference command-line 7z decoder) are built: enough to open a
 `.7z` archive and extract a file, nothing that encodes one.
 

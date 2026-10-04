@@ -1,5 +1,4 @@
-/* Spike for the DoltLite dependency (see .local/plan/wms/database_tool/plan.md):
- * proves the pinned native library can be linked from MSVC and that version
+/* Spike for the DoltLite dependency: proves the pinned native library can be linked from MSVC and that version
  * control works as plain SQL on an ordinary sqlite3 connection. */
 
 #include <stdio.h>

@@ -16,9 +16,7 @@ struct TranslatedTable
 // SqlStatementSplitter) from MySQL to SQLite dialect: column types, MySQL's
 // implicit non-strict defaults, a single-column integer AUTO_INCREMENT
 // primary key, secondary keys as separate indexes, and dropped table
-// options. Shared by MysqlDumpImport and the port-migration command. See
-// .local/plan/wms/database_tool/world-sql.md for the exact mapping this
-// implements.
+// options. Shared by MysqlDumpImport and the port-migration command.
 TranslatedTable TranslateMysqlCreateTable(std::string const& statementText);
 
 #endif

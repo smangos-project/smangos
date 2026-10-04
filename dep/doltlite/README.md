@@ -2,8 +2,7 @@
 
 [DoltLite](https://github.com/dolthub/doltlite) is a SQLite fork that adds Git-style version
 control (`dolt_commit`, `dolt_log`, branches, merges, ...) as plain SQL on an ordinary `sqlite3`
-connection. `tools/database_tool` uses it for the world database
-(`.local/plan/wms/database_tool/plan.md`).
+connection. `tools/database_tool` uses it for the world database.
 
 ## Decision: FetchContent the NuGet package, not a source build
 

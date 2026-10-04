@@ -1,6 +1,5 @@
 # LZMA SDK: public domain 7z archive decoder (Igor Pavlov), used by
-# tools/database_tool to unpack the pinned world base dump
-# (.local/plan/wms/database_tool/world-sql.md). Only the files reachable from
+# tools/database_tool to unpack the pinned world base dump. Only the files reachable from
 # the SDK's own C/Util/7z/7zMain.c ("7zDec") reference decoder are built --
 # nothing that encodes.
 #

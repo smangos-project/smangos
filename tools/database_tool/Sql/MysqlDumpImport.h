@@ -15,8 +15,7 @@ struct DumpImportResult
     uint64_t rowsInserted = 0;
 };
 
-// Imports a HeidiSQL-style MySQL dump (the world base dump; see
-// .local/plan/wms/database_tool/world-sql.md) into db: `DROP TABLE IF EXISTS`
+// Imports a HeidiSQL-style MySQL dump (the world base dump) into db: `DROP TABLE IF EXISTS`
 // runs as-is (SQLite accepts backtick identifiers), `CREATE TABLE` is
 // translated with MysqlDdlTranslator (secondary indexes are deferred until
 // every table's rows are in), `INSERT INTO ... VALUES ...` rows are parsed
