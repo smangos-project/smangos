@@ -243,6 +243,36 @@ TEST_CASE("WriteWdc5File round-trips a sparse table", "[Wdc5Writer]")
     CHECK((result.info.flags & 0x1) != 0);
 }
 
+TEST_CASE("WriteWdc5File sizes a sparse array field's slot for all its elements", "[Wdc5Writer]")
+{
+    DbcFieldMeta fields[] = {
+        { "ID", DbcFieldType::Int, 32, false, 1, true, false, false, nullptr, nullptr },
+        { "Values", DbcFieldType::Int, 16, false, 3, false, false, false, nullptr, nullptr },
+        { "Tail", DbcFieldType::Int, 32, false, 1, false, false, false, nullptr, nullptr },
+    };
+    uint32_t layoutHashes[] = { 0xABCDu };
+    DbcTableMeta table{ "Test", "test", "dbc_test", layoutHashes, 1, fields, 3 };
+
+    Wdc5FileInfo info;
+    info.tableHash = 0x1234;
+    info.layoutHash = 0xABCD;
+    info.locale = 1;
+    info.flags = 0x1;
+
+    Wdc5Row row(5);
+    row[0].intValue = 7;
+    row[1].intValue = 1; row[2].intValue = 2; row[3].intValue = 3;
+    row[4].intValue = 99;
+
+    Wdc5ReadResult result = RoundTrip(table, info, { row }, "sparse_array");
+
+    INFO(result.error);
+    CHECK(result.error.empty());
+    REQUIRE(result.rows.size() == 1);
+    CHECK(result.rows[0][3].intValue == 3);
+    CHECK(result.rows[0][4].intValue == 99);
+}
+
 TEST_CASE("WriteWdc5File round-trips a non-inline id on a sparse table", "[Wdc5Writer]")
 {
     DbcFieldMeta fields[] = {

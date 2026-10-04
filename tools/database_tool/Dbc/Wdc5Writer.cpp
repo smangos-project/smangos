@@ -405,7 +405,7 @@ namespace
         for (uint32_t i = 0; i < table.fieldCount; ++i)
         {
             if (!table.fields[i].isNonInline)
-                inRecordFields.push_back({ i, 0, EffectiveWidthBytes(table.fields[i], rows, lookup.flattenedStart[i]) });
+                inRecordFields.push_back({ i, 0, FieldWidthBytes(table.fields[i]) }); // nominal: values wider than the client's slot are truncated
         }
 
         std::vector<std::vector<uint8_t>> records(rows.size());
@@ -448,13 +448,16 @@ namespace
 
         // Slot width of each field in the client's own sparse files: strings and floats take 32
         // bits, integers their real width; fields are packed back to back.
+        // An array field's slot covers all of its elements.
         std::vector<uint32_t> slotBits;
+        std::vector<uint32_t> elementBits;
         uint32_t slotBytes = 0;
         for (InRecordField const& f : inRecordFields)
         {
             DbcFieldMeta const& field = table.fields[f.fieldIndex];
             bool const wide = field.type != DbcFieldType::Int;
-            slotBits.push_back(wide ? 32 : f.width * 8);
+            elementBits.push_back(wide ? 32 : f.width * 8);
+            slotBits.push_back(elementBits.back() * field.arrayLength);
             slotBytes += slotBits.back() / 8;
         }
 
@@ -495,7 +498,7 @@ namespace
         uint32_t byteOffset = 0;
         for (size_t i = 0; i < inRecordFields.size(); ++i)
         {
-            PutI16(file, static_cast<int16_t>(32 - slotBits[i]));
+            PutI16(file, static_cast<int16_t>(32 - elementBits[i]));
             PutU16(file, static_cast<uint16_t>(byteOffset));
             byteOffset += slotBits[i] / 8;
         }
