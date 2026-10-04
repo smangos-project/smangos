@@ -389,7 +389,7 @@ TEST_CASE("PartyMemberFullState round-trips with auras and a pet", "[packets]")
     state.PositionX = -8900;
     state.PositionY = -120;
     state.PositionZ = 80;
-    state.Auras = { { 1459, 0x100, 1 }, { 5, 0x10, 3 } };
+    state.Auras = { { 1459, 0x100, 1 }, { 5, 0x10, 3 }, { 19506, 0x108, 1, { 55.0f } } };
     state.MemberGuid = Player(2);
     auto check = [](PartyMemberFullState const& a, PartyMemberFullState const& b)
     {
@@ -410,6 +410,7 @@ TEST_CASE("PartyMemberFullState round-trips with auras and a pet", "[packets]")
             CHECK(a.Auras[i].SpellId == b.Auras[i].SpellId);
             CHECK(a.Auras[i].Flags == b.Auras[i].Flags);
             CHECK(a.Auras[i].ActiveFlags == b.Auras[i].ActiveFlags);
+            CHECK(a.Auras[i].Points == b.Auras[i].Points);
         }
         CHECK(a.Pet.has_value() == b.Pet.has_value());
         if (a.Pet)

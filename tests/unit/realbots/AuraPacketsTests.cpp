@@ -32,6 +32,7 @@ void CheckAura(AuraDataInfo const& a, AuraDataInfo const& b)
     CHECK(a.CastUnit == b.CastUnit);
     CHECK(a.Duration == b.Duration);
     CHECK(a.Remaining == b.Remaining);
+    CHECK(a.Points == b.Points);
 }
 }
 
@@ -52,6 +53,8 @@ TEST_CASE("AuraUpdate round-trips a full list with timed and untimed auras", "[p
     untimed.AuraData->Flags = CLASSIC_AURA_FLAG_NEGATIVE;
     untimed.AuraData->Duration.reset();
     untimed.AuraData->Remaining.reset();
+    untimed.AuraData->Flags |= CLASSIC_AURA_FLAG_SCALABLE;
+    untimed.AuraData->Points = { 55.0f, 0.0f, -10.0f };
     packet.Auras = { timed, untimed };
 
     RoundTrip(packet, [](AuraUpdate const& a, AuraUpdate const& b)

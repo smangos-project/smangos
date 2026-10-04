@@ -689,6 +689,7 @@ class SpellEntry
         uint32 SingleTargetKey = 0;
         uint32 ClientVisualId = 0;                                 // SpellXSpellVisual row id the client expects on the wire
         bool HasClientActiveIcon = false;                          // a SpellXSpellVisual row has an active icon
+        bool AuraPointsOnClient = false;                           // the client shows the aura's effect amounts, so they must be sent
 
         // HELPERS:
         DiminishingGroup GetDiminishingReturnsGroup(bool triggered) const;

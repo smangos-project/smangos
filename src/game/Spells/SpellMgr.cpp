@@ -3576,7 +3576,7 @@ void SpellMgr::LoadSpells()
         } while (result->NextRow());
     }
 
-    forEachRow("dbc_spellmisc", "SELECT `SpellID`, `Attributes1`, `Attributes2`, `Attributes3`, `Attributes4`, `Attributes5`, `CastingTimeIndex`, `DurationIndex`, `RangeIndex`, `SchoolMask`, `Speed` FROM `dbc_spellmisc` WHERE `DifficultyID` = 0",
+    forEachRow("dbc_spellmisc", "SELECT `SpellID`, `Attributes1`, `Attributes2`, `Attributes3`, `Attributes4`, `Attributes5`, `CastingTimeIndex`, `DurationIndex`, `RangeIndex`, `SchoolMask`, `Speed`, `Attributes9` FROM `dbc_spellmisc` WHERE `DifficultyID` = 0",
         [](SpellEntry& s, Field* f)
     {
         s.Attributes = f[1].GetUInt32();
@@ -3598,6 +3598,7 @@ void SpellMgr::LoadSpells()
             }
         }
         s.speed = f[10].GetFloat();
+        s.AuraPointsOnClient = f[11].GetUInt32() & 0x1000;
     });
     forEachRow("dbc_spell", "SELECT `ID`, `NameSubtext_lang` FROM `dbc_spell`", [](SpellEntry& s, Field* f)
     {

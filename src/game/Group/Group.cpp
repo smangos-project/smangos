@@ -127,6 +127,7 @@ void AppendVisibleAuras(Unit const* unit, std::vector<PartyMemberAuraStates>& au
         aura.SpellId = int32(holder->GetId());
         aura.Flags = info.AuraData->Flags;
         aura.ActiveFlags = info.AuraData->ActiveFlags;
+        aura.Points = info.AuraData->Points;
     }
 }
 

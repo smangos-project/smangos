@@ -7334,11 +7334,22 @@ void SpellAuraHolder::BuildAuraInfo(AuraInfo& info) const
         aura.Duration = uint32(GetAuraMaxDuration());
         aura.Remaining = uint32(std::max(GetAuraDuration(), 0));
     }
+    if (m_spellProto->AuraPointsOnClient)
+        flags |= CLASSIC_AURA_FLAG_SCALABLE;
     aura.Flags = flags;
 
     for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
-        if (GetAuraByEffectIndex(SpellEffectIndex(i)))
-            aura.ActiveFlags |= (1u << i);
+    {
+        Aura const* effect = GetAuraByEffectIndex(SpellEffectIndex(i));
+        if (!effect)
+            continue;
+        aura.ActiveFlags |= (1u << i);
+        if (flags & CLASSIC_AURA_FLAG_SCALABLE)
+        {
+            aura.Points.resize(i + 1);
+            aura.Points[i] = effect->GetModifier()->m_amount;
+        }
+    }
 
     Unit const* caster = GetCaster();
     aura.CastLevel = caster ? caster->GetLevel() : GetAuraLevel();

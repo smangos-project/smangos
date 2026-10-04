@@ -16,6 +16,7 @@
 
 constexpr uint32 CLASSIC_MAX_PARTY_MEMBERS = 40;
 constexpr uint32 CLASSIC_MAX_PARTY_AURAS = 255;
+constexpr uint32 CLASSIC_MAX_PARTY_AURA_POINTS = 64;
 constexpr uint32 CLASSIC_MAX_PARTY_NAME_LENGTH = 48;
 
 // PartyUpdate::PartyFlags.
@@ -991,27 +992,34 @@ struct PartyUpdate
     }
 };
 
-// One aura on a party member. The scaled values are never sent, and a body that carries some is
-// rejected on read.
+// One aura on a party member. Points is filled like AuraDataInfo::Points.
 struct PartyMemberAuraStates
 {
     int32 SpellId = 0;
     uint16 Flags = 0;
     uint32 ActiveFlags = 0;
+    std::vector<float> Points;
 
     void Write(ByteBuffer& data) const
     {
         data << SpellId << Flags << ActiveFlags;
-        data << uint32(0);
+        data << uint32(Points.size());
+        for (float points : Points)
+            data << points;
     }
 
     bool Read(ByteBuffer& data)
     {
         if (data.size() - data.rpos() < sizeof(int32) + sizeof(uint16) + 2 * sizeof(uint32))
             return false;
-        uint32 points;
-        data >> SpellId >> Flags >> ActiveFlags >> points;
-        return points == 0;
+        uint32 count;
+        data >> SpellId >> Flags >> ActiveFlags >> count;
+        if (count > CLASSIC_MAX_PARTY_AURA_POINTS || data.size() - data.rpos() < count * sizeof(float))
+            return false;
+        Points.resize(count);
+        for (float& points : Points)
+            data >> points;
+        return true;
     }
 };
 
@@ -1023,7 +1031,7 @@ inline void ClassicWritePartyAuras(ByteBuffer& data, std::vector<PartyMemberAura
 
 inline bool ClassicReadPartyAuras(ByteBuffer& data, uint32 count, std::vector<PartyMemberAuraStates>& auras)
 {
-    // Every aura is 14 bytes.
+    // Every aura is at least 14 bytes.
     if (count > CLASSIC_MAX_PARTY_AURAS || count > (data.size() - data.rpos()) / 14)
         return false;
     auras.assign(count, PartyMemberAuraStates());

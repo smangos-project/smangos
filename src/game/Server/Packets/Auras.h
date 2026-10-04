@@ -23,8 +23,9 @@ enum ClassicAuraFlags : uint16
     CLASSIC_AURA_FLAG_PASSIVE    = 0x0200,
 };
 
-// The scaling fields (points, estimated points, time mod, content tuning) are never sent: no aura
-// here scales, so the bits announcing them are always clear and a body that sets one is rejected.
+// Points carries each effect's amount, indexed by effect, for CLASSIC_AURA_FLAG_SCALABLE auras. The
+// other scaling fields (estimated points, time mod, content tuning) are never sent, and a body that
+// sets one is rejected.
 struct AuraDataInfo
 {
     ClassicGuid CastId;
@@ -38,6 +39,7 @@ struct AuraDataInfo
     std::optional<ClassicGuid> CastUnit;
     std::optional<uint32> Duration;
     std::optional<uint32> Remaining;
+    std::vector<float> Points;
 
     void Write(ByteBuffer& data) const
     {
@@ -49,7 +51,7 @@ struct AuraDataInfo
         data.WriteBit(Duration.has_value());
         data.WriteBit(Remaining.has_value());
         data.WriteBit(false); // time mod
-        data.WriteBits(0, 6); // points
+        data.WriteBits(Points.size(), 6);
         data.WriteBits(0, 6); // estimated points
         data.WriteBit(false); // content tuning
         data.FlushBits();
@@ -59,6 +61,8 @@ struct AuraDataInfo
             data << *Duration;
         if (Remaining)
             data << *Remaining;
+        for (float points : Points)
+            data << points;
     }
 
     bool Read(ByteBuffer& data)
@@ -81,7 +85,7 @@ struct AuraDataInfo
         uint32 const estimatedPointCount = data.ReadBits(6);
         bool const hasContentTuning = data.ReadBit();
         data.ResetBitPos();
-        if (hasTimeMod || pointCount || estimatedPointCount || hasContentTuning)
+        if (hasTimeMod || estimatedPointCount || hasContentTuning)
             return false;
 
         CastUnit.reset();
@@ -108,6 +112,12 @@ struct AuraDataInfo
                 return false;
             Remaining = data.read<uint32>();
         }
+
+        if (data.size() - data.rpos() < pointCount * sizeof(float))
+            return false;
+        Points.resize(pointCount);
+        for (float& points : Points)
+            data >> points;
         return true;
     }
 };
