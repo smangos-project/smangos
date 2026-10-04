@@ -11,6 +11,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 
 namespace
 {
@@ -108,6 +109,12 @@ namespace
         out.write(reinterpret_cast<char const*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
     }
 
+    std::vector<uint8_t> ReadFile(std::filesystem::path const& path)
+    {
+        std::ifstream in(path, std::ios::binary);
+        return std::vector<uint8_t>(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+    }
+
     DbcFieldMeta TestFields[] = {
         { "ID", DbcFieldType::Int, 32, true, 1, true, false, false, nullptr, nullptr },
         { "Value", DbcFieldType::Int, 32, true, 1, false, false, false, nullptr, nullptr },
@@ -175,4 +182,62 @@ TEST_CASE("ExportDb2Files filters by table name", "[DbcExport]")
     DbcExportResult result = ExportDb2Files(db, dir.path, { "somethingelse" }, std::span(&TestTable, 1));
 
     CHECK(result.tables.empty());
+}
+
+TEST_CASE("ExportDb2Files with onlyChanged leaves a matching file untouched", "[DbcExport]")
+{
+    TempDir dir("only_changed_same");
+    std::vector<uint8_t> const stock = BuildSimpleDb2(0xABCD, { { 1, 100 }, { 2, 200 } });
+    WriteFile(dir.path / "test.db2", stock);
+
+    TempDoltLiteFile file("only_changed_same");
+    DoltLiteDatabase db(file.path.string());
+    db.Execute(BuildDbcFilesTableDdl());
+    REQUIRE(ImportDb2Files(db, dir.path, {}, std::span(&TestTable, 1)).error.empty());
+
+    ExportDb2Options options;
+    options.onlyChanged = true;
+    options.backupDir = dir.path / "backup";
+    DbcExportResult result = ExportDb2Files(db, dir.path, {}, std::span(&TestTable, 1), options);
+
+    REQUIRE(result.tables.size() == 1);
+    CHECK(result.tables[0].unchanged);
+    CHECK(result.tables[0].error.empty());
+    CHECK(ReadFile(dir.path / "test.db2") == stock);
+    CHECK_FALSE(std::filesystem::exists(options.backupDir / "test.db2"));
+}
+
+TEST_CASE("ExportDb2Files with onlyChanged rewrites a changed file and keeps the first backup", "[DbcExport]")
+{
+    TempDir dir("only_changed_diff");
+    std::vector<uint8_t> const stock = BuildSimpleDb2(0xABCD, { { 1, 100 }, { 2, 200 } });
+    WriteFile(dir.path / "test.db2", stock);
+
+    TempDoltLiteFile file("only_changed_diff");
+    DoltLiteDatabase db(file.path.string());
+    db.Execute(BuildDbcFilesTableDdl());
+    REQUIRE(ImportDb2Files(db, dir.path, {}, std::span(&TestTable, 1)).error.empty());
+
+    ExportDb2Options options;
+    options.onlyChanged = true;
+    options.backupDir = dir.path / "backup";
+
+    db.Execute("UPDATE \"dbc_test\" SET \"Value\" = 250 WHERE \"ID\" = 2");
+    DbcExportResult first = ExportDb2Files(db, dir.path, {}, std::span(&TestTable, 1), options);
+    REQUIRE(first.tables.size() == 1);
+    CHECK_FALSE(first.tables[0].unchanged);
+    CHECK(first.tables[0].error.empty());
+    CHECK(ReadFile(options.backupDir / "test.db2") == stock);
+
+    db.Execute("UPDATE \"dbc_test\" SET \"Value\" = 300 WHERE \"ID\" = 2");
+    DbcExportResult second = ExportDb2Files(db, dir.path, {}, std::span(&TestTable, 1), options);
+    REQUIRE(second.tables.size() == 1);
+    CHECK_FALSE(second.tables[0].unchanged);
+    CHECK(ReadFile(options.backupDir / "test.db2") == stock); // an existing backup is never replaced
+
+    Wdc5ReadResult reread = ReadWdc5File(dir.path / "test.db2", TestTable);
+    INFO(reread.error);
+    REQUIRE(reread.error.empty());
+    REQUIRE(reread.rows.size() == 2);
+    CHECK(reread.rows[1][1].intValue == 300);
 }
