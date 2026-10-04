@@ -120,7 +120,6 @@ bool StringStartsWithCaseInsensitive(std::string const& str, std::string const& 
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
 
-#include "Progression.h"
 
 enum TimeConstants
 {

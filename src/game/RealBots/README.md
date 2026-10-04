@@ -2,9 +2,8 @@
 
 A client bot framework, embedded in `mangosd` and in a standalone console host
 (`contrib/realbotrunner`), that speaks the **modern** (1.15.x classic-era) WoW protocol as a real
-client would. It drives the vmangos-to-modern-client port described in `.local/plan/bot/port-plan.md`
-and its own conformance suite (`tests/conformance/`). Spec: `.local/plan/bot/bot-phase-1.md`;
-design direction: `.local/plan/bot/bot-plan.md`; current spec: `.local/plan/bot/bot-phase-2.md`.
+client would. It drives the vmangos-to-modern-client port and its own conformance suite
+(`tests/conformance/`).
 
 Everything here lives behind `ENABLE_REALBOTS` (`#ifdef REALBOTS` at every touch point outside this
 directory: three lines in `World.cpp`, a chat command in `Chat.h`/`Chat.cpp`). Protocol code the

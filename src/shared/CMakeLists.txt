@@ -26,7 +26,6 @@ set (shared_SRCS
     Log.h
     migrations_list.h
     ProgressBar.h
-    Progression.h
     RealmZone.h
     revision.h
     SystemConfig.h

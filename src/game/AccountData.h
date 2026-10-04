@@ -26,23 +26,7 @@
 #include "Policies/Singleton.h"
 #include <string>
 
-namespace OldAccountData // 1.8 and earlier
-{
-    enum AccountDataType
-    {
-        GLOBAL_CONFIG_CACHE             = 0,                    // 0x01 g
-        GLOBAL_BINDINGS_CACHE           = 1,                    // 0x04 g
-        GLOBAL_MACROS_CACHE             = 2,                    // 0x08 g
-        PER_CHARACTER_LAYOUT_CACHE      = 3,                    // 0x10 p
-        PER_CHARACTER_CHAT_CACHE        = 4,                    // 0x20 p
-        NUM_ACCOUNT_DATA_TYPES          = 5
-    };
-
-    constexpr uint32 GLOBAL_CACHE_MASK = 0xD;
-    constexpr uint32 PER_CHARACTER_CACHE_MASK = 0x30;
-}
-
-namespace NewAccountData // 1.9 and later
+namespace NewAccountData
 {
     enum AccountDataType
     {
@@ -59,24 +43,6 @@ namespace NewAccountData // 1.9 and later
 
     constexpr uint32 GLOBAL_CACHE_MASK = 0x15;
     constexpr uint32 PER_CHARACTER_CACHE_MASK = 0xEA;
-}
-
-inline NewAccountData::AccountDataType ConvertOldAccountDataToNew(uint32 index)
-{
-    switch (index)
-    {
-        case OldAccountData::GLOBAL_CONFIG_CACHE:
-            return NewAccountData::GLOBAL_CONFIG_CACHE;
-        case OldAccountData::GLOBAL_BINDINGS_CACHE:
-            return NewAccountData::GLOBAL_BINDINGS_CACHE;
-        case OldAccountData::GLOBAL_MACROS_CACHE:
-            return NewAccountData::GLOBAL_MACROS_CACHE;
-        case OldAccountData::PER_CHARACTER_LAYOUT_CACHE:
-            return NewAccountData::PER_CHARACTER_LAYOUT_CACHE;
-        case OldAccountData::PER_CHARACTER_CHAT_CACHE:
-            return NewAccountData::PER_CHARACTER_CHAT_CACHE;
-    }
-    return NewAccountData::NUM_ACCOUNT_DATA_TYPES;
 }
 
 struct AccountData

@@ -1,6 +1,5 @@
 message(STATUS "")
 message(STATUS "Core revision: ${rev_hash} ${rev_date} ")
-message(STATUS "Supported version: ${supported_build}")
 message(STATUS "Install server to: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "")
 

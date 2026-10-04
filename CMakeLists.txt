@@ -192,9 +192,6 @@ else()
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/generators/revision.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/revision.h)
 endif()
 
-set(supported_build ${SUPPORTED_CLIENT_BUILD})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/generators/Progression.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/Progression.h)
-
 # Generate migrations list
 include(cmake/generators/migrations_list.h.cmake)
 

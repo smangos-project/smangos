@@ -23,7 +23,6 @@
 #define MANGOS_WORLDSTATES_H
 
 #include "Platform/Define.h"
-#include "Progression.h"
 #include "ByteBuffer.h"
 
 enum WorldStates

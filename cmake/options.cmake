@@ -29,9 +29,6 @@ if(USE_REALMMERGE)
   set(BUILD_REALMMERGE ON CACHE BOOL "Build helper tool for merging character databases" FORCE)
 endif()
 
-# Other options
-set(SUPPORTED_CLIENT_BUILD "CLIENT_BUILD_1_12_1" CACHE STRING "Client version the core will support")
-
 if(UNIX)
   option(DEBUG_SYMBOLS "Include Debug Symbols" ON)
 endif()
@@ -83,7 +80,6 @@ message(STATUS
     BUILD_EXTRACTORS          Build extractors
     BUILD_REALMMERGE          Build helper tool for merging character databases
     ENABLE_MAILSENDER         Enables support for sending emails via sendgrid.com (requires libcurl)
-    SUPPORTED_CLIENT_BUILD    Client version the core will support
     ENABLE_CPPTRACE           Enables cpptrace stack tracing; can be disabled if using other tools like GDB
     ENABLE_REALBOTS           Build the RealBots client bot framework
     BUILD_TESTING             Build unit and conformance test suites

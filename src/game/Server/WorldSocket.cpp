@@ -23,6 +23,7 @@
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #include "WorldSession.h"
+#include "Bnet/BnetClientBuild.h"
 
 #include "World.h"
 #include "AccountMgr.h"
@@ -405,7 +406,7 @@ WorldSocket::HandlerResult WorldSocket::HandleAuthSession(ByteBuffer& data)
 
     m_Session = new WorldSession(accountId, this->shared_from_this(), security, mutetime, locale);
     m_Session->SetUsername(username);
-    m_Session->SetGameBuild(58797);
+    m_Session->SetGameBuild(BNET_CLIENT_BUILD);
     m_Session->SetAccountFlags(accFlags);
     m_Session->SetVerifiedEmail(verifiedEmail);
     m_Session->SetWorldSessionKeyBytes(sessionKey);

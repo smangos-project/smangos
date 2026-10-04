@@ -44,6 +44,7 @@
 #include "DBCStores.h"
 #include "StoreDump.h"
 #include "WorldSocketMgr.h"
+#include "Bnet/BnetClientBuild.h"
 #include "Bnet/BnetRealmList.h"
 #include "IO/Context/IoContext.h"
 #include "IO/Multithreading/CreateThread.h"
@@ -196,12 +197,9 @@ bool Master::Start(std::string const& dumpStoresDir)
     m_worldThread = IO::Multithreading::CreateThread("WorldRunnable", WorldRunnable());
     // world_thread.setPriority(ACE_Based::Highest); // TODO
 
-    // set realmbuilds depend on mangosd expected builds, and set server online
+    // set realmbuilds and set server online
     {
-        std::string builds = AcceptableClientBuildsListStr();
-        LoginDatabase.escape_string(builds);
-
-        LoginDatabase.DirectPExecute("UPDATE `realmlist` SET `realmflags` = `realmflags` & ~(%u), `population` = 0, `realmbuilds` = '%s'  WHERE `id` = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
+        LoginDatabase.DirectPExecute("UPDATE `realmlist` SET `realmflags` = `realmflags` & ~(%u), `population` = 0, `realmbuilds` = '%u'  WHERE `id` = '%u'", REALM_FLAG_OFFLINE, BNET_CLIENT_BUILD, realmID);
         sBnetRealmList.Invalidate();
     }
 

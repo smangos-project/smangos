@@ -808,11 +808,7 @@ void WorldSession::HandleAreaTriggerOpcode(AreaTrigger const& packet)
 
 void WorldSession::HandleUpdateAccountData(AccountDataUpdate const& packet)
 {
-    NewAccountData::AccountDataType dataType;
-    if (GetGameBuild() <= CLIENT_BUILD_1_8_4)
-        dataType = ConvertOldAccountDataToNew(packet.DataType);
-    else
-        dataType = static_cast<NewAccountData::AccountDataType>(packet.DataType);
+    NewAccountData::AccountDataType dataType = static_cast<NewAccountData::AccountDataType>(packet.DataType);
 
     if (dataType >= NewAccountData::NUM_ACCOUNT_DATA_TYPES)
     {
@@ -852,11 +848,7 @@ void WorldSession::HandleUpdateAccountData(AccountDataUpdate const& packet)
 
 void WorldSession::HandleRequestAccountData(AccountDataRequest const& packet)
 {
-    NewAccountData::AccountDataType dataType;
-    if (GetGameBuild() <= CLIENT_BUILD_1_8_4)
-        dataType = ConvertOldAccountDataToNew(packet.DataType);
-    else
-        dataType = (NewAccountData::AccountDataType)packet.DataType;
+    NewAccountData::AccountDataType dataType = static_cast<NewAccountData::AccountDataType>(packet.DataType);
 
     if (dataType >= NewAccountData::NUM_ACCOUNT_DATA_TYPES)
     {

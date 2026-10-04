@@ -29,8 +29,6 @@
 
 #include <list>
 
-bool IsAcceptableClientBuild(uint32 build);
-std::string AcceptableClientBuildsListStr();
 
 char const* GetPetName(uint32 petfamily, uint32 dbclang);
 uint32 GetTalentSpellCost(uint32 spellId);

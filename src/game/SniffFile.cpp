@@ -17,6 +17,7 @@
 #include "SniffFile.h"
 #include "Errors.h"
 #include "Log.h"
+#include "Bnet/BnetClientBuild.h"
 
 SniffFile::SniffFile(FILE* pFile) : m_file(pFile)
 {
@@ -41,7 +42,7 @@ void SniffFile::WriteHeader()
     fwrite("PKT", 1, 3, m_file);
     uint16 sniffVersion = 0x201;
     fwrite(&sniffVersion, sizeof(uint16), 1, m_file);
-    uint16 gameBuild = SUPPORTED_CLIENT_BUILD;
+    uint16 gameBuild = BNET_CLIENT_BUILD;
     fwrite(&gameBuild, sizeof(uint16), 1, m_file);
     uint8 zero = 0;
     for (int i = 0; i < 40; i++)

@@ -27,6 +27,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Config/Config.h"
 #include "Platform/Define.h"
+#include "Bnet/BnetClientBuild.h"
 #include "SystemConfig.h"
 #include "Log.h"
 #include "Opcodes.h"
@@ -1825,7 +1826,7 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "==========================================================");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Current content is set to %s.", GetPatchName());
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Supported client build is set to %u.", SUPPORTED_CLIENT_BUILD);
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Supported client build is set to %u.", BNET_CLIENT_BUILD);
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "==========================================================");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 

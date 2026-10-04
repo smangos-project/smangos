@@ -3,8 +3,7 @@
 
 #include "Common.h"
 
-// The one modern client this server speaks. Independent of SUPPORTED_CLIENT_BUILD, which still
-// selects the legacy data layouts.
+// The one client build this server speaks.
 constexpr uint32 BNET_CLIENT_BUILD = 58797;
 constexpr uint32 BNET_CLIENT_VERSION_MAJOR = 1;
 constexpr uint32 BNET_CLIENT_VERSION_MINOR = 15;

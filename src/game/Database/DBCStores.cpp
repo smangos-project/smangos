@@ -107,28 +107,8 @@ DBCStorage <TransportAnimationEntry> sTransportAnimationStore(TransportAnimation
 
 DBCStorage <WMOAreaTableEntry>  sWMOAreaTableStore(WMOAreaTableEntryfmt);
 std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> sWMOAreaInfoByTripple;
-//DBCStorage <WorldMapOverlayEntry> sWorldMapOverlayStore(WorldMapOverlayEntryfmt);
 
 typedef std::vector<std::string> StoreProblemList;
-
-bool IsAcceptableClientBuild(uint32 build)
-{
-    int accepted_versions[] = EXPECTED_MANGOSD_CLIENT_BUILD;
-    for (int i = 0; accepted_versions[i]; ++i)
-        if (int(build) == accepted_versions[i])
-            return true;
-
-    return false;
-}
-
-std::string AcceptableClientBuildsListStr()
-{
-    std::ostringstream data;
-    int accepted_versions[] = EXPECTED_MANGOSD_CLIENT_BUILD;
-    for (int i = 0; accepted_versions[i]; ++i)
-        data << accepted_versions[i] << " ";
-    return data.str();
-}
 
 template<class T, class Fill>
 static void LoadDBCFromWorld(BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, char const* table, char const* columns, Fill fill, char const* orderBy = "")
