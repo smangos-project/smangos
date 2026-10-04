@@ -343,6 +343,10 @@ if (BUILD_DATABASE_TOOL)
     add_subdirectory(tools/database_tool)
 endif()
 
+if (BUILD_MAP_EXTRACTOR)
+    add_subdirectory(tools/map_extractor)
+endif()
+
 if (BUILD_CASC_EXTRACTOR)
     add_subdirectory(tools/casc_extractor)
 endif()
