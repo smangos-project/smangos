@@ -332,6 +332,15 @@ static VerifySpecColumns ReadSpecColumns(std::filesystem::path const& specDir)
     return spec;
 }
 
+// False when columns.tsv marks every column of the table `drop`: it needs no mapping.
+static bool KeepsData(VerifySpecColumns const& spec, std::string const& key)
+{
+    auto columns = spec.rows.find(key);
+    return columns == spec.rows.end() ||
+           std::any_of(columns->second.begin(), columns->second.end(),
+                       [](SpecColumnRow const& row) { return row.disposition != "drop"; });
+}
+
 // V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
 // A table whose columns are all `drop` needs no mapping.
 static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& specDir,
@@ -353,11 +362,7 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
         std::filesystem::path mappingPath = verifyDir / "srv" / (table + ".sql");
         if (!std::filesystem::exists(mappingPath))
         {
-            auto columns = spec.rows.find("srv:" + table);
-            bool keepsData = columns == spec.rows.end() ||
-                             std::any_of(columns->second.begin(), columns->second.end(),
-                                         [](SpecColumnRow const& row) { return row.disposition != "drop"; });
-            if (keepsData)
+            if (KeepsData(spec, "srv:" + table))
                 result.problems.push_back({ "V1", originalTable, "no mapping file srv/" + table + ".sql" });
             continue;
         }
@@ -405,11 +410,7 @@ static void VerifyVanillaTables(DoltLiteDatabase& db, std::filesystem::path cons
             continue;
         }
 
-        auto columns = spec.rows.find("vdbc:" + table);
-        bool keepsData = columns == spec.rows.end() ||
-                         std::any_of(columns->second.begin(), columns->second.end(),
-                                     [](SpecColumnRow const& row) { return row.disposition != "drop"; });
-        if (!keepsData)
+        if (!KeepsData(spec, "vdbc:" + table))
             continue;
         if (options.final)
             result.problems.push_back({ "V2", originalTable, "no mapping file vdbc/" + name + ".sql" });
@@ -947,11 +948,12 @@ VerifyInitResult InitVerifyMappings(std::filesystem::path const& referencePath, 
     try
     {
         DoltLiteDatabase db(referencePath.string());
+        VerifySpecColumns spec = ReadSpecColumns(specDir);
         for (std::string const& originalTable : TablesWithPrefix(db, "main", "srv_"))
         {
             std::string table = originalTable.substr(4);
             std::filesystem::path path = verifyDir / "srv" / (table + ".sql");
-            if (std::filesystem::exists(path))
+            if (std::filesystem::exists(path) || !KeepsData(spec, "srv:" + table))
                 continue;
 
             std::vector<VerifyTableColumn> columns = ReadTableColumns(db, "main", originalTable);

@@ -1,2 +1,46 @@
 table	column	rows	reason
 ChrRaces	ClientPrefix	1	race 9 is Gb in 1.12 and Go in the client; the ChrRaces phase 4 step decides
+ChrClasses	Flags	4	not read by the server; the client's flags stay
+CreatureDisplayInfo	TextureVariation1	10534	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	TextureVariation2	10534	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	TextureVariation3	10534	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	NPCSoundID	1	not read by the server; the client's sound stays
+CreatureDisplayInfoExtra	DisplaySexID	1	not read by the server; the client's look stays
+CreatureDisplayInfoExtra	SkinID	2	not read by the server; the client's look stays
+CreatureDisplayInfoExtra	FaceID	176	not read by the server; the client's look stays
+CreatureDisplayInfoExtra	HairStyleID	3	not read by the server; the client's look stays
+CreatureDisplayInfoExtra	HairColorID	3	not read by the server; the client's look stays
+CreatureDisplayInfoExtra	FacialHairID	3	not read by the server; the client's look stays
+CreatureFamily	IconFile	23	1.15 holds file ids, 1.12 icon paths
+CreatureModelData	BloodID	122	not read by the server; the client's value stays (mostly 1.12 -1)
+CreatureModelData	FootprintTextureID	133	client encoding of "none" (0, 1.12 -1)
+CreatureModelData	CollisionWidth	417	not read by the server; the client's recomputed widths stay
+NamesProfanity	(missing)	16	the name filters are the client's lists
+NamesProfanity	Name	684	the name filters are the client's lists (\b instead of \< \>)
+NamesReserved	(missing)	232	the name filters are the client's lists
+NamesReserved	Name	1791	the name filters are the client's lists (\b instead of \< \>)
+SkillLine	SpellIconID	119	1.15 holds file ids, 1.12 icon ids
+SpellItemEnchantment	EffectPointsMax1	1	not read by the server (it reads EffectPointsMin); the client's value stays
+SpellShapeshiftForm	AttackIconID	3	1.15 holds file ids, 1.12 icon ids
+TalentTab	SpellIconID	27	1.15 holds file ids, 1.12 icon ids
+WMOAreaTable	SoundProviderPref	186	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	SoundProviderPrefUnderwater	1	not read by the server; the client's sound stays
+WMOAreaTable	AmbienceID	11	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	ZoneMusic	80	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	AreaName_lang	6	1.12 stored the apostrophe in a non-UTF-8 code page
+ItemSet	SetSpellID1	18	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID2	19	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID3	20	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID4	20	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID5	18	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID6	11	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID7	6	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetSpellID8	3	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold1	18	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold2	19	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold3	20	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold4	20	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold5	17	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold6	11	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold7	6	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+ItemSet	SetThreshold8	3	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
