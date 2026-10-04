@@ -7,6 +7,7 @@ add_executable(map_extractor
   Cache/Manifest.cpp
   Map/MapStage.cpp
   Formats/Wdt.cpp
+  Vmap/RawModels.cpp
 )
 
 target_include_directories(map_extractor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

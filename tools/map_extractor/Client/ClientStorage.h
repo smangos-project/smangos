@@ -28,6 +28,9 @@ public:
     // Relative path (lowercase, '/') for a FileDataID; files without a name live under _unnamed/.
     std::string PathOf(uint32_t fileDataId) const;
 
+    // 0 if the (any case, any slash) path is not in the index.
+    uint32_t FileDataIdOf(std::string const& path) const;
+
     static std::string Normalize(std::string path);
 
     bool Exists(std::string const& relPath) const;
@@ -41,6 +44,7 @@ public:
 private:
     std::filesystem::path m_root;
     std::unordered_map<uint32_t, std::string> m_paths;
+    std::unordered_map<std::string, uint32_t> m_ids;
 };
 
 #endif

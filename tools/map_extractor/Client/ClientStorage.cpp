@@ -36,7 +36,9 @@ std::string ClientStorage::Load()
         size_t end = path.find(';');
         if (end != std::string::npos)
             path.resize(end);
-        m_paths[id] = Normalize(std::move(path));
+        path = Normalize(std::move(path));
+        m_ids.emplace(path, id);
+        m_paths[id] = std::move(path);
     }
     return {};
 }
@@ -47,6 +49,12 @@ std::string ClientStorage::PathOf(uint32_t fileDataId) const
     if (itr != m_paths.end())
         return itr->second;
     return "_unnamed/" + std::to_string(fileDataId);
+}
+
+uint32_t ClientStorage::FileDataIdOf(std::string const& path) const
+{
+    auto itr = m_ids.find(Normalize(path));
+    return itr == m_ids.end() ? 0 : itr->second;
 }
 
 bool ClientStorage::Exists(std::string const& relPath) const
