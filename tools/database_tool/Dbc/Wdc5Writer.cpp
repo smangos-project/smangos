@@ -173,6 +173,14 @@ namespace
         return fields;
     }
 
+    // The client misreads scalar fields stored without compression, so ints and floats are
+    // written as Immediate (bit-packed); arrays and strings stay uncompressed.
+    bool IsImmediateField(DbcFieldMeta const& field, int width)
+    {
+        bool numeric = field.type == DbcFieldType::Int || field.type == DbcFieldType::Float;
+        return numeric && field.arrayLength == 1 && width <= 4;
+    }
+
     Wdc5WriteResult WriteRegular(DbcTableMeta const& table, Wdc5FileInfo const& info, std::vector<Wdc5Row> const& rows)
     {
         FieldLookup lookup = ComputeFieldLookup(table);
@@ -203,6 +211,9 @@ namespace
             std::memcpy(record, recordBuf.data(), recordSize);
         }
 
+        if (stringTable.empty())
+            stringTable.assign(2, '\0'); // the client's files always carry a string block
+
         uint32_t minId = rows.empty() ? 0 : RowId(rows[order.front()], lookup);
         uint32_t maxId = rows.empty() ? 0 : RowId(rows[order.back()], lookup);
 
@@ -211,6 +222,11 @@ namespace
             for (size_t i = 0; i < inRecordFields.size(); ++i)
                 if (inRecordFields[i].fieldIndex == static_cast<uint32_t>(lookup.idFieldIndex))
                     indexField = static_cast<int16_t>(i);
+
+        size_t packedStart = recordSize;
+        for (InRecordField const& f : inRecordFields)
+            if (IsImmediateField(table.fields[f.fieldIndex], f.width))
+                packedStart = std::min(packedStart, f.byteOffset);
 
         std::vector<uint8_t> file;
         uint32_t fieldCount = static_cast<uint32_t>(inRecordFields.size());
@@ -231,7 +247,7 @@ namespace
         PutU16(file, flags);
         PutI16(file, indexField);
         PutU32(file, fieldCount);            // totalFieldCount
-        PutU32(file, static_cast<uint32_t>(recordSize)); // packedDataOffset (unused; no packed fields)
+        PutU32(file, static_cast<uint32_t>(packedStart)); // packedDataOffset
         PutU32(file, lookup.relationNonInline ? 1u : 0u); // parentLookupCount
         PutU32(file, fieldCount * 24);        // columnMetaSize
         PutU32(file, 0);                      // commonDataSize
@@ -254,7 +270,20 @@ namespace
         PutU32(file, 0); // catalogDataCount
         PutU32(file, 0); // copyTableCount
 
-        file.insert(file.end(), static_cast<size_t>(fieldCount) * 4, 0); // field entries, unused
+        for (InRecordField const& f : inRecordFields)
+        {
+            DbcFieldMeta const& field = table.fields[f.fieldIndex];
+            if (IsImmediateField(field, f.width))
+            {
+                PutI16(file, 32);
+                PutU16(file, static_cast<uint16_t>(packedStart));
+            }
+            else
+            {
+                PutI16(file, static_cast<int16_t>(std::max(0, 32 - f.width * 8)));
+                PutU16(file, static_cast<uint16_t>(f.byteOffset));
+            }
+        }
 
         for (InRecordField const& f : inRecordFields)
         {
@@ -262,10 +291,20 @@ namespace
             PutU16(file, static_cast<uint16_t>(f.byteOffset * 8));
             PutU16(file, static_cast<uint16_t>(f.width * 8 * field.arrayLength));
             PutU32(file, 0); // additionalDataSize
-            PutU32(file, 0); // compressionType: None
-            PutU32(file, 0);
-            PutU32(file, 0);
-            PutU32(file, 0);
+            if (IsImmediateField(field, f.width))
+            {
+                PutU32(file, 1); // compressionType: Immediate
+                PutU32(file, static_cast<uint32_t>((f.byteOffset - packedStart) * 8));
+                PutU32(file, static_cast<uint32_t>(f.width * 8));
+                PutU32(file, field.isSigned ? 1u : 0u);
+            }
+            else
+            {
+                PutU32(file, 0); // compressionType: None
+                PutU32(file, 0);
+                PutU32(file, 0);
+                PutU32(file, 0);
+            }
         }
 
         uint32_t fileOffset = static_cast<uint32_t>(file.size());
@@ -279,14 +318,16 @@ namespace
 
         if (lookup.relationNonInline)
         {
+            std::vector<uint32_t> parents;
+            for (uint32_t index : order)
+                parents.push_back(static_cast<uint32_t>(
+                    rows[index][lookup.flattenedStart[lookup.relationFieldIndex]].intValue));
             PutU32(file, static_cast<uint32_t>(rows.size())); // NumEntries
-            PutU32(file, minId);
-            PutU32(file, maxId);
-            for (uint32_t r = 0; r < order.size(); ++r)
+            PutU32(file, parents.empty() ? 0 : *std::min_element(parents.begin(), parents.end()));
+            PutU32(file, parents.empty() ? 0 : *std::max_element(parents.begin(), parents.end()));
+            for (uint32_t r = 0; r < parents.size(); ++r)
             {
-                uint32_t parentId = static_cast<uint32_t>(
-                    rows[order[r]][lookup.flattenedStart[lookup.relationFieldIndex]].intValue);
-                PutU32(file, parentId);
+                PutU32(file, parents[r]);
                 PutU32(file, r);
             }
         }
