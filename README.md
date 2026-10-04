@@ -26,7 +26,19 @@ If your client still has its CASC storage (`.build.info` and `Data/` next to `_c
 
 ### 2. Map data
 
-Extract `maps`, `vmaps` and `mmaps` for the client and note the folder that holds them.
+`map_extractor` builds `maps`, `vmaps` and `mmaps` from `.client/Content/` into `.server/data/` (override with `--output`):
+
+    cmake -S . -B build -DBUILD_MAP_EXTRACTOR=ON
+    cmake --build build --target map_extractor
+    build/tools/map_extractor/map_extractor --stages map,vmap --threads 16
+
+`map` and `vmap` take seconds to minutes and must cover all maps (the server refuses partial vmaps). `mmap` takes hours for the whole world, so build it for a region, e.g. Northshire:
+
+    build/tools/map_extractor/map_extractor --stages mmap --map 0 --tiles 47,31,49,33 --threads 16
+
+and set `mmap.enabled = 1` in `.server/config/mangosd.conf`. Unchanged work is skipped on rerun. See `tools/map_extractor/README.md`.
+
+If you extract the data elsewhere, pass that folder as `SERVER_MAP_DATA_DIR` in step 3.
 
 ### 3. Build
 
