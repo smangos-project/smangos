@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "ControlServer.hpp"
+#include "Overlay.hpp"
 
 #include "ControlCapture.hpp"
 #include "ControlInput.hpp"
@@ -471,6 +472,11 @@ static Response Route(Request const& request)
         return HandleStatus();
     if (get && request.path == "/screenshot")
         return HandleScreenshot(query);
+    if (post && request.path == "/overlay") {
+        for (auto const& [key, value] : request.query)
+            SetOverlayParameter(key, std::strtof(value.c_str(), nullptr));
+        return JsonResponse(200, Json{{"ok", true}});
+    }
     if (get && request.path == "/mem")
         return HandleMem(query);
     if (post) {

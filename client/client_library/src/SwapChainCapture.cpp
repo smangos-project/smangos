@@ -178,14 +178,21 @@ bool CopyBackBuffer(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue)
     return true;
 }
 
+PresentCallback OverlayCallback = nullptr;
+
 void OnPresent(IDXGISwapChain* swapChain)
 {
     ID3D12CommandQueue* queue;
     {
         std::lock_guard<std::mutex> lock(StateMutex);
+        queue = DirectQueue;
+    }
+    if (OverlayCallback && queue)
+        OverlayCallback(swapChain, queue, [](ID3D12CommandQueue* q, UINT n, ID3D12CommandList* const* l) { OriginalExecute(q, n, l); });
+    {
+        std::lock_guard<std::mutex> lock(StateMutex);
         if (!Requested)
             return;
-        queue = DirectQueue;
     }
     bool const ok = CopyBackBuffer(swapChain, queue);
     {
@@ -288,15 +295,23 @@ bool InstallHooks()
 
 } // namespace
 
+bool EnsureSwapChainHooks()
+{
+    std::lock_guard<std::mutex> lock(HookMutex);
+    if (!HooksInstalled)
+        HooksInstalled = InstallHooks();
+    return HooksInstalled;
+}
+
+void SetPresentCallback(PresentCallback callback)
+{
+    OverlayCallback = callback;
+}
+
 bool CaptureSwapChain(int& width, int& height, std::vector<std::uint8_t>& pixels)
 {
-    {
-        std::lock_guard<std::mutex> lock(HookMutex);
-        if (!HooksInstalled)
-            HooksInstalled = InstallHooks();
-        if (!HooksInstalled)
-            return false;
-    }
+    if (!EnsureSwapChainHooks())
+        return false;
 
     std::unique_lock<std::mutex> lock(StateMutex);
     // Present runs once a frame; the first frames after installing may still miss the queue.
