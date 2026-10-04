@@ -1,6 +1,6 @@
 INSERT INTO `migrations` VALUES ('20260930030000');
-
 -- Vanilla values: item-level durability costs past the client's 100 rows, the armor cost of levels 99-100, and one quality multiplier.
+
 UPDATE `dbc_durabilityquality` SET `Data` = 1.7280000448226929 WHERE `ID` = 11;
 UPDATE `dbc_durabilitycosts` SET `ArmorSubClassCost7` = 141 WHERE `ID` = 99;
 UPDATE `dbc_durabilitycosts` SET `ArmorSubClassCost7` = 143 WHERE `ID` = 100;

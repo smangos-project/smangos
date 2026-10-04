@@ -1,26 +1,22 @@
 INSERT INTO `migrations` VALUES ('20260930070000');
-
 -- Vanilla spell durations, shapeshift forms and item enchantments where the client differs.
-INSERT INTO `dbc_spellduration` (`ID`, `Duration`, `DurationPerLevel`, `MaxDuration`) VALUES (507, 1100, 0, 1100);
-INSERT INTO `dbc_spellduration` (`ID`, `Duration`, `DurationPerLevel`, `MaxDuration`) VALUES (508, 1100, 0, 1100);
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = 'Tree Form', `Flags` = 16, `CreatureType` = -1 WHERE `ID` = 2;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = 'Battle Stance', `Flags` = 7, `CreatureType` = -1 WHERE `ID` = 17;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = '', `Flags` = 0, `CreatureType` = 0 WHERE `ID` = 22;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = '', `Flags` = 0, `CreatureType` = 0 WHERE `ID` = 24;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = 'Shadowform', `Flags` = 9, `CreatureType` = -1 WHERE `ID` = 28;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = 'Moonkin Form', `Flags` = 65, `CreatureType` = -1 WHERE `ID` = 31;
-UPDATE `dbc_spellshapeshiftform` SET `Name_lang` = 'Spirit of Redemption', `Flags` = 0, `CreatureType` = -1 WHERE `ID` = 32;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 8029, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 3;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 8028, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 4;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 8026, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 5;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 15, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 705, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 1, `Flags` = 0 WHERE `ID` = 25;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 10, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 205, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 27, `Flags` = 0 WHERE `ID` = 26;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 20, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 8233, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 81, `Flags` = 1 WHERE `ID` = 283;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 20, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 8236, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 81, `Flags` = 1 WHERE `ID` = 284;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 10445, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 523;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 20, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 10484, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 81, `Flags` = 1 WHERE `ID` = 525;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 16343, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 1665;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 100, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 16344, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 32, `Flags` = 1 WHERE `ID` = 1666;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 20, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 16361, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 81, `Flags` = 1 WHERE `ID` = 1669;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 1, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 0, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 20007, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = 103, `Flags` = 0 WHERE `ID` = 1900;
-UPDATE `dbc_spellitemenchantment` SET `Effect1` = 3, `Effect2` = 0, `Effect3` = 0, `EffectPointsMin1` = 0, `EffectPointsMin2` = 0, `EffectPointsMin3` = 0, `EffectArg1` = 9346, `EffectArg2` = 0, `EffectArg3` = 0, `ItemVisual` = -1, `Flags` = 1 WHERE `ID` = 2605;
+
+INSERT INTO `dbc_spellduration` (`ID`, `Duration`, `DurationPerLevel`, `MaxDuration`) SELECT `ID`, `Duration`, `DurationPerLevel`, `MaxDuration` FROM `vdbc_spellduration` WHERE `ID` IN (507, 508);
+UPDATE `dbc_spellshapeshiftform` SET
+  `Name_lang` = (SELECT v.`Name_lang` FROM `vdbc_spellshapeshiftform` v WHERE v.`ID` = `dbc_spellshapeshiftform`.`ID`),
+  `Flags` = (SELECT v.`Flags` FROM `vdbc_spellshapeshiftform` v WHERE v.`ID` = `dbc_spellshapeshiftform`.`ID`),
+  `CreatureType` = (SELECT v.`CreatureType` FROM `vdbc_spellshapeshiftform` v WHERE v.`ID` = `dbc_spellshapeshiftform`.`ID`)
+WHERE `ID` IN (2, 17, 22, 24, 28, 31, 32);
+UPDATE `dbc_spellitemenchantment` SET
+  `Effect1` = (SELECT v.`Effect1` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `Effect2` = (SELECT v.`Effect2` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `Effect3` = (SELECT v.`Effect3` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectPointsMin1` = (SELECT v.`EffectPointsMin1` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectPointsMin2` = (SELECT v.`EffectPointsMin2` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectPointsMin3` = (SELECT v.`EffectPointsMin3` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectArg1` = (SELECT v.`EffectArg1` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectArg2` = (SELECT v.`EffectArg2` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `EffectArg3` = (SELECT v.`EffectArg3` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `ItemVisual` = (SELECT v.`ItemVisual` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`),
+  `Flags` = (SELECT v.`Flags` FROM `vdbc_spellitemenchantment` v WHERE v.`ID` = `dbc_spellitemenchantment`.`ID`)
+WHERE `ID` IN (3, 4, 5, 25, 26, 283, 284, 523, 525, 1665, 1666, 1669, 1900, 2605);
