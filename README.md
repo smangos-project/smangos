@@ -1,53 +1,49 @@
-[![CI Build](https://github.com/vmangos/core/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/vmangos/core/actions/workflows/ci-build.yaml)
+# smangos
 
+A vmangos-based server for the 1.15 Classic Era client. It reuses the vmangos game logic and speaks the modern client protocol; the world database is a DoltLite file (`.world/world.doltlite`), not MySQL.
 
-# Progressive Vanilla
-This project is an independent continuation of the Elysium / LightsHope codebases, focused on delivering the most complete and accurate content progression system possible, including support for the patch appropriate game clients.
+## Setup
 
-### Currently supported builds
-- 1.12.1.5875+
-- 1.11.2.5464
-- 1.10.2.5302
-- 1.9.4.5086
-- 1.8.4.4878
-- 1.7.1.4695
-- 1.6.1.4544
-- 1.5.1.4449
-<!--- 1.4.2.4375
-- 1.3.1.4297
-- 1.2.4.4222-->
+### 1. Client files
 
-### Project guidelines
-- Accuracy: The point of an emulator is to recreate the functionality of that which it is emulating as closely as possible. Therefore any custom behaviour should be behind a config option and off by default.
-- DB Scripting: Content should be separate from the core itself, so hardcoding scripts should be avoided where possible. When database scripting functionality is insufficient, we simply expand it.
-- Full progression: The ultimate goal of this project is to have complete progression starting from patch 1.2 through 1.12. This means every piece of data must be marked with the patch in which it was added or changed to it's current state.
-- Tools are great: Content creation should not require programming knowledge. We hope to eventually provide tools that allow for user-friendly editing of database scripts and content, with all data presented in human-readable form.
+Put a stock 1.15 Classic Era client in `.client/_classic_era_/` (the folder with `WowClassic.exe`) and provide these folders in `.client/`:
 
-### Running the server
+- `Content/dbfilesclient/`: the client's `.db2` files.
+- `vanilla/dbc/`: the vanilla 1.12 `.dbc` files.
 
-The server runs from `.server` (git-ignored): `config/` holds `common.conf` (databases, directories, logging),
-`mangosd.conf` and `bnetserver.conf`, `data/` the map data, `logs/` every log.
+`database_tool` checks both against the hashes in `tools/database_tool/Inputs/` and refuses to run on anything else.
 
-1. Configure once with `-DSERVER_MAP_DATA_DIR=<your maps folder>` (`vmaps` and `mmaps` next to it are linked too).
-2. Build the `server_setup` target. It builds `server` and creates whatever of `.server` is missing; it never overwrites.
-3. Build the world database with `database_tool create` (see `tools/database_tool/README.md`). It writes
-   `.world/world.doltlite`; the world is not a MySQL database.
-4. Edit the database strings in `.server/config/common.conf`.
-5. Run `bin/<config>/server` from anywhere. `--services mangosd` or `--services bnetserver` runs only one
-   (default: `Server.Services` in `common.conf`); `--server-dir <dir>` uses another server directory.
+### 2. Map data
 
-### Running the bot tests
+Extract `maps`, `vmaps` and `mmaps` for the client and note the folder that holds them.
 
-`cmake --build build --config <config> --target bot_tests` builds `server`, `tests-realbots` and `tests-conformance`, then runs the
-RealBots unit tests and the conformance suite against `.server`. It starts the server when nothing listens on the RPC port, creates
-the bot accounts listed in `.server/config/tests-conformance.conf` (made by `server_setup`) through its console, and stops it
-afterwards; a server that is already running is used as it is. Extra switches (`-Strict`, `-NoServer`, `-Filter "char_screen*"` to run only matching scenarios) go in `-DBOT_TESTS_ARGS="-Strict"`.
+### 3. Build
 
-### Downloads
-- [![Development Release](https://github.com/vmangos/core/actions/workflows/development-release.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/latest) Latest development build (Linux, macOS, and Windows)
+    cmake -S . -B build -DSERVER_MAP_DATA_DIR=<your maps folder>
+    cmake --build build -j --target server_setup database_tool
 
-### Useful Links
-- [Wiki](https://github.com/vmangos/wiki)
-- [Discord](https://discord.gg/x9a2jt7)
-- [Script Editor](https://github.com/brotalnia/scripteditor)
-- [Script Converter](https://github.com/vmangos/ScriptConverter)
+`server_setup` builds `server` and creates the missing parts of `.server/` (`config/`, `data/`, `logs/`). It never overwrites existing files.
+
+### 4. World database
+
+    build/tools/database_tool/database_tool create
+
+This downloads the pinned vmangos dump into `.world/cache/` (GitHub, with a mirror as fallback), imports it, applies `sql/migrations/` and imports the client's db2 tables into `.world/world.doltlite`. It takes several minutes and refuses to run if the file already exists. See `tools/database_tool/README.md` for the other commands.
+
+To make the client load the server's own db2 files (needed for the riding trainer and other server-side spell changes), run `database_tool export --format db2 --client`. The original files are backed up in `.world/dbfilesclient-stock`.
+
+### 5. Run
+
+    build/src/server/server
+
+Edit the database settings in `.server/config/common.conf` first. `--services mangosd` or `--services bnetserver` starts only one service.
+
+### 6. Client (optional, Windows or Linux with wine)
+
+The patched launcher lets the client connect to this server. See `client/README.md` for building it, `client/launch-wine.sh` for starting it on Linux and `client/autologin.sh` for logging in without the login screen.
+
+## Tests
+
+    cmake --build build --target bot_tests
+
+Runs the RealBots unit tests and the conformance suite against `.server`. See `src/game/RealBots/README.md`.
