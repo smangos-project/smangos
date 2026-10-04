@@ -34,8 +34,8 @@ directory options:
 ```
 database_tool create   [--databases world] [--no-dbc-import]
 database_tool update   [--databases world]
-database_tool import   --format db2|dbc [--tables A,B]
-database_tool export   --format db2|dbc [--tables A,B]
+database_tool import   --format db2|dbc [--tables A,B] [--dir D]
+database_tool export   --format db2|dbc [--tables A,B] [--dir D]
 database_tool port-migration <file>...
 database_tool compare-world --mysql "<host;port;user;pass;db>"
 database_tool reference
@@ -66,8 +66,9 @@ Applies pending `_world` migrations to an existing `.world`.
 
 World only. `import` reads `dbfilesclient/<fileStem>.db2` (WDC5) or `.dbc` (WDBC) for every table
 with a resolved WoWDBDefs definition (or just the ones named in `--tables`, comma-separated),
-recreating and repopulating that table's `dbc_<name>` and its `dbc_files` bookkeeping row.
-`export` does the reverse, rebuilding the file from `dbc_<name>`. `--format db2` always writes
+recreating and repopulating that table's `dbc_<name>` and its `dbc_files` bookkeeping row;
+`--dir` reads another directory. `export` does the reverse, writing each file from `dbc_<name>`
+into `.world/dbfilesclient/` (or `--dir`). `--format db2` always writes
 WDC5, one section, every field uncompressed at its natural width, sorted by id (dbc-formats.md);
 sparse layout is kept for the four tables that need it. `--format dbc` writes plain WDBC (no
 compression or sections at all). A table with no file (`import`) or no `dbc_files` row (`export`)

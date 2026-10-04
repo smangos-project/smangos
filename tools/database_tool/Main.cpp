@@ -121,17 +121,20 @@ namespace
         return 0;
     }
 
-    // import --format db2|dbc [--tables A,B]
+    // import --format db2|dbc [--tables A,B] [--dir D]
     int RunImport(std::vector<std::string> const& args)
     {
         std::string format;
         std::vector<std::string> onlyTables;
+        std::filesystem::path directory = DbfilesclientDir();
         for (size_t i = 0; i < args.size(); ++i)
         {
             if (args[i] == "--format" && i + 1 < args.size())
                 format = args[++i];
             else if (args[i] == "--tables" && i + 1 < args.size())
                 onlyTables = SplitCsv(args[++i]);
+            else if (args[i] == "--dir" && i + 1 < args.size())
+                directory = args[++i];
         }
 
         if (format != "db2" && format != "dbc")
@@ -149,8 +152,8 @@ namespace
 
         DoltLiteDatabase world(worldPath.string());
         DbcImportResult result = format == "db2"
-            ? ImportDb2Files(world, DbfilesclientDir(), onlyTables)
-            : ImportDbcFiles(world, DbfilesclientDir(), onlyTables);
+            ? ImportDb2Files(world, directory, onlyTables)
+            : ImportDbcFiles(world, directory, onlyTables);
         if (!result.error.empty())
         {
             std::printf("import: %s\n", result.error.c_str());
@@ -160,17 +163,20 @@ namespace
         return PrintDbcImportSummary(format.c_str(), result) ? 1 : 0;
     }
 
-    // export --format db2|dbc [--tables A,B]
+    // export --format db2|dbc [--tables A,B] [--dir D]
     int RunExport(std::vector<std::string> const& args)
     {
         std::string format;
         std::vector<std::string> onlyTables;
+        std::filesystem::path directory = SourceRoot() / ".world" / "dbfilesclient";
         for (size_t i = 0; i < args.size(); ++i)
         {
             if (args[i] == "--format" && i + 1 < args.size())
                 format = args[++i];
             else if (args[i] == "--tables" && i + 1 < args.size())
                 onlyTables = SplitCsv(args[++i]);
+            else if (args[i] == "--dir" && i + 1 < args.size())
+                directory = args[++i];
         }
 
         if (format != "db2" && format != "dbc")
@@ -186,10 +192,18 @@ namespace
             return 1;
         }
 
+        std::error_code ec;
+        std::filesystem::create_directories(directory, ec);
+        if (ec)
+        {
+            std::printf("export: cannot create %s: %s\n", directory.string().c_str(), ec.message().c_str());
+            return 1;
+        }
+
         DoltLiteDatabase world(worldPath.string());
         DbcExportResult result = format == "db2"
-            ? ExportDb2Files(world, DbfilesclientDir(), onlyTables)
-            : ExportDbcFiles(world, DbfilesclientDir(), onlyTables);
+            ? ExportDb2Files(world, directory, onlyTables)
+            : ExportDbcFiles(world, directory, onlyTables);
         if (!result.error.empty())
         {
             std::printf("export: %s\n", result.error.c_str());
