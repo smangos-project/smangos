@@ -1047,13 +1047,13 @@ srv	locales_creature	subname_loc5	server			non-enUS translation loaded into Crea
 srv	locales_creature	subname_loc6	server			non-enUS translation loaded into CreatureLocale::SubName[6] (ObjectMgr::LoadCreatureLocales, ObjectMgr.cpp:968); read in QueryHandler.cpp's creature query response	yes
 srv	locales_creature	subname_loc7	server			non-enUS translation loaded into CreatureLocale::SubName[7] (ObjectMgr::LoadCreatureLocales, ObjectMgr.cpp:968); read in QueryHandler.cpp's creature query response	yes
 srv	locales_creature	subname_loc8	server			non-enUS translation loaded into CreatureLocale::SubName[8] (ObjectMgr::LoadCreatureLocales, ObjectMgr.cpp:968); read in QueryHandler.cpp's creature query response	yes
-srv	locales_faction	entry	server			join key into m_FactionsMap (ObjectMgr::LoadFactions, ObjectMgr.cpp:8729)	yes
-srv	locales_faction	name_loc1	server			non-enUS translation loaded into FactionEntry::name[1] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
-srv	locales_faction	name_loc2	server			non-enUS translation loaded into FactionEntry::name[2] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
-srv	locales_faction	name_loc3	server			non-enUS translation loaded into FactionEntry::name[3] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
-srv	locales_faction	name_loc4	server			non-enUS translation loaded into FactionEntry::name[4] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
-srv	locales_faction	name_loc5	server			non-enUS translation loaded into FactionEntry::name[5] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
-srv	locales_faction	name_loc6	server			non-enUS translation loaded into FactionEntry::name[6] (ObjectMgr::LoadFactions, ObjectMgr.cpp:8741)	yes
+srv	locales_faction	entry	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc1	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc2	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc3	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc4	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc5	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_faction	name_loc6	drop			non-enUS translation; the server keeps the enUS string only	yes
 srv	locales_faction	description_loc1	drop			read but immediately discarded: ObjectMgr.cpp:8750 assigns it inside a commented-out "unused" block (FactionEntry::description is never populated)	yes
 srv	locales_faction	description_loc2	drop			read but immediately discarded: ObjectMgr.cpp:8750 assigns it inside a commented-out "unused" block (FactionEntry::description is never populated)	yes
 srv	locales_faction	description_loc3	drop			read but immediately discarded: ObjectMgr.cpp:8750 assigns it inside a commented-out "unused" block (FactionEntry::description is never populated)	yes
@@ -1203,19 +1203,19 @@ srv	locales_quest	ObjectiveText4_loc5	server			non-enUS translation of quest_tem
 srv	locales_quest	ObjectiveText4_loc6	server			non-enUS translation of quest_template.objectiveText4; loaded into QuestLocale::ObjectiveText4 (ObjectMgr::LoadQuestLocales, ObjectMgr.cpp:6257)	yes
 srv	locales_quest	ObjectiveText4_loc7	server			non-enUS translation of quest_template.objectiveText4; loaded into QuestLocale::ObjectiveText4 (ObjectMgr::LoadQuestLocales, ObjectMgr.cpp:6257)	yes
 srv	locales_quest	ObjectiveText4_loc8	server			non-enUS translation of quest_template.objectiveText4; loaded into QuestLocale::ObjectiveText4 (ObjectMgr::LoadQuestLocales, ObjectMgr.cpp:6257)	yes
-srv	locales_spell	entry	server			join key into mSpellEntryMap (SpellMgr::LoadSpells, SpellMgr.cpp:3749)	yes
-srv	locales_spell	name_loc1	server			non-enUS translation loaded into SpellEntry::SpellName[1] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	name_loc2	server			non-enUS translation loaded into SpellEntry::SpellName[2] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	name_loc3	server			non-enUS translation loaded into SpellEntry::SpellName[3] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	name_loc4	server			non-enUS translation loaded into SpellEntry::SpellName[4] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	name_loc5	server			non-enUS translation loaded into SpellEntry::SpellName[5] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	name_loc6	server			non-enUS translation loaded into SpellEntry::SpellName[6] (SpellMgr::LoadSpells, SpellMgr.cpp:3759); read back with the session locale in LookupCommands.cpp/UnitCommands.cpp	yes
-srv	locales_spell	nameSubtext_loc1	server			non-enUS translation loaded into SpellEntry::Rank[1] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
-srv	locales_spell	nameSubtext_loc2	server			non-enUS translation loaded into SpellEntry::Rank[2] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
-srv	locales_spell	nameSubtext_loc3	server			non-enUS translation loaded into SpellEntry::Rank[3] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
-srv	locales_spell	nameSubtext_loc4	server			non-enUS translation loaded into SpellEntry::Rank[4] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
-srv	locales_spell	nameSubtext_loc5	server			non-enUS translation loaded into SpellEntry::Rank[5] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
-srv	locales_spell	nameSubtext_loc6	server			non-enUS translation loaded into SpellEntry::Rank[6] (SpellMgr::LoadSpells, SpellMgr.cpp:3765) -- column name doesn't match the struct field it feeds, but the value is used (SpellEntry::Rank via .lookup/debug commands)	yes
+srv	locales_spell	entry	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc1	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc2	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc3	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc4	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc5	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	name_loc6	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc1	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc2	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc3	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc4	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc5	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_spell	nameSubtext_loc6	drop			non-enUS translation; the server keeps the enUS string only	yes
 srv	locales_spell	description_loc1	drop			read but immediately discarded: SpellMgr.cpp:3774 assigns it inside a commented-out "unused" block	yes
 srv	locales_spell	description_loc2	drop			read but immediately discarded: SpellMgr.cpp:3774 assigns it inside a commented-out "unused" block	yes
 srv	locales_spell	description_loc3	drop			read but immediately discarded: SpellMgr.cpp:3774 assigns it inside a commented-out "unused" block	yes
@@ -1228,13 +1228,13 @@ srv	locales_spell	auraDescription_loc3	drop			read but immediately discarded: Sp
 srv	locales_spell	auraDescription_loc4	drop			read but immediately discarded: SpellMgr.cpp:3780 assigns it inside a commented-out "unused" block	yes
 srv	locales_spell	auraDescription_loc5	drop			read but immediately discarded: SpellMgr.cpp:3780 assigns it inside a commented-out "unused" block	yes
 srv	locales_spell	auraDescription_loc6	drop			read but immediately discarded: SpellMgr.cpp:3780 assigns it inside a commented-out "unused" block	yes
-srv	locales_taxi_node	entry	server			join key into m_TaxiNodes (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9335)	yes
-srv	locales_taxi_node	name_loc1	server			non-enUS translation loaded into TaxiNodesEntry::name[1] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
-srv	locales_taxi_node	name_loc2	server			non-enUS translation loaded into TaxiNodesEntry::name[2] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
-srv	locales_taxi_node	name_loc3	server			non-enUS translation loaded into TaxiNodesEntry::name[3] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
-srv	locales_taxi_node	name_loc4	server			non-enUS translation loaded into TaxiNodesEntry::name[4] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
-srv	locales_taxi_node	name_loc5	server			non-enUS translation loaded into TaxiNodesEntry::name[5] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
-srv	locales_taxi_node	name_loc6	server			non-enUS translation loaded into TaxiNodesEntry::name[6] (ObjectMgr::LoadTaxiNodes, ObjectMgr.cpp:9345)	yes
+srv	locales_taxi_node	entry	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc1	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc2	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc3	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc4	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc5	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	locales_taxi_node	name_loc6	drop			non-enUS translation; the server keeps the enUS string only	yes
 srv	mail_loot_template	entry	server			mail template id key, LootStore::LoadLootTable (LootMgr.cpp:106,117); this LootStore is constructed with rate=false (LootMgr.cpp:50), unlike the loot tables above	yes
 srv	mail_loot_template	item	server			read at LootMgr.cpp:118	yes
 srv	mail_loot_template	ChanceOrQuestChance	server			read at LootMgr.cpp:119	yes
@@ -1246,13 +1246,13 @@ srv	mail_loot_template	patch_min	drop			progression removed	yes
 srv	mail_loot_template	patch_max	drop			progression removed	yes
 srv	mail_text_template	entry	dbc	dbc_mailtemplate.ID	identity	95/96 shared, 1 vanilla-only row needs a manual insert (data-plan.md 3.1)	yes
 srv	mail_text_template	content_default	dbc	dbc_mailtemplate.Body_lang	identity	the client's text equals the vanilla text except 7 rows, which the migration sets to the vanilla text (the vanilla text has line breaks where the client has spaces)	yes
-srv	mail_text_template	content_loc1	server			non-default-locale mail text; DB2 is enUS only, so server-side localization has no client counterpart (stuff-plan.md 8.2 locales_* note)	yes
-srv	mail_text_template	content_loc2	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
-srv	mail_text_template	content_loc3	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
-srv	mail_text_template	content_loc4	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
-srv	mail_text_template	content_loc5	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
-srv	mail_text_template	content_loc6	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2)	yes
-srv	mail_text_template	content_loc7	server			non-default-locale mail text; DB2 is enUS only (stuff-plan.md 8.2), always empty in the reference data	yes
+srv	mail_text_template	content_loc1	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc2	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc3	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc4	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc5	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc6	drop			non-enUS translation; the server keeps the enUS string only	yes
+srv	mail_text_template	content_loc7	drop			non-enUS translation; the server keeps the enUS string only	yes
 srv	mangos_string	entry	server			fully read by ObjectMgr::LoadMangosStrings, called with extra_content=false (ObjectMgr.h:881, ObjectMgr.cpp:10113)	yes
 srv	mangos_string	content_default	server			enUS text, fully read by ObjectMgr::LoadMangosStrings (ObjectMgr.cpp:10113)	yes
 srv	mangos_string	content_loc1	server			non-enUS translation slot, fully read by ObjectMgr::LoadMangosStrings (ObjectMgr.cpp:10113)	yes

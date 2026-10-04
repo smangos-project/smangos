@@ -81,17 +81,17 @@ locales_area	server	Entry	srv:locales_area
 locales_areatrigger	server	entry	srv:locales_areatrigger			
 locales_broadcast_text	server	entry	srv:locales_broadcast_text			
 locales_creature	server	entry	srv:locales_creature			
-locales_faction	server	entry	srv:locales_faction			
+locales_faction	gone					translations of client text; the server keeps the enUS string only
 locales_gameobject	server	entry	srv:locales_gameobject			
 locales_gossip_menu_option	server	menu_id, id	srv:locales_gossip_menu_option			
 locales_item	server	entry	srv:locales_item			
 locales_page_text	server	entry	srv:locales_page_text			
 locales_points_of_interest	server	entry	srv:locales_points_of_interest			
 locales_quest	server	entry	srv:locales_quest			
-locales_spell	server	entry	srv:locales_spell			
-locales_taxi_node	server	entry	srv:locales_taxi_node			
+locales_spell	gone					translations of client text; the server keeps the enUS string only
+locales_taxi_node	gone					translations of client text; the server keeps the enUS string only
 mail_loot_template	server	entry, item	srv:mail_loot_template			
-mail_text_template	server	entry	srv:mail_text_template	dbc_mailtemplate		
+mail_text_template	gone			dbc_mailtemplate		the text is MailTemplate.Body_lang; translations dropped, the server keeps the enUS string only
 mangos_string	server	entry	srv:mangos_string			
 map_loot_disabled	server	map_id	srv:map_loot_disabled			
 map_template	server	entry	srv:map_template	dbc_map		

@@ -3059,19 +3059,19 @@ srv	locales_creature	subname_loc5	TEXT	none					rows=10328 distinct=605 null=816
 srv	locales_creature	subname_loc6	TEXT	none					rows=10328 distinct=737 null=7919 formula=equals_subname_loc7:1658/10328
 srv	locales_creature	subname_loc7	TEXT	none					rows=10328 distinct=818 null=7918 formula=equals_subname_loc6:1658/10328
 srv	locales_creature	subname_loc8	TEXT	none					rows=10328 distinct=719 null=7915 formula=equals_subname_loc1:0/10328
-srv	locales_faction	entry	INTEGER	manual:src/game/ObjectMgr.cpp:8735					rows=190 distinct=190 null=0
-srv	locales_faction	name_loc1	TEXT	manual:src/game/ObjectMgr.cpp:8741					rows=190 distinct=190 null=0 formula=equals_name_loc3:4/190
-srv	locales_faction	name_loc2	TEXT	manual:src/game/ObjectMgr.cpp:8742					rows=190 distinct=190 null=0 formula=equals_name_loc3:32/190
-srv	locales_faction	name_loc3	TEXT	manual:src/game/ObjectMgr.cpp:8743					rows=190 distinct=190 null=0 formula=equals_name_loc2:32/190
-srv	locales_faction	name_loc4	TEXT	manual:src/game/ObjectMgr.cpp:8744					rows=190 distinct=187 null=0 formula=equals_name_loc5:41/190
-srv	locales_faction	name_loc5	TEXT	manual:src/game/ObjectMgr.cpp:8745					rows=190 distinct=186 null=0 formula=equals_name_loc4:41/190
-srv	locales_faction	name_loc6	TEXT	manual:src/game/ObjectMgr.cpp:8746					rows=190 distinct=190 null=0 formula=equals_name_loc2:17/190
-srv	locales_faction	description_loc1	TEXT	manual:src/game/ObjectMgr.cpp:8750					rows=190 distinct=36 null=155 formula=equals_description_loc3:156/190
-srv	locales_faction	description_loc2	TEXT	manual:src/game/ObjectMgr.cpp:8751					rows=190 distinct=36 null=155 formula=equals_description_loc1:155/190
-srv	locales_faction	description_loc3	TEXT	manual:src/game/ObjectMgr.cpp:8752					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
-srv	locales_faction	description_loc4	TEXT	manual:src/game/ObjectMgr.cpp:8753					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
-srv	locales_faction	description_loc5	TEXT	manual:src/game/ObjectMgr.cpp:8754					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
-srv	locales_faction	description_loc6	TEXT	manual:src/game/ObjectMgr.cpp:8755					rows=190 distinct=36 null=155 formula=equals_description_loc1:155/190
+srv	locales_faction	entry	INTEGER	none					rows=190 distinct=190 null=0
+srv	locales_faction	name_loc1	TEXT	none					rows=190 distinct=190 null=0 formula=equals_name_loc3:4/190
+srv	locales_faction	name_loc2	TEXT	none					rows=190 distinct=190 null=0 formula=equals_name_loc3:32/190
+srv	locales_faction	name_loc3	TEXT	none					rows=190 distinct=190 null=0 formula=equals_name_loc2:32/190
+srv	locales_faction	name_loc4	TEXT	none					rows=190 distinct=187 null=0 formula=equals_name_loc5:41/190
+srv	locales_faction	name_loc5	TEXT	none					rows=190 distinct=186 null=0 formula=equals_name_loc4:41/190
+srv	locales_faction	name_loc6	TEXT	none					rows=190 distinct=190 null=0 formula=equals_name_loc2:17/190
+srv	locales_faction	description_loc1	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc3:156/190
+srv	locales_faction	description_loc2	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc1:155/190
+srv	locales_faction	description_loc3	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
+srv	locales_faction	description_loc4	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
+srv	locales_faction	description_loc5	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc1:156/190
+srv	locales_faction	description_loc6	TEXT	none					rows=190 distinct=36 null=155 formula=equals_description_loc1:155/190
 srv	locales_gameobject	entry	INTEGER	manual:src/game/ObjectMgr.cpp:8038					rows=8667 distinct=8667 null=0
 srv	locales_gameobject	name_loc1	TEXT	none					rows=8667 distinct=2052 null=1029 formula=equals_name_loc5:918/8667
 srv	locales_gameobject	name_loc2	TEXT	none					rows=8667 distinct=2243 null=676 formula=equals_name_loc6:512/8667
@@ -3215,38 +3215,38 @@ srv	locales_quest	ObjectiveText4_loc5	TEXT	none					rows=4251 distinct=10 null=4
 srv	locales_quest	ObjectiveText4_loc6	TEXT	none					rows=4251 distinct=13 null=4230 formula=equals_ObjectiveText4_loc7:4224/4251
 srv	locales_quest	ObjectiveText4_loc7	TEXT	none					rows=4251 distinct=10 null=4240 formula=equals_ObjectiveText4_loc6:4224/4251
 srv	locales_quest	ObjectiveText4_loc8	TEXT	none					rows=4251 distinct=14 null=4229 formula=equals_ObjectiveText4_loc3:4137/4251
-srv	locales_spell	entry	INTEGER	manual:src/game/Spells/SpellMgr.cpp:3755					rows=22357 distinct=22357 null=0
-srv	locales_spell	name_loc1	TEXT	manual:src/game/Spells/SpellMgr.cpp:3759					rows=22357 distinct=9558 null=0 formula=equals_name_loc4:565/22357
-srv	locales_spell	name_loc2	TEXT	manual:src/game/Spells/SpellMgr.cpp:3760					rows=22357 distinct=10925 null=0 formula=equals_name_loc3:373/22357
-srv	locales_spell	name_loc3	TEXT	manual:src/game/Spells/SpellMgr.cpp:3761					rows=22357 distinct=10765 null=0 formula=equals_name_loc4:1074/22357
-srv	locales_spell	name_loc4	TEXT	manual:src/game/Spells/SpellMgr.cpp:3762					rows=22357 distinct=10844 null=0 formula=equals_name_loc5:5519/22357
-srv	locales_spell	name_loc5	TEXT	manual:src/game/Spells/SpellMgr.cpp:3763					rows=22357 distinct=10850 null=0 formula=equals_name_loc4:5519/22357
-srv	locales_spell	name_loc6	TEXT	manual:src/game/Spells/SpellMgr.cpp:3764					rows=22357 distinct=10877 null=0 formula=equals_name_loc3:93/22357
-srv	locales_spell	nameSubtext_loc1	TEXT	manual:src/game/Spells/SpellMgr.cpp:3765					rows=22357 distinct=71 null=14403 formula=equals_nameSubtext_loc4:14466/22357
-srv	locales_spell	nameSubtext_loc2	TEXT	manual:src/game/Spells/SpellMgr.cpp:3766					rows=22357 distinct=73 null=14403 formula=equals_nameSubtext_loc3:22017/22357
-srv	locales_spell	nameSubtext_loc3	TEXT	manual:src/game/Spells/SpellMgr.cpp:3767					rows=22357 distinct=75 null=14400 formula=equals_nameSubtext_loc2:22017/22357
-srv	locales_spell	nameSubtext_loc4	TEXT	manual:src/game/Spells/SpellMgr.cpp:3768					rows=22357 distinct=69 null=14400 formula=equals_nameSubtext_loc1:14466/22357
-srv	locales_spell	nameSubtext_loc5	TEXT	manual:src/game/Spells/SpellMgr.cpp:3769					rows=22357 distinct=69 null=14361 formula=equals_nameSubtext_loc4:14380/22357
-srv	locales_spell	nameSubtext_loc6	TEXT	manual:src/game/Spells/SpellMgr.cpp:3770					rows=22357 distinct=72 null=14399 formula=equals_nameSubtext_loc2:14404/22357
-srv	locales_spell	description_loc1	TEXT	manual:src/game/Spells/SpellMgr.cpp:3774					rows=22357 distinct=6416 null=9114 formula=equals_description_loc4:9128/22357
-srv	locales_spell	description_loc2	TEXT	manual:src/game/Spells/SpellMgr.cpp:3775					rows=22357 distinct=6806 null=9114 formula=equals_description_loc3:9123/22357
-srv	locales_spell	description_loc3	TEXT	manual:src/game/Spells/SpellMgr.cpp:3776					rows=22357 distinct=6800 null=9114 formula=equals_description_loc2:9123/22357
-srv	locales_spell	description_loc4	TEXT	manual:src/game/Spells/SpellMgr.cpp:3777					rows=22357 distinct=6598 null=9113 formula=equals_description_loc5:9422/22357
-srv	locales_spell	description_loc5	TEXT	manual:src/game/Spells/SpellMgr.cpp:3778					rows=22357 distinct=6610 null=9101 formula=equals_description_loc4:9422/22357
-srv	locales_spell	description_loc6	TEXT	manual:src/game/Spells/SpellMgr.cpp:3779					rows=22357 distinct=6607 null=9103 formula=equals_description_loc3:9114/22357
-srv	locales_spell	auraDescription_loc1	TEXT	manual:src/game/Spells/SpellMgr.cpp:3780					rows=22357 distinct=1315 null=18142 formula=equals_auraDescription_loc2:18143/22357
-srv	locales_spell	auraDescription_loc2	TEXT	manual:src/game/Spells/SpellMgr.cpp:3781					rows=22357 distinct=1503 null=18142 formula=equals_auraDescription_loc6:18147/22357
-srv	locales_spell	auraDescription_loc3	TEXT	manual:src/game/Spells/SpellMgr.cpp:3782					rows=22357 distinct=1620 null=18142 formula=equals_auraDescription_loc1:18143/22357
-srv	locales_spell	auraDescription_loc4	TEXT	manual:src/game/Spells/SpellMgr.cpp:3783					rows=22357 distinct=1491 null=18137 formula=equals_auraDescription_loc5:18622/22357
-srv	locales_spell	auraDescription_loc5	TEXT	manual:src/game/Spells/SpellMgr.cpp:3784					rows=22357 distinct=1505 null=18132 formula=equals_auraDescription_loc4:18622/22357
-srv	locales_spell	auraDescription_loc6	TEXT	manual:src/game/Spells/SpellMgr.cpp:3785					rows=22357 distinct=1470 null=18142 formula=equals_auraDescription_loc2:18147/22357
-srv	locales_taxi_node	entry	INTEGER	manual:src/game/ObjectMgr.cpp:9341					rows=85 distinct=85 null=0
-srv	locales_taxi_node	name_loc1	TEXT	manual:src/game/ObjectMgr.cpp:9345					rows=85 distinct=76 null=0 formula=equals_name_loc2:0/85
-srv	locales_taxi_node	name_loc2	TEXT	manual:src/game/ObjectMgr.cpp:9346					rows=85 distinct=76 null=0 formula=equals_name_loc3:19/85
-srv	locales_taxi_node	name_loc3	TEXT	manual:src/game/ObjectMgr.cpp:9347					rows=85 distinct=76 null=0 formula=equals_name_loc2:19/85
-srv	locales_taxi_node	name_loc4	TEXT	manual:src/game/ObjectMgr.cpp:9348					rows=85 distinct=76 null=0 formula=equals_name_loc5:12/85
-srv	locales_taxi_node	name_loc5	TEXT	manual:src/game/ObjectMgr.cpp:9349					rows=85 distinct=76 null=0 formula=equals_name_loc4:12/85
-srv	locales_taxi_node	name_loc6	TEXT	manual:src/game/ObjectMgr.cpp:9350					rows=85 distinct=76 null=0 formula=equals_name_loc2:7/85
+srv	locales_spell	entry	INTEGER	none					rows=22357 distinct=22357 null=0
+srv	locales_spell	name_loc1	TEXT	none					rows=22357 distinct=9558 null=0 formula=equals_name_loc4:565/22357
+srv	locales_spell	name_loc2	TEXT	none					rows=22357 distinct=10925 null=0 formula=equals_name_loc3:373/22357
+srv	locales_spell	name_loc3	TEXT	none					rows=22357 distinct=10765 null=0 formula=equals_name_loc4:1074/22357
+srv	locales_spell	name_loc4	TEXT	none					rows=22357 distinct=10844 null=0 formula=equals_name_loc5:5519/22357
+srv	locales_spell	name_loc5	TEXT	none					rows=22357 distinct=10850 null=0 formula=equals_name_loc4:5519/22357
+srv	locales_spell	name_loc6	TEXT	none					rows=22357 distinct=10877 null=0 formula=equals_name_loc3:93/22357
+srv	locales_spell	nameSubtext_loc1	TEXT	none					rows=22357 distinct=71 null=14403 formula=equals_nameSubtext_loc4:14466/22357
+srv	locales_spell	nameSubtext_loc2	TEXT	none					rows=22357 distinct=73 null=14403 formula=equals_nameSubtext_loc3:22017/22357
+srv	locales_spell	nameSubtext_loc3	TEXT	none					rows=22357 distinct=75 null=14400 formula=equals_nameSubtext_loc2:22017/22357
+srv	locales_spell	nameSubtext_loc4	TEXT	none					rows=22357 distinct=69 null=14400 formula=equals_nameSubtext_loc1:14466/22357
+srv	locales_spell	nameSubtext_loc5	TEXT	none					rows=22357 distinct=69 null=14361 formula=equals_nameSubtext_loc4:14380/22357
+srv	locales_spell	nameSubtext_loc6	TEXT	none					rows=22357 distinct=72 null=14399 formula=equals_nameSubtext_loc2:14404/22357
+srv	locales_spell	description_loc1	TEXT	none					rows=22357 distinct=6416 null=9114 formula=equals_description_loc4:9128/22357
+srv	locales_spell	description_loc2	TEXT	none					rows=22357 distinct=6806 null=9114 formula=equals_description_loc3:9123/22357
+srv	locales_spell	description_loc3	TEXT	none					rows=22357 distinct=6800 null=9114 formula=equals_description_loc2:9123/22357
+srv	locales_spell	description_loc4	TEXT	none					rows=22357 distinct=6598 null=9113 formula=equals_description_loc5:9422/22357
+srv	locales_spell	description_loc5	TEXT	none					rows=22357 distinct=6610 null=9101 formula=equals_description_loc4:9422/22357
+srv	locales_spell	description_loc6	TEXT	none					rows=22357 distinct=6607 null=9103 formula=equals_description_loc3:9114/22357
+srv	locales_spell	auraDescription_loc1	TEXT	none					rows=22357 distinct=1315 null=18142 formula=equals_auraDescription_loc2:18143/22357
+srv	locales_spell	auraDescription_loc2	TEXT	none					rows=22357 distinct=1503 null=18142 formula=equals_auraDescription_loc6:18147/22357
+srv	locales_spell	auraDescription_loc3	TEXT	none					rows=22357 distinct=1620 null=18142 formula=equals_auraDescription_loc1:18143/22357
+srv	locales_spell	auraDescription_loc4	TEXT	none					rows=22357 distinct=1491 null=18137 formula=equals_auraDescription_loc5:18622/22357
+srv	locales_spell	auraDescription_loc5	TEXT	none					rows=22357 distinct=1505 null=18132 formula=equals_auraDescription_loc4:18622/22357
+srv	locales_spell	auraDescription_loc6	TEXT	none					rows=22357 distinct=1470 null=18142 formula=equals_auraDescription_loc2:18147/22357
+srv	locales_taxi_node	entry	INTEGER	none					rows=85 distinct=85 null=0
+srv	locales_taxi_node	name_loc1	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc2:0/85
+srv	locales_taxi_node	name_loc2	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc3:19/85
+srv	locales_taxi_node	name_loc3	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc2:19/85
+srv	locales_taxi_node	name_loc4	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc5:12/85
+srv	locales_taxi_node	name_loc5	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc4:12/85
+srv	locales_taxi_node	name_loc6	TEXT	none					rows=85 distinct=76 null=0 formula=equals_name_loc2:7/85
 srv	mail_loot_template	entry	INTEGER	none					rows=72 distinct=72 null=0
 srv	mail_loot_template	item	INTEGER	none					rows=72 distinct=17 null=0
 srv	mail_loot_template	ChanceOrQuestChance	REAL	none					rows=72 distinct=1 null=0 const=100.0
@@ -3258,13 +3258,13 @@ srv	mail_loot_template	patch_min	INTEGER	none					rows=72 distinct=1 null=0 cons
 srv	mail_loot_template	patch_max	INTEGER	none					rows=72 distinct=1 null=0 const=10
 srv	mail_text_template	entry	INTEGER	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.ID	identity	95/95	rows=96 distinct=96 null=0
 srv	mail_text_template	content_default	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	95/95	rows=96 distinct=40 null=0
-srv	mail_text_template	content_loc1	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	6/95	rows=96 distinct=42 null=0 formula=equals_content_loc4:7/96
-srv	mail_text_template	content_loc2	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	2/95	rows=96 distinct=39 null=0 formula=equals_content_loc1:2/96
-srv	mail_text_template	content_loc3	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	6/95	rows=96 distinct=39 null=0 formula=equals_content_loc4:6/96
-srv	mail_text_template	content_loc4	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	8/95	rows=96 distinct=40 null=0 formula=equals_content_loc1:7/96
-srv	mail_text_template	content_loc5	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	5/95	rows=96 distinct=39 null=0 formula=equals_content_loc3:5/96
-srv	mail_text_template	content_loc6	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	4/95	rows=96 distinct=41 null=0 formula=equals_content_loc1:2/96
-srv	mail_text_template	content_loc7	TEXT	manual:src/game/Database/SQLStorages.cpp:46		cdbc_mailtemplate.Body_lang	identity	0/95	rows=96 distinct=1 null=96 const= formula=equals_content_loc1:0/96
+srv	mail_text_template	content_loc1	TEXT	none		cdbc_mailtemplate.Body_lang	identity	6/95	rows=96 distinct=42 null=0 formula=equals_content_loc4:7/96
+srv	mail_text_template	content_loc2	TEXT	none		cdbc_mailtemplate.Body_lang	identity	2/95	rows=96 distinct=39 null=0 formula=equals_content_loc1:2/96
+srv	mail_text_template	content_loc3	TEXT	none		cdbc_mailtemplate.Body_lang	identity	6/95	rows=96 distinct=39 null=0 formula=equals_content_loc4:6/96
+srv	mail_text_template	content_loc4	TEXT	none		cdbc_mailtemplate.Body_lang	identity	8/95	rows=96 distinct=40 null=0 formula=equals_content_loc1:7/96
+srv	mail_text_template	content_loc5	TEXT	none		cdbc_mailtemplate.Body_lang	identity	5/95	rows=96 distinct=39 null=0 formula=equals_content_loc3:5/96
+srv	mail_text_template	content_loc6	TEXT	none		cdbc_mailtemplate.Body_lang	identity	4/95	rows=96 distinct=41 null=0 formula=equals_content_loc1:2/96
+srv	mail_text_template	content_loc7	TEXT	none		cdbc_mailtemplate.Body_lang	identity	0/95	rows=96 distinct=1 null=96 const= formula=equals_content_loc1:0/96
 srv	mangos_string	entry	INTEGER	none					rows=976 distinct=976 null=0
 srv	mangos_string	content_default	TEXT	none					rows=976 distinct=956 null=0
 srv	mangos_string	content_loc1	TEXT	none					rows=976 distinct=859 null=94 formula=equals_content_loc3:7/976
