@@ -338,7 +338,12 @@ void WorldSession::HandleGossipHelloOpcode(GossipHello const& request)
     if (!sScriptMgr.OnGossipHello(_player, pCreature))
     {
         _player->PrepareGossipMenu(pCreature, pCreature->GetDefaultGossipMenuId());
-        _player->SendPreparedGossip(pCreature);
+        PlayerMenu* menu = _player->PlayerTalkClass;
+        if (!pCreature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP) && menu->GetQuestMenu().Empty() &&
+            menu->GetGossipMenu().MenuItemCount() == 1 && menu->GetGossipMenu().GetItem(0).m_gOptionId != GOSSIP_OPTION_GOSSIP)
+            _player->OnGossipSelect(pCreature, 0);
+        else
+            _player->SendPreparedGossip(pCreature);
     }
 }
 
