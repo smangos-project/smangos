@@ -4,6 +4,7 @@
 #include "Commands/PortMigrationFile.h"
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
+#include "Dbc/InputManifest.h"
 #include "Reference/ReferenceBuild.h"
 #include "Spec/Evidence.h"
 #include "Spec/GapAnalysis.h"
@@ -32,6 +33,44 @@ namespace
     std::filesystem::path DbfilesclientDir()
     {
         return SourceRoot() / ".client" / "Content" / "dbfilesclient";
+    }
+
+    std::filesystem::path InputsDir()
+    {
+        return SourceRoot() / "tools" / "database_tool" / "Inputs";
+    }
+
+    std::filesystem::path VanillaDbcDir()
+    {
+        return SourceRoot() / ".client" / "vanilla" / "dbc";
+    }
+
+    // The stock client db2s (backups win over files `export --client` overwrote), checked
+    // against the committed manifest. Empty path and a message in `error` on mismatch.
+    std::filesystem::path StockDbfilesclientDir(std::string& error)
+    {
+        std::filesystem::path view = BuildStockClientView(DbfilesclientDir(),
+            SourceRoot() / ".world" / "dbfilesclient-stock", SourceRoot() / ".world" / "cache" / "client-db2-stock");
+        error = VerifyInputManifest(view, InputsDir() / "client-db2.sha256");
+        return error.empty() ? view : std::filesystem::path();
+    }
+
+    // pin-inputs: rewrites both manifests from the current stock inputs.
+    int RunPinInputs()
+    {
+        std::string error;
+        std::filesystem::path view = BuildStockClientView(DbfilesclientDir(),
+            SourceRoot() / ".world" / "dbfilesclient-stock", SourceRoot() / ".world" / "cache" / "client-db2-stock");
+        error = WriteInputManifest(view, ".db2", InputsDir() / "client-db2.sha256");
+        if (error.empty())
+            error = WriteInputManifest(VanillaDbcDir(), ".dbc", InputsDir() / "vanilla-dbc.sha256");
+        if (!error.empty())
+        {
+            std::printf("pin-inputs: %s\n", error.c_str());
+            return 1;
+        }
+        std::printf("pin-inputs: wrote manifests to %s\n", InputsDir().string().c_str());
+        return 0;
     }
 
     bool HasFlag(std::vector<std::string> const& args, std::string const& flag)
@@ -106,7 +145,15 @@ namespace
         std::filesystem::path const migrationsDirectory = SourceRoot() / "sql" / "migrations";
         bool const importDbc = !HasFlag(args, "--no-dbc-import");
 
-        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, DbfilesclientDir(), importDbc);
+        std::string inputError;
+        std::filesystem::path const clientDir = StockDbfilesclientDir(inputError);
+        if (!inputError.empty())
+        {
+            std::printf("create world: %s\n", inputError.c_str());
+            return 1;
+        }
+
+        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir, importDbc);
         if (!result.error.empty())
         {
             std::printf("create world: %s\n", result.error.c_str());
@@ -126,7 +173,7 @@ namespace
     {
         std::string format;
         std::vector<std::string> onlyTables;
-        std::filesystem::path directory = DbfilesclientDir();
+        std::filesystem::path directory;
         for (size_t i = 0; i < args.size(); ++i)
         {
             if (args[i] == "--format" && i + 1 < args.size())
@@ -141,6 +188,17 @@ namespace
         {
             std::printf("import: --format db2|dbc is required\n");
             return 1;
+        }
+
+        if (directory.empty())
+        {
+            std::string inputError;
+            directory = format == "db2" ? StockDbfilesclientDir(inputError) : VanillaDbcDir();
+            if (!inputError.empty())
+            {
+                std::printf("import: %s\n", inputError.c_str());
+                return 1;
+            }
         }
 
         std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
@@ -365,7 +423,15 @@ namespace
             return 1;
         }
 
-        ReferenceBuildResult result = BuildReferenceDatabase(referencePath, worldPath, vanillaDbcDir, DbfilesclientDir());
+        std::string inputError = VerifyInputManifest(vanillaDbcDir, InputsDir() / "vanilla-dbc.sha256");
+        std::filesystem::path const clientDir = inputError.empty() ? StockDbfilesclientDir(inputError) : std::filesystem::path();
+        if (!inputError.empty())
+        {
+            std::printf("reference: %s\n", inputError.c_str());
+            return 1;
+        }
+
+        ReferenceBuildResult result = BuildReferenceDatabase(referencePath, worldPath, vanillaDbcDir, clientDir);
         for (std::string const& error : result.tableErrors)
             std::printf("%s\n", error.c_str());
         if (!result.error.empty())
@@ -721,6 +787,8 @@ int main(int argc, char** argv)
         return RunPortMigration(rest);
     if (command == "compare-world")
         return RunCompareWorld(rest);
+    if (command == "pin-inputs")
+        return RunPinInputs();
     if (command == "reference")
         return RunReference(rest);
     if (command == "spec")
