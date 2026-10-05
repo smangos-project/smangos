@@ -73,7 +73,7 @@ const config: Config = {
           items: [
             {
               label: 'Features',
-              to: '/docs/features',
+              to: '/docs/features/',
             },
             {
               label: 'Setup',
