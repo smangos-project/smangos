@@ -806,6 +806,83 @@ void STDMETHODCALLTYPE ExecuteDetour(ID3D12CommandQueue* queue, UINT count, ID3D
     OriginalExecute(queue, count, lists);
 }
 
+// Pipeline layout logging: every root signature (parsed) and every graphics PSO's root signature and pixel shader
+// DXBC checksum, so client shaders from .bls files can be matched to their bindings.
+using CreateRootSignatureFn = HRESULT(STDMETHODCALLTYPE*)(ID3D12Device*, UINT, void const*, SIZE_T, REFIID, void**);
+using CreateGraphicsPsoFn = HRESULT(STDMETHODCALLTYPE*)(ID3D12Device*, D3D12_GRAPHICS_PIPELINE_STATE_DESC const*, REFIID,
+                                                        void**);
+CreateRootSignatureFn OriginalCreateRootSignature = nullptr;
+CreateGraphicsPsoFn OriginalCreateGraphicsPso = nullptr;
+
+std::string DescribeRootSignature(void const* blob, SIZE_T size)
+{
+    auto create = reinterpret_cast<PFN_D3D12_CREATE_ROOT_SIGNATURE_DESERIALIZER>(
+        GetProcAddress(GetModuleHandleW(L"d3d12.dll"), "D3D12CreateRootSignatureDeserializer"));
+    ComPtr<ID3D12RootSignatureDeserializer> reader;
+    if (!create || FAILED(create(blob, size, IID_PPV_ARGS(&reader))))
+        return "unparsed";
+    static char const* const Ranges[] = {"t", "u", "b", "s"};
+    D3D12_ROOT_SIGNATURE_DESC const* desc = reader->GetRootSignatureDesc();
+    char buf[256];
+    std::snprintf(buf, sizeof(buf), "flags %x", desc->Flags);
+    std::string text = buf;
+    for (UINT i = 0; i < desc->NumParameters; ++i) {
+        D3D12_ROOT_PARAMETER const& p = desc->pParameters[i];
+        std::snprintf(buf, sizeof(buf), " | %u vis%d ", i, p.ShaderVisibility);
+        text += buf;
+        switch (p.ParameterType) {
+        case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+            text += "table";
+            for (UINT r = 0; r < p.DescriptorTable.NumDescriptorRanges; ++r) {
+                D3D12_DESCRIPTOR_RANGE const& range = p.DescriptorTable.pDescriptorRanges[r];
+                std::snprintf(buf, sizeof(buf), " %s%u+%d space%u off%d", Ranges[range.RangeType],
+                              range.BaseShaderRegister, static_cast<int>(range.NumDescriptors), range.RegisterSpace,
+                              static_cast<int>(range.OffsetInDescriptorsFromTableStart));
+                text += buf;
+            }
+            break;
+        case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+            std::snprintf(buf, sizeof(buf), "const b%u x%u", p.Constants.ShaderRegister, p.Constants.Num32BitValues);
+            text += buf;
+            break;
+        default:
+            std::snprintf(buf, sizeof(buf), "%s%u", p.ParameterType == D3D12_ROOT_PARAMETER_TYPE_CBV   ? "cbv b"
+                                                    : p.ParameterType == D3D12_ROOT_PARAMETER_TYPE_SRV ? "srv t"
+                                                                                                       : "uav u",
+                          p.Descriptor.ShaderRegister);
+            text += buf;
+        }
+    }
+    for (UINT i = 0; i < desc->NumStaticSamplers; ++i) {
+        std::snprintf(buf, sizeof(buf), " | static s%u", desc->pStaticSamplers[i].ShaderRegister);
+        text += buf;
+    }
+    return text;
+}
+
+HRESULT STDMETHODCALLTYPE CreateRootSignatureDetour(ID3D12Device* device, UINT mask, void const* blob, SIZE_T size,
+                                                    REFIID riid, void** out)
+{
+    HRESULT const hr = OriginalCreateRootSignature(device, mask, blob, size, riid, out);
+    if (SUCCEEDED(hr))
+        HOOK_LOG_INFO("rootsig %p: %s", *out, DescribeRootSignature(blob, size).c_str());
+    return hr;
+}
+
+HRESULT STDMETHODCALLTYPE CreateGraphicsPsoDetour(ID3D12Device* device, D3D12_GRAPHICS_PIPELINE_STATE_DESC const* desc,
+                                                  REFIID riid, void** out)
+{
+    HRESULT const hr = OriginalCreateGraphicsPso(device, desc, riid, out);
+    auto const* ps = static_cast<unsigned char const*>(desc->PS.pShaderBytecode);
+    if (SUCCEEDED(hr) && ps && desc->PS.BytecodeLength >= 20) {
+        char sum[33];
+        for (int i = 0; i < 16; ++i)
+            std::snprintf(sum + i * 2, 3, "%02x", ps[4 + i]);
+        HOOK_LOG_INFO("pso %p rootsig %p ps %s", *out, static_cast<void*>(desc->pRootSignature), sum);
+    }
+    return hr;
+}
+
 void* VirtualMethod(void* object, int index)
 {
     return (*static_cast<void***>(object))[index];
@@ -877,7 +954,11 @@ bool InstallHooks()
              Hook(VirtualMethod(list.Get(), 46), reinterpret_cast<void*>(&SetTargetsDetour),
                   reinterpret_cast<void**>(&OriginalSetTargets), "OMSetRenderTargets") &&
              Hook(VirtualMethod(device.Get(), 20), reinterpret_cast<void*>(&CreateRtvDetour),
-                  reinterpret_cast<void**>(&OriginalCreateRtv), "CreateRenderTargetView");
+                  reinterpret_cast<void**>(&OriginalCreateRtv), "CreateRenderTargetView") &&
+             Hook(VirtualMethod(device.Get(), 16), reinterpret_cast<void*>(&CreateRootSignatureDetour),
+                  reinterpret_cast<void**>(&OriginalCreateRootSignature), "CreateRootSignature") &&
+             Hook(VirtualMethod(device.Get(), 10), reinterpret_cast<void*>(&CreateGraphicsPsoDetour),
+                  reinterpret_cast<void**>(&OriginalCreateGraphicsPso), "CreateGraphicsPipelineState");
         // Frame tracing only; ID3D12GraphicsCommandList::{Close, Reset, DrawInstanced, DrawIndexedInstanced, Dispatch,
         // CopyTextureRegion, CopyResource, ClearRenderTargetView, SetMarker, BeginEvent, EndEvent, ExecuteIndirect}
         if (ok) {
