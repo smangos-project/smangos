@@ -1,0 +1,225 @@
+diff --git a/src/wowlib/fs/filesystem.cpp b/src/wowlib/fs/filesystem.cpp
+index 31dcdcf..8bebfdb 100644
+--- a/src/wowlib/fs/filesystem.cpp
++++ b/src/wowlib/fs/filesystem.cpp
+@@ -52,6 +52,19 @@ namespace wowlib::fs {
+       project = std::move(*opened);
+     }
+ 
++    if (settings.looseClient) {
++      CsvListfile listfile;
++      if (settings.listfileCsv) {
++        auto loaded = CsvListfile::load(*settings.listfileCsv, {.customFdidStart = settings.customFdidStart});
++        if (!loaded) return std::unexpected(loaded.error());
++        listfile = std::move(*loaded);
++      }
++      auto storage = LooseStorage::open(settings.clientPath);
++      if (!storage) return std::unexpected(storage.error());
++      return FileSystem{LooseFileSystem{std::move(*storage), std::move(listfile), std::move(project)},
++                        settings.version};
++    }
++
+     if (settings.version.storageKind() == StorageKind::Mpq) {
+       auto storage = MpqStorage::open({
+         .dataDir = resolveDataDir(settings.clientPath),
+@@ -127,6 +140,8 @@ namespace wowlib::fs {
+       return paths;
+     }
+ 
++    if (auto* looseFs = std::get_if<LooseFileSystem>(&_impl)) return looseFs->backend().enumeratePaths();
++
+     return closedError();
+   }
+ 
+@@ -148,4 +163,5 @@ namespace wowlib::fs {
+   // carries them for C++ consumers.
+   template class ClientFileSystem<MpqStorage, NullListfile>;
+   template class ClientFileSystem<CascStorage, CsvListfile>;
++  template class ClientFileSystem<LooseStorage, CsvListfile>;
+ }
+diff --git a/src/wowlib/fs/filesystem.hpp b/src/wowlib/fs/filesystem.hpp
+index 9f9c6e2..2973ce7 100644
+--- a/src/wowlib/fs/filesystem.hpp
++++ b/src/wowlib/fs/filesystem.hpp
+@@ -22,6 +22,7 @@
+ #include <wowlib/fs/client_filesystem.hpp>
+ #include <wowlib/fs/client_install.hpp>
+ #include <wowlib/fs/csv_listfile.hpp>
++#include <wowlib/fs/loose/loose_storage.hpp>
+ #include <wowlib/fs/mpq/mpq_storage.hpp>
+ 
+ namespace wowlib::fs {
+@@ -31,6 +32,9 @@ namespace wowlib::fs {
+   /** The concrete composition for CASC-era clients (listfile-resolved FileDataIDs). */
+   using CascFileSystem = ClientFileSystem<CascStorage, CsvListfile>;
+ 
++  /** The concrete composition for an extracted client directory tree. */
++  using LooseFileSystem = ClientFileSystem<LooseStorage, CsvListfile>;
++
+   /** The first FileDataID handed to project files by default — far above
+       Blizzard's ~6-7M so future official content never collides. */
+   inline constexpr FileDataID DefaultCustomFdidStart{1'000'000'000};
+@@ -85,6 +89,12 @@ namespace wowlib::fs {
+         off the installation.)")]]
+     const std::optional<std::string> cascProduct{};
+ 
++    [[=welder::doc(R"(
++        Treat clientPath as an extracted client: a directory tree of files laid
++        out by client-internal path, with no archives. The storage is Casc-kind
++        (ids come from the listfile) but nothing is opened through CascLib.)")]]
++    const bool looseClient = false;
++
+     [[=welder::doc(R"(
+         Settings for a client whose version is read off the installation itself
+         (see ClientInstall.detect) instead of being spelled out — the reliable
+@@ -272,6 +282,11 @@ namespace wowlib::fs {
+     [[=welder::mark::exclude]]
+     MpqFileSystem* mpq() { return std::get_if<MpqFileSystem>(&_impl); }
+ 
++    /** The extracted-directory composition, for C++ callers.
++        @return the composition, or nullptr if this filesystem is not loose. */
++    [[=welder::mark::exclude]]
++    LooseFileSystem* loose() { return std::get_if<LooseFileSystem>(&_impl); }
++
+     /** The CASC composition, for C++ callers that want the static types.
+         @return the composition, or nullptr if this filesystem is MPQ-backed. */
+     [[=welder::mark::exclude]]
+@@ -291,6 +306,13 @@ namespace wowlib::fs {
+     explicit FileSystem(CascFileSystem impl, ClientVersion version)
+       : _impl(std::move(impl)), _kind(StorageKind::Casc), _version(version) {}
+ 
++    /** C++-only; target languages construct through open().
++        @param impl    the ready loose composition.
++        @param version the client version the composition was opened for. */
++    [[=welder::mark::exclude]]
++    explicit FileSystem(LooseFileSystem impl, ClientVersion version)
++      : _impl(std::move(impl)), _kind(StorageKind::Casc), _version(version) {}
++
+   protected:
+     // Welded through policy::weld_protected, uncallable from C++ (where RAII is
+     // the lifetime story); scripting languages get deterministic release.
+@@ -313,7 +335,7 @@ namespace wowlib::fs {
+   private:
+     // monostate = closed; reachable only through close() above, so C++ callers
+     // never observe it (a moved-from FileSystem still holds a composition).
+-    std::variant<std::monostate, MpqFileSystem, CascFileSystem> _impl;
++    std::variant<std::monostate, MpqFileSystem, CascFileSystem, LooseFileSystem> _impl;
+     StorageKind _kind;
+     ClientVersion _version{};
+   };
+diff --git a/src/wowlib/fs/loose/loose_storage.hpp b/src/wowlib/fs/loose/loose_storage.hpp
+new file mode 100644
+index 0000000..e9c0947
+--- /dev/null
++++ b/src/wowlib/fs/loose/loose_storage.hpp
+@@ -0,0 +1,61 @@
++#pragma once
++
++/** @file
++    The storage backend over a plain directory tree of client files (an
++    extracted client, laid out by client-internal path). Not welded; reached
++    through the FileSystem facade. */
++
++#include <filesystem>
++#include <format>
++#include <string>
++#include <utility>
++#include <vector>
++
++#include <wowlib/core/buffer.hpp>
++#include <wowlib/core/client_version.hpp>
++#include <wowlib/core/error.hpp>
++#include <wowlib/core/file_key.hpp>
++#include <wowlib/fs/project_directory.hpp>
++
++namespace wowlib::fs {
++  /** A directory of extracted client files addressed by path (case-insensitive,
++      either slash). It reports itself as an id-addressed (Casc) storage: a
++      listfile in the composition layer supplies the FileDataIDs. */
++  class LooseStorage {
++  public:
++    /** Open (and index) the directory; it must already exist.
++        @param root the extracted client's root directory.
++        @return the storage, or IoError. */
++    static Result<LooseStorage> open(std::filesystem::path root) {
++      std::error_code ec;
++      if (!std::filesystem::is_directory(root, ec))
++        return makeError(ErrorCode::IoError, std::format("'{}' is not a directory", root.string()));
++      auto dir = ProjectDirectory::open(std::move(root));
++      if (!dir) return std::unexpected(dir.error());
++      return LooseStorage{std::move(*dir)};
++    }
++
++    /** Read a file by path.
++        @param key the file identity; its path half is used.
++        @return the bytes, or FileNotFound. */
++    Result<FileBuffer> readFile(const FileKey& key) {
++      if (!key.path)
++        return makeError(ErrorCode::FileNotFound, "no path for this FileDataID (not in the listfile)");
++      return _dir.read(*key.path);
++    }
++
++    /** @param key the file identity.
++        @return true if the path is present. */
++    bool exists(const FileKey& key) { return key.path && _dir.exists(*key.path); }
++
++    /** @return every canonical path in the tree, sorted. */
++    std::vector<std::string> enumeratePaths() const { return _dir.paths(); }
++
++    static constexpr StorageKind kind() { return StorageKind::Casc; }
++
++  private:
++    explicit LooseStorage(ProjectDirectory dir) : _dir(std::move(dir)) {}
++
++    ProjectDirectory _dir;
++  };
++}
+diff --git a/src/wowlib/fs/project_directory.cpp b/src/wowlib/fs/project_directory.cpp
+index 66c4a8d..2602fbd 100644
+--- a/src/wowlib/fs/project_directory.cpp
++++ b/src/wowlib/fs/project_directory.cpp
+@@ -1,5 +1,6 @@
+ #include <wowlib/fs/project_directory.hpp>
+ 
++#include <algorithm>
+ #include <format>
+ #include <fstream>
+ #include <mutex>
+@@ -119,6 +120,15 @@ namespace wowlib::fs {
+     return {};
+   }
+ 
++  std::vector<std::string> ProjectDirectory::paths() const {
++    std::shared_lock lock{_mtx};
++    std::vector<std::string> out;
++    out.reserve(_index.size());
++    for (const auto& entry : _index) out.push_back(entry.first);
++    std::ranges::sort(out);
++    return out;
++  }
++
+   std::size_t ProjectDirectory::size() const {
+     std::shared_lock lock{_mtx};
+     return _index.size();
+diff --git a/src/wowlib/fs/project_directory.hpp b/src/wowlib/fs/project_directory.hpp
+index d41d41e..31aa5f6 100644
+--- a/src/wowlib/fs/project_directory.hpp
++++ b/src/wowlib/fs/project_directory.hpp
+@@ -11,6 +11,7 @@
+ #include <string>
+ #include <string_view>
+ #include <unordered_map>
++#include <vector>
+ 
+ #include <wowlib/core/buffer.hpp>
+ #include <wowlib/core/error.hpp>
+@@ -60,6 +61,9 @@ namespace wowlib::fs {
+     /** @return the directory root (absolute). */
+     const std::filesystem::path& root() const { return _root; }
+ 
++    /** @return every indexed canonical path, sorted. */
++    std::vector<std::string> paths() const;
++
+     /** @return the number of indexed files. */
+     std::size_t size() const;
+ 
