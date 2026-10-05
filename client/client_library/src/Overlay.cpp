@@ -18,7 +18,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <deque>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -39,23 +38,16 @@ struct Vertex {
 
 struct Camera {
     float eye[3];
-    float forward[3];
-    float right[3];
-    float up[3];
+    // The client's view-projection relative to the eye, row-vector convention: clip = (p - eye, 1) * viewProj.
+    float viewProj[16];
     float player[3];
 };
 
 std::atomic<bool> Enabled{false};
-std::atomic<float> TanHalfFovV{0.57735f};
 std::atomic<int> TestGrid{0};
-std::atomic<float> TanHalfFovH{0.f};
-std::atomic<float> NearPlane{0.189f};
-std::atomic<float> FarPlane{1e7f};
 std::atomic<bool> ReversedDepth{true};
 std::atomic<float> LineBias{0.006f};
 std::atomic<float> FaceBias{0.006f};
-std::atomic<float> HeightOffset{0.f};
-std::atomic<int> CameraLag{0};
 std::atomic<bool> UseDepth{true};
 std::atomic<bool> DumpDepth{false};
 std::atomic<int> DepthPick{0};
@@ -75,18 +67,11 @@ std::uintptr_t Rebase(std::uintptr_t ghidraAddress)
 
 bool ReadCamera(Camera& camera)
 {
-    std::uintptr_t pointer = 0;
-    if (!ReadAt(Rebase(CameraRoot), pointer) || !pointer || !ReadAt(pointer + 0x3a58, pointer) || !pointer)
+    std::uintptr_t worldFrame = 0, pointer = 0;
+    if (!ReadAt(Rebase(CameraRoot), worldFrame) || !worldFrame || !ReadAt(worldFrame + 0x3a58, pointer) || !pointer)
         return false;
-    float block[0x40];
-    if (!ReadAt(pointer + 0x10, block))
+    if (!ReadAt(worldFrame + 0x350, camera.viewProj) || !ReadAt(pointer + 0x10, camera.eye))
         return false;
-    std::memcpy(camera.eye, block, 12);
-    std::memcpy(camera.forward, block + 3, 12);
-    // The block stores the camera's left axis.
-    for (int i = 0; i < 3; ++i)
-        camera.right[i] = -block[6 + i];
-    std::memcpy(camera.up, block + 9, 12);
     return ReadAt(pointer + 0x224, camera.player);
 }
 
@@ -402,14 +387,6 @@ void Render(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue, ExecuteLists e
     Camera camera;
     if (!ReadCamera(camera))
         return;
-    {
-        static std::deque<Camera> history;
-        history.push_back(camera);
-        std::size_t const lag = static_cast<std::size_t>(std::max(0, CameraLag.load()));
-        while (history.size() > lag + 1)
-            history.pop_front();
-        camera = history.front();
-    }
 
     SceneDepth depth;
     std::vector<SceneDepth> depths;
@@ -463,28 +440,10 @@ void Render(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue, ExecuteLists e
     Draw.list->Reset(frame.allocator.Get(), nullptr);
 
     float const width = static_cast<float>(desc.Width), height = static_cast<float>(desc.Height);
-    float const tanV = TanHalfFovV, tanH = TanHalfFovH > 0.f ? TanHalfFovH.load() : tanV * width / height;
-    float const nearPlane = NearPlane, farPlane = FarPlane;
-    float a, b;
-    if (ReversedDepth) {
-        b = nearPlane * farPlane / (farPlane - nearPlane);
-        a = -nearPlane / (farPlane - nearPlane);
-    } else {
-        a = farPlane / (farPlane - nearPlane);
-        b = -nearPlane * a;
-    }
-    // Row-vector convention: clip = (x,y,z,1) * M, with M columns computed from the camera basis.
     float m[20] = {};
-    camera.eye[2] -= HeightOffset;
-    auto const column = [&](int c, float const* axis, float scale, float constant) {
-        for (int row = 0; row < 3; ++row)
-            m[row * 4 + c] = axis[row] * scale;
-        m[3 * 4 + c] = -(axis[0] * camera.eye[0] + axis[1] * camera.eye[1] + axis[2] * camera.eye[2]) * scale + constant;
-    };
-    column(0, camera.right, 1.f / tanH, 0.f);
-    column(1, camera.up, 1.f / tanV, 0.f);
-    column(2, camera.forward, a, b);
-    column(3, camera.forward, 1.f, 0.f);
+    std::memcpy(m, camera.viewProj, sizeof(camera.viewProj));
+    for (int c = 0; c < 4; ++c)
+        m[12 + c] -= camera.eye[0] * m[c] + camera.eye[1] * m[4 + c] + camera.eye[2] * m[8 + c];
 
     D3D12_CPU_DESCRIPTOR_HANDLE rtv = Draw.rtvHeap->GetCPUDescriptorHandleForHeapStart();
     Draw.device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtv);
@@ -565,24 +524,12 @@ void SetOverlayEnabled(bool enabled)
 
 void SetOverlayParameter(std::string const& name, float value)
 {
-    if (name == "tanv")
-        TanHalfFovV = value;
-    else if (name == "tanh")
-        TanHalfFovH = value;
-    else if (name == "near")
-        NearPlane = value;
-    else if (name == "far")
-        FarPlane = value;
-    else if (name == "revz")
+    if (name == "revz")
         ReversedDepth = value != 0.f;
     else if (name == "linebias")
         LineBias = value;
     else if (name == "facebias")
         FaceBias = value;
-    else if (name == "camlag")
-        CameraLag = static_cast<int>(value);
-    else if (name == "zoff")
-        HeightOffset = value;
     else if (name == "depth")
         UseDepth = value != 0.f;
     else if (name == "depthpick")
