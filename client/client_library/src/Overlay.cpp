@@ -47,12 +47,12 @@ struct Camera {
 std::atomic<bool> Enabled{false};
 std::atomic<float> TanHalfFovV{0.57735f};
 std::atomic<int> TestGrid{0};
-std::atomic<float> NearPlane{0.146f};
+std::atomic<float> NearPlane{0.189f};
 std::atomic<float> FarPlane{1e7f};
 std::atomic<bool> ReversedDepth{true};
-std::atomic<float> LineBias{0.004f};
-std::atomic<float> FaceBias{0.003f};
-std::atomic<float> HeightOffset{2.f};
+std::atomic<float> LineBias{0.006f};
+std::atomic<float> FaceBias{0.006f};
+std::atomic<float> HeightOffset{0.f};
 std::atomic<bool> UseDepth{true};
 std::atomic<bool> DumpDepth{false};
 std::atomic<int> DepthPick{0};
