@@ -244,7 +244,7 @@ def _submesh_mesh(model, name, sm, arrays):
     skin_verts = np.asarray(prof.vertices, dtype=np.int64)[vstart:vstart + vcount]
     idx = np.asarray(prof.indices, dtype=np.int64)[sm.index_start:sm.index_start + sm.index_count]
     tris = (idx - vstart)[: len(idx) // 3 * 3].reshape(-1, 3)
-    if len(tris) and (tris.min() < 0 or tris.max() >= vcount):
+    if len(tris) and (tris.min() < 0 or tris.max() >= min(vcount, len(skin_verts))):
         _import_warnings.append(f"{name}: triangle indices leave the submesh vertex range")
         used, inverse = np.unique(idx[: len(idx) // 3 * 3], return_inverse=True)
         skin_verts = np.asarray(prof.vertices, dtype=np.int64)[used]
@@ -271,7 +271,12 @@ def _submesh_mesh(model, name, sm, arrays):
         a = me.attributes.new(attr, "INT", "POINT")
         a.data.foreach_set("value", vals.astype(np.int32))
     me.shade_smooth()
-    me.normals_split_custom_set_from_vertices(nrm[skin_verts])
+    if nt:
+        me.validate()
+        n = np.nan_to_num(nrm[skin_verts].astype(np.float32))
+        ln = np.linalg.norm(n, axis=1)
+        n[ln < 1e-6] = (0.0, 0.0, 1.0)
+        me.normals_split_custom_set_from_vertices(n)
     return me, skin_verts
 
 

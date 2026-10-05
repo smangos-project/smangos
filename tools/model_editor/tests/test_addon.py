@@ -358,6 +358,8 @@ def sweep_m2():
         entries = [e for e in entries if only in e[1]]
     for fdid, path, _ in entries:
         clear()
+        if os.environ.get("SWEEP_VERBOSE"):
+            print("M2", path, flush=True)
         try:
             m2_import.load(path, {"display": "NONE"})
         except Exception as e:  # noqa: BLE001
