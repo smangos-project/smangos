@@ -1,6 +1,7 @@
 #include "Version.h"
 
 #include "Commands/CreateWorldDatabase.h"
+#include "Commands/GenerateWms.h"
 #include "Commands/PortMigrationFile.h"
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
@@ -779,6 +780,34 @@ namespace
 
         return anyFlagged ? 2 : 0;
     }
+
+
+    // generate-wms [--out DIR]
+    int RunGenerateWms(std::vector<std::string> const& args)
+    {
+        std::filesystem::path directory = SourceRoot() / "tools" / "map_editor" / "WorldMapStudioPlugins" / "WoWMapStudio" /
+            "src" / "Database" / "Generated";
+        for (size_t i = 0; i < args.size(); ++i)
+            if (args[i] == "--out" && i + 1 < args.size())
+                directory = args[++i];
+
+        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        if (!std::filesystem::exists(worldPath))
+        {
+            std::printf("generate-wms: %s does not exist (run create first)\n", worldPath.string().c_str());
+            return 1;
+        }
+
+        DoltLiteDatabase world(worldPath.string());
+        WmsGenerateResult result = GenerateWmsSources(world, directory);
+        if (!result.error.empty())
+        {
+            std::printf("generate-wms: %s\n", result.error.c_str());
+            return 1;
+        }
+        std::printf("generate-wms: wrote %zu tables to %s\n", result.tables, directory.string().c_str());
+        return 0;
+    }
 }
 
 int main(int argc, char** argv)
@@ -811,6 +840,8 @@ int main(int argc, char** argv)
         return RunImport(rest);
     if (command == "export")
         return RunExport(rest);
+    if (command == "generate-wms")
+        return RunGenerateWms(rest);
     if (command == "verify")
         return RunVerifyCommand(rest);
 

@@ -18,6 +18,7 @@ add_library(database_tool_lib STATIC
   Migrations/MigrationRunner.cpp
   Commands/CreateMysqlDatabase.cpp
   Commands/CreateWorldDatabase.cpp
+  Commands/GenerateWms.cpp
   Commands/PortMigrationFile.cpp
   Dbc/DbcExport.cpp
   Dbc/DbcImport.cpp
