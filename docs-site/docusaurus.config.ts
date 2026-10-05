@@ -72,6 +72,10 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
+              label: 'Features',
+              to: '/docs/features',
+            },
+            {
               label: 'Setup',
               to: '/docs/setup',
             },

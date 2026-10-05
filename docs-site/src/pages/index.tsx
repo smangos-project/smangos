@@ -3,5 +3,5 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import type {ReactNode} from 'react';
 
 export default function Home(): ReactNode {
-  return <Redirect to={useBaseUrl('/docs/setup')} />;
+  return <Redirect to={useBaseUrl('/docs/features')} />;
 }
