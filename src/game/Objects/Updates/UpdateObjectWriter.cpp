@@ -92,6 +92,21 @@ CreateObjectBits ComputeCreateObjectBits(Object const& object, Player const* tar
     return flags;
 }
 
+// FVendor_C flags: modern vendor bits (NpcFlags & 0xF80) >> 7, plus 0x20 for petitioners. The
+// client reads this fragment, not NpcFlags, to decide vendor/petitioner interaction and cursor.
+int32 GetVendorFragmentFlags(Object const& object)
+{
+    if (object.GetTypeId() != TYPEID_UNIT)
+        return 0;
+    uint32 const npcFlags = object.GetUInt32Value(UNIT_NPC_FLAGS);
+    int32 flags = 0;
+    if (npcFlags & UNIT_NPC_FLAG_VENDOR)
+        flags |= 0x1;
+    if (npcFlags & UNIT_NPC_FLAG_PETITIONER)
+        flags |= 0x20;
+    return flags;
+}
+
 void WriteEntityFragments(ByteBuffer& data, Object const& object)
 {
     data << uint8(EntityFragment::CGObject);
@@ -106,6 +121,8 @@ void WriteEntityFragments(ByteBuffer& data, Object const& object)
             break;
         case TYPEID_UNIT:
             data << uint8(EntityFragment::Tag_Unit);
+            if (GetVendorFragmentFlags(object))
+                data << uint8(EntityFragment::FVendor_C);
             break;
         case TYPEID_PLAYER:
             data << uint8(EntityFragment::Tag_Unit);
@@ -504,6 +521,8 @@ std::size_t OpenValuesBlock(ByteBuffer& buf, Object const& object, EnumFlag<Upda
     buf << uint32(0);
     buf << uint8(flags.HasFlag(UpdateFieldFlag::Owner));
     buf << uint8(0);                                             // IdsChanged
+    if (GetVendorFragmentFlags(object))
+        contentsChangedMask |= VendorActiveMask;
     buf << contentsChangedMask;
     return sizePos;
 }
@@ -555,6 +574,11 @@ void BuildCreateUpdateBlockForPlayer(Object const& object, UpdateData& data, Pla
     WriteEntityFragments(buf, object);
     buf << uint8(1);                                             // IndirectFragmentActive: CGObject
     BuildValuesCreate(object, buf, fieldFlags, target);
+    if (int32 vendorFlags = GetVendorFragmentFlags(object))
+    {
+        buf << uint8(1);                                         // IndirectFragmentActive: FVendor_C
+        buf << vendorFlags;
+    }
     buf.put<uint32>(sizePos, uint32(buf.wpos() - sizePos - 4));
 
     if (Unit const* unit = object.ToUnit())

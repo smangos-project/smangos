@@ -16,10 +16,12 @@ enum class EntityFragment : uint8
     Tag_GameObject    = 7,
     Tag_DynamicObject = 8,
     Tag_Corpse        = 9,
+    FVendor_C         = 117,
     End               = 255,
 };
 
 constexpr uint8 CGObjectActiveMask  = 0x1;
 constexpr uint8 CGObjectChangedMask = 0x2;
+constexpr uint8 VendorActiveMask    = 0x4;
 
 #endif
