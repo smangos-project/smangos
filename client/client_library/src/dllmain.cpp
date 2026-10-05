@@ -16,6 +16,7 @@
 #include "DumpTrigger.hpp"
 #include "NetDiagnostics.hpp"
 #include "Overlay.hpp"
+#include "ServerData.hpp"
 
 #include "custom/LaunchProtocol.hpp"
 
@@ -57,6 +58,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
         StartDumpTrigger();
         StartControlServerIfRequested();
         StartOverlay();
+        StartServerData();
 
         FlushLog();
 

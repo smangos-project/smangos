@@ -21,6 +21,7 @@ fi
 
 export WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/classic-client-wine}"
 export WINEARCH=win64
+export SMANGOS_SERVER_DATA="${SMANGOS_SERVER_DATA:-Z:$root/.server/data}"
 export WINEDEBUG="${WINEDEBUG:--all}"
 # Without this, mutter lowers the game window behind other windows on click.
 wine reg add 'HKCU\Software\Wine\X11 Driver' /v UseTakeFocus /t REG_SZ /d N /f >/dev/null 2>&1 || true

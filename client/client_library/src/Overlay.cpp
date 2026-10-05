@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "Overlay.hpp"
 
+#include "ServerData.hpp"
 #include "SwapChainCapture.hpp"
 
 #include <windows.h>
@@ -42,7 +43,7 @@ struct Camera {
 
 std::atomic<bool> Enabled{false};
 std::atomic<float> TanHalfFovV{0.5f};
-std::atomic<int> TestGrid{1};
+std::atomic<int> TestGrid{0};
 
 std::mutex ProviderMutex;
 std::vector<OverlayProvider> Providers;
@@ -354,6 +355,8 @@ void SetOverlayParameter(std::string const& name, float value)
         TanHalfFovV = value;
     else if (name == "grid")
         TestGrid = static_cast<int>(value);
+    else if (name == "map")
+        SetServerDataMap(static_cast<int>(value));
     else if (name == "enabled")
         Enabled = value != 0.f;
 }

@@ -460,6 +460,30 @@ static Response HandleMem(Json const& params)
     return JsonResponse(200, Json{{"address", address}, {"base", base}, {"hex", hex}});
 }
 
+// Debug search for aligned 32-bit `value` in committed read/write memory; returns up to 400000 addresses.
+static Response HandleScan(Json const& params)
+{
+    auto const value = static_cast<std::uint32_t>(std::strtoll(GetString(params, "value").c_str(), nullptr, 0));
+    Json hits = Json::array();
+    MEMORY_BASIC_INFORMATION info;
+    std::vector<std::uint32_t> buffer;
+    for (std::uintptr_t address = 0; hits.size() < 400000 && VirtualQuery(reinterpret_cast<void const*>(address), &info, sizeof(info)); address += info.RegionSize) {
+        std::uintptr_t const next = reinterpret_cast<std::uintptr_t>(info.BaseAddress) + info.RegionSize;
+        address = reinterpret_cast<std::uintptr_t>(info.BaseAddress);
+        if (info.State != MEM_COMMIT || (info.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) == 0 || (info.Protect & PAGE_GUARD))
+            continue;
+        buffer.resize(info.RegionSize / 4);
+        SIZE_T read = 0;
+        if (!ReadProcessMemory(GetCurrentProcess(), info.BaseAddress, buffer.data(), info.RegionSize, &read))
+            continue;
+        for (SIZE_T i = 0; i < read / 4 && hits.size() < 400000; ++i)
+            if (buffer[i] == value)
+                hits.push_back(address + i * 4);
+        address = next - info.RegionSize;
+    }
+    return JsonResponse(200, Json{{"hits", hits}});
+}
+
 static Response Route(Request const& request)
 {
     Json query = Json::object();
@@ -477,6 +501,8 @@ static Response Route(Request const& request)
             SetOverlayParameter(key, std::strtof(value.c_str(), nullptr));
         return JsonResponse(200, Json{{"ok", true}});
     }
+    if (get && request.path == "/scan")
+        return HandleScan(query);
     if (get && request.path == "/mem")
         return HandleMem(query);
     if (post) {
