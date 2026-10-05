@@ -53,4 +53,34 @@ public static class WowEntityFactoryTests
         Assert.IsNull(node.NodeId);
         Assert.IsTrue(context.Scene.Contains(node));
     }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Area_trigger_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_trigger_factory_test__");
+        var trigger = (WowAreaTrigger)Factory<WowAreaTriggerFactory>(context).Create(context, new MapId(0), transform, "");
+
+        Assert.IsNull(trigger.TriggerId);
+        Assert.IsTrue(context.Scene.Contains(trigger));
+    }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Light_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_light_factory_test__");
+        var light = (WowLight)Factory<WowLightFactory>(context).Create(context, new MapId(0), transform, "");
+
+        Assert.IsNull(light.LightId);
+        Assert.IsTrue(context.Scene.Contains(light));
+    }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Sound_emitter_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_emitter_factory_test__");
+        var emitter = (WowSoundEmitter)Factory<WowSoundEmitterFactory>(context).Create(context, new MapId(0), transform, "");
+
+        Assert.IsNull(emitter.EmitterId);
+        Assert.IsTrue(context.Scene.Contains(emitter));
+    }
 }
