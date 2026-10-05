@@ -1,6 +1,6 @@
 # model_editor
 
-Blender addon (WoW 1.15 `.m2`/`.wmo`) on top of wowlib. Phase 1 was the toolchain spike; phase 2 is the addon skeleton, textures and read-only WMO import (M2 import and all export come later).
+Blender addon (WoW 1.15 `.m2`/`.wmo`) on top of wowlib. Phase 1 was the toolchain spike; phase 2 the addon skeleton, textures and read-only WMO import; phase 3 static M2 import (animation and all export come later).
 
 ## Build wowlib
 
@@ -62,3 +62,23 @@ the file's vertex layout; faces outside any batch use the transparent `wow_colli
 approximation (shader id picks diffuse/two-layer/env, blend mode picks key/blend/additive).
 
 `tests/render_model.py` renders an import (`blender -b --python tests/render_model.py -- OUT.png WMO [az el]`) for a visual check.
+
+### M2 import (phase 3)
+
+Imports `<name>.m2` as a collection with one mesh per skin submesh (`<model>_<geoset id>_<submesh>`, grouped under
+`geosets/group_N`), an armature `<model>_rig` with weights, preview materials built from the batch stack, and
+`attachments`, `events`, `cameras`, `lights`, `emitters` and a hidden `<model>_collision` mesh. Raw fields live in
+`wow_m2` (collection), `wow_m2_submesh`, `wow_m2_bone` (Bone), `wow_m2_batches` (Material) and `wow_m2_object`; int point
+attributes `wow_vertex` / `wow_skin_vertex` map vertices back to the file. Only skin 0 (or the chosen skin) is imported.
+
+Creature skins come from the client db2s (`dbfilesclient/creaturedisplayinfo`, `creaturemodeldata`,
+`creaturedisplayinfogeosetdata`, read by the small `db2.py`, since wowlib has no 1.15 schemas): import option Display
+(Auto/None/ID) and the sidebar "WoW M2" panel switch the skin and geoset overrides. Character skins use the
+`<model>skin00_00.blp` guess; other replaceable textures show the magenta placeholder. Default geoset visibility
+(id 0, plus `group*100+1`) is a heuristic that has not been checked against the client.
+
+WMO import option "Doodad meshes" shows each doodad as a collection instance of a mesh-only M2 kept in the hidden
+`wmo_doodad_lib` collection (auto for WMOs with fewer than 500 doodads from the API; stormwind with all 6026 instances takes ~14 s).
+Doodad colours are not applied. Preview materials approximate blending modes (mod/mod2x use alpha blend).
+
+`test.sh --all-m2` imports every M2 in the catalogue.

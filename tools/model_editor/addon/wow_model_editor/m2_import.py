@@ -447,11 +447,11 @@ def import_emitters(model, top):
     coll = _link(top, "emitters")
     for i, e in enumerate(model.root.particle_emitters):
         ob = _empty(model, coll, f"particle_{i}", "CUBE", 0.1, "particle", i, int(e.bone_id), _vec(e.position))
-        ob.wow_m2_object.id = int(e.particle_id)
+        ob.wow_m2_object.id = s32(e.particle_id)
         ob.wow_m2_object.flags = s32(int(e.flags))
     for i, e in enumerate(model.root.ribbon_emitters):
         ob = _empty(model, coll, f"ribbon_{i}", "CIRCLE", 0.1, "ribbon", i, int(e.bone_index), _vec(e.position))
-        ob.wow_m2_object.id = int(e.ribbon_id)
+        ob.wow_m2_object.id = s32(e.ribbon_id)
 
 
 def import_collision(model, top):

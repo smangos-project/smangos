@@ -15,11 +15,14 @@ textures = common.submodule("textures")
 wmo_import = common.submodule("wmo_import")
 client = common.submodule("client")
 props = common.submodule("props")
+m2_import = common.submodule("m2_import")
+m2_names = common.submodule("m2_names")
+displays = common.submodule("displays")
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 REFS = ["world/wmo/cameron.wmo", "world/wmo/kalimdor/ogrimmar/kl_pvpbarracks.wmo",
         "world/wmo/azeroth/buildings/stormwind/stormwind.wmo"]
-KNOWN_BAD = {"world/wmo/expansion11/troll/12tr_amani_bridgewood_plank01.wmo"}  # truncated in the shipped data
+KNOWN_BAD = {"world/expansion11/doodads/elwynn/12elw_elwynn_main_tree_apple_d02.m2", "world/wmo/expansion11/troll/12tr_amani_bridgewood_plank01.wmo"}  # truncated in the shipped data
 tests = []
 
 
@@ -171,6 +174,163 @@ def operators():
     assert wm.wow_import.doodads
 
 
+M2S = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2"]
+
+
+def find_m2(stem):
+    index.load(client.session().content, client.prefs().cache_dir)
+    return next(e[1] for e in index.entries("m2") if e[1].endswith("/" + stem))
+
+
+@test
+def m2_names_and_displays():
+    assert m2_names.event(int.from_bytes(b"$CAH", "little")) == "$CAH"
+    assert m2_names.bone_name(3, 26) == "Root_3" and m2_names.bone_name(1, -1) == "bone_1"
+    ds = displays.for_model(126487)
+    assert len(ds) >= 12 and all(isinstance(d.textures, tuple) and len(d.textures) == 4 for d in ds)
+    assert ds[0].scale > 0 and any(d.textures[0] or d.textures[1] for d in ds)
+    assert displays.for_model(1) == []
+
+
+@test
+def import_m2_geometry():
+    for path in M2S:
+        clear()
+        t = time.time()
+        top = m2_import.load(path, {"display": "NONE"})
+        secs = time.time() - t
+        m = m2_import.read(path)
+        prof = m.skins[0].profile
+        root = m.root
+        subs = {o.wow_m2_submesh.index: o for o in top.all_objects if o.type == "MESH" and o.wow_m2_submesh.index >= 0}
+        assert len(subs) == len(prof.submeshes), path
+        skin_verts = np.asarray(prof.vertices)
+        for si, sm in enumerate(prof.submeshes):
+            ob = subs[si]
+            me = ob.data
+            assert len(me.polygons) == sm.index_count // 3 and len(me.vertices) == sm.vertex_count, (path, si)
+            wv = np.empty(len(me.vertices), np.int32)
+            me.attributes["wow_vertex"].data.foreach_get("value", wv)
+            assert (wv == skin_verts[sm.vertex_start:sm.vertex_start + sm.vertex_count]).all()
+            co = np.empty(len(me.vertices) * 3, np.float32)
+            me.vertices.foreach_get("co", co)
+            for k in (0, len(wv) - 1):
+                v = root.vertices[int(wv[k])]
+                assert np.allclose(co.reshape(-1, 3)[k], (v.pos.x, v.pos.y, v.pos.z), atol=1e-5)
+            if len(wv):
+                v = root.vertices[int(wv[0])]
+                lu = np.empty(len(me.loops) * 2, np.float32)
+                me.uv_layers["uv_0"].data.foreach_get("uv", lu)
+                vi = np.empty(len(me.loops), np.int32)
+                me.loops.foreach_get("vertex_index", vi)
+                j = int(np.nonzero(vi == 0)[0][0])
+                assert np.allclose(lu.reshape(-1, 2)[j], (v.tex_coords[0].x, 1 - v.tex_coords[0].y), atol=1e-5)
+            p = ob.wow_m2_submesh
+            assert p.skin_section_id == sm.skin_section_id and p.bone_combo_index == sm.bone_combo_index
+        arm = bpy.data.objects[f"{top.wow_m2.name and posix_stem(path)}_rig"]
+        bones = arm.data.bones
+        assert len(bones) == len(root.bones)
+        for i, b in enumerate(root.bones):
+            eb = next(x for x in bones if x.wow_m2_bone.index == i)
+            assert np.allclose(eb.head_local, (b.pivot.x, b.pivot.y, b.pivot.z), atol=1e-5)
+            assert (eb.parent.wow_m2_bone.index if eb.parent else -1) == (b.parent_bone if 0 <= b.parent_bone < len(root.bones) else -1)
+        for si, ob in list(subs.items())[:6]:
+            sums = np.zeros(len(ob.data.vertices))
+            for v in ob.data.vertices:
+                sums[v.index] = sum(g.weight for g in v.groups)
+            assert (np.abs(sums - 1) < 3 / 255).all() or not len(ob.vertex_groups), (path, si)
+        p = top.wow_m2
+        assert p.path == path and p.format_version == root.format_version and len(p.textures) == len(root.textures)
+        assert len(p.materials) == len(root.materials)
+        print(f"  {path}: {secs:.2f}s {len(subs)} submeshes {len(bones)} bones")
+
+
+def posix_stem(path):
+    return path.rsplit("/", 1)[1].rsplit(".", 1)[0]
+
+
+@test
+def import_m2_materials_and_extras():
+    clear()
+    path = M2S[0]
+    top = m2_import.load(path)
+    root = m2_import.read(path).root
+    prof = m2_import.read(path).skins[0].profile
+    batches = {}
+    for mat in bpy.data.materials:
+        for b in mat.wow_m2_batches:
+            batches[b.batch_index] = b
+    assert len(batches) == len(prof.batches)
+    for bi, b in enumerate(prof.batches):
+        p = batches[bi]
+        assert p.shader_id == b.shader_id and p.material_layer == b.material_layer and p.texture_count == b.texture_count
+        assert p.blending_mode == root.materials[b.material_index].blending_mode
+    objs = top.all_objects
+    assert len([o for o in objs if o.wow_m2_object.kind == "attachment"]) == len(root.attachments)
+    assert len([o for o in objs if o.wow_m2_object.kind == "event"]) == len(root.events)
+    assert len([o for o in objs if o.type == "CAMERA"]) == len(root.cameras)
+    bpy.context.view_layer.update()
+    a = next(o for o in objs if o.wow_m2_object.kind == "attachment")
+    att = root.attachments[a.wow_m2_object.index]
+    assert np.allclose(a.matrix_world.translation, (att.position.x, att.position.y, att.position.z), atol=1e-4)
+    assert any(o.name.endswith("_collision") and o.hide_viewport for o in objs)
+    # display swap changes the skin image and keeps one mesh visible
+    imgs = lambda: {n.image.name for m in bpy.data.materials for n in m.node_tree.nodes if n.bl_idname == "ShaderNodeTexImage"}
+    before = imgs()
+    ds = displays.for_model(m2_import.index.fdid_of(path))
+    other = next(d for d in ds if d.textures[0] and d.textures[1] and d.id != top.wow_m2.display_id)
+    m2_import.set_display(top, other.id)
+    assert top.wow_m2.display_id == other.id
+    assert imgs() != before or any(not d.textures[1] for d in ds[:1])
+    clear()
+    top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE"})
+    assert top.wow_m2.display_id == -1
+    assert any(n.image.name == textures.PLACEHOLDER for m in bpy.data.materials for n in m.node_tree.nodes if n.bl_idname == "ShaderNodeTexImage")
+
+
+@test
+def import_m2_hardcoded_and_particles():
+    clear()
+    top = m2_import.load(find_m2("duskwoodlamppost.m2"))
+    mats = [m for m in bpy.data.materials if len(m.wow_m2_batches)]
+    assert mats and all(b.texture_fdids[0] for m in mats for b in m.wow_m2_batches)
+    clear()
+    top = m2_import.load(find_m2("sc_brazier1.m2"))
+    assert any(o.wow_m2_object.kind == "particle" for o in top.all_objects)
+    clear()
+    top = m2_import.load(M2S[2])
+    assert any(o.type == "LIGHT" for o in top.all_objects)
+
+
+@test
+def import_doodad_meshes():
+    clear()
+    path = "world/wmo/kalimdor/ogrimmar/kl_pvpbarracks.wmo"
+    t = time.time()
+    coll = wmo_import.load(path, {"doodad_meshes": True})
+    root = wmo_expect(path)[1]
+    inst = [o for o in coll.all_objects if o.instance_type == "COLLECTION"]
+    assert 0 < len(inst) <= len(root.doodad_defs)
+    lib = bpy.data.collections["wmo_doodad_lib"]
+    assert len(lib.children) == len({o.instance_collection for o in inst})
+    assert all(o.wow_wmo_doodad.index >= 0 for o in inst)
+    print(f"  {len(inst)} instances, {len(lib.children)} models, {time.time() - t:.1f}s")
+    n = len(lib.children)
+    wmo_import.load(path, {"doodad_meshes": True})
+    assert len(bpy.data.collections["wmo_doodad_lib"].children) == n
+
+
+@test
+def operators_m2():
+    clear()
+    wm = bpy.context.window_manager
+    assert bpy.ops.wow.import_path(path="creature/wolf/wolf.m2") == {"FINISHED"}
+    assert bpy.data.collections["wolf.m2"]
+    bpy.context.view_layer.objects.active = bpy.data.objects["wolf_0_0"]
+    assert bpy.ops.wow.m2_set_display(display_id=-1) == {"FINISHED"}
+    wm.wow_kind = "m2"
+
+
 def sweep():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
@@ -184,6 +344,23 @@ def sweep():
     fails = [f for f in fails if f[0] not in KNOWN_BAD]
     print(f"sweep: {len(wmos)} WMOs, {len(fails)} failures, {time.time() - t0:.0f}s")
     for f in fails:
+        print("  FAIL", *f)
+    return fails
+
+
+def sweep_m2():
+    index.load(client.session().content, client.prefs().cache_dir)
+    fails, t0 = [], time.time()
+    entries = index.entries("m2")
+    for fdid, path, _ in entries:
+        clear()
+        try:
+            m2_import.load(path, {"display": "NONE"})
+        except Exception as e:  # noqa: BLE001
+            fails.append((path, f"{type(e).__name__}: {e}"[:200]))
+    fails = [f for f in fails if f[0] not in KNOWN_BAD]
+    print(f"m2 sweep: {len(entries)} M2s, {len(fails)} failures, {time.time() - t0:.0f}s")
+    for f in fails[:40]:
         print("  FAIL", *f)
     return fails
 
@@ -204,5 +381,7 @@ for f in tests:
         traceback.print_exc()
 if "--all" in ARGS:
     failed += len(sweep())
+if "--all-m2" in ARGS:
+    failed += len(sweep_m2())
 print("RESULT", "FAIL" if failed else "OK")
 sys.exit(1 if failed else 0)
