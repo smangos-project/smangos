@@ -32,5 +32,5 @@ def attachment(att_id):
 
 
 def event(identifier):
-    """Four-character code of an event identifier stored as a big-endian u32."""
-    return int(identifier).to_bytes(4, "big").decode("latin-1")
+    """Four-character code of an event identifier stored as a little-endian u32."""
+    return int(identifier).to_bytes(4, "little").decode("latin-1")

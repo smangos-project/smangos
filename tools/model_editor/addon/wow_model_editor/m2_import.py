@@ -522,7 +522,57 @@ def load(client_path, options=None, parent=None):
     return top
 
 
+def root_collection(ob):
+    """The M2 root collection that owns an object (found through wow_source)."""
+    path = ob.wow_source if ob is not None else ""
+    for c in bpy.data.collections:
+        if c.wow_m2.path and c.wow_m2.path == path:
+            return c
+    return None
+
+
+def set_display(top, display_id):
+    """Swap replaceable textures and geoset visibility to creature display `display_id` (-1 = none)."""
+    p = top.wow_m2
+    disp = displays.display(p.fdid, display_id) if display_id >= 0 else None
+    p.display_id = disp.id if disp else -1
+    types = {t: disp.textures[slot] for t, slot in SKIN_TYPES.items() if disp and disp.textures[slot]}
+    objs = [o for o in top.all_objects if o.type == "MESH" and o.wow_m2_submesh.index >= 0]
+    seen = set()
+    for ob in objs:
+        for mat in ob.data.materials:
+            if mat is not None and mat not in seen:
+                seen.add(mat)
+                m2_materials.set_replaceable(mat, types)
+    over = {gi + 1: val for gi, val in disp.geosets} if disp else {}
+    for ob in objs:
+        ob.hide_viewport = ob.hide_render = not geoset_visible(ob.wow_m2_submesh.skin_section_id, over)
+    return disp
+
+
 def take_warnings():
     out = list(_import_warnings)
     _import_warnings.clear()
     return out
+
+
+class WOW_OT_m2_set_display(bpy.types.Operator):
+    bl_idname = "wow.m2_set_display"
+    bl_label = "Set creature display"
+
+    display_id: bpy.props.IntProperty(default=-1)
+
+    @classmethod
+    def poll(cls, context):
+        return root_collection(context.active_object) is not None
+
+    def execute(self, context):
+        try:
+            set_display(root_collection(context.active_object), self.display_id)
+        except Exception as e:  # noqa: BLE001
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_m2_set_display,)

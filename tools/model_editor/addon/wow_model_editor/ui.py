@@ -41,6 +41,16 @@ class WOW_PT_browser(bpy.types.Panel):
         box.prop(o, "portals")
         box.prop(o, "liquids")
         box.prop(o, "group_filter")
+        box.prop(o, "doodad_meshes")
+        if wm.wow_kind == "m2" or wm.wow_query.endswith(".m2"):
+            box = col.box()
+            box.label(text="M2")
+            box.prop(o, "skin")
+            box.prop(o, "display")
+            if o.display == "ID":
+                box.prop(o, "display_id")
+            for name in ("attachments", "events", "cameras", "m2_lights", "emitters", "collision"):
+                box.prop(o, name)
         if wm.wow_recent:
             col.label(text="Recent")
             for r in wm.wow_recent:
@@ -48,7 +58,36 @@ class WOW_PT_browser(bpy.types.Panel):
                 op.path = r.name
 
 
-classes = (WowRecent, WOW_PT_browser)
+class WOW_PT_m2(bpy.types.Panel):
+    bl_label = "WoW M2"
+    bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
+
+    @classmethod
+    def poll(cls, context):
+        from . import m2_import
+        return m2_import.root_collection(context.active_object) is not None
+
+    def draw(self, context):
+        from . import displays, m2_import
+        top = m2_import.root_collection(context.active_object)
+        p = top.wow_m2
+        col = self.layout.column()
+        col.label(text=f"{p.path} (FDID {p.fdid})")
+        col.label(text=f"Skin {p.skin_index + 1}/{p.skin_count}, {p.sequence_count} sequences")
+        try:
+            listed = displays.for_model(p.fdid)
+        except Exception:  # noqa: BLE001
+            listed = []
+        if listed:
+            col.label(text="Display")
+            op = col.operator("wow.m2_set_display", text="None", depress=p.display_id < 0)
+            op.display_id = -1
+            for d in listed[:24]:
+                op = col.operator("wow.m2_set_display", text=str(d.id), depress=d.id == p.display_id)
+                op.display_id = d.id
+
+
+classes = (WowRecent, WOW_PT_browser, WOW_PT_m2)
 
 
 def register():

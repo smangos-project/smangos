@@ -61,4 +61,4 @@ PropertyGroups (`wow_wmo`, `wow_wmo_group`, `wow_wmo_material`, ...), so export 
 the file's vertex layout; faces outside any batch use the transparent `wow_collision` material. Material nodes are an
 approximation (shader id picks diffuse/two-layer/env, blend mode picks key/blend/additive).
 
-`tests/render_wmo.py` renders an import (`blender -b --python tests/render_wmo.py -- OUT.png WMO [az el]`) for a visual check.
+`tests/render_model.py` renders an import (`blender -b --python tests/render_model.py -- OUT.png WMO [az el]`) for a visual check.

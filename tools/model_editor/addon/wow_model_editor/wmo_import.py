@@ -189,7 +189,25 @@ def import_lights(root, coll):
         p.rotation = (l.rotation.x, l.rotation.y, l.rotation.z, l.rotation.w)
 
 
-def import_doodads(root, parent):
+def doodad_library(fdid, path):
+    """Hidden collection with the mesh-only M2 for `fdid`, shared by every instance in the file."""
+    lib = bpy.data.collections.get("wmo_doodad_lib")
+    if lib is None:
+        lib = bpy.data.collections.new("wmo_doodad_lib")
+        bpy.context.scene.collection.children.link(lib)
+        bpy.context.view_layer.layer_collection.children[lib.name].exclude = True
+    for c in lib.children:
+        if c.get("wow_fdid") == fdid:
+            return c
+    from . import m2_import
+    c = m2_import.load(path, {"mesh_only": True, "display": "NONE", "armature": False}, parent=lib)
+    c["wow_fdid"] = fdid
+    return c
+
+
+def import_doodads(root, parent, meshes=None):
+    if meshes is None:
+        meshes = len(root.doodad_defs) < 500
     sets = list(root.doodad_sets)
     set_colls = []
     for si, s in enumerate(sets):
@@ -213,6 +231,11 @@ def import_doodads(root, parent):
         path = index.path_of(fdid) or ""
         ob = bpy.data.objects.new(posixpath.splitext(posixpath.basename(path))[0] or f"doodad_{di}", None)
         ob.empty_display_type, ob.empty_display_size = "ARROWS", 0.5
+        if meshes and path.endswith(".m2"):
+            try:
+                ob.instance_type, ob.instance_collection = "COLLECTION", doodad_library(fdid, path)
+            except Exception:  # noqa: BLE001
+                pass
         ob.location = (d.position.x, d.position.y, d.position.z)
         ob.rotation_mode = "QUATERNION"
         q = d.orientation
@@ -311,7 +334,7 @@ def load(client_path, options=None, parent=None):
     if opts["lights"]:
         import_lights(root, _link(top, "lights"))
     if opts["doodads"]:
-        import_doodads(root, _link(top, "doodads"))
+        import_doodads(root, _link(top, "doodads"), opts.get("doodad_meshes"))
     if opts["liquids"]:
         lc = _link(top, "liquids")
         for ob in group_objs:

@@ -1,4 +1,4 @@
-"""blender -b --python render_wmo.py -- OUT.png WMO_PATH [azimuth_deg elevation_deg]: imports a WMO and renders it from outside with textures."""
+"""blender -b --python render_model.py -- OUT.png WMO_OR_M2_PATH [azimuth_deg elevation_deg]: imports a WMO and renders it from outside with textures."""
 import math
 import sys
 import time
@@ -13,12 +13,19 @@ import common  # noqa: E402
 out, path, *rest = sys.argv[sys.argv.index("--") + 1:]
 az, el = (float(rest[0]), float(rest[1])) if rest else (35.0, 30.0)
 common.enable()
-mod = type("M", (), {"wmo_import": common.submodule("wmo_import")})
+for o in list(bpy.data.objects):
+    bpy.data.objects.remove(o)
 t = time.time()
-coll = mod.wmo_import.load(path, {"lights": False})
+if path.endswith(".m2"):
+    coll = common.submodule("m2_import").load(path, {"lights": False})
+else:
+    coll = common.submodule("wmo_import").load(path, {"lights": False})
 print("import %.1fs" % (time.time() - t))
+for o in list(coll.all_objects):
+    if o.hide_render:
+        bpy.data.objects.remove(o)
 
-objs = [o for o in coll.all_objects if o.type == "MESH" and "groups" in [c.name for c in o.users_collection]]
+objs = [o for o in coll.all_objects if o.type == "MESH" and not o.hide_viewport and o.display_type != "WIRE"]
 pts = [o.matrix_world @ mathutils.Vector(c) for o in objs for c in o.bound_box]
 lo = mathutils.Vector([min(p[i] for p in pts) for i in range(3)])
 hi = mathutils.Vector([max(p[i] for p in pts) for i in range(3)])
@@ -27,7 +34,7 @@ cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
 bpy.context.scene.collection.objects.link(cam)
 d = mathutils.Vector((math.cos(math.radians(el)) * math.cos(math.radians(az)),
                       math.cos(math.radians(el)) * math.sin(math.radians(az)), math.sin(math.radians(el))))
-cam.location = ctr + d * size * 0.9
+cam.location = ctr + d * size * 1.6
 cam.rotation_euler = (ctr - cam.location).to_track_quat("-Z", "Y").to_euler()
 cam.data.clip_end = size * 4
 bpy.context.scene.camera = cam
