@@ -7,10 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WorldMapStudio.WoW;
 
-/// <summary>
-/// Maps <see cref="WowGameTele"/> to and from `game_tele`. Like <see cref="WowTaxiNodeFactory"/>,
-/// the scan ignores its region and loads every teleport for the map once — 1531 rows total, 61 maps.
-/// </summary>
+/// <summary>Maps <see cref="WowGameTele"/> to and from `game_tele`. The scan loads every row for the map once.</summary>
 [Subsystem(nameof(WorldStorage))]
 public sealed class WowGameTeleFactory : ISceneEntityFactory, ISpawnFactory
 {
@@ -127,12 +124,6 @@ public sealed class WowGameTeleFactory : ISceneEntityFactory, ISpawnFactory
     /// <see cref="WowGameTele.DisplayName"/>) at <paramref name="transform"/>.</summary>
     public SceneEntity Create(EditorContext context, MapId map, Transform3D transform, string key)
     {
-        if (ResolveWowMap(map) is null)
-        {
-            throw new InvalidOperationException(
-                $"map {map.Value} has no matching dbc_map row — name the editor map after a WoW map first.");
-        }
-
         var tele = new WowGameTele
         {
             Map = map,
