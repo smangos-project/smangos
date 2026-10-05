@@ -57,7 +57,7 @@ public static class TextureMapperTests
         IReadOnlyList<AdtSlotAssignment> slots = TextureMapper.SlotAssignments(chunk, textures, materials);
 
         Assert.AreEqual(2, slots.Count);
-        Assert.AreEqual(0, slots[0].Slot);
+        Assert.AreEqual(0, slots[0].SlotIndex);
         Assert.AreEqual(10, slots[0].MaterialId);
         Assert.AreEqual(20, slots[1].MaterialId);
     }

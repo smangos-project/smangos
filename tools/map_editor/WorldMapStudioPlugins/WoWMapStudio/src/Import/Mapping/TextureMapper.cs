@@ -10,9 +10,6 @@ namespace WorldMapStudio.WoW;
 /// alpha. Every non-empty alpha byte round-trips exactly through the identity <c>channel_mask</c>
 /// remap the material binds.
 /// </summary>
-/// <summary>One MCNK slot's material; <see cref="LayerId"/> is resolved by the component.</summary>
-public readonly record struct AdtSlotAssignment(int Slot, int? LayerId, int? MaterialId);
-
 public static class TextureMapper
 {
     /// <summary>MCLY layers per MCNK.</summary>
