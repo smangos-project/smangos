@@ -1,5 +1,8 @@
 #pragma once
 
+#include <d3d12.h>
+#include <wrl/client.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -17,3 +20,16 @@ using PresentCallback = void (*)(IDXGISwapChain*, ID3D12CommandQueue*, ExecuteLi
 
 bool EnsureSwapChainHooks();
 void SetPresentCallback(PresentCallback callback);
+
+// The depth buffer the client rendered its scene with, as seen through the hooked command lists.
+struct SceneDepth {
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+    D3D12_DEPTH_STENCIL_VIEW_DESC view = {};
+    bool hasView = false;
+    D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+    UINT width = 0;
+    UINT height = 0;
+};
+
+// The depth buffers bound during the previous frame, most used first; false before one has been seen.
+bool GetSceneDepths(std::vector<SceneDepth>& depths);

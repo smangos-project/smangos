@@ -36,9 +36,15 @@ struct Segment {
     float a[3], b[3];
 };
 
+struct Face {
+    float a[3], b[3], c[3];
+};
+
 struct Tile {
     std::vector<Segment> collision;
+    std::vector<Face> collisionFaces;
     std::vector<Segment> navmesh;
+    std::vector<Face> navmeshFaces;
 };
 
 std::atomic<int> MapId{0};
@@ -99,6 +105,7 @@ struct Cursor {
 struct Wireframe {
     std::vector<float> vertices;
     std::vector<std::uint32_t> edges;
+    std::vector<std::uint32_t> triangles;
 };
 
 std::shared_ptr<Wireframe const> ParseModel(std::vector<std::uint8_t> const& bytes)
@@ -133,6 +140,8 @@ std::shared_ptr<Wireframe const> ParseModel(std::vector<std::uint8_t> const& byt
             std::uint32_t idx[3] = {in.Read<std::uint32_t>(), in.Read<std::uint32_t>(), in.Read<std::uint32_t>()};
             if (idx[0] >= vertexCount || idx[1] >= vertexCount || idx[2] >= vertexCount)
                 return nullptr;
+            for (int c = 0; c < 3; ++c)
+                wire->triangles.push_back(base + idx[c]);
             for (int c = 0; c < 3; ++c) {
                 std::uint32_t const from = base + idx[c], to = base + idx[(c + 1) % 3];
                 if (seen.insert((std::uint64_t(std::min(from, to)) << 32) | std::max(from, to)).second) {
@@ -209,7 +218,7 @@ struct Transform {
     }
 };
 
-void BuildCollision(int map, int tx, int ty, std::vector<Segment>& out)
+void BuildCollision(int map, int tx, int ty, std::vector<Segment>& out, std::vector<Face>& faces)
 {
     char name[48];
     std::snprintf(name, sizeof(name), "/vmaps/%03d_%02d_%02d.vmtile", map, ty, tx);
@@ -249,10 +258,17 @@ void BuildCollision(int map, int tx, int ty, std::vector<Segment>& out)
             std::memcpy(s.b, &world[model->edges[e + 1] * 3], 12);
             out.push_back(s);
         }
+        for (std::size_t t = 0; t + 2 < model->triangles.size(); t += 3) {
+            Face f;
+            std::memcpy(f.a, &world[model->triangles[t] * 3], 12);
+            std::memcpy(f.b, &world[model->triangles[t + 1] * 3], 12);
+            std::memcpy(f.c, &world[model->triangles[t + 2] * 3], 12);
+            faces.push_back(f);
+        }
     }
 }
 
-void BuildNavmesh(int map, int tx, int ty, std::vector<Segment>& out)
+void BuildNavmesh(int map, int tx, int ty, std::vector<Segment>& out, std::vector<Face>& faces)
 {
     char name[48];
     std::snprintf(name, sizeof(name), "/mmaps/%03d%02d%02d.mmtile", map, tx, ty);
@@ -330,6 +346,12 @@ void BuildNavmesh(int map, int tx, int ty, std::vector<Segment>& out)
         };
         for (int t = 0; t < triangleCount; ++t) {
             std::uint8_t const* tri = detailTris + (triBase + t) * 4;
+            if (tri[0] < vertexCount + detailVertexCount && tri[1] < vertexCount + detailVertexCount &&
+                tri[2] < vertexCount + detailVertexCount) {
+                Face f;
+                if (corner(tri[0], f.a) && corner(tri[1], f.b) && corner(tri[2], f.c))
+                    faces.push_back(f);
+            }
             for (int e = 0; e < 3; ++e) {
                 if (((tri[3] >> (e * 2)) & 3) == 0)
                     continue;
@@ -347,8 +369,8 @@ void BuildNavmesh(int map, int tx, int ty, std::vector<Segment>& out)
 std::shared_ptr<Tile const> BuildTile(int map, int tx, int ty)
 {
     auto tile = std::make_shared<Tile>();
-    BuildCollision(map, tx, ty, tile->collision);
-    BuildNavmesh(map, tx, ty, tile->navmesh);
+    BuildCollision(map, tx, ty, tile->collision, tile->collisionFaces);
+    BuildNavmesh(map, tx, ty, tile->navmesh, tile->navmeshFaces);
     return tile;
 }
 
@@ -399,7 +421,7 @@ void StreamLoop()
     }
 }
 
-void Emit(float const* eye, OverlayLineSink const& line)
+void Emit(float const* eye, OverlayLineSink const& line, OverlayTriangleSink const& triangle)
 {
     EyeX = eye[0];
     EyeY = eye[1];
@@ -416,7 +438,19 @@ void Emit(float const* eye, OverlayLineSink const& line)
         float const dx = s.a[0] - eye[0], dy = s.a[1] - eye[1], dz = s.a[2] - eye[2];
         return dx * dx + dy * dy + dz * dz < radius * radius;
     };
+    auto const nearFace = [&](Face const& f, float radius) {
+        float const dx = f.a[0] - eye[0], dy = f.a[1] - eye[1], dz = f.a[2] - eye[2];
+        return dx * dx + dy * dy + dz * dz < radius * radius;
+    };
     for (auto const& tile : tiles) {
+        if (ShowCollision)
+            for (Face const& f : tile->collisionFaces)
+                if (nearFace(f, CollisionRadius))
+                    triangle(f.a, f.b, f.c, {255, 160, 40, 50});
+        if (ShowNavmesh)
+            for (Face const& f : tile->navmeshFaces)
+                if (nearFace(f, NavmeshRadius))
+                    triangle(f.a, f.b, f.c, {60, 255, 90, 50});
         if (ShowCollision)
             for (Segment const& s : tile->collision)
                 if (within(s, CollisionRadius))

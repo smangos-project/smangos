@@ -11,9 +11,13 @@
 #include <MinHook.h>
 
 #include <chrono>
+#include <algorithm>
+#include <atomic>
 #include <condition_variable>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <unordered_map>
 
 using Microsoft::WRL::ComPtr;
 
@@ -26,6 +30,74 @@ using ExecuteFn = void(STDMETHODCALLTYPE*)(ID3D12CommandQueue*, UINT, ID3D12Comm
 PresentFn OriginalPresent = nullptr;
 Present1Fn OriginalPresent1 = nullptr;
 ExecuteFn OriginalExecute = nullptr;
+
+using CreateDsvFn = void(STDMETHODCALLTYPE*)(ID3D12Device*, ID3D12Resource*, D3D12_DEPTH_STENCIL_VIEW_DESC const*,
+                                             D3D12_CPU_DESCRIPTOR_HANDLE);
+using SetTargetsFn = void(STDMETHODCALLTYPE*)(ID3D12GraphicsCommandList*, UINT, D3D12_CPU_DESCRIPTOR_HANDLE const*, BOOL,
+                                              D3D12_CPU_DESCRIPTOR_HANDLE const*);
+using BarrierFn = void(STDMETHODCALLTYPE*)(ID3D12GraphicsCommandList*, UINT, D3D12_RESOURCE_BARRIER const*);
+
+CreateDsvFn OriginalCreateDsv = nullptr;
+SetTargetsFn OriginalSetTargets = nullptr;
+BarrierFn OriginalBarrier = nullptr;
+
+struct DsvInfo {
+    ID3D12Resource* resource;
+    D3D12_DEPTH_STENCIL_VIEW_DESC view;
+    bool hasView;
+    UINT width, height;
+    int uses;
+};
+
+std::mutex DepthMutex;
+std::unordered_map<SIZE_T, DsvInfo> DsvDescriptors;
+std::unordered_map<ID3D12Resource*, DsvInfo> FrameSeen;
+std::vector<SceneDepth> Candidates;
+std::atomic<int> SelectedState{D3D12_RESOURCE_STATE_DEPTH_WRITE};
+std::unordered_map<ID3D12Resource*, int> States;
+
+void STDMETHODCALLTYPE CreateDsvDetour(ID3D12Device* device, ID3D12Resource* resource,
+                                       D3D12_DEPTH_STENCIL_VIEW_DESC const* desc, D3D12_CPU_DESCRIPTOR_HANDLE handle)
+{
+    OriginalCreateDsv(device, resource, desc, handle);
+    if (!resource)
+        return;
+    D3D12_RESOURCE_DESC const resourceDesc = resource->GetDesc();
+    DsvInfo info = {resource, desc ? *desc : D3D12_DEPTH_STENCIL_VIEW_DESC{}, desc != nullptr,
+                    static_cast<UINT>(resourceDesc.Width), resourceDesc.Height, 0};
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    DsvDescriptors[handle.ptr] = info;
+}
+
+void STDMETHODCALLTYPE SetTargetsDetour(ID3D12GraphicsCommandList* list, UINT count,
+                                        D3D12_CPU_DESCRIPTOR_HANDLE const* targets, BOOL single,
+                                        D3D12_CPU_DESCRIPTOR_HANDLE const* depth)
+{
+    OriginalSetTargets(list, count, targets, single, depth);
+    if (!depth)
+        return;
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    auto it = DsvDescriptors.find(depth->ptr);
+    if (it == DsvDescriptors.end())
+        return;
+    DsvInfo& seen = FrameSeen.try_emplace(it->second.resource, it->second).first->second;
+    seen.view = it->second.view;
+    seen.hasView = it->second.hasView;
+    ++seen.uses;
+}
+
+void STDMETHODCALLTYPE BarrierDetour(ID3D12GraphicsCommandList* list, UINT count, D3D12_RESOURCE_BARRIER const* barriers)
+{
+    OriginalBarrier(list, count, barriers);
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    for (UINT i = 0; i < count; ++i)
+        if (barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION &&
+            barriers[i].Transition.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES) {
+            auto it = States.find(barriers[i].Transition.pResource);
+            if (it != States.end())
+                it->second = barriers[i].Transition.StateAfter;
+        }
+}
 
 std::mutex HookMutex;
 bool HooksInstalled = false;
@@ -180,8 +252,39 @@ bool CopyBackBuffer(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue)
 
 PresentCallback OverlayCallback = nullptr;
 
+void FinishDepthFrame()
+{
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    if (FrameSeen.empty())
+        return;
+    std::vector<DsvInfo> best;
+    for (auto const& [resource, info] : FrameSeen)
+        best.push_back(info);
+    std::sort(best.begin(), best.end(), [](DsvInfo const& a, DsvInfo const& b) {
+        return a.uses != b.uses ? a.uses > b.uses : a.resource < b.resource;
+    });
+    std::unordered_map<ID3D12Resource*, int> states;
+    Candidates.clear();
+    for (DsvInfo const& info : best) {
+        auto it = States.find(info.resource);
+        int const state = it == States.end() ? D3D12_RESOURCE_STATE_DEPTH_WRITE : it->second;
+        states[info.resource] = state;
+        SceneDepth depth;
+        depth.resource = info.resource;
+        depth.view = info.view;
+        depth.hasView = info.hasView;
+        depth.width = info.width;
+        depth.height = info.height;
+        depth.state = static_cast<D3D12_RESOURCE_STATES>(state);
+        Candidates.push_back(std::move(depth));
+    }
+    States = std::move(states);
+    FrameSeen.clear();
+}
+
 void OnPresent(IDXGISwapChain* swapChain)
 {
+    FinishDepthFrame();
     ID3D12CommandQueue* queue;
     {
         std::lock_guard<std::mutex> lock(StateMutex);
@@ -262,6 +365,8 @@ bool InstallHooks()
     ComPtr<ID3D12CommandQueue> queue;
     ComPtr<IDXGIFactory2> factory;
     ComPtr<IDXGISwapChain1> swapChain;
+    ComPtr<ID3D12CommandAllocator> allocator;
+    ComPtr<ID3D12GraphicsCommandList> list;
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     DXGI_SWAP_CHAIN_DESC1 swapDesc = {};
@@ -274,17 +379,29 @@ bool InstallHooks()
     swapDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     bool ok = SUCCEEDED(createDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device))) &&
               SUCCEEDED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&queue))) &&
+              SUCCEEDED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator))) &&
+              SUCCEEDED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr,
+                                                  IID_PPV_ARGS(&list))) &&
               SUCCEEDED(createFactory(0, IID_PPV_ARGS(&factory))) &&
               SUCCEEDED(factory->CreateSwapChainForHwnd(queue.Get(), window, &swapDesc, nullptr, nullptr, &swapChain));
     if (ok) {
-        // IDXGISwapChain::Present, IDXGISwapChain1::Present1, ID3D12CommandQueue::ExecuteCommandLists
+        // IDXGISwapChain::Present, IDXGISwapChain1::Present1, ID3D12CommandQueue::ExecuteCommandLists,
+        // ID3D12Device::CreateDepthStencilView, ID3D12GraphicsCommandList::{ResourceBarrier, OMSetRenderTargets}
         ok = Hook(VirtualMethod(swapChain.Get(), 8), reinterpret_cast<void*>(&PresentDetour),
                   reinterpret_cast<void**>(&OriginalPresent), "Present") &&
              Hook(VirtualMethod(swapChain.Get(), 22), reinterpret_cast<void*>(&Present1Detour),
                   reinterpret_cast<void**>(&OriginalPresent1), "Present1") &&
              Hook(VirtualMethod(queue.Get(), 10), reinterpret_cast<void*>(&ExecuteDetour),
-                  reinterpret_cast<void**>(&OriginalExecute), "ExecuteCommandLists");
+                  reinterpret_cast<void**>(&OriginalExecute), "ExecuteCommandLists") &&
+             Hook(VirtualMethod(device.Get(), 21), reinterpret_cast<void*>(&CreateDsvDetour),
+                  reinterpret_cast<void**>(&OriginalCreateDsv), "CreateDepthStencilView") &&
+             Hook(VirtualMethod(list.Get(), 26), reinterpret_cast<void*>(&BarrierDetour),
+                  reinterpret_cast<void**>(&OriginalBarrier), "ResourceBarrier") &&
+             Hook(VirtualMethod(list.Get(), 46), reinterpret_cast<void*>(&SetTargetsDetour),
+                  reinterpret_cast<void**>(&OriginalSetTargets), "OMSetRenderTargets");
     }
+    list.Reset();
+    allocator.Reset();
     swapChain.Reset();
     queue.Reset();
     device.Reset();
@@ -331,4 +448,16 @@ bool CaptureSwapChain(int& width, int& height, std::vector<std::uint8_t>& pixels
     height = FrameHeight;
     pixels = std::move(FramePixels);
     return true;
+}
+
+bool GetSceneDepths(std::vector<SceneDepth>& depths)
+{
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    for (SceneDepth& depth : Candidates) {
+        auto it = States.find(depth.resource.Get());
+        if (it != States.end())
+            depth.state = static_cast<D3D12_RESOURCE_STATES>(it->second);
+    }
+    depths = Candidates;
+    return !depths.empty();
 }

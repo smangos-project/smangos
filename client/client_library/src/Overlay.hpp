@@ -9,10 +9,12 @@ struct OverlayColor {
 };
 
 using OverlayLineSink = std::function<void(float const* from, float const* to, OverlayColor color)>;
-// Called every frame with the camera eye in the server world frame; emits world-space lines.
-using OverlayProvider = std::function<void(float const* eye, OverlayLineSink const& line)>;
+using OverlayTriangleSink = std::function<void(float const* a, float const* b, float const* c, OverlayColor color)>;
+// Called every frame with the camera eye in the server world frame; emits world-space lines and faces.
+using OverlayProvider =
+    std::function<void(float const* eye, OverlayLineSink const& line, OverlayTriangleSink const& triangle)>;
 
-// Draws world-space lines over the client's frames. Starts once the client has loaded D3D12.
+// Draws world-space lines and faces, depth-tested against the client's scene, over the client's frames. Starts once the client has loaded D3D12.
 void StartOverlay();
 void SetOverlayEnabled(bool enabled);
 void SetOverlayParameter(std::string const& name, float value);
