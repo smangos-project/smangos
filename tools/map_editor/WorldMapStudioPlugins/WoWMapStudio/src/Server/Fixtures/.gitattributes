@@ -1,0 +1,6 @@
+*.map binary
+*.mmtile binary
+*.mmap binary
+*.vmtile binary
+*.vmo binary
+*.vmtree binary
