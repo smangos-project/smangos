@@ -370,7 +370,7 @@ public sealed class AdtImportCatalog
     }
 
     /// <summary>The name of the material that puts <paramref name="texture"/> in MCNK slot <paramref name="slot"/>.</summary>
-    public static string SlotMaterialName(string texture, int slot) => $"ADT {slot}: {texture}";
+    public static string SlotMaterialName(uint texture, int slot) => $"ADT {slot}: {texture}";
 
     /// <summary>Which <c>(texture, slot)</c> a material name from <see cref="SlotMaterialName"/> stands for.</summary>
     public static bool TryParseSlotMaterialName(string name, out string texture, out int slot)
@@ -415,11 +415,11 @@ public sealed class AdtImportCatalog
     /// (threshold 0.5, softness 1.0). Called per tile as its MTEX is read; after the first few tiles it
     /// finds everything and creates nothing. Returns a lookup for every requested pair.
     /// </summary>
-    public static async Task<IReadOnlyDictionary<(string Texture, int Slot), int>> EnsureSlotMaterialsAsync(
+    public static async Task<IReadOnlyDictionary<(uint Texture, int Slot), int>> EnsureSlotMaterialsAsync(
         BatchContext context,
         WorkContext work,
         MapId map,
-        IReadOnlyCollection<(string Texture, int Slot, int EffectId)> requests)
+        IReadOnlyCollection<(uint Texture, int Slot, int EffectId)> requests)
     {
         EditorContext editor = context.Editor;
 
@@ -442,11 +442,11 @@ public sealed class AdtImportCatalog
             .Select(group => (group.Key.Texture, group.Key.Slot,
                 EffectId: group.Select(request => request.EffectId).FirstOrDefault(id => id != 0)));
 
-        var toCreate = new List<(string Texture, int Slot, int EffectId, string Name, string AlphaFunction, string AlphaParameters)>();
+        var toCreate = new List<(uint Texture, int Slot, int EffectId, string Name, string AlphaFunction, string AlphaParameters)>();
         var toRepair = new List<(LandscapeMaterial Material, string TexturePath, string AlphaFunction, string AlphaParameters, int EffectId)>();
-        var result = new Dictionary<(string, int), int>();
+        var result = new Dictionary<(uint, int), int>();
 
-        foreach ((string texture, int slot, int effectId) in byPair)
+        foreach ((uint texture, int slot, int effectId) in byPair)
         {
             string name = SlotMaterialName(texture, slot);
             (string wantedAlphaFunction, string wantedAlphaParameters) = SlotAlpha(slot);
@@ -458,11 +458,11 @@ public sealed class AdtImportCatalog
             }
 
             if (existing.AlphaFunction != wantedAlphaFunction || existing.AlphaParameters != wantedAlphaParameters
-                || existing.TexturePath != texture || (effectId != 0 && existing.SurfaceEffectId != effectId))
+                || existing.TexturePath != WowFileDataIds.Shared.PathOrPlaceholder(texture) || (effectId != 0 && existing.SurfaceEffectId != effectId))
             {
                 // Repair a material from an earlier importer version (e.g. one with a stale channel
                 // binding) rather than leave it broken. A zero effect id never overwrites a set one.
-                toRepair.Add((existing, texture, wantedAlphaFunction, wantedAlphaParameters, effectId));
+                toRepair.Add((existing, WowFileDataIds.Shared.PathOrPlaceholder(texture), wantedAlphaFunction, wantedAlphaParameters, effectId));
             }
 
             result[(texture, slot)] = existing.RecordId ?? 0;
@@ -476,13 +476,13 @@ public sealed class AdtImportCatalog
         await work.SwitchToMain();
 
         var toSave = new List<IEntity>();
-        foreach ((string texture, int slot, int effectId, string name, string wantedAlphaFunction, string wantedAlphaParameters) in toCreate)
+        foreach ((uint texture, int slot, int effectId, string name, string wantedAlphaFunction, string wantedAlphaParameters) in toCreate)
         {
             var created = new LandscapeMaterial
             {
                 Map = map,
                 Name = name,
-                TexturePath = texture,
+                TexturePath = WowFileDataIds.Shared.PathOrPlaceholder(texture),
                 AlphaFunction = wantedAlphaFunction,
                 AlphaParameters = wantedAlphaParameters,
                 SurfaceEffectId = effectId,

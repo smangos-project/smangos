@@ -67,6 +67,9 @@ public sealed class WowFileDataIds
 
     public string? PathOf(uint id) => _paths.GetValueOrDefault(id);
 
+    /// <summary>The listed path, or a stable stand-in for ids the listfile does not know.</summary>
+    public string PathOrPlaceholder(uint id) => PathOf(id) ?? $"unknown/{id}.blp";
+
     public uint? IdOf(string path) => _ids.TryGetValue(Normalize(path), out uint id) ? id : null;
 
     private void AddLine(string line)
