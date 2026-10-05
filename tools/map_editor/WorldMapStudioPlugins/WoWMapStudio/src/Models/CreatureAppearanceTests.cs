@@ -1,3 +1,9 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 namespace WorldMapStudio.WoW;
 
 public static class CreatureAppearanceTests
@@ -34,5 +40,44 @@ public static class CreatureAppearanceTests
 
         Assert.AreEqual("creature/boar/boarskin.blp", options.MaterialOverride!(null!, null!, skin).Values.GetTexture(M2Material.Texture));
         Assert.AreEqual("a.blp", options.MaterialOverride!(null!, null!, fixedTex).Values.GetTexture(M2Material.Texture));
+    }
+
+    [EditorTest(Category = "WoW Models", Thread = TestThread.Background)]
+    public static async Task Resolve_reads_display_rows_from_the_world_database()
+    {
+        string? db = null;
+        for (string? dir = AppContext.BaseDirectory; dir != null && db == null; dir = Path.GetDirectoryName(dir))
+        {
+            string candidate = Path.Combine(dir, ".world", "world.doltlite");
+            db = File.Exists(candidate) ? candidate : null;
+        }
+        if (db == null)
+        {
+            Assert.Skip("world.doltlite not available");
+        }
+
+        var project = new Project { Name = "__wms_creature_resolve_test__" };
+        project.StorageLocations["Editor"] = new StorageLocation { DatabasePath = db! };
+        var context = new EditorContext(new Godot.Node3D(), project);
+        WorldStorage storage = context.Database.Storages.OfType<WorldStorage>().Single();
+
+        int[] displayIds;
+        await using (WorldDbContext world = storage.CreateContext())
+        {
+            displayIds = await world.DbcCreaturedisplayinfo.AsNoTracking().Select(row => row.ID).Take(200).ToArrayAsync();
+        }
+
+        CreatureAppearance? found = null;
+        foreach (int id in displayIds)
+        {
+            found = await CreatureAppearanceResolver.ResolveAsync(storage, id);
+            if (found != null)
+            {
+                break;
+            }
+        }
+
+        Assert.IsNotNull(found, "some display resolves to a model path");
+        Assert.IsTrue(found!.ModelPath.EndsWith(".m2", StringComparison.OrdinalIgnoreCase));
     }
 }
