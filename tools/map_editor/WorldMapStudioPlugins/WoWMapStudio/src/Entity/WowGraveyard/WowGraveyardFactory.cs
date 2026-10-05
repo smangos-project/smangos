@@ -20,6 +20,7 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
     private readonly Dictionary<WowGraveyard, int> _newIds = [];
     private MapId? _cachedMap;
     private List<WorldSafeLocsRecord> _cached = [];
+    private Dictionary<int, List<WowGraveyardZone>> _cachedZones = [];
 
     public WowGraveyardFactory(WorldStorage storage)
     {
@@ -93,7 +94,8 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
             WorldSafeLocsRecord record = db.WorldSafeLocs.Find((int)existingId)
                 ?? throw new InvalidOperationException($"world_safe_locs row {existingId} was removed outside the editor.");
             WriteFields(loc, record, mapValue);
-            return () => { };
+            StageZones(db, record.Id, loc.Zones);
+            return () => _cachedMap = null;
         }
 
         if (!_newIds.TryGetValue(loc, out int newId))
@@ -104,6 +106,7 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
         var newRecord = new WorldSafeLocsRecord { Id = newId };
         WriteFields(loc, newRecord, mapValue);
         db.WorldSafeLocs.Add(newRecord);
+        StageZones(db, newId, loc.Zones);
         return () =>
         {
             loc.LocId = (uint)newRecord.Id;
@@ -118,6 +121,7 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
         if (loc.LocId is uint id)
         {
             db.WorldSafeLocs.Remove(new WorldSafeLocsRecord { Id = (int)id });
+            db.GameGraveyardZone.RemoveRange(db.GameGraveyardZone.Where(row => row.Id == (int)id).ToList());
         }
     }
 
@@ -143,6 +147,7 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
         {
             Map = map,
             LocId = (uint)record.Id,
+            Zones = _cachedZones.TryGetValue(record.Id, out List<WowGraveyardZone>? zones) ? zones : [],
         };
         loc.AddIntrinsicComponent(new WowPointMarker(MarkerTypeId, "Graveyard Marker", MarkerColor, 3.0f));
 
@@ -150,6 +155,27 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
         Basis rotation = CreatureCoordinates.OrientationToGodot(record.Orientation);
         loc.Transform = new Transform3D(rotation, position);
         return loc;
+    }
+
+    private static void StageZones(WorldDbContext db, int id, List<WowGraveyardZone> zones)
+    {
+        var wanted = zones.GroupBy(z => z.GhostZone).ToDictionary(g => g.Key, g => g.First().Faction);
+        foreach (GameGraveyardZoneRecord row in db.GameGraveyardZone.Where(row => row.Id == id).ToList())
+        {
+            if (wanted.Remove(row.GhostZone, out int faction))
+            {
+                row.Faction = faction;
+            }
+            else
+            {
+                db.GameGraveyardZone.Remove(row);
+            }
+        }
+
+        foreach ((int ghostZone, int faction) in wanted)
+        {
+            db.GameGraveyardZone.Add(new GameGraveyardZoneRecord { Id = id, GhostZone = ghostZone, Faction = faction });
+        }
     }
 
     private static void WriteFields(WowGraveyard loc, WorldSafeLocsRecord record, int mapValue)
@@ -174,6 +200,12 @@ public sealed class WowGraveyardFactory : ISceneEntityFactory, ISpawnFactory
         List<WorldSafeLocsRecord> rows = await db.WorldSafeLocs.AsNoTracking()
             .Where(row => row.MapId == mapValue).ToListAsync().ConfigureAwait(false);
 
+        var ids = rows.Select(row => row.Id).ToList();
+        List<GameGraveyardZoneRecord> links = await db.GameGraveyardZone.AsNoTracking()
+            .Where(row => ids.Contains(row.Id)).ToListAsync().ConfigureAwait(false);
+
+        _cachedZones = links.GroupBy(row => row.Id)
+            .ToDictionary(group => group.Key, group => group.Select(row => new WowGraveyardZone(row.GhostZone, row.Faction)).ToList());
         _cachedMap = map;
         _cached = rows;
         return rows;

@@ -54,6 +54,15 @@ public static class WowEntityCommitTests
 
             var zone = (WowZoneLight)new WowZoneLightFactory(world).Create(context, map, transform, "Commit Test");
 
+            var yard = (WowGraveyard)new WowGraveyardFactory(world).Create(context, map, transform, "");
+            yard.Zones = [new WowGraveyardZone(12, 0)];
+
+            await world.CommitAsync([yard], []).ConfigureAwait(false);
+            yard.Zones = [new WowGraveyardZone(12, 469), new WowGraveyardZone(14, 0)];
+            await world.CommitAsync([yard], []).ConfigureAwait(false);
+            Assert.IsNotNull(yard.LocId);
+            await world.CommitAsync([], [yard]).ConfigureAwait(false);
+
             await world.CommitAsync([node, trigger, light, emitter, zone], []).ConfigureAwait(false);
             Assert.IsNotNull(zone.ZoneLightId);
 
