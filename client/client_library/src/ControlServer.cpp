@@ -5,6 +5,7 @@
 
 #include "ControlServer.hpp"
 #include "Overlay.hpp"
+#include "SwapChainCapture.hpp"
 
 #include "ControlCapture.hpp"
 #include "ControlInput.hpp"
@@ -500,6 +501,12 @@ static Response Route(Request const& request)
         for (auto const& [key, value] : request.query)
             SetOverlayParameter(key, std::strtof(value.c_str(), nullptr));
         return JsonResponse(200, Json{{"ok", true}});
+    }
+    if (get && request.path == "/frametrace") {
+        std::string text;
+        if (!TraceFrame(text))
+            return ErrorResponse(503, "no frame presented");
+        return {200, "text/plain", text};
     }
     if (get && request.path == "/scan")
         return HandleScan(query);

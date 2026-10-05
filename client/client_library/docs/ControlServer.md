@@ -34,6 +34,7 @@ Coordinates are client-area pixels of the WoW window.
 | `POST /batch` | `{"actions":[{"key":"ctrl+a"},{"type":"name"},{"click":{"x":1,"y":2}},{"wait_ms":500}], "screenshot":{...}}` |
 | `GET /mem` | debug: `addr` (Ghidra address, hex), `len` (64, max 4096), `follow` (comma list: `*` dereferences the pointer at the current address, a hex number is added); replies with `hex` bytes |
 | `POST /overlay` | debug overlay settings as query: `revz` (reversed depth, 0/1), `linebias`/`facebias` (relative depth pull towards the camera), `depth` (0/1: depth-test against the client's scene), `depthpick` (index into the frame's depth buffers matching the back buffer, most used first), `dumpdepth` (writes `Z:\tmp\depth<N>.bin`), `grid`, `map` (client map id), `enabled` (0/1); replies `{ok}` |
+| `GET /frametrace` | text log of one whole frame: every command list in recording order with its render targets (`R<n>`, described at the top), clears, barriers (`R:before->after` states in hex), copies, debug events and draw counts, then the `ExecuteCommandLists` order and the presented back buffer |
 | `GET /scan` | debug: `value` (32-bit integer); lists writable memory addresses holding that value |
 | `POST /dump` | writes `WowClassic.custom.dmp` (same as the `custom.dumpnow` trigger) |
 | `POST /quit` | `WM_CLOSE` to the window; the process is terminated after 10 s if it is still there |

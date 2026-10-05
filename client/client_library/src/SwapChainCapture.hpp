@@ -4,6 +4,7 @@
 #include <wrl/client.h>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 // Copies the client's next presented D3D12 frame as top-down BGRX pixels. Hooks Present and
@@ -33,3 +34,6 @@ struct SceneDepth {
 
 // The depth buffers bound during the previous frame, most used first; false before one has been seen.
 bool GetSceneDepths(std::vector<SceneDepth>& depths);
+
+// Records the command lists, render targets, draws and submissions of the next whole frame as text.
+bool TraceFrame(std::string& text);
