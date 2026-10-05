@@ -1,0 +1,11 @@
+schema_version = "1.0.0"
+id = "wowlib_ext_check"
+version = "0.0.1"
+name = "wowlib extension check"
+tagline = "Checks that the bundled wowlib wheel loads"
+maintainer = "smangos"
+type = "add-on"
+blender_version_min = "5.1.0"
+license = ["SPDX:MIT"]
+platforms = ["linux-x64"]
+wheels = ["./wheels/WHEEL"]
