@@ -1,4 +1,4 @@
-# Intro
+# Differences
 
 If you are familiar with emulator conventions, there are some design differences to be aware of before you start.
 
