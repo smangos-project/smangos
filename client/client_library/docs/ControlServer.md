@@ -33,6 +33,8 @@ Coordinates are client-area pixels of the WoW window.
 | `POST /scroll` | `{"x":..,"y":..,"delta":-3}` (notches) |
 | `POST /batch` | `{"actions":[{"key":"ctrl+a"},{"type":"name"},{"click":{"x":1,"y":2}},{"wait_ms":500}], "screenshot":{...}}` |
 | `GET /mem` | debug: `addr` (Ghidra address, hex), `len` (64, max 4096), `follow` (comma list: `*` dereferences the pointer at the current address, a hex number is added); replies with `hex` bytes |
+| `POST /overlay` | debug overlay settings as query: `tanv` (tan of half vertical FOV), `grid`, `map` (client map id), `enabled` (0/1); replies `{ok}` |
+| `GET /scan` | debug: `value` (32-bit integer); lists writable memory addresses holding that value |
 | `POST /dump` | writes `WowClassic.custom.dmp` (same as the `custom.dumpnow` trigger) |
 | `POST /quit` | `WM_CLOSE` to the window; the process is terminated after 10 s if it is still there |
 
