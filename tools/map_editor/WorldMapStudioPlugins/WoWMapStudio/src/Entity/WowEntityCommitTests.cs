@@ -63,6 +63,11 @@ public static class WowEntityCommitTests
             Assert.IsNotNull(yard.LocId);
             await world.CommitAsync([], [yard]).ConfigureAwait(false);
 
+            var path = (WowWaypointPath)new WowWaypointPathFactory(world).Create(context, map, transform, "1");
+            await world.CommitAsync([path], []).ConfigureAwait(false);
+            await world.CommitAsync([path], []).ConfigureAwait(false);
+            await world.CommitAsync([], [path]).ConfigureAwait(false);
+
             await world.CommitAsync([node, trigger, light, emitter, zone], []).ConfigureAwait(false);
             Assert.IsNotNull(zone.ZoneLightId);
 

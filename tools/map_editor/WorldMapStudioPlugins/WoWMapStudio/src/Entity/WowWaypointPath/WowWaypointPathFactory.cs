@@ -63,33 +63,46 @@ public sealed class WowWaypointPathFactory : ISceneEntityFactory, ISpawnFactory
             throw new InvalidOperationException("a waypoint path needs the guid of the creature it belongs to before saving.");
         }
 
-        List<CreatureMovementRecord> existing = db.CreatureMovement.Where(row => row.Id == (int)guid).ToList();
-        db.CreatureMovement.RemoveRange(existing);
+        Dictionary<int, CreatureMovementRecord> existing = db.CreatureMovement.Where(row => row.Id == (int)guid)
+            .ToList().ToDictionary(row => row.Point);
 
         var component = path.Component<WowWaypointPathComponent>()!;
         int point = 1;
         foreach ((int _, Vector3 local, WaypointNodeData data) in component.OrderedNodes)
         {
             Vector3 server = CreatureCoordinates.PositionFromGodot(path.Transform * local);
-            db.CreatureMovement.Add(new CreatureMovementRecord
+            if (existing.Remove(point, out CreatureMovementRecord? row))
             {
-                Id = (int)guid,
-                Point = point++,
-                PositionX = server.X,
-                PositionY = server.Y,
-                PositionZ = server.Z,
-                Orientation = data.Orientation,
-                Waittime = data.WaitTime,
-                WanderDistance = data.WanderDistance,
-                ScriptId = data.ScriptId,
-            });
+                Fill(row, server, data);
+            }
+            else
+            {
+                row = new CreatureMovementRecord { Id = (int)guid, Point = point };
+                Fill(row, server, data);
+                db.CreatureMovement.Add(row);
+            }
+
+            point++;
         }
+
+        db.CreatureMovement.RemoveRange(existing.Values);
 
         return () =>
         {
             path.IsSaved = true;
             _cachedMap = null;
         };
+    }
+
+    private static void Fill(CreatureMovementRecord row, Vector3 server, WaypointNodeData data)
+    {
+        row.PositionX = server.X;
+        row.PositionY = server.Y;
+        row.PositionZ = server.Z;
+        row.Orientation = data.Orientation;
+        row.Waittime = data.WaitTime;
+        row.WanderDistance = data.WanderDistance;
+        row.ScriptId = data.ScriptId;
     }
 
     public void StageDelete(DbContext context, IEntity entity)
