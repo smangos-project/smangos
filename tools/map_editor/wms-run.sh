@@ -12,9 +12,20 @@ while [ $# -gt 0 ]; do
         *) break ;;
     esac
 done
-cd "$here/WorldMapStudio"
+wms_dir="$here/WorldMapStudio"
+
+# Godot rewrites the csproj SDK version to its own on import; undo that so the submodule stays clean.
+restore_csproj() {
+    cd "$wms_dir" || return
+    if [ "$(git diff --numstat -- WorldMapStudio.csproj | cut -f1,2)" = "$(printf '1\t1')" ]; then
+        git checkout -- WorldMapStudio.csproj
+    fi
+    rm -f WorldMapStudio.csproj.old
+}
+cd "$wms_dir"
 if [ "$build" -eq 1 ]; then
     dotnet build --nologo -v q
     godot-mono --headless --import --quit-after 1000
+    restore_csproj
 fi
 exec godot-mono . -- --project "$(realpath "$config")" "$@"

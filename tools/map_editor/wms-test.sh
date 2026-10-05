@@ -50,6 +50,15 @@ log_tail() {
     fi
 }
 
+# Godot rewrites the csproj SDK version to its own on import; undo that so the submodule stays clean.
+restore_csproj() {
+    cd "$wms_dir" || return
+    if [ "$(git diff --numstat -- WorldMapStudio.csproj | cut -f1,2)" = "$(printf '1\t1')" ]; then
+        git checkout -- WorldMapStudio.csproj
+    fi
+    rm -f WorldMapStudio.csproj.old
+}
+
 alive() { [ -n "$1" ] && kill -0 "$1" 2>/dev/null; }
 
 # Runs JS in the editor; prints the result string, returns 1 on a script error.
@@ -108,6 +117,7 @@ else
         fi
         out=$(dotnet build --nologo 2>&1) || { echo "$out"; fail 'dotnet build failed'; }
         out=$(godot-mono --headless --import --quit-after 1000 2>&1) || { echo "$out"; fail 'godot import failed'; }
+        restore_csproj
     fi
     msg=$(check_databases "$config") || fail "$msg"
     if [ "$port" -gt 0 ]; then endpoint="$port"; else
