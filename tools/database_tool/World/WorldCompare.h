@@ -48,7 +48,7 @@ struct WorldCompareResult
 };
 
 // Compares every ordinary table `.world` and a MySQL world database have in
-// common, table by table: DoltLite's own dolt_*/sqlite_* tables are skipped,
+// common, table by table: DoltLite's own dolt_*/sqlite_* tables and the editor's wms_* tables are skipped,
 // since they have no MySQL counterpart. For each common table: column names
 // in order, row count, and rows compared in primary-key order (or by every
 // column if the table has none). Floats are compared as float32 (MySQL FLOAT

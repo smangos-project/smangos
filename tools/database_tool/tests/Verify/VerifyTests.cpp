@@ -320,6 +320,7 @@ TEST_CASE("V0 compares the world with the finished database, gated by --final; V
         world.Execute("CREATE TABLE old_thing (x INTEGER)");
         world.Execute("CREATE TABLE dbc_thing (ID INTEGER, Copy INTEGER, Zero INTEGER)");
         world.Execute("INSERT INTO dbc_thing VALUES (1, 10, 0), (2, 20, 0)");
+        world.Execute("CREATE TABLE wms_editor_table (x INTEGER)");
     }
     WriteVerifyTestFile(dir.path / "tables.tsv", "table\tkind\tkey\tsources\tinto\toverrides\treason\n"
                                                  "thing\tserver\tentry\tsrv:thing\t\t\t\n"

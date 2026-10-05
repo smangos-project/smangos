@@ -759,7 +759,7 @@ static void VerifySchema(DoltLiteDatabase& db, std::filesystem::path const& spec
     uint32_t count = 0;
     for (std::string const& table : worldTables)
     {
-        if (table.rfind("dbc_", 0) == 0 || table.rfind("dolt_", 0) == 0 || table.rfind("sqlite_", 0) == 0 ||
+        if (table.rfind("dbc_", 0) == 0 || table.rfind("dolt_", 0) == 0 || table.rfind("sqlite_", 0) == 0 || table.rfind("wms_", 0) == 0 ||
             table == "migrations" || !WantsTable(options, table))
             continue;
 

@@ -70,8 +70,8 @@ namespace
         {
             std::string name = stmt.ColumnText(0);
             // DoltLite's own housekeeping tables (dolt_*) and SQLite's
-            // internal ones (sqlite_*) have no MySQL counterpart.
-            if (HasPrefix(name, "dolt_") || HasPrefix(name, "sqlite_"))
+            // internal ones (sqlite_*) and the editor's (wms_*) have no MySQL counterpart.
+            if (HasPrefix(name, "dolt_") || HasPrefix(name, "sqlite_") || HasPrefix(name, "wms_"))
                 continue;
             tables.push_back(std::move(name));
         }
