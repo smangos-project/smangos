@@ -1,0 +1,25 @@
+import importlib
+
+_names = ("prefs", "client")
+_mods = []
+
+
+def register():
+    import bpy
+    for n in _names:
+        m = importlib.import_module(f".{n}", __package__)
+        _mods.append(m)
+        for c in getattr(m, "classes", ()):
+            bpy.utils.register_class(c)
+        if hasattr(m, "register"):
+            m.register()
+
+
+def unregister():
+    import bpy
+    for m in reversed(_mods):
+        if hasattr(m, "unregister"):
+            m.unregister()
+        for c in reversed(getattr(m, "classes", ())):
+            bpy.utils.unregister_class(c)
+    _mods.clear()

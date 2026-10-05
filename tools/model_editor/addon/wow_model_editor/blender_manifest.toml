@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "wow_model_editor"
+version = "0.2.0"
+name = "WoW Model Editor"
+tagline = "Import and edit WoW 1.15 WMO and M2 models"
+maintainer = "smangos"
+type = "add-on"
+blender_version_min = "5.1.0"
+license = ["SPDX:GPL-3.0-or-later"]
+platforms = ["linux-x64"]
+wheels = ["./wheels/wowlib_py-0.0.11.post1.dev0-cp313-abi3-linux_x86_64.whl"]
+
+[permissions]
+files = "Read the WoW client tree, write edited files and cache"
