@@ -1,0 +1,30 @@
+{
+  // WorldMapStudio project config for this checkout. Relative paths resolve against this file's directory.
+  "name": "smangos",
+
+  // WoW client-model axes: X forward, Y left, Z up.
+  "axisX": "PosX",
+  "axisY": "NegZ",
+  "axisZ": "PosY",
+
+  "storageLocations": {
+    // The editor's tables (wms_*) live in the server's world database.
+    "Editor": { "databasePath": "../../.world/world.doltlite" }
+  },
+
+  "paths": {
+    "wow.clientContent": "../../.client/Content",
+    "wow.serverData": "../../.server/data"
+  },
+
+  "assetSources": [
+    {
+      "id": "wow",
+      "name": "WoW Client",
+      "type": "FileSystem",
+      "enabled": true,
+      "rootPath": "../../.client/Content",
+      "lowercasePaths": true
+    }
+  ]
+}
