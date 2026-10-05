@@ -47,6 +47,7 @@ struct Camera {
 std::atomic<bool> Enabled{false};
 std::atomic<float> TanHalfFovV{0.57735f};
 std::atomic<int> TestGrid{0};
+std::atomic<float> TanHalfFovH{0.f};
 std::atomic<float> NearPlane{0.189f};
 std::atomic<float> FarPlane{1e7f};
 std::atomic<bool> ReversedDepth{true};
@@ -450,7 +451,7 @@ void Render(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue, ExecuteLists e
     Draw.list->Reset(frame.allocator.Get(), nullptr);
 
     float const width = static_cast<float>(desc.Width), height = static_cast<float>(desc.Height);
-    float const tanV = TanHalfFovV, tanH = tanV * width / height;
+    float const tanV = TanHalfFovV, tanH = TanHalfFovH > 0.f ? TanHalfFovH.load() : tanV * width / height;
     float const nearPlane = NearPlane, farPlane = FarPlane;
     float a, b;
     if (ReversedDepth) {
@@ -554,6 +555,8 @@ void SetOverlayParameter(std::string const& name, float value)
 {
     if (name == "tanv")
         TanHalfFovV = value;
+    else if (name == "tanh")
+        TanHalfFovH = value;
     else if (name == "near")
         NearPlane = value;
     else if (name == "far")
