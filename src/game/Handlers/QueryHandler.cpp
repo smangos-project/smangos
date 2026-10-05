@@ -139,6 +139,20 @@ void WorldSession::HandleCreatureQueryOpcode(QueryCreature const& packet)
         }
     }
 
+    // Texture file names under Interface\Cursor, which the client uses for the hover cursor.
+    if (ci->npc_flags & UNIT_NPC_FLAG_INNKEEPER)
+        response.CursorName = "Innkeeper";
+    else if (ci->npc_flags & UNIT_NPC_FLAG_STABLEMASTER)
+        response.CursorName = "Stablemaster";
+    else if (ci->npc_flags & UNIT_NPC_FLAG_FLIGHTMASTER)
+        response.CursorName = "Taxi";
+    else if (ci->npc_flags & UNIT_NPC_FLAG_TRAINER)
+        response.CursorName = "Trainer";
+    else if (ci->npc_flags & UNIT_NPC_FLAG_REPAIR)
+        response.CursorName = "Repairnpc";
+    else if (ci->npc_flags & UNIT_NPC_FLAG_VENDOR)
+        response.CursorName = "Buy";
+
     response.Civilian = ci->civilian;
     response.Leader = ci->racial_leader;
     response.TypeFlags = ci->GetTypeFlags();

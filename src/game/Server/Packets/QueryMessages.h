@@ -254,6 +254,7 @@ struct QueryCreatureResponse
 
     std::string Name;
     std::string Title;
+    std::string CursorName;
     bool Civilian = false;
     bool Leader = false;
     uint32 TypeFlags = 0;
@@ -280,7 +281,7 @@ struct QueryCreatureResponse
 
         data.WriteBits(uint32(Title.length() + 1), 11);
         data.WriteBits(1, 11);  // alternate title
-        data.WriteBits(1, 6);   // cursor name
+        data.WriteBits(uint32(CursorName.length() + 1), 6);
         data.WriteBit(Civilian);
         data.WriteBit(Leader);
         for (uint32 i = 0; i < 4; ++i)
@@ -313,6 +314,7 @@ struct QueryCreatureResponse
         data << int32(0);   // widget set unit condition
 
         ClassicWriteCStringBytes(data, Title);
+        ClassicWriteCStringBytes(data, CursorName);
         for (int32 item : QuestItems)
             data << item;
     }
@@ -342,7 +344,7 @@ struct QueryCreatureResponse
             nameAltLengths[i] = data.ReadBits(11);
         }
         data.ResetBitPos();
-        if (titleAltLength > 1 || cursorLength > 1)
+        if (titleAltLength > 1)
             return false;
         for (uint32 i = 0; i < 4; ++i)
             if ((i > 0 && nameLengths[i] > 1) || nameAltLengths[i] > 1)
@@ -376,6 +378,8 @@ struct QueryCreatureResponse
             data >> ignored;
 
         if (!ClassicReadCStringBytes(data, titleLength, Title))
+            return false;
+        if (!ClassicReadCStringBytes(data, cursorLength, CursorName))
             return false;
         if (questItems > (data.size() - data.rpos()) / sizeof(int32))
             return false;
