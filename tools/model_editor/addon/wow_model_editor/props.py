@@ -120,6 +120,101 @@ class WowWmoFog(bpy.types.PropertyGroup):
     uw_color: IntVectorProperty(size=4)
 
 
+class WowM2Texture(bpy.types.PropertyGroup):
+    type: IntProperty()
+    flags: IntProperty()
+    fdid: IntProperty()
+
+
+class WowM2Material(bpy.types.PropertyGroup):
+    flags: IntProperty()
+    blending_mode: IntProperty()
+
+
+class WowM2(bpy.types.PropertyGroup):
+    path: StringProperty()
+    fdid: IntProperty()
+    name: StringProperty()
+    format_version: IntProperty()
+    global_flags: IntProperty()
+    skin_index: IntProperty()
+    skin_fdids: IntVectorProperty(size=4)
+    skin_count: IntProperty()
+    display_id: IntProperty(default=-1, description="-1 = none")
+    sequence_count: IntProperty()
+    bounding_min: FloatVectorProperty(size=3)
+    bounding_max: FloatVectorProperty(size=3)
+    bounding_radius: FloatProperty()
+    collision_min: FloatVectorProperty(size=3)
+    collision_max: FloatVectorProperty(size=3)
+    collision_radius: FloatProperty()
+    textures: CollectionProperty(type=WowM2Texture)
+    materials: CollectionProperty(type=WowM2Material)
+
+
+class WowM2Submesh(bpy.types.PropertyGroup):
+    index: IntProperty(default=-1)
+    skin_section_id: IntProperty()
+    level: IntProperty()
+    bone_combo_index: IntProperty()
+    bone_count: IntProperty()
+    bone_influences: IntProperty()
+    center_bone_index: IntProperty()
+    center_position: FloatVectorProperty(size=3)
+    sort_center_position: FloatVectorProperty(size=3)
+    sort_radius: FloatProperty()
+
+
+class WowM2Bone(bpy.types.PropertyGroup):
+    index: IntProperty(default=-1)
+    key_bone_id: IntProperty()
+    flags: IntProperty()
+    parent_bone: IntProperty()
+    submesh_id: IntProperty()
+    bone_name_crc: IntProperty()
+    pivot: FloatVectorProperty(size=3)
+
+
+class WowM2Batch(bpy.types.PropertyGroup):
+    flags: IntProperty()
+    priority_plane: IntProperty()
+    shader_id: IntProperty()
+    skin_section_index: IntProperty()
+    geoset_index: IntProperty()
+    color_index: IntProperty()
+    material_index: IntProperty()
+    material_layer: IntProperty()
+    texture_count: IntProperty()
+    texture_combo_index: IntProperty()
+    texture_coord_combo_index: IntProperty()
+    texture_weight_combo_index: IntProperty()
+    texture_transform_combo_index: IntProperty()
+    batch_index: IntProperty()
+    render_flags: IntProperty()
+    blending_mode: IntProperty()
+    texture_indices: IntVectorProperty(size=2, default=(-1, -1))
+    texture_types: IntVectorProperty(size=2)
+    texture_fdids: IntVectorProperty(size=2)
+    uv_sets: IntVectorProperty(size=2, description="-1 = environment map")
+    preview_color: FloatVectorProperty(size=4, default=(1.0, 1.0, 1.0, 1.0))
+    preview_weight: FloatProperty(default=1.0)
+    preview_uv_offset: FloatVectorProperty(size=2)
+    preview_uv_scale: FloatVectorProperty(size=2, default=(1.0, 1.0))
+
+
+class WowM2Object(bpy.types.PropertyGroup):
+    kind: StringProperty()
+    index: IntProperty(default=-1)
+    id: IntProperty()
+    identifier: StringProperty()
+    data: IntProperty()
+    bone: IntProperty()
+    flags: IntProperty()
+    position: FloatVectorProperty(size=3)
+    target: FloatVectorProperty(size=3)
+    animated: BoolProperty()
+
+
 class WowImportOptions(bpy.types.PropertyGroup):
     doodads: BoolProperty(name="Doodads", default=True)
     lights: BoolProperty(name="Lights", default=True)
@@ -128,9 +223,22 @@ class WowImportOptions(bpy.types.PropertyGroup):
     group_filter: bpy.props.EnumProperty(
         name="Groups", default="ALL",
         items=[("ALL", "All", ""), ("EXTERIOR", "Exterior", ""), ("INTERIOR", "Interior", "")])
+    doodad_meshes: BoolProperty(name="Doodad meshes", description="Show doodads as M2 instances", default=False)
+    skin: IntProperty(name="Skin", min=0, default=0)
+    display: bpy.props.EnumProperty(
+        name="Display", default="AUTO",
+        items=[("AUTO", "Auto", "First creature display using the model"), ("NONE", "None", ""),
+               ("ID", "Display ID", "")])
+    display_id: IntProperty(name="Display ID", min=0, default=0)
+    attachments: BoolProperty(name="Attachments", default=True)
+    events: BoolProperty(name="Events", default=True)
+    cameras: BoolProperty(name="Cameras", default=True)
+    m2_lights: BoolProperty(name="Lights", default=True)
+    emitters: BoolProperty(name="Emitters", default=True)
+    collision: BoolProperty(name="Collision", default=True)
 
 
-classes = (WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
+classes = (WowM2Texture, WowM2Material, WowM2, WowM2Submesh, WowM2Bone, WowM2Batch, WowM2Object, WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
            WowWmoLiquid, WowWmoFog, WowImportOptions)
 
 _attach = (
@@ -143,14 +251,21 @@ _attach = (
     (bpy.types.Object, "wow_wmo_liquid", WowWmoLiquid),
     (bpy.types.Object, "wow_wmo_fog", WowWmoFog),
     (bpy.types.WindowManager, "wow_import", WowImportOptions),
+    (bpy.types.Collection, "wow_m2", WowM2),
+    (bpy.types.Object, "wow_m2_submesh", WowM2Submesh),
+    (bpy.types.Bone, "wow_m2_bone", WowM2Bone),
+    (bpy.types.Object, "wow_m2_object", WowM2Object),
 )
 
 
 def register():
+    bpy.types.Material.wow_m2_batches = CollectionProperty(type=WowM2Batch)
+    bpy.types.Object.wow_source = StringProperty()
     for owner, name, cls in _attach:
         setattr(owner, name, PointerProperty(type=cls))
 
 
 def unregister():
+    del bpy.types.Material.wow_m2_batches, bpy.types.Object.wow_source
     for owner, name, _ in reversed(_attach):
         delattr(owner, name)

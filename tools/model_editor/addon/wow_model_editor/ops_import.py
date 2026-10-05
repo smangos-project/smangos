@@ -26,18 +26,23 @@ def resolve(text):
 
 
 def import_path(op, context, path):
-    if path.endswith(".m2"):
-        op.report({"WARNING"}, "M2 import is not implemented yet")
-        return {"CANCELLED"}
-    if not path.endswith(".wmo"):
-        op.report({"ERROR"}, f"{path} is not a .wmo/.m2")
-        return {"CANCELLED"}
-    from . import wmo_import
     o = context.window_manager.wow_import
-    options = {"doodads": o.doodads, "lights": o.lights, "portals": o.portals, "liquids": o.liquids,
-               "group_filter": o.group_filter}
     try:
-        wmo_import.load(path, options)
+        if path.endswith(".m2"):
+            from . import m2_import
+            m2_import.load(path, {"skin": o.skin, "display": o.display, "display_id": o.display_id,
+                                  "attachments": o.attachments, "events": o.events, "cameras": o.cameras,
+                                  "lights": o.m2_lights, "emitters": o.emitters, "collision": o.collision})
+            for w in m2_import.take_warnings():
+                op.report({"WARNING"}, w)
+        elif path.endswith(".wmo"):
+            from . import wmo_import
+            wmo_import.load(path, {"doodads": o.doodads, "lights": o.lights, "portals": o.portals,
+                                   "liquids": o.liquids, "group_filter": o.group_filter,
+                                   "doodad_meshes": o.doodad_meshes})
+        else:
+            op.report({"ERROR"}, f"{path} is not a .wmo/.m2")
+            return {"CANCELLED"}
     except Exception as e:  # noqa: BLE001
         op.report({"ERROR"}, f"{path}: {e}")
         return {"CANCELLED"}
