@@ -136,6 +136,7 @@ public sealed class WowAreaTriggerFactory : ISceneEntityFactory, ISpawnFactory
             Radius = 5.0f,
         };
         trigger.AddIntrinsicComponent(new WowPointMarker(MarkerTypeId, "Area Trigger Marker", MarkerColor, 3.0f));
+        trigger.AddIntrinsicComponent(WowAreaTriggerVolume.For(trigger));
 
         var command = new CreateEntityCommand(context.Scene, trigger);
         command.Apply();
@@ -156,6 +157,7 @@ public sealed class WowAreaTriggerFactory : ISceneEntityFactory, ISpawnFactory
             BoxYaw = record.BoxYaw,
         };
         trigger.AddIntrinsicComponent(new WowPointMarker(MarkerTypeId, "Area Trigger Marker", MarkerColor, 3.0f));
+        trigger.AddIntrinsicComponent(WowAreaTriggerVolume.For(trigger));
 
         if (_cachedTeleports.TryGetValue(record.ID, out AreatriggerTeleportRecord? teleport))
         {
