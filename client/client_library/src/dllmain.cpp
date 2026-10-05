@@ -18,6 +18,7 @@
 #include "Overlay.hpp"
 #include "PostProcess.hpp"
 #include "ServerData.hpp"
+#include "TerrainLayers.hpp"
 
 #include "custom/LaunchProtocol.hpp"
 
@@ -55,6 +56,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
         ok = InstallCertBypassHook() && ok;
         ok = InstallCascBypassHook() && ok;
         InstallNetDiagnosticsHooks();
+        InstallTerrainLayerHooks();
         ok = EnableAllHooks() && ok;
         StartDumpTrigger();
         StartControlServerIfRequested();

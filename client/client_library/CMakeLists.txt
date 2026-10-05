@@ -6,7 +6,7 @@ add_subdirectory(hook_lib)
 add_library(client_library SHARED src/dllmain.cpp src/CascBypass.cpp src/CertBypass.cpp src/ClientPatches.cpp
             src/DumpTrigger.cpp src/NetDiagnostics.cpp src/ControlServer.cpp src/ControlCapture.cpp
             src/ControlInput.cpp src/SwapChainCapture.cpp src/Overlay.cpp src/ServerData.cpp src/PostProcess.cpp
-            src/PostProcessDebugEffect.cpp src/PostProcessOutlineEffect.cpp)
+            src/PostProcessDebugEffect.cpp src/PostProcessOutlineEffect.cpp src/TerrainLayers.cpp)
 set_target_properties(client_library PROPERTIES OUTPUT_NAME "custom")
 target_link_libraries(client_library PRIVATE user32 crypt32 shell32 ws2_32 secur32 psapi gdi32 windowscodecs ole32 uuid dxguid hook_lib client_common)
 target_include_directories(client_library PRIVATE ${CLIENT_DEP_INCLUDE})
