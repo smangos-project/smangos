@@ -13,7 +13,27 @@ public sealed class WowFileDataIds
     private readonly Dictionary<uint, string> _paths = new();
     private readonly Dictionary<string, uint> _ids = new(StringComparer.Ordinal);
 
+    private static WowFileDataIds? _shared;
+
+    /// <summary>The project listfile (<c>.local/listfile.txt</c> found above the editor binary), or an
+    /// empty map when none exists.</summary>
+    public static WowFileDataIds Shared => _shared ??= LoadShared();
+
     public int Count => _paths.Count;
+
+    private static WowFileDataIds LoadShared()
+    {
+        for (string? dir = AppContext.BaseDirectory; dir != null; dir = Path.GetDirectoryName(dir))
+        {
+            string candidate = Path.Combine(dir, ".local", "listfile.txt");
+            if (File.Exists(candidate))
+            {
+                return Load(candidate);
+            }
+        }
+
+        return new WowFileDataIds();
+    }
 
     public static string Normalize(string path) => path.Replace('\\', '/').ToLowerInvariant();
 
