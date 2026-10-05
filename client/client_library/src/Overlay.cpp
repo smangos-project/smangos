@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <deque>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -54,6 +55,7 @@ std::atomic<bool> ReversedDepth{true};
 std::atomic<float> LineBias{0.006f};
 std::atomic<float> FaceBias{0.006f};
 std::atomic<float> HeightOffset{0.f};
+std::atomic<int> CameraLag{0};
 std::atomic<bool> UseDepth{true};
 std::atomic<bool> DumpDepth{false};
 std::atomic<int> DepthPick{0};
@@ -398,6 +400,14 @@ void Render(IDXGISwapChain* swapChain, ID3D12CommandQueue* queue, ExecuteLists e
     Camera camera;
     if (!ReadCamera(camera))
         return;
+    {
+        static std::deque<Camera> history;
+        history.push_back(camera);
+        std::size_t const lag = static_cast<std::size_t>(std::max(0, CameraLag.load()));
+        while (history.size() > lag + 1)
+            history.pop_front();
+        camera = history.front();
+    }
 
     SceneDepth depth;
     std::vector<SceneDepth> depths;
@@ -567,6 +577,8 @@ void SetOverlayParameter(std::string const& name, float value)
         LineBias = value;
     else if (name == "facebias")
         FaceBias = value;
+    else if (name == "camlag")
+        CameraLag = static_cast<int>(value);
     else if (name == "zoff")
         HeightOffset = value;
     else if (name == "depth")
