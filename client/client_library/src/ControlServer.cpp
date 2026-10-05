@@ -5,6 +5,7 @@
 
 #include "ControlServer.hpp"
 #include "Overlay.hpp"
+#include "PostProcess.hpp"
 #include "SwapChainCapture.hpp"
 
 #include "ControlCapture.hpp"
@@ -500,6 +501,11 @@ static Response Route(Request const& request)
     if (post && request.path == "/overlay") {
         for (auto const& [key, value] : request.query)
             SetOverlayParameter(key, std::strtof(value.c_str(), nullptr));
+        return JsonResponse(200, Json{{"ok", true}});
+    }
+    if (post && request.path == "/postprocess") {
+        for (auto const& [key, value] : request.query)
+            SetPostProcessParameter(key, std::strtof(value.c_str(), nullptr));
         return JsonResponse(200, Json{{"ok", true}});
     }
     if (get && request.path == "/frametrace") {

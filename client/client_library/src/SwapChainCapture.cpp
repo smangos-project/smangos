@@ -18,7 +18,9 @@
 #include <cstring>
 #include <mutex>
 #include <string>
+#include <map>
 #include <unordered_map>
+#include <unordered_set>
 
 using Microsoft::WRL::ComPtr;
 
@@ -56,6 +58,18 @@ std::unordered_map<ID3D12Resource*, DsvInfo> FrameSeen;
 std::vector<SceneDepth> Candidates;
 std::atomic<int> SelectedState{D3D12_RESOURCE_STATE_DEPTH_WRITE};
 std::unordered_map<ID3D12Resource*, int> States;
+
+// Scene colour tracking. The client alternates between scene textures, so the scene is the (colour, depth) pair at
+// back buffer size bound most often by the lists submitted so far this frame.
+using TargetPair = std::pair<ID3D12Resource*, ID3D12Resource*>;
+std::unordered_set<ID3D12Resource*> BackBuffers;
+std::unordered_map<void*, std::map<TargetPair, int>> ListTargetUses;
+std::map<TargetPair, int> SubmittedTargetUses;
+std::unordered_set<void*> FinalLists;
+// The state each list expects a resource in: the StateBefore of its first transition there.
+std::unordered_map<void*, std::unordered_map<ID3D12Resource*, int>> EntryStates;
+std::atomic<bool> SceneRan{false};
+SceneCallback SceneHook = nullptr;
 
 using CreateRtvFn = void(STDMETHODCALLTYPE*)(ID3D12Device*, ID3D12Resource*, D3D12_RENDER_TARGET_VIEW_DESC const*,
                                              D3D12_CPU_DESCRIPTOR_HANDLE);
@@ -216,6 +230,12 @@ void STDMETHODCALLTYPE CreateRtvDetour(ID3D12Device* device, ID3D12Resource* res
 HRESULT STDMETHODCALLTYPE ResetDetour(ID3D12GraphicsCommandList* list, ID3D12CommandAllocator* allocator,
                                       ID3D12PipelineState* state)
 {
+    {
+        std::lock_guard<std::mutex> lock(DepthMutex);
+        FinalLists.erase(list);
+        EntryStates.erase(list);
+        ListTargetUses.erase(list);
+    }
     if (Tracing()) {
         std::lock_guard<std::mutex> lock(TraceMutex);
         TraceLists.push_back({list, GetCurrentThreadId(), {}});
@@ -430,12 +450,25 @@ void STDMETHODCALLTYPE SetTargetsDetour(ID3D12GraphicsCommandList* list, UINT co
     OriginalSetTargets(list, count, targets, single, depth);
     if (Tracing())
         TraceTargets(list, count, targets, single, depth);
+    ID3D12Resource* color = nullptr;
+    if (count && targets) {
+        std::lock_guard<std::mutex> lock(RtvMutex);
+        auto it = RtvDescriptors.find(targets[0].ptr);
+        if (it != RtvDescriptors.end())
+            color = it->second;
+    }
+    std::lock_guard<std::mutex> lock(DepthMutex);
+    if (color && BackBuffers.count(color)) {
+        FinalLists.insert(list);
+        return;
+    }
     if (!depth)
         return;
-    std::lock_guard<std::mutex> lock(DepthMutex);
     auto it = DsvDescriptors.find(depth->ptr);
     if (it == DsvDescriptors.end())
         return;
+    if (color)
+        ++ListTargetUses[list][{color, it->second.resource}];
     DsvInfo& seen = FrameSeen.try_emplace(it->second.resource, it->second).first->second;
     seen.view = it->second.view;
     seen.hasView = it->second.hasView;
@@ -451,9 +484,8 @@ void STDMETHODCALLTYPE BarrierDetour(ID3D12GraphicsCommandList* list, UINT count
     for (UINT i = 0; i < count; ++i)
         if (barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION &&
             barriers[i].Transition.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES) {
-            auto it = States.find(barriers[i].Transition.pResource);
-            if (it != States.end())
-                it->second = barriers[i].Transition.StateAfter;
+            EntryStates[list].try_emplace(barriers[i].Transition.pResource, barriers[i].Transition.StateBefore);
+            States[barriers[i].Transition.pResource] = barriers[i].Transition.StateAfter;
         }
 }
 
@@ -614,6 +646,7 @@ PresentCallback OverlayCallback = nullptr;
 void FinishDepthFrame()
 {
     std::lock_guard<std::mutex> lock(DepthMutex);
+    SubmittedTargetUses.clear();
     if (FrameSeen.empty())
         return;
     std::vector<DsvInfo> best;
@@ -645,6 +678,20 @@ void OnPresent(IDXGISwapChain* swapChain)
 {
     FinishDepthFrame();
     TracePresent(swapChain);
+    SceneRan = false;
+    {
+        ComPtr<IDXGISwapChain3> swapChain3;
+        DXGI_SWAP_CHAIN_DESC desc = {};
+        std::unordered_set<ID3D12Resource*> buffers;
+        if (SUCCEEDED(swapChain->QueryInterface(IID_PPV_ARGS(&swapChain3))) && SUCCEEDED(swapChain3->GetDesc(&desc)))
+            for (UINT i = 0; i < desc.BufferCount; ++i) {
+                ComPtr<ID3D12Resource> buffer;
+                if (SUCCEEDED(swapChain3->GetBuffer(i, IID_PPV_ARGS(&buffer))))
+                    buffers.insert(buffer.Get());
+            }
+        std::lock_guard<std::mutex> lock(DepthMutex);
+        BackBuffers = std::move(buffers);
+    }
     ID3D12CommandQueue* queue;
     {
         std::lock_guard<std::mutex> lock(StateMutex);
@@ -680,6 +727,46 @@ HRESULT STDMETHODCALLTYPE Present1Detour(IDXGISwapChain1* swapChain, UINT syncIn
     return OriginalPresent1(swapChain, syncInterval, flags, parameters);
 }
 
+// Caller holds DepthMutex.
+void FindScene(void* finalList, SceneTargets& scene)
+{
+    if (BackBuffers.empty())
+        return;
+    D3D12_RESOURCE_DESC const screen = (*BackBuffers.begin())->GetDesc();
+    TargetPair best = {};
+    int most = 0;
+    for (auto const& [pair, uses] : SubmittedTargetUses) {
+        auto depth = FrameSeen.find(pair.second);
+        if (uses <= most || depth == FrameSeen.end() || depth->second.width != screen.Width ||
+            depth->second.height != screen.Height)
+            continue;
+        D3D12_RESOURCE_DESC const desc = pair.first->GetDesc();
+        if (desc.Width == screen.Width && desc.Height == screen.Height && desc.DepthOrArraySize == 1) {
+            best = pair;
+            most = uses;
+        }
+    }
+    if (!most)
+        return;
+    DsvInfo const& depth = FrameSeen[best.second];
+    scene.color = best.first;
+    scene.depth.resource = depth.resource;
+    scene.depth.view = depth.view;
+    scene.depth.hasView = depth.hasView;
+    scene.depth.width = depth.width;
+    scene.depth.height = depth.height;
+    auto state = States.find(depth.resource);
+    if (state != States.end())
+        scene.depth.state = static_cast<D3D12_RESOURCE_STATES>(state->second);
+    scene.hasDepth = true;
+    auto entry = EntryStates.find(finalList);
+    if (entry != EntryStates.end()) {
+        auto color = entry->second.find(best.first);
+        if (color != entry->second.end())
+            scene.colorState = static_cast<D3D12_RESOURCE_STATES>(color->second);
+    }
+}
+
 void STDMETHODCALLTYPE ExecuteDetour(ID3D12CommandQueue* queue, UINT count, ID3D12CommandList* const* lists)
 {
     if (queue->GetDesc().Type == D3D12_COMMAND_LIST_TYPE_DIRECT) {
@@ -688,6 +775,34 @@ void STDMETHODCALLTYPE ExecuteDetour(ID3D12CommandQueue* queue, UINT count, ID3D
     }
     if (Tracing())
         TraceSubmit(queue, count, lists);
+    if (SceneHook && !SceneRan) {
+        SceneTargets scene;
+        UINT split = count;
+        {
+            std::lock_guard<std::mutex> lock(DepthMutex);
+            for (UINT i = 0; i < count && split == count; ++i)
+                if (FinalLists.count(lists[i]))
+                    split = i;
+            for (UINT i = 0; i < split; ++i) {
+                auto uses = ListTargetUses.find(lists[i]);
+                if (uses == ListTargetUses.end())
+                    continue;
+                for (auto const& [pair, n] : uses->second)
+                    SubmittedTargetUses[pair] += n;
+                ListTargetUses.erase(uses);
+            }
+            if (split < count)
+                FindScene(lists[split], scene);
+        }
+        if (scene.color) {
+            SceneRan = true;
+            if (split)
+                OriginalExecute(queue, split, lists);
+            SceneHook(queue, scene, [](ID3D12CommandQueue* q, UINT n, ID3D12CommandList* const* l) { OriginalExecute(q, n, l); });
+            OriginalExecute(queue, count - split, lists + split);
+            return;
+        }
+    }
     OriginalExecute(queue, count, lists);
 }
 
@@ -819,6 +934,11 @@ bool EnsureSwapChainHooks()
 void SetPresentCallback(PresentCallback callback)
 {
     OverlayCallback = callback;
+}
+
+void SetSceneCallback(SceneCallback callback)
+{
+    SceneHook = callback;
 }
 
 bool CaptureSwapChain(int& width, int& height, std::vector<std::uint8_t>& pixels)

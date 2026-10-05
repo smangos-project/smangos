@@ -35,5 +35,18 @@ struct SceneDepth {
 // The depth buffers bound during the previous frame, most used first; false before one has been seen.
 bool GetSceneDepths(std::vector<SceneDepth>& depths);
 
+// The client's finished world image and its depth, before the UI is drawn over it.
+struct SceneTargets {
+    Microsoft::WRL::ComPtr<ID3D12Resource> color;
+    D3D12_RESOURCE_STATES colorState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    SceneDepth depth;
+    bool hasDepth = false;
+};
+
+// Runs on the submitting thread once a frame, right before the command list that draws to the back buffer (the world
+// composite and the UI) executes. Leave both resources in the states given.
+using SceneCallback = void (*)(ID3D12CommandQueue*, SceneTargets const&, ExecuteLists);
+void SetSceneCallback(SceneCallback callback);
+
 // Records the command lists, render targets, draws and submissions of the next whole frame as text.
 bool TraceFrame(std::string& text);
