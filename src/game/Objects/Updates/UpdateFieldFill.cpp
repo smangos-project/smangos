@@ -33,6 +33,32 @@ ClassicGuid ToClassic(ObjectGuid const& guid)
     return ClassicGuidMapping::ToClassic(guid, realmID);
 }
 
+uint32 ToModernNpcFlags(uint32 flags)
+{
+    static constexpr std::pair<uint32, uint32> map[] = {
+        { UNIT_NPC_FLAG_GOSSIP,         0x00000001 },
+        { UNIT_NPC_FLAG_QUESTGIVER,     0x00000002 },
+        { UNIT_NPC_FLAG_TRAINER,        0x00000010 },
+        { UNIT_NPC_FLAG_VENDOR,         0x00000080 },
+        { UNIT_NPC_FLAG_REPAIR,         0x00001000 },
+        { UNIT_NPC_FLAG_FLIGHTMASTER,   0x00002000 },
+        { UNIT_NPC_FLAG_SPIRITHEALER,   0x00004000 },
+        { UNIT_NPC_FLAG_SPIRITGUIDE,    0x00008000 },
+        { UNIT_NPC_FLAG_INNKEEPER,      0x00010000 },
+        { UNIT_NPC_FLAG_BANKER,         0x00020000 },
+        { UNIT_NPC_FLAG_PETITIONER,     0x00040000 },
+        { UNIT_NPC_FLAG_TABARDDESIGNER, 0x00080000 },
+        { UNIT_NPC_FLAG_BATTLEMASTER,   0x00100000 },
+        { UNIT_NPC_FLAG_AUCTIONEER,     0x00200000 },
+        { UNIT_NPC_FLAG_STABLEMASTER,   0x00400000 },
+    };
+    uint32 out = 0;
+    for (auto const& [vanilla, modern] : map)
+        if (flags & vanilla)
+            out |= modern;
+    return out;
+}
+
 // TrinityCore UnitDefines.h; 1.12 has no equivalent flag, so this stays a local literal rather
 // than pulling in a game-side enum this file doesn't otherwise need.
 constexpr uint32 MODERN_UNIT_FLAG2_FEIGN_DEATH      = 0x00000001;
@@ -144,7 +170,7 @@ void FillUnitData(Unit& unit)
     FillField(unit, &Unit::m_unitData, &UFUnitData::Health, int64(unit.GetUInt32Value(UNIT_FIELD_HEALTH)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::MaxHealth, int64(unit.GetUInt32Value(UNIT_FIELD_MAXHEALTH)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::DisplayID, int32(unit.GetUInt32Value(UNIT_FIELD_DISPLAYID)));
-    FillField(unit, &Unit::m_unitData, &UFUnitData::NpcFlags, unit.GetUInt32Value(UNIT_NPC_FLAGS));
+    FillField(unit, &Unit::m_unitData, &UFUnitData::NpcFlags, ToModernNpcFlags(unit.GetUInt32Value(UNIT_NPC_FLAGS)));
 
     FillField(unit, &Unit::m_unitData, &UFUnitData::Charm, ToClassic(unit.GetGuidValue(UNIT_FIELD_CHARM)));
     FillField(unit, &Unit::m_unitData, &UFUnitData::Summon, ToClassic(unit.GetGuidValue(UNIT_FIELD_SUMMON)));
