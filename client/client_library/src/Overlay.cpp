@@ -83,7 +83,9 @@ bool ReadCamera(Camera& camera)
         return false;
     std::memcpy(camera.eye, block, 12);
     std::memcpy(camera.forward, block + 3, 12);
-    std::memcpy(camera.right, block + 6, 12);
+    // The block stores the camera's left axis.
+    for (int i = 0; i < 3; ++i)
+        camera.right[i] = -block[6 + i];
     std::memcpy(camera.up, block + 9, 12);
     return ReadAt(pointer + 0x224, camera.player);
 }
