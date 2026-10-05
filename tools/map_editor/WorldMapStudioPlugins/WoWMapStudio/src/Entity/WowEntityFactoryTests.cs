@@ -83,4 +83,15 @@ public static class WowEntityFactoryTests
         Assert.IsNull(emitter.EmitterId);
         Assert.IsTrue(context.Scene.Contains(emitter));
     }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Zone_light_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_zonelight_factory_test__");
+        var zone = (WowZoneLight)Factory<WowZoneLightFactory>(context).Create(context, new MapId(0), transform, "Zone");
+
+        Assert.IsNull(zone.ZoneLightId);
+        Assert.AreEqual(4, zone.Component<WowZoneLightComponent>()!.OrderedNodes.Count);
+        Assert.IsTrue(context.Scene.Contains(zone));
+    }
 }

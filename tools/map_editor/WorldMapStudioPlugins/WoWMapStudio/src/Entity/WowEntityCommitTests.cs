@@ -52,14 +52,17 @@ public static class WowEntityCommitTests
             var light = (WowLight)new WowLightFactory(world).Create(context, map, transform, "");
             var emitter = (WowSoundEmitter)new WowSoundEmitterFactory(world).Create(context, map, transform, "");
 
-            await world.CommitAsync([node, trigger, light, emitter], []).ConfigureAwait(false);
+            var zone = (WowZoneLight)new WowZoneLightFactory(world).Create(context, map, transform, "Commit Test");
+
+            await world.CommitAsync([node, trigger, light, emitter, zone], []).ConfigureAwait(false);
+            Assert.IsNotNull(zone.ZoneLightId);
 
             Assert.IsNotNull(node.NodeId);
             Assert.IsNotNull(trigger.TriggerId);
             Assert.IsNotNull(light.LightId);
             Assert.IsNotNull(emitter.EmitterId);
 
-            await world.CommitAsync([], [node, trigger, light, emitter]).ConfigureAwait(false);
+            await world.CommitAsync([], [node, trigger, light, emitter, zone]).ConfigureAwait(false);
         }
         finally
         {
