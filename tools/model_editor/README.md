@@ -1,6 +1,6 @@
 # model_editor
 
-Blender addon (WoW 1.15 `.m2`/`.wmo`) on top of wowlib. Phase 1 is the toolchain spike; no addon features yet.
+Blender addon (WoW 1.15 `.m2`/`.wmo`) on top of wowlib. Phase 1 was the toolchain spike; phase 2 is the addon skeleton, textures and read-only WMO import (M2 import and all export come later).
 
 ## Build wowlib
 
@@ -43,3 +43,22 @@ into `wheels = [...]`), install with `extension install-file -r user_default -e 
 - numpy: WMO vertices/normals/indices are zero-copy structured/uint16 views (`.view(np.float32).reshape(-1, 3)`), texcoords
   and batches are copies/objects; M2 vertices are an opaque record vector (python loop, 3k verts ~6 ms). 50k-vertex
   mesh `foreach_set` takes 34 ms.
+
+## Addon (`addon/wow_model_editor`, Blender >= 5.1 extension)
+
+    tools/model_editor/build-addon.sh [--install DIR] [--dev]   # zip -> .build/dist; DIR = BLENDER_USER_RESOURCES
+    tools/model_editor/test.sh [--all] [--filter NAME]          # fresh temp profile, headless tests; --all sweeps every root WMO
+
+Build needs `.build/wheels/<wheel named in blender_manifest.toml>` (built by `build-wowlib.sh` on demand; bump the manifest
+when the pin changes). `--install DIR --dev` swaps the installed extension dir for a symlink to the source, so Python edits
+only need a Blender restart; the bundled wheel stays in the profile's `extensions/.local/.../site-packages`. Always use a
+scratch `BLENDER_USER_RESOURCES` for agents and tests. Preferences: Content dir (default `$MODEL_EDITOR_CONTENT`), output
+dir (becomes wowlib's `project_directory`), cache dir (BLP PNGs and the catalogue JSON, default `~/.cache/wow_model_editor`).
+
+Use: 3D view sidebar tab "WoW" (search by path fragment or FDID, Import), or File > Import > WoW model. Imports a WMO as
+`<name>.wmo` with `groups`, `portals`, `lights`, `doodads/<set>`, `liquids`, `fogs` collections. Raw fields live in
+PropertyGroups (`wow_wmo`, `wow_wmo_group`, `wow_wmo_material`, ...), so export never parses node trees. Group meshes keep
+the file's vertex layout; faces outside any batch use the transparent `wow_collision` material. Material nodes are an
+approximation (shader id picks diffuse/two-layer/env, blend mode picks key/blend/additive).
+
+`tests/render_wmo.py` renders an import (`blender -b --python tests/render_wmo.py -- OUT.png WMO [az el]`) for a visual check.

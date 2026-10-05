@@ -89,7 +89,7 @@ class WowWmoLight(bpy.types.PropertyGroup):
 
 
 class WowWmoDoodad(bpy.types.PropertyGroup):
-    index: IntProperty()
+    index: IntProperty(default=-1)
     doodad_set: IntProperty()
     fdid: IntProperty()
     path: StringProperty()

@@ -106,4 +106,4 @@ def export_blp(image, path):
     wimg = wblp.Image(rgba.shape[1], rgba.shape[0], wowlib.VectorUnsignedChar(rgba.tobytes()))
     blp = wblp.BLP()
     blp.encode(wimg, settings)
-    return client.session().fs.add_file(path, blp.write())
+    return client.session().fs.add_file(path, blp.write()).value
