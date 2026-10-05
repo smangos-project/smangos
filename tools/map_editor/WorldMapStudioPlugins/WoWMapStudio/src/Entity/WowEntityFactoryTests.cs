@@ -43,4 +43,14 @@ public static class WowEntityFactoryTests
         Assert.IsNull(yard.LocId);
         Assert.IsTrue(context.Scene.Contains(yard));
     }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Taxi_node_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_taxi_factory_test__");
+        var node = (WowTaxiNode)Factory<WowTaxiNodeFactory>(context).Create(context, new MapId(0), transform, "Test");
+
+        Assert.IsNull(node.NodeId);
+        Assert.IsTrue(context.Scene.Contains(node));
+    }
 }
