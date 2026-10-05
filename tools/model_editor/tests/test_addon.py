@@ -1,4 +1,5 @@
 """Headless addon tests. Run: blender -b --factory-startup --python test_addon.py -- [--all] [--filter SUBSTR]"""
+import os
 import sys
 import time
 import traceback
@@ -352,6 +353,9 @@ def sweep_m2():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
     entries = index.entries("m2")
+    only = os.environ.get("SWEEP_ONLY")
+    if only:
+        entries = [e for e in entries if only in e[1]]
     for fdid, path, _ in entries:
         clear()
         try:
@@ -360,7 +364,7 @@ def sweep_m2():
             fails.append((path, f"{type(e).__name__}: {e}"[:200]))
     fails = [f for f in fails if f[0] not in KNOWN_BAD]
     print(f"m2 sweep: {len(entries)} M2s, {len(fails)} failures, {time.time() - t0:.0f}s")
-    for f in fails[:40]:
+    for f in fails[:400]:
         print("  FAIL", *f)
     return fails
 

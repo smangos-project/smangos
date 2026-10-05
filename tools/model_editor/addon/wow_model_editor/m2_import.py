@@ -143,7 +143,7 @@ def _preview_values(root, batch):
     lut = root.texture_transforms_lookup_table
     if ti < len(lut) and 0 <= lut[ti] < len(root.texture_transforms):
         tt = root.texture_transforms[lut[ti]]
-        tr, sc = _first(tt.translation), _first(tt.scale)
+        tr, sc = _first(tt.translation), _first(getattr(tt, "scaling", None) or getattr(tt, "scale", None))
         if tr is not None:
             off = [tr.x, tr.y]
         if sc is not None:
@@ -384,7 +384,7 @@ def import_attachments(model, top):
     for i, a in enumerate(model.root.attachments):
         ob = _empty(model, coll, m2_names.attachment(a.id), "PLAIN_AXES", 0.1, "attachment", i, int(a.bone), _vec(a.position))
         p = ob.wow_m2_object
-        p.id, p.data = int(a.id), int(a.unknown)
+        p.id, p.data = s32(int(a.id)), s32(int(a.unknown))
         p.animated = bool(_first(a.animate_attached) is not None)
 
 
@@ -394,7 +394,7 @@ def import_events(model, top):
         code = m2_names.event(e.identifier)
         ob = _empty(model, coll, code, "SPHERE", 0.05, "event", i, int(e.bone), _vec(e.position))
         p = ob.wow_m2_object
-        p.identifier, p.data = code, int(e.data)
+        p.identifier, p.data = code, s32(int(e.data))
         p.animated = _first(e.enabled) is not None
 
 
@@ -419,7 +419,7 @@ def import_cameras(model, top):
         for o in (ob, tgt):
             o.wow_source = model.path
         p = ob.wow_m2_object
-        p.kind, p.index, p.id = "camera", i, int(c.type)
+        p.kind, p.index, p.id = "camera", i, s32(int(c.type))
         p.position, p.target = _vec(c.position_base), _vec(c.target_position_base)
 
 
@@ -440,7 +440,7 @@ def import_lights(model, top):
         _bone_parent(model, ob, int(l.bone), _vec(l.position))
         ob.wow_source = model.path
         p = ob.wow_m2_object
-        p.kind, p.index, p.id, p.bone, p.position = "light", i, int(l.type), int(l.bone), _vec(l.position)
+        p.kind, p.index, p.id, p.bone, p.position = "light", i, s32(int(l.type)), int(l.bone), _vec(l.position)
 
 
 def import_emitters(model, top):
