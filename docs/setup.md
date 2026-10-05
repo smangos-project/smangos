@@ -8,8 +8,6 @@ git clone https://github.com/smangos-project/smangos.git --recurse-submodules
 
 ## 2. Install dependencies
 
-You need Clang (a C++20 compiler), CMake, Ninja, OpenSSL (>= 1.1.1), zlib, libcurl, the MySQL/MariaDB client library, and a MySQL/MariaDB server for the `realmd`, `characters` and `logs` databases (`mangos`/`mangos` on `127.0.0.1:3306` by default, see `.server/config/common.conf`).
-
 <details>
 <summary>Arch Linux</summary>
 
@@ -42,21 +40,25 @@ Run the build commands from an "x64 Native Tools Command Prompt for VS 2022".
 ## 3. Client files
 
 - Place a 1.15 Classic Era client in `.client/_classic_era_/` (so that `.client/_classic_era_/Data` and `.client/_classic_era_/.build.info` exist)
+- The client executable at `.client/_classic_era_/WowClassic.exe` needs to be dejunked. You are on your own for this step.
 - Place the vanilla 1.12 `.dbc` files in `.client/vanilla/dbc/`
 
 ## 4. Configure
 
-Configure once with Clang and Ninja Multi-Config. Each step below builds only the target it needs, in the configuration that suits it: the extractors and `database_tool` in `RelWithDebInfo` (fast), the server in `Debug`.
+Configure once with Clang and Ninja Multi-Config.
 
-Linux:
+<details>
+<summary>Linux</summary>
 
     cmake -S . -B build -G "Ninja Multi-Config" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DBUILD_CASC_EXTRACTOR=ON -DBUILD_MAP_EXTRACTOR=ON -DBUILD_DATABASE_TOOL=ON
+</details>
 
-Windows:
+<details>
+<summary>Windows</summary>
 
     cmake -S . -B build -G "Ninja Multi-Config" -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DBUILD_CASC_EXTRACTOR=ON -DBUILD_MAP_EXTRACTOR=ON -DBUILD_DATABASE_TOOL=ON
 
-Ninja Multi-Config puts executables in a per-configuration folder: `build/<dir>/<Config>/<exe>` on Linux (e.g. `build/src/server/Debug/server`). On Windows they all land in `bin/<Config>/` instead. The commands below use the Linux paths; on Windows use `bin/<Config>/<exe>.exe`.
+</details>
 
 ## 5. Extract CASC
 
@@ -104,4 +106,4 @@ Create an account on the server console, e.g. `account create NAME PASS`.
 
 ## 9. Client (optional, Windows or Linux with wine)
 
-See `client/README.md` for the patched launcher, `client/launch-wine.sh` and `client/autologin.sh`. On Windows the launcher is part of the main build (`BUILD_CLIENT`); on Linux it is cross-compiled separately with mingw-w64.
+See `client/README.md` for the patched launcher, `client/launch-wine.sh` and `client/autologin.sh`.
