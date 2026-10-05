@@ -8,6 +8,8 @@
 - Shader utilities
 - MCP server, so agents can launch and control the client
 
+![Server data overlay](./assets/server-data-overlay.png)
+
 ## Server
 
 - Windows and Linux support
