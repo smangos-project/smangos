@@ -33,7 +33,14 @@ sudo apt-get install build-essential git cmake ninja-build libssl-dev zlib1g-dev
 <details>
 <summary>Windows</summary>
 
-Install Visual Studio 2022 (Desktop development with C++), CMake, Ninja and git, plus the OpenSSL 3 installer to its default location (`C:/Program Files/OpenSSL-Win64`, override with `-DOPENSSL_ROOT_DIR=...`). Run the commands below from a "x64 Native Tools" prompt. Executables then end up in `bin/<Config>` (e.g. `bin/Release`) instead of `build/.../Release`. For `--cdn` in `casc_extractor`, see `dep/windows/optional_dependencies`.
+- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) (or the Build Tools), with the "Desktop development with C++" workload and the "C++ Clang tools for Windows" component
+- [Git for Windows](https://git-scm.com/download/win)
+- [CMake](https://cmake.org/download/) (add it to PATH)
+- [Ninja](https://github.com/ninja-build/ninja/releases) (add it to PATH)
+- [OpenSSL 3 (64-bit)](https://slproweb.com/products/Win32OpenSSL.html), installed to the default `C:/Program Files/OpenSSL-Win64` (or pass `-DOPENSSL_ROOT_DIR=...`)
+- Optional, for `casc_extractor --cdn`: libcurl, see `dep/windows/optional_dependencies`
+
+Run the build commands from an "x64 Native Tools Command Prompt for VS 2022". Executables end up in `bin/<Config>` (e.g. `bin/Release`) instead of `build/.../Release`.
 </details>
 
 ### 3. Client files
