@@ -2,7 +2,7 @@ name: docs-site
 
 on:
   push:
-    branches: [main]
+    branches: [development]
     paths: [docs-site/**, .github/workflows/docs-site.yaml]
   pull_request:
     paths: [docs-site/**, .github/workflows/docs-site.yaml]
@@ -33,12 +33,12 @@ jobs:
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/development' && github.event_name == 'push'
         with:
           path: docs-site/build
 
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     permissions:

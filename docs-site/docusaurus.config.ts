@@ -30,7 +30,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/smangos-project/smangos/tree/main/docs-site/',
+          editUrl: 'https://github.com/smangos-project/smangos/tree/development/docs-site/',
         },
         blog: false,
         theme: {
