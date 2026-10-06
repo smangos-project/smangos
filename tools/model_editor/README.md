@@ -92,7 +92,7 @@ splines, particle emitters, ribbons) are stored as custom properties (`wow_color
 the armature or the owning object and animated through the same actions; values use fixed16/quaternion codecs matching the
 file. Events are pose markers `event_<i>` on sequence/loop actions. Operators `wow.m2_sequence_add/duplicate/remove/key` and
 `wow.m2_loop_add/remove` author sequences. Export builds the tracks back from the actions in memory; the round trip is tested
-(`test.sh --filter m2_anim`, sweep with `SWEEP_STEP=8 ./test.sh --filter zzz --all-m2-anim`).
+(`test.sh --filter m2_anim`, sweep with `SWEEP_STEP=8 ./test.sh --filter zzz --corpus`).
 
 Limits / phase 6 risks: Blender light colour, energy and range and camera lens are driven (one way) by the `wow_*` properties; edit those, not the Blender data. Preview materials are not driven by
 the colour/weight props; models without an armature carry only the model/object tracks; timestamps are milliseconds mapped
@@ -133,7 +133,7 @@ The `file_data_id` table of `.world/world.doltlite` (`id`, `path`, `source`, `re
 In-client checks (2026-10-06, `tests/gate_items.py`, `tests/gate_item.py`): a custom sword, shield, helm (human variants), shoulders and a chest with female/male component textures show on a character; no ModelFileData row is needed for creature/game object models, but items resolve models only through it. `Import item display` (`wow.import_item_display`, File > Import and sidebar) imports the model of a stock ItemDisplayInfo (`game_data.item_display_models`, default human male variant); its first BLP texture is applied as the object-skin (type 2) replaceable. Not done: helm orc/dwarf variants checked in the client, race-specific body textures.
 
 ### Corpus suite
-`test.sh --filter zzz --corpus` imports every M2 and dry-run exports it (this is the unedited-clean check and the forced-rebuild comparison at once, `SWEEP_STEP=N` samples every Nth file, about 15 s per 170 files). Failures are compared with `tests/corpus_baseline.json`; only new ones fail. `--update-baseline` rewrites it. The older `--all-wmo-export`, `--all-wmo-rebuild`, `--all-m2-geo` and `--all-m2-anim` sweeps stay available.
+`test.sh --filter zzz --corpus` imports every M2 and dry-run exports it (this is the unedited-clean check and the forced-rebuild comparison at once, `SWEEP_STEP=N` samples every Nth file, about 15 s per 170 files). Failures are compared with `tests/corpus_baseline.json`; only new ones fail. `--update-baseline` rewrites it. It also runs the WMO export, WMO forced-rebuild and M2 animation sweeps; `--all-m2-geo` stays separate.
 
 ### Phase 6 risks
 - New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.

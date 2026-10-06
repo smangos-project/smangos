@@ -1096,6 +1096,11 @@ def m2_anim_round_trip():
         assert d is None, (path, d)
 
 
+def progress(label, i, n):
+    if i % 200 == 0:
+        print(f"  {label}: {i}/{n}", flush=True)
+
+
 def sweep():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
@@ -1143,7 +1148,8 @@ def sweep_m2_anim():
     if only:
         entries = [e for e in entries if only in e[1]]
     entries = entries[::step]
-    for fdid, path, _ in entries:
+    for i, (fdid, path, _) in enumerate(entries):
+        progress("m2 anim", i, len(entries))
         if path in KNOWN_BAD:
             continue
         try:
@@ -1174,7 +1180,8 @@ def sweep_m2_geo():
     fails, t0 = [], time.time()
     only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
     entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
-    for fdid, path, _ in entries:
+    for i, (fdid, path, _) in enumerate(entries):
+        progress("m2 geometry", i, len(entries))
         if path in KNOWN_BAD:
             continue
         try:
@@ -1198,7 +1205,8 @@ def sweep_wmo_export(force):
     if only:
         wmos = [e for e in wmos if only in e[1]]
     slowest = []
-    for fdid, path, _ in wmos:
+    for i, (fdid, path, _) in enumerate(wmos):
+        progress(f"wmo export (force={force})", i, len(wmos))
         if path in KNOWN_BAD:
             continue
         t = time.time()
@@ -1228,7 +1236,8 @@ def sweep_m2_clean():
     fails, t0 = {}, time.time()
     only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
     entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
-    for fdid, path, _ in entries:
+    for i, (fdid, path, _) in enumerate(entries):
+        progress("m2 clean", i, len(entries))
         if path in KNOWN_BAD:
             continue
         try:
@@ -1246,11 +1255,14 @@ def sweep_m2_clean():
 
 
 def corpus():
-    """Sweeps compared with tests/corpus_baseline.json ({"m2_clean": {path: message}}); new failures fail, fixed ones are listed."""
+    """Sweeps compared with tests/corpus_baseline.json ({kind: {path: message}} for m2_clean, wmo_export, wmo_rebuild, m2_anim); new failures fail, fixed ones are listed."""
     base_file = common.Path(__file__).with_name("corpus_baseline.json")
     base = json.loads(base_file.read_text()) if base_file.is_file() else {}
-    found = {"m2_clean": sweep_m2_clean()}
+    found = {"m2_clean": sweep_m2_clean(), "wmo_export": dict(sweep_wmo_export(False)),
+             "wmo_rebuild": dict(sweep_wmo_export(True)), "m2_anim": dict(sweep_m2_anim())}
     if "--update-baseline" in ARGS:
+        if os.environ.get("SWEEP_STEP", "1") != "1" or os.environ.get("SWEEP_ONLY"):
+            raise SystemExit("--update-baseline needs a full run (no SWEEP_STEP/SWEEP_ONLY)")
         base_file.write_text(json.dumps(found, indent=1, sort_keys=True) + "\n")
         return 0
     bad = 0
@@ -1319,17 +1331,11 @@ for f in tests:
         traceback.print_exc()
 if "--all" in ARGS:
     failed += len(sweep())
-if "--all-wmo-export" in ARGS:
-    failed += len(sweep_wmo_export(False))
-if "--all-wmo-rebuild" in ARGS:
-    failed += len(sweep_wmo_export(True))
 if "--all-m2" in ARGS:
     failed += len(sweep_m2())
 if "--all-m2-geo" in ARGS:
     failed += len(sweep_m2_geo())
 if "--corpus" in ARGS:
     failed += corpus()
-if "--all-m2-anim" in ARGS:
-    failed += len(sweep_m2_anim())
 print("RESULT", "FAIL" if failed else "OK")
 sys.exit(1 if failed else 0)
