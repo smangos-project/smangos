@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import CollectionProperty, EnumProperty, StringProperty
 
-from . import client, index
+from . import client, index, m2_names
 
 
 def _search(self, context, edit_text):
@@ -87,7 +87,42 @@ class WOW_PT_m2(bpy.types.Panel):
                 op.display_id = d.id
 
 
-classes = (WowRecent, WOW_PT_browser, WOW_PT_m2)
+class WOW_UL_sequences(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        alias = bool(item.flags & 0x40)
+        layout.label(text=f"{index}: {m2_names.anim_name(item.anim_id)} {item.variation_index}", icon="ACTION" if not alias else "LINKED")
+        layout.label(text=f"{item.duration} ms")
+        layout.label(text=f"0x{item.flags:x}")
+
+
+class WOW_PT_m2_sequences(bpy.types.Panel):
+    bl_label = "Sequences"
+    bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
+
+    @classmethod
+    def poll(cls, context):
+        from . import m2_import
+        top = m2_import.root_collection(context.active_object)
+        return top is not None and len(top.wow_m2.sequences) > 0
+
+    def draw(self, context):
+        from . import m2_import
+        p = m2_import.root_collection(context.active_object).wow_m2
+        col = self.layout.column()
+        col.template_list("WOW_UL_sequences", "", p, "sequences", p, "active_sequence", rows=8)
+        col.operator("wow.m2_play_sequence", icon="PLAY")
+        if 0 <= p.active_sequence < len(p.sequences):
+            s = p.sequences[p.active_sequence]
+            box = col.box()
+            for name in ("anim_id", "variation_index", "alias_next", "flags", "duration", "frequency", "blend_time_in",
+                         "blend_time_out", "movespeed", "action"):
+                box.prop(s, name)
+            box.label(text=f"Bounds radius {s.bounds_radius:.2f}")
+        if p.loops:
+            col.label(text="Global loops: " + ", ".join(f"{l.timestamp} ms" for l in p.loops))
+
+
+classes = (WowRecent, WOW_PT_browser, WOW_PT_m2, WOW_UL_sequences, WOW_PT_m2_sequences)
 
 
 def register():

@@ -8,7 +8,9 @@ import bpy
 import numpy as np
 
 sys.path.insert(0, __file__.rsplit("/", 1)[0])
+sys.path.insert(0, __file__.rsplit("/", 2)[0] + "/spike")
 import common  # noqa: E402
+from deep import deep_diff  # noqa: E402
 
 common.enable()
 index = common.submodule("index")
@@ -19,6 +21,9 @@ props = common.submodule("props")
 m2_import = common.submodule("m2_import")
 m2_names = common.submodule("m2_names")
 displays = common.submodule("displays")
+m2_anim = common.submodule("m2_anim")
+m2_anim_export = common.submodule("m2_anim_export")
+m2_seq = common.submodule("m2_seq")
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 REFS = ["world/wmo/cameron.wmo", "world/wmo/kalimdor/ogrimmar/kl_pvpbarracks.wmo",
@@ -332,6 +337,61 @@ def operators_m2():
     wm.wow_kind = "m2"
 
 
+ANIM_MODELS = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2"]
+
+
+def anim_diff(path):
+    """First difference between the source M2 root and the one rebuilt from the imported Blender animation, or None."""
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    fresh = m2_import.read(path)
+    m2_anim_export.build(top, fresh.root)
+    return deep_diff(m2_import.read(path).root, fresh.root, "root")
+
+
+@test
+def m2_anim_import():
+    clear()
+    t = time.time()
+    top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE"})
+    p = top.wow_m2
+    assert len(p.sequences) == 32 and sum(1 for s in p.sequences if s.action) == 30
+    assert sum(1 for s in p.sequences if s.flags & 0x40) == 2
+    assert bpy.context.scene.render.fps == 1000
+    arm = next(o for o in top.all_objects if o.type == "ARMATURE")
+    assert all(b.bone.wow_m2_bone.index >= 0 and b.rotation_mode == "QUATERNION" for b in arm.pose.bones)
+    assert m2_seq.play(top, 0)
+    assert arm.animation_data.action == p.sequences[0].action and arm.animation_data.action_slot is not None
+    assert bpy.context.scene.frame_end == p.sequences[0].duration
+    clear()
+    t = time.time()
+    top = m2_import.load("character/human/male/humanmale.m2", {"display": "NONE"})
+    secs = time.time() - t
+    assert len(top.wow_m2.sequences) == 143 and len(top.wow_m2.loops) > 0 and secs < 10, secs
+    m2_seq.play(top, 1)
+    arm = next(o for o in top.all_objects if o.type == "ARMATURE")
+    assert "wow_loops" in arm.animation_data.nla_tracks
+
+
+@test
+def m2_anim_cquat_codec():
+    raw = np.array([(-32768, -1, 0, 32767), (5, -5, 32766, -32767)], dtype=[(n, "<i2") for n in "xyzw"])
+    dec = m2_anim._cquat(raw)
+    back = m2_anim._enc_cquat(dec)
+    assert np.array_equal(np.asarray(back)[["x", "y", "z", "w"]].tolist(), raw.tolist()), (back, raw)
+    every = np.arange(-32768, 32768, dtype=np.int16)
+    arr = np.zeros(len(every), dtype=raw.dtype)
+    arr["x"] = arr["y"] = arr["z"] = arr["w"] = every
+    assert np.array_equal(np.asarray(m2_anim._enc_cquat(m2_anim._cquat(arr)))["x"], every)
+
+
+@test
+def m2_anim_round_trip():
+    for path in ANIM_MODELS:
+        d = anim_diff(path)
+        assert d is None, (path, d)
+
+
 def sweep():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
@@ -371,6 +431,29 @@ def sweep_m2():
     return fails
 
 
+def sweep_m2_anim():
+    index.load(client.session().content, client.prefs().cache_dir)
+    fails, t0 = [], time.time()
+    entries = index.entries("m2")
+    only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
+    if only:
+        entries = [e for e in entries if only in e[1]]
+    entries = entries[::step]
+    for fdid, path, _ in entries:
+        if path in KNOWN_BAD:
+            continue
+        try:
+            d = anim_diff(path)
+            if d:
+                fails.append((path, d))
+        except Exception as e:  # noqa: BLE001
+            fails.append((path, f"{type(e).__name__}: {e}"[:200]))
+    print(f"m2 anim sweep: {len(entries)} M2s, {len(fails)} differences, {time.time() - t0:.0f}s")
+    for f in fails[:400]:
+        print("  FAIL", *f)
+    return fails
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:
@@ -389,5 +472,7 @@ if "--all" in ARGS:
     failed += len(sweep())
 if "--all-m2" in ARGS:
     failed += len(sweep_m2())
+if "--all-m2-anim" in ARGS:
+    failed += len(sweep_m2_anim())
 print("RESULT", "FAIL" if failed else "OK")
 sys.exit(1 if failed else 0)

@@ -3,6 +3,9 @@ import math
 
 import bpy
 import numpy as np
+import wowlib
+from wowlib.formats import common
+from wowlib.formats.m2.root import record
 
 from . import m2_names
 
@@ -33,18 +36,21 @@ def _enc_cquat(f):
     f = np.asarray(f, np.float64)
     x = np.rint(f * 32767.0)
     v = np.where(np.signbit(f), x + 32767.0, x - 32768.0).astype(np.int16)
-    out = np.empty(len(f), np.dtype([("x", "<i2"), ("y", "<i2"), ("z", "<i2"), ("w", "<i2")]))
-    for j, name in enumerate("wxyz"):
-        out[name] = v[:, j]
-    return out
+    out = []
+    for w, qx, qy, qz in v.tolist():
+        q = record.M2CompQuat()
+        q.w, q.x, q.y, q.z = w, qx, qy, qz
+        out.append(q)
+    return wowlib.VectorM2CompQuat(out)
 
 
 def _enc_vec3(f):
-    f = np.asarray(f, np.float32)
-    out = np.empty(len(f), np.dtype([("x", "<f4"), ("y", "<f4"), ("z", "<f4")]))
-    for j, name in enumerate("xyz"):
-        out[name] = f[:, j]
-    return out
+    out = []
+    for x, y, z in np.asarray(f, np.float32).tolist():
+        c = common.C3Vector()
+        c.x, c.y, c.z = x, y, z
+        out.append(c)
+    return wowlib.VectorC3Vector(out)
 
 
 class Binding:
