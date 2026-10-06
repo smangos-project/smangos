@@ -117,7 +117,15 @@ public sealed class WowImportScriptApi : IScriptModule
     /// current map's open edit session. Returns the catalog id.
     /// </summary>
     [ScriptFunction]
-    public async Task<int> CreatePanelModel(string name, double size, string texturePath, double x, double y, double z)
+    public Task<int> CreatePanelModel(string name, double size, string texturePath, double x, double y, double z)
+        => CreatePanel(name, size, texturePath, x, y, z, M2Format.FormatId, M2Material.Texture);
+
+    /// <summary>Like <see cref="CreatePanelModel"/> but the model outputs a WMO.</summary>
+    [ScriptFunction]
+    public Task<int> CreatePanelWmoModel(string name, double size, string texturePath, double x, double y, double z)
+        => CreatePanel(name, size, texturePath, x, y, z, WmoFormat.FormatId, WmoMaterial.Texture);
+
+    private async Task<int> CreatePanel(string name, double size, string texturePath, double x, double y, double z, string formatId, MeshParameter textureParameter)
     {
         var network = new VertexNetwork();
         float h = (float)size / 2.0f;
@@ -128,11 +136,11 @@ public sealed class WowImportScriptApi : IScriptModule
         network.AddFace([a, b, c, d]);
 
         var formats = new ProceduralFormats();
-        formats.Set(PanelNetworkMeshFunction.Output, M2Format.FormatId);
+        formats.Set(PanelNetworkMeshFunction.Output, formatId);
 
         var materials = new ProceduralBindings();
         var textureValues = new MeshParameterValues();
-        textureValues.Set(M2Material.Texture, texturePath);
+        textureValues.Set(textureParameter, texturePath);
         materials.BindInline(PanelNetworkMeshFunction.Output, PanelNetworkMeshFunction.Surface, textureValues);
 
         var model = new ProceduralModel

@@ -76,3 +76,6 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 ## WMO writer (done, not client-loaded)
 - `Export/Models/WmoModelWriter` (wowlib WMORootLegion + WMOGroupLegion; one exterior group, one MOMT/batch per surface, GFID), `WmoBspBuilder` (port of wmo_bsp.build), `ModelSurfaceInput` (renamed from M2SurfaceInput). `ProceduralModelExporter.WriteWmo` writes `name.wmo` + `name_000.wmo`; `WowProceduralPlacements` accepts wow.format.wmo (MODF via PlacementExtractor). WoW Export 41/41 pass.
 - Not done: no group/header names (MOGN), no doodad sets, poly flags fixed at Render|CullObjects (0x60 as stock), no E2E with a WMO ProceduralModel (CreatePanelModel is M2 only) and nothing loaded in the real client.
+
+## WMO E2E
+`wms.wowImport.CreatePanelWmoModel` added. Export in /tmp/wmsdbg wrote `testwmo_1.wmo` + `_000.wmo` and a MODF entry (custom FDID, at the placed position) in azeroth_32_48_obj0. Not loaded in the real client yet.
