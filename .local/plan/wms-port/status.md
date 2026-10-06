@@ -43,3 +43,9 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 - G1: `Creature Template` / `GameObject Template` catalogs (ThinDbcFactory keyed by Entry, common fields only, no palette UI in spawn tools yet).
 - G2/G3: `Quest` (quest_template) and `Item` (dbc_itemsparse, edit only) catalogs.
 - Next: H1/H2 procedural export (CataBox Export/Models: ProceduralModelExporter, M2Writer, WMO writers, WowExportChannelSystem, WowModelExportChannels; port onto wowlib writers), then F5.
+
+## Session: H1 research (no code)
+- Do NOT copy CataBox M2Writer/M2SkinWriter: they emit WotLK MD20 (v264) + external skin; the 1.15 client loads chunked MD21 + SkinCataPlus, and our M2Reader reads exactly that. Build with wowlib instead.
+- wowlib C# (net8, WoWLib.dll 0.0.11) write path: `M2RootLegionPlus` (Vertices, Textures, Materials, TextureLookupTable, BoneLookupTable, BoundingBox, ... all `WoWLib.Vector<T>` with Add/Clear/CopyFrom), `SkinCataPlus.Profile` (`M2SkinProfileCataPlus`: Vertices, Indices, Submeshes, Batches), `M2ChunkedFile.ForVersion(ClientEra)` (SkinFdids, TextureFdids). Unknown yet: how MD21 chunk + chunked file combine on Write, and the submesh element type (reflect with /tmp/refl.fsx: `dotnet fsi refl.fsx <type>`; may be gone).
+- Alternative: start from a template model like the Python addon (m2_export.new_m2 copies a small doodad then rewrites geometry) and call `M2.Write(fs,key)`.
+- ProceduralModelExporter, WowExportChannelSystem, WowModelExportChannels, WowExportRun are still to port (reference Export/). WMO writers (WmoRootWriter/WmoGroupWriter/WmoBspBuilder) should likewise target 1.15 WMO via wowlib; see tools/model_editor/addon/wow_model_editor/wmo_*.py for the working Python equivalent.
