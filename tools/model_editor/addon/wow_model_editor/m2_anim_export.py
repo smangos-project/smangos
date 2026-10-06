@@ -35,7 +35,10 @@ def _channelbag(action, obj):
     return action.layers[0].strips[0].channelbag(slot)
 
 
-def _read(b, action):
+BAKE_STEP = 33
+
+
+def _read(b, action, off_grid=None):
     """(timestamps, values (k, n), interpolation) of binding `b` in `action`, or None without keys."""
     cb = _channelbag(action, b.obj)
     if cb is None:
@@ -45,6 +48,11 @@ def _read(b, action):
     if not curves:
         return None
     frames = np.unique(np.concatenate([_co(fc)[0] for fc in curves]))
+    bake = any(k.interpolation not in ("CONSTANT", "LINEAR") for fc in curves for k in fc.keyframe_points)
+    if bake:
+        frames = np.unique(np.concatenate([frames, np.arange(np.ceil(frames[0]), frames[-1], BAKE_STEP)]))
+    if off_grid is not None and np.any(frames != np.rint(frames)):
+        off_grid.append(b.key)
     default = b.get_static()[0]
     vals = np.empty((len(frames), b.n), np.float64)
     for c in range(b.n):
@@ -53,12 +61,12 @@ def _read(b, action):
             vals[:, c] = default[c]
             continue
         f, v = _co(fc)
-        if len(f) == len(frames) and np.array_equal(f, frames):
+        if not bake and len(f) == len(frames) and np.array_equal(f, frames):
             vals[:, c] = v
         else:
             vals[:, c] = [fc.evaluate(x) for x in frames]
     first = curves[0].keyframe_points[0].interpolation
-    ipo = {"CONSTANT": 0, "LINEAR": 1}.get(first, int(b.track.interpolation_type) if int(b.track.interpolation_type) >= 2 else 2)
+    ipo = 1 if bake else {"CONSTANT": 0, "LINEAR": 1}.get(first, 1)
     return np.rint(frames).astype(np.int64), vals, ipo
 
 
@@ -150,7 +158,7 @@ def _write_events(model, seq_actions, loop_actions):
             t.global_sequence = NONE
 
 
-def build(top, root, rig=None, objects=None):
+def build(top, root, rig=None, objects=None, report=None):
     """Rewrites sequences, loops and every animated track of `root` from the Blender data under `top`."""
     p = top.wow_m2
     model = _Shim(top, root, rig, objects)
@@ -159,10 +167,11 @@ def build(top, root, rig=None, objects=None):
     static = set(top.get(m2_anim.STATIC_PROP, []))
     seq_actions = [None if s.flags & ALIAS_FLAG else s.action for s in p.sequences]
     loop_actions = [l.action for l in p.loops]
+    off_grid = [] if report is not None else None
     for b in m2_anim.all_bindings(model):
-        loops = [(k, _read(b, a)) for k, a in enumerate(loop_actions)]
+        loops = [(k, _read(b, a, off_grid)) for k, a in enumerate(loop_actions)]
         loops = [(k, r) for k, r in loops if r is not None]
-        per_seq = [_read(b, a) for a in seq_actions]
+        per_seq = [_read(b, a, off_grid) for a in seq_actions]
         if loops:
             k, r = loops[0]
             _set_timelines(b, [(r[0], r[1])])
@@ -177,3 +186,30 @@ def build(top, root, rig=None, objects=None):
         else:
             _set_timelines(b, [])
     _write_events(model, seq_actions, loop_actions)
+    if off_grid:
+        report.add("WARNING", "animation", f"{len(set(off_grid))} tracks have keys off the integer grid (rounded)")
+    validate(p, root, report)
+
+
+def validate(p, root, report):
+    """Sequence list problems that would make the client misplay or reject the animations."""
+    if report is None:
+        return
+    seqs = list(p.sequences)
+    for i, s in enumerate(seqs):
+        alias = bool(s.flags & ALIAS_FLAG)
+        if alias:
+            seen, j = set(), i
+            while j >= 0 and j not in seen and j < len(seqs) and seqs[j].flags & ALIAS_FLAG:
+                seen.add(j)
+                j = seqs[j].alias_next
+            if j in seen:
+                report.add("ERROR", f"sequence {i}", "alias loop")
+        elif s.action is None:
+            report.add("WARNING", f"sequence {i}", "no action, the sequence plays without animation")
+        elif s.action.frame_range[1] > s.duration:
+            report.add("WARNING", f"sequence {i}", "keys run past the sequence duration")
+    ids = {int(q.anim_id) for q in seqs}
+    holes = [a for a in range(len(root.sequence_lookups)) if (root.sequence_lookups[a] >= 0) != (a in ids)]
+    if holes:
+        report.add("WARNING", "animation", f"sequence lookup disagrees with the sequence list for ids {holes[:5]}")

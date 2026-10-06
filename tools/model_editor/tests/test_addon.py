@@ -1002,6 +1002,30 @@ def m2_anim_authoring():
 
 
 @test
+def m2_anim_bake_bezier():
+    clear()
+    path = "creature/wolf/wolf.m2"
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    p = top.wow_m2
+    seq = next(s for s in p.sequences if s.action is not None and not s.flags & m2_anim.ALIAS_FLAG)
+    n = 0
+    for lay in seq.action.layers:
+        for st in lay.strips:
+            for cb in st.channelbags:
+                for fc in cb.fcurves:
+                    for k in fc.keyframe_points:
+                        k.interpolation = "BEZIER"
+                        n += 1
+    assert n
+    fresh = m2_import.read(path)
+    rep = common.submodule("report").Report()
+    m2_anim_export.build(top, fresh.root, report=rep)
+    b = next(b for b in fresh.root.bones if len(b.rotation.timestamps) and len(b.rotation.timestamps[0]) > 1)
+    assert int(b.rotation.interpolation_type) == 1
+    assert not rep.errors, str(rep)
+
+
+@test
 def m2_anim_cquat_codec():
     raw = np.array([(-32768, -1, 0, 32767), (5, -5, 32766, -32767)], dtype=[(n, "<i2") for n in "xyzw"])
     dec = m2_anim._cquat(raw)

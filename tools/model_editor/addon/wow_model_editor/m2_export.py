@@ -42,7 +42,7 @@ def rebuild(top, m, report, opts):
     report.extra_files += m2_materials_export.build(top, m, report, opts, top.wow_m2.path)
     m2_mesh_export.build(top, m, report, opts, rig)
     objects = m2_objects_export.build(top, m, report, rig)
-    m2_anim_export.build(top, m.root, rig, objects)
+    m2_anim_export.build(top, m.root, rig, objects, report)
 
 
 def export(top, out_path=None, options=None):
