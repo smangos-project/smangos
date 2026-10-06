@@ -40,6 +40,7 @@ class WowWmo(bpy.types.PropertyGroup):
     flags: IntProperty()
     wmo_id: IntProperty()
     num_lod: IntProperty()
+    is_new: BoolProperty()
     ambient_color: IntVectorProperty(size=4)
 
 

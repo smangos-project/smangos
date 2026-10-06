@@ -1,6 +1,7 @@
 """Writes an imported WMO collection back as a 1.15 root + group files. Untouched sections keep the source data."""
 import io
 import os
+import posixpath
 import re
 import struct
 from pathlib import Path
@@ -8,6 +9,7 @@ from pathlib import Path
 import bpy
 import numpy as np
 import wowlib
+from wowlib.formats import wmo as wwmo
 
 from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import, wmo_root_export
 from .props import u32
@@ -240,7 +242,7 @@ def apply_material(m, mat, tex):
 def update_materials(w, root, files, report):
     """Sync wow materials used by the group objects into MOMT; new materials are appended."""
     mats = {}
-    for ob in group_objects(root).values():
+    for ob in [*group_objects(root).values(), *new_group_objects(root)]:
         for s in ob.material_slots:
             m = s.material
             if m is not None and not m.name.startswith(COLLISION_NAME):
@@ -511,6 +513,19 @@ def write_files(files, out_dir, content_dir, report):
         report.stats["files_written"] += 1
 
 
+def new_wmo(path, parent=None):
+    """An empty WMO collection that exports a new file at client path `path`."""
+    path = path.replace("\\", "/").lower()
+    top = bpy.data.collections.new(posixpath.basename(path))
+    (parent or bpy.context.scene.collection).children.link(top)
+    top.wow_wmo.path = path
+    top.wow_wmo.is_new = True
+    for name in ("groups", "portals", "lights", "doodads", "liquids", "fogs"):
+        c = bpy.data.collections.new(name)
+        top.children.link(c)
+    return top
+
+
 def export(root, out_path=None, options=None):
     """Export WMO collection `root`; returns a Report. `options`: force, dry_run."""
     opts = {"force": False, "dry_run": False}
@@ -520,7 +535,11 @@ def export(root, out_path=None, options=None):
     p = root.wow_wmo
     src_path = p.path
     path = (out_path or src_path).replace("\\", "/").lower()
-    w = wmo_import.read(src_path)
+    if p.is_new:
+        w = wwmo.WMO.for_version(client.VERSION)
+        fdids.allocate(path)
+    else:
+        w = wmo_import.read(src_path)
     objs = group_objects(root)
     dirty = set()
     files = {}

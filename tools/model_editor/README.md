@@ -104,7 +104,8 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - Materials: edited `wow_wmo_material` fields update MOMT; a material without an index is appended. Texture nodes are labelled `texture1..3`; an image without `wow_fdid` is encoded to `world/wmo/custom/<name>.blp` and gets an id from `fdids.allocate` (custom listfile `.local/listfile.custom.txt`, ids from 2e9, override with the `Custom listfile` preference). Edited (dirty) imported images overwrite their own path.
 - Root objects: doodads (moved, retargeted, added to their set with group references), lights, fogs, portal vertices/planes and liquid heights/tile flags are written when they differ from the source. Deleted objects are kept in the file with a warning.
 - Export checks: `w.validate()` issues and out-of-range material ids (errors/warnings), texture ids missing from every listfile and non-power-of-two new textures (warnings).
-- Not yet: new groups or WMOs, LOD files, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
+- New groups: a mesh object in the `groups` collection with no group index is appended as a new group (file `<wmo>_NNN.wmo`, group fdid from the custom listfile). `New WMO` (`wow.new_wmo`) creates an empty collection whose export writes a new file from scratch.
+- Not yet: LOD files, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
 
 ### Phase 6 risks
 - The client may not resolve new fdids in the 2e9 range (unverified; needs an in-client check with backup/restore of the replaced files).

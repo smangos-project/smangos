@@ -555,6 +555,31 @@ def wmo_export_new_group():
 
 
 @test
+def wmo_export_new_wmo():
+    clear()
+    client.prefs().custom_listfile = "/tmp/me-custom-listfile4.txt"
+    src = wmo_import.load(REFS[0], {"doodads": False})
+    mat = next(s.material for s in mesh_groups(src)[0].material_slots if s.material.wow_wmo_material.material_index >= 0).copy()
+    mat.wow_wmo_material.material_index = -1
+    path = "world/wmo/custom/test_box.wmo"
+    top = wmo_export.new_wmo(path)
+    me = bpy.data.meshes.new("box")
+    v = [(x, y, z) for x in (0, 4) for y in (0, 4) for z in (0, 4)]
+    f = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    me.from_pydata(v, [], f)
+    me.uv_layers.new(name="uv0")
+    me.materials.append(mat)
+    ob = bpy.data.objects.new("box", me)
+    next(c for c in top.children if c.name.startswith("groups")).objects.link(ob)
+    r = wmo_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.groups) == 1 and len(new.root.materials) == 1 and len(new.groups[0].body.vertices) >= 8
+    assert new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
+    assert path in r.files and path.replace(".wmo", "_000.wmo") in r.files
+
+
+@test
 def wmo_export_root_objects():
     path = REFS[1]
     coll, r = export_files(path, import_opts={"doodads": True})
