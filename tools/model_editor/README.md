@@ -108,6 +108,13 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - LOD group files (`*_lodN.wmo`) are neither imported nor exported; editing a group that has them warns that they are stale.
 - Not yet: LOD editing, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
 
+### M2 export (phase 6)
+"Export M2" in the WoW panel (`wow.export_m2`) rebuilds the model from the collection: geometry/skins, rig, materials/textures, objects, animation. The source is re-read and each section is applied on top; if nothing differs from the source, nothing is written.
+- Geometry edits drop LOD skins unless "rebuild LODs" is set. Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
+- Non-linear animation keys are baked to linear; sequences are validated.
+- `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the custom listfile.
+- Not done: shadow-batch rules beyond the fallback, driving Blender lights/cameras from props, in-client checks of edited/new models, LOD decimation.
+
 ### Phase 6 risks
 - The client may not resolve new fdids in the 2e9 range (unverified; needs an in-client check with backup/restore of the replaced files).
 - New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.
