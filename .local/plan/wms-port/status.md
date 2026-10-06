@@ -79,3 +79,4 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 
 ## WMO E2E
 `wms.wowImport.CreatePanelWmoModel` added. Export in /tmp/wmsdbg wrote `testwmo_1.wmo` + `_000.wmo` and a MODF entry (custom FDID, at the placed position) in azeroth_32_48_obj0. Not loaded in the real client yet.
+WMO verified in the real client (Stormwind, MODF[0] of azeroth_32_48_obj0 repointed to a remapped FDID, files + fdid.index lines added by hand, then restored from /tmp backup): a 60-wide two-sided panel renders, no crash. Panels from CreatePanel*Model are now two-sided. autologin picks the last played character (Wefwefwefa), ignoring the CHARACTER arg.
