@@ -538,6 +538,16 @@ def wmo_export_root_objects():
 
 
 @test
+def wmo_export_operator():
+    clear()
+    coll = wmo_import.load(REFS[0], {"doodads": False})
+    ob = next(iter(mesh_groups(coll).values()))
+    with bpy.context.temp_override(active_object=ob):
+        assert bpy.ops.wow.export_wmo.poll()
+        assert bpy.ops.wow.export_wmo(dry_run=True) == {"FINISHED"}
+
+
+@test
 def import_doodad_meshes():
     clear()
     path = "world/wmo/kalimdor/ogrimmar/kl_pvpbarracks.wmo"

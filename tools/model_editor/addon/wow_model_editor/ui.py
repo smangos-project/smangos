@@ -51,6 +51,8 @@ class WOW_PT_browser(bpy.types.Panel):
                 box.prop(o, "display_id")
             for name in ("attachments", "events", "cameras", "m2_lights", "emitters", "collision"):
                 box.prop(o, name)
+        col.separator()
+        col.operator("wow.export_wmo", icon="EXPORT")
         if wm.wow_recent:
             col.label(text="Recent")
             for r in wm.wow_recent:

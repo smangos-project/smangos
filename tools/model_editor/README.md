@@ -97,3 +97,10 @@ file. Events are pose markers `event_<i>` on sequence/loop actions. Operators `w
 Limits / phase 6 risks: lights and cameras do not drive real Blender light/camera data and preview materials are not driven by
 the colour/weight props; models without an armature carry only the model/object tracks; timestamps are milliseconds mapped
 to frames at a fixed rate, so edits off the grid are rounded on export.
+
+### WMO export (phase 5)
+Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW panel, or `wow.export_wmo`. Files are written to the Output directory; a file whose bytes equal the Content copy is not written, so an unedited export writes nothing.
+- Groups are rebuilt (vertex split, batches, BSP) only when an array differs from the source; `Rebuild all groups` forces it. Normals come from the `wow_normal` attribute, falling back to corner normals for new vertices.
+- Materials: edited `wow_wmo_material` fields update MOMT; a material without an index is appended. Texture nodes are labelled `texture1..3`; an image without `wow_fdid` is encoded to `world/wmo/custom/<name>.blp` and gets an id from `fdids.allocate` (custom listfile `.local/listfile.custom.txt`, ids from 2e9, override with the `Custom listfile` preference). Edited (dirty) imported images overwrite their own path.
+- Root objects: doodads (moved, retargeted, added to their set with group references), lights, fogs, portal vertices/planes and liquid heights/tile flags are written when they differ from the source. Deleted objects are kept in the file with a warning.
+- Not yet: new groups or WMOs, LOD files, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
