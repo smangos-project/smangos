@@ -129,7 +129,10 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
         var grid = new LandscapeGrid(catalog.Settings);
         var allRows = rows.Concat(newTiles.Select(tile => new AdtImportTileRecord { SourceId = sourceMap, FileX = tile.FileX, FileY = tile.FileY })).ToList();
-        Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>> waterPatches = await GatherWaterAsync(context, work, catalog.Map, grid, sourceMap, allRows).ConfigureAwait(false);
+        var exporter = new ProceduralModelExporter(content, ids);
+        (Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>> waterPatches, List<EditorPlacement> proceduralPlacements) =
+            await GatherSceneAsync(context, work, catalog.Map, grid, sourceMap, allRows, exporter).ConfigureAwait(false);
+        placements.AddRange(proceduralPlacements);
         // With no authored water anywhere, MH2O is left exactly as the client has it (water import may be off).
         bool anyWater = waterPatches.Values.Any(patches => patches.Count > 0);
 
@@ -279,9 +282,9 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         return tiles;
     }
 
-    /// <summary>Each tile's water patches: the scene is scanned in the background, the built meshes are read on the main thread.</summary>
-    private static async Task<Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>>> GatherWaterAsync(
-        BatchContext context, WorkContext work, MapId map, LandscapeGrid grid, string sourceMap, IReadOnlyList<AdtImportTileRecord> rows)
+    /// <summary>Each tile's water patches and the procedural M2 placements (writing their files): the scene is scanned in the background, the built meshes are read on the main thread.</summary>
+    private static async Task<(Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>> Water, List<EditorPlacement> Placements)> GatherSceneAsync(
+        BatchContext context, WorkContext work, MapId map, LandscapeGrid grid, string sourceMap, IReadOnlyList<AdtImportTileRecord> rows, ProceduralModelExporter exporter)
     {
         var scans = new List<((int FileX, int FileY) Key, IReadOnlyList<SceneEntity> Hits)>();
         foreach (AdtImportTileRecord row in rows)
@@ -293,12 +296,21 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         }
 
         var result = new Dictionary<(int, int), List<WaterSurfacePatch>>();
+        var placements = new List<EditorPlacement>();
+        var seen = new HashSet<SceneEntity>();
         await work.SwitchToMain();
         try
         {
             foreach (((int FileX, int FileY) key, IReadOnlyList<SceneEntity> hits) in scans)
             {
                 result[key] = hits.SelectMany(entity => WowWaterPatches.Gather(context.Editor, entity)).ToList();
+                foreach (SceneEntity entity in hits)
+                {
+                    if (seen.Add(entity))
+                    {
+                        placements.AddRange(WowProceduralPlacements.Gather(context.Editor, exporter, entity));
+                    }
+                }
             }
         }
         finally
@@ -306,6 +318,6 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             await work.SwitchToBackground();
         }
 
-        return result;
+        return (result, placements);
     }
 }
