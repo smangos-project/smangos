@@ -101,7 +101,7 @@ public sealed class WowFileDataIds
         }
     }
 
-    /// <summary>Writes the custom-range allocations (<c>id;path</c> per line), ordered by id.</summary>
+    /// <summary>Writes the custom-range allocations (<c>id;path</c> per line, the client bypass's name-table format), ordered by id.</summary>
     public void SaveCustom(string path)
     {
         var lines = new List<string>();
