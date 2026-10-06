@@ -486,6 +486,15 @@ def check_output(w, report):
                 report.add("WARNING", path, f"texture size {wd}x{ht} is not a power of two")
 
 
+def warn_stale_lods(path, dirty, report):
+    """LOD group files are not exported; they stay as in Content and go stale when their group changes."""
+    content = Path(client.session().content)
+    for gi in sorted(dirty):
+        base = Path(group_path(path, gi))
+        for lod in (content / base.parent).glob(base.stem + "_lod*.wmo"):
+            report.add("WARNING", f"group {gi}", f"{lod.name} is not updated and no longer matches the edited group")
+
+
 def serialize(w):
     root = io.BytesIO()
     groups = [io.BytesIO() for _ in w.groups]
@@ -568,6 +577,8 @@ def export(root, out_path=None, options=None):
         dirty.add(gi)
     if dirty:
         update_root_boxes(w)
+        if not p.is_new:
+            warn_stale_lods(path, dirty, report)
     if report.errors:
         return report
     vr = w.validate()

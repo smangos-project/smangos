@@ -580,6 +580,18 @@ def wmo_export_new_wmo():
 
 
 @test
+def wmo_export_lod_warning():
+    path = "world/wmo/dungeon/md_crypt/classic_md_crypt_d.wmo"
+    clear()
+    coll = wmo_import.load(path, {"doodads": False})
+    ob = mesh_groups(coll)[0]
+    ob.data.vertices[0].co.z += 0.5
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    assert any("_lod1.wmo" in i[2] for i in r.items), str(r)
+
+
+@test
 def wmo_export_root_objects():
     path = REFS[1]
     coll, r = export_files(path, import_opts={"doodads": True})
