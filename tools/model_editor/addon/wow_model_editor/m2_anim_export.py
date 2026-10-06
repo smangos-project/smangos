@@ -129,7 +129,7 @@ def write_loops(root, loops):
 
 
 def _marker_times(action, i):
-    return sorted({int(m.frame) for m in action.pose_markers if m.name == m2_anim.marker_name(i)}) if action is not None else []
+    return sorted(int(m.frame) for m in action.pose_markers if m.name == m2_anim.marker_name(i)) if action is not None else []
 
 
 def _write_events(model, seq_actions, loop_actions):

@@ -4,6 +4,7 @@ using WoWLib;
 using WoWLib.Filesystem;
 using WoWLib.Formats.ADT;
 using WoWLib.Formats.ADT.Chunks;
+using WoWLib.Formats.Common;
 
 namespace WorldMapStudio.WoW;
 
@@ -18,7 +19,7 @@ public static class WowAdtTileWriter
     private const int Inner = ImportedChunk.InnerEdge;
     private const int AlphaSize = 64 * 64;
 
-    /// <summary>Applies <paramref name="tile"/> onto <paramref name="adt"/> (terrain, layers, textures); placements are not yet touched.</summary>
+    /// <summary>Applies <paramref name="tile"/> onto <paramref name="adt"/> (terrain, layers, textures) and moves of existing placements matched by unique id; added or removed placements are not written.</summary>
     public static void Apply(ADTBfaPlus adt, ImportedTile tile)
     {
         if (tile.Chunks.Count != ImportedTile.ChunkCount || adt.Chunks.Count != ImportedTile.ChunkCount)
@@ -38,6 +39,8 @@ public static class WowAdtTileWriter
         {
             ApplyChunk(adt.Chunks[i], tile.Chunks[i]);
         }
+
+        ApplyPlacements(adt, tile);
     }
 
     /// <summary>Reads the tile's current client file, applies <paramref name="tile"/> and writes it into the filesystem's project overlay.</summary>
@@ -51,6 +54,43 @@ public static class WowAdtTileWriter
         Apply(adt, tile);
         adt.Write(fs, key, alpha);
     }
+
+    private static void ApplyPlacements(ADTBfaPlus adt, ImportedTile tile)
+    {
+        foreach (var d in tile.Doodads)
+        {
+            foreach (var p in adt.DoodadPlacements)
+            {
+                if (p.UniqueId == d.UniqueId)
+                {
+                    p.Position = ToC3(d.Position);
+                    p.Rotation = ToC3(d.RotationDegrees);
+                    p.Scale = d.Scale;
+                    p.Flags = (DoodadDefFlags)d.Flags;
+                }
+            }
+        }
+
+        foreach (var o in tile.Objects)
+        {
+            foreach (var p in adt.WmoPlacements)
+            {
+                if (p.UniqueId == o.UniqueId)
+                {
+                    p.Position = ToC3(o.Position);
+                    p.Rotation = ToC3(o.RotationDegrees);
+                    p.Extents.Min = ToC3(o.LowerBounds);
+                    p.Extents.Max = ToC3(o.UpperBounds);
+                    p.Flags = (MapObjDefFlags)o.Flags;
+                    p.DoodadSet = o.DoodadSet;
+                    p.NameSet = o.NameSet;
+                    p.Scale = o.Scale;
+                }
+            }
+        }
+    }
+
+    private static C3Vector ToC3(Vector3 v) => new() { X = v.X, Y = v.Y, Z = v.Z };
 
     private static void ApplyChunk(MapChunkCataPlus c, ImportedChunk src)
     {
