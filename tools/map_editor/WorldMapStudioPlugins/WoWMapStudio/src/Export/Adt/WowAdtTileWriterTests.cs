@@ -58,5 +58,20 @@ public static class WowAdtTileWriterTests
                 max = System.MathF.Max(max, System.MathF.Abs(tile.Chunks[c].InnerHeights[i] - back.Chunks[c].InnerHeights[i]));
         }
         Assert.IsTrue(max < 0.01f, "max height drift " + max);
+        for (int c = 0; c < tile.Chunks.Count; c++)
+        {
+            Assert.IsTrue((tile.Chunks[c].VertexColors == null) == (back.Chunks[c].VertexColors == null), "vertex colour presence");
+            if (tile.Chunks[c].VertexColors is { } a)
+            {
+                for (int i = 0; i < a.Length; i++)
+                {
+                    Assert.IsTrue(a[i].IsEqualApprox(back.Chunks[c].VertexColors![i]), "vertex colour " + c + "/" + i);
+                }
+            }
+            for (int l = 0; l < tile.Chunks[c].Layers.Count; l++)
+            {
+                Assert.AreEqual(tile.Chunks[c].Layers[l].EffectId, back.Chunks[c].Layers[l].EffectId);
+            }
+        }
     }
 }

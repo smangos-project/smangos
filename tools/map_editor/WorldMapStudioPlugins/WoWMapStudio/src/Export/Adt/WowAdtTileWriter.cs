@@ -1,4 +1,5 @@
 using System;
+using Godot;
 using WoWLib;
 using WoWLib.Filesystem;
 using WoWLib.Formats.ADT;
@@ -76,6 +77,15 @@ public static class WowAdtTileWriter
         header.Flags = (MapChunkFlags)src.Flags;
         SetHoles(header, src.Holes);
 
+        ApplyColors(c.VertexColors, src.VertexColors, src.InnerVertexColors, (v, k) => { v.R = k.R; v.G = k.G; v.B = k.B; v.A = k.A; });
+        ApplyColors(c.VertexLighting, src.VertexLight, src.InnerVertexLight, (v, k) => { v.R = k.R; v.G = k.G; v.B = k.B; v.A = k.A; });
+
+        var oldFlags = new LayerFlags[c.Layers.Count];
+        for (int i = 0; i < oldFlags.Length; i++)
+        {
+            oldFlags[i] = c.Layers[i].Flags;
+        }
+
         c.Layers.Clear();
         c.AlphaMaps.Clear();
         for (int i = 0; i < src.Layers.Count; i++)
@@ -84,7 +94,8 @@ public static class WowAdtTileWriter
             {
                 TextureId = (uint)src.Layers[i].TextureIndex,
                 EffectId = src.Layers[i].EffectId,
-                Flags = src.Layers[i].Alpha != null ? LayerFlags.UseAlphaMap : 0,
+                Flags = (i < oldFlags.Length ? oldFlags[i] & ~LayerFlags.UseAlphaMap : 0)
+                    | (src.Layers[i].Alpha != null ? LayerFlags.UseAlphaMap : 0),
             });
             var map = new Vector<byte>();
             if (src.Layers[i].Alpha is { Length: AlphaSize } a)
@@ -95,6 +106,35 @@ public static class WowAdtTileWriter
             c.AlphaMaps.Add(map);
         }
     }
+
+    private static void ApplyColors<T>(Vector<T> dst, Color[]? outer, Color[]? inner, Action<T, (byte R, byte G, byte B, byte A)> set)
+        where T : class
+    {
+        if (outer == null || inner == null || dst.Count < (Outer * Outer) + (Inner * Inner))
+        {
+            return;
+        }
+
+        const int rowStride = Outer + Inner;
+        for (int y = 0; y < Outer; y++)
+        {
+            for (int x = 0; x < Outer; x++)
+            {
+                set(dst[(y * rowStride) + x], Bytes(outer[(y * Outer) + x]));
+            }
+
+            if (y < Inner)
+            {
+                for (int x = 0; x < Inner; x++)
+                {
+                    set(dst[(y * rowStride) + Outer + x], Bytes(inner[(y * Inner) + x]));
+                }
+            }
+        }
+    }
+
+    private static (byte, byte, byte, byte) Bytes(Color c) =>
+        ((byte)MathF.Round(c.R * 255f), (byte)MathF.Round(c.G * 255f), (byte)MathF.Round(c.B * 255f), (byte)MathF.Round(c.A * 255f));
 
     private static void SetHoles(SMChunk header, bool[] holes)
     {
