@@ -53,7 +53,7 @@ public sealed class AdtImportCatalog
 
     public const string HeightChannelName = "adt_height";
     public const string AlphaChannelName = "adt_alpha";
-    private const string HoleChannelName = "adt_holes";
+    public const string HoleChannelName = "adt_holes";
     public const string VColorChannelName = "adt_vcolor";
     public const string VLightChannelName = "adt_vlight";
     private const string AreaChannelName = "adt_area";
