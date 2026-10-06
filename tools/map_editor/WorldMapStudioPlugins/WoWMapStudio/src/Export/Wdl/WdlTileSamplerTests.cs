@@ -9,8 +9,7 @@ public static class WdlTileSamplerTests
     {
         WowTestContent.RequireFile("world/maps/azeroth/azeroth.wdl");
         WowTestContent.RequireFile("world/maps/azeroth/azeroth_32_48.adt");
-        string project = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wms-wdl-test-" + System.Guid.NewGuid().ToString("N"));
-        var fs = WowClientFiles.OpenIsolated(project);
+        var fs = WowClientFiles.Shared;
         var wdt = WowWdt.Read(fs, "azeroth");
         var tile = WowAdtTileReader.Read(fs, wdt, new ImportedTileId("azeroth", 32, 48));
         using var wdl = WoWLib.Formats.WDL.WDL.ForVersion(WoWLib.Expansion.Bfa);
@@ -18,7 +17,6 @@ public static class WdlTileSamplerTests
         int slot = Enumerable.Range(0, (48 * 64) + 32).Count(i => wdl.TileOffsets[i] != 0);
         var stock = wdl.Heightmaps[slot];
         var (outer, inner) = WdlTileSampler.Build(tile.Chunks);
-        System.IO.Directory.Delete(project, true);
 
         int bad = 0;
         for (int i = 0; i < outer.Length; i++) { if (System.Math.Abs(outer[i] - stock.Outer[i]) > 8) { bad++; } }
