@@ -48,7 +48,7 @@ public static class ImportedTileComparer
         && Near(a.LowerBounds, b.LowerBounds) && Near(a.UpperBounds, b.UpperBounds);
 
     private static bool ChunkEqual(ImportedChunk a, ImportedChunk b) =>
-        a.AreaId == b.AreaId && a.Flags == b.Flags
+        a.AreaId == b.AreaId && a.Flags == b.Flags && LiquidEqual(a.Liquid, b.Liquid)
         && a.Holes.AsSpan().SequenceEqual(b.Holes)
         && Near(a.OuterHeights, b.OuterHeights) && Near(a.InnerHeights, b.InnerHeights)
         && Near(a.VertexColors, b.VertexColors) && Near(a.InnerVertexColors, b.InnerVertexColors)
@@ -56,6 +56,30 @@ public static class ImportedTileComparer
         && a.Layers.Count == b.Layers.Count
         && a.Layers.Zip(b.Layers).All(p => p.First.TextureIndex == p.Second.TextureIndex && p.First.EffectId == p.Second.EffectId
             && (p.First.Alpha == null ? p.Second.Alpha == null : p.Second.Alpha != null && p.First.Alpha.AsSpan().SequenceEqual(p.Second.Alpha)));
+
+    internal static bool LiquidEqual(ImportedChunkLiquid? a, ImportedChunkLiquid? b)
+    {
+        if (ReferenceEquals(a, b))
+        {
+            return true;
+        }
+
+        if (a == null || b == null || a.HasAttributes != b.HasAttributes || a.Fishable != b.Fishable || a.Fatigue != b.Fatigue || a.Instances.Count != b.Instances.Count)
+        {
+            return false;
+        }
+
+        return a.Instances.Zip(b.Instances).All(p =>
+            p.First.LiquidType == p.Second.LiquidType && p.First.LiquidObjectOrFormat == p.Second.LiquidObjectOrFormat
+            && p.First.XOffset == p.Second.XOffset && p.First.YOffset == p.Second.YOffset
+            && p.First.Width == p.Second.Width && p.First.Height == p.Second.Height
+            && MathF.Abs(p.First.MinHeight - p.Second.MinHeight) <= HeightTolerance && MathF.Abs(p.First.MaxHeight - p.Second.MaxHeight) <= HeightTolerance
+            && Same(p.First.Exists, p.Second.Exists) && NearOrNull(p.First.Heights, p.Second.Heights) && Same(p.First.Depths, p.Second.Depths));
+    }
+
+    private static bool Same(byte[]? a, byte[]? b) => a == null || b == null ? a == b : a.AsSpan().SequenceEqual(b);
+
+    private static bool NearOrNull(float[]? a, float[]? b) => a == null || b == null ? a == b : Near(a, b);
 
     private static bool Near(float[] a, float[] b) =>
         a.Length == b.Length && a.Zip(b).All(p => MathF.Abs(p.First - p.Second) <= HeightTolerance);

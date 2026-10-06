@@ -46,6 +46,80 @@ public static class WowAdtTileWriter
         RebuildNormals(adt, tile, heightsChanged);
 
         ApplyPlacements(adt, tile);
+        ApplyWater(adt, tile);
+    }
+
+    /// <summary>Rewrites only the cells whose liquid differs from what the file holds, so untouched water stays byte-equal.</summary>
+    private static void ApplyWater(ADTBfaPlus adt, ImportedTile tile)
+    {
+        Mh2OData? water = adt.Water;
+        if (water == null)
+        {
+            return;
+        }
+
+        while (water.Cells.Count < ImportedTile.ChunkCount)
+        {
+            water.Cells.Add(new MapChunkLiquid());
+        }
+
+        for (int i = 0; i < ImportedTile.ChunkCount; i++)
+        {
+            ImportedChunkLiquid? wanted = tile.Chunks[i].Liquid;
+            if (ImportedTileComparer.LiquidEqual(WowAdtTileReader.ConvertLiquid(water.Cells[i]), wanted))
+            {
+                continue;
+            }
+
+            MapChunkLiquid cell = water.Cells[i];
+            cell.Instances.Clear();
+            cell.HasAttributes = wanted?.HasAttributes ?? false;
+            cell.Fishable = wanted?.Fishable ?? 0;
+            cell.Deep = wanted?.Fatigue ?? 0;
+            foreach (ImportedLiquidInstance source in wanted?.Instances ?? [])
+            {
+                cell.Instances.Add(ToWowLib(source));
+            }
+        }
+    }
+
+    private static LiquidInstance ToWowLib(ImportedLiquidInstance source)
+    {
+        var instance = new LiquidInstance
+        {
+            LiquidType = source.LiquidType,
+            LiquidObjectOrLvf = source.LiquidObjectOrFormat,
+            MinHeight = source.MinHeight,
+            MaxHeight = source.MaxHeight,
+            XOffset = (byte)source.XOffset,
+            YOffset = (byte)source.YOffset,
+            Width = (byte)source.Width,
+            Height = (byte)source.Height,
+        };
+        foreach (byte b in source.Exists ?? [])
+        {
+            instance.ExistsBitmap.Add(b);
+        }
+
+        foreach (float h in source.Heights ?? [])
+        {
+            instance.Heightmap.Add(h);
+        }
+
+        foreach (byte d in source.Depths ?? [])
+        {
+            instance.Depthmap.Add(d);
+        }
+
+        if ((LiquidVertexFormat)source.LiquidObjectOrFormat is LiquidVertexFormat.HeightUv or LiquidVertexFormat.HeightUvDepth)
+        {
+            for (int i = 0; i < (source.Width + 1) * (source.Height + 1); i++)
+            {
+                instance.Uvmap.Add(new UvMapEntry());
+            }
+        }
+
+        return instance;
     }
 
     /// <summary>Reads the tile's current client file, applies <paramref name="tile"/> and writes it into the filesystem's project overlay.</summary>

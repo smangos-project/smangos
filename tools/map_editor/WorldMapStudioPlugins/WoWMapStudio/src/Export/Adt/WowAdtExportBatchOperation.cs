@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Godot;
 using ImGuiNET;
 
 namespace WorldMapStudio.WoW;
@@ -92,6 +93,11 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             ids.IdOf(path)
             ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : ids.Allocate(path));
 
+        var grid = new LandscapeGrid(catalog.Settings);
+        Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>> waterPatches = await GatherWaterAsync(context, work, catalog.Map, grid, sourceMap, rows).ConfigureAwait(false);
+        // With no authored water anywhere, MH2O is left exactly as the client has it (water import may be off).
+        bool anyWater = waterPatches.Values.Any(patches => patches.Count > 0);
+
         int written = 0;
         var edited = new List<ImportedTile>();
         for (int i = 0; i < rows.Count; i++)
@@ -118,6 +124,13 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
                 },
                 path => ids.Allocate(path));
             tile = ImportedTileExtractor.WithPlacements(tile, doodads, objects);
+            if (anyWater)
+            {
+                tile = ImportedTileExtractor.WithLiquid(
+                    tile,
+                    WowWaterTileBuilder.Build(waterPatches[(id.FileX, id.FileY)], id, grid, tile, template.Chunks.Select(chunk => chunk.Liquid).ToList()));
+            }
+
             string? difference = ImportedTileComparer.FirstDifference(template, tile);
             if (difference == null)
             {
@@ -144,5 +157,35 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
         ids.ExportIndex(content);
         context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
+    }
+
+    /// <summary>Each tile's water patches: the scene is scanned in the background, the built meshes are read on the main thread.</summary>
+    private static async Task<Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>>> GatherWaterAsync(
+        BatchContext context, WorkContext work, MapId map, LandscapeGrid grid, string sourceMap, IReadOnlyList<AdtImportTileRecord> rows)
+    {
+        var scans = new List<((int FileX, int FileY) Key, IReadOnlyList<SceneEntity> Hits)>();
+        foreach (AdtImportTileRecord row in rows)
+        {
+            Aabb bounds = WowTileAddressing.EnumerateChunks(new WowTileId(sourceMap, row.FileX, row.FileY))
+                .Select(entry => grid.BoundsOf(entry.Coord))
+                .Aggregate((a, b) => a.Merge(b));
+            scans.Add(((row.FileX, row.FileY), await context.ScanSceneAsync(map, bounds).ConfigureAwait(false)));
+        }
+
+        var result = new Dictionary<(int, int), List<WaterSurfacePatch>>();
+        await work.SwitchToMain();
+        try
+        {
+            foreach (((int FileX, int FileY) key, IReadOnlyList<SceneEntity> hits) in scans)
+            {
+                result[key] = hits.SelectMany(entity => WowWaterPatches.Gather(context.Editor, entity)).ToList();
+            }
+        }
+        finally
+        {
+            await work.SwitchToBackground();
+        }
+
+        return result;
     }
 }

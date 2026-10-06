@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace WorldMapStudio.WoW;
@@ -70,6 +71,32 @@ public static class ImportedTileExtractor
         Doodads = doodads,
         Objects = objects,
         Chunks = tile.Chunks,
+    };
+
+    /// <summary>The tile with each chunk's liquid replaced (slot order, <see cref="ImportedTile.ChunkCount"/> entries).</summary>
+    public static ImportedTile WithLiquid(ImportedTile tile, IReadOnlyList<ImportedChunkLiquid?> liquid) => new()
+    {
+        TileId = tile.TileId,
+        Textures = tile.Textures,
+        HeightTextures = tile.HeightTextures,
+        Doodads = tile.Doodads,
+        Objects = tile.Objects,
+        Chunks = tile.Chunks.Select((chunk, i) => new ImportedChunk
+        {
+            LocalCol = chunk.LocalCol,
+            LocalRow = chunk.LocalRow,
+            OuterHeights = chunk.OuterHeights,
+            InnerHeights = chunk.InnerHeights,
+            VertexColors = chunk.VertexColors,
+            InnerVertexColors = chunk.InnerVertexColors,
+            VertexLight = chunk.VertexLight,
+            InnerVertexLight = chunk.InnerVertexLight,
+            Layers = chunk.Layers,
+            Holes = chunk.Holes,
+            AreaId = chunk.AreaId,
+            Flags = chunk.Flags,
+            Liquid = liquid[i],
+        }).ToList(),
     };
 
     private static ImportedChunk ExtractChunk(

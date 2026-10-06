@@ -224,7 +224,7 @@ public static class WowAdtTileReader
         return holes;
     }
 
-    private static ImportedChunkLiquid? ConvertLiquid(MapChunkLiquid cell)
+    internal static ImportedChunkLiquid? ConvertLiquid(MapChunkLiquid cell)
     {
         if (cell.Empty)
         {
