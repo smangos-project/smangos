@@ -22,7 +22,7 @@ public sealed class WowAreaTriggerVolume(float radius, Vector3 boxSize, float ya
     {
         get
         {
-            Vector3 half = radius > 0.0f ? Vector3.One * radius : (Basis.FromEuler(new Vector3(0.0f, yaw, 0.0f)) * boxSize).Abs() * 0.5f;
+            Vector3 half = radius > 0.0f ? Vector3.One * radius : (BoxBasis(yaw) * boxSize).Abs() * 0.5f;
             return new Aabb(-half, half * 2.0f);
         }
     }
@@ -38,7 +38,7 @@ public sealed class WowAreaTriggerVolume(float radius, Vector3 boxSize, float ya
         {
             Name = "Volume",
             Mesh = mesh,
-            Rotation = radius > 0.0f ? Vector3.Zero : new Vector3(0.0f, yaw, 0.0f),
+            Basis = radius > 0.0f ? Basis.Identity : BoxBasis(yaw),
             MaterialOverride = new StandardMaterial3D
             {
                 AlbedoColor = VolumeColor,
@@ -48,6 +48,10 @@ public sealed class WowAreaTriggerVolume(float radius, Vector3 boxSize, float ya
             },
         };
     }
+
+    /// <summary>Orientation of a box volume: the server turns boxes counter-clockwise about +Z by
+    /// <paramref name="yaw"/>, which is a positive turn about Godot's +Y.</summary>
+    public static Basis BoxBasis(float yaw) => Basis.FromEuler(new Vector3(0.0f, yaw, 0.0f));
 
     /// <summary>Builds the volume for a trigger's current shape fields.</summary>
     public static WowAreaTriggerVolume For(WowAreaTrigger trigger) =>
