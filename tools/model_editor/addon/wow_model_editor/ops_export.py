@@ -215,4 +215,72 @@ class WOW_OT_write_game_data(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_write_game_data, WOW_OT_install_model, WOW_OT_uninstall_model, WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
+class WOW_OT_write_item(bpy.types.Operator):
+    bl_idname = "wow.write_item"
+    bl_label = "Write item display"
+    bl_description = "Create or update the item display rows of the active M2 (and optionally a test item) in the world database"
+    template_display: IntProperty(name="Template display", description="ItemDisplayInfo id whose other fields are copied", min=1)
+    textures: StringProperty(name="Texture FDIDs", description="Up to two comma separated BLP file data ids (one per model)")
+    variants: StringProperty(name="Other models", description="Semicolon separated fdid:race:gender:position (helm race variants, shoulder sides); the active model is the first")
+    race: IntProperty(name="Race", description="Race of the active model when it is a helm variant (1 human .. 8 troll); 0 for none", min=0, max=8)
+    gender: IntProperty(name="Gender", description="0 male, 1 female, 2 any", default=2, min=0, max=2)
+    position: IntProperty(name="Position", description="0 left, 1 right shoulder; -1 for other items", default=-1, min=-1, max=1)
+    sections: StringProperty(name="Body textures", description="Armor without a model: semicolon separated section:fdid:gender (section 0..7, gender -1 for the only texture)")
+    template_item: IntProperty(name="Template item", description="Create a test item copied from this item id (0: none)", min=0)
+    item_name: StringProperty(name="Item name", default="Test item")
+    dry_run: BoolProperty(name="Preview only", default=True)
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def _spec(self, root):
+        spec = game_data.ItemSpec(self.template_display)
+        if root is not None and root.wow_m2.fdid:
+            first = game_data.ItemModel(root.wow_m2.fdid, race=self.race, gender=self.gender, position=self.position, variant=bool(self.race))
+            spec.models.append(first)
+        for part in filter(None, (v.strip() for v in self.variants.split(";"))):
+            f = [int(x) for x in part.split(":")]
+            spec.models.append(game_data.ItemModel(f[0], race=f[1], gender=f[2], position=f[3] if len(f) > 3 else -1, variant=f[1] > 0))
+        spec.textures = [int(t) for t in self.textures.replace(",", " ").split()]
+        for part in filter(None, (v.strip() for v in self.sections.split(";"))):
+            sec, fdid, gender = (int(x) for x in part.split(":"))
+            spec.sections.setdefault(sec, []).append((fdid, gender))
+        return spec
+
+    def execute(self, context):
+        root = m2_export.find_root(context.active_object or context.collection)
+        try:
+            spec = self._spec(root)
+            layout = game_data.Layout.discover(client.dirs()[0])
+            db = layout.open()
+            try:
+                changes, display = game_data.plan_item_display(db, layout, spec)
+                item = 0
+            finally:
+                db.close()
+            if not self.dry_run:
+                game_data.apply_changes(layout, changes)
+                if self.template_item:
+                    db = layout.open()
+                    try:
+                        more, item = game_data.plan_item(db, layout, self.template_item, display, self.item_name)
+                    finally:
+                        db.close()
+                    game_data.apply_changes(layout, more)
+        except (game_data.GameDataError, OSError, ValueError) as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        for c in changes:
+            self.report({"INFO"}, f"{c.kind} {c.table} {c.values[game_data.KEYS[c.table]]}")
+        if self.dry_run:
+            self.report({"INFO"}, f"Display {display}: {len(changes)} changes (preview)")
+        else:
+            self.report({"INFO"}, f"Display {display}" + (f", item {item}" if item else "") + " written (uncommitted); restart the server and clear Cache/")
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_write_item, WOW_OT_write_game_data, WOW_OT_install_model, WOW_OT_uninstall_model, WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
