@@ -8,7 +8,7 @@ namespace WorldMapStudio.WoW;
 /// Writes a procedural model's built output as client files, once per model per export run: every
 /// placement of the same model reuses one generated file (cached by catalog record id and format id).
 /// The output's <c>ArrayMesh</c> arrays are read here, so call it from the main thread.
-/// Only M2 is file-backed so far.
+/// M2 and WMO are file-backed.
 /// </summary>
 public sealed class ProceduralModelExporter
 {
@@ -39,7 +39,10 @@ public sealed class ProceduralModelExporter
             return cached;
         }
 
-        string? path = formatId == M2Format.FormatId ? WriteM2(SanitizeFileName($"{model.Name}_{modelId}"), output.Asset) : null;
+        string name = SanitizeFileName($"{model.Name}_{modelId}");
+        string? path = formatId == M2Format.FormatId ? WriteM2(name, output.Asset)
+            : formatId == WmoFormat.FormatId ? WriteWmo(name, output.Asset)
+            : null;
         _pathsByModelAndFormat[key] = path;
         return path;
     }
@@ -48,23 +51,7 @@ public sealed class ProceduralModelExporter
     /// file data ids; the client-relative m2 path, or null when the asset has no surfaces.</summary>
     public string? WriteM2(string name, ModelAsset asset)
     {
-        var surfaces = new List<ModelSurfaceInput>();
-        foreach (ModelPart part in asset.Parts)
-        {
-            foreach (ModelSurface surface in part.Surfaces)
-            {
-                RawSurfaceArrays raw = ExtractRawArrays(surface, part.Transform);
-                MeshParameterValues values = surface.Material.Values;
-                string texture = values.GetTexture(M2Material.Texture);
-                surfaces.Add(new ModelSurfaceInput(
-                    raw.Positions, raw.Normals, raw.Uvs, raw.Indices,
-                    texture.Length > 0 ? _fileDataIds.IdOf(texture) ?? 0 : 0,
-                    values.GetChoice(M2Material.Blend),
-                    values.GetBool(M2Material.TwoSided),
-                    values.GetBool(M2Material.Unlit),
-                    values.GetBool(M2Material.DepthWrite)));
-            }
-        }
+        List<ModelSurfaceInput> surfaces = CollectSurfaces(asset, M2Material.Texture, M2Material.Blend, M2Material.TwoSided, M2Material.Unlit, M2Material.DepthWrite);
 
         if (surfaces.Count == 0)
         {
@@ -80,6 +67,51 @@ public sealed class ProceduralModelExporter
         File.WriteAllBytes(OutputFile(m2Path), m2Bytes);
         File.WriteAllBytes(OutputFile(skinPath), skinBytes);
         return m2Path;
+    }
+
+    /// <summary>Writes <paramref name="asset"/> as <c>name.wmo</c> and <c>name_000.wmo</c> and registers both
+    /// file data ids; the client-relative root path, or null when the asset has no surfaces.</summary>
+    public string? WriteWmo(string name, ModelAsset asset)
+    {
+        List<ModelSurfaceInput> surfaces = CollectSurfaces(asset, WmoMaterial.Texture, WmoMaterial.Blend, WmoMaterial.TwoSided, WmoMaterial.Unlit, null);
+        if (surfaces.Count == 0)
+        {
+            return null;
+        }
+
+        string rootPath = $"{RelativeDirectory}\\{name}.wmo";
+        string groupPath = $"{RelativeDirectory}\\{name}_000.wmo";
+        _fileDataIds.Allocate(rootPath);
+        uint groupId = _fileDataIds.Allocate(groupPath);
+
+        (byte[] rootBytes, byte[] groupBytes) = WmoModelWriter.Write(surfaces, groupId);
+        File.WriteAllBytes(OutputFile(rootPath), rootBytes);
+        File.WriteAllBytes(OutputFile(groupPath), groupBytes);
+        return rootPath;
+    }
+
+    private List<ModelSurfaceInput> CollectSurfaces(
+        ModelAsset asset, MeshParameter texture, MeshParameter blend, MeshParameter twoSided, MeshParameter unlit, MeshParameter? depthWrite)
+    {
+        var surfaces = new List<ModelSurfaceInput>();
+        foreach (ModelPart part in asset.Parts)
+        {
+            foreach (ModelSurface surface in part.Surfaces)
+            {
+                RawSurfaceArrays raw = ExtractRawArrays(surface, part.Transform);
+                MeshParameterValues values = surface.Material.Values;
+                string texturePath = values.GetTexture(texture);
+                surfaces.Add(new ModelSurfaceInput(
+                    raw.Positions, raw.Normals, raw.Uvs, raw.Indices,
+                    texturePath.Length > 0 ? _fileDataIds.IdOf(texturePath) ?? 0 : 0,
+                    values.GetChoice(blend),
+                    values.GetBool(twoSided),
+                    values.GetBool(unlit),
+                    depthWrite == null || values.GetBool(depthWrite)));
+            }
+        }
+
+        return surfaces;
     }
 
     private string OutputFile(string relative)

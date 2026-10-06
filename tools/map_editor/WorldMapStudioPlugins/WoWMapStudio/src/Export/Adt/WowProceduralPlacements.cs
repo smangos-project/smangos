@@ -4,12 +4,12 @@ using Godot;
 namespace WorldMapStudio.WoW;
 
 /// <summary>
-/// Turns procedural models whose output format is M2 into generated <c>.m2</c> files plus
+/// Turns procedural models whose output format is M2 or WMO into generated <c>.m2</c>/<c>.wmo</c> files plus
 /// <see cref="EditorPlacement"/>s for <see cref="PlacementExtractor"/>. Builds Godot meshes, so main thread only.
 /// </summary>
 public static class WowProceduralPlacements
 {
-    /// <summary>The M2 placements of <paramref name="entity"/>; empty when it is not a persisted procedural M2 model.</summary>
+    /// <summary>The M2/WMO placements of <paramref name="entity"/>; empty when it is not a persisted procedural M2/WMO model.</summary>
     public static IEnumerable<EditorPlacement> Gather(EditorContext editor, ProceduralModelExporter exporter, SceneEntity entity)
     {
         if (entity.RecordId is not { } recordId
@@ -22,8 +22,9 @@ public static class WowProceduralPlacements
 
         foreach (ProceduralModelOutput output in editor.Procedural.Build(model).Models)
         {
-            if (editor.Procedural.ResolveFormatId(model, output.Slot) != M2Format.FormatId
-                || exporter.GetOrCreate(model, output, M2Format.FormatId) is not { } path)
+            string formatId = editor.Procedural.ResolveFormatId(model, output.Slot);
+            if ((formatId != M2Format.FormatId && formatId != WmoFormat.FormatId)
+                || exporter.GetOrCreate(model, output, formatId) is not { } path)
             {
                 continue;
             }
