@@ -110,7 +110,7 @@ def _model_file_data(db, info, changes):
 
 
 def plan_creature(db, layout, info, template_display, scale=1.0, textures=(), display_index=0, update_stock_model=False,
-                  model_file_data=True):
+                  model_file_data=False):
     """Changes that give `info` a creature model row, a display row (the `display_index`-th one of this model; one past the
     last adds a display) and a server addon row. `template_display` is a CreatureDisplayInfo id whose other fields are copied."""
     tdisp = _by_key(db, CDI, "ID", template_display)
@@ -167,7 +167,7 @@ def model_name(path):
     return path.replace("/", "\\")[: -len(".m2")] + ".mdx" if path.lower().endswith(".m2") else path.replace("/", "\\")
 
 
-def plan_game_object(db, layout, info, update_stock=False, model_file_data=True):
+def plan_game_object(db, layout, info, update_stock=False, model_file_data=False):
     """Changes for a GameObjectDisplayInfo row of `info` (looked up by FileDataID)."""
     derived = {"FileDataID": info.fdid, "ModelName": model_name(info.path), **{f"GeoBox{i + 1}": v for i, v in enumerate(geo_box(info))}}
     existing = _by_key(db, GODI, "FileDataID", info.fdid)

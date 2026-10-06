@@ -117,6 +117,8 @@ def export(top, out_path=None, options=None):
             return report
     m.write(s.fs, client.key(path))
     fdids.adopt_session_ids()
+    if path == p.path:
+        p.fdid = fdids.allocate(path)
     report.files = [path, *skins, *report.extra_files]
     report.stats["files_written"] = len(report.files)
     return report

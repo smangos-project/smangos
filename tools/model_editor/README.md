@@ -123,7 +123,7 @@ The `file_data_id` table of `.world/world.doltlite` (`id`, `path`, `source`, `re
 
 ### Game data (phase 7)
 `Write game data` (`wow.write_game_data`, `game_data.py`) builds rows for the active M2 and writes them to `.world/world.doltlite` in one transaction (no migration file, no dolt commit; committing `.world` is up to you):
-- Creature: CreatureModelData (ids 60000..65535), CreatureDisplayInfo (ids from 1000000, other columns copied from a template display), `creature_display_info_addon` (radius/reach derived from the model bounds and scale). Game object: GameObjectDisplayInfo (ids from 1000000). A ModelFileData row is added when missing.
+- Creature: CreatureModelData (ids 60000..65535), CreatureDisplayInfo (ids from 1000000, other columns copied from a template display), `creature_display_info_addon` (radius/reach derived from the model bounds and scale). Game object: GameObjectDisplayInfo (ids from 1000000). No ModelFileData row is written: a new 2e9-id cube renders in the client as a creature and as a game object display without one (checked 2026-10-06).
 - Rows in the reserved id ranges are the editor's own and are updated in place; edits of other (stock) rows need "Update stock rows". The db2 files are re-exported to `.client/Content/dbfilesclient`.
 - Rules from stock data: CollisionWidth is the collision box width, CollisionHeight its max z; stock GeoBox is not derived from the M2 bounding box exactly, so the editor writes the current mesh bounds. Bounding radius and combat reach are hand data in stock.
 - `tests/test_game_data.py` runs all of it on a scratch copy of the world; `database_tool` honours `DATABASE_TOOL_ROOT` for that.
@@ -132,6 +132,5 @@ The `file_data_id` table of `.world/world.doltlite` (`id`, `path`, `source`, `re
 `test.sh --filter zzz --corpus` imports every M2 and dry-run exports it (this is the unedited-clean check and the forced-rebuild comparison at once, `SWEEP_STEP=N` samples every Nth file, about 15 s per 170 files). Failures are compared with `tests/corpus_baseline.json`; only new ones fail. `--update-baseline` rewrites it. The older `--all-wmo-export`, `--all-wmo-rebuild`, `--all-m2-geo` and `--all-m2-anim` sweeps stay available.
 
 ### Phase 6 risks
-- The client may not resolve new fdids in the 2e9 range for brand-new files (unverified; the phase 7 in-client check of a new model and of a model without a ModelFileData row is still open).
 - New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.
 - New doodads outside every group box get no group reference, so they will not render.
