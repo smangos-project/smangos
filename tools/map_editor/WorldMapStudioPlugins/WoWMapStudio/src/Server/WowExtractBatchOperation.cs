@@ -110,6 +110,14 @@ public sealed class WowExtractBatchOperation : IBatchOperation
             context.Log(line);
         }
 
+        if (dryRun)
+        {
+            var stale = WowServerExtractor.ParseStaleTiles(result.Lines);
+            context.Log(stale.Count == 0
+                ? "Server data is current."
+                : $"Server data is stale: {stale.Count} tile(s) would be redone ({stale[0].Row},{stale[0].Col}{(stale.Count > 1 ? ", ..." : "")}).");
+        }
+
         if (result.ExitCode != 0)
         {
             throw new InvalidOperationException($"The extractor exited with code {result.ExitCode}; see the batch log.");
