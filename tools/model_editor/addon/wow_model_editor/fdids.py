@@ -1,33 +1,38 @@
-"""FileDataIDs for files created by the editors: the shared registry `Content/custom.index` (see registry.py)."""
+"""FileDataIDs for files created by the editors: the `file_data_id` table of the world database (see registry.py)."""
 from pathlib import Path
 
-from . import client, index, registry
+from . import client, doltlite, index, registry
 
 FIRST_ID = registry.FIRST_ID
-read_file = registry.read
 
 
-def registry_path():
-    """The registry file; legacy allocation files next to the default location are merged into it once."""
+def world_path():
+    """`.world/world.doltlite` next to the Content directory, unless the `custom_listfile` preference names another database."""
     p = client.prefs()
     if p.custom_listfile:
         return Path(p.custom_listfile)
-    content = Path(p.content_dir)
-    path = content / "custom.index"
-    legacy = [content.parent.parent / ".local" / "listfile.custom.txt", content / "wms.index", content / "wms-custom-fdids.txt"]
-    if any(f.is_file() for f in legacy):
-        for c in registry.merge_legacy(path, legacy):
-            print("fdid registry conflict:", c)
-        client.close()
-    return path
+    return Path(p.content_dir).parent.parent / ".world" / "world.doltlite"
 
 
-listfile_path = registry_path
+def connect():
+    world = world_path()
+    lib = doltlite.find_library(Path(client.prefs().content_dir).parent.parent)
+    if lib is None:
+        raise RuntimeError("libdoltlite.so.0 not found under build/ (build database_tool)")
+    return registry.open_db(world, lib)
+
+
+def with_db(fn):
+    db = connect()
+    try:
+        return fn(db)
+    finally:
+        db.close()
 
 
 def read():
-    """{fdid: path} of the registry."""
-    return registry.read(registry_path())
+    """{fdid: path} of the custom ids."""
+    return with_db(registry.read_custom)
 
 
 def path_of(fdid):
@@ -35,36 +40,35 @@ def path_of(fdid):
 
 
 def allocate(client_path):
-    """The fdid of `client_path`: the stock one, an existing custom one, or a new id."""
-    key = registry.normalize(client_path)
-    stock = index.fdid_of(key)
-    if stock:
-        return stock
-    path = registry_path()
-    known = registry.read(path)
-    fdid = registry.allocate(path, key)
-    if fdid not in known:
+    """The fdid of `client_path`: the table row (stock or custom) or a new id."""
+    fdid, created = with_db(lambda db: registry.allocate(db, client_path))
+    if created:
         client.close()
     return fdid
 
 
 def release(client_paths):
-    """Drops registry entries (for new files that were uninstalled)."""
-    gone = registry.release(registry_path(), client_paths)
+    """Retires rows (for new files that were uninstalled)."""
+    gone = with_db(lambda db: registry.release(db, client_paths))
     if gone:
         client.close()
     return gone
 
 
 def adopt_session_ids():
-    """Copies ids wowlib allocated while writing (custom range) into the registry."""
+    """Raises when wowlib allocated a custom id while writing that the table does not have."""
     s = client.session()
-    new = {}
+    ids = {}
     for line in s.listfile.read_text(encoding="utf-8").splitlines():
         fdid, sep, name = line.partition(";")
         if sep and fdid.isdigit() and int(fdid) >= FIRST_ID:
-            new[int(fdid)] = name
-    added = registry.add(registry_path(), new)
-    if added:
-        client.close()
-    return added
+            ids[int(fdid)] = name
+    gone = with_db(lambda db: registry.missing(db, ids))
+    if gone:
+        raise RuntimeError(f"wowlib allocated ids that are not in file_data_id: {sorted(gone.items())[:3]}")
+    export_index()
+
+
+def export_index():
+    """Rewrites Content/fdid.index from the table."""
+    return with_db(lambda db: registry.export_index(db, client.session().content))

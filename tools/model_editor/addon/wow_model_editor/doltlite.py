@@ -7,6 +7,7 @@ OK, ROW, DONE, BUSY = 0, 100, 101, 5
 INTEGER, FLOAT, TEXT, BLOB, NULL = 1, 2, 3, 4, 5
 TRANSIENT = ctypes.c_void_p(-1)
 OPEN_READWRITE = 2
+OPEN_CREATE = 4
 
 _c = ctypes
 _lib = None
@@ -64,14 +65,14 @@ def load(lib_path):
 class DB:
     """One connection. Rows come back as tuples; `columns` holds the names of the last statement."""
 
-    def __init__(self, path, lib_path=None, busy_ms=10000):
+    def __init__(self, path, lib_path=None, busy_ms=10000, create=False):
         lib = _lib or load(lib_path)
         self.lib = lib
         self.path = Path(path)
-        if not self.path.is_file():
+        if not create and not self.path.is_file():
             raise DoltError(f"{path} does not exist")
         self.h = _c.c_void_p()
-        rc = lib.sqlite3_open_v2(str(path).encode(), _c.byref(self.h), OPEN_READWRITE, None)
+        rc = lib.sqlite3_open_v2(str(path).encode(), _c.byref(self.h), OPEN_READWRITE | (OPEN_CREATE if create else 0), None)
         if rc != OK:
             raise DoltError(f"cannot open {path}: {self._msg()}")
         lib.sqlite3_busy_timeout(self.h, busy_ms)

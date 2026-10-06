@@ -505,10 +505,7 @@ def wmo_export_vertex_edit():
 def wmo_export_materials():
     path = REFS[0]
     clear()
-    lf = "/tmp/me-custom-listfile.txt"
-    if os.path.exists(lf):
-        os.remove(lf)
-    client.prefs().custom_listfile = lf
+    common.scratch_world("wmo1")
     coll = wmo_import.load(path, {"doodads": False})
     ob = mesh_groups(coll)[0]
     mat = next(s.material for s in ob.material_slots if s.material.wow_wmo_material.material_index >= 0)
@@ -531,16 +528,16 @@ def wmo_export_materials():
     fdid = new.root.materials[len(src.materials)].texture1
     assert fdid >= 2_000_000_000
     assert r.files["world/wmo/custom/my_tex.blp"][:4] == b"BLP2"
-    assert open(lf).read().strip() == f"{fdid};world/wmo/custom/my_tex.blp"
+    assert fdids.read() == {fdid: "world/wmo/custom/my_tex.blp"}
     r2 = wmo_export.export(coll, options={"dry_run": True})
-    assert open(lf).read().count("\n") == 1 and not r2.errors
+    assert len(fdids.read()) == 1 and not r2.errors
 
 
 @test
 def wmo_export_validation():
     path = REFS[0]
     clear()
-    client.prefs().custom_listfile = "/tmp/me-custom-listfile2.txt"
+    common.scratch_world("wmo2")
     coll = wmo_import.load(path, {"doodads": False})
     ob = mesh_groups(coll)[0]
     mat = next(s.material for s in ob.material_slots if s.material.wow_wmo_material.material_index >= 0)
@@ -560,7 +557,7 @@ def wmo_export_validation():
 def wmo_export_new_group():
     path = REFS[0]
     clear()
-    client.prefs().custom_listfile = "/tmp/me-custom-listfile3.txt"
+    common.scratch_world("wmo3")
     coll = wmo_import.load(path, {"doodads": False})
     src = mesh_groups(coll)[0]
     nob = src.copy()
@@ -586,7 +583,7 @@ def wmo_export_new_group():
 @test
 def wmo_export_new_wmo():
     clear()
-    client.prefs().custom_listfile = "/tmp/me-custom-listfile4.txt"
+    common.scratch_world("wmo4")
     src = wmo_import.load(REFS[0], {"doodads": False})
     mat = next(s.material for s in mesh_groups(src)[0].material_slots if s.material.wow_wmo_material.material_index >= 0).copy()
     mat.wow_wmo_material.material_index = -1
@@ -725,10 +722,7 @@ def m2_export_unchanged_and_forced():
 @test
 def m2_export_new_path_allocates_ids():
     clear()
-    lf = common.Path("/tmp/me-custom-registry.index")
-    lf.unlink(missing_ok=True)
-    client.prefs().custom_listfile = str(lf)
-    client.close()
+    common.scratch_world("m2new")
     try:
         top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE", "collision": False})
         r = m2_export.export(top, "creature/zzme/wolfcopy.m2", {"force": True})
@@ -738,8 +732,7 @@ def m2_export_new_path_allocates_ids():
         m = m2_import.read("creature/zzme/wolfcopy.m2")
         skin_ids = [int(x) for x in m.chunks.skin_fdids]
         assert skin_ids == [k for k, v in sorted(got.items()) if v.endswith(".skin")], (skin_ids, got)
-        assert not [ln for ln in common.Path(client.session().content, "fdid.index").read_text().splitlines()
-                    if ln.partition(";")[0].isdigit() and int(ln.partition(";")[0]) >= 1_000_000_000]
+        assert "wolfcopy" not in common.Path(client.session().content, "fdid.index").read_text()
     finally:
         client.close()
 

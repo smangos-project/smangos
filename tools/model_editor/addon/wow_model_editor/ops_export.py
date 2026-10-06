@@ -4,7 +4,7 @@ from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, St
 
 from pathlib import Path
 
-from . import client, game_data, install, m2_export, wmo_export
+from . import client, fdids, game_data, install, m2_export, wmo_export
 
 
 class WOW_OT_export_wmo(bpy.types.Operator):
@@ -144,6 +144,7 @@ class WOW_OT_install_model(bpy.types.Operator):
                 self.report({"ERROR"}, "Nothing to install: export the model first")
                 return {"CANCELLED"}
             install.install(content, out, rels)
+            fdids.export_index()
         except (install.InstallError, OSError) as e:
             self.report({"ERROR"}, str(e))
             return {"CANCELLED"}

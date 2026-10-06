@@ -1,73 +1,88 @@
-"""Registry tests without Blender. Run: python3 tests/test_registry.py"""
+"""Registry tests without Blender, on a scratch DoltLite file. Run: python3 tests/test_registry.py"""
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "addon" / "wow_model_editor"))
+REPO = Path(__file__).resolve().parents[3]
+ADDON = str(REPO / "tools" / "model_editor" / "addon" / "wow_model_editor")
+sys.path.insert(0, ADDON)
+import doltlite  # noqa: E402
 import registry  # noqa: E402
+
+LIB = doltlite.find_library(REPO)
+SCHEMA = """CREATE TABLE file_data_id (id INTEGER PRIMARY KEY, path TEXT NOT NULL UNIQUE, source TEXT NOT NULL,
+    retired INTEGER NOT NULL DEFAULT 0)"""
 
 WORKER = """
 import sys
 sys.path.insert(0, sys.argv[1])
-import registry
+import doltlite, registry
+db = registry.open_db(sys.argv[2], sys.argv[5])
 for i in range(int(sys.argv[4])):
-    registry.allocate(sys.argv[2], f"world/custom/{sys.argv[3]}_{i}.m2")
+    registry.allocate(db, f"world/custom/{sys.argv[3]}_{i}.m2")
+db.close()
 """
+
+
+def scratch(tmp):
+    path = tmp / "world.doltlite"
+    db = doltlite.DB(path, LIB, create=True)
+    db.execute(SCHEMA)
+    db.close()
+    return path
 
 
 class RegistryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        self.path = self.tmp / "custom.index"
+        self.path = scratch(self.tmp)
+        self.db = registry.open_db(self.path, LIB)
+
+    def tearDown(self):
+        self.db.close()
 
     def test_allocate_is_stable_and_counts_up(self):
-        a = registry.allocate(self.path, "World\\Custom\\A.m2")
-        self.assertEqual(a, registry.FIRST_ID)
-        self.assertEqual(registry.allocate(self.path, "world/custom/a.m2"), a)
-        self.assertEqual(registry.allocate(self.path, "world/custom/b.m2"), a + 1)
-        self.assertFalse(Path(str(self.path) + ".lock").exists())
+        a, created = registry.allocate(self.db, "World\\Custom\\A.m2")
+        self.assertEqual((a, created), (registry.FIRST_ID, True))
+        self.assertEqual(registry.allocate(self.db, "world/custom/a.m2"), (a, False))
+        self.assertEqual(registry.allocate(self.db, "world/custom/b.m2"), (a + 1, True))
+
+    def test_stock_rows_are_reused(self):
+        self.db.execute("INSERT INTO file_data_id (id, path, source) VALUES (5, 'a/b.blp', 'listfile')")
+        self.assertEqual(registry.allocate(self.db, "A\\B.blp"), (5, False))
+        self.assertEqual(registry.allocate(self.db, "x.blp"), (registry.FIRST_ID, True))
 
     def test_concurrent_processes_get_distinct_ids(self):
-        src = str(Path(registry.__file__).parent)
-        procs = [subprocess.Popen([sys.executable, "-c", WORKER, src, str(self.path), name, "40"]) for name in "abc"]
+        procs = [subprocess.Popen([sys.executable, "-c", WORKER, ADDON, str(self.path), name, "40", str(LIB)]) for name in "abc"]
         for p in procs:
             self.assertEqual(p.wait(), 0)
-        entries = registry.read(self.path)
-        self.assertEqual(len(entries), 120)
+        entries = registry.read_custom(self.db)
         self.assertEqual(sorted(entries), list(range(registry.FIRST_ID, registry.FIRST_ID + 120)))
 
-    def test_stale_lock_is_taken_over(self):
-        lock = Path(str(self.path) + ".lock")
-        lock.write_text("1")
-        with registry.locked(self.path, stale=-1):
-            pass
-        self.assertFalse(lock.exists())
-        lock.write_text("1")
-        with self.assertRaises(TimeoutError):
-            with registry.locked(self.path, timeout=0.1):
-                pass
+    def test_release_retires_and_never_reuses(self):
+        registry.allocate(self.db, "world/custom/a.m2")
+        registry.allocate(self.db, "world/custom/b.m2")
+        self.assertEqual(list(registry.release(self.db, ["World/Custom/A.m2"]).values()), ["world/custom/a.m2"])
+        self.assertEqual(registry.allocate(self.db, "world/custom/d.m2"), (registry.FIRST_ID + 2, True))
+        self.assertEqual(registry.allocate(self.db, "world/custom/a.m2"), (registry.FIRST_ID, True))
 
-    def test_legacy_merge_reports_conflicts_and_dedups(self):
-        self.path.write_text(f"{registry.FIRST_ID};world/custom/keep.m2\n")
-        a, b = self.tmp / "listfile.custom.txt", self.tmp / "wms.index"
-        a.write_text(f"{registry.FIRST_ID};world/custom/other.m2\n{registry.FIRST_ID + 5};world/custom/x.blp\n")
-        b.write_text(f"{registry.FIRST_ID + 5};World/Custom/X.blp\n{registry.FIRST_ID + 6};world/custom/x.blp\n{registry.FIRST_ID + 7};world/custom/y.blp\n")
-        conflicts = registry.merge_legacy(self.path, [a, b])
-        self.assertEqual(len(conflicts), 2)
-        self.assertEqual(registry.read(self.path), {
-            registry.FIRST_ID: "world/custom/keep.m2", registry.FIRST_ID + 5: "world/custom/x.blp",
-            registry.FIRST_ID + 7: "world/custom/y.blp"})
-        self.assertFalse(a.exists() or b.exists())
-        self.assertEqual(registry.merge_legacy(self.path, [a, b]), [])
+    def test_missing_and_export(self):
+        a, _ = registry.allocate(self.db, "world/custom/a.m2")
+        self.assertEqual(registry.missing(self.db, {a: "x", a + 7: "y", 5: "z"}), {a + 7: "y"})
+        content = self.tmp / "Content"
+        content.mkdir()
+        (content / "custom.index").write_text("")
+        self.assertTrue(registry.export_index(self.db, content))
+        self.assertEqual((content / "fdid.index").read_text(), f"{a};world/custom/a.m2\n")
+        self.assertFalse(registry.export_index(self.db, content))
+        self.assertFalse((content / "custom.index").exists())
 
-    def test_release_and_add(self):
-        registry.allocate(self.path, "world/custom/a.m2")
-        registry.allocate(self.path, "world/custom/b.m2")
-        self.assertEqual(list(registry.release(self.path, ["World/Custom/A.m2"]).values()), ["world/custom/a.m2"])
-        self.assertEqual(registry.add(self.path, {registry.FIRST_ID + 1: "x", registry.FIRST_ID + 9: "World/c.m2"}), {registry.FIRST_ID + 9: "world/c.m2"})
-        self.assertEqual(registry.allocate(self.path, "world/custom/d.m2"), registry.FIRST_ID + 10)
+    def test_no_dolt_commit_is_made(self):
+        before = self.db.execute("SELECT count(*) FROM dolt_log")
+        registry.allocate(self.db, "world/custom/a.m2")
+        self.assertEqual(self.db.execute("SELECT count(*) FROM dolt_log"), before)
 
 
 if __name__ == "__main__":

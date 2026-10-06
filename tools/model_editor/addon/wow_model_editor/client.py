@@ -18,20 +18,20 @@ CUSTOM_FDID_START = 2_000_000_000
 
 
 def working_listfile(content):
-    """Copy of fdid.index plus the custom registry; wowlib appends the ids it allocates to its listfile, so it must not be the shared one."""
+    """The table dumped as a listfile; wowlib appends the ids it allocates to its listfile, so it must not be the shared one."""
     from . import fdids, registry
     content = Path(content)
-    src, custom = content / "fdid.index", fdids.registry_path()
     cache = Path(bpy.path.abspath(prefs().cache_dir)) if prefs().cache_dir else content.parent / ".model-editor-cache"
     cache.mkdir(parents=True, exist_ok=True)
     dst, stamp = cache / "listfile.csv", cache / "listfile.stamp"
-    key = "|".join(f"{q.stat().st_mtime_ns}:{q.stat().st_size}" if q.is_file() else "-" for q in (src, custom))
-    if not (dst.is_file() and stamp.is_file() and stamp.read_text() == key):
-        with open(dst, "w", encoding="utf-8") as out:
-            out.write(src.read_text(encoding="utf-8"))
-            for fdid, name in sorted(registry.read(custom).items()):
-                out.write(f"{fdid};{name}\n")
-        stamp.write_text(key)
+
+    def dump(db):
+        key = repr(registry.stamp(db))
+        if not (dst.is_file() and stamp.is_file() and stamp.read_text() == key):
+            with open(dst, "w", encoding="utf-8") as out:
+                out.writelines(f"{i};{p}\n" for i, p in sorted(registry.read_all(db).items()))
+            stamp.write_text(key)
+    fdids.with_db(dump)
     return dst
 
 

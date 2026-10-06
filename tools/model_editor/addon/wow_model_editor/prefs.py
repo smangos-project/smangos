@@ -20,8 +20,8 @@ class WowPreferences(bpy.types.AddonPreferences):
         name="Output directory", subtype="DIR_PATH",
         description="Where edited files are written; overrides Content on later reads")
     custom_listfile: StringProperty(
-        name="Custom registry", subtype="FILE_PATH",
-        description="id;path registry for new files; defaults to custom.index in the Content directory")
+        name="World database", subtype="FILE_PATH",
+        description="world database holding the file_data_id table; defaults to .world/world.doltlite")
     cache_dir: StringProperty(
         name="Cache directory", subtype="DIR_PATH", default=_cache_default())
 
