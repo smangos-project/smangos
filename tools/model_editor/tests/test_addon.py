@@ -1266,6 +1266,18 @@ def corpus():
     return bad
 
 
+@test
+def write_item_operator_dry_run():
+    clear()
+    r = bpy.ops.wow.write_item("EXEC_DEFAULT", template_display=26577, textures="2000000061", variants="2000000071:1:0", dry_run=True)
+    assert r == {"FINISHED"}, r
+    try:
+        bpy.ops.wow.write_item("EXEC_DEFAULT", template_display=26577, sections="0:bad", dry_run=True)
+        raise AssertionError("bad sections accepted")
+    except RuntimeError:
+        pass
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:
