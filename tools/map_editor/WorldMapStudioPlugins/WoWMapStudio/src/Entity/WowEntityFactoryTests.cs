@@ -35,6 +35,16 @@ public static class WowEntityFactoryTests
     }
 
     [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
+    public static void Spell_target_create_places_an_entity()
+    {
+        (EditorContext context, Transform3D transform) = Setup("__wms_spell_factory_test__");
+        var target = (WowSpellTargetPosition)Factory<WowSpellTargetPositionFactory>(context).Create(context, new MapId(0), transform, "8690");
+
+        Assert.AreEqual(8690u, target.SpellId);
+        Assert.IsTrue(context.Scene.Contains(target));
+    }
+
+    [EditorTest(Category = "WoW Creature", Thread = TestThread.Background)]
     public static void Graveyard_create_places_an_entity()
     {
         (EditorContext context, Transform3D transform) = Setup("__wms_yard_factory_test__");
