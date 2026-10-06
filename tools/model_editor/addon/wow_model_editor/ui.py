@@ -77,6 +77,7 @@ class WOW_PT_m2(bpy.types.Panel):
         col = self.layout.column()
         col.label(text=f"{p.path} (FDID {p.fdid})")
         col.label(text=f"Skin {p.skin_index + 1}/{p.skin_count}, {p.sequence_count} sequences")
+        col.operator("wow.export_m2", icon="EXPORT")
         try:
             listed = displays.for_model(p.fdid)
         except Exception:  # noqa: BLE001

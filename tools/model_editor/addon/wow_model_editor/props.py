@@ -164,6 +164,7 @@ def _seq_changed(props):
 
 class WowM2(bpy.types.PropertyGroup):
     path: StringProperty()
+    is_new: BoolProperty()
     fdid: IntProperty()
     name: StringProperty()
     format_version: IntProperty()

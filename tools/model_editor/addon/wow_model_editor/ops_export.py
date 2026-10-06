@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import BoolProperty, StringProperty
 
-from . import wmo_export
+from . import m2_export, wmo_export
 
 
 class WOW_OT_export_wmo(bpy.types.Operator):
@@ -51,4 +51,32 @@ class WOW_OT_new_wmo(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_export_wmo, WOW_OT_new_wmo)
+class WOW_OT_export_m2(bpy.types.Operator):
+    bl_idname = "wow.export_m2"
+    bl_label = "Export M2"
+    bl_description = "Write the active M2 collection to the output directory"
+    force: BoolProperty(name="Force write", description="Write even when nothing changed", default=False)
+    dry_run: BoolProperty(name="Validate only", default=False)
+    write_anyway: BoolProperty(name="Write anyway", description="Write although validation reports errors", default=False)
+
+    @classmethod
+    def poll(cls, context):
+        return m2_export.find_root(context.active_object or context.collection) is not None
+
+    def execute(self, context):
+        root = m2_export.find_root(context.active_object or context.collection)
+        try:
+            r = m2_export.export(root, options={"force": self.force, "dry_run": self.dry_run, "write_anyway": self.write_anyway})
+        except Exception as e:  # noqa: BLE001
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        for sev, where, msg in r.items:
+            if sev != "INFO":
+                self.report({sev}, f"{where}: {msg}")
+        if r.errors:
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"{root.wow_m2.path}: {'changed' if r.dirty else 'unchanged'}, {r.stats['files_written']} files written")
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2)

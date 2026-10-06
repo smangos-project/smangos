@@ -23,6 +23,8 @@ m2_names = common.submodule("m2_names")
 displays = common.submodule("displays")
 m2_anim = common.submodule("m2_anim")
 m2_anim_export = common.submodule("m2_anim_export")
+m2_export = common.submodule("m2_export")
+fdids = common.submodule("fdids")
 m2_seq = common.submodule("m2_seq")
 wmo_export = common.submodule("wmo_export")
 wmo_bsp = common.submodule("wmo_bsp")
@@ -670,6 +672,54 @@ def anim_diff(path):
     fresh = m2_import.read(path)
     m2_anim_export.build(top, fresh.root)
     return deep_diff(m2_import.read(path).root, fresh.root, "root")
+
+
+def m2_out_files():
+    out = common.Path(client.session().project)
+    return sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file() and "creature" in p.parts or p.suffix in (".m2", ".skin"))
+
+
+@test
+def m2_export_unchanged_and_forced():
+    clear()
+    top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE", "collision": False})
+    r = m2_export.export(top)
+    assert not r.errors and not r.dirty and r.stats["files_written"] == 0, (r.diff, str(r))
+    r = m2_export.export(top, options={"force": True})
+    assert not r.errors and r.stats["files_written"] == 3, str(r)
+    out = common.Path(client.session().project)
+    assert (out / "creature/wolf/wolf.m2").is_file() and (out / "creature/wolf/wolf00.skin").is_file()
+    again = m2_import.read("creature/wolf/wolf.m2")
+    assert m2_export.differs(r.model, again) is None
+    r = m2_export.export(top)
+    assert r.stats["files_removed"] == 3 and not (out / "creature/wolf/wolf.m2").exists()
+
+
+@test
+def m2_export_new_path_allocates_ids():
+    clear()
+    lf = fdids.listfile_path()
+    saved = lf.read_text() if lf.is_file() else None
+    try:
+        if saved is not None:
+            lf.unlink()
+        client.close()
+        top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE", "collision": False})
+        r = m2_export.export(top, "creature/zzme/wolfcopy.m2", {"force": True})
+        assert not r.errors, str(r)
+        got = fdids.read()
+        assert sorted(got.values()) == ["creature/zzme/wolfcopy.m2", "creature/zzme/wolfcopy00.skin", "creature/zzme/wolfcopy01.skin"], got
+        m = m2_import.read("creature/zzme/wolfcopy.m2")
+        skin_ids = [int(x) for x in m.chunks.skin_fdids]
+        assert skin_ids == [k for k, v in sorted(got.items()) if v.endswith(".skin")], (skin_ids, got)
+        assert not [ln for ln in common.Path(client.session().content, "fdid.index").read_text().splitlines()
+                    if ln.partition(";")[0].isdigit() and int(ln.partition(";")[0]) >= 1_000_000_000]
+    finally:
+        if saved is None:
+            lf.unlink(missing_ok=True)
+        else:
+            lf.write_text(saved)
+        client.close()
 
 
 @test

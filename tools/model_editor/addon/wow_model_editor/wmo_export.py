@@ -13,28 +13,16 @@ from wowlib.formats import wmo as wwmo
 
 from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import, wmo_root_export
 from .props import u32
+from .report import Report as _Report
 
 BBOX_PAD = 0.028
 F_BSP, F_COLOR, F_EXTERIOR, F_INTERIOR = 0x1, 0x4, 0x8, 0x2000
 COLLISION_NAME = "wow_collision"
 
 
-class Report:
+class Report(_Report):
     def __init__(self):
-        self.items = []
-        self.material_index = {}
-        self.new_groups = {}
-        self.stats = {"groups_rebuilt": 0, "files_written": 0, "files_removed": 0}
-
-    def add(self, severity, where, message):
-        self.items.append((severity, where, message))
-
-    @property
-    def errors(self):
-        return [i for i in self.items if i[0] == "ERROR"]
-
-    def __str__(self):
-        return "\n".join(f"{s} {w}: {m}" for s, w, m in self.items)
+        super().__init__(groups_rebuilt=0, files_written=0, files_removed=0)
 
 
 def _root_collection(obj):

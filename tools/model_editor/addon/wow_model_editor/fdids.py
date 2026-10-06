@@ -4,7 +4,7 @@ from pathlib import Path
 
 from . import client, index
 
-FIRST_ID = 2_000_000_000
+FIRST_ID = client.CUSTOM_FDID_START
 
 
 def listfile_path():
@@ -48,4 +48,21 @@ def allocate(client_path):
     fdid = max([FIRST_ID - 1, *entries]) + 1
     entries[fdid] = key
     _write(entries, path)
+    client.close()
     return fdid
+
+
+def adopt_session_ids():
+    """Copies ids wowlib allocated while writing (custom range) into the custom listfile."""
+    s = client.session()
+    path = listfile_path()
+    known = read(path)
+    new = {}
+    for line in s.listfile.read_text(encoding="utf-8").splitlines():
+        fdid, sep, name = line.partition(";")
+        if sep and fdid.isdigit() and int(fdid) >= FIRST_ID and int(fdid) not in known:
+            new[int(fdid)] = name
+    if new:
+        _write({**known, **new}, path)
+        client.close()
+    return new
