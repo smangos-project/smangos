@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import types
 import traceback
 
 import bpy
@@ -260,6 +261,31 @@ def import_m2_geometry():
 
 def posix_stem(path):
     return path.rsplit("/", 1)[1].rsplit(".", 1)[0]
+
+
+@test
+def m2_camera_fov_driven_by_prop():
+    clear()
+    top = m2_import.load("cameras/flybydwarf.m2", {"display": "NONE"})
+    cam = next(o for o in top.all_objects if o.type == "CAMERA")
+    cam["wow_fov"] = (0.5, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    assert abs(cam.data.angle_y - 0.5) < 1e-4, cam.data.angle_y
+    clear()
+
+
+@test
+def m2_light_driven_by_props():
+    clear()
+    ob = bpy.data.objects.new("l", bpy.data.lights.new("l", "POINT"))
+    bpy.context.scene.collection.objects.link(ob)
+    ob.data.use_custom_distance = True
+    ob["wow_diffuse_color"], ob["wow_diffuse_intensity"], ob["wow_attenuation_end"] = (0.2, 0.4, 0.6), 2.0, 30.0
+    m2_anim.drive_object_data(types.SimpleNamespace(objects={("light", 0): ob}))
+    bpy.context.view_layer.update()
+    assert np.allclose(ob.data.color, (0.2, 0.4, 0.6), atol=1e-5) and abs(ob.data.energy - 200) < 1e-3
+    assert abs(ob.data.cutoff_distance - 30) < 1e-4
+    clear()
 
 
 @test

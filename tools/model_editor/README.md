@@ -94,7 +94,7 @@ file. Events are pose markers `event_<i>` on sequence/loop actions. Operators `w
 `wow.m2_loop_add/remove` author sequences. Export builds the tracks back from the actions in memory; the round trip is tested
 (`test.sh --filter m2_anim`, sweep with `SWEEP_STEP=8 ./test.sh --filter zzz --all-m2-anim`).
 
-Limits / phase 6 risks: lights and cameras do not drive real Blender light/camera data and preview materials are not driven by
+Limits / phase 6 risks: Blender light colour, energy and range and camera lens are driven (one way) by the `wow_*` properties; edit those, not the Blender data. Preview materials are not driven by
 the colour/weight props; models without an armature carry only the model/object tracks; timestamps are milliseconds mapped
 to frames at a fixed rate, so edits off the grid are rounded on export.
 
@@ -113,7 +113,7 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - Geometry edits drop LOD skins unless "rebuild LODs" is set. Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
 - Non-linear animation keys are baked to linear; sequences are validated.
 - `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the custom listfile.
-- Not done: shadow-batch rules beyond the fallback, driving Blender lights/cameras from props, in-client checks of edited/new models, LOD decimation.
+- Not done: shadow-batch rules beyond the fallback, in-client checks of edited/new models, LOD decimation.
 
 ### Custom file ids (registry)
 `Content/custom.index` (`fdid;path`, ids from 2000000000) is the single registry of custom ids; the addon (`registry.py`) and WorldMapStudio (`WowFileDataIds`) both allocate through it under an O_EXCL lock file, and merge older per-tool listfiles on first use. A preference `custom_listfile` overrides the path. Ids are never reused; uninstalling does not release them.

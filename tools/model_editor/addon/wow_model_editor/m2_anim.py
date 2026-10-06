@@ -333,6 +333,31 @@ def add_event_markers(action, events, ti):
             action.pose_markers.new(marker_name(i)).frame = int(ts)
 
 
+def _drive(data, path, index, ob, prop, expr="v"):
+    fc = data.driver_add(path, index) if index >= 0 else data.driver_add(path)
+    d = fc.driver
+    d.type = "SCRIPTED"
+    d.expression = expr
+    v = d.variables.new()
+    v.name, v.type = "v", "SINGLE_PROP"
+    v.targets[0].id = ob
+    v.targets[0].data_path = prop
+
+
+def drive_object_data(model):
+    """Blender light colour/energy/range and camera field of view follow the wow_* properties."""
+    for (kind, i), ob in model.objects.items():
+        if kind == "light" and ob.type == "LIGHT":
+            for c in range(3):
+                _drive(ob.data, "color", c, ob, f'["wow_diffuse_color"][{c}]')
+            _drive(ob.data, "energy", -1, ob, '["wow_diffuse_intensity"]', "v * 100")
+            if ob.data.use_custom_distance:
+                _drive(ob.data, "cutoff_distance", -1, ob, '["wow_attenuation_end"]', "max(v, 0.01)")
+        elif kind == "camera" and ob.type == "CAMERA" and "wow_fov" in ob:
+            if 0 < ob["wow_fov"][0] < math.pi:
+                _drive(ob.data, "lens", -1, ob, '["wow_fov"][0]', f"{ob.data.sensor_height} / (2 * tan(v / 2))")
+
+
 def import_animations(model, top):
     """Fills `wow_m2.sequences` / `loops` and builds their actions; returns the binding list."""
     root = model.root
@@ -381,4 +406,5 @@ def import_animations(model, top):
         e.action = build_action(f"{model.stem}_loop{k}", sel, int(loop.timestamp))
         add_event_markers(e.action, [ev for ev in events if ev[2].global_sequence == k], 0)
     p.active_sequence = -1
+    drive_object_data(model)
     return bindings
