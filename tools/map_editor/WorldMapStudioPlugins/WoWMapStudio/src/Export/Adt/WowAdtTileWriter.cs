@@ -58,6 +58,16 @@ public static class WowAdtTileWriter
         adt.Read(fs, key, alpha);
         Apply(adt, tile);
         adt.Write(fs, key, alpha);
+
+        string lodPath = $"world/maps/{id.Map}/{id.Map}_{id.FileX}_{id.FileY}_obj1.adt";
+        if (fs.Exists(lodPath) &&
+            AdtObj1Patcher.Patch(
+                fs.ReadFile(lodPath),
+                tile.Doodads.Select(d => d.UniqueId).ToHashSet(),
+                tile.Objects.Select(o => o.UniqueId).ToHashSet()) is { } patched)
+        {
+            fs.AddFile(lodPath, patched);
+        }
     }
 
     private static void ApplyPlacements(ADTBfaPlus adt, ImportedTile tile)
