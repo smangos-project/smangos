@@ -185,18 +185,15 @@ def build_materials(model):
     return out
 
 
-def _tail_for(heads, children, i, parents):
+def _bone_length(heads, children, i, parents):
+    """Display length of bone `i`; every bone points along +Y so rest rotations stay identity."""
     head = mathutils.Vector(heads[i])
     kids = children.get(i, [])
     if len(kids) == 1:
-        d = mathutils.Vector(heads[kids[0]]) - head
-        if d.length >= MIN_BONE_LENGTH:
-            return head + d
-    p = parents[i]
-    d = head - mathutils.Vector(heads[p]) if p >= 0 else mathutils.Vector((0, 0, 1))
-    if d.length < 1e-4:
-        d = mathutils.Vector((0, 0, 1))
-    return head + d.normalized() * MIN_BONE_LENGTH
+        d = (mathutils.Vector(heads[kids[0]]) - head).length
+        if d >= MIN_BONE_LENGTH:
+            return d
+    return MIN_BONE_LENGTH
 
 
 def build_armature(model, coll):
@@ -219,7 +216,8 @@ def build_armature(model, coll):
     for i, name in enumerate(names):
         e = eb.new(name)
         e.head = heads[i]
-        e.tail = _tail_for(heads, children, i, parents)
+        e.tail = (heads[i][0], heads[i][1] + _bone_length(heads, children, i, parents), heads[i][2])
+        e.roll = 0.0
     for i, p in enumerate(parents):
         if p >= 0 and p != i:
             eb[names[i]].parent = eb[names[p]]
