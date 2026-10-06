@@ -81,6 +81,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             return;
         }
 
+        int written = 0;
         for (int i = 0; i < rows.Count; i++)
         {
             work.ThrowIfCancellationRequested();
@@ -91,9 +92,15 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             ImportedTile template = await Task.Run(() => WowAdtTileReader.Read(fs, wdt, new ImportedTileId(sourceMap, id.FileX, id.FileY))).ConfigureAwait(false);
             StoredTerrainImages stored = await StoredTerrainImages.LoadAsync(storage, images, catalog, id).ConfigureAwait(false);
             ImportedTile tile = ImportedTileExtractor.Extract(id, template, stored);
+            if (ImportedTileComparer.IsUnchanged(template, tile))
+            {
+                continue;
+            }
+
             await Task.Run(() => WowAdtTileWriter.Write(fs, wdt, tile)).ConfigureAwait(false);
+            written++;
         }
 
-        context.Report($"Exported {rows.Count} tile(s) to {content}.");
+        context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
     }
 }
