@@ -62,6 +62,38 @@ public static class HeightMapper
     }
 
     /// <summary>
+    /// The inverse of <see cref="ChunkBlock"/>: reads a chunk's 32×32 block back at every vertex and
+    /// returns the 9×9 outer and 8×8 inner grids in MCNK order.
+    /// </summary>
+    public static (float[] Outer, float[] Inner) FromBlock(float[] block)
+    {
+        if (block.Length != TexelEdge * TexelEdge)
+        {
+            throw new ArgumentException($"Expected {TexelEdge * TexelEdge} texels, got {block.Length}.", nameof(block));
+        }
+
+        var outer = new float[VertexEdge * VertexEdge];
+        var inner = new float[CentreEdge * CentreEdge];
+        for (int y = 0; y < VertexEdge; y++)
+        {
+            for (int x = 0; x < VertexEdge; x++)
+            {
+                outer[((VertexEdge - 1 - x) * VertexEdge) + y] = SampleAtVertex(block, x, y);
+            }
+        }
+
+        for (int y = 0; y < CentreEdge; y++)
+        {
+            for (int x = 0; x < CentreEdge; x++)
+            {
+                inner[((CentreEdge - 1 - x) * CentreEdge) + y] = SampleAtCentre(block, x, y);
+            }
+        }
+
+        return (outer, inner);
+    }
+
+    /// <summary>
     /// The height at editor-grid corner <paramref name="x"/>, <paramref name="y"/>, read out of an
     /// MCNK-ordered grid. The export rotation is <c>wow[slow][fast] = editor[fast][edge-1-slow]</c>;
     /// inverted, <c>editor[y][x] = wow[edge-1-x][y]</c>.

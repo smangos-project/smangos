@@ -1,3 +1,4 @@
+using System;
 namespace WorldMapStudio.WoW;
 
 public static class HoleMapperTests
@@ -38,5 +39,13 @@ public static class HoleMapperTests
         }
 
         Assert.AreEqual(1, set, "exactly one cell is cut");
+    }
+
+    [EditorTest(Category = "WoW Import", Thread = TestThread.Background)]
+    public static void FromBlock_inverts_HoleBlock()
+    {
+        var holes = new bool[HoleMapper.HoleEdge * HoleMapper.HoleEdge];
+        holes[1] = holes[6] = holes[11] = true;
+        Assert.IsTrue(holes.AsSpan().SequenceEqual(HoleMapper.FromBlock(HoleMapper.HoleBlock(holes))), "holes round trip");
     }
 }

@@ -23,7 +23,10 @@ public static class WowClientFiles
         }
     }
 
-    private static FileSystem Open()
+    /// <summary>A separate filesystem whose project overlay is <paramref name="projectDir"/>, so writes never leak into <see cref="Shared"/>.</summary>
+    public static FileSystem OpenIsolated(string projectDir) => Open(projectDir);
+
+    private static FileSystem Open(string? projectDir = null)
     {
         for (string? dir = AppContext.BaseDirectory; dir != null; dir = Path.GetDirectoryName(dir))
         {
@@ -31,7 +34,7 @@ public static class WowClientFiles
             string listfile = Path.Combine(dir, ".local", "listfile.txt");
             if (Directory.Exists(Path.Combine(client, "Data")) && File.Exists(listfile))
             {
-                string project = Path.Combine(Path.GetTempPath(), "wms-wowlib-project");
+                string project = projectDir ?? Path.Combine(Path.GetTempPath(), "wms-wowlib-project");
                 Directory.CreateDirectory(project);
                 var settings = FileSystemSettings.Detect(client, Locale.enUS, project, listfile, new FileDataId(1_000_000_000u));
                 return FileSystem.Open(settings);

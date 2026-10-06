@@ -39,4 +39,19 @@ public static class HoleMapper
 
         return block;
     }
+
+    /// <summary>The inverse of <see cref="HoleBlock"/>: a row-major editor-axes byte block back to the MCNK-order 4×4 grid.</summary>
+    public static bool[] FromBlock(byte[] block)
+    {
+        var holes = new bool[HoleEdge * HoleEdge];
+        for (int y = 0; y < HoleEdge; y++)
+        {
+            for (int x = 0; x < HoleEdge; x++)
+            {
+                holes[((HoleEdge - 1 - x) * HoleEdge) + y] = block[(y * HoleEdge) + x] >= 128;
+            }
+        }
+
+        return holes;
+    }
 }

@@ -8,7 +8,8 @@ public static class WowAdtTileWriterTests
     public static void Edited_tile_round_trips_through_the_project_overlay()
     {
         WowTestContent.RequireFile("world/maps/azeroth/azeroth_32_48.adt");
-        var fs = WowClientFiles.Shared;
+        string project = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wms-writer-test-" + System.Guid.NewGuid().ToString("N"));
+        var fs = WowClientFiles.OpenIsolated(project);
         var wdt = WowWdt.Read(fs, "azeroth");
         var id = new ImportedTileId("azeroth", 32, 48);
         var tile = WowAdtTileReader.Read(fs, wdt, id);
@@ -26,10 +27,12 @@ public static class WowAdtTileWriterTests
 
         WowAdtTileWriter.Write(fs, wdt, edited);
         var back = WowAdtTileReader.Read(fs, wdt, id);
+        System.IO.Directory.Delete(project, true);
 
         Assert.IsTrue(System.MathF.Abs(back.Chunks[0].OuterHeights[10] - raised[10]) < 0.01f, "edited height persists");
         Assert.IsTrue(System.MathF.Abs(back.Chunks[1].OuterHeights[3] - tile.Chunks[1].OuterHeights[3]) < 0.01f, "other chunks unchanged");
         Assert.AreEqual(tile.Textures.Count, back.Textures.Count);
         Assert.AreEqual(tile.Chunks[0].Layers.Count, back.Chunks[0].Layers.Count);
+        Assert.IsTrue(back.Chunks[0].Layers.Skip(1).All(l => l.Alpha is { Length: 4096 }), "overlay alpha survives");
     }
 }

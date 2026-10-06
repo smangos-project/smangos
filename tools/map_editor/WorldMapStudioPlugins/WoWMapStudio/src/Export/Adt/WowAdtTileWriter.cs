@@ -80,7 +80,12 @@ public static class WowAdtTileWriter
         c.AlphaMaps.Clear();
         for (int i = 0; i < src.Layers.Count; i++)
         {
-            c.Layers.Add(new SMLayer { TextureId = (uint)src.Layers[i].TextureIndex, EffectId = src.Layers[i].EffectId });
+            c.Layers.Add(new SMLayer
+            {
+                TextureId = (uint)src.Layers[i].TextureIndex,
+                EffectId = src.Layers[i].EffectId,
+                Flags = src.Layers[i].Alpha != null ? LayerFlags.UseAlphaMap : 0,
+            });
             var map = new Vector<byte>();
             if (src.Layers[i].Alpha is { Length: AlphaSize } a)
             {

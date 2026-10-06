@@ -87,6 +87,24 @@ public static class HeightMapperTests
         }
     }
 
+    [EditorTest(Category = "WoW Import", Thread = TestThread.Background)]
+    public static void FromBlock_inverts_ChunkBlock_in_mcnk_order()
+    {
+        float[] outer = OuterGrid();
+        float[] inner = InnerGrid();
+        (float[] o, float[] i) = HeightMapper.FromBlock(HeightMapper.ChunkBlock(outer, inner));
+
+        for (int k = 0; k < outer.Length; k++)
+        {
+            Assert.AreApproximatelyEqual(outer[k], o[k], 1e-3, $"outer {k}");
+        }
+
+        for (int k = 0; k < inner.Length; k++)
+        {
+            Assert.AreApproximatelyEqual(inner[k], i[k], 1e-3, $"inner {k}");
+        }
+    }
+
     /// <summary>
     /// A raised centre in an otherwise symmetric chunk: the quarter-turn of the 8x8 grid is invisible on flat
     /// terrain and on any grid that is its own rotation, so this one raised cell has to land where the outer
