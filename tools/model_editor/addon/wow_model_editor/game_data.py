@@ -10,8 +10,20 @@ CREATURE_MODEL_IDS = (60000, 65535)
 DISPLAY_FIRST_ID = 1_000_000
 CMD, CDI, GODI, MFD, ADDON = ("dbc_creaturemodeldata", "dbc_creaturedisplayinfo", "dbc_gameobjectdisplayinfo",
                               "dbc_modelfiledata", "creature_display_info_addon")
-DB2_NAMES = {CMD: "CreatureModelData", CDI: "CreatureDisplayInfo", GODI: "GameObjectDisplayInfo", MFD: "ModelFileData"}
-KEYS = {CMD: "ID", CDI: "ID", GODI: "ID", MFD: "FileDataID", ADDON: "display_id"}
+IDI, CMFD, TFD, CTFD, IDIMR, IDIMMR, ITEM, SPARSE, IAPP, IMA = (
+    "dbc_itemdisplayinfo", "dbc_componentmodelfiledata", "dbc_texturefiledata", "dbc_componenttexturefiledata",
+    "dbc_itemdisplayinfomaterialres", "dbc_itemdisplayinfomodelmatres", "dbc_item", "dbc_itemsparse",
+    "dbc_itemappearance", "dbc_itemmodifiedappearance")
+DB2_NAMES = {CMD: "CreatureModelData", CDI: "CreatureDisplayInfo", GODI: "GameObjectDisplayInfo", MFD: "ModelFileData",
+             IDI: "ItemDisplayInfo", CMFD: "ComponentModelFileData", TFD: "TextureFileData", CTFD: "ComponentTextureFileData",
+             IDIMR: "ItemDisplayInfoMaterialRes", IDIMMR: "ItemDisplayInfoModelMatRes", ITEM: "Item", SPARSE: "ItemSparse",
+             IAPP: "ItemAppearance", IMA: "ItemModifiedAppearance"}
+KEYS = {CMD: "ID", CDI: "ID", GODI: "ID", MFD: "FileDataID", ADDON: "display_id", IDI: "ID", CMFD: "ID", TFD: "FileDataID",
+        CTFD: "ID", IDIMR: "ID", IDIMMR: "ID", ITEM: "ID", SPARSE: "ID", IAPP: "ID", IMA: "ID"}
+MODEL_RESOURCE_FIRST = 100_000
+MATERIAL_RESOURCE_FIRST = 1_000_000
+ITEM_FIRST, APPEARANCE_FIRST, MODIFIED_APPEARANCE_FIRST = 300_000, 200_000, 400_000
+MODEL_MAT_RES_FIRST, MATERIAL_RES_FIRST = 500_000, 2_000_000
 
 
 class GameDataError(RuntimeError):
@@ -66,6 +78,11 @@ def next_id(db, table, lo, hi):
     if n > hi:
         raise GameDataError(f"no free id left in {table} range {lo}..{hi}")
     return n
+
+
+def next_value(db, table, column, lo):
+    top = db.execute(f"SELECT MAX(`{column}`) FROM {table} WHERE `{column}` >= ?", (lo,))[0][0]
+    return lo if top is None else max(lo, top + 1)
 
 
 def _by_key(db, table, key, value):
@@ -186,6 +203,175 @@ def plan_game_object(db, layout, info, update_stock=False, model_file_data=False
     if model_file_data:
         _model_file_data(db, info, changes)
     return changes, display_id
+
+
+class _Planner:
+    """Collects changes for one plan and hands out ids that stay unique across the rows it has not written yet."""
+
+    def __init__(self, db):
+        self.db, self.changes, self._next, self.materials = db, [], {}, {}
+
+    def new_id(self, table, column, lo):
+        n = self._next.get((table, column))
+        if n is None:
+            n = next_value(self.db, table, column, lo)
+        self._next[(table, column)] = n + 1
+        return n
+
+    def upsert(self, table, values, owned=True, template=None):
+        """Insert a row, or update the columns that differ in an existing one; with `owned` false an existing row is left alone."""
+        key = KEYS[table]
+        old = _by_key(self.db, table, key, values[key])
+        if old is None:
+            row = {**(template or {}), **values}
+            self.changes.append(Change("insert", table, row))
+            return row
+        if not owned:
+            return old
+        diff = _diff(old, values)
+        if diff:
+            self.changes.append(Change("update", table, {key: values[key], **diff}, changed=diff))
+        return {**old, **values}
+
+
+@dataclass
+class ItemModel:
+    """One M2 of an item display. `race`/`gender`/`position` (helm variants, shoulder sides) add a ComponentModelFileData row."""
+    fdid: int
+    race: int = 0
+    gender: int = 2
+    position: int = -1
+    variant: bool = False
+
+
+@dataclass
+class ItemSpec:
+    """Textures are BLP fdids per model index (at most two). `sections` maps a body ComponentSection (0..7) to
+    [(blp fdid, gender or -1)] for armor without models."""
+    template_display: int
+    models: list = field(default_factory=list)
+    textures: list = field(default_factory=list)
+    sections: dict = field(default_factory=dict)
+
+
+def _resource_of(db, table, column, fdid):
+    rows = db.execute(f"SELECT `{column}` FROM {table} WHERE FileDataID = ?", (fdid,))
+    return rows[0][0] if rows else None
+
+
+def _item_models(pl, spec):
+    """ModelResourcesID of the display's models: an existing resource of the first model, or a new one with a row per model."""
+    if not spec.models:
+        return 0
+    first = _resource_of(pl.db, MFD, "ModelResourcesID", spec.models[0].fdid)
+    res = first if first else pl.new_id(MFD, "ModelResourcesID", MODEL_RESOURCE_FIRST)
+    owned = res >= MODEL_RESOURCE_FIRST
+    for m in spec.models:
+        if first and not owned:
+            break
+        pl.upsert(MFD, {"FileDataID": m.fdid, "Flags": 0, "LodCount": 0, "ModelResourcesID": res}, owned=owned)
+        if m.variant or m.position >= 0:
+            pl.upsert(CMFD, {"ID": m.fdid, "GenderIndex": m.gender, "ClassID": 0, "RaceID": m.race, "PositionIndex": m.position})
+    return res
+
+
+def _material(pl, fdid):
+    """MaterialResourcesID of texture `fdid` (TextureFileData is keyed by file, so one file has one resource)."""
+    res = _resource_of(pl.db, TFD, "MaterialResourcesID", fdid) or pl.materials.get(fdid)
+    if res is None:
+        res = pl.materials[fdid] = pl.new_id(TFD, "MaterialResourcesID", MATERIAL_RESOURCE_FIRST)
+        pl.upsert(TFD, {"FileDataID": fdid, "UsageType": 0, "MaterialResourcesID": res})
+    return res
+
+
+def _component_texture(pl, fdid, gender, material):
+    """A body texture under `material`: gender -1 means the only texture, else it is added to ComponentTextureFileData."""
+    pl.upsert(TFD, {"FileDataID": fdid, "UsageType": 0, "MaterialResourcesID": material})
+    if gender >= 0:
+        pl.upsert(CTFD, {"ID": fdid, "GenderIndex": gender, "ClassID": 0, "RaceID": 0})
+
+
+def plan_item_display(db, layout, spec):
+    """Changes for an ItemDisplayInfo built from `spec` (copied from `spec.template_display`); returns (changes, display id).
+    The display is found again through its first model, or through the first body texture for model-less armor."""
+    tdisp = _by_key(db, IDI, "ID", spec.template_display)
+    if tdisp is None:
+        raise GameDataError(f"template display {spec.template_display} not found")
+    if not spec.models and not spec.sections:
+        raise GameDataError("an item display needs a model or body textures")
+    pl = _Planner(db)
+    res = _item_models(pl, spec)
+    paired = len(spec.models) > 1 and all(m.position >= 0 for m in spec.models)
+    textures = list(spec.textures[:2])
+    if paired and len(textures) == 1:
+        textures *= 2
+    mats = [_material(pl, t) for t in textures]
+    wanted = {"ModelResourcesID1": res, "ModelResourcesID2": res if paired else 0,
+              "ModelMaterialResourcesID1": 0, "ModelMaterialResourcesID2": 0}
+    for i, m in enumerate(mats):
+        wanted[f"ModelMaterialResourcesID{i + 1}"] = m
+    if res:
+        found = db.dicts(f"SELECT * FROM {IDI} WHERE ModelResourcesID1 = ? AND ID >= ? ORDER BY ID", (res, DISPLAY_FIRST_ID))
+    else:
+        first = next(iter(spec.sections.values()))[0][0]
+        found = db.dicts(f"SELECT d.* FROM {IDI} d JOIN {IDIMR} r ON r.ItemDisplayInfoID = d.ID JOIN {TFD} t ON t.MaterialResourcesID = r.MaterialResourcesID "
+                         f"WHERE t.FileDataID = ? AND d.ID >= ? ORDER BY d.ID", (first, DISPLAY_FIRST_ID))
+    if found:
+        display_id = found[0]["ID"]
+        diff = _diff(found[0], wanted)
+        if diff:
+            pl.changes.append(Change("update", IDI, {"ID": display_id, **diff}, changed=diff))
+    else:
+        display_id = next_id(db, IDI, DISPLAY_FIRST_ID, 2**31 - 1)
+        pl.changes.append(Change("insert", IDI, {**tdisp, **wanted, "ID": display_id}))
+    for i, m in enumerate(mats):
+        row = db.dicts(f"SELECT * FROM {IDIMMR} WHERE ItemDisplayInfoID = ? AND ModelIndex = ?", (display_id, i)) if found else []
+        if row:
+            diff = _diff(row[0], {"MaterialResourcesID": m, "TextureType": 2})
+            if diff:
+                pl.changes.append(Change("update", IDIMMR, {"ID": row[0]["ID"], **diff}, changed=diff))
+        else:
+            pl.changes.append(Change("insert", IDIMMR, {"ID": pl.new_id(IDIMMR, "ID", MODEL_MAT_RES_FIRST), "MaterialResourcesID": m,
+                                                         "TextureType": 2, "ModelIndex": i, "ItemDisplayInfoID": display_id}))
+    for section, variants in sorted(spec.sections.items()):
+        rows = db.dicts(f"SELECT * FROM {IDIMR} WHERE ItemDisplayInfoID = ? AND ComponentSection = ?", (display_id, section)) if found else []
+        material = rows[0]["MaterialResourcesID"] if rows else (_resource_of(db, TFD, "MaterialResourcesID", variants[0][0])
+                                                                or pl.new_id(TFD, "MaterialResourcesID", MATERIAL_RESOURCE_FIRST))
+        for fdid, gender in variants:
+            _component_texture(pl, fdid, gender, material)
+        if not rows:
+            pl.changes.append(Change("insert", IDIMR, {"ID": pl.new_id(IDIMR, "ID", MATERIAL_RES_FIRST), "ComponentSection": section,
+                                                        "MaterialResourcesID": material, "ItemDisplayInfoID": display_id}))
+    return pl.changes, display_id
+
+
+def plan_item(db, layout, template_item, display_id, name, icon=0):
+    """Changes for a test item showing `display_id`: Item and ItemSparse copied from `template_item` (new id from the
+    reserved range), plus ItemAppearance and ItemModifiedAppearance. Found again through the display; returns (changes, item id)."""
+    titem, tsparse = _by_key(db, ITEM, "ID", template_item), _by_key(db, SPARSE, "ID", template_item)
+    tima = db.dicts(f"SELECT * FROM {IMA} WHERE ItemID = ? ORDER BY ItemAppearanceModifierID, ID", (template_item,))
+    if titem is None or tsparse is None or not tima:
+        raise GameDataError(f"template item {template_item} needs Item, ItemSparse and ItemModifiedAppearance rows")
+    tapp = _by_key(db, IAPP, "ID", tima[0]["ItemAppearanceID"])
+    pl = _Planner(db)
+    icon = icon or titem["IconFileDataID"]
+    found = db.dicts(f"SELECT m.ItemID FROM {IMA} m JOIN {IAPP} a ON a.ID = m.ItemAppearanceID WHERE a.ItemDisplayInfoID = ? AND a.ID >= ? AND m.ID >= ? ORDER BY m.ID",
+                     (display_id, APPEARANCE_FIRST, MODIFIED_APPEARANCE_FIRST))
+    if found:
+        item_id = found[0]["ItemID"]
+        pl.upsert(ITEM, {"ID": item_id, "IconFileDataID": icon})
+        pl.upsert(SPARSE, {"ID": item_id, "Display_lang": name})
+        app = db.dicts(f"SELECT a.* FROM {IAPP} a JOIN {IMA} m ON m.ItemAppearanceID = a.ID WHERE m.ItemID = ?", (item_id,))[0]
+        pl.upsert(IAPP, {"ID": app["ID"], "DefaultIconFileDataID": icon})
+        return pl.changes, item_id
+    item_id = pl.new_id(ITEM, "ID", ITEM_FIRST)
+    app_id = pl.new_id(IAPP, "ID", APPEARANCE_FIRST)
+    pl.changes.append(Change("insert", ITEM, {**titem, "ID": item_id, "IconFileDataID": icon}))
+    pl.changes.append(Change("insert", SPARSE, {**tsparse, "ID": item_id, "Display_lang": name}))
+    pl.changes.append(Change("insert", IAPP, {**tapp, "ID": app_id, "ItemDisplayInfoID": display_id, "DefaultIconFileDataID": icon}))
+    pl.changes.append(Change("insert", IMA, {**tima[0], "ID": pl.new_id(IMA, "ID", MODIFIED_APPEARANCE_FIRST), "ItemID": item_id,
+                                              "ItemAppearanceModifierID": 0, "ItemAppearanceID": app_id}))
+    return pl.changes, item_id
 
 
 def run_tool(layout, *args):

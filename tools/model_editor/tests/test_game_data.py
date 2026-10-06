@@ -79,6 +79,100 @@ class GameDataTests(unittest.TestCase):
         finally:
             db.close()
 
+    def _item(self, spec, **kw):
+        lay = layout()
+        db = lay.open()
+        try:
+            changes, display = gd.plan_item_display(db, lay, spec, **kw)
+        finally:
+            db.close()
+        gd.apply_changes(lay, changes)
+        db = lay.open()
+        try:
+            again, display2 = gd.plan_item_display(db, lay, spec, **kw)
+        finally:
+            db.close()
+        self.assertEqual((again, display2), ([], display))
+        return lay, changes, display
+
+    def _row(self, lay, sql, *args):
+        db = lay.open()
+        try:
+            return db.dicts(sql, args)
+        finally:
+            db.close()
+
+    def test_sword_display(self):
+        spec = gd.ItemSpec(26577, [gd.ItemModel(2000000010)], [2000000011])
+        lay, changes, display = self._item(spec)
+        self.assertGreaterEqual(display, gd.DISPLAY_FIRST_ID)
+        d = self._row(lay, f"SELECT * FROM {gd.IDI} WHERE ID = ?", display)[0]
+        self.assertGreaterEqual(d["ModelResourcesID1"], gd.MODEL_RESOURCE_FIRST)
+        self.assertGreaterEqual(d["ModelMaterialResourcesID1"], gd.MATERIAL_RESOURCE_FIRST)
+        self.assertEqual(self._row(lay, f"SELECT * FROM {gd.MFD} WHERE FileDataID = 2000000010")[0]["ModelResourcesID"], d["ModelResourcesID1"])
+        self.assertEqual(self._row(lay, f"SELECT TextureType, ModelIndex FROM {gd.IDIMMR} WHERE ItemDisplayInfoID = ?", display), [{"TextureType": 2, "ModelIndex": 0}])
+        self.assertEqual(self._row(lay, f"SELECT count(*) n FROM {gd.CMFD} WHERE ID = 2000000010")[0]["n"], 0)
+
+    def test_retexture_stock_model(self):
+        spec = gd.ItemSpec(26577, [gd.ItemModel(148132)], [2000000021])
+        lay, changes, display = self._item(spec)
+        self.assertEqual([c.table for c in changes if c.table == gd.MFD], [])
+        d = self._row(lay, f"SELECT * FROM {gd.IDI} WHERE ID = ?", display)[0]
+        self.assertEqual(d["ModelResourcesID1"], 16810)
+
+    def test_helm_variants(self):
+        spec = gd.ItemSpec(1166, [gd.ItemModel(2000000030, race=1, gender=0, variant=True), gd.ItemModel(2000000031, race=1, gender=1, variant=True)], [2000000032])
+        lay, changes, display = self._item(spec)
+        res = self._row(lay, f"SELECT ModelResourcesID1 r FROM {gd.IDI} WHERE ID = ?", display)[0]["r"]
+        cm = self._row(lay, f"SELECT c.* FROM {gd.CMFD} c JOIN {gd.MFD} m ON m.FileDataID = c.ID WHERE m.ModelResourcesID = ? ORDER BY c.ID", res)
+        self.assertEqual([(c["RaceID"], c["GenderIndex"], c["PositionIndex"]) for c in cm], [(1, 0, -1), (1, 1, -1)])
+        spec.models[1].gender = 0
+        spec.models[1].race = 2
+        db = layout().open()
+        try:
+            upd, _ = gd.plan_item_display(db, layout(), spec)
+        finally:
+            db.close()
+        self.assertEqual([(c.kind, c.table) for c in upd], [("update", gd.CMFD)])
+
+    def test_shoulders(self):
+        spec = gd.ItemSpec(1057, [gd.ItemModel(2000000040, gender=2, position=0), gd.ItemModel(2000000041, gender=2, position=1)], [2000000042])
+        lay, changes, display = self._item(spec)
+        d = self._row(lay, f"SELECT * FROM {gd.IDI} WHERE ID = ?", display)[0]
+        self.assertEqual(d["ModelResourcesID1"], d["ModelResourcesID2"])
+        self.assertEqual(d["ModelMaterialResourcesID1"], d["ModelMaterialResourcesID2"])
+        self.assertEqual(len(self._row(lay, f"SELECT * FROM {gd.IDIMMR} WHERE ItemDisplayInfoID = ?", display)), 2)
+
+    def test_body_sections(self):
+        spec = gd.ItemSpec(7777, [], [], {0: [(2000000050, 0), (2000000051, 1)], 3: [(2000000052, -1)]})
+        lay, changes, display = self._item(spec)
+        rows = self._row(lay, f"SELECT ComponentSection s, MaterialResourcesID m FROM {gd.IDIMR} WHERE ItemDisplayInfoID = ? ORDER BY s", display)
+        self.assertEqual([r["s"] for r in rows], [0, 3])
+        self.assertEqual(self._row(lay, f"SELECT count(*) n FROM {gd.TFD} WHERE MaterialResourcesID = ?", rows[0]["m"])[0]["n"], 2)
+        self.assertEqual(self._row(lay, f"SELECT GenderIndex g FROM {gd.CTFD} WHERE ID = 2000000051")[0]["g"], 1)
+        self.assertEqual(self._row(lay, f"SELECT count(*) n FROM {gd.CTFD} WHERE ID = 2000000052")[0]["n"], 0)
+
+    def test_test_item(self):
+        spec = gd.ItemSpec(26577, [gd.ItemModel(2000000060)], [2000000061])
+        lay, _, display = self._item(spec)
+        db = lay.open()
+        try:
+            changes, item = gd.plan_item(db, lay, 727, display, "Cube Sword (test)", icon=135274)
+        finally:
+            db.close()
+        self.assertGreaterEqual(item, gd.ITEM_FIRST)
+        self.assertEqual(sorted(c.table for c in changes), sorted([gd.ITEM, gd.SPARSE, gd.IAPP, gd.IMA]))
+        gd.apply_changes(lay, changes)
+        db = lay.open()
+        try:
+            self.assertEqual(db.dicts(f"SELECT Display_lang n FROM {gd.SPARSE} WHERE ID = ?", (item,))[0]["n"], "Cube Sword (test)")
+            self.assertEqual(db.dicts(f"SELECT a.ItemDisplayInfoID d, a.DisplayType t FROM {gd.IMA} m JOIN {gd.IAPP} a ON a.ID = m.ItemAppearanceID WHERE m.ItemID = ?", (item,)), [{"d": display, "t": 11}])
+            self.assertEqual(gd.plan_item(db, lay, 727, display, "Cube Sword (test)", icon=135274), ([], item))
+            renamed, same = gd.plan_item(db, lay, 727, display, "Renamed")
+            self.assertEqual((same, [c.kind for c in renamed]), (item, ["update"]))
+        finally:
+            db.close()
+
 
 if __name__ == "__main__":
     unittest.main()
