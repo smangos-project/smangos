@@ -59,7 +59,7 @@ def build_group_mesh(name, body, mats, collision_mat, wmo_name):
     me.polygons.foreach_set("loop_start", np.arange(0, nt * 3, 3, dtype=np.int32))
     me.update()
 
-    polys = np.asarray(body.polys)
+    polys = np.asarray(body.polys if len(body.polys) else body.polys2)
     pf = np.zeros(nt, np.int32)
     pm = np.full(nt, 255, np.int32)
     n = min(nt, len(polys))

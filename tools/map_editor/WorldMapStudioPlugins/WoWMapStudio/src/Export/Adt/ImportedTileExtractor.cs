@@ -51,6 +51,17 @@ public static class ImportedTileExtractor
         };
     }
 
+    /// <summary>The tile with its placements replaced.</summary>
+    public static ImportedTile WithPlacements(ImportedTile tile, IReadOnlyList<ImportedDoodad> doodads, IReadOnlyList<ImportedObject> objects) => new()
+    {
+        TileId = tile.TileId,
+        Textures = tile.Textures,
+        HeightTextures = tile.HeightTextures,
+        Doodads = doodads,
+        Objects = objects,
+        Chunks = tile.Chunks,
+    };
+
     private static ImportedChunk ExtractChunk(ImportedChunk src, ChunkCoord coord, ITerrainImageSource source)
     {
         float[] outer = src.OuterHeights;

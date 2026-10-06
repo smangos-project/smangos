@@ -85,6 +85,11 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         string fdidFile = Path.Combine(content, "wms-custom-fdids.txt");
         WowFileDataIds.Shared.LoadCustom(fdidFile);
 
+        var ledger = new Dictionary<long, long>(await WowExportEntityIds.LoadAsync(storage).ConfigureAwait(false));
+        List<EditorPlacement> placements = await StoredPlacements.LoadAsync(storage, context.Editor.Assets, catalog.Map.Value).ConfigureAwait(false);
+        var newUids = new Dictionary<long, long>();
+        uint nextUid = (uint)Math.Max(PlacementExtractor.CustomUidBase, ledger.Count == 0 ? 0 : ledger.Values.Max() + 1);
+
         int written = 0;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -96,6 +101,19 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             ImportedTile template = await Task.Run(() => WowAdtTileReader.Read(fs, wdt, new ImportedTileId(sourceMap, id.FileX, id.FileY))).ConfigureAwait(false);
             StoredTerrainImages stored = await StoredTerrainImages.LoadAsync(storage, images, catalog, id).ConfigureAwait(false);
             ImportedTile tile = ImportedTileExtractor.Extract(id, template, stored);
+            var (doodads, objects) = PlacementExtractor.Apply(
+                template,
+                placements,
+                recordId => ledger.TryGetValue(recordId, out long uid) ? (uint)uid : null,
+                recordId =>
+                {
+                    uint uid = nextUid++;
+                    ledger[recordId] = uid;
+                    newUids[recordId] = uid;
+                    return uid;
+                },
+                path => WowFileDataIds.Shared.Allocate(path));
+            tile = ImportedTileExtractor.WithPlacements(tile, doodads, objects);
             if (ImportedTileComparer.IsUnchanged(template, tile))
             {
                 continue;
@@ -106,6 +124,11 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         }
 
         WowFileDataIds.Shared.SaveCustom(fdidFile);
+        if (newUids.Count > 0)
+        {
+            await WowExportEntityIds.UpsertAsync(storage, newUids).ConfigureAwait(false);
+        }
+
         context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
     }
 }
