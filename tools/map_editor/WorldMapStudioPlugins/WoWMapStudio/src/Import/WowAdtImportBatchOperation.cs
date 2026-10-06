@@ -625,6 +625,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
                 SourceTileHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(wdt.Files?[(fy * MapEdge) + fx].Root.ToString() ?? tileId.Stem)))[..16],
                 ImportedAtUtc = DateTime.UtcNow,
                 ImporterVersion = ImporterVersion,
+                WaterImported = importWater,
             };
 
             // One transaction for everything the tile writes: the entity commit, the image chunks, the

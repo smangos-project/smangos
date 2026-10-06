@@ -133,8 +133,8 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         (Dictionary<(int FileX, int FileY), List<WaterSurfacePatch>> waterPatches, List<EditorPlacement> proceduralPlacements) =
             await GatherSceneAsync(context, work, catalog.Map, grid, sourceMap, allRows, exporter).ConfigureAwait(false);
         placements.AddRange(proceduralPlacements);
-        // With no authored water anywhere, MH2O is left exactly as the client has it (water import may be off).
-        bool anyWater = waterPatches.Values.Any(patches => patches.Count > 0);
+        // MH2O is only rewritten for tiles that have authored water or whose water was imported
+        // (so deleting it clears it); otherwise it stays exactly as the client has it.
 
         int written = 0;
         var edited = new List<ImportedTile>();
@@ -168,11 +168,12 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
                 },
                 path => ids.Allocate(path));
             tile = ImportedTileExtractor.WithPlacements(tile, doodads, objects);
-            if (anyWater)
+            waterPatches.TryGetValue((id.FileX, id.FileY), out List<WaterSurfacePatch>? tilePatches);
+            if (tilePatches is { Count: > 0 } || allRows[i].WaterImported)
             {
                 tile = ImportedTileExtractor.WithLiquid(
                     tile,
-                    WowWaterTileBuilder.Build(waterPatches[(id.FileX, id.FileY)], id, grid, tile, template.Chunks.Select(chunk => chunk.Liquid).ToList()));
+                    WowWaterTileBuilder.Build(tilePatches ?? [], id, grid, tile, template.Chunks.Select(chunk => chunk.Liquid).ToList()));
             }
 
             string? difference = isNew ? "new tile" : ImportedTileComparer.FirstDifference(template, tile);

@@ -40,6 +40,10 @@ public sealed class AdtImportTileRecord
     /// <summary>The importer version that wrote this row. Bumping the importer's current version makes
     /// every existing row stale, exactly as the exporter's writer version re-exports everything.</summary>
     public int ImporterVersion { get; set; }
+
+    /// <summary>Whether the importer turned the tile's MH2O into water entities, so the exporter knows
+    /// that a tile with no water left should have its MH2O cleared rather than left alone.</summary>
+    public bool WaterImported { get; set; }
 }
 
 [Subsystem(nameof(EditorStorage))]
@@ -135,6 +139,7 @@ public static class AdtImportTileStore
             existing.SourceTileHash = row.SourceTileHash;
             existing.ImportedAtUtc = row.ImportedAtUtc;
             existing.ImporterVersion = row.ImporterVersion;
+            existing.WaterImported = row.WaterImported;
         }
     }
 
