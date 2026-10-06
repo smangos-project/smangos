@@ -103,7 +103,7 @@ def classify(binding):
         binding.kind = "global"
     elif n == 0:
         binding.kind = "empty"
-    elif n == 1:
+    elif n == 1 and t.key_count(0) <= 1:
         binding.kind = "static"
     else:
         binding.kind = "seq"
