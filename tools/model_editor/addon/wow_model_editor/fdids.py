@@ -1,68 +1,70 @@
-"""FileDataIDs for files created by the editors, kept in a custom listfile shared with the other tools."""
-import os
+"""FileDataIDs for files created by the editors: the shared registry `Content/custom.index` (see registry.py)."""
 from pathlib import Path
 
-from . import client, index
+from . import client, index, registry
 
-FIRST_ID = client.CUSTOM_FDID_START
+FIRST_ID = registry.FIRST_ID
+read_file = registry.read
 
 
-def listfile_path():
+def registry_path():
+    """The registry file; legacy allocation files next to the default location are merged into it once."""
     p = client.prefs()
     if p.custom_listfile:
         return Path(p.custom_listfile)
     content = Path(p.content_dir)
-    return content.parent.parent / ".local" / "listfile.custom.txt"
+    path = content / "custom.index"
+    legacy = [content.parent.parent / ".local" / "listfile.custom.txt", content / "wms.index", content / "wms-custom-fdids.txt"]
+    if any(f.is_file() for f in legacy):
+        for c in registry.merge_legacy(path, legacy):
+            print("fdid registry conflict:", c)
+        client.close()
+    return path
 
 
-def read(path=None):
-    """{fdid: path} of the custom listfile."""
-    path = path or listfile_path()
-    out = {}
-    if path.is_file():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            fdid, sep, name = line.partition(";")
-            if sep and fdid.isdigit():
-                out[int(fdid)] = name
-    return out
+listfile_path = registry_path
 
 
-def _write(entries, path):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text("".join(f"{k};{v}\n" for k, v in sorted(entries.items())), encoding="utf-8")
-    os.replace(tmp, path)
+def read():
+    """{fdid: path} of the registry."""
+    return registry.read(registry_path())
+
+
+def path_of(fdid):
+    return index.path_of(fdid) or read().get(fdid)
 
 
 def allocate(client_path):
     """The fdid of `client_path`: the stock one, an existing custom one, or a new id."""
-    key = client_path.replace("\\", "/").lower()
+    key = registry.normalize(client_path)
     stock = index.fdid_of(key)
     if stock:
         return stock
-    path = listfile_path()
-    entries = read(path)
-    for k, v in entries.items():
-        if v.lower() == key:
-            return k
-    fdid = max([FIRST_ID - 1, *entries]) + 1
-    entries[fdid] = key
-    _write(entries, path)
-    client.close()
+    path = registry_path()
+    known = registry.read(path)
+    fdid = registry.allocate(path, key)
+    if fdid not in known:
+        client.close()
     return fdid
 
 
+def release(client_paths):
+    """Drops registry entries (for new files that were uninstalled)."""
+    gone = registry.release(registry_path(), client_paths)
+    if gone:
+        client.close()
+    return gone
+
+
 def adopt_session_ids():
-    """Copies ids wowlib allocated while writing (custom range) into the custom listfile."""
+    """Copies ids wowlib allocated while writing (custom range) into the registry."""
     s = client.session()
-    path = listfile_path()
-    known = read(path)
     new = {}
     for line in s.listfile.read_text(encoding="utf-8").splitlines():
         fdid, sep, name = line.partition(";")
-        if sep and fdid.isdigit() and int(fdid) >= FIRST_ID and int(fdid) not in known:
+        if sep and fdid.isdigit() and int(fdid) >= FIRST_ID:
             new[int(fdid)] = name
-    if new:
-        _write({**known, **new}, path)
+    added = registry.add(registry_path(), new)
+    if added:
         client.close()
-    return new
+    return added

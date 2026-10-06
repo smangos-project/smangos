@@ -239,7 +239,7 @@ def import_m2_geometry():
                 assert np.allclose(lu.reshape(-1, 2)[j], (v.tex_coords[0].x, 1 - v.tex_coords[0].y), atol=1e-5)
             p = ob.wow_m2_submesh
             assert p.skin_section_id == sm.skin_section_id and p.bone_combo_index == sm.bone_combo_index
-        arm = bpy.data.objects[f"{top.wow_m2.name and posix_stem(path)}_rig"]
+        arm = bpy.data.objects[f"{posix_stem(path)}_rig"]
         bones = arm.data.bones
         assert len(bones) == len(root.bones)
         for i, b in enumerate(root.bones):
@@ -698,12 +698,11 @@ def m2_export_unchanged_and_forced():
 @test
 def m2_export_new_path_allocates_ids():
     clear()
-    lf = fdids.listfile_path()
-    saved = lf.read_text() if lf.is_file() else None
+    lf = common.Path("/tmp/me-custom-registry.index")
+    lf.unlink(missing_ok=True)
+    client.prefs().custom_listfile = str(lf)
+    client.close()
     try:
-        if saved is not None:
-            lf.unlink()
-        client.close()
         top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE", "collision": False})
         r = m2_export.export(top, "creature/zzme/wolfcopy.m2", {"force": True})
         assert not r.errors, str(r)
@@ -715,10 +714,6 @@ def m2_export_new_path_allocates_ids():
         assert not [ln for ln in common.Path(client.session().content, "fdid.index").read_text().splitlines()
                     if ln.partition(";")[0].isdigit() and int(ln.partition(";")[0]) >= 1_000_000_000]
     finally:
-        if saved is None:
-            lf.unlink(missing_ok=True)
-        else:
-            lf.write_text(saved)
         client.close()
 
 

@@ -18,10 +18,10 @@ CUSTOM_FDID_START = 2_000_000_000
 
 
 def working_listfile(content):
-    """Copy of fdid.index plus the custom listfile; wowlib appends the ids it allocates to its listfile, so it must not be the shared one."""
-    from . import fdids
+    """Copy of fdid.index plus the custom registry; wowlib appends the ids it allocates to its listfile, so it must not be the shared one."""
+    from . import fdids, registry
     content = Path(content)
-    src, custom = content / "fdid.index", fdids.listfile_path()
+    src, custom = content / "fdid.index", fdids.registry_path()
     cache = Path(bpy.path.abspath(prefs().cache_dir)) if prefs().cache_dir else content.parent / ".model-editor-cache"
     cache.mkdir(parents=True, exist_ok=True)
     dst, stamp = cache / "listfile.csv", cache / "listfile.stamp"
@@ -29,7 +29,7 @@ def working_listfile(content):
     if not (dst.is_file() and stamp.is_file() and stamp.read_text() == key):
         with open(dst, "w", encoding="utf-8") as out:
             out.write(src.read_text(encoding="utf-8"))
-            for fdid, name in sorted(fdids.read(custom).items()):
+            for fdid, name in sorted(registry.read(custom).items()):
                 out.write(f"{fdid};{name}\n")
         stamp.write_text(key)
     return dst
