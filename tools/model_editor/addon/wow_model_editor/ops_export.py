@@ -2,7 +2,9 @@
 import bpy
 from bpy.props import BoolProperty, StringProperty
 
-from . import m2_export, wmo_export
+from pathlib import Path
+
+from . import client, install, m2_export, wmo_export
 
 
 class WOW_OT_export_wmo(bpy.types.Operator):
@@ -115,4 +117,53 @@ class WOW_OT_new_m2(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
+def _last_files(context):
+    """Client paths the last export of the active model wrote (and that exist in the Output directory)."""
+    ob = context.active_object or context.collection
+    if m2_export.find_root(ob) is not None:
+        files = list(getattr(m2_export.last_report, "files", None) or [])
+    elif wmo_export.find_root(ob) is not None:
+        files = list(getattr(wmo_export.last_report, "files", None) or [])
+    else:
+        files = []
+    out = Path(client.dirs()[1])
+    return [f for f in files if (out / f).is_file()]
+
+
+class WOW_OT_install_model(bpy.types.Operator):
+    bl_idname = "wow.install_model"
+    bl_label = "Install to Content"
+    bl_description = "Copy the last export of the active model into the client Content directory (stock files are backed up); restart the client afterwards"
+    all_output: BoolProperty(name="Everything in Output", description="Install every file in the output directory", default=False)
+
+    def execute(self, context):
+        content, out = client.dirs()
+        try:
+            rels = install.output_files(out) if self.all_output else _last_files(context)
+            if not rels:
+                self.report({"ERROR"}, "Nothing to install: export the model first")
+                return {"CANCELLED"}
+            install.install(content, out, rels)
+        except (install.InstallError, OSError) as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"Installed {len(rels)} files; restart the client to load them")
+        return {"FINISHED"}
+
+
+class WOW_OT_uninstall_model(bpy.types.Operator):
+    bl_idname = "wow.uninstall_model"
+    bl_label = "Uninstall"
+    bl_description = "Restore the stock Content files replaced by installed models and remove installed new files"
+
+    def execute(self, context):
+        try:
+            done = install.uninstall(client.dirs()[0])
+        except (install.InstallError, OSError) as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"Restored {len(done)} files; restart the client")
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_install_model, WOW_OT_uninstall_model, WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)

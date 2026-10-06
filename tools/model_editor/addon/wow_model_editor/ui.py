@@ -55,6 +55,8 @@ class WOW_PT_browser(bpy.types.Panel):
         col.operator("wow.new_wmo", icon="ADD")
         col.operator("wow.new_m2", icon="ADD")
         col.operator("wow.export_wmo", icon="EXPORT")
+        col.operator("wow.install_model", icon="IMPORT")
+        col.operator("wow.uninstall_model", icon="LOOP_BACK")
         if wm.wow_recent:
             col.label(text="Recent")
             for r in wm.wow_recent:
@@ -79,6 +81,8 @@ class WOW_PT_m2(bpy.types.Panel):
         col.label(text=f"{p.path} (FDID {p.fdid})")
         col.label(text=f"Skin {p.skin_index + 1}/{p.skin_count}, {p.sequence_count} sequences")
         col.operator("wow.export_m2", icon="EXPORT")
+        col.operator("wow.install_model", icon="IMPORT")
+        col.operator("wow.uninstall_model", icon="LOOP_BACK")
         try:
             listed = displays.for_model(p.fdid)
         except Exception:  # noqa: BLE001

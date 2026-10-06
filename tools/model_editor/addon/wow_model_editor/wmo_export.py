@@ -523,11 +523,16 @@ def new_wmo(path, parent=None):
     return top
 
 
+last_report = None
+
+
 def export(root, out_path=None, options=None):
     """Export WMO collection `root`; returns a Report. `options`: force, dry_run."""
+    global last_report
     opts = {"force": False, "dry_run": False}
     opts.update(options or {})
     report = Report()
+    last_report = report
     bpy.context.view_layer.update()
     p = root.wow_wmo
     src_path = p.path
