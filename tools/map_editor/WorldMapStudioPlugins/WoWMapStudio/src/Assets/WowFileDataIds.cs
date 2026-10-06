@@ -89,6 +89,33 @@ public sealed class WowFileDataIds
         return next;
     }
 
+    /// <summary>Loads previously saved custom allocations so ids stay stable between sessions.</summary>
+    public void LoadCustom(string path)
+    {
+        if (File.Exists(path))
+        {
+            foreach (string line in File.ReadLines(path))
+            {
+                AddLine(line);
+            }
+        }
+    }
+
+    /// <summary>Writes the custom-range allocations (<c>id;path</c> per line), ordered by id.</summary>
+    public void SaveCustom(string path)
+    {
+        var lines = new List<string>();
+        foreach (var (id, p) in _paths)
+        {
+            if (id >= CustomBase)
+            {
+                lines.Add($"{id};{p}");
+            }
+        }
+        lines.Sort(StringComparer.Ordinal);
+        File.WriteAllLines(path, lines);
+    }
+
     public string? PathOf(uint id) => _paths.GetValueOrDefault(id);
 
     /// <summary>The listed path, or a stable stand-in for ids the listfile does not know.</summary>

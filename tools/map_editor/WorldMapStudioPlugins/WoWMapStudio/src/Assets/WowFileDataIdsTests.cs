@@ -39,4 +39,25 @@ public static class WowFileDataIdsTests
         Assert.AreEqual(first + 1, ids.Allocate("world/new2.adt"));
         Assert.AreEqual(first, ids.Allocate("World\\New1.adt"));
     }
+
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Custom_allocations_survive_save_and_load()
+    {
+        string file = System.IO.Path.GetTempFileName();
+        try
+        {
+            var a = WowFileDataIds.Parse(new[] { "10;World/A.adt" });
+            uint id = a.Allocate("world/new1.adt");
+            a.SaveCustom(file);
+
+            var b = WowFileDataIds.Parse(new[] { "10;World/A.adt" });
+            b.LoadCustom(file);
+            Assert.AreEqual(id, b.IdOf("world/new1.adt"));
+            Assert.AreEqual(id + 1, b.Allocate("world/new2.adt"));
+        }
+        finally
+        {
+            System.IO.File.Delete(file);
+        }
+    }
 }
