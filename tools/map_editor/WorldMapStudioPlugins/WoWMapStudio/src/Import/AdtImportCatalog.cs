@@ -372,6 +372,22 @@ public sealed class AdtImportCatalog
     /// <summary>The name of the material that puts <paramref name="texture"/> in MCNK slot <paramref name="slot"/>.</summary>
     public static string SlotMaterialName(uint texture, int slot) => $"ADT {slot}: {texture}";
 
+    /// <summary>Reads the slot out of a name made by <see cref="SlotMaterialName"/>.</summary>
+    public static bool TryParseSlotMaterialName(string name, out uint texture, out int slot)
+    {
+        texture = 0;
+        slot = 0;
+        if (!name.StartsWith("ADT ", System.StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string[] parts = name[4..].Split(": ", 2);
+        return parts.Length == 2
+            && int.TryParse(parts[0], System.Globalization.CultureInfo.InvariantCulture, out slot)
+            && uint.TryParse(parts[1], System.Globalization.CultureInfo.InvariantCulture, out texture);
+    }
+
     /// <summary>The alpha function and parameters a slot's material carries: none for the opaque base, the
     /// identity <c>channel_mask</c> over <c>adt_alpha</c>'s R/G/B for slots 1-3.</summary>
     public static (string Function, string Parameters) SlotAlpha(int slot)
