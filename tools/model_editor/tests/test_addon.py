@@ -1315,6 +1315,36 @@ def import_item_display_texture():
     assert textures[0] in fds, (textures, fds)
 
 
+@test
+def creature_derivation_check():
+    """GeoBox and collision size derived from the imported M2 against stock CreatureModelData rows."""
+    gd = common.submodule("game_data")
+    db = gd.Layout.discover(client.dirs()[0]).open()
+    try:
+        rows = db.dicts(f"SELECT * FROM {gd.CMD} WHERE FileDataID > 0 AND ID < 60000 AND GeoBox4 > GeoBox1 ORDER BY ID")
+    finally:
+        db.close()
+    index.load(client.session().content, client.prefs().cache_dir)
+    rows = [r for r in rows if index.path_of(r["FileDataID"]).endswith(".m2")][::max(1, len(rows) // 50)][:50]
+    errs, n = {"geo": [], "width": [], "height": []}, 0
+    for r in rows:
+        clear()
+        top = m2_import.load(index.path_of(r["FileDataID"]), {"display": "NONE"})
+        p = top.wow_m2
+        info = gd.ModelInfo(p.fdid, p.path, tuple(p.bounding_min), tuple(p.bounding_max), tuple(p.collision_min), tuple(p.collision_max))
+        scale = max(abs(r[f"GeoBox{i}"]) for i in range(1, 7)) or 1.0
+        errs["geo"].append(max(abs(a - r[f"GeoBox{i + 1}"]) for i, a in enumerate(gd.geo_box(info))) / scale)
+        w, h = gd.collision_size(info)
+        if r["CollisionWidth"] > 0:
+            errs["width"].append(abs(w - r["CollisionWidth"]) / r["CollisionWidth"])
+        if r["CollisionHeight"] > 0:
+            errs["height"].append(abs(h - r["CollisionHeight"]) / r["CollisionHeight"])
+        n += 1
+    med = {k: sorted(v)[len(v) // 2] for k, v in errs.items()}
+    print(f"derivation: {n} models, median relative error {med}")
+    assert n >= 20 and med["width"] < 0.01 and med["height"] < 0.01, med
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:
