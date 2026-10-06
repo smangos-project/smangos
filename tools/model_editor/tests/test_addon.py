@@ -397,7 +397,7 @@ def group_files(r, path):
 def reread(path, files):
     from wowlib.formats import wmo as wwmo
     w = wwmo.WMO.for_version(client.VERSION)
-    gp = [k for k in sorted(files) if k != path]
+    gp = [k for k in sorted(files) if k != path and k.endswith(".wmo")]
     w.read(files[path], [files[k] for k in gp])
     return w
 
@@ -470,6 +470,41 @@ def wmo_export_vertex_edit():
     assert (np.abs(vb - va).sum(1) > 1e-6).sum() == 1
     hb = new.groups[0].body.header.bounding_box
     assert hb.max.z >= vb[:, 2].max() and new.validate().ok
+
+
+@test
+def wmo_export_materials():
+    path = REFS[0]
+    clear()
+    lf = "/tmp/me-custom-listfile.txt"
+    if os.path.exists(lf):
+        os.remove(lf)
+    client.prefs().custom_listfile = lf
+    coll = wmo_import.load(path, {"doodads": False})
+    ob = mesh_groups(coll)[0]
+    mat = next(s.material for s in ob.material_slots if s.material.wow_wmo_material.material_index >= 0)
+    idx = mat.wow_wmo_material.material_index
+    mat.wow_wmo_material.blend_mode = 2
+    nm = mat.copy()
+    nm.wow_wmo_material.material_index = -1
+    img = bpy.data.images.new("My Tex", 16, 16, alpha=True)
+    img.pixels.foreach_set(np.tile(np.array([1, 0, 0, 1], np.float32), 256))
+    for n in nm.node_tree.nodes:
+        if n.label == "texture1":
+            n.image = img
+    ob.data.materials.append(nm)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    src = wmo_expect(path)[1]
+    assert len(new.root.materials) == len(src.materials) + 1
+    assert new.root.materials[idx].blend_mode == 2 and src.materials[idx].blend_mode != 2
+    fdid = new.root.materials[len(src.materials)].texture1
+    assert fdid >= 2_000_000_000
+    assert r.files["world/wmo/custom/my_tex.blp"][:4] == b"BLP2"
+    assert open(lf).read().strip() == f"{fdid};world/wmo/custom/my_tex.blp"
+    r2 = wmo_export.export(coll, options={"dry_run": True})
+    assert open(lf).read().count("\n") == 1 and not r2.errors
 
 
 @test

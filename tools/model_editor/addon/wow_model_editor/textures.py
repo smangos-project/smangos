@@ -86,8 +86,8 @@ def image_to_rgba(image):
     return px[::-1]
 
 
-def export_blp(image, path):
-    """Encode a Blender image as BLP at a client path; DXT1 without alpha, else DXT5 unless the source BLP says otherwise."""
+def encode_blp(image):
+    """BLP bytes for a Blender image; DXT1 without alpha, else DXT5 unless the source BLP says otherwise."""
     rgba = np.ascontiguousarray(image_to_rgba(image))
     settings = wblp.EncodeSettings()
     src_fdid = image.get("wow_fdid")
@@ -106,4 +106,9 @@ def export_blp(image, path):
     wimg = wblp.Image(rgba.shape[1], rgba.shape[0], wowlib.VectorUnsignedChar(rgba.tobytes()))
     blp = wblp.BLP()
     blp.encode(wimg, settings)
-    return client.session().fs.add_file(path, blp.write()).value
+    return bytes(blp.write())
+
+
+def export_blp(image, path):
+    """Add `image` as BLP to the file system at a client path; returns its fdid."""
+    return client.session().fs.add_file(path, encode_blp(image)).value

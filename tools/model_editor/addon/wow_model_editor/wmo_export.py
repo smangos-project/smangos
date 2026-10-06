@@ -8,7 +8,7 @@ import bpy
 import numpy as np
 import wowlib
 
-from . import client, wmo_bsp, wmo_geometry as geo, wmo_import
+from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import
 from .props import u32
 
 BBOX_PAD = 0.028
@@ -19,6 +19,7 @@ COLLISION_NAME = "wow_collision"
 class Report:
     def __init__(self):
         self.items = []
+        self.material_index = {}
         self.stats = {"groups_rebuilt": 0, "files_written": 0, "files_removed": 0}
 
     def add(self, severity, where, message):
@@ -155,12 +156,108 @@ def slot_material_ids(ob, report):
         mat = s.material
         if mat is None or mat.name.startswith(COLLISION_NAME):
             out.append(-1)
-        elif mat.wow_wmo_material.material_index >= 0:
-            out.append(mat.wow_wmo_material.material_index)
+        elif mat.name in report.material_index:
+            out.append(report.material_index[mat.name])
         else:
             report.add("ERROR", ob.name, f"material {mat.name} has no WMO material index")
             out.append(-1)
     return out
+
+
+TEXTURE_FIELDS = ("texture1", "texture2", "texture3")
+TEXTURE_DIR = "world/wmo/custom/"
+
+
+def _node_images(mat):
+    """{field: image} from the labelled texture nodes of a material preview."""
+    if not mat.node_tree:
+        return {}
+    return {n.label: n.image for n in mat.node_tree.nodes
+            if n.bl_idname == "ShaderNodeTexImage" and n.label in TEXTURE_FIELDS and n.image}
+
+
+def resolve_textures(mat, files, report):
+    """Texture fdids of `mat` (None keeps the stored one); new and edited images are encoded into `files`."""
+    out = {}
+    for field, img in _node_images(mat).items():
+        if img.name == textures.PLACEHOLDER:
+            continue
+        fdid = img.get("wow_fdid")
+        if fdid:
+            out[field] = int(fdid)
+            if not img.is_dirty:
+                continue
+            path = index.path_of(int(fdid)) or fdids.read().get(int(fdid))
+        else:
+            name = re.sub(r"[^a-z0-9_]", "_", os.path.splitext(img.name)[0].lower())
+            path = f"{TEXTURE_DIR}{name}.blp"
+            fdid = fdids.allocate(path)
+            out[field] = fdid
+            img["wow_fdid"], img["wow_path"] = fdid, path
+        if path is None:
+            report.add("WARNING", img.name, "image has no known path, not exported")
+            continue
+        files[path] = textures.encode_blp(img)
+    return out
+
+
+def material_fields(mat, tex):
+    p = mat.wow_wmo_material
+    d = {"flags": u32(p.flags), "shader": p.shader, "blend_mode": p.blend_mode, "ground_type": p.ground_type,
+         "color2": u32(p.color2), "flags2": u32(p.flags2)}
+    for f in TEXTURE_FIELDS:
+        d[f] = u32(tex.get(f, getattr(p, f)))
+    return d
+
+
+def _color(c):
+    return tuple(int(v) for v in c)
+
+
+def apply_material(m, mat, tex):
+    """Write `mat` into SMOMaterial `m`; returns True if anything changed."""
+    p = mat.wow_wmo_material
+    changed = False
+    for k, v in material_fields(mat, tex).items():
+        if int(getattr(m, k)) != v:
+            setattr(m, k, type(getattr(m, k))(v) if not isinstance(getattr(m, k), int) else v)
+            changed = True
+    for attr in ("sidn_color", "frame_sidn_color", "diff_color"):
+        c, want = getattr(m, attr), _color(getattr(p, attr))
+        if (c.r, c.g, c.b, c.a) != want:
+            c.r, c.g, c.b, c.a = want
+            changed = True
+    rtd = [u32(v) for v in p.run_time_data]
+    if [int(v) for v in m.run_time_data] != rtd:
+        for i, v in enumerate(rtd):
+            m.run_time_data[i] = v
+        changed = True
+    return changed
+
+
+def update_materials(w, root, files, report):
+    """Sync wow materials used by the group objects into MOMT; new materials are appended."""
+    mats = {}
+    for ob in group_objects(root).values():
+        for s in ob.material_slots:
+            m = s.material
+            if m is not None and not m.name.startswith(COLLISION_NAME):
+                mats[m.name] = m
+    n = len(w.root.materials)
+    changed = False
+    for m in sorted(mats.values(), key=lambda m: (m.wow_wmo_material.material_index < 0, m.wow_wmo_material.material_index, m.name)):
+        i = m.wow_wmo_material.material_index
+        tex = resolve_textures(m, files, report)
+        if i < 0:
+            w.root.materials.new()
+            i, n = n, n + 1
+            changed = True
+        elif i >= n:
+            report.add("ERROR", m.name, f"material index {i} out of range")
+            continue
+        report.material_index[m.name] = i
+        changed |= apply_material(w.root.materials[i], m, tex)
+    return changed
 
 
 def source_batch_info(body, header):
@@ -364,6 +461,9 @@ def export(root, out_path=None, options=None):
     w = wmo_import.read(src_path)
     objs = group_objects(root)
     dirty = set()
+    files = {}
+    if update_materials(w, root, files, report):
+        report.add("INFO", "materials", "MOMT updated")
     for gi in range(len(w.groups)):
         ob = objs.get(gi)
         if ob is None:
@@ -383,7 +483,7 @@ def export(root, out_path=None, options=None):
         for issue in vr.issues:
             report.add("WARNING", "validate", str(issue))
     root_bytes, group_bytes = serialize(w)
-    files = {path: root_bytes}
+    files[path] = root_bytes
     for i, data in enumerate(group_bytes):
         files[group_path(path, i)] = data
     report.files = files

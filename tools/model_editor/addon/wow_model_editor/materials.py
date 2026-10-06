@@ -61,8 +61,9 @@ def collision_material():
     return mat
 
 
-def _tex(nt, fdid, flags, uv_layer=None):
+def _tex(nt, fdid, flags, uv_layer=None, field=None):
     node = nt.nodes.new("ShaderNodeTexImage")
+    node.label = field or ""
     node.image = textures.get_image(fdid)
     node.interpolation = "Linear"
     node.extension = "EXTEND" if flags & (F_CLAMP_S | F_CLAMP_T) == (F_CLAMP_S | F_CLAMP_T) else "REPEAT"
@@ -88,10 +89,10 @@ def build_preview(mat, multi_uv=False):
     vc.layer_name = "col0"
     L.new(vc.outputs["Color"], grp.inputs["Vertex Color"])
 
-    t1 = _tex(nt, p.texture1, flags)
+    t1 = _tex(nt, p.texture1, flags, field="texture1")
     color, alpha = t1.outputs["Color"], t1.outputs["Alpha"]
     if shader in TWO_LAYER and p.texture2:
-        t2 = _tex(nt, p.texture2, flags, "uv_1" if multi_uv else None)
+        t2 = _tex(nt, p.texture2, flags, "uv_1" if multi_uv else None, "texture2")
         fac = N.new("ShaderNodeVertexColor")
         fac.layer_name = "col1"
         mix = N.new("ShaderNodeMix")
@@ -101,7 +102,7 @@ def build_preview(mat, multi_uv=False):
         L.new(t2.outputs["Color"], mix.inputs["B"])
         color = mix.outputs["Result"]
     elif shader in ENV and p.texture2:
-        t2 = _tex(nt, p.texture2, flags)
+        t2 = _tex(nt, p.texture2, flags, field="texture2")
         add = N.new("ShaderNodeMix")
         add.data_type, add.blend_type = "RGBA", "ADD"
         add.inputs["Factor"].default_value = 0.15

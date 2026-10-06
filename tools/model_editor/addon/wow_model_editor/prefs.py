@@ -19,6 +19,9 @@ class WowPreferences(bpy.types.AddonPreferences):
     output_dir: StringProperty(
         name="Output directory", subtype="DIR_PATH",
         description="Where edited files are written; overrides Content on later reads")
+    custom_listfile: StringProperty(
+        name="Custom listfile", subtype="FILE_PATH",
+        description="id;path listfile for new files; defaults to .local/listfile.custom.txt next to the Content tree")
     cache_dir: StringProperty(
         name="Cache directory", subtype="DIR_PATH", default=_cache_default())
 
@@ -26,6 +29,7 @@ class WowPreferences(bpy.types.AddonPreferences):
         col = self.layout.column()
         col.prop(self, "content_dir")
         col.prop(self, "output_dir")
+        col.prop(self, "custom_listfile")
         col.prop(self, "cache_dir")
         if not self.content_dir:
             col.label(text="Set the Content directory to browse client files", icon="ERROR")
