@@ -1,6 +1,7 @@
 add_executable(tests-database-tool
   VersionTests.cpp
   World/DoltLiteDatabaseTests.cpp
+  Fdid/FileDataIdsTests.cpp
   World/WorldArchiveTests.cpp
   World/WorldCompareTests.cpp
   World/VersionCollapseTests.cpp

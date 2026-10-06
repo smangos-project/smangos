@@ -130,6 +130,7 @@ DoltLiteDatabase::DoltLiteDatabase(std::string const& path)
         sqlite3_close(m_db);
         throw error;
     }
+    sqlite3_busy_timeout(m_db, 30000);
 }
 
 DoltLiteDatabase::~DoltLiteDatabase()
@@ -159,6 +160,11 @@ DoltLiteStatement DoltLiteDatabase::Prepare(std::string const& sql)
 void DoltLiteDatabase::Begin()
 {
     Execute("BEGIN");
+}
+
+void DoltLiteDatabase::BeginImmediate()
+{
+    Execute("BEGIN IMMEDIATE");
 }
 
 void DoltLiteDatabase::Commit()

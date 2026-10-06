@@ -6,6 +6,7 @@
 #include "Dbc/DbcExport.h"
 #include "Dbc/DbcImport.h"
 #include "Dbc/InputManifest.h"
+#include "Fdid/FileDataIds.h"
 #include "Reference/ReferenceBuild.h"
 #include "Spec/Evidence.h"
 #include "Spec/GapAnalysis.h"
@@ -86,6 +87,24 @@ namespace
     bool HasFlag(std::vector<std::string> const& args, std::string const& flag)
     {
         return std::find(args.begin(), args.end(), flag) != args.end();
+    }
+
+    std::filesystem::path WorldPath()
+    {
+        return DataRoot() / ".world" / "world.doltlite";
+    }
+
+    std::filesystem::path FdidIndexPath()
+    {
+        return DataRoot() / ".client" / "Content" / "fdid.index";
+    }
+
+    void PrintFdidImport(char const* label, FdidImportResult const& result)
+    {
+        std::printf("fdid import %s: %u added, %u unchanged, %zu conflicts\n", label, result.added, result.unchanged,
+            result.conflicts.size());
+        for (std::string const& conflict : result.conflicts)
+            std::printf("  conflict: %s\n", conflict.c_str());
     }
 
     // Returns the number of tables that failed to import.
@@ -182,6 +201,22 @@ namespace
             return 1;
         }
 
+        std::string listfile;
+        for (size_t i = 0; i + 1 < args.size(); ++i)
+            if (args[i] == "--listfile")
+                listfile = args[i + 1];
+        if (!listfile.empty())
+        {
+            DoltLiteDatabase world(worldPath.string());
+            FdidImportResult fdids = ImportFdidFile(world, listfile, "listfile");
+            if (!fdids.error.empty())
+            {
+                std::printf("create world: listfile: %s\n", fdids.error.c_str());
+                return 1;
+            }
+            PrintFdidImport(listfile.c_str(), fdids);
+        }
+
         std::printf("create world: imported %u tables, %llu rows; applied %zu migrations\n",
             result.dumpImport.tablesCreated, static_cast<unsigned long long>(result.dumpImport.rowsInserted),
             result.update.appliedMigrationIds.size());
@@ -190,6 +225,100 @@ namespace
         if (importDbc)
             PrintDbcImportSummary("db2", result.dbcImport);
         return 0;
+    }
+
+    // Writes Content/fdid.index from file_data_id and drops the old custom.index.
+    int RunFdidExportIndex(DoltLiteDatabase& world)
+    {
+        FdidExportResult result = ExportFdidIndex(world, FdidIndexPath());
+        if (!result.error.empty())
+        {
+            std::printf("fdid export: %s\n", result.error.c_str());
+            return 1;
+        }
+        std::error_code ec;
+        std::filesystem::remove(FdidIndexPath().parent_path() / "custom.index", ec);
+        std::printf("fdid export: %u rows, %s\n", result.rows, result.written ? "written" : "unchanged");
+        return 0;
+    }
+
+    // fdid import --listfile FILE | --custom FILE...; fdid export; fdid allocate PATH...; fdid retire PATH...
+    int RunFdid(std::vector<std::string> const& args)
+    {
+        if (args.empty())
+        {
+            std::printf("fdid: subcommand required (import, export, allocate, retire)\n");
+            return 1;
+        }
+        if (!std::filesystem::exists(WorldPath()))
+        {
+            std::printf("fdid: %s does not exist (run create first)\n", WorldPath().string().c_str());
+            return 1;
+        }
+
+        std::string const subcommand = args[0];
+        std::vector<std::string> const rest(args.begin() + 1, args.end());
+        DoltLiteDatabase world(WorldPath().string());
+        try
+        {
+            if (subcommand == "export")
+                return RunFdidExportIndex(world);
+
+            if (subcommand == "import")
+            {
+                bool failed = false;
+                std::string mode;
+                for (std::string const& arg : rest)
+                {
+                    if (arg == "--listfile" || arg == "--custom")
+                    {
+                        mode = arg;
+                        continue;
+                    }
+                    std::string const source = mode == "--listfile" ? "listfile" : "import";
+                    if (mode.empty())
+                    {
+                        std::printf("fdid import: --listfile FILE or --custom FILE... required\n");
+                        return 1;
+                    }
+                    FdidImportResult result = ImportFdidFile(world, arg, source);
+                    if (!result.error.empty())
+                    {
+                        std::printf("fdid import: %s\n", result.error.c_str());
+                        failed = true;
+                        continue;
+                    }
+                    PrintFdidImport(arg.c_str(), result);
+                }
+                return failed || mode.empty() ? 1 : 0;
+            }
+
+            if (subcommand == "allocate" || subcommand == "retire")
+            {
+                if (rest.empty())
+                {
+                    std::printf("fdid %s: at least one path required\n", subcommand.c_str());
+                    return 1;
+                }
+                if (subcommand == "retire")
+                {
+                    std::printf("fdid retire: %u retired\n", RetireFdids(world, rest));
+                    return 0;
+                }
+                std::vector<int64_t> const ids = AllocateFdids(world, rest, "import");
+                for (size_t i = 0; i < ids.size(); ++i)
+                    std::printf("%lld;%s\n", static_cast<long long>(ids[i]), NormalizeClientPath(rest[i]).c_str());
+                return 0;
+            }
+        }
+        catch (std::exception const& e)
+        {
+            std::printf("fdid %s: %s\n", subcommand.c_str(), e.what());
+            return 1;
+        }
+
+        std::printf("fdid: unknown subcommand: %s\n", subcommand.c_str());
+        return 1;
     }
 
     // import --format db2|dbc [--tables A,B] [--dir D]
@@ -327,6 +456,8 @@ namespace
         }
         std::printf("export %s: %u tables exported, %u unchanged, %u with no dbc_files row, %u failed\n",
             format.c_str(), exported, unchanged, missing, failed);
+        if (toClient && RunFdidExportIndex(world) != 0)
+            return 1;
         return failed ? 1 : 0;
     }
 
@@ -849,6 +980,8 @@ int main(int argc, char** argv)
         return RunImport(rest);
     if (command == "export")
         return RunExport(rest);
+    if (command == "fdid")
+        return RunFdid(rest);
     if (command == "generate-wms")
         return RunGenerateWms(rest);
     if (command == "verify")

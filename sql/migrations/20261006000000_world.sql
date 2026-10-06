@@ -1,0 +1,8 @@
+INSERT INTO `migrations` VALUES ('20261006000000');
+
+CREATE TABLE `file_data_id` (
+  `id` INTEGER PRIMARY KEY,
+  `path` TEXT NOT NULL UNIQUE,
+  `source` TEXT NOT NULL,
+  `retired` INTEGER NOT NULL DEFAULT 0
+);

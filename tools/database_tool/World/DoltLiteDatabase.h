@@ -71,6 +71,8 @@ public:
     DoltLiteStatement Prepare(std::string const& sql);
 
     void Begin();
+    // Takes the write lock up front (waits up to the busy timeout), for read-then-write sequences.
+    void BeginImmediate();
     void Commit();
     void Rollback();
 

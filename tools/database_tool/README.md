@@ -32,10 +32,11 @@ directory options:
 ## Commands
 
 ```
-database_tool create   [--databases world] [--no-dbc-import] [--base-only]
+database_tool create   [--databases world] [--no-dbc-import] [--base-only] [--listfile FILE]
 database_tool update   [--databases world]
 database_tool import   --format db2|dbc [--tables A,B] [--dir D]
 database_tool export   --format db2|dbc [--tables A,B] [--dir D] [--client]
+database_tool fdid     import --listfile FILE | import --custom FILE... | export | allocate PATH... | retire PATH...
 database_tool port-migration <file>...
 database_tool compare-world --mysql "<host;port;user;pass;db>"
 database_tool reference
@@ -50,6 +51,18 @@ Exit codes: `0` success, `1` failure, `2` for `port-migration` when any file was
 `status` (plan.md's command set) isn't implemented yet, and neither is a `--config` flag: `create`
 and `update` only drive `world`; `logon`/`characters`/`logs` aren't wired into the CLI yet (see
 `Commands/CreateMysqlDatabase.h` to drive them directly against a `common.conf`-style file).
+
+### fdid
+
+`file_data_id` in `.world` holds every FileDataID (stock rows from the listfile, custom ids from
+2000000000 up; ids are never deleted or reused, `retire` sets a flag). `fdid import --listfile`
+loads stock rows (also `create --listfile`), `fdid import --custom` folds in old `custom.index` /
+legacy allocation files, `fdid allocate` prints `id;path` for each path (adding missing ones), and
+`fdid export` writes `.client/Content/fdid.index` (also run by `export --client`) and removes the
+old `custom.index`. Allocation runs in one `BEGIN IMMEDIATE` transaction, so concurrent tools never
+get the same id.
+
+No command makes dolt commits; committing `.world` is left to the user.
 
 ### create
 
