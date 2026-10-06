@@ -58,6 +58,42 @@ public static class VertexColorMapper
             CellCentreTexels.CentreCoordinate(cx),
             CellCentreTexels.CentreCoordinate(cy));
 
+    /// <summary>The inverse of <see cref="ColorBlock"/> / <see cref="LightBlock"/>: reads a block back at every
+    /// vertex and returns the 9×9 outer and 8×8 inner grids in MCNK order. Alpha is returned opaque.</summary>
+    public static (Color[] Outer, Color[] Inner) FromBlock(byte[] block)
+    {
+        if (block.Length != TexelEdge * TexelEdge * 4)
+        {
+            throw new System.ArgumentException($"Expected {TexelEdge * TexelEdge * 4} bytes, got {block.Length}.", nameof(block));
+        }
+
+        var outer = new Color[VertexEdge * VertexEdge];
+        for (int y = 0; y < VertexEdge; y++)
+        {
+            for (int x = 0; x < VertexEdge; x++)
+            {
+                outer[((VertexEdge - 1 - x) * VertexEdge) + y] = ReadColor(block, SampleAtVertex, x, y);
+            }
+        }
+
+        var inner = new Color[CentreEdge * CentreEdge];
+        for (int y = 0; y < CentreEdge; y++)
+        {
+            for (int x = 0; x < CentreEdge; x++)
+            {
+                inner[((CentreEdge - 1 - x) * CentreEdge) + y] = ReadColor(block, SampleAtCentre, x, y);
+            }
+        }
+
+        return (outer, inner);
+    }
+
+    private static Color ReadColor(byte[] block, System.Func<byte[], int, int, int, float> sample, int x, int y) => new(
+        ToByte(sample(block, 0, x, y) / 255.0f) / 255.0f,
+        ToByte(sample(block, 1, x, y) / 255.0f) / 255.0f,
+        ToByte(sample(block, 2, x, y) / 255.0f) / 255.0f,
+        1.0f);
+
     private static byte[] Block(Color[] outer, Color[]? inner, bool opaque)
     {
         var block = new byte[TexelEdge * TexelEdge * 4];

@@ -125,4 +125,32 @@ public static class VertexColorMapperTests
             Assert.AreEqual((byte)0, block[i + 3]);
         }
     }
+
+    [EditorTest(Category = "WoW Import", Thread = TestThread.Background)]
+    public static void From_block_inverts_the_colour_block()
+    {
+        var outer = new Color[81];
+        var inner = new Color[64];
+        for (int i = 0; i < outer.Length; i++)
+        {
+            outer[i] = new Color((i * 3 % 256) / 255.0f, (i * 7 % 256) / 255.0f, (i * 11 % 256) / 255.0f, 1.0f);
+        }
+
+        for (int i = 0; i < inner.Length; i++)
+        {
+            inner[i] = new Color((i * 5 % 256) / 255.0f, (i * 13 % 256) / 255.0f, (i * 17 % 256) / 255.0f, 1.0f);
+        }
+
+        (Color[] o, Color[] n) = VertexColorMapper.FromBlock(VertexColorMapper.ColorBlock(outer, inner));
+
+        for (int i = 0; i < outer.Length; i++)
+        {
+            Assert.AreEqual(outer[i], o[i], $"outer {i}");
+        }
+
+        for (int i = 0; i < inner.Length; i++)
+        {
+            Assert.AreEqual(inner[i], n[i], $"inner {i}");
+        }
+    }
 }

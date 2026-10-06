@@ -86,4 +86,20 @@ public static class TextureMapper
 
         return block;
     }
+
+    /// <summary>The inverse of <see cref="AlphaBlock"/>: the 64×64 MCAL grid of <paramref name="slot"/> (1-3).</summary>
+    public static byte[] AlphaFromBlock(byte[] block, int slot)
+    {
+        var mcal = new byte[AlphaEdge * AlphaEdge];
+        int component = slot - 1;
+        for (int y = 0; y < AlphaEdge; y++)
+        {
+            for (int x = 0; x < AlphaEdge; x++)
+            {
+                mcal[((AlphaEdge - 1 - x) * AlphaEdge) + y] = block[(((y * AlphaEdge) + x) * 4) + component];
+            }
+        }
+
+        return mcal;
+    }
 }

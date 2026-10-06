@@ -84,6 +84,24 @@ public static class TextureMapperTests
         }));
     }
 
+    [EditorTest(Category = "WoW Import", Thread = TestThread.Background)]
+    public static void Alpha_from_block_inverts_the_alpha_block()
+    {
+        var a1 = new byte[64 * 64];
+        var a3 = new byte[64 * 64];
+        for (int i = 0; i < a1.Length; i++)
+        {
+            a1[i] = (byte)(i * 7);
+            a3[i] = (byte)(i * 13 + 5);
+        }
+
+        ImportedChunk chunk = Chunk(new ImportedLayer(0, 0, null), new ImportedLayer(1, 0, a1), new ImportedLayer(2, 0, null), new ImportedLayer(3, 0, a3));
+        byte[] block = TextureMapper.AlphaBlock(chunk);
+
+        Assert.IsTrue(a1.AsSpan().SequenceEqual(TextureMapper.AlphaFromBlock(block, 1)));
+        Assert.IsTrue(a3.AsSpan().SequenceEqual(TextureMapper.AlphaFromBlock(block, 3)));
+    }
+
     private static ImportedChunk Chunk(params ImportedLayer[] layers) => new()
     {
         LocalCol = 0,
