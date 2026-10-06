@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -31,9 +32,17 @@ namespace
         return std::filesystem::path(DATABASE_TOOL_SOURCE_DIR);
     }
 
+    // Where .world, .client and sql/migrations live; DATABASE_TOOL_ROOT lets tests point at a scratch copy.
+    std::filesystem::path DataRoot()
+    {
+        if (char const* override = std::getenv("DATABASE_TOOL_ROOT"))
+            return std::filesystem::path(override);
+        return SourceRoot();
+    }
+
     std::filesystem::path DbfilesclientDir()
     {
-        return SourceRoot() / ".client" / "Content" / "dbfilesclient";
+        return DataRoot() / ".client" / "Content" / "dbfilesclient";
     }
 
     std::filesystem::path InputsDir()
@@ -43,7 +52,7 @@ namespace
 
     std::filesystem::path VanillaDbcDir()
     {
-        return SourceRoot() / ".client" / "vanilla" / "dbc";
+        return DataRoot() / ".client" / "vanilla" / "dbc";
     }
 
     // The stock client db2s (backups win over files `export --client` overwrote), checked
@@ -51,7 +60,7 @@ namespace
     std::filesystem::path StockDbfilesclientDir(std::string& error)
     {
         std::filesystem::path view = BuildStockClientView(DbfilesclientDir(),
-            SourceRoot() / ".world" / "dbfilesclient-stock", SourceRoot() / ".world" / "cache" / "client-db2-stock");
+            DataRoot() / ".world" / "dbfilesclient-stock", DataRoot() / ".world" / "cache" / "client-db2-stock");
         error = VerifyInputManifest(view, InputsDir() / "client-db2.sha256");
         return error.empty() ? view : std::filesystem::path();
     }
@@ -61,7 +70,7 @@ namespace
     {
         std::string error;
         std::filesystem::path view = BuildStockClientView(DbfilesclientDir(),
-            SourceRoot() / ".world" / "dbfilesclient-stock", SourceRoot() / ".world" / "cache" / "client-db2-stock");
+            DataRoot() / ".world" / "dbfilesclient-stock", DataRoot() / ".world" / "cache" / "client-db2-stock");
         error = WriteInputManifest(view, ".db2", InputsDir() / "client-db2.sha256");
         if (error.empty())
             error = WriteInputManifest(VanillaDbcDir(), ".dbc", InputsDir() / "vanilla-dbc.sha256");
@@ -142,12 +151,12 @@ namespace
         }
 
         bool const baseOnly = HasFlag(args, "--base-only");
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / (baseOnly ? "base.doltlite" : "world.doltlite");
-        std::filesystem::path const cacheDirectory = SourceRoot() / ".world" / "cache";
-        std::filesystem::path const emptyMigrations = SourceRoot() / ".world" / "no-migrations";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / (baseOnly ? "base.doltlite" : "world.doltlite");
+        std::filesystem::path const cacheDirectory = DataRoot() / ".world" / "cache";
+        std::filesystem::path const emptyMigrations = DataRoot() / ".world" / "no-migrations";
         if (baseOnly)
             std::filesystem::create_directories(emptyMigrations);
-        std::filesystem::path const migrationsDirectory = baseOnly ? emptyMigrations : SourceRoot() / "sql" / "migrations";
+        std::filesystem::path const migrationsDirectory = baseOnly ? emptyMigrations : DataRoot() / "sql" / "migrations";
         bool const importDbc = !baseOnly && !HasFlag(args, "--no-dbc-import");
 
         std::string inputError;
@@ -216,7 +225,7 @@ namespace
             }
         }
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
             std::printf("import: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
@@ -242,7 +251,7 @@ namespace
         bool toClient = false;
         std::string format;
         std::vector<std::string> onlyTables;
-        std::filesystem::path directory = SourceRoot() / ".world" / "dbfilesclient";
+        std::filesystem::path directory = DataRoot() / ".world" / "dbfilesclient";
         for (size_t i = 0; i < args.size(); ++i)
         {
             if (args[i] == "--format" && i + 1 < args.size())
@@ -270,7 +279,7 @@ namespace
             return 1;
         }
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
             std::printf("export: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
@@ -290,7 +299,7 @@ namespace
         if (toClient)
         {
             options.onlyChanged = true;
-            options.backupDir = SourceRoot() / ".world" / "dbfilesclient-stock";
+            options.backupDir = DataRoot() / ".world" / "dbfilesclient-stock";
         }
         DbcExportResult result = format == "db2"
             ? ExportDb2Files(world, directory, onlyTables, GetDbcTables(), options)
@@ -329,8 +338,8 @@ namespace
             return 1;
         }
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
-        std::filesystem::path const migrationsDirectory = SourceRoot() / "sql" / "migrations";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const migrationsDirectory = DataRoot() / "sql" / "migrations";
 
         if (!std::filesystem::exists(worldPath))
         {
@@ -364,7 +373,7 @@ namespace
             return 1;
         }
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
             std::printf("compare-world: %s does not exist (run create --base-only first)\n", worldPath.string().c_str());
@@ -428,9 +437,9 @@ namespace
     {
         (void)args;
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "base.doltlite";
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
-        std::filesystem::path const vanillaDbcDir = SourceRoot() / ".client" / "vanilla" / "dbc";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "base.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const vanillaDbcDir = DataRoot() / ".client" / "vanilla" / "dbc";
 
         if (!std::filesystem::exists(worldPath))
         {
@@ -477,7 +486,7 @@ namespace
     {
         (void)args;
 
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
         SpecInitResult result = UpdateSpecInventory(referencePath, SpecDir());
         if (!result.error.empty())
         {
@@ -538,7 +547,7 @@ namespace
     {
         (void)args;
 
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
         SpecEvidenceResult result = BuildEvidence(referencePath, SourceRoot(), SpecDir());
         if (!result.error.empty())
         {
@@ -560,7 +569,7 @@ namespace
     {
         (void)args;
 
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
         SpecGapResult result = BuildGaps(referencePath, DB_SCHEMA_SETUP_DEFINITIONS_DIR, SpecDir());
         if (!result.error.empty())
         {
@@ -577,7 +586,7 @@ namespace
     {
         bool final = std::find(args.begin(), args.end(), "--final") != args.end();
 
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
         SpecCheckResult result;
         try
         {
@@ -647,7 +656,7 @@ namespace
 
         try
         {
-            DoltLiteDatabase db((SourceRoot() / ".world" / (useWorld ? "world.doltlite" : "reference.doltlite")).string());
+            DoltLiteDatabase db((DataRoot() / ".world" / (useWorld ? "world.doltlite" : "reference.doltlite")).string());
             DoltLiteStatement stmt = db.Prepare(sql);
             int const count = stmt.ColumnCount();
             while (stmt.Step())
@@ -699,7 +708,7 @@ namespace
     // verify init [--vdbc Name,Name|all]
     int RunVerifyCommand(std::vector<std::string> const& args)
     {
-        std::filesystem::path const referencePath = SourceRoot() / ".world" / "reference.doltlite";
+        std::filesystem::path const referencePath = DataRoot() / ".world" / "reference.doltlite";
         std::filesystem::path const verifyDir = SourceRoot() / "tools" / "database_tool" / "Verify";
 
         if (!args.empty() && args[0] == "init")
@@ -739,7 +748,7 @@ namespace
             }
         }
 
-        VerifyResult result = RunVerify(SourceRoot() / ".world" / "world.doltlite", referencePath, SpecDir(), verifyDir, options);
+        VerifyResult result = RunVerify(DataRoot() / ".world" / "world.doltlite", referencePath, SpecDir(), verifyDir, options);
         if (!result.error.empty())
         {
             std::printf("verify: %s\n", result.error.c_str());
@@ -791,7 +800,7 @@ namespace
             if (args[i] == "--out" && i + 1 < args.size())
                 directory = args[++i];
 
-        std::filesystem::path const worldPath = SourceRoot() / ".world" / "world.doltlite";
+        std::filesystem::path const worldPath = DataRoot() / ".world" / "world.doltlite";
         if (!std::filesystem::exists(worldPath))
         {
             std::printf("generate-wms: %s does not exist (run create first)\n", worldPath.string().c_str());
