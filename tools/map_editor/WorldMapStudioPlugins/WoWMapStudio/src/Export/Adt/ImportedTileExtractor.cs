@@ -32,19 +32,29 @@ public interface ITerrainImageSource
 /// </summary>
 public static class ImportedTileExtractor
 {
-    public static ImportedTile Extract(WowTileId tile, ImportedTile template, ITerrainImageSource source)
+    /// <param name="slotTextures">Texture FileDataID per MCNK slot (null = no layer) by chunk (col, row); chunks absent keep the template's layers.</param>
+    public static ImportedTile Extract(
+        WowTileId tile,
+        ImportedTile template,
+        ITerrainImageSource source,
+        IReadOnlyDictionary<(int Col, int Row), IReadOnlyList<uint?>>? slotTextures = null)
     {
+        var textures = new List<uint>(template.Textures);
+        var heightTextures = new List<uint>(template.HeightTextures);
         var chunks = new List<ImportedChunk>(ImportedTile.ChunkCount);
         foreach ((int col, int row, ChunkCoord coord) in WowTileAddressing.EnumerateChunks(tile))
         {
-            chunks.Add(ExtractChunk(template.Chunks[(row * ImportedTile.ChunkEdge) + col], coord, source));
+            ImportedChunk src = template.Chunks[(row * ImportedTile.ChunkEdge) + col];
+            IReadOnlyList<uint?>? slots = null;
+            slotTextures?.TryGetValue((src.LocalCol, src.LocalRow), out slots);
+            chunks.Add(ExtractChunk(src, coord, source, slots, textures, heightTextures));
         }
 
         return new ImportedTile
         {
             TileId = template.TileId,
-            Textures = template.Textures,
-            HeightTextures = template.HeightTextures,
+            Textures = textures,
+            HeightTextures = heightTextures,
             Doodads = template.Doodads,
             Objects = template.Objects,
             Chunks = chunks,
@@ -62,7 +72,13 @@ public static class ImportedTileExtractor
         Chunks = tile.Chunks,
     };
 
-    private static ImportedChunk ExtractChunk(ImportedChunk src, ChunkCoord coord, ITerrainImageSource source)
+    private static ImportedChunk ExtractChunk(
+        ImportedChunk src,
+        ChunkCoord coord,
+        ITerrainImageSource source,
+        IReadOnlyList<uint?>? slotTextures,
+        List<uint> textures,
+        List<uint> heightTextures)
     {
         float[] outer = src.OuterHeights;
         float[] inner = src.InnerHeights;
@@ -100,10 +116,29 @@ public static class ImportedTileExtractor
 
         var layers = new List<ImportedLayer>(src.Layers.Count);
         byte[]? alphaBlock = ReadBlock(source, TerrainImage.Alpha, TextureMapper.AlphaEdge, 4, coord);
-        for (int slot = 0; slot < src.Layers.Count; slot++)
+        int slotCount = slotTextures == null || LastAssigned(slotTextures) < 0 ? src.Layers.Count : Math.Min(TextureMapper.SlotCount, LastAssigned(slotTextures) + 1);
+        for (int slot = 0; slot < slotCount; slot++)
         {
-            ImportedLayer layer = src.Layers[slot];
-            if (alphaBlock != null && slot >= 1 && slot < TextureMapper.SlotCount && layer.Alpha != null)
+            bool existing = slot < src.Layers.Count;
+            ImportedLayer layer = existing ? src.Layers[slot] : new ImportedLayer(0, 0, null);
+            if (slotTextures != null && slot < slotTextures.Count)
+            {
+                uint? fdid = slotTextures[slot];
+                if (fdid is { } id && (!existing || TextureOf(textures, layer) != id))
+                {
+                    int index = textures.IndexOf(id);
+                    if (index < 0)
+                    {
+                        index = textures.Count;
+                        textures.Add(id);
+                        heightTextures.Add(0);
+                    }
+
+                    layer = layer with { TextureIndex = index };
+                }
+            }
+
+            if (alphaBlock != null && slot >= 1 && slot < TextureMapper.SlotCount && (layer.Alpha != null || !existing))
             {
                 layer = layer with { Alpha = TextureMapper.AlphaFromBlock(alphaBlock, slot) };
             }
@@ -127,6 +162,22 @@ public static class ImportedTileExtractor
             Flags = flags,
             Liquid = src.Liquid,
         };
+    }
+
+    private static uint? TextureOf(List<uint> textures, ImportedLayer layer) =>
+        layer.TextureIndex >= 0 && layer.TextureIndex < textures.Count ? textures[layer.TextureIndex] : null;
+
+    private static int LastAssigned(IReadOnlyList<uint?> slots)
+    {
+        for (int i = slots.Count - 1; i >= 0; i--)
+        {
+            if (slots[i] != null)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>A vertex colour/light block, or null when it is blank (the import stores nothing for a chunk without one).</summary>

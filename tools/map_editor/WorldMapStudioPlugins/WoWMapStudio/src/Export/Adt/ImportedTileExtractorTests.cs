@@ -64,4 +64,38 @@ public static class ImportedTileExtractorTests
             }
         }
     }
+
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Extract_applies_slot_texture_changes()
+    {
+        var chunks = Enumerable.Range(0, ImportedTile.ChunkCount).Select(i => new ImportedChunk
+        {
+            LocalCol = i % ImportedTile.ChunkEdge,
+            LocalRow = i / ImportedTile.ChunkEdge,
+            OuterHeights = new float[81],
+            InnerHeights = new float[64],
+            Layers = [new ImportedLayer(0, 0, null)],
+            Holes = new bool[16],
+            AreaId = 0,
+            Flags = 0,
+        }).ToList();
+        var template = new ImportedTile
+        {
+            TileId = new ImportedTileId("azeroth", 32, 48),
+            Textures = [100u],
+            HeightTextures = [0u],
+            Doodads = [],
+            Objects = [],
+            Chunks = chunks,
+        };
+
+        var slots = new Dictionary<(int, int), IReadOnlyList<uint?>> { [(0, 0)] = new uint?[] { 200u, 100u, null, null } };
+        var back = ImportedTileExtractor.Extract(new WowTileId("azeroth", 32, 48), template, new DictSource(), slots);
+
+        Assert.IsTrue(back.Textures.SequenceEqual(new uint[] { 100, 200 }), "texture appended");
+        Assert.AreEqual(1, back.Chunks[0].Layers[0].TextureIndex);
+        Assert.AreEqual(2, back.Chunks[0].Layers.Count);
+        Assert.AreEqual(0, back.Chunks[0].Layers[1].TextureIndex);
+        Assert.AreEqual(1, back.Chunks[1].Layers.Count);
+    }
 }

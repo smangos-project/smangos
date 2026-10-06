@@ -90,6 +90,10 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         var newUids = new Dictionary<long, long>();
         uint nextUid = (uint)Math.Max(PlacementExtractor.CustomUidBase, ledger.Count == 0 ? 0 : ledger.Values.Max() + 1);
 
+        uint ResolveTexture(string path) =>
+            WowFileDataIds.Shared.IdOf(path)
+            ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : WowFileDataIds.Shared.Allocate(path));
+
         int written = 0;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -100,7 +104,8 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
             ImportedTile template = await Task.Run(() => WowAdtTileReader.Read(fs, wdt, new ImportedTileId(sourceMap, id.FileX, id.FileY))).ConfigureAwait(false);
             StoredTerrainImages stored = await StoredTerrainImages.LoadAsync(storage, images, catalog, id).ConfigureAwait(false);
-            ImportedTile tile = ImportedTileExtractor.Extract(id, template, stored);
+            var slotTextures = await StoredSlotTextures.LoadAsync(storage, catalog.Map.Value, id.FileX, id.FileY, ResolveTexture).ConfigureAwait(false);
+            ImportedTile tile = ImportedTileExtractor.Extract(id, template, stored, slotTextures);
             var (doodads, objects) = PlacementExtractor.Apply(
                 template,
                 placements,
