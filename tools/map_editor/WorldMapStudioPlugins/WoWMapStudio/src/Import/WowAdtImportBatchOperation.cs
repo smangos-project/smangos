@@ -28,7 +28,9 @@ internal sealed record ImportedImageChunk(ImageChunkCoord Coord, byte[] Pixels, 
 /// run resumes where it left off. Everything is written straight to storage, outside the edit session;
 /// <see cref="BatchContext.RequireReload"/> brings the loaded world back in line at the end.
 ///
-/// Heights, textures, holes, vertex colours/light and placements are mapped; water is not yet.
+/// Heights, textures, holes, vertex colours/light, placements and water are mapped. Water becomes
+/// one <c>wow.water.surface</c> <see cref="ProceduralModel"/> plus a <see cref="ProceduralComponent"/>
+/// per merged body (<see cref="WaterMapper"/>).
 /// </summary>
 [Subsystem(nameof(BatchSystem))]
 public sealed class WowAdtImportBatchOperation : IBatchOperation
@@ -41,8 +43,9 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
     /// merging into it, so every tile but the last one imported came out flat.
     /// v4: the placement dedup set was seeded from the whole project-wide export uid ledger, so
     /// importing a source map's tiles into a second target map skipped every model and WMO.
-    /// v5: placements and textures are keyed by FileDataID.</summary>
-    public const int ImporterVersion = 5;
+    /// v5: placements and textures are keyed by FileDataID.
+    /// v6: MH2O is imported as editable water (a wow.water.surface model per body).</summary>
+    public const int ImporterVersion = 6;
 
     /// <summary>The map's most-negative landscape chunk — a full 64×64-tile map's origin, which the
     /// map-wide height image's pixel (0,0) is aligned to (<see cref="AdtImportCatalog"/>).</summary>
@@ -61,6 +64,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
     private string _sourceMap = "";
     private string _targetMap = "";
     private bool _diskStorage;
+    private bool _importWater = true;
     private int _minX = 32;
     private int _minY = 32;
     private int _maxX = 32;
@@ -101,6 +105,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
 
         ImGui.InputText("Target project map", ref _targetMap, 128);
         ImGui.Checkbox("Store heights on disk", ref _diskStorage);
+        ImGui.Checkbox("Import water (MH2O)", ref _importWater);
 
         ImGui.InputInt("Tile min X", ref _minX);
         ImGui.InputInt("Tile min Y", ref _minY);
@@ -299,6 +304,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
         ["sourceMap"] = _sourceMap,
         ["targetMap"] = _targetMap,
         ["diskStorage"] = _diskStorage,
+        ["importWater"] = _importWater,
         ["minX"] = _minX,
         ["minY"] = _minY,
         ["maxX"] = _maxX,
@@ -310,6 +316,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
         _sourceMap = settings["sourceMap"]?.GetValue<string>() ?? "";
         _targetMap = settings["targetMap"]?.GetValue<string>() ?? "";
         _diskStorage = settings["diskStorage"]?.GetValue<bool>() ?? false;
+        _importWater = settings["importWater"]?.GetValue<bool>() ?? true;
         _minX = settings["minX"]?.GetValue<int>() ?? 32;
         _minY = settings["minY"]?.GetValue<int>() ?? 32;
         _maxX = settings["maxX"]?.GetValue<int>() ?? 32;
@@ -329,6 +336,8 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
         PaintImageStorageKind storageKind = (settings["diskStorage"]?.GetValue<bool>() ?? false)
             ? PaintImageStorageKind.Disk
             : PaintImageStorageKind.Database;
+
+        bool importWater = settings["importWater"]?.GetValue<bool>() ?? true;
 
         int minX = Math.Min(settings["minX"]?.GetValue<int>() ?? 0, settings["maxX"]?.GetValue<int>() ?? 0);
         int maxX = Math.Max(settings["minX"]?.GetValue<int>() ?? 0, settings["maxX"]?.GetValue<int>() ?? 0);
@@ -480,6 +489,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
                 using (context.Timings.Measure("delete previous tile"))
                 {
                     await DeleteExistingTileEntityAsync(storage, catalog.Map, fx, fy).ConfigureAwait(false);
+                    await DeleteExistingWaterAsync(context, work, catalog.Map, grid, tileId).ConfigureAwait(false);
                 }
             }
 
@@ -586,8 +596,22 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
 
             // Nothing here references a row that only a write-back would produce, so the tile entity,
             // placements, water models and water entities can all go in the same commit.
+            List<IEntity> waterModels = [];
+            Vector3[] waterOrigins = [];
+            int waterBodyCount = 0;
+            if (importWater)
+            {
+                (waterModels, waterOrigins, waterBodyCount) = await BuildWaterModelsAsync(context, work, grid, tileId, parsed).ConfigureAwait(false);
+            }
+
+            List<IEntity> waterEntities = waterModels.Count > 0
+                ? BuildWaterEntities(context.Editor, catalog.Map, waterModels, waterOrigins)
+                : [];
+
             var firstBatch = new List<IEntity> { entity };
             firstBatch.AddRange(placements.Select(p => (IEntity)p.Entity));
+            firstBatch.AddRange(waterModels);
+            firstBatch.AddRange(waterEntities);
 
             List<ChunkCoord> chunkCoords = WowTileAddressing.EnumerateChunks(tileId).Select(entry => entry.Coord).ToList();
             List<(int Map, int X, int Y)> chunkChangeRows = chunkCoords.Select(coord => (catalog.Map.Value, coord.X, coord.Y)).ToList();
@@ -650,6 +674,11 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
                 {
                     newUids[recordId] = uniqueId;
                 }
+            }
+
+            if (waterBodyCount > 0)
+            {
+                context.Log($"{tileId.Stem}: {waterBodyCount} water body(ies).");
             }
 
             imported++;
@@ -799,6 +828,216 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
     {
         int slash = path.LastIndexOfAny(['/', '\\']);
         return slash >= 0 ? path[(slash + 1)..] : path;
+    }
+
+    /// <summary>
+    /// Turns a tile's MH2O into one <c>wow.water.surface</c> <see cref="ProceduralModel"/> per merged
+    /// body (<see cref="WaterMapper"/>) and adds each to the catalog, but does not commit — the caller
+    /// folds these, plus the <see cref="ProceduralComponent"/> placements <see cref="BuildWaterEntities"/>
+    /// builds from the result, into the same transaction as the tile entity and placements (see
+    /// <see cref="RunAsync"/>). The body's world-space lattice vertices become the model's network in
+    /// entity-local space, with the returned origin at the body's XZ-bounds centre so the placement
+    /// drags as a unit.
+    /// </summary>
+    /// <remarks>Only building the <see cref="ProceduralModel"/> itself needs the main thread
+    /// (<see cref="EditorContext.Catalog"/>, <see cref="ProceduralModel.LoadNetwork"/>), mirroring
+    /// <see cref="AdtImportCatalog.EnsureSlotMaterialsAsync"/>. Everything else — mapping bodies and
+    /// building each network — runs first, in the background. This hops to the main thread only around
+    /// that step and switches back before returning, so the caller never has to. Returns empty/zero,
+    /// with no hop at all, when the tile has no water.</remarks>
+    private static async Task<(List<IEntity> Models, Vector3[] Origins, int BodyCount)> BuildWaterModelsAsync(
+        BatchContext context, WorkContext work, LandscapeGrid grid, WowTileId tileId, ImportedTile parsed)
+    {
+        IReadOnlyList<ImportedWaterBody> bodies;
+        using (context.Timings.Measure("water: map bodies"))
+        {
+            bodies = WaterMapper.Map(
+                parsed.Chunks.Select(chunk => chunk.Liquid).ToList(), tileId, grid, context.Log);
+        }
+
+        if (bodies.Count == 0)
+        {
+            return ([], [], 0);
+        }
+
+        var origins = new Vector3[bodies.Count];
+        var networks = new VertexNetwork[bodies.Count];
+        for (int i = 0; i < bodies.Count; i++)
+        {
+            ImportedWaterBody body = bodies[i];
+            Vector3 origin = BodyOrigin(body.Vertices);
+            origins[i] = origin;
+
+            var localVertices = new Vector3[body.Vertices.Count];
+            for (int v = 0; v < body.Vertices.Count; v++)
+            {
+                localVertices[v] = body.Vertices[v] - origin;
+            }
+
+            var faces = new int[body.Faces.Count][];
+            for (int f = 0; f < body.Faces.Count; f++)
+            {
+                WaterQuad quad = body.Faces[f];
+                faces[f] = [quad.A, quad.B, quad.C, quad.D];
+            }
+
+            // A whole-tile ocean is one body with thousands of quads; AddFace in a loop is O(n²).
+            using (context.Timings.Measure("water: build network"))
+            {
+                networks[i] = VertexNetwork.FromMesh(localVertices, faces);
+            }
+        }
+
+        // Timed separately from the loop above: a main-thread hop waits for the frame pump, so a slow
+        // frame rate and slow water work are two different problems with two different fixes.
+        using (context.Timings.Measure("water: hop to main"))
+        {
+            await work.SwitchToMain();
+        }
+
+        EditorContext editor = context.Editor;
+        var models = new List<IEntity>(bodies.Count);
+        try
+        {
+            for (int i = 0; i < bodies.Count; i++)
+            {
+                ImportedWaterBody body = bodies[i];
+
+                var values = new MeshParameterValues();
+                values.Set(WowLiquidParameters.LiquidTypeIdLookup, body.LiquidTypeId);
+                values.Set(WowLiquidParameters.FrameDuration, 0.15f);
+                values.Set(WaterSurfaceMeshFunction.UvScale, 0.05f);
+                values.Set(WaterAttributeParameters.Fishable, body.Fishable);
+                values.Set(WaterAttributeParameters.Fatigue, body.Fatigue);
+
+                var model = new ProceduralModel
+                {
+                    Name = WaterModelName(tileId, i),
+                    FunctionId = WaterSurfaceMeshFunction.FunctionId,
+                    Parameters = values.Serialize(),
+                };
+                using (context.Timings.Measure("water: attach network"))
+                {
+                    model.LoadNetwork(networks[i]);
+                }
+
+                // Adding bumps Context.Catalog.Version, and ProceduralSystem.Index() rebuilds from the
+                // whole catalog the next time it is read — doing this for every model before any entity
+                // resolves ProceduralComponent.Model (which SceneEntity.AddComponent does) keeps that a
+                // one-off cost instead of O(bodies²).
+                using (context.Timings.Measure("water: catalog add"))
+                {
+                    editor.Catalog.AssignId(model);
+                    editor.Catalog.Add(model);
+                }
+
+                models.Add(model);
+            }
+        }
+        finally
+        {
+            await work.SwitchToBackground();
+        }
+
+        return (models, origins, bodies.Count);
+    }
+
+    /// <summary>Builds the <see cref="SceneEntity"/> + <see cref="ProceduralComponent"/> placement for
+    /// each model <see cref="BuildWaterModelsAsync"/> built. <see cref="ProceduralComponent.ModelId"/>
+    /// only needs the model's client-assigned <see cref="ProceduralModel.RecordId"/>, so this can run
+    /// before the models are committed — there is no FK to satisfy.</summary>
+    private static List<IEntity> BuildWaterEntities(EditorContext editor, MapId map, IReadOnlyList<IEntity> models, IReadOnlyList<Vector3> origins)
+    {
+        var entities = new List<IEntity>(models.Count);
+        for (int i = 0; i < models.Count; i++)
+        {
+            var model = (ProceduralModel)models[i];
+            var entity = new MapSceneEntity
+            {
+                Name = model.Name,
+                Map = map,
+                Transform = new Transform3D(Basis.Identity, origins[i]),
+            };
+            entity.AddComponent(new ProceduralComponent(editor.Procedural) { ModelId = model.RecordId });
+            entities.Add(entity);
+        }
+
+        return entities;
+    }
+
+    /// <summary>Drops a re-imported tile's previously imported water — its <see cref="ProceduralComponent"/>
+    /// entities (matched by the deterministic <see cref="WaterModelName"/> prefix, so hand-authored water
+    /// in the same area is left alone) and the models they bind.</summary>
+    private static async Task DeleteExistingWaterAsync(
+        BatchContext context, WorkContext work, MapId map, LandscapeGrid grid, WowTileId tileId)
+    {
+        Aabb tileBounds = WowTileAddressing.EnumerateChunks(tileId)
+            .Select(entry => grid.BoundsOf(entry.Coord))
+            .Aggregate((a, b) => a.Merge(b));
+
+        IReadOnlyList<SceneEntity> hits = await context.ScanSceneAsync(map, tileBounds).ConfigureAwait(false);
+
+        await work.SwitchToMain();
+        try
+        {
+            EditorContext editor = context.Editor;
+            EditorStorage storage = editor.Database.EditorStorage;
+            string prefix = WaterModelName(tileId, -1)[..^2]; // "ADT Water X_Y #"
+            var entities = new List<IEntity>();
+            var models = new List<IEntity>();
+
+            foreach (SceneEntity entity in hits)
+            {
+                if (entity.Component<ProceduralComponent>()?.Model is not { } model ||
+                    !model.Name.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (entity.RecordId is { } entityId)
+                {
+                    entities.Add(new MapSceneEntity { RecordId = entityId, Map = map });
+                }
+
+                if (model.RecordId is not null)
+                {
+                    models.Add(model);
+                    editor.Catalog.Remove(model);
+                }
+            }
+
+            if (entities.Count > 0)
+            {
+                await storage.CommitAsync([], entities).ConfigureAwait(false);
+            }
+
+            if (models.Count > 0)
+            {
+                await storage.CommitAsync([], models).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            await work.SwitchToBackground();
+        }
+    }
+
+    private static string WaterModelName(WowTileId tile, int index) => $"ADT Water {tile.FileX}_{tile.FileY} #{index}";
+
+    /// <summary>The XZ-bounds centre of a body's vertices, at Y = 0 — the entity origin the body's
+    /// network is stored relative to.</summary>
+    private static Vector3 BodyOrigin(IReadOnlyList<Vector3> vertices)
+    {
+        float minX = vertices[0].X, maxX = vertices[0].X, minZ = vertices[0].Z, maxZ = vertices[0].Z;
+        foreach (Vector3 v in vertices)
+        {
+            minX = Math.Min(minX, v.X);
+            maxX = Math.Max(maxX, v.X);
+            minZ = Math.Min(minZ, v.Z);
+            maxZ = Math.Max(maxZ, v.Z);
+        }
+
+        return new Vector3((minX + maxX) * 0.5f, 0.0f, (minZ + maxZ) * 0.5f);
     }
 
     /// <summary>Drops a re-imported tile's previous <see cref="AdtTileComponent"/> entity (its chunk
