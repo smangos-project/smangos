@@ -119,7 +119,7 @@ TEST_CASE("CreateDbcTables creates dbc_files plus one table for every real metad
     TempDoltLiteFile file("real_metadata");
     DoltLiteDatabase db(file.path.string());
 
-    DbcSchemaResult result = CreateDbcTables(db, "test: create dbc tables");
+    DbcSchemaResult result = CreateDbcTables(db);
 
     INFO(result.error);
     CHECK(result.error.empty());
@@ -144,13 +144,13 @@ TEST_CASE("CreateDbcTables recreates dbc_* tables from scratch on a second run",
     TempDoltLiteFile file("rerun");
     DoltLiteDatabase db(file.path.string());
 
-    REQUIRE(CreateDbcTables(db, "first").error.empty());
+    REQUIRE(CreateDbcTables(db).error.empty());
 
     DbcTableMeta const* map = FindDbcTable("Map");
     REQUIRE(map != nullptr);
     db.Execute(std::string("INSERT INTO \"") + map->sqlTable + "\" (\"ID\") VALUES (1)");
 
-    DbcSchemaResult second = CreateDbcTables(db, "second");
+    DbcSchemaResult second = CreateDbcTables(db);
     INFO(second.error);
     CHECK(second.error.empty());
 

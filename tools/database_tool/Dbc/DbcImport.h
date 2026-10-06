@@ -28,7 +28,7 @@ struct DbcImportResult
 // Imports dbfilesclient/<fileStem>.db2 for every table in `tables` (GetDbcTables() by default),
 // or just the ones named in `onlyTables` (case-insensitive) when it's non-empty, into `world`:
 // recreates dbc_<name>, bulk-inserts every row and upserts its dbc_files bookkeeping row, all in
-// one transaction, then one dolt_commit (dbc-formats.md). A table with no file on disk is
+// one transaction (dbc-formats.md). A table with no file on disk is
 // reported (fileFound=false) and left untouched, not an error; a table whose file fails to
 // decode is reported with its error and also left untouched.
 DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path const& dbfilesclientDir,

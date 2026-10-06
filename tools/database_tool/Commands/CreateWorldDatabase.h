@@ -20,8 +20,8 @@ struct WorldUpdateResult
 };
 
 // Applies every pending `_world` migration under migrationsDirectory to an
-// already-open .world (RunDoltLiteMigrations): one DoltLite transaction plus
-// dolt_commit per file, in filename order, stopping at the first failure --
+// already-open .world (RunDoltLiteMigrations): one DoltLite transaction
+// per file, in filename order, stopping at the first failure --
 // including a file that still has the legacy stored-procedure envelope,
 // reported by name rather than run.
 WorldUpdateResult UpdateWorldDatabase(DoltLiteDatabase& world, std::filesystem::path const& migrationsDirectory);

@@ -32,8 +32,7 @@ void LoadVanillaDbcTables(DoltLiteDatabase& db, std::filesystem::path const& van
 // non-dbc_/bookkeeping table renamed "srv_<table>", collapsed to the vanilla build/patch;
 // `vanillaDbcDir` (.client/vanilla/dbc) becomes the "vdbc_*" tables via ReadWdbcFile; and
 // `clientDbfilesclientDir` (.client/Content/dbfilesclient) becomes the "cdbc_*" tables via
-// ReadWdc5File, untouched. Refuses if `referencePath` already exists, like `create`. One DoltLite
-// commit per part.
+// ReadWdc5File, untouched. Refuses if `referencePath` already exists, like `create`.
 ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referencePath,
                                              std::filesystem::path const& worldPath,
                                              std::filesystem::path const& vanillaDbcDir,

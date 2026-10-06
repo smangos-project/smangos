@@ -54,7 +54,7 @@ namespace
     }
 }
 
-TEST_CASE("RunDoltLiteMigrations applies a file's statements and commits it to dolt history", "[MigrationRunner][DoltLite]")
+TEST_CASE("RunDoltLiteMigrations applies a file's statements", "[MigrationRunner][DoltLite]")
 {
     TempDoltLiteFile world("apply");
     DoltLiteDatabase db(world.path.string());
@@ -76,12 +76,12 @@ TEST_CASE("RunDoltLiteMigrations applies a file's statements and commits it to d
     REQUIRE(select.Step());
     CHECK(select.ColumnText(0) == "a");
 
-    DoltLiteStatement log = db.Prepare("SELECT COUNT(*) FROM dolt_log WHERE message = 'migration 1'");
-    REQUIRE(log.Step());
-    CHECK(log.ColumnInt64(0) == 1);
+    DoltLiteStatement ids = db.Prepare("SELECT COUNT(*) FROM `migrations` WHERE `id` = '1'");
+    REQUIRE(ids.Step());
+    CHECK(ids.ColumnInt64(0) == 1);
 }
 
-TEST_CASE("RunDoltLiteMigrations applies pending files in order, one dolt_log entry each", "[MigrationRunner][DoltLite]")
+TEST_CASE("RunDoltLiteMigrations applies pending files in order", "[MigrationRunner][DoltLite]")
 {
     TempDoltLiteFile world("order");
     DoltLiteDatabase db(world.path.string());
@@ -98,9 +98,9 @@ TEST_CASE("RunDoltLiteMigrations applies pending files in order, one dolt_log en
     CHECK(result.appliedIds[0] == "1");
     CHECK(result.appliedIds[1] == "2");
 
-    DoltLiteStatement log = db.Prepare("SELECT COUNT(*) FROM dolt_log WHERE message LIKE 'migration %'");
-    REQUIRE(log.Step());
-    CHECK(log.ColumnInt64(0) == 2);
+    DoltLiteStatement ids = db.Prepare("SELECT COUNT(*) FROM `migrations`");
+    REQUIRE(ids.Step());
+    CHECK(ids.ColumnInt64(0) == 2);
 }
 
 TEST_CASE("RunDoltLiteMigrations rolls back a failing statement, leaving no data and no migrations row", "[MigrationRunner][DoltLite]")

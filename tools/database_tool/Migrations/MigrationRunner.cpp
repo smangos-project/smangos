@@ -74,7 +74,6 @@ MigrationRunResult RunDoltLiteMigrations(DoltLiteDatabase& db, std::vector<Migra
             return result;
         }
 
-        db.DoltCommit("migration " + file.id);
         result.appliedIds.push_back(file.id);
     }
     return result;

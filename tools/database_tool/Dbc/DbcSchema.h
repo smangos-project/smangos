@@ -47,8 +47,7 @@ struct DbcSchemaResult
     std::string error;
 };
 
-// Drops (if present) and recreates every dbc_* table plus dbc_files, in one transaction, then
-// commits `world` with `message`.
-DbcSchemaResult CreateDbcTables(DoltLiteDatabase& world, std::string const& message);
+// Drops (if present) and recreates every dbc_* table plus dbc_files, in one transaction.
+DbcSchemaResult CreateDbcTables(DoltLiteDatabase& world);
 
 #endif

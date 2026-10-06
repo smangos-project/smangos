@@ -140,7 +140,7 @@ std::string BuildDbcFilesTableDdl()
            "\"row_count\" INTEGER)";
 }
 
-DbcSchemaResult CreateDbcTables(DoltLiteDatabase& world, std::string const& message)
+DbcSchemaResult CreateDbcTables(DoltLiteDatabase& world)
 {
     DbcSchemaResult result;
 
@@ -167,19 +167,6 @@ DbcSchemaResult CreateDbcTables(DoltLiteDatabase& world, std::string const& mess
         result.error = e.what();
         try { world.Rollback(); } catch (std::exception const&) {}
         return result;
-    }
-
-    try
-    {
-        world.DoltCommit(message);
-    }
-    catch (std::exception const& e)
-    {
-        // Recreating byte-identical dbc_* tables (e.g. an unchanged regenerate) is a no-op as
-        // far as dolt's working tree is concerned; that's still a successful call.
-        std::string_view what = e.what();
-        if (what.find("nothing to commit") == std::string_view::npos)
-            result.error = e.what();
     }
 
     return result;

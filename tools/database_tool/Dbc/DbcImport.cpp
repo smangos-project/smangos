@@ -128,20 +128,6 @@ DbcImportResult ImportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         return result;
     }
 
-    if (importedTableCount)
-    {
-        try
-        {
-            world.DoltCommit("import db2 (" + std::to_string(importedTableCount) + " tables)");
-        }
-        catch (std::exception const& e)
-        {
-            std::string_view what = e.what();
-            if (what.find("nothing to commit") == std::string_view::npos)
-                result.error = e.what();
-        }
-    }
-
     return result;
 }
 
@@ -211,20 +197,6 @@ DbcImportResult ImportDbcFiles(DoltLiteDatabase& world, std::filesystem::path co
         result.error = e.what();
         try { world.Rollback(); } catch (std::exception const&) {}
         return result;
-    }
-
-    if (importedTableCount)
-    {
-        try
-        {
-            world.DoltCommit("import dbc (" + std::to_string(importedTableCount) + " tables)");
-        }
-        catch (std::exception const& e)
-        {
-            std::string_view what = e.what();
-            if (what.find("nothing to commit") == std::string_view::npos)
-                result.error = e.what();
-        }
     }
 
     return result;

@@ -85,20 +85,3 @@ TEST_CASE("DoltLiteDatabase reports sqlite errors", "[DoltLiteDatabase]")
 
     CHECK_THROWS_AS(db.Execute("NOT VALID SQL"), DoltLiteError);
 }
-
-TEST_CASE("DoltLiteDatabase commits and reads it back from dolt_log", "[DoltLiteDatabase]")
-{
-    TempDoltLiteFile file("dolt_commit");
-    DoltLiteDatabase db(file.path.string());
-
-    db.Execute("CREATE TABLE t(id INTEGER PRIMARY KEY)");
-    db.Execute("INSERT INTO t(id) VALUES (1)");
-
-    std::string hash = db.DoltCommit("test commit");
-    CHECK_FALSE(hash.empty());
-
-    DoltLiteStatement log = db.Prepare("SELECT commit_hash, message FROM dolt_log ORDER BY date DESC LIMIT 1");
-    REQUIRE(log.Step());
-    CHECK(log.ColumnText(0) == hash);
-    CHECK(log.ColumnText(1) == "test commit");
-}

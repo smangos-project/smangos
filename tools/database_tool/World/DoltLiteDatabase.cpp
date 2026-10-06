@@ -170,12 +170,3 @@ void DoltLiteDatabase::Rollback()
 {
     Execute("ROLLBACK");
 }
-
-std::string DoltLiteDatabase::DoltCommit(std::string const& message)
-{
-    DoltLiteStatement statement = Prepare("SELECT dolt_commit('-A', '-m', ?)");
-    statement.BindText(1, message);
-    if (!statement.Step())
-        throw DoltLiteError("dolt_commit returned no rows");
-    return statement.ColumnText(0);
-}

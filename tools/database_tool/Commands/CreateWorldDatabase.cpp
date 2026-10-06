@@ -48,15 +48,14 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
     }
 
     DoltLiteDatabase world(worldPath.string());
-    result.dumpImport = ImportMysqlDump(world, result.archive.sqlPath, "world: import vmangos mangos.sql");
+    result.dumpImport = ImportMysqlDump(world, result.archive.sqlPath);
     if (!result.dumpImport.ok)
     {
         result.error = result.dumpImport.error;
         return result;
     }
 
-    result.dbcSchema = CreateDbcTables(world,
-        std::string("world: create dbc tables (") + GetWowDbDefsCommit() + ")");
+    result.dbcSchema = CreateDbcTables(world);
     if (!result.dbcSchema.error.empty())
     {
         result.error = result.dbcSchema.error;
@@ -81,7 +80,6 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
         result.stagingErrors = std::move(staged.tableErrors);
         for (ReferenceTableInfo const& info : staged.tables)
             stagingTables.push_back(info.table);
-        world.DoltCommit("world: stage vanilla dbc tables");
     }
 
     // Migrations may edit dbc_* rows, so the tables and their rows must already exist.
@@ -98,7 +96,6 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
         for (std::string const& table : stagingTables)
             world.Execute("DROP TABLE \"" + table + "\"");
         world.Commit();
-        world.DoltCommit("world: drop vanilla dbc staging tables");
     }
 
     return result;

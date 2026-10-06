@@ -356,22 +356,6 @@ namespace
                "\"row_count\" INTEGER NOT NULL)";
     }
 
-    // Recreating byte-identical rows in a part (e.g. an unchanged rebuild) is a no-op as far as
-    // dolt's working tree is concerned; that's still a successful commit for our purposes.
-    void SafeDoltCommit(DoltLiteDatabase& db, std::string const& message)
-    {
-        try
-        {
-            db.DoltCommit(message);
-        }
-        catch (std::exception const& e)
-        {
-            std::string_view what = e.what();
-            if (what.find("nothing to commit") == std::string_view::npos)
-                throw;
-        }
-    }
-
     void WriteReferenceTables(DoltLiteDatabase& reference, std::vector<ReferenceTableInfo> const& tables)
     {
         reference.Execute("DROP TABLE IF EXISTS \"reference_tables\"");
@@ -417,7 +401,6 @@ ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referen
     try
     {
         BuildSrvTables(reference, worldPath, result);
-        SafeDoltCommit(reference, "reference: srv_* tables");
 
         // vdbc_* and cdbc_* are each built in their own fresh, self-contained file first, then
         // merged in with CREATE TABLE ... AS SELECT (see MergeIsolatedPart), rather than being
@@ -428,23 +411,18 @@ ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referen
         {
             DoltLiteDatabase vdbcPart(vdbcPartPath.string());
             BuildVdbcTables(vdbcPart, vanillaDbcDir, result);
-            SafeDoltCommit(vdbcPart, "vdbc part: initial build");
         }
         MergeIsolatedPart(reference, vdbcPartPath, "vdbc", result);
-        SafeDoltCommit(reference, "reference: vdbc_* tables");
 
         std::filesystem::path cdbcPartPath = referencePath.parent_path() / "reference.cdbc-part.doltlite";
         std::filesystem::remove(cdbcPartPath);
         {
             DoltLiteDatabase cdbcPart(cdbcPartPath.string());
             BuildCdbcTables(cdbcPart, clientDbfilesclientDir, result);
-            SafeDoltCommit(cdbcPart, "cdbc part: initial build");
         }
         MergeIsolatedPart(reference, cdbcPartPath, "cdbc", result);
-        SafeDoltCommit(reference, "reference: cdbc_* tables");
 
         WriteReferenceTables(reference, result.tables);
-        SafeDoltCommit(reference, "reference: reference_tables bookkeeping");
     }
     catch (std::exception const& e)
     {

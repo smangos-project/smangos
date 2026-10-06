@@ -28,8 +28,7 @@ MigrationRunResult RunMysqlMigrations(Database& db, std::vector<MigrationFile> c
 // statement (MigrationPorter, world-sql.md); this checks that the row landed
 // rather than trusting the file, so a failing statement or a missing insert
 // both leave the file's whole transaction rolled back. Only once that check
-// passes is the transaction committed and `migration <id>` recorded to dolt
-// history. A file that still has the legacy stored-procedure envelope hasn't
+// passes is the transaction committed. A file that still has the legacy stored-procedure envelope hasn't
 // been ported yet and is reported as a failure naming the file, not run.
 MigrationRunResult RunDoltLiteMigrations(DoltLiteDatabase& db, std::vector<MigrationFile> const& pending);
 

@@ -185,7 +185,7 @@ TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-de
     }
     {
         DoltLiteDatabase world(worldPath.string());
-        REQUIRE(CreateDbcTables(world, "dbc tables").error.empty());
+        REQUIRE(CreateDbcTables(world).error.empty());
     }
 
     VerifyOptions options{ false, false, { "V3" }, { "dbc_map", "dbc_chrraces" } };
@@ -274,7 +274,7 @@ TEST_CASE("V4 counts dangling client foreign keys and declared server references
     DoltLiteDatabase(referencePath.string()).Execute("CREATE TABLE unused (x INTEGER)");
     {
         DoltLiteDatabase world(worldPath.string());
-        REQUIRE(CreateDbcTables(world, "dbc tables").error.empty());
+        REQUIRE(CreateDbcTables(world).error.empty());
         world.Execute("INSERT INTO dbc_taxinodes (ID) VALUES (1)");
         world.Execute("INSERT INTO dbc_taxipath (ID, FromTaxiNode, ToTaxiNode) VALUES (1, 1, 0), (2, 5, 0)");
         world.Execute("CREATE TABLE thing (id INTEGER, node INTEGER, kind INTEGER)");

@@ -73,7 +73,7 @@ namespace
     }
 }
 
-DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path const& dumpPath, std::string const& commitMessage)
+DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path const& dumpPath)
 {
     DumpImportResult result;
 
@@ -183,8 +183,6 @@ DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path con
         result.error = "PRAGMA integrity_check failed";
         return result;
     }
-
-    db.DoltCommit(commitMessage);
 
     result.ok = true;
     return result;

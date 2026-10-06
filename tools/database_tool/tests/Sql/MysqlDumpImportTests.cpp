@@ -76,7 +76,7 @@ TEST_CASE("ImportMysqlDump imports tables, rows and a secondary index", "[MysqlD
     TempDoltLiteFile world("ok");
     DoltLiteDatabase db(world.path.string());
 
-    DumpImportResult result = ImportMysqlDump(db, dump.path, "test import");
+    DumpImportResult result = ImportMysqlDump(db, dump.path);
 
     INFO(result.error);
     REQUIRE(result.ok);
@@ -114,7 +114,7 @@ TEST_CASE("ImportMysqlDump reports an unrecognized statement with its line numbe
     TempDoltLiteFile world("bad");
     DoltLiteDatabase db(world.path.string());
 
-    DumpImportResult result = ImportMysqlDump(db, dump.path, "test import");
+    DumpImportResult result = ImportMysqlDump(db, dump.path);
 
     CHECK_FALSE(result.ok);
     CHECK(result.error.find("line 3") != std::string::npos);

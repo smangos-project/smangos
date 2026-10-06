@@ -25,7 +25,7 @@ struct DumpImportResult
 //
 // Runs in one transaction. Before committing, checks that every imported
 // table's row count matches how many rows were parsed for it, and that
-// PRAGMA integrity_check reports "ok". Finishes with one dolt_commit.
-DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path const& dumpPath, std::string const& commitMessage);
+// PRAGMA integrity_check reports "ok".
+DumpImportResult ImportMysqlDump(DoltLiteDatabase& db, std::filesystem::path const& dumpPath);
 
 #endif

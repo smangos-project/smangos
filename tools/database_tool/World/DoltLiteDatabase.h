@@ -74,9 +74,6 @@ public:
     void Commit();
     void Rollback();
 
-    // SELECT dolt_commit('-A', '-m', message); returns the new commit hash.
-    std::string DoltCommit(std::string const& message);
-
     sqlite3* Handle() const { return m_db; }
 
 private:

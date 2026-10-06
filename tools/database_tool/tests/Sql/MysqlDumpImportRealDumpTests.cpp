@@ -28,7 +28,7 @@ TEST_CASE("ImportMysqlDump imports the real pinned world base dump", "[MysqlDump
     DumpImportResult result;
     {
         DoltLiteDatabase db(worldPath.string());
-        result = ImportMysqlDump(db, archive.sqlPath, "world: import vmangos mangos.sql");
+        result = ImportMysqlDump(db, archive.sqlPath);
     } // closed before removing the file below
 
     INFO(result.error);
