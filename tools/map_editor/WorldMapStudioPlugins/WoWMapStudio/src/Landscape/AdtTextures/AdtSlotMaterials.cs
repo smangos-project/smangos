@@ -113,9 +113,12 @@ public sealed class AdtSlotMaterials
         }
     }
 
-    private static uint TextureId(string path) =>
-        WowFileDataIds.Shared.IdOf(path)
-        ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(System.IO.Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : WowFileDataIds.Shared.Allocate(path));
+    private uint TextureId(string path)
+    {
+        WowFileDataIds ids = WowFileDataIds.For(_editor);
+        return ids.IdOf(path)
+            ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(System.IO.Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : ids.Allocate(path));
+    }
 
     private void PersistToDatabase(IReadOnlyList<IEntity> created)
     {

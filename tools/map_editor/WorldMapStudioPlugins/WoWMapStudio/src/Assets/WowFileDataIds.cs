@@ -24,6 +24,28 @@ public sealed class WowFileDataIds
     /// until one is attached it reads <c>.client/Content/fdid.index</c> and allocates in memory only.</summary>
     public static WowFileDataIds Shared => _shared ??= new WowFileDataIds();
 
+    private static readonly Dictionary<string, WowFileDataIds> Detached = new();
+
+    /// <summary>The map for <paramref name="editor"/>: <see cref="Shared"/> when its database is the one backing it, otherwise
+    /// an in-memory map of its own, so scratch projects never write ids into the real table.</summary>
+    public static WowFileDataIds For(EditorContext editor)
+    {
+        WowFileDataIds shared = Shared;
+        string? path = editor.Database.EditorStorage.Location.DatabasePath;
+        lock (shared._gate)
+        {
+            if (shared._storage == null || Equals(shared._storage.Location.DatabasePath, path))
+            {
+                return shared;
+            }
+        }
+
+        lock (Detached)
+        {
+            return Detached.TryGetValue(path ?? "", out WowFileDataIds? ids) ? ids : Detached[path ?? ""] = Parse([]);
+        }
+    }
+
     public int Count
     {
         get

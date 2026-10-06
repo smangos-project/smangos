@@ -87,9 +87,10 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         var newUids = new Dictionary<long, long>();
         uint nextUid = (uint)Math.Max(PlacementExtractor.CustomUidBase, ledger.Count == 0 ? 0 : ledger.Values.Max() + 1);
 
+        WowFileDataIds ids = WowFileDataIds.For(context.Editor);
         uint ResolveTexture(string path) =>
-            WowFileDataIds.Shared.IdOf(path)
-            ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : WowFileDataIds.Shared.Allocate(path));
+            ids.IdOf(path)
+            ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : ids.Allocate(path));
 
         int written = 0;
         var edited = new List<ImportedTile>();
@@ -115,7 +116,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
                     newUids[recordId] = uid;
                     return uid;
                 },
-                path => WowFileDataIds.Shared.Allocate(path));
+                path => ids.Allocate(path));
             tile = ImportedTileExtractor.WithPlacements(tile, doodads, objects);
             string? difference = ImportedTileComparer.FirstDifference(template, tile);
             if (difference == null)
@@ -141,7 +142,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             await WowExportEntityIds.UpsertAsync(storage, newUids).ConfigureAwait(false);
         }
 
-        WowFileDataIds.Shared.ExportIndex(content);
+        ids.ExportIndex(content);
         context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
     }
 }
