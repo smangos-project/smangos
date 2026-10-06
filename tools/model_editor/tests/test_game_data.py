@@ -1,6 +1,8 @@
-"""Game data rows on a scratch copy of the world. Run: python3 tests/test_game_data.py [SCRATCH_ROOT]
-SCRATCH_ROOT holds .world/world.doltlite, .world/dbfilesclient-stock, .client/Content/dbfilesclient and sql/migrations (copies, never the live data)."""
+"""Game data rows on a scratch copy of the world. Run: python3 tests/test_game_data.py [SOURCE_ROOT]
+The world, client db2 files and migrations are copied to a temp root; the live data is never written."""
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -8,8 +10,23 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "addon"))
 from wow_model_editor import doltlite, game_data as gd  # noqa: E402
 
-SCRATCH = Path(sys.argv.pop(1)) if len(sys.argv) > 1 else Path("/tmp/gd-root")
+SOURCE = Path(sys.argv.pop(1)) if len(sys.argv) > 1 else REPO
+SCRATCH = Path(tempfile.mkdtemp(prefix="gd-root-"))
 INFO = gd.ModelInfo(2000000001, "world/custom/wolfy.m2", (-1.0, -0.5, 0.0), (1.0, 0.5, 1.0), (-0.347, -0.347, 0.0), (0.347, 0.347, 1.2), 0)
+
+
+def setUpModule():
+    (SCRATCH / ".world").mkdir()
+    (SCRATCH / ".client" / "Content").mkdir(parents=True)
+    shutil.copy(SOURCE / ".world" / "world.doltlite", SCRATCH / ".world")
+    shutil.copytree(SOURCE / ".client" / "Content" / "dbfilesclient", SCRATCH / ".client" / "Content" / "dbfilesclient")
+    shutil.copytree(SOURCE / "sql", SCRATCH / "sql")
+    for n in ("dbfilesclient-stock", "cache"):
+        (SCRATCH / ".world" / n).symlink_to(SOURCE / ".world" / n)
+
+
+def tearDownModule():
+    shutil.rmtree(SCRATCH, ignore_errors=True)
 
 
 def layout():
@@ -18,7 +35,6 @@ def layout():
                      REPO / "build" / "tools" / "database_tool" / "database_tool", lib)
 
 
-@unittest.skipUnless((SCRATCH / ".world" / "world.doltlite").is_file(), "no scratch root")
 class GameDataTests(unittest.TestCase):
     def test_creature_flow(self):
         lay = layout()
