@@ -38,3 +38,5 @@
 
 ## Session 8 - F6 (partial)
 - `wow.extract` batch op (`Server/WowExtractBatchOperation`): map, optional tile, stages, force, dry run, wraps `WowServerExtractor`. Compiles, not run through the UI. Not done: staleness status header, tile-rect (map_extractor only has `--tile`), drift layer exists already. Next: F3 light preview, G, H, F5.
+
+F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLightComponent env source auto-attached to WowLight, WowSkyEvaluation, WowOutdoorLighting; light falloff now /36. Weather slots, band editing, zone light env source not ported. Not seen in viewport.

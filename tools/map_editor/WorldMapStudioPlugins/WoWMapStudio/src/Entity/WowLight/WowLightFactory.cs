@@ -51,7 +51,7 @@ public sealed class WowLightFactory : ISceneEntityFactory, ISpawnFactory
         List<DbcLightRecord> rows = await RowsForAsync(map, mapValue).ConfigureAwait(false);
         var keys = rows.Select(row => (long)row.ID).ToList();
         List<SceneEntity> built = rows.Where(row => !loaded.Contains(row.ID))
-            .Select(row => (SceneEntity)ToEntity(row, map)).ToList();
+            .Select(row => (SceneEntity)ToEntity(row, map, _storage.Context.Catalog)).ToList();
         return new SceneEntityScan(built, keys, []);
     }
 
@@ -125,6 +125,7 @@ public sealed class WowLightFactory : ISceneEntityFactory, ISpawnFactory
             FalloffEnd = 200.0f,
         };
         light.AddIntrinsicComponent(new WowPointMarker(MarkerTypeId, "Light Marker", MarkerColor, 3.0f));
+        light.AddIntrinsicComponent(new WowLightComponent(context.Catalog));
 
         var command = new CreateEntityCommand(context.Scene, light);
         command.Apply();
@@ -132,19 +133,20 @@ public sealed class WowLightFactory : ISceneEntityFactory, ISpawnFactory
         return light;
     }
 
-    private static WowLight ToEntity(DbcLightRecord record, MapId map)
+    private static WowLight ToEntity(DbcLightRecord record, MapId map, CatalogEntityRegistry catalog)
     {
         var light = new WowLight
         {
             Map = map,
             LightId = (uint)record.ID,
-            FalloffStart = record.GameFalloffStart,
-            FalloffEnd = record.GameFalloffEnd,
+            FalloffStart = WowLightCoordinates.RadiusToGodot(record.GameFalloffStart),
+            FalloffEnd = WowLightCoordinates.RadiusToGodot(record.GameFalloffEnd),
             LightParams = record.LightParamsID1,
             Transform = new Transform3D(Basis.Identity,
                 WowLightCoordinates.PositionToGodot(new Vector3(record.GameCoords1, record.GameCoords2, record.GameCoords3))),
         };
         light.AddIntrinsicComponent(new WowPointMarker(MarkerTypeId, "Light Marker", MarkerColor, 3.0f));
+        light.AddIntrinsicComponent(new WowLightComponent(catalog));
         return light;
     }
 
@@ -155,8 +157,8 @@ public sealed class WowLightFactory : ISceneEntityFactory, ISpawnFactory
         record.GameCoords1 = position.X;
         record.GameCoords2 = position.Y;
         record.GameCoords3 = position.Z;
-        record.GameFalloffStart = light.FalloffStart;
-        record.GameFalloffEnd = light.FalloffEnd;
+        record.GameFalloffStart = WowLightCoordinates.RadiusFromGodot(light.FalloffStart);
+        record.GameFalloffEnd = WowLightCoordinates.RadiusFromGodot(light.FalloffEnd);
         record.LightParamsID1 = light.LightParams;
     }
 
