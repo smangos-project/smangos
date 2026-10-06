@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -81,6 +82,9 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             return;
         }
 
+        string fdidFile = Path.Combine(content, "wms-custom-fdids.txt");
+        WowFileDataIds.Shared.LoadCustom(fdidFile);
+
         int written = 0;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -101,6 +105,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             written++;
         }
 
+        WowFileDataIds.Shared.SaveCustom(fdidFile);
         context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
     }
 }
