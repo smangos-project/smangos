@@ -21,6 +21,7 @@ class Report:
     def __init__(self):
         self.items = []
         self.material_index = {}
+        self.new_groups = {}
         self.stats = {"groups_rebuilt": 0, "files_written": 0, "files_removed": 0}
 
     def add(self, severity, where, message):
@@ -426,6 +427,34 @@ def update_group(w, gi, ob, report, force):
     return True
 
 
+def new_group_objects(root):
+    """Mesh objects in the groups collection without a group index; they are appended as new groups."""
+    objs = [o for c in root.children_recursive if c.name.split(".")[0] == "groups" for o in c.objects
+            if o.type == "MESH" and o.wow_wmo_group.index < 0 and not o.name.startswith(COLLISION_NAME)]
+    return sorted(set(objs), key=lambda o: o.name)
+
+
+def add_group(w, ob, path, report):
+    """Append an empty group for `ob` (to be filled by update_group); returns its index."""
+    gi = len(w.groups)
+    w.groups.new()
+    info = w.root.group_infos.new()
+    p = ob.wow_wmo_group
+    flags = u32(p.flags) or F_EXTERIOR
+    h = w.groups[gi].body.header
+    h.flags = type(h.flags)(flags)
+    h.group_name = w.root.group_names.add(p.group_name)
+    h.descriptive_group_name = w.root.group_names.add(p.descriptive_name)
+    info.name_offset = h.group_name
+    info.flags = type(info.flags)(flags)
+    h.unique_id = 0
+    h.group_liquid = p.group_liquid
+    h.batch_type_d = 0
+    w.root.group_fdids.append(fdids.allocate(group_path(path, gi)))
+    report.new_groups[ob.name] = gi
+    return gi
+
+
 def update_root_boxes(w):
     boxes = np.array([[g.body.header.bounding_box.min.x, g.body.header.bounding_box.min.y, g.body.header.bounding_box.min.z,
                        g.body.header.bounding_box.max.x, g.body.header.bounding_box.max.y, g.body.header.bounding_box.max.z]
@@ -505,6 +534,13 @@ def export(root, out_path=None, options=None):
         try:
             if update_group(w, gi, ob, report, opts["force"]):
                 dirty.add(gi)
+        except ValueError as e:
+            report.add("ERROR", ob.name, str(e))
+    for ob in new_group_objects(root):
+        try:
+            gi = add_group(w, ob, path, report)
+            update_group(w, gi, ob, report, True)
+            dirty.add(gi)
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
     liquid_groups = wmo_root_export.update_root_objects(w, root, report)

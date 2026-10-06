@@ -528,6 +528,33 @@ def wmo_export_validation():
 
 
 @test
+def wmo_export_new_group():
+    path = REFS[0]
+    clear()
+    client.prefs().custom_listfile = "/tmp/me-custom-listfile3.txt"
+    coll = wmo_import.load(path, {"doodads": False})
+    src = mesh_groups(coll)[0]
+    nob = src.copy()
+    nob.data = src.data.copy()
+    nob.name = "my_new_group"
+    nob.wow_wmo_group.index = -1
+    nob.wow_wmo_group.group_name = "extra"
+    nob.location.z += 5
+    next(c for c in coll.children if c.name.startswith("groups")).objects.link(nob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    old = wmo_expect(path)[0]
+    n = len(old.groups)
+    assert len(new.groups) == n + 1 and r.new_groups["my_new_group"] == n
+    a = np.asarray(old.groups[0].body.vertices).view(np.float32).reshape(-1, 3)
+    b = np.asarray(new.groups[n].body.vertices).view(np.float32).reshape(-1, 3)
+    assert len(a) == len(b) and np.allclose(np.sort(a[:, 2]) + 5, np.sort(b[:, 2]), atol=1e-3)
+    assert len(new.root.group_infos) == n + 1 and new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
+    assert path.replace(".wmo", f"_{n:03d}.wmo") in r.files
+
+
+@test
 def wmo_export_root_objects():
     path = REFS[1]
     coll, r = export_files(path, import_opts={"doodads": True})
