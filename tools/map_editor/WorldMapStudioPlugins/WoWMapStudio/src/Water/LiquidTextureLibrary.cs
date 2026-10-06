@@ -16,9 +16,8 @@ public sealed class LiquidTextureLibrary
 {
     private const int MaxFrames = 30;
 
-    // Procedural-water fallback — used when the catalog names no template
-    // (procedural-water rows) or the named frames don't load.
-    private const string FallbackTemplate = @"XTextures\river\lake_a.%d.blp";
+    // Procedural-water fallback — used when the catalog names no frames or they don't load.
+    private const string FallbackTemplate = "XTextures/river/lake_a.{0}.blp";
 
     private readonly Dictionary<int, Texture2DArray?> _arrays = new();
 
@@ -32,16 +31,19 @@ public sealed class LiquidTextureLibrary
             return cached;
         }
 
-        string template = WowLiquidCatalog.Find(context, liquidTypeId)?.TextureTemplate is { Length: > 0 } configured
-            ? configured
-            : FallbackTemplate;
+        string[] framePaths = WowLiquidCatalog.Find(context, liquidTypeId)?.FrameFileDataIds
+            .Select(id => WowFileDataIds.For(context).PathOf((uint)id))
+            .OfType<string>()
+            .Take(MaxFrames)
+            .ToArray() ?? [];
 
-        Texture2DArray? array = BuildTextureArray(context.Assets, template) ?? BuildTextureArray(context.Assets, FallbackTemplate);
+        Texture2DArray? array = (framePaths.Length > 0 ? BuildTextureArray(context.Assets, framePaths) : null)
+            ?? BuildTextureArray(context.Assets, FallbackFrames());
         if (array == null)
         {
             // Loud rather than silent: an unbound sampler renders as flat white, which reads as "the
             // tint is broken" rather than "no client is configured" unless something says so.
-            GD.PushWarning($"[WoW Liquid] No animation frames for liquid type {liquidTypeId}: tried '{FrameFile(template, 1)}' and '{FrameFile(FallbackTemplate, 1)}'. Is a client configured as an asset source?");
+            GD.PushWarning($"[WoW Liquid] No animation frames for liquid type {liquidTypeId}. Is a client configured as an asset source?");
         }
 
         _arrays[liquidTypeId] = array;
@@ -52,19 +54,17 @@ public sealed class LiquidTextureLibrary
     /// new client, so a previously "not found" result is retried instead of staying cached as null.</summary>
     public void Invalidate(int liquidTypeId) => _arrays.Remove(liquidTypeId);
 
-    /// <summary>One frame's path from a <c>dbc_liquidtype.Texture1</c> <c>printf</c> template — the
-    /// <c>%d</c> is the (non-zero-padded) frame number, matching how the client reconstructs frames.</summary>
-    private static string FrameFile(string template, int frame) =>
-        template.Contains("%d") ? template.Replace("%d", frame.ToString()) : $"{template}{frame}";
+    private static string[] FallbackFrames() =>
+        Enumerable.Range(1, MaxFrames).Select(frame => string.Format(FallbackTemplate, frame)).ToArray();
 
-    private static Texture2DArray? BuildTextureArray(AssetSystem assets, string template)
+    private static Texture2DArray? BuildTextureArray(AssetSystem assets, IReadOnlyList<string> paths)
     {
         var frames = new Godot.Collections.Array<Image>();
         Image? first = null;
 
-        for (int frame = 1; frame <= MaxFrames; frame++)
+        foreach (string path in paths)
         {
-            Image? image = LoadImage(assets, FrameFile(template, frame));
+            Image? image = LoadImage(assets, path);
             if (image == null)
             {
                 break;
@@ -72,9 +72,8 @@ public sealed class LiquidTextureLibrary
 
             first ??= image;
 
-            // Guards Texture2DArray.CreateFromImages, which requires every layer to share format and
-            // size: a frame that disagrees with the first is dropped in favour of repeating the first,
-            // rather than failing the whole array.
+            // Texture2DArray.CreateFromImages requires every layer to share format and size: a frame
+            // that disagrees with the first repeats the first instead of failing the whole array.
             frames.Add(image.GetFormat() == first.GetFormat() && image.GetWidth() == first.GetWidth() && image.GetHeight() == first.GetHeight()
                 ? image
                 : first);

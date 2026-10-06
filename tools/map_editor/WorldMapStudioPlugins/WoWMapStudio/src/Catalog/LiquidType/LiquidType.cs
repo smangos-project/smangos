@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace WorldMapStudio.WoW;
 
 /// <summary>The <c>SoundBank</c> column of <c>dbc_liquidtype</c> — what a liquid id fundamentally
@@ -31,10 +33,9 @@ public sealed class LiquidType : CatalogEntity
     [ScriptProperty]
     public int MaterialId { get; set; }
 
-    /// <summary><c>Texture1</c>: a <c>printf</c> frame template, e.g. <c>XTextures\river\lake_a.%d.blp</c>.
+    /// <summary>Animation frame FileDataIDs from <c>dbc_liquidtypextexture</c> (type 0, by order index).
     /// Empty for a type with no client texture (procedural water).</summary>
-    [ScriptProperty]
-    public string TextureTemplate { get; set; } = string.Empty;
+    public IReadOnlyList<int> FrameFileDataIds { get; set; } = [];
 
     /// <summary><c>Float1</c>: UV scale for water/ocean, scroll rate for magma/slime — see
     /// <see cref="WowLiquidMaterialType"/>.</summary>

@@ -47,7 +47,11 @@ public sealed class LiquidTypeFactory : ICatalogEntityFactory, ICatalogBrowser
         List<DbcLiquidtypeRecord> rows = await context.DbcLiquidtype.AsNoTracking()
             .OrderBy(row => row.ID).ToListAsync().ConfigureAwait(false);
 
-        return rows.Select(row => (CatalogEntity)ToEntity(row)).ToList();
+        List<DbcLiquidtypextextureRecord> textures = await context.DbcLiquidtypextexture.AsNoTracking()
+            .Where(row => row.Type == 0).OrderBy(row => row.OrderIndex).ToListAsync().ConfigureAwait(false);
+        ILookup<int, int> frames = textures.ToLookup(row => row.LiquidTypeID, row => row.FileDataID);
+
+        return rows.Select(row => (CatalogEntity)ToEntity(row, frames[row.ID].ToList())).ToList();
     }
 
     public async Task<int> MaxRecordIdAsync()
@@ -111,7 +115,10 @@ public sealed class LiquidTypeFactory : ICatalogEntityFactory, ICatalogBrowser
             return null;
         }
 
-        LiquidType entity = ToEntity(record);
+        List<int> frames = await db.DbcLiquidtypextexture.AsNoTracking()
+            .Where(row => row.LiquidTypeID == id && row.Type == 0).OrderBy(row => row.OrderIndex)
+            .Select(row => row.FileDataID).ToListAsync().ConfigureAwait(false);
+        LiquidType entity = ToEntity(record, frames);
         context.Catalog.Add(entity);
         return entity;
     }
@@ -126,7 +133,7 @@ public sealed class LiquidTypeFactory : ICatalogEntityFactory, ICatalogBrowser
         f.Custom("Name", () => ImGui.TextDisabled($"Name: {typed.Name}"));
         f.Custom("Basic Type", () => ImGui.TextDisabled($"Basic Type: {typed.BasicType}"));
         f.Custom("Material Id", () => ImGui.TextDisabled($"Material Id: {typed.MaterialId}"));
-        f.Custom("Texture Template", () => ImGui.TextDisabled($"Texture Template: {typed.TextureTemplate}"));
+        f.Custom("Frames", () => ImGui.TextDisabled($"Frames: {typed.FrameFileDataIds.Count}"));
         f.Custom("Animation", () => ImGui.TextDisabled($"Animation: {typed.AnimationX}, {typed.AnimationY}"));
     }
 
@@ -143,13 +150,13 @@ public sealed class LiquidTypeFactory : ICatalogEntityFactory, ICatalogBrowser
     public void StageDelete(DbContext context, IEntity entity) =>
         throw new InvalidOperationException("dbc_liquidtype is read-only reference data — liquid rows can't be deleted.");
 
-    private static LiquidType ToEntity(DbcLiquidtypeRecord record) => new()
+    private static LiquidType ToEntity(DbcLiquidtypeRecord record, IReadOnlyList<int> frames) => new()
     {
         LiquidTypeId = record.ID,
         Name = record.Name,
         BasicType = (LiquidBasicType)record.SoundBank,
         MaterialId = record.MaterialID,
-        TextureTemplate = record.Texture1,
+        FrameFileDataIds = frames,
         AnimationX = record.Float1,
         AnimationY = record.Float2,
     };
