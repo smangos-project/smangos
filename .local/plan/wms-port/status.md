@@ -32,3 +32,6 @@
 ## Session 7 - F1/F2
 - F1/F2 done (minimal): `Component/WowSpawnModelComponent` + `SpawnAppearances` replace the point marker on creature and gameobject spawns (same marker type ids). Creature = `creature_template.display_id1` (+`display_scale1`) -> CreatureDisplayInfo -> CreatureModelData FDID; gameobject = `GameObjectDisplayInfo.FileDataID` x template size. Placeholder box until loaded/unresolved. Checked in the live editor at Northshire (NPC and objects render). Not done: NPCs with `CreatureDisplayInfoExtra` (F5), equipment, display_id2-4 variants, thumbnails.
 - Next: F3 light preview, F4 spell_target_position, F6, G catalogs, H.
+
+## Session 8 - F4
+- F4 done: `WowSpellTargetPosition` entity (+factory, inspector, view category) on `spell_target_position` (key id + target_map, no effect index). Create doesn't validate the map (Stage does). Commit path untested against a DB. Next: F3 light preview, F6, G, H.
