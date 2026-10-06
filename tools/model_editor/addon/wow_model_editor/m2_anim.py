@@ -81,6 +81,52 @@ def _enc_quat4(f):
     return wowlib.VectorC4Quaternion(out)
 
 
+def _scalar(v):
+    return np.asarray(v, np.float64)[:, None]
+
+
+def _enc_scalar(vec_cls, dtype):
+    def enc(f):
+        return vec_cls(np.asarray(f, np.float64)[:, 0].astype(dtype).tolist())
+    return enc
+
+
+def _enc_round(vec_cls, dtype):
+    def enc(f):
+        return vec_cls(np.rint(np.asarray(f, np.float64)[:, 0]).astype(dtype).tolist())
+    return enc
+
+
+def _spline_float(v):
+    """M2 spline keys of floats as (value, in tangent, out tangent) columns."""
+    return np.array([(k.value, k.in_tan, k.out_tan) for k in v], np.float64).reshape(len(v), 3)
+
+
+def _enc_spline_float(f):
+    out = []
+    for val, i, o in np.asarray(f, np.float32).tolist():
+        k = record.M2SplineKeyFloat()
+        k.value, k.in_tan, k.out_tan = val, i, o
+        out.append(k)
+    return wowlib.VectorWowlibFormatsM2RootRecordM2SplineKeyFloat(out)
+
+
+def _spline_vec3(v):
+    return np.array([(k.value.x, k.value.y, k.value.z, k.in_tan.x, k.in_tan.y, k.in_tan.z, k.out_tan.x, k.out_tan.y, k.out_tan.z) for k in v], np.float64).reshape(len(v), 9)
+
+
+def _enc_spline_vec3(f):
+    out = []
+    for row in np.asarray(f, np.float32).tolist():
+        k = record.M2SplineKeyC3Vector()
+        for name, (x, y, z) in zip(("value", "in_tan", "out_tan"), (row[0:3], row[3:6], row[6:9])):
+            c = common.C3Vector()
+            c.x, c.y, c.z = x, y, z
+            setattr(k, name, c)
+        out.append(k)
+    return wowlib.VectorWowlibFormatsM2RootRecordM2SplineKeyWowlibFormatsCommonC3Vector(out)
+
+
 class Binding:
     """One M2 track and the Blender property (object, path, attr) that carries it."""
 
@@ -142,8 +188,77 @@ def model_bindings(model):
         yield _prop_binding(arm, f"texxform/{i}/scaling", t.scaling, f"wow_tt_scaling_{i}", 3, (1.0, 1.0, 1.0), _vec3, _enc_vec3)
 
 
+def _obj_binding(ob, key, track, field, n, default, decode, encode):
+    return _prop_binding(ob, key, track, f"wow_{field}", n, default, decode, encode)
+
+
+def _u8():
+    return _scalar, _enc_round(wowlib.VectorUnsignedChar, np.uint8)
+
+
+def _f32():
+    return _scalar, _enc_scalar(wowlib.VectorFloat, np.float32)
+
+
+def object_bindings(model):
+    """Tracks of attachments, lights, cameras, particle and ribbon emitters as custom properties of their objects."""
+    ob_of = model.objects
+    root = model.root
+    u8, f32 = _u8(), _f32()
+    vec3 = (_vec3, _enc_vec3)
+    for i, a in enumerate(root.attachments):
+        ob = ob_of.get(("attachment", i))
+        if ob is not None:
+            yield _obj_binding(ob, f"attachment/{i}/animate_attached", a.animate_attached, "animate_attached", 1, 1.0, *u8)
+    for i, l in enumerate(root.lights):
+        ob = ob_of.get(("light", i))
+        if ob is None:
+            continue
+        for field, n, default, codec in (("ambient_color", 3, (0.0, 0.0, 0.0), vec3), ("ambient_intensity", 1, 0.0, f32), ("diffuse_color", 3, (1.0, 1.0, 1.0), vec3),
+                                         ("diffuse_intensity", 1, 1.0, f32), ("attenuation_start", 1, 0.0, f32), ("attenuation_end", 1, 0.0, f32), ("visibility", 1, 1.0, u8)):
+            yield _obj_binding(ob, f"light/{i}/{field}", getattr(l, field), field, n, default, *codec)
+    for i, c in enumerate(root.cameras):
+        ob = ob_of.get(("camera", i))
+        if ob is None:
+            continue
+        zero9 = (0.0,) * 9
+        yield _obj_binding(ob, f"camera/{i}/positions", c.positions, "positions", 9, zero9, _spline_vec3, _enc_spline_vec3)
+        yield _obj_binding(ob, f"camera/{i}/target_position", c.target_position, "target_position", 9, zero9, _spline_vec3, _enc_spline_vec3)
+        yield _obj_binding(ob, f"camera/{i}/roll", c.roll, "roll", 3, (0.0,) * 3, _spline_float, _enc_spline_float)
+        yield _obj_binding(ob, f"camera/{i}/fov", c.fov, "fov", 3, (0.0,) * 3, _spline_float, _enc_spline_float)
+    for i, e in enumerate(root.particle_emitters):
+        ob = ob_of.get(("particle", i))
+        if ob is None:
+            continue
+        for field in ("emission_speed", "speed_variation", "vertical_range", "horizontal_range", "gravity", "lifespan", "emission_rate", "emission_area_length", "emission_area_width", "z_source"):
+            yield _obj_binding(ob, f"particle/{i}/{field}", getattr(e, field), field, 1, 0.0, *f32)
+        yield _obj_binding(ob, f"particle/{i}/enabled_in", e.enabled_in, "enabled_in", 1, 1.0, *u8)
+    for i, e in enumerate(root.ribbon_emitters):
+        ob = ob_of.get(("ribbon", i))
+        if ob is None:
+            continue
+        yield _obj_binding(ob, f"ribbon/{i}/color", e.color, "color", 3, (1.0, 1.0, 1.0), *vec3)
+        yield _obj_binding(ob, f"ribbon/{i}/alpha", e.alpha, "alpha", 1, 1.0, _fixed16, _enc_fixed16)
+        yield _obj_binding(ob, f"ribbon/{i}/height_above", e.height_above, "height_above", 1, 0.0, *f32)
+        yield _obj_binding(ob, f"ribbon/{i}/height_below", e.height_below, "height_below", 1, 0.0, *f32)
+        yield _obj_binding(ob, f"ribbon/{i}/tex_slot", e.tex_slot, "tex_slot", 1, 0.0, _scalar, _enc_round(wowlib.VectorShortUnsignedInt, np.uint16))
+        yield _obj_binding(ob, f"ribbon/{i}/visibility", e.visibility, "visibility", 1, 1.0, *u8)
+
+
+def event_tracks(model):
+    """(event index, object, track) of every event with an object."""
+    for i, e in enumerate(model.root.events):
+        ob = model.objects.get(("event", i))
+        if ob is not None:
+            yield i, ob, e.enabled
+
+
+def object_map(top):
+    return {(o.wow_m2_object.kind, o.wow_m2_object.index): o for o in top.all_objects if o.wow_m2_object.kind}
+
+
 def all_bindings(model):
-    return list(bone_bindings(model)) + list(model_bindings(model))
+    return list(bone_bindings(model)) + list(model_bindings(model)) + list(object_bindings(model))
 
 
 def classify(binding):
@@ -204,11 +319,26 @@ def build_action(name, selected, frame_end):
     return act
 
 
+def marker_name(i):
+    return f"event_{i}"
+
+
+def add_event_markers(action, events, ti):
+    """Event firing times of timeline `ti` as pose markers named after the event index."""
+    for i, _ob, t in events:
+        if t.timeline_count() <= ti:
+            continue
+        for ts in t.timeline_timestamps(ti):
+            action.pose_markers.new(marker_name(i)).frame = int(ts)
+
+
 def import_animations(model, top):
     """Fills `wow_m2.sequences` / `loops` and builds their actions; returns the binding list."""
     root = model.root
     p = top.wow_m2
+    model.objects = object_map(top)
     bindings = all_bindings(model)
+    events = list(event_tracks(model))
     static = []
     by_seq = []
     by_loop = {}
@@ -223,8 +353,8 @@ def import_animations(model, top):
             by_loop.setdefault(int(b.track.global_sequence), []).append(b)
         elif kind == "seq":
             by_seq.append(b)
-    if static and model.armature is not None:
-        model.armature[STATIC_PROP] = static
+    if static:
+        top[STATIC_PROP] = static
     scene = bpy.context.scene
     scene.render.fps, scene.render.fps_base = 1000, 1.0
     scene.sync_mode = "FRAME_DROP"
@@ -242,10 +372,12 @@ def import_animations(model, top):
         sel = [(b, si) for b in by_seq if si < b.track.timeline_count() and b.track.key_count(si)]
         name = f"{model.stem}_{m2_names.anim_name(s.id)}_{int(s.variation_index)}"
         e.action = build_action(name, sel, int(s.duration))
+        add_event_markers(e.action, [ev for ev in events if ev[2].global_sequence == NONE], si)
     for k, loop in enumerate(root.global_loops):
         e = p.loops.add()
         e.timestamp = int(loop.timestamp)
         sel = [(b, 0) for b in by_loop.get(k, ()) if b.track.timeline_count() and b.track.key_count(0)]
         e.action = build_action(f"{model.stem}_loop{k}", sel, int(loop.timestamp))
+        add_event_markers(e.action, [ev for ev in events if ev[2].global_sequence == k], 0)
     p.active_sequence = -1
     return bindings

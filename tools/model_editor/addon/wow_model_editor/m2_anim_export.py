@@ -18,6 +18,7 @@ class _Shim:
             for b in self.armature.data.bones:
                 names[b.wow_m2_bone.index] = b.name
         self.bone_names = [names.get(i, "") for i in range(len(root.bones))]
+        self.objects = m2_anim.object_map(top)
 
 
 def _channelbag(action, obj):
@@ -127,13 +128,30 @@ def write_loops(root, loops):
             root.global_loops.append(m)
 
 
+def _marker_times(action, i):
+    return sorted({int(m.frame) for m in action.pose_markers if m.name == m2_anim.marker_name(i)}) if action is not None else []
+
+
+def _write_events(model, seq_actions, loop_actions):
+    for i, _ob, t in m2_anim.event_tracks(model):
+        loops = [(k, _marker_times(a, i)) for k, a in enumerate(loop_actions)]
+        loops = [(k, ts) for k, ts in loops if ts]
+        per_seq = [_marker_times(a, i) for a in seq_actions]
+        if loops:
+            t.timestamps = type(t.timestamps)([_vec_uint(loops[0][1])])
+            t.global_sequence = loops[0][0]
+        elif any(per_seq) or t.timeline_count():
+            t.timestamps = type(t.timestamps)([_vec_uint(ts) for ts in per_seq])
+            t.global_sequence = NONE
+
+
 def build(top, root):
     """Rewrites sequences, loops and every animated track of `root` from the Blender data under `top`."""
     p = top.wow_m2
     model = _Shim(top, root)
     write_sequences(root, list(p.sequences))
     write_loops(root, list(p.loops))
-    static = set(model.armature.get(m2_anim.STATIC_PROP, [])) if model.armature is not None else set()
+    static = set(top.get(m2_anim.STATIC_PROP, []))
     seq_actions = [None if s.flags & ALIAS_FLAG else s.action for s in p.sequences]
     loop_actions = [l.action for l in p.loops]
     for b in m2_anim.all_bindings(model):
@@ -153,3 +171,4 @@ def build(top, root):
             b.track.global_sequence = NONE
         else:
             _set_timelines(b, [])
+    _write_events(model, seq_actions, loop_actions)

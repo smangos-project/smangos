@@ -96,6 +96,7 @@ Detailed plan: `phase1.md` (server readers must be ported to vmangos formats; pl
 ### Phase 7 - Terrain export
 - ADT writers (root/`_tex0`/`_obj0`, regenerate `_obj1`/`_lod` or drop and clear the WDT `MAID` slots), WDT (`MAID`, new tiles need new FDIDs), WDL, ZMP (`Map.ZmpFileDataID`), MH2O, minimap tiles (optional). All via wowlib writers; CataBox writers become the semantic reference for what to fill.
 - FDID allocator + listfile update for new files; check the CASC bypass picks up new FDIDs.
+- Progress: `Export/Adt/WowAdtTileWriter` (ImportedTile applied onto the client's own ADT read through wowlib, written to the project overlay; heights, holes, area, layers+alpha, textures) done with an Elwynn round-trip test. Not done: vertex colours/light, placements, water, editor landscape -> ImportedTile extraction, batch operation, WDT/WDL/ZMP, FDID allocator, getting the overlay into the client.
 - Exit: edit a hill in Northshire, export, restart client, walk on it; re-extract server data and the server agrees (height drift layer is zero).
 
 ### Phase 8 - Remaining editors

@@ -7,7 +7,7 @@ from . import m2_import
 
 
 def _objects(top):
-    return [o for o in top.all_objects if o.animation_data is not None or o.type == "ARMATURE"]
+    return [o for o in top.all_objects if o.animation_data is not None or o.type == "ARMATURE" or o.wow_m2_object.kind]
 
 
 def _slot_for(action, ob):

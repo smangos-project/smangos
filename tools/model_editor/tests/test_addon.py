@@ -180,7 +180,8 @@ def operators():
     assert wm.wow_import.doodads
 
 
-M2S = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2", "spells/arcaneexplosion_base.m2", "spells/assassinate_missile.m2"]
+M2S = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2", "spells/arcaneexplosion_base.m2", "spells/assassinate_missile.m2",
+              "character/dwarf/female/dwarffemale.m2", "creature/cryptscarab/crypt_scarab.m2"]
 
 
 def find_m2(stem):
@@ -380,6 +381,19 @@ def m2_anim_model_tracks():
     paths = {fc.data_path for s in top.wow_m2.sequences if s.action for cb in s.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
     paths |= {fc.data_path for l in top.wow_m2.loops if l.action for cb in l.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
     assert any(p.startswith('["wow_tt_translation') for p in paths), paths
+
+
+@test
+def m2_anim_object_tracks():
+    clear()
+    top = m2_import.load("character/dwarf/female/dwarffemale.m2", {"display": "NONE"})
+    acts = [s.action for s in top.wow_m2.sequences if s.action]
+    assert sum(len(a.pose_markers) for a in acts) > 0
+    clear()
+    top = m2_import.load("spells/fireball_missile_high.m2", {"display": "NONE"})
+    paths = {fc.data_path for s in top.wow_m2.sequences if s.action for cb in s.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
+    paths |= {fc.data_path for l in top.wow_m2.loops if l.action for cb in l.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
+    assert any(p.startswith('["wow_emission_rate') for p in paths), paths
 
 
 @test
