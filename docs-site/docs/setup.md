@@ -68,6 +68,8 @@ Extract the client's data into `.client/Content/` (you supply your own `LISTFILE
 
     build/tools/casc_extractor/RelWithDebInfo/casc_extractor --listfile LISTFILE [--cdn HOSTS] [--zero-encrypted]
 
+Afterwards import the names and write the client index (after step 6 has created the world database): `database_tool fdid import --listfile LISTFILE` then `database_tool fdid export`.
+
 `--cdn` downloads files missing from local storage, `--zero-encrypted` zero-fills db2 sections with unknown keys. Reruns skip finished files; see `client/README.md`.
 
 ## 6. Set up the databases

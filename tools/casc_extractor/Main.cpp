@@ -306,9 +306,7 @@ int main(int argc, char** argv)
     }
 
     fs::create_directories(options.output);
-    fs::path indexPath = options.output / "fdid.index";
     fs::path hashesPath = options.output / "root.hashes";
-    std::map<DWORD, std::string> index = ReadKeyedLines(indexPath);
     std::map<DWORD, std::string> hashes = ReadKeyedLines(hashesPath);
 
     std::vector<std::string> failures;
@@ -378,7 +376,6 @@ int main(int argc, char** argv)
 
         if (fileDataId != CASC_INVALID_ID && fileDataId != 0)
         {
-            index[fileDataId] = entry.path;
             if (haveCKey)
             {
                 char line[128];
@@ -391,7 +388,6 @@ int main(int argc, char** argv)
     }
     CascCloseStorage(storage);
 
-    WriteKeyedLines(indexPath, "", index);
     WriteKeyedLines(hashesPath, "# fileDataId;nameHash;ckey;size -- from the build's root and encoding\n", hashes);
 
     fs::path failLog = options.output / "_dump_failed.log";
