@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace WorldMapStudio.WoW;
 
@@ -28,7 +30,13 @@ public sealed class WowFileDataIds
             string candidate = Path.Combine(dir, ".local", "listfile.txt");
             if (File.Exists(candidate))
             {
-                return Load(candidate);
+                WowFileDataIds ids = Load(candidate);
+                string content = Path.Combine(dir, ".client", "Content");
+                if (Directory.Exists(content))
+                {
+                    ids.AttachRegistry(content);
+                }
+                return ids;
             }
         }
 
@@ -68,9 +76,21 @@ public sealed class WowFileDataIds
     /// <summary>First id handed out for project-created files, well above anything the stock client uses.</summary>
     public const uint CustomBase = 2_000_000_000;
 
-    /// <summary>The existing id of <paramref name="path"/>, or a new one from the custom range.</summary>
+    /// <summary>File name of the shared custom id registry (<c>id;path</c> lines) in the Content directory; the client bypass reads it as a name table.</summary>
+    public const string RegistryFile = "custom.index";
+
+    private string? _registryPath;
+
+    /// <summary>The existing id of <paramref name="path"/>, or a new one from the custom range. With a registry attached
+    /// the id is allocated under the registry lock from the file's current contents, so other tools never get the same id.</summary>
     public uint Allocate(string path)
     {
+        if (_registryPath != null)
+        {
+            using var _ = CustomIndexLock.Acquire(_registryPath);
+            LoadRegistry();
+        }
+
         if (IdOf(path) is { } existing)
         {
             return existing;
@@ -86,34 +106,110 @@ public sealed class WowFileDataIds
         }
 
         Add(next, path);
+        if (_registryPath != null)
+        {
+            AppendRegistry(next, Normalize(path));
+        }
         return next;
     }
 
-    /// <summary>Loads previously saved custom allocations so ids stay stable between sessions.</summary>
-    public void LoadCustom(string path)
+    /// <summary>Uses <c>custom.index</c> in <paramref name="contentDirectory"/> as the allocation file. The older allocation
+    /// files (<c>.local/listfile.custom.txt</c>, <c>wms.index</c>, <c>wms-custom-fdids.txt</c>) are merged into it once and deleted.</summary>
+    public void AttachRegistry(string contentDirectory)
     {
-        if (File.Exists(path))
+        string registry = Path.Combine(contentDirectory, RegistryFile);
+        if (_registryPath == registry)
         {
-            foreach (string line in File.ReadLines(path))
+            return;
+        }
+
+        _registryPath = registry;
+        string[] legacy =
+        [
+            Path.Combine(contentDirectory, "..", "..", ".local", "listfile.custom.txt"),
+            Path.Combine(contentDirectory, "wms.index"),
+            Path.Combine(contentDirectory, "wms-custom-fdids.txt"),
+        ];
+        if (legacy.Any(File.Exists))
+        {
+            using var _ = CustomIndexLock.Acquire(registry);
+            MergeLegacy(registry, legacy);
+        }
+        LoadRegistry();
+    }
+
+    private void LoadRegistry()
+    {
+        if (File.Exists(_registryPath!))
+        {
+            foreach (string line in File.ReadLines(_registryPath!))
             {
                 AddLine(line);
             }
         }
     }
 
-    /// <summary>Writes the custom-range allocations (<c>id;path</c> per line, the client bypass's name-table format), ordered by id.</summary>
-    public void SaveCustom(string path)
+    private static void MergeLegacy(string registry, string[] legacy)
     {
-        var lines = new List<string>();
-        foreach (var (id, p) in _paths)
+        var entries = new SortedDictionary<uint, string>();
+        var byPath = new Dictionary<string, uint>(StringComparer.Ordinal);
+        void Read(string file, bool strict)
         {
-            if (id >= CustomBase)
+            foreach (string line in File.ReadLines(file))
             {
-                lines.Add($"{id};{p}");
+                int sep = line.IndexOf(';');
+                if (sep <= 0 || sep == line.Length - 1 || !uint.TryParse(line.AsSpan(0, sep), out uint id))
+                {
+                    continue;
+                }
+
+                string path = Normalize(line[(sep + 1)..]);
+                if (strict && ((entries.TryGetValue(id, out string? have) && have != path) || (byPath.TryGetValue(path, out uint other) && other != id)))
+                {
+                    Godot.GD.PushWarning($"fdid registry conflict in {Path.GetFileName(file)}: {id};{path} (kept the registry entry)");
+                    continue;
+                }
+
+                entries[id] = path;
+                byPath[path] = id;
             }
         }
-        lines.Sort(StringComparer.Ordinal);
-        File.WriteAllLines(path, lines);
+
+        if (File.Exists(registry))
+        {
+            Read(registry, false);
+        }
+        foreach (string file in legacy.Where(File.Exists))
+        {
+            Read(file, true);
+        }
+
+        File.WriteAllLines(registry, entries.Select(e => $"{e.Key};{e.Value}"));
+        foreach (string file in legacy.Where(File.Exists))
+        {
+            File.Delete(file);
+        }
+    }
+
+    private void AppendRegistry(uint id, string path)
+    {
+        var entries = new SortedDictionary<uint, string>();
+        if (File.Exists(_registryPath!))
+        {
+            foreach (string line in File.ReadLines(_registryPath!))
+            {
+                int sep = line.IndexOf(';');
+                if (sep > 0 && uint.TryParse(line.AsSpan(0, sep), out uint existing))
+                {
+                    entries[existing] = line[(sep + 1)..];
+                }
+            }
+        }
+
+        entries[id] = path;
+        string temp = _registryPath + ".tmp";
+        File.WriteAllLines(temp, entries.Select(e => $"{e.Key};{e.Value}"));
+        File.Move(temp, _registryPath!, true);
     }
 
     public string? PathOf(uint id) => _paths.GetValueOrDefault(id);
@@ -132,4 +228,44 @@ public sealed class WowFileDataIds
         }
         Add(id, line[(separator + 1)..]);
     }
+}
+
+/// <summary>Exclusive <c>&lt;registry&gt;.lock</c> file shared with the Blender addon; locks older than a minute are taken over.</summary>
+internal sealed class CustomIndexLock : IDisposable
+{
+    private readonly string _lockPath;
+
+    private CustomIndexLock(string lockPath) => _lockPath = lockPath;
+
+    public static CustomIndexLock Acquire(string registryPath, TimeSpan? timeout = null)
+    {
+        string lockPath = registryPath + ".lock";
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(registryPath))!);
+        DateTime end = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(30));
+        while (true)
+        {
+            try
+            {
+                using (new FileStream(lockPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                }
+                return new CustomIndexLock(lockPath);
+            }
+            catch (IOException) when (File.Exists(lockPath))
+            {
+                if (DateTime.UtcNow - File.GetLastWriteTimeUtc(lockPath) > TimeSpan.FromSeconds(60))
+                {
+                    File.Delete(lockPath);
+                    continue;
+                }
+                if (DateTime.UtcNow > end)
+                {
+                    throw new TimeoutException($"{lockPath} is held by another process");
+                }
+                Thread.Sleep(20);
+            }
+        }
+    }
+
+    public void Dispose() => File.Delete(_lockPath);
 }

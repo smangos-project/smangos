@@ -82,10 +82,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             return;
         }
 
-        string fdidFile = Path.Combine(content, "wms.index");
-        string legacyFdidFile = Path.Combine(content, "wms-custom-fdids.txt");
-        WowFileDataIds.Shared.LoadCustom(legacyFdidFile);
-        WowFileDataIds.Shared.LoadCustom(fdidFile);
+        WowFileDataIds.Shared.AttachRegistry(content);
 
         var ledger = new Dictionary<long, long>(await WowExportEntityIds.LoadAsync(storage).ConfigureAwait(false));
         List<EditorPlacement> placements = await StoredPlacements.LoadAsync(storage, context.Editor.Assets, catalog.Map.Value).ConfigureAwait(false);
@@ -134,8 +131,6 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             written++;
         }
 
-        WowFileDataIds.Shared.SaveCustom(fdidFile);
-        File.Delete(legacyFdidFile);
         if (newUids.Count > 0)
         {
             await WowExportEntityIds.UpsertAsync(storage, newUids).ConfigureAwait(false);
