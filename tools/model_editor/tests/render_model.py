@@ -11,6 +11,8 @@ sys.path.insert(0, __file__.rsplit("/", 1)[0])
 import common  # noqa: E402
 
 out, path, *rest = sys.argv[sys.argv.index("--") + 1:]
+seq = int(rest.pop()[4:]) if rest and rest[-1].startswith("seq=") else None
+frames = [int(f) for f in rest.pop()[7:].split(",")] if rest and rest[-1].startswith("frames=") else [None]
 az, el = (float(rest[0]), float(rest[1])) if rest else (35.0, 30.0)
 common.enable()
 for o in list(bpy.data.objects):
@@ -49,5 +51,11 @@ sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN"))
 sun.data.energy = 3
 sun.rotation_euler = (math.radians(50), 0, math.radians(30))
 sc.collection.objects.link(sun)
-bpy.ops.render.render(write_still=True)
-print("rendered", out)
+if seq is not None:
+    common.submodule("m2_seq").play(coll, seq)
+for f in frames:
+    if f is not None:
+        sc.frame_set(f)
+    sc.render.filepath = out.replace(".png", f"_{f}.png") if f is not None else out
+    bpy.ops.render.render(write_still=True)
+    print("rendered", sc.render.filepath)

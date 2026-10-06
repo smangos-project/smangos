@@ -131,6 +131,36 @@ class WowM2Material(bpy.types.PropertyGroup):
     blending_mode: IntProperty()
 
 
+class WowM2Sequence(bpy.types.PropertyGroup):
+    anim_id: IntProperty()
+    variation_index: IntProperty()
+    variation_next: IntProperty(default=-1)
+    alias_next: IntProperty()
+    flags: IntProperty()
+    duration: IntProperty(description="Milliseconds")
+    frequency: IntProperty()
+    blend_time_in: IntProperty()
+    blend_time_out: IntProperty()
+    movespeed: FloatProperty()
+    replay_min: IntProperty()
+    replay_max: IntProperty()
+    bounds_min: FloatVectorProperty(size=3)
+    bounds_max: FloatVectorProperty(size=3)
+    bounds_radius: FloatProperty()
+    padding: IntProperty()
+    action: PointerProperty(type=bpy.types.Action)
+
+
+class WowM2Loop(bpy.types.PropertyGroup):
+    timestamp: IntProperty(description="Milliseconds")
+    action: PointerProperty(type=bpy.types.Action)
+
+
+def _seq_changed(props):
+    from . import m2_seq
+    m2_seq.on_active(props)
+
+
 class WowM2(bpy.types.PropertyGroup):
     path: StringProperty()
     fdid: IntProperty()
@@ -150,6 +180,9 @@ class WowM2(bpy.types.PropertyGroup):
     collision_radius: FloatProperty()
     textures: CollectionProperty(type=WowM2Texture)
     materials: CollectionProperty(type=WowM2Material)
+    sequences: CollectionProperty(type=WowM2Sequence)
+    loops: CollectionProperty(type=WowM2Loop)
+    active_sequence: IntProperty(default=-1, update=lambda self, ctx: _seq_changed(self))
 
 
 class WowM2Submesh(bpy.types.PropertyGroup):
@@ -238,7 +271,7 @@ class WowImportOptions(bpy.types.PropertyGroup):
     collision: BoolProperty(name="Collision", default=True)
 
 
-classes = (WowM2Texture, WowM2Material, WowM2, WowM2Submesh, WowM2Bone, WowM2Batch, WowM2Object, WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
+classes = (WowM2Texture, WowM2Material, WowM2Sequence, WowM2Loop, WowM2, WowM2Submesh, WowM2Bone, WowM2Batch, WowM2Object, WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
            WowWmoLiquid, WowWmoFog, WowImportOptions)
 
 _attach = (

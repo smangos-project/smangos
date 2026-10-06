@@ -7,13 +7,13 @@ import mathutils
 import numpy as np
 from wowlib.formats import m2 as wm2
 
-from . import client, displays, index, m2_materials, m2_names
+from . import client, displays, index, m2_anim, m2_materials, m2_names
 from .props import s32
 
 MIN_BONE_LENGTH = 0.02
 SKIN_TYPES = {11: 0, 12: 1, 13: 2}
 DEFAULTS = {"skin": 0, "display": "AUTO", "display_id": 0, "attachments": True, "events": True, "cameras": True,
-            "lights": True, "emitters": True, "collision": True, "armature": True, "mesh_only": False}
+            "lights": True, "emitters": True, "collision": True, "animations": "ALL", "armature": True, "mesh_only": False}
 _import_warnings = []
 
 
@@ -515,6 +515,8 @@ def load(client_path, options=None, parent=None):
     objs = build_submeshes(model, top, mats, arrays)
     apply_geosets(model, objs)
     group_geosets(top, objs)
+    if opts["animations"] != "NONE" and not opts["mesh_only"] and model.armature is not None:
+        m2_anim.import_animations(model, top)
     if not opts["mesh_only"]:
         for flag, fn in (("attachments", import_attachments), ("events", import_events), ("cameras", import_cameras),
                          ("lights", import_lights), ("emitters", import_emitters)):
