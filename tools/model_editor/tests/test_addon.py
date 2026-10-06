@@ -754,8 +754,9 @@ def m2_geometry_edit_round_trip():
     again = m2_import.read(path)
     assert len(again.skins[0].profile.submeshes) == n_sub - 1
     assert all(b.skin_section_index < n_sub - 1 for b in again.skins[0].profile.batches)
-    clear()
-    m2_import.load(path, {"display": "NONE", "collision": False})
+    out = common.Path(client.session().project)
+    for f in (path, "creature/wolf/wolf00.skin", "creature/wolf/wolf01.skin"):
+        (out / f).unlink(missing_ok=True)
     client.close()
 
 
