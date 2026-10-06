@@ -20,11 +20,13 @@ public sealed class WowCreatureSpawnFactory : ISceneEntityFactory, ISpawnFactory
     private const float SpawnMargin = 33.3333f;
 
     private readonly WorldStorage _storage;
+    private readonly SpawnAppearances _appearances;
     private readonly Dictionary<WowCreatureSpawn, int> _newGuids = [];
 
     public WowCreatureSpawnFactory(WorldStorage storage)
     {
         _storage = storage;
+        _appearances = new SpawnAppearances(storage);
     }
 
     public string SpawnKind => "Creature";
@@ -128,7 +130,7 @@ public sealed class WowCreatureSpawnFactory : ISceneEntityFactory, ISpawnFactory
         }
 
         var spawn = new WowCreatureSpawn { Map = map, TemplateEntry = templateEntry, Transform = transform };
-        spawn.AddIntrinsicComponent(NewMarker());
+        spawn.AddIntrinsicComponent(NewMarker(spawn));
 
         var command = new CreateEntityCommand(context.Scene, spawn);
         command.Apply();
@@ -136,9 +138,12 @@ public sealed class WowCreatureSpawnFactory : ISceneEntityFactory, ISpawnFactory
         return spawn;
     }
 
-    private static WowPointMarker NewMarker() => new(MarkerTypeId, "Creature Spawn Marker", MarkerColor, MarkerSize);
+    private WowSpawnModelComponent NewMarker(WowCreatureSpawn spawn) => new(
+        MarkerTypeId, "Creature Spawn Marker", MarkerColor, MarkerSize,
+        _storage.Context.Assets, _storage.Context.MeshMaterials,
+        () => spawn.TemplateEntry, _appearances.Creature);
 
-    private static WowCreatureSpawn ToEntity(CreatureRecord record, MapId map)
+    private WowCreatureSpawn ToEntity(CreatureRecord record, MapId map)
     {
         var spawn = new WowCreatureSpawn
         {
@@ -150,7 +155,7 @@ public sealed class WowCreatureSpawnFactory : ISceneEntityFactory, ISpawnFactory
             WanderDistance = record.WanderDistance,
             MovementType = (byte)record.MovementType,
         };
-        spawn.AddIntrinsicComponent(NewMarker());
+        spawn.AddIntrinsicComponent(NewMarker(spawn));
 
         Vector3 position = CreatureCoordinates.PositionToGodot(new Vector3(record.PositionX, record.PositionY, record.PositionZ));
         spawn.Transform = new Transform3D(CreatureCoordinates.OrientationToGodot(record.Orientation), position);

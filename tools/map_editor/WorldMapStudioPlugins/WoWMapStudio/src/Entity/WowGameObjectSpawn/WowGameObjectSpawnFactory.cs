@@ -20,11 +20,13 @@ public sealed class WowGameObjectSpawnFactory : ISceneEntityFactory, ISpawnFacto
     private const float SpawnMargin = 33.3333f;
 
     private readonly WorldStorage _storage;
+    private readonly SpawnAppearances _appearances;
     private readonly Dictionary<WowGameObjectSpawn, int> _newGuids = [];
 
     public WowGameObjectSpawnFactory(WorldStorage storage)
     {
         _storage = storage;
+        _appearances = new SpawnAppearances(storage);
     }
 
     public string SpawnKind => "Game Object";
@@ -128,7 +130,7 @@ public sealed class WowGameObjectSpawnFactory : ISceneEntityFactory, ISpawnFacto
         }
 
         var spawn = new WowGameObjectSpawn { Map = map, TemplateEntry = templateEntry, Transform = transform };
-        spawn.AddIntrinsicComponent(NewMarker());
+        spawn.AddIntrinsicComponent(NewMarker(spawn));
 
         var command = new CreateEntityCommand(context.Scene, spawn);
         command.Apply();
@@ -136,9 +138,12 @@ public sealed class WowGameObjectSpawnFactory : ISceneEntityFactory, ISpawnFacto
         return spawn;
     }
 
-    private static WowPointMarker NewMarker() => new(MarkerTypeId, "Game Object Spawn Marker", MarkerColor, MarkerSize);
+    private WowSpawnModelComponent NewMarker(WowGameObjectSpawn spawn) => new(
+        MarkerTypeId, "Game Object Spawn Marker", MarkerColor, MarkerSize,
+        _storage.Context.Assets, _storage.Context.MeshMaterials,
+        () => spawn.TemplateEntry, _appearances.GameObject);
 
-    private static WowGameObjectSpawn ToEntity(GameobjectRecord record, MapId map)
+    private WowGameObjectSpawn ToEntity(GameobjectRecord record, MapId map)
     {
         var spawn = new WowGameObjectSpawn
         {
@@ -148,7 +153,7 @@ public sealed class WowGameObjectSpawnFactory : ISceneEntityFactory, ISpawnFacto
             SpawnTimeMin = (uint)record.Spawntimesecsmin,
             SpawnTimeMax = (uint)record.Spawntimesecsmax,
         };
-        spawn.AddIntrinsicComponent(NewMarker());
+        spawn.AddIntrinsicComponent(NewMarker(spawn));
 
         Vector3 position = GameObjectCoordinates.PositionToGodot(new Vector3(record.PositionX, record.PositionY, record.PositionZ));
         var rotation = new Quaternion(record.Rotation0, record.Rotation1, record.Rotation2, record.Rotation3);

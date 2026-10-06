@@ -28,3 +28,7 @@
 ## Session 6 - E3/E4 and empty-scene diagnosis
 - E3: export setting "Removed tiles" (drops overlay files, clears WDT MAIN/MAID). E4: `wow.export.map` batch op (WDT from donor without tiles, dbc_map + map_template + game_tele rows, ids from 3000); export op has "Donor map for new tiles". Untested end to end.
 - Empty scene: NOT a bug. On a scratch copy, import 32,48 + `wms.editor.Reload()` + `wms.map.Open(1)` + `wms.viewport.SetPosition(-8800,650,266)` + `wms.wowMap.WaitForStreaming()` gives 255 entities (terrain, m2/wmo, creatures, water "ADT Water 32_48 #1"); screenshot shows terrain with trees. Entities stream in asynchronously, so `scene.All()` right after Open is empty. Water not yet inspected up close (Focus(entity from All()) fails; use look.sh with a Create()d entity).
+
+## Session 7 - F1/F2
+- F1/F2 done (minimal): `Component/WowSpawnModelComponent` + `SpawnAppearances` replace the point marker on creature and gameobject spawns (same marker type ids). Creature = `creature_template.display_id1` (+`display_scale1`) -> CreatureDisplayInfo -> CreatureModelData FDID; gameobject = `GameObjectDisplayInfo.FileDataID` x template size. Placeholder box until loaded/unresolved. Checked in the live editor at Northshire (NPC and objects render). Not done: NPCs with `CreatureDisplayInfoExtra` (F5), equipment, display_id2-4 variants, thumbnails.
+- Next: F3 light preview, F4 spell_target_position, F6, G catalogs, H.
