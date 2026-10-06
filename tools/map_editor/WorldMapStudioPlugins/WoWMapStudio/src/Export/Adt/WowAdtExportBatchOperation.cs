@@ -119,10 +119,14 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
                 },
                 path => WowFileDataIds.Shared.Allocate(path));
             tile = ImportedTileExtractor.WithPlacements(tile, doodads, objects);
-            if (ImportedTileComparer.IsUnchanged(template, tile))
+            string? difference = ImportedTileComparer.FirstDifference(template, tile);
+            if (difference == null)
             {
                 continue;
             }
+
+            context.Report($"{id.Stem}: changed ({difference}).");
+            Godot.GD.Print($"[Export] {id.Stem}: changed ({difference})");
 
             await Task.Run(() => WowAdtTileWriter.Write(fs, wdt, tile)).ConfigureAwait(false);
             written++;

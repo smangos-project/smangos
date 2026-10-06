@@ -19,7 +19,6 @@ public static class PlacementExtractor
     public const uint CustomUidBase = 0x70000000;
 
     private const float PositionTolerance = 0.01f;
-    private const float AngleTolerance = 0.01f;
     private const ushort ModfHasScaleFlag = 0x4;
 
     /// <param name="uidOf">The uid a record id was exported under, if any.</param>
@@ -125,8 +124,5 @@ public static class PlacementExtractor
 
     private static bool Same(Vector3 pos, Vector3 rot, ushort scale, Vector3 newPos, Vector3 newRot, ushort newScale) =>
         pos.DistanceTo(newPos) <= PositionTolerance && scale == newScale
-        && AngleNear(rot.X, newRot.X) && AngleNear(rot.Y, newRot.Y) && AngleNear(rot.Z, newRot.Z);
-
-    private static bool AngleNear(float a, float b) =>
-        MathF.Abs(Mathf.Wrap(a - b, -180f, 180f)) <= AngleTolerance;
+        && WowPlacementTransform.SameRotation(rot, newRot);
 }

@@ -65,6 +65,14 @@ public static class WowPlacementTransform
         return WowToGodot * wowBasis * GodotToWow;
     }
 
+    /// <summary>Whether two on-disk rotations describe the same orientation (Euler triples are ambiguous at gimbal lock).</summary>
+    public static bool SameRotation(Vector3 a, Vector3 b)
+    {
+        Basis x = FromOnDiskRotationDegrees(a);
+        Basis y = FromOnDiskRotationDegrees(b);
+        return (x.X - y.X).Length() <= 2e-3f && (x.Y - y.Y).Length() <= 2e-3f && (x.Z - y.Z).Length() <= 2e-3f;
+    }
+
     /// <summary>MDDF/MODF's 1024-fixed-point scale field — <see cref="Basis.Scale"/>'s X component,
     /// since every model format this exporter places (<c>M2Format</c>, WMO) restricts itself to
     /// uniform scale.</summary>
