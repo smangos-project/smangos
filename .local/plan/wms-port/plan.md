@@ -90,7 +90,7 @@ Detailed plan: `phase1.md` (server readers must be ported to vmangos formats; pl
 
 ### Phase 6 - Server data loop
 - `Server/Preview` layers against our `.server/data` (`.map`/`.vmtile`/`.vmo`/`.mmtile` versions from `tools/map_extractor`), `Server/Extract` runs `build/tools/map_extractor/map_extractor --map --tiles`, `Staleness` reads map_extractor's `.cache` fingerprints.
-- Progress: mesh builders (collision, navmesh, server height grid) and the viewport header toggles (`WowServerPreviewViewportHeaderItem`: 3x3 tiles around the camera, background build, rebuild on file stamp change) done and compile. `WowServerExtractor` + `wms.wowServer` script API (stale via map_extractor `--dry-run`, extract) done. `WowHeightDrift.Measure` (numeric drift vs a terrain sampler) done. Not done: visual check in the editor, wiring drift to editor terrain, extract/stale UI.
+- Progress: mesh builders (collision, navmesh, server height grid) and the viewport header toggles (`WowServerPreviewViewportHeaderItem`: 3x3 tiles around the camera, background build, rebuild on file stamp change) done and compile. `WowServerExtractor` + `wms.wowServer` script API (stale via map_extractor `--dry-run`, extract) done. `WowHeightDrift.Measure` + a "Drift" button in the server preview header (camera tile vs editor terrain) done, untested by eye. Not done: visual check in the editor, extract/stale UI.
 - Exit: drift/collision/navmesh layers render for Northshire.
 
 ### Phase 7 - Terrain export

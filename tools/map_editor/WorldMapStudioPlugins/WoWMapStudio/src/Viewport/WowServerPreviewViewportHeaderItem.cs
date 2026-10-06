@@ -32,6 +32,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
     private Task<Built>? _task;
     private WowServerFileStamp[] _stamps = [];
     private double _lastStaleCheck;
+    private string? _drift;
 
     public float Priority => 3f;
 
@@ -50,8 +51,45 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
         ImGui.Checkbox("Collision", ref _collision);
         ImGui.SameLine();
         ImGui.Checkbox("Navmesh", ref _navmesh);
+        ImGui.SameLine();
+        if (ImGui.Button("Drift"))
+        {
+            _drift = MeasureDrift(context.Camera.GlobalTransform.Origin);
+        }
+
+        if (_drift != null)
+        {
+            ImGui.SameLine();
+            ImGui.TextUnformatted(_drift);
+        }
 
         Update(context.Camera.GlobalTransform.Origin);
+    }
+
+    private string MeasureDrift(Vector3 cameraGodot)
+    {
+        if (WowMapBindings.For(_context).Resolve(_context.Maps.CurrentMap) is not int wowMap)
+        {
+            return "no map binding";
+        }
+
+        Vector3 server = CreatureCoordinates.PositionFromGodot(cameraGodot);
+        (int fileX, int fileY) = WowTileAddressing.TileAtServer(server.X, server.Y);
+        if (_context.WowServerPaths.Roots.MapFile(new WowServerTileKey(wowMap, fileX, fileY)) is not { } file || !File.Exists(file))
+        {
+            return "no server .map for tile";
+        }
+
+        var tile = WowMapTileReader.Read(File.ReadAllBytes(file));
+        var probe = new TerrainProbe(_context.Landscape);
+        var drift = WowHeightDrift.Measure(tile, (row, col) =>
+        {
+            Vector3 world = WowMapGrid.ToGodot(row, col, 0f, fileX, fileY);
+            return probe.TryHeight(world.X, world.Z, out float height) ? height : null;
+        }, 0.1f);
+        return drift.Samples == 0
+            ? "no terrain loaded under tile"
+            : $"{drift.Drifted}/{drift.Samples} verts >0.1, max {drift.MaxAbs:F2}, mean {drift.MeanAbs:F3}";
     }
 
     private void Update(Vector3 cameraGodot)
