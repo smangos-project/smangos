@@ -345,6 +345,36 @@ def plan_item_display(db, layout, spec):
     return pl.changes, display_id
 
 
+def item_display_models(db, display_id):
+    """The M2s of an ItemDisplayInfo as ItemModel rows (fdid, race, gender, position) plus its BLP texture fdids per model."""
+    d = _by_key(db, IDI, "ID", display_id)
+    if d is None:
+        raise GameDataError(f"item display {display_id} not found")
+    models, seen = [], set()
+    for res in (d["ModelResourcesID1"], d["ModelResourcesID2"]):
+        if not res or res in seen:
+            continue
+        seen.add(res)
+        for (fdid,) in db.execute(f"SELECT FileDataID FROM {MFD} WHERE ModelResourcesID = ? ORDER BY FileDataID", (res,)):
+            c = db.dicts(f"SELECT * FROM {CMFD} WHERE ID = ?", (fdid,))
+            c = c[0] if c else {"GenderIndex": 2, "RaceID": 0, "PositionIndex": -1}
+            models.append(ItemModel(fdid, race=c["RaceID"], gender=c["GenderIndex"], position=c["PositionIndex"], variant=c["RaceID"] > 0))
+    textures = []
+    for i in (1, 2):
+        mat = d[f"ModelMaterialResourcesID{i}"]
+        rows = db.execute(f"SELECT FileDataID FROM {TFD} WHERE MaterialResourcesID = ?", (mat,)) if mat else []
+        textures.append(rows[0][0] if rows else 0)
+    return models, textures
+
+
+def pick_default(models):
+    """The model to import by default: human male (or race-less) variant, else the first."""
+    for m in models:
+        if m.race in (0, 1) and m.gender in (0, 2):
+            return m
+    return models[0] if models else None
+
+
 def plan_item(db, layout, template_item, display_id, name, icon=0):
     """Changes for a test item showing `display_id`: Item and ItemSparse copied from `template_item` (new id from the
     reserved range), plus ItemAppearance and ItemModifiedAppearance. Found again through the display; returns (changes, item id)."""

@@ -173,6 +173,22 @@ class GameDataTests(unittest.TestCase):
         finally:
             db.close()
 
+    def test_import_stock_display(self):
+        lay = layout()
+        db = lay.open()
+        try:
+            did = db.execute(f"SELECT d.ID FROM {gd.IDI} d JOIN {gd.MFD} m ON m.ModelResourcesID = d.ModelResourcesID1 "
+                             f"JOIN {gd.CMFD} c ON c.ID = m.FileDataID WHERE c.RaceID = 1 AND d.ID < {gd.DISPLAY_FIRST_ID} LIMIT 1")[0][0]
+            models, textures = gd.item_display_models(db, did)
+            self.assertTrue(models)
+            self.assertEqual(len(textures), 2)
+            pick = gd.pick_default(models)
+            self.assertIn(pick.race, (0, 1))
+            with self.assertRaises(gd.GameDataError):
+                gd.item_display_models(db, 999999999)
+        finally:
+            db.close()
+
 
 if __name__ == "__main__":
     unittest.main()

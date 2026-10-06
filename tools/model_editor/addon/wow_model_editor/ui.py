@@ -34,6 +34,7 @@ class WOW_PT_browser(bpy.types.Panel):
         fdid = index.fdid_of(wm.wow_query) if index._state["key"] else None
         col.label(text=f"FDID {fdid}" if fdid else "")
         col.operator("wow.import_selected", icon="IMPORT")
+        col.operator("wow.import_item_display", icon="IMPORT")
         o = wm.wow_import
         box = col.box()
         box.prop(o, "doodads")

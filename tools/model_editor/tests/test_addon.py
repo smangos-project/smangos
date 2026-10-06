@@ -1278,6 +1278,15 @@ def write_item_operator_dry_run():
         pass
 
 
+@test
+def import_item_display_unknown():
+    try:
+        bpy.ops.wow.import_item_display("EXEC_DEFAULT", display_id=999999999)
+        raise AssertionError("unknown display accepted")
+    except RuntimeError:
+        pass
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:

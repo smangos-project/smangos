@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import IntProperty, StringProperty
 from bpy_extras.io_utils import ImportHelper
 
 from . import client, index, textures
@@ -121,12 +121,45 @@ class WOW_OT_import_selected(bpy.types.Operator):
         return import_path(self, context, path)
 
 
+class WOW_OT_import_item_display(bpy.types.Operator):
+    bl_idname = "wow.import_item_display"
+    bl_label = "Import item display"
+    bl_description = "Import the model of an ItemDisplayInfo (human male variant by default)"
+
+    display_id: IntProperty(name="ItemDisplayInfo id", min=1)
+    race: IntProperty(name="Race", description="Variant race (0: default)", min=0, max=8)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        from . import game_data
+        try:
+            layout = game_data.Layout.discover(client.dirs()[0])
+            db = layout.open()
+            try:
+                models, textures = game_data.item_display_models(db, self.display_id)
+            finally:
+                db.close()
+            pick = next((m for m in models if m.race == self.race and m.gender in (0, 2)), None) if self.race else game_data.pick_default(models)
+            if pick is None:
+                self.report({"ERROR"}, f"display {self.display_id} has no model")
+                return {"CANCELLED"}
+            path = resolve(str(pick.fdid))
+        except (game_data.GameDataError, ValueError, RuntimeError, OSError) as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"{len(models)} models, textures {textures}; importing {path}")
+        return import_path(self, context, path)
+
+
 def menu_import(self, context):
     self.layout.operator(WOW_OT_import_file.bl_idname, text="WoW model (.m2/.wmo)")
     self.layout.operator(WOW_OT_import_path.bl_idname, text="WoW model by path or FDID")
+    self.layout.operator(WOW_OT_import_item_display.bl_idname, text="WoW item display by id")
 
 
-classes = (WOW_OT_import_path, WOW_OT_import_file, WOW_OT_import_selected)
+classes = (WOW_OT_import_path, WOW_OT_import_file, WOW_OT_import_selected, WOW_OT_import_item_display)
 
 
 def register():
