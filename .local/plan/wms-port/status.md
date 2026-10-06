@@ -35,3 +35,6 @@
 
 ## Session 8 - F4
 - F4 done: `WowSpellTargetPosition` entity (+factory, inspector, view category) on `spell_target_position` (key id + target_map, no effect index). Create doesn't validate the map (Stage does). Commit path untested against a DB. Next: F3 light preview, F6, G, H.
+
+## Session 8 - F6 (partial)
+- `wow.extract` batch op (`Server/WowExtractBatchOperation`): map, optional tile, stages, force, dry run, wraps `WowServerExtractor`. Compiles, not run through the UI. Not done: staleness status header, tile-rect (map_extractor only has `--tile`), drift layer exists already. Next: F3 light preview, G, H, F5.
