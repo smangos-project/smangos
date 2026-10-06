@@ -13,7 +13,7 @@ namespace WorldMapStudio.WoW;
 /// <summary>
 /// Writes an <see cref="ImportedTile"/> back to a client ADT through wowlib. The tile is applied onto a
 /// freshly read copy of the client's own file, so everything the editor does not model (shadow maps,
-/// normals, texture params, water, flying bounds) survives untouched.
+/// texture params, water, flying bounds) survives untouched.
 /// </summary>
 public static class WowAdtTileWriter
 {
@@ -37,10 +37,13 @@ public static class WowAdtTileWriter
             adt.HeightTextureIds.Add(i < tile.HeightTextures.Count ? tile.HeightTextures[i] : 0);
         }
 
+        var heightsChanged = new bool[tile.Chunks.Count];
         for (int i = 0; i < tile.Chunks.Count; i++)
         {
-            ApplyChunk(adt.Chunks[i], tile.Chunks[i]);
+            heightsChanged[i] = ApplyChunk(adt.Chunks[i], tile.Chunks[i]);
         }
+
+        RebuildNormals(adt, tile, heightsChanged);
 
         ApplyPlacements(adt, tile);
     }
@@ -189,10 +192,52 @@ public static class WowAdtTileWriter
 
     private static C3Vector ToC3(Vector3 v) => new() { X = v.X, Y = v.Y, Z = v.Z };
 
-    private static void ApplyChunk(MapChunkCataPlus c, ImportedChunk src)
+    /// <summary>Recomputes MCNR for chunks whose heights changed and the neighbours that read across their edges.</summary>
+    private static void RebuildNormals(ADTBfaPlus adt, ImportedTile tile, bool[] heightsChanged)
+    {
+        const int edge = ImportedTile.ChunkEdge;
+        for (int i = 0; i < heightsChanged.Length; i++)
+        {
+            if (!heightsChanged[i])
+            {
+                continue;
+            }
+
+            for (int dr = -1; dr <= 1; dr++)
+            {
+                for (int dc = -1; dc <= 1; dc++)
+                {
+                    int row = (i / edge) + dr, col = (i % edge) + dc;
+                    if (row < 0 || col < 0 || row >= edge || col >= edge)
+                    {
+                        continue;
+                    }
+
+                    var normals = AdtNormals.Compute(tile.Chunks, col, row);
+                    var target = adt.Chunks[(row * edge) + col].Normals;
+                    for (int v = 0; v < target.Count; v++)
+                    {
+                        for (int k = 0; k < 3; k++)
+                        {
+                            target[v].Normal[k] = normals[(v * 3) + k];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // True when the chunk's heights differ from the ones it held.
+    private static bool ApplyChunk(MapChunkCataPlus c, ImportedChunk src)
     {
         var header = c.Header;
         float baseZ = header.Position.Z;
+        var old = new float[c.Heights.Count];
+        for (int i = 0; i < old.Length; i++)
+        {
+            old[i] = c.Heights[i];
+        }
+
         c.Heights.Clear();
         for (int y = 0; y < Outer; y++)
         {
@@ -242,6 +287,21 @@ public static class WowAdtTileWriter
 
             c.AlphaMaps.Add(map);
         }
+
+        if (old.Length != c.Heights.Count)
+        {
+            return true;
+        }
+
+        for (int i = 0; i < old.Length; i++)
+        {
+            if (MathF.Abs(old[i] - c.Heights[i]) > 0.001f)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void ApplyColors<T>(Vector<T> dst, Color[]? outer, Color[]? inner, Action<T, (byte R, byte G, byte B, byte A)> set)
