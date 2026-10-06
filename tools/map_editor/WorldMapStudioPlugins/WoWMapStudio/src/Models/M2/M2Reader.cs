@@ -83,7 +83,7 @@ internal static class M2Reader
             return null;
         }
 
-        using var chunked = new M2ChunkedFileLegion();
+        using M2ChunkedFile chunked = M2ChunkedFile.ForVersion(WoWLib.Versions.Global.ClassicEra);
         chunked.Read(bytes);
         uint[] skinFdids = chunked.SkinFdids.ToArray();
         uint[] textureFdids = chunked.TextureFdids.ToArray();
