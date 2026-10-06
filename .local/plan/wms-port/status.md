@@ -80,3 +80,6 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 ## WMO E2E
 `wms.wowImport.CreatePanelWmoModel` added. Export in /tmp/wmsdbg wrote `testwmo_1.wmo` + `_000.wmo` and a MODF entry (custom FDID, at the placed position) in azeroth_32_48_obj0. Not loaded in the real client yet.
 WMO verified in the real client (Stormwind, MODF[0] of azeroth_32_48_obj0 repointed to a remapped FDID, files + fdid.index lines added by hand, then restored from /tmp backup): a 60-wide two-sided panel renders, no crash. Panels from CreatePanel*Model are now two-sided. autologin picks the last played character (Wefwefwefa), ignoring the CHARACTER arg.
+
+## MH2O HeightUv (investigated, nothing to change)
+- Scanned all stock 1.15 ADTs: no MH2O instance uses vertex format 1/3 (HeightUv); stock files use liquid object ids (>=42) or HeightDepth, so there are no reference UV values and zero UVs are harmless. `WaterImported` flag (wow_adt_import_tiles) now lets export clear MH2O on tiles whose imported water was deleted.
