@@ -365,8 +365,8 @@ def geometry_vertex_split_and_batches():
     src = dict(c, src_class=[wmo_geometry.TRANS, wmo_geometry.EXT], src_mat=[3, 9])
     c2 = dict(src, face_mat=np.array([9, 3, 3]), face_batch=np.array([1, 1, 0]))
     a = wmo_geometry.build_group(c2)
-    assert list(a.batch_class) == [wmo_geometry.TRANS, wmo_geometry.EXT] and list(a.batches["material"]) == [3, 9]
-    assert list(a.face_order) == [2, 1, 0] or list(a.face_order) == [1, 2, 0]
+    assert list(a.batch_class) == [wmo_geometry.TRANS, wmo_geometry.EXT, wmo_geometry.EXT]
+    assert list(a.batches["material"]) == [3, 9, 3] and list(a.face_order) == [2, 0, 1]
 
 
 @test
