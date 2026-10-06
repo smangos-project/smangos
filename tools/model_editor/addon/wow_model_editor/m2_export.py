@@ -3,7 +3,7 @@ import posixpath
 from pathlib import Path
 
 import bpy
-from . import client, fdids, m2_anim_export, m2_import
+from . import client, fdids, m2_anim_export, m2_import, m2_mesh_export
 from .deep_compare import deep_diff
 from .report import Report
 
@@ -36,6 +36,7 @@ def differs(ref, m):
 
 def rebuild(top, m, report, opts):
     """Applies every section of the Blender data to the freshly read model `m`."""
+    m2_mesh_export.build(top, m, report, opts)
     m2_anim_export.build(top, m.root)
 
 

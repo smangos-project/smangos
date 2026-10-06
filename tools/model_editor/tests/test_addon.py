@@ -723,6 +723,43 @@ def m2_export_new_path_allocates_ids():
 
 
 @test
+def m2_geometry_unedited_clean():
+    for path in ("creature/wolf/wolf.m2", "character/human/male/humanmale.m2"):
+        clear()
+        top = m2_import.load(path, {"display": "NONE", "collision": False})
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors and not r.dirty, (path, r.diff, str(r))
+
+
+@test
+def m2_geometry_edit_round_trip():
+    path = "creature/wolf/wolf.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    subs = sorted((o for o in top.all_objects if o.type == "MESH"), key=lambda o: o.wow_m2_submesh.index)
+    n_sub = len(subs)
+    ob = subs[0]
+    ob.data.vertices[0].co.x += 0.25
+    moved = tuple(ob.data.vertices[0].co)
+    r = m2_export.export(top, options={"force": True})
+    assert not r.errors and r.dirty, str(r)
+    again = m2_import.read(path)
+    assert len(again.skins) == 1 and len(again.skins[0].profile.submeshes) == n_sub
+    assert again.validate().ok, [str(i) for i in again.validate().issues]
+    v = again.root.vertices[0]
+    assert abs(v.pos.x - moved[0]) < 1e-5, (v.pos.x, moved)
+    bpy.data.objects.remove(subs[-1])
+    r = m2_export.export(top, options={"force": True})
+    assert not r.errors, str(r)
+    again = m2_import.read(path)
+    assert len(again.skins[0].profile.submeshes) == n_sub - 1
+    assert all(b.skin_section_index < n_sub - 1 for b in again.skins[0].profile.batches)
+    clear()
+    m2_import.load(path, {"display": "NONE", "collision": False})
+    client.close()
+
+
+@test
 def m2_anim_import():
     clear()
     t = time.time()
@@ -872,6 +909,37 @@ def sweep_m2_anim():
     return fails
 
 
+def geo_diff(path):
+    """First difference after rebuilding the geometry of an unedited import, or None."""
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False, "animations": "NONE", "attachments": False,
+                                "events": False, "cameras": False, "lights": False, "emitters": False})
+    m, ref = m2_import.read(path), m2_import.read(path)
+    rep = m2_export.Report(files_written=0, files_removed=0)
+    m2_export.m2_mesh_export.build(top, m, rep, m2_export.DEFAULTS)
+    return rep.errors and str(rep) or m2_export.differs(ref, m)
+
+
+def sweep_m2_geo():
+    index.load(client.session().content, client.prefs().cache_dir)
+    fails, t0 = [], time.time()
+    only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
+    entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
+    for fdid, path, _ in entries:
+        if path in KNOWN_BAD:
+            continue
+        try:
+            d = geo_diff(path)
+            if d:
+                fails.append((path, d))
+        except Exception as e:  # noqa: BLE001
+            fails.append((path, f"{type(e).__name__}: {e}"[:200]))
+    print(f"m2 geometry sweep: {len(entries)} M2s, {len(fails)} differences, {time.time() - t0:.0f}s")
+    for f in fails[:400]:
+        print("  FAIL", *f)
+    return fails
+
+
 def sweep_wmo_export(force):
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
@@ -927,6 +995,8 @@ if "--all-wmo-rebuild" in ARGS:
     failed += len(sweep_wmo_export(True))
 if "--all-m2" in ARGS:
     failed += len(sweep_m2())
+if "--all-m2-geo" in ARGS:
+    failed += len(sweep_m2_geo())
 if "--all-m2-anim" in ARGS:
     failed += len(sweep_m2_anim())
 print("RESULT", "FAIL" if failed else "OK")
