@@ -103,7 +103,7 @@ class WOW_PT_m2_sequences(bpy.types.Panel):
     def poll(cls, context):
         from . import m2_import
         top = m2_import.root_collection(context.active_object)
-        return top is not None and len(top.wow_m2.sequences) > 0
+        return top is not None
 
     def draw(self, context):
         from . import m2_import
@@ -111,6 +111,11 @@ class WOW_PT_m2_sequences(bpy.types.Panel):
         col = self.layout.column()
         col.template_list("WOW_UL_sequences", "", p, "sequences", p, "active_sequence", rows=8)
         col.operator("wow.m2_play_sequence", icon="PLAY")
+        row = col.row(align=True)
+        row.operator("wow.m2_sequence_add", text="Add", icon="ADD")
+        row.operator("wow.m2_sequence_duplicate", text="Duplicate", icon="DUPLICATE")
+        row.operator("wow.m2_sequence_remove", text="Remove", icon="REMOVE")
+        col.operator("wow.m2_sequence_key", icon="KEY_HLT")
         if 0 <= p.active_sequence < len(p.sequences):
             s = p.sequences[p.active_sequence]
             box = col.box()
@@ -120,6 +125,9 @@ class WOW_PT_m2_sequences(bpy.types.Panel):
             box.label(text=f"Bounds radius {s.bounds_radius:.2f}")
         if p.loops:
             col.label(text="Global loops: " + ", ".join(f"{l.timestamp} ms" for l in p.loops))
+        row = col.row(align=True)
+        row.operator("wow.m2_loop_add", text="Add loop", icon="ADD")
+        row.operator("wow.m2_loop_remove", text="Remove loop", icon="REMOVE")
 
 
 classes = (WowRecent, WOW_PT_browser, WOW_PT_m2, WOW_UL_sequences, WOW_PT_m2_sequences)

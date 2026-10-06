@@ -395,6 +395,31 @@ def m2_anim_object_tracks():
 
 
 @test
+def m2_anim_authoring():
+    clear()
+    path = "creature/wolf/wolf.m2"
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    p = top.wow_m2
+    n = len(p.sequences)
+    p.active_sequence = 0
+    ctx = bpy.context
+    arm = next(o for o in top.all_objects if o.type == "ARMATURE")
+    ctx.view_layer.objects.active = arm
+    assert bpy.ops.wow.m2_sequence_duplicate() == {"FINISHED"} and len(p.sequences) == n + 1
+    assert bpy.ops.wow.m2_sequence_add(anim_id=0, duration=500) == {"FINISHED"} and len(p.sequences) == n + 2
+    assert p.sequences[-1].action is not None and p.sequences[-1].duration == 500
+    fresh = m2_import.read(path)
+    m2_anim_export.build(top, fresh.root)
+    assert len(fresh.root.sequences) == n + 2
+    ids = [int(s.id) for s in fresh.root.sequences]
+    assert [int(s.variation_index) for s in fresh.root.sequences][-2:] == [ids[:-2].count(ids[-2]), ids[:-1].count(ids[-1])]
+    assert bpy.ops.wow.m2_sequence_remove() == {"FINISHED"} and bpy.ops.wow.m2_sequence_remove() == {"FINISHED"}
+    assert len(p.sequences) == n
+    d = anim_diff(path)
+    assert d is None, d
+
+
+@test
 def m2_anim_cquat_codec():
     raw = np.array([(-32768, -1, 0, 32767), (5, -5, 32766, -32767)], dtype=[(n, "<i2") for n in "xyzw"])
     dec = m2_anim._cquat(raw)
