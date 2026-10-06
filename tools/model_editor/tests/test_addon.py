@@ -24,6 +24,9 @@ displays = common.submodule("displays")
 m2_anim = common.submodule("m2_anim")
 m2_anim_export = common.submodule("m2_anim_export")
 m2_seq = common.submodule("m2_seq")
+wmo_export = common.submodule("wmo_export")
+wmo_bsp = common.submodule("wmo_bsp")
+wmo_geometry = common.submodule("wmo_geometry")
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 REFS = ["world/wmo/cameron.wmo", "world/wmo/kalimdor/ogrimmar/kl_pvpbarracks.wmo",
@@ -309,6 +312,166 @@ def import_m2_hardcoded_and_particles():
     assert any(o.type == "LIGHT" for o in top.all_objects)
 
 
+MPY2_WMO = "world/wmo/dungeon/md_crypt/md_crypt_d.wmo"
+
+
+def export_files(path, force=False, import_opts=None):
+    clear()
+    coll = wmo_import.load(path, import_opts or {"doodads": False})
+    r = wmo_export.export(coll, options={"dry_run": True, "force": force})
+    return coll, r
+
+
+def differing(files):
+    content = client.session().content
+    return [k for k, v in files.items() if not (content / k).is_file() or (content / k).read_bytes() != v]
+
+
+@test
+def bsp_matches_brute_force():
+    rng = np.random.default_rng(7)
+    for path, gis in ((REFS[1], (1, 3, 5)), (REFS[0], (0,))):
+        w = wmo_expect(path)[0]
+        for gi in gis:
+            b = w.groups[gi].body
+            v = np.asarray(b.vertices).view(np.float32).reshape(-1, 3)
+            tris = np.asarray(b.indices).reshape(-1, 3).astype(int)
+            nodes, faces = wmo_bsp.build(v, tris)
+            assert wmo_bsp.covers_all(nodes, faces, len(tris))
+            lo, hi = v.min(0), v.max(0)
+            segs = [(rng.uniform(lo, hi), rng.uniform(lo, hi)) for _ in range(150)]
+            assert wmo_bsp.check(nodes, faces, v, tris, segs) == 0
+            assert nodes["flags"].max() <= 4 and len(faces) >= len(tris)
+    nodes, faces = wmo_bsp.build(np.zeros((3, 3)), np.zeros((0, 3), int))
+    assert len(nodes) == 0 and len(faces) == 0
+
+
+@test
+def geometry_vertex_split_and_batches():
+    co = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [5, 5, 5]], np.float32)
+    tri_vi = np.array([[0, 1, 2], [1, 3, 2], [0, 1, 2]])
+    n = np.tile(np.array([0, 0, 1], np.float32), (3, 3, 1))
+    n[2, 0] = (0, 1, 0)
+    uv = [np.zeros((3, 3, 2), np.float32)]
+    c = {"co": co, "tri_vi": tri_vi, "tri_normal": n, "tri_uv": uv, "vcol": [np.full((5, 4), 255, np.uint8)],
+         "face_mat": np.array([3, 3, -1]), "face_flags": np.array([0x24, 0, 0]), "face_batch": np.array([-1, -1, -1]),
+         "default_class": wmo_geometry.INT}
+    a = wmo_geometry.build_group(c)
+    assert len(a.vertices) == 6, len(a.vertices)
+    assert list(a.batches["material"]) == [3] and a.batches["count"][0] == 6
+    assert list(a.poly_mat) == [3, 3, 255] and list(a.poly_flags) == [0x24, 0x24, 0x08]
+    assert a.batches["start"][0] == 0 and a.indices.max() < 6
+    assert (a.vertices[:, 0] <= 5).all() and (a.vertices == 5).any()
+    src = dict(c, src_class=[wmo_geometry.TRANS, wmo_geometry.EXT], src_mat=[3, 9])
+    c2 = dict(src, face_mat=np.array([9, 3, 3]), face_batch=np.array([1, 1, 0]))
+    a = wmo_geometry.build_group(c2)
+    assert list(a.batch_class) == [wmo_geometry.TRANS, wmo_geometry.EXT] and list(a.batches["material"]) == [3, 9]
+    assert list(a.face_order) == [2, 1, 0] or list(a.face_order) == [1, 2, 0]
+
+
+@test
+def wmo_export_unedited_is_identical():
+    for path in REFS + [MPY2_WMO]:
+        t = time.time()
+        coll, r = export_files(path)
+        assert not r.errors, str(r)
+        assert r.stats["groups_rebuilt"] == 0, (path, str(r))
+        assert differing(r.files) == [], path
+        print(f"  {path}: {len(r.files)} files {time.time() - t:.1f}s")
+
+
+@test
+def wmo_export_forced_rebuild_is_equivalent():
+    for path in (REFS[0], REFS[1], MPY2_WMO):
+        coll, r = export_files(path, force=True)
+        assert not r.errors, str(r)
+        assert r.stats["groups_rebuilt"] == len(group_files(r, path)), path
+        d = rebuild_diff(path, r.files)
+        assert d == [], (path, d[:5])
+
+
+def group_files(r, path):
+    return [k for k in r.files if k != path]
+
+
+def reread(path, files):
+    from wowlib.formats import wmo as wwmo
+    w = wwmo.WMO.for_version(client.VERSION)
+    gp = [k for k in sorted(files) if k != path]
+    w.read(files[path], [files[k] for k in gp])
+    return w
+
+
+def tri_rows(body):
+    v = np.asarray(body.vertices).view(np.float32).reshape(-1, 3)
+    n = np.asarray(body.normals).view(np.float32).reshape(-1, 3)
+    uv = np.asarray(body.texcoords[0]) if len(body.texcoords) else np.zeros(len(v), [("x", "f4"), ("y", "f4")])
+    uv = np.stack([uv["x"], uv["y"]], 1)
+    idx = np.asarray(body.indices).astype(int).reshape(-1, 3)
+    polys = np.asarray(body.polys if len(body.polys) else body.polys2)
+    mat = np.full(len(idx), -1, np.int64)
+    for b in body.batches:
+        m = b.material_id_large if b.flags & 2 else b.material_id
+        mat[b.start_index // 3:(b.start_index + b.count) // 3] = m
+    corner = np.rint(np.nan_to_num(np.concatenate([v, uv, n], 1) * 1000)).astype(np.int64)
+    return idx, corner, polys["flags"].astype(np.int64)[:len(idx)], mat
+
+
+def tri_multiset(body, corner_ids):
+    idx, corner, flags, mat = tri_rows(body)
+    ids = np.sort(corner_ids[idx], axis=1)
+    rows = np.concatenate([ids, flags[:, None], mat[:, None]], 1)
+    return rows[np.lexsort(rows.T[::-1])]
+
+
+def rebuild_diff(path, files):
+    src, new = wmo_expect(path)[0], reread(path, files)
+    out = []
+    if len(src.groups) != len(new.groups):
+        return ["group count"]
+    for gi, (a, b) in enumerate(zip(src.groups, new.groups)):
+        ia, ca, _, _ = tri_rows(a.body)
+        ib, cb, _, _ = tri_rows(b.body)
+        allc = np.concatenate([ca, cb])
+        _, inv = np.unique(allc, axis=0, return_inverse=True)
+        inv = inv.reshape(-1)
+        ra, rb = tri_multiset(a.body, inv[:len(ca)]), tri_multiset(b.body, inv[len(ca):])
+        if ra.shape != rb.shape or not (ra == rb).all():
+            out.append(f"group {gi} triangles")
+        nb = b.body
+        v = np.asarray(nb.vertices).view(np.float32).reshape(-1, 3)
+        tris = np.asarray(nb.indices).astype(int).reshape(-1, 3)
+        if len(tris):
+            nodes, faces = np.asarray(nb.bsp_nodes), np.asarray(nb.bsp_face_indices)
+            if not wmo_bsp.covers_all(nodes, faces, len(tris)):
+                out.append(f"group {gi} bsp")
+    if not new.validate().ok and src.validate().ok:
+        out.append("validate")
+    return out
+
+
+@test
+def wmo_export_vertex_edit():
+    path = REFS[0]
+    clear()
+    coll = wmo_import.load(path, {"doodads": False})
+    ob = mesh_groups(coll)[0]
+    ob.data.vertices[5].co.z += 2.0
+    ob.data.update()
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors and r.stats["groups_rebuilt"] == 1, str(r)
+    d = differing(r.files)
+    assert sorted(d) == sorted([path, wmo_export.group_path(path, 0)]), d
+    new = reread(path, r.files)
+    src = wmo_expect(path)[0]
+    va = np.asarray(src.groups[0].body.vertices).view(np.float32).reshape(-1, 3)
+    vb = np.asarray(new.groups[0].body.vertices).view(np.float32).reshape(-1, 3)
+    assert len(va) == len(vb) and np.allclose(vb[5] - va[5], (0, 0, 2.0), atol=1e-5)
+    assert (np.abs(vb - va).sum(1) > 1e-6).sum() == 1
+    hb = new.groups[0].body.header.bounding_box
+    assert hb.max.z >= vb[:, 2].max() and new.validate().ok
+
+
 @test
 def import_doodad_meshes():
     clear()
@@ -500,6 +663,39 @@ def sweep_m2_anim():
     return fails
 
 
+def sweep_wmo_export(force):
+    index.load(client.session().content, client.prefs().cache_dir)
+    fails, t0 = [], time.time()
+    step = int(os.environ.get("SWEEP_STEP", "1"))
+    wmos = index.entries("wmo")[::step]
+    only = os.environ.get("SWEEP_ONLY")
+    if only:
+        wmos = [e for e in wmos if only in e[1]]
+    slowest = []
+    for fdid, path, _ in wmos:
+        if path in KNOWN_BAD:
+            continue
+        t = time.time()
+        try:
+            coll, r = export_files(path, force, {"doodads": False, "lights": False})
+            if r.errors:
+                fails.append((path, str(r)[:200]))
+            elif not force and differing(r.files):
+                fails.append((path, f"differs: {differing(r.files)[:3]} rebuilt {r.stats['groups_rebuilt']}"))
+            elif force:
+                d = rebuild_diff(path, r.files)
+                if d:
+                    fails.append((path, str(d[:3])))
+        except Exception as e:  # noqa: BLE001
+            fails.append((path, f"{type(e).__name__}: {e}"[:200]))
+        slowest.append((time.time() - t, path))
+    slowest.sort(reverse=True)
+    print(f"wmo export sweep (force={force}): {len(wmos)} WMOs, {len(fails)} failures, {time.time() - t0:.0f}s, slowest {slowest[:3]}")
+    for f in fails[:400]:
+        print("  FAIL", *f)
+    return fails
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:
@@ -516,6 +712,10 @@ for f in tests:
         traceback.print_exc()
 if "--all" in ARGS:
     failed += len(sweep())
+if "--all-wmo-export" in ARGS:
+    failed += len(sweep_wmo_export(False))
+if "--all-wmo-rebuild" in ARGS:
+    failed += len(sweep_wmo_export(True))
 if "--all-m2" in ARGS:
     failed += len(sweep_m2())
 if "--all-m2-anim" in ARGS:
