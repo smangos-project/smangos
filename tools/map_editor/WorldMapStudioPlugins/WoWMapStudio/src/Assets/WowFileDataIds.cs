@@ -65,6 +65,30 @@ public sealed class WowFileDataIds
         _ids.TryAdd(normalized, id);
     }
 
+    /// <summary>First id handed out for project-created files, well above anything the stock client uses.</summary>
+    public const uint CustomBase = 2_000_000_000;
+
+    /// <summary>The existing id of <paramref name="path"/>, or a new one from the custom range.</summary>
+    public uint Allocate(string path)
+    {
+        if (IdOf(path) is { } existing)
+        {
+            return existing;
+        }
+
+        uint next = CustomBase;
+        foreach (uint id in _paths.Keys)
+        {
+            if (id >= next)
+            {
+                next = id + 1;
+            }
+        }
+
+        Add(next, path);
+        return next;
+    }
+
     public string? PathOf(uint id) => _paths.GetValueOrDefault(id);
 
     /// <summary>The listed path, or a stable stand-in for ids the listfile does not know.</summary>

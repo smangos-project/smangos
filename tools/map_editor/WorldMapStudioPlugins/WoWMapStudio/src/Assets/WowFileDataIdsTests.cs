@@ -28,4 +28,15 @@ public static class WowFileDataIdsTests
         uint id = ids.IdOf("interface/icons/inv_misc_questionmark.blp")!.Value;
         Assert.AreEqual("interface/icons/inv_misc_questionmark.blp", ids.PathOf(id));
     }
+
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Allocate_reuses_known_paths_and_counts_up()
+    {
+        var ids = WowFileDataIds.Parse(new[] { "10;World/A.adt" });
+        Assert.AreEqual(10u, ids.Allocate("world/a.adt"));
+        uint first = ids.Allocate("world/new1.adt");
+        Assert.AreEqual(WowFileDataIds.CustomBase, first);
+        Assert.AreEqual(first + 1, ids.Allocate("world/new2.adt"));
+        Assert.AreEqual(first, ids.Allocate("World\\New1.adt"));
+    }
 }
