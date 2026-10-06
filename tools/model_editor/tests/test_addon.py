@@ -180,7 +180,7 @@ def operators():
     assert wm.wow_import.doodads
 
 
-M2S = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2"]
+M2S = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2", "spells/arcaneexplosion_base.m2", "spells/assassinate_missile.m2"]
 
 
 def find_m2(stem):
@@ -337,7 +337,7 @@ def operators_m2():
     wm.wow_kind = "m2"
 
 
-ANIM_MODELS = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2"]
+ANIM_MODELS = ["creature/wolf/wolf.m2", "character/human/male/humanmale.m2", "spells/fireball_missile_high.m2", "spells/arcaneexplosion_base.m2", "spells/assassinate_missile.m2"]
 
 
 def anim_diff(path):
@@ -371,6 +371,15 @@ def m2_anim_import():
     m2_seq.play(top, 1)
     arm = next(o for o in top.all_objects if o.type == "ARMATURE")
     assert "wow_loops" in arm.animation_data.nla_tracks
+
+
+@test
+def m2_anim_model_tracks():
+    clear()
+    top = m2_import.load("spells/arcaneexplosion_base.m2", {"display": "NONE"})
+    paths = {fc.data_path for s in top.wow_m2.sequences if s.action for cb in s.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
+    paths |= {fc.data_path for l in top.wow_m2.loops if l.action for cb in l.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
+    assert any(p.startswith('["wow_tt_translation') for p in paths), paths
 
 
 @test

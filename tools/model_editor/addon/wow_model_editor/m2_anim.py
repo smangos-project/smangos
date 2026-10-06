@@ -53,6 +53,34 @@ def _enc_vec3(f):
     return wowlib.VectorC3Vector(out)
 
 
+def _fixed16(v):
+    return np.asarray(v)["value"].astype(np.float64)[:, None] / 32767.0
+
+
+def _enc_fixed16(f):
+    out = []
+    for x in np.rint(np.asarray(f, np.float64)[:, 0] * 32767.0).astype(np.int16).tolist():
+        c = common.fixed16()
+        c.value = x
+        out.append(c)
+    return wowlib.Vectorfixed16(out)
+
+
+def _quat4(v):
+    """C4Quaternion (x, y, z, w) to Blender (w, x, y, z)."""
+    a = np.asarray(v)
+    return np.stack([a["w"], a["x"], a["y"], a["z"]], 1).astype(np.float64)
+
+
+def _enc_quat4(f):
+    out = []
+    for w, x, y, z in np.asarray(f, np.float32).tolist():
+        q = common.C4Quaternion()
+        q.w, q.x, q.y, q.z = w, x, y, z
+        out.append(q)
+    return wowlib.VectorC4Quaternion(out)
+
+
 class Binding:
     """One M2 track and the Blender property (object, path, attr) that carries it."""
 
@@ -92,8 +120,30 @@ def bone_bindings(model):
         yield Binding(f"bone/{i}/scale", b.scale, arm, pb, path, "scale", 3, _vec3, _enc_vec3, name)
 
 
+def _prop_binding(arm, key, track, attr, n, default, decode, encode):
+    if attr not in arm:
+        arm[attr] = default
+    return Binding(key, track, arm, arm, "", attr, n, decode, encode)
+
+
+def model_bindings(model):
+    """Colors, texture weights and texture transforms as custom properties of the armature."""
+    arm, root = model.armature, model.root
+    if arm is None:
+        return
+    for i, c in enumerate(root.colors):
+        yield _prop_binding(arm, f"color/{i}/color", c.color, f"wow_color_{i}", 3, (1.0, 1.0, 1.0), _vec3, _enc_vec3)
+        yield _prop_binding(arm, f"color/{i}/alpha", c.alpha, f"wow_alpha_{i}", 1, 1.0, _fixed16, _enc_fixed16)
+    for i, w in enumerate(root.texture_weights):
+        yield _prop_binding(arm, f"texweight/{i}", w.weight, f"wow_texweight_{i}", 1, 1.0, _fixed16, _enc_fixed16)
+    for i, t in enumerate(root.texture_transforms):
+        yield _prop_binding(arm, f"texxform/{i}/translation", t.translation, f"wow_tt_translation_{i}", 3, (0.0, 0.0, 0.0), _vec3, _enc_vec3)
+        yield _prop_binding(arm, f"texxform/{i}/rotation", t.rotation, f"wow_tt_rotation_{i}", 4, (1.0, 0.0, 0.0, 0.0), _quat4, _enc_quat4)
+        yield _prop_binding(arm, f"texxform/{i}/scaling", t.scaling, f"wow_tt_scaling_{i}", 3, (1.0, 1.0, 1.0), _vec3, _enc_vec3)
+
+
 def all_bindings(model):
-    return list(bone_bindings(model))
+    return list(bone_bindings(model)) + list(model_bindings(model))
 
 
 def classify(binding):
