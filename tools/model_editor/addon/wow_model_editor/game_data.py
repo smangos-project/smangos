@@ -322,7 +322,7 @@ def plan_item_display(db, layout, spec):
         if diff:
             pl.changes.append(Change("update", IDI, {"ID": display_id, **diff}, changed=diff))
     else:
-        display_id = next_id(db, IDI, DISPLAY_FIRST_ID, 2**31 - 1)
+        display_id = pl.new_id(IDI, "ID", DISPLAY_FIRST_ID)
         pl.changes.append(Change("insert", IDI, {**tdisp, **wanted, "ID": display_id}))
     for i, m in enumerate(mats):
         row = db.dicts(f"SELECT * FROM {IDIMMR} WHERE ItemDisplayInfoID = ? AND ModelIndex = ?", (display_id, i)) if found else []
