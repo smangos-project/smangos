@@ -103,4 +103,11 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - Groups are rebuilt (vertex split, batches, BSP) only when an array differs from the source; `Rebuild all groups` forces it. Normals come from the `wow_normal` attribute, falling back to corner normals for new vertices.
 - Materials: edited `wow_wmo_material` fields update MOMT; a material without an index is appended. Texture nodes are labelled `texture1..3`; an image without `wow_fdid` is encoded to `world/wmo/custom/<name>.blp` and gets an id from `fdids.allocate` (custom listfile `.local/listfile.custom.txt`, ids from 2e9, override with the `Custom listfile` preference). Edited (dirty) imported images overwrite their own path.
 - Root objects: doodads (moved, retargeted, added to their set with group references), lights, fogs, portal vertices/planes and liquid heights/tile flags are written when they differ from the source. Deleted objects are kept in the file with a warning.
+- Export checks: `w.validate()` issues and out-of-range material ids (errors/warnings), texture ids missing from every listfile and non-power-of-two new textures (warnings).
 - Not yet: new groups or WMOs, LOD files, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
+
+### Phase 6 risks
+- The client may not resolve new fdids in the 2e9 range (unverified; needs an in-client check with backup/restore of the replaced files).
+- New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.
+- New doodads outside every group box get no group reference, so they will not render.
+- `import_m2_geometry` fails with KeyError `_rig` (pre-existing).

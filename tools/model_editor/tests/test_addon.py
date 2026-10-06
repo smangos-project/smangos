@@ -508,6 +508,26 @@ def wmo_export_materials():
 
 
 @test
+def wmo_export_validation():
+    path = REFS[0]
+    clear()
+    client.prefs().custom_listfile = "/tmp/me-custom-listfile2.txt"
+    coll = wmo_import.load(path, {"doodads": False})
+    ob = mesh_groups(coll)[0]
+    mat = next(s.material for s in ob.material_slots if s.material.wow_wmo_material.material_index >= 0)
+    nm = mat.copy()
+    nm.wow_wmo_material.material_index = -1
+    img = bpy.data.images.new("Odd Tex", 12, 8, alpha=True)
+    for n in nm.node_tree.nodes:
+        if n.label == "texture1":
+            n.image = img
+    ob.data.materials.append(nm)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    assert any("power of two" in i[2] for i in r.items), str(r)
+
+
+@test
 def wmo_export_root_objects():
     path = REFS[1]
     coll, r = export_files(path, import_opts={"doodads": True})

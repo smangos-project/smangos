@@ -2,6 +2,7 @@
 import io
 import os
 import re
+import struct
 from pathlib import Path
 
 import bpy
@@ -433,6 +434,27 @@ def update_root_boxes(w):
         _set_box(w.root.header.bounding_box, boxes[:, :3].min(axis=0), boxes[:, 3:].max(axis=0))
 
 
+def check_output(w, report):
+    """Cross-checks the structural validator does not cover: material ranges and texture ids."""
+    n = len(w.root.materials)
+    for gi, g in enumerate(w.groups):
+        for b in g.body.batches:
+            m = b.material_id_large if b.flags & wmo_import.BATCH_LARGE_MATERIAL else b.material_id
+            if m >= n and m != 0xFF:
+                report.add("ERROR", f"group {gi}", f"batch material {m} out of range ({n} materials)")
+    custom = fdids.read()
+    for mi, m in enumerate(w.root.materials):
+        for f in TEXTURE_FIELDS:
+            v = int(getattr(m, f))
+            if v and not index.path_of(v) and v not in custom:
+                report.add("WARNING", f"material {mi}", f"{f} {v} is not in any listfile")
+    for path, data in report.files.items():
+        if data[:4] == b"BLP2":
+            wd, ht = struct.unpack_from("<II", data, 12)
+            if wd & (wd - 1) or ht & (ht - 1):
+                report.add("WARNING", path, f"texture size {wd}x{ht} is not a power of two")
+
+
 def serialize(w):
     root = io.BytesIO()
     groups = [io.BytesIO() for _ in w.groups]
@@ -502,6 +524,9 @@ def export(root, out_path=None, options=None):
     for i, data in enumerate(group_bytes):
         files[group_path(path, i)] = data
     report.files = files
+    check_output(w, report)
+    if report.errors:
+        return report
     if not opts["dry_run"]:
         s = client.session()
         out_dir = s.project
