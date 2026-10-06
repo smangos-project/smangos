@@ -10,7 +10,7 @@ from .m2_anim import ALIAS_FLAG, NONE
 class _Shim:
     """The slice of an import `Model` that the binding builders use."""
 
-    def __init__(self, top, root, rig=None):
+    def __init__(self, top, root, rig=None, objects=None):
         self.root = root
         self.armature = next((o for o in top.all_objects if o.type == "ARMATURE"), None)
         names = {}
@@ -23,7 +23,7 @@ class _Shim:
                     names[b.wow_m2_bone.index] = b.name
             self.bone_names = [names.get(i, "") for i in range(len(root.bones))]
             self.bone_keys = list(range(len(root.bones)))
-        self.objects = m2_anim.object_map(top)
+        self.objects = objects if objects is not None else m2_anim.object_map(top)
 
 
 def _channelbag(action, obj):
@@ -150,10 +150,10 @@ def _write_events(model, seq_actions, loop_actions):
             t.global_sequence = NONE
 
 
-def build(top, root, rig=None):
+def build(top, root, rig=None, objects=None):
     """Rewrites sequences, loops and every animated track of `root` from the Blender data under `top`."""
     p = top.wow_m2
-    model = _Shim(top, root, rig)
+    model = _Shim(top, root, rig, objects)
     write_sequences(root, list(p.sequences))
     write_loops(root, list(p.loops))
     static = set(top.get(m2_anim.STATIC_PROP, []))

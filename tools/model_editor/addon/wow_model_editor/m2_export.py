@@ -3,7 +3,7 @@ import posixpath
 from pathlib import Path
 
 import bpy
-from . import client, fdids, m2_anim_export, m2_import, m2_materials_export, m2_mesh_export, m2_rig_export
+from . import client, fdids, m2_anim_export, m2_import, m2_materials_export, m2_mesh_export, m2_objects_export, m2_rig_export
 from .deep_compare import deep_diff
 from .report import Report
 
@@ -41,7 +41,8 @@ def rebuild(top, m, report, opts):
         m2_rig_export.build(top, m, report, rig)
     report.extra_files += m2_materials_export.build(top, m, report, opts, top.wow_m2.path)
     m2_mesh_export.build(top, m, report, opts, rig)
-    m2_anim_export.build(top, m.root, rig)
+    objects = m2_objects_export.build(top, m, report, rig)
+    m2_anim_export.build(top, m.root, rig, objects)
 
 
 def export(top, out_path=None, options=None):

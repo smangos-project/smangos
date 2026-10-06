@@ -771,6 +771,10 @@ def _edit_bones(top, fn):
     return arm
 
 
+def _vec3(v):
+    return (v.x, v.y, v.z)
+
+
 def _cleanup_out(path, n_skins=1):
     out = common.Path(client.session().project)
     base = path[:-3]
@@ -883,6 +887,49 @@ def m2_material_edit_round_trip():
         for f in r.files:
             (common.Path(client.session().project) / f).unlink(missing_ok=True)
         client.close()
+
+
+@test
+def m2_objects_unedited_clean():
+    for path in ("creature/wolf/wolf.m2", "character/human/male/humanmale.m2", find_m2("duskwoodlamppost.m2")):
+        clear()
+        top = m2_import.load(path, {"display": "NONE"})
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors and not r.dirty, (path, r.diff, str(r))
+
+
+@test
+def m2_object_edit_round_trip():
+    path = "character/human/male/humanmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    src = m2_import.read(path)
+    na, ne = len(src.root.attachments), len(src.root.events)
+    assert na > 3 and ne > 1
+    atts = sorted((o for o in top.all_objects if o.wow_m2_object.kind == "attachment"), key=lambda o: o.wow_m2_object.index)
+    evs = sorted((o for o in top.all_objects if o.wow_m2_object.kind == "event"), key=lambda o: o.wow_m2_object.index)
+    gone = atts[2]
+    gone_id = gone.wow_m2_object.id
+    keep_id = atts[3].wow_m2_object.id
+    old_pos = _vec3(src.root.attachments[0].position)
+    atts[0].location.z += 0.25
+    evs[1].wow_m2_object.data = 77
+    bpy.data.objects.remove(gone)
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        assert r.dirty
+        m = m2_import.read(path)
+        assert len(m.root.attachments) == na - 1 and len(m.root.events) == ne
+        assert abs(m.root.attachments[0].position.z - old_pos[2] - 0.25) < 1e-3
+        ids = [int(a.id) for a in m.root.attachments]
+        assert gone_id not in ids and keep_id in ids
+        lut = list(m.root.attachment_lookup_table)
+        assert all(ids[lut[i]] == i for i in ids if i < len(lut) and lut[i] != 0xFFFF)
+        assert int(m.root.events[1].data) == 77
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+    finally:
+        _cleanup_out(path, len(src.skins))
 
 
 @test
