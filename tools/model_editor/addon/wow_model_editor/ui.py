@@ -83,6 +83,7 @@ class WOW_PT_m2(bpy.types.Panel):
         col.operator("wow.export_m2", icon="EXPORT")
         col.operator("wow.install_model", icon="IMPORT")
         col.operator("wow.uninstall_model", icon="LOOP_BACK")
+        col.operator("wow.write_game_data", icon="DISK_DRIVE")
         try:
             listed = displays.for_model(p.fdid)
         except Exception:  # noqa: BLE001

@@ -263,3 +263,6 @@ def build(top, m, report, opts, rig=None):
         return
     report.add("INFO", "geometry", f"{len(pool.pos)} vertices, {len(pool.submeshes)} submeshes rebuilt")
     apply(m, pool, opts, report)
+    if len(pool.pos):
+        lo, hi, radius = bounds_of(pool.pos)
+        top.wow_m2.bounding_min, top.wow_m2.bounding_max, top.wow_m2.bounding_radius = lo, hi, radius

@@ -1,10 +1,10 @@
 """Export operators."""
 import bpy
-from bpy.props import BoolProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 
 from pathlib import Path
 
-from . import client, install, m2_export, wmo_export
+from . import client, game_data, install, m2_export, wmo_export
 
 
 class WOW_OT_export_wmo(bpy.types.Operator):
@@ -166,4 +166,52 @@ class WOW_OT_uninstall_model(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_install_model, WOW_OT_uninstall_model, WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
+class WOW_OT_write_game_data(bpy.types.Operator):
+    bl_idname = "wow.write_game_data"
+    bl_label = "Write game data"
+    bl_description = "Create or update the creature or game object display rows of the active M2 (migration plus client db2 export)"
+    kind: EnumProperty(name="Kind", items=[("creature", "Creature", ""), ("object", "Game object", "")], default="creature")
+    template_display: IntProperty(name="Template display", description="CreatureDisplayInfo id whose other fields are copied", min=0)
+    scale: FloatProperty(name="Scale", default=1.0, min=0.01)
+    textures: StringProperty(name="Texture FDIDs", description="Up to four comma separated file data ids")
+    update_stock: BoolProperty(name="Update stock rows", description="Also rewrite rows that exist in the stock data", default=False)
+    dry_run: BoolProperty(name="Preview only", default=True)
+
+    @classmethod
+    def poll(cls, context):
+        return m2_export.find_root(context.active_object or context.collection) is not None
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        root = m2_export.find_root(context.active_object or context.collection)
+        p = root.wow_m2
+        info = game_data.ModelInfo(p.fdid, p.path, tuple(p.bounding_min), tuple(p.bounding_max),
+                                   tuple(p.collision_min), tuple(p.collision_max))
+        try:
+            layout = game_data.Layout.discover(client.dirs()[0])
+            db = layout.open()
+            try:
+                if self.kind == "creature":
+                    tex = [int(t) for t in self.textures.replace(",", " ").split()]
+                    changes, display = game_data.plan_creature(db, layout, info, self.template_display, self.scale, tex,
+                                                               update_stock_model=self.update_stock)
+                else:
+                    changes, display = game_data.plan_game_object(db, layout, info, update_stock=self.update_stock)
+            finally:
+                db.close()
+            for c in changes:
+                self.report({"INFO"}, f"{c.kind} {c.table} {c.values[game_data.KEYS[c.table]]}")
+            if self.dry_run or not changes:
+                self.report({"INFO"}, f"Display {display}: {len(changes)} changes" + (" (preview)" if self.dry_run else ""))
+                return {"FINISHED"}
+            res = game_data.apply_changes(layout, changes, f"{self.kind} display for {p.path}")
+        except (game_data.GameDataError, OSError, ValueError) as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"Display {display} written" + (f", migration {res['migration'].name}" if res["migration"] else ""))
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_write_game_data, WOW_OT_install_model, WOW_OT_uninstall_model, WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
