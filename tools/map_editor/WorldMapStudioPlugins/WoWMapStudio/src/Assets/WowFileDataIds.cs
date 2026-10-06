@@ -89,6 +89,12 @@ public sealed class WowFileDataIds
 
             _paths.Clear();
             _ids.Clear();
+            if (_storage != null && !HasTable(_storage))
+            {
+                // A database without the table (a scratch project) gets the index file and in-memory ids.
+                _storage = null;
+            }
+
             if (_storage != null)
             {
                 using WorldDbContext db = _storage.CreateContext();
@@ -107,6 +113,13 @@ public sealed class WowFileDataIds
 
             _loaded = true;
         }
+    }
+
+    private static bool HasTable(WorldStorage storage)
+    {
+        using WorldDbContext db = storage.CreateContext();
+        return db.Database.SqlQueryRaw<int>("SELECT count(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = 'file_data_id'")
+            .AsEnumerable().Single() > 0;
     }
 
     private static string? FindIndexFile()
@@ -194,6 +207,7 @@ public sealed class WowFileDataIds
     /// <c>database_tool fdid export</c>); true when the file changed.</summary>
     public bool ExportIndex(string contentDirectory)
     {
+        EnsureLoaded();
         if (_storage == null)
         {
             return false;
