@@ -96,4 +96,18 @@ public sealed class WowImportScriptApi : IScriptModule
             .Select(row => new WowImportedTileDescriptor(row))
             .ToArray();
     });
+
+    /// <summary>Starts an ADT export of a project map's imported tiles and returns its batch run id.</summary>
+    [ScriptFunction]
+    public long Export(string sourceMap, string targetMap)
+    {
+        IBatchOperation operation = _context.Batch.Find("wow.export.adt")
+            ?? throw new InvalidOperationException("'wow.export.adt' is not registered.");
+
+        var overrides = new JsonObject { ["sourceMap"] = sourceMap, ["targetMap"] = targetMap };
+        BatchRun run = _context.Batch.TryStart(operation, overrides, out string? blocker)
+            ?? throw new InvalidOperationException(blocker ?? "Could not start the ADT export.");
+
+        return run.Id;
+    }
 }
