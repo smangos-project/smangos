@@ -161,9 +161,10 @@ def bone_bindings(model):
         pb = arm.pose.bones[name]
         pb.rotation_mode = "QUATERNION"
         path = f'pose.bones["{name}"]'
-        yield Binding(f"bone/{i}/translation", b.translation, arm, pb, path, "location", 3, _vec3, _enc_vec3, name)
-        yield Binding(f"bone/{i}/rotation", b.rotation, arm, pb, path, "rotation_quaternion", 4, _cquat, _enc_cquat, name)
-        yield Binding(f"bone/{i}/scale", b.scale, arm, pb, path, "scale", 3, _vec3, _enc_vec3, name)
+        k = model.bone_keys[i] if hasattr(model, "bone_keys") else i
+        yield Binding(f"bone/{k}/translation", b.translation, arm, pb, path, "location", 3, _vec3, _enc_vec3, name)
+        yield Binding(f"bone/{k}/rotation", b.rotation, arm, pb, path, "rotation_quaternion", 4, _cquat, _enc_cquat, name)
+        yield Binding(f"bone/{k}/scale", b.scale, arm, pb, path, "scale", 3, _vec3, _enc_vec3, name)
 
 
 def _prop_binding(arm, key, track, attr, n, default, decode, encode):

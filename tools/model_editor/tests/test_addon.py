@@ -760,6 +760,92 @@ def m2_geometry_edit_round_trip():
     client.close()
 
 
+def _edit_bones(top, fn):
+    arm = next(o for o in top.all_objects if o.type == "ARMATURE")
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    try:
+        fn(arm.data.edit_bones)
+    finally:
+        bpy.ops.object.mode_set(mode="OBJECT")
+    return arm
+
+
+def _cleanup_out(path, n_skins=1):
+    out = common.Path(client.session().project)
+    base = path[:-3]
+    for f in (path, *(f"{base}{i:02d}.skin" for i in range(n_skins + 1))):
+        (out / f).unlink(missing_ok=True)
+    client.close()
+
+
+@test
+def m2_rig_edit_round_trip():
+    path = "character/human/male/humanmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    n = len(src.root.bones)
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.dirty, r.diff
+
+    by_index = {b.wow_m2_bone.index: b.name for b in next(o for o in top.all_objects if o.type == "ARMATURE").data.bones}
+
+    def edit(eb):
+        eb[by_index[3]].head.x += 0.1
+        p = eb[by_index[5]]
+        e = eb.new("finger_new")
+        e.head, e.tail, e.parent = p.head, (p.head.x, p.head.y + 0.05, p.head.z), p
+    arm = _edit_bones(top, edit)
+    old_name3 = [b.name for b in arm.data.bones if b.wow_m2_bone.index == 3][0]
+    new_pivot = tuple(arm.data.bones[old_name3].head_local)
+    try:
+        r = m2_export.export(top, options={"force": True})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        assert len(m.root.bones) == n + 1
+        assert abs(m.root.bones[3].pivot.x - new_pivot[0]) < 1e-5
+        assert m.root.bones[n].parent_bone == 5, (m.root.bones[n].parent_bone, [b.name for b in arm.data.bones][-3:])
+        assert [int(x) for x in m.root.bone_lookup_table] == [int(x) for x in src.root.bone_lookup_table]
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+        top2 = m2_import.load(path, {"display": "NONE", "collision": False})
+        assert len(next(o for o in top2.all_objects if o.type == "ARMATURE").data.bones) == n + 1
+    finally:
+        _cleanup_out(path, len(src.skins))
+
+
+@test
+def m2_rig_delete_remaps_references():
+    path = "character/human/male/humanmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    n = len(src.root.bones)
+    used = {int(i) for v in src.root.vertices for i, w in zip(v.bone_indices, v.bone_weights) if w}
+    parents = {int(b.parent_bone) for b in src.root.bones}
+    victim = next(i for i in range(n) if i not in used and i not in parents)
+    arm = next(o for o in top.all_objects if o.type == "ARMATURE")
+    name = next(b.name for b in arm.data.bones if b.wow_m2_bone.index == victim)
+    _edit_bones(top, lambda eb: eb.remove(eb[name]))
+    try:
+        r = m2_export.export(top, options={"force": True})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        assert len(m.root.bones) == n - 1
+        for v_new, v_old in zip(m.root.vertices, src.root.vertices):
+            for a, b, w in zip(v_new.bone_indices, v_old.bone_indices, v_old.bone_weights):
+                if w:
+                    assert int(a) == int(b) - (int(b) > victim)
+        for a_new, a_old in zip(m.root.attachments, src.root.attachments):
+            want = int(a_old.bone) - (int(a_old.bone) > victim) if int(a_old.bone) != victim else 0
+            assert int(a_new.bone) == want
+        assert [int(b.parent_bone) for b in m.root.bones] == [
+            (p - (p > victim) if p >= 0 else p) for i, p in enumerate(int(b.parent_bone) for b in src.root.bones) if i != victim]
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+    finally:
+        _cleanup_out(path, len(src.skins))
+
+
 @test
 def m2_anim_import():
     clear()

@@ -65,7 +65,7 @@ def source_submeshes(m, arrays):
     return out
 
 
-def gather(ob, top, arm, bmap, report):
+def gather(ob, top, arm, bmap, report, rig=None):
     """SubmeshIn for a mesh object, or None when it has no vertices."""
     me = ob.data
     nv = len(me.vertices)
@@ -105,11 +105,12 @@ def gather(ob, top, arm, bmap, report):
     if attr is not None:
         attr.data.foreach_get("value", src_vertex)
     p = ob.wow_m2_submesh
-    bones, weights, missing = _weights(ob, me, bmap, p.center_bone_index if p.index >= 0 else 0)
+    center = rig.map(p.center_bone_index) if rig is not None else p.center_bone_index
+    bones, weights, missing = _weights(ob, me, bmap, center if p.index >= 0 else 0)
     if missing:
-        report.add("WARNING", "geometry", f"{ob.name}: {missing} vertices without weights use bone {p.center_bone_index}")
+        report.add("WARNING", "geometry", f"{ob.name}: {missing} vertices without weights use bone {center}")
     return geo.SubmeshIn(co, tri_vi.reshape(-1, 3), tri_normal, uvs, bones, weights, src_vertex,
-                         p.skin_section_id, p.level, p.center_bone_index)
+                         p.skin_section_id, p.level, center)
 
 
 def _weights(ob, me, bmap, fallback):
@@ -232,17 +233,17 @@ def apply(m, pool, opts, report):
         sf.resize(1)
 
 
-def build(top, m, report, opts):
+def build(top, m, report, opts, rig=None):
     """Rebuild the vertex pool and skin 0 from the submesh objects; leaves `m` alone when they match the source."""
     old, new = submesh_objects(top)
     objs = old + new
     arm = find_armature(top)
-    bmap = bone_map(arm)
+    bmap = dict(rig.by_name) if rig is not None else bone_map(arm)
     arrays = source_arrays(m.root)
     srcs = source_submeshes(m, arrays)
     subs, names = [], []
     for ob in objs:
-        sub = gather(ob, top, arm, bmap, report)
+        sub = gather(ob, top, arm, bmap, report, rig)
         if sub is None:
             continue
         sub.src = srcs.get(ob.wow_m2_submesh.index)
