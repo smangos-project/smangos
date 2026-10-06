@@ -22,4 +22,17 @@ public static class WowWdtWriterTests
         Assert.IsFalse(removed.Has(5, 5), "tile removed");
         Assert.AreEqual(0u, removed.Files![(5 * 64) + 5].Root);
     }
+
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Empty_map_wdt_has_no_tiles()
+    {
+        WowTestContent.RequireFile("world/maps/azeroth/azeroth.wdt");
+        string project = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wms-wdt-test-" + System.Guid.NewGuid().ToString("N"));
+        var fs = WowClientFiles.OpenIsolated(project);
+        WowWdtWriter.CreateEmpty(fs, "azeroth", "azeroth");
+        var empty = WowWdt.Read(fs, "azeroth");
+        System.IO.Directory.Delete(project, true);
+        Assert.AreEqual(0, System.Linq.Enumerable.Count(empty.HasAdt, h => h), "tiles left");
+        Assert.AreEqual(0u, empty.Files![(48 * 64) + 32].Root);
+    }
 }

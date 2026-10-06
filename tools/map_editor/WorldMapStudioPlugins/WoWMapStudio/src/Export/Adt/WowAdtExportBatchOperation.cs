@@ -20,6 +20,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
     private string _targetMap = "";
     private string _newTiles = "";
     private string _removedTiles = "";
+    private string _donorMap = "";
 
     public string Id => "wow.export.adt";
 
@@ -37,6 +38,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         ImGui.InputText("Client map folder", ref _sourceMap, 128);
         ImGui.InputText("Project map", ref _targetMap, 128);
         ImGui.InputText("New tiles (x,y;x,y)", ref _newTiles, 256);
+        ImGui.InputText("Donor map for new tiles", ref _donorMap, 128);
         ImGui.InputText("Removed tiles (x,y;x,y)", ref _removedTiles, 256);
     }
 
@@ -46,6 +48,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         ["targetMap"] = _targetMap,
         ["newTiles"] = _newTiles,
         ["removedTiles"] = _removedTiles,
+        ["donorMap"] = _donorMap,
     };
 
     public void LoadSettings(JsonObject settings)
@@ -54,6 +57,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         _targetMap = settings["targetMap"]?.GetValue<string>() ?? "";
         _newTiles = settings["newTiles"]?.GetValue<string>() ?? "";
         _removedTiles = settings["removedTiles"]?.GetValue<string>() ?? "";
+        _donorMap = settings["donorMap"]?.GetValue<string>() ?? "";
     }
 
     public async Task RunAsync(BatchContext context, WorkContext work)
@@ -132,7 +136,8 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         int written = 0;
         var edited = new List<ImportedTile>();
         var created = new List<((int FileX, int FileY), WowTileFiles)>();
-        (int DonorX, int DonorY)? donor = null;
+        (string Map, int X, int Y)? donor = null;
+        string donorMapSetting = context.Settings["donorMap"]?.GetValue<string>() ?? "";
         for (int i = 0; i < allRows.Count; i++)
         {
             work.ThrowIfCancellationRequested();
@@ -178,9 +183,10 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
             if (isNew)
             {
-                donor ??= FindDonor(wdt) ?? throw new InvalidOperationException("The map has no existing tile to build new tiles from.");
-                (int donorX, int donorY) = donor.Value;
-                await Task.Run(() => WowAdtTileWriter.WriteNew(fs, wdt, sourceMap, donorX, donorY, tile)).ConfigureAwait(false);
+                donor ??= FindDonor(fs, wdt, sourceMap, donorMapSetting)
+                    ?? throw new InvalidOperationException("The map has no existing tile to build new tiles from; set a donor map.");
+                (string donorMap, int donorX, int donorY) = donor.Value;
+                await Task.Run(() => WowAdtTileWriter.WriteNew(fs, wdt, donorMap, donorX, donorY, tile)).ConfigureAwait(false);
                 string[] paths = NewTilePaths(sourceMap, id.FileX, id.FileY);
                 created.Add(((id.FileX, id.FileY), new WowTileFiles(ids.Allocate(paths[0]), ids.Allocate(paths[1]), 0, ids.Allocate(paths[2]), 0, 0, 0, 0)));
             }
@@ -230,7 +236,22 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         return [$"{stem}.adt", $"{stem}_obj0.adt", $"{stem}_tex0.adt"];
     }
 
-    private static (int, int)? FindDonor(WowWdt wdt)
+    private static (string Map, int X, int Y)? FindDonor(WoWLib.Filesystem.FileSystem fs, WowWdt wdt, string map, string donorMap)
+    {
+        if (FirstTile(wdt) is var (x, y))
+        {
+            return (map, x, y);
+        }
+
+        if (donorMap.Length > 0 && FirstTile(WowWdt.Read(fs, donorMap)) is var (dx, dy))
+        {
+            return (donorMap, dx, dy);
+        }
+
+        return null;
+    }
+
+    private static (int, int)? FirstTile(WowWdt wdt)
     {
         for (int i = 0; i < wdt.HasAdt.Length; i++)
         {

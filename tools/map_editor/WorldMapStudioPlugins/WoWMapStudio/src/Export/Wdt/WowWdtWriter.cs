@@ -18,6 +18,34 @@ public static class WowWdtWriter
             Assign(entry, files);
         });
 
+    /// <summary>Writes <paramref name="map"/>'s WDT as the donor map's with every tile removed.</summary>
+    public static void CreateEmpty(FileSystem fs, string donorMap, string map)
+    {
+        var wdt = WDT.ForVersion(fs.Version);
+        using (wdt)
+        {
+            wdt.Read(fs, new FileKey($"world/maps/{donorMap}/{donorMap}.wdt"));
+            for (int i = 0; i < wdt.Root.Tiles.Count; i++)
+            {
+                wdt.Root.Tiles[i].Flags &= ~AreaInfoFlags.HasAdt;
+            }
+
+            if (wdt.Root is WDTRootShadowlandsPlus plus)
+            {
+                foreach (MapFileDataIDs entry in plus.MapFdids)
+                {
+                    Assign(entry, default);
+                    entry.LodAdt = 0;
+                    entry.MapTexture = 0;
+                    entry.MapTextureN = 0;
+                    entry.MinimapTexture = 0;
+                }
+            }
+
+            wdt.Write(fs, new FileKey($"world/maps/{map}/{map}.wdt"));
+        }
+    }
+
     /// <summary>Clears the tiles' presence and MAID entries.</summary>
     public static void RemoveTiles(FileSystem fs, string map, IEnumerable<(int FileX, int FileY)> tiles)
     {
