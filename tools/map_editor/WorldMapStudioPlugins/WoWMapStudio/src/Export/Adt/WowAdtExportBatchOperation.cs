@@ -94,6 +94,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             ?? (path.StartsWith("unknown/", StringComparison.Ordinal) && uint.TryParse(Path.GetFileNameWithoutExtension(path), out uint raw) ? raw : WowFileDataIds.Shared.Allocate(path));
 
         int written = 0;
+        var edited = new List<ImportedTile>();
         for (int i = 0; i < rows.Count; i++)
         {
             work.ThrowIfCancellationRequested();
@@ -128,7 +129,13 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             Godot.GD.Print($"[Export] {id.Stem}: changed ({difference})");
 
             await Task.Run(() => WowAdtTileWriter.Write(fs, wdt, tile)).ConfigureAwait(false);
+            edited.Add(tile);
             written++;
+        }
+
+        if (edited.Count > 0)
+        {
+            await Task.Run(() => WowWdlWriter.Write(fs, sourceMap, edited.ToArray())).ConfigureAwait(false);
         }
 
         if (newUids.Count > 0)
