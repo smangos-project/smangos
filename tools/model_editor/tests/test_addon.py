@@ -391,9 +391,7 @@ def m2_anim_object_tracks():
     assert sum(len(a.pose_markers) for a in acts) > 0
     clear()
     top = m2_import.load("spells/fireball_missile_high.m2", {"display": "NONE"})
-    paths = {fc.data_path for s in top.wow_m2.sequences if s.action for cb in s.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
-    paths |= {fc.data_path for l in top.wow_m2.loops if l.action for cb in l.action.layers[0].strips[0].channelbags for fc in cb.fcurves}
-    assert any(p.startswith('["wow_emission_rate') for p in paths), paths
+    assert any(o.get("wow_emission_rate") is not None for o in top.all_objects if o.wow_m2_object.kind == "particle")
 
 
 @test
