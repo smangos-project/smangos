@@ -1026,6 +1026,24 @@ def m2_anim_bake_bezier():
 
 
 @test
+def m2_validate_findings():
+    clear()
+    top = m2_import.load("creature/wolf/wolf.m2", {"display": "NONE", "collision": False})
+    base = m2_export.export(top, options={"dry_run": True})
+    assert not base.errors and not [i for i in base.items if i[0] == "WARNING" and i[1] != "animation"], str(base)
+    ob = common.submodule("m2_mesh_export").submesh_objects(top)[0][0]
+    import bmesh
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bmesh.ops.delete(bm, geom=list(bm.faces), context="FACES_ONLY")
+    bm.to_mesh(ob.data)
+    bm.free()
+    rep = m2_export.export(top, options={"dry_run": True})
+    hit = [(i, o) for i, o in zip(rep.items, rep.objects) if "no faces" in i[2]]
+    assert hit and hit[0][1] is ob, str(rep)
+
+
+@test
 def m2_anim_cquat_codec():
     raw = np.array([(-32768, -1, 0, 32767), (5, -5, 32766, -32767)], dtype=[(n, "<i2") for n in "xyzw"])
     dec = m2_anim._cquat(raw)

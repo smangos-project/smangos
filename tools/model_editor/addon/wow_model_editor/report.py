@@ -4,12 +4,14 @@
 class Report:
     def __init__(self, **stats):
         self.items = []
+        self.objects = []
         self.material_index = {}
         self.new_groups = {}
         self.stats = dict(stats)
 
-    def add(self, severity, where, message):
+    def add(self, severity, where, message, obj=None):
         self.items.append((severity, where, message))
+        self.objects.append(obj)
 
     @property
     def errors(self):

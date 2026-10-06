@@ -91,6 +91,28 @@ class WOW_PT_m2(bpy.types.Panel):
                 op.display_id = d.id
 
 
+class WOW_PT_m2_report(bpy.types.Panel):
+    bl_label = "Export report"
+    bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
+
+    @classmethod
+    def poll(cls, context):
+        from . import m2_export
+        r = m2_export.last_report
+        return r is not None and any(i[0] != "INFO" for i in r.items)
+
+    def draw(self, context):
+        from . import m2_export
+        r = m2_export.last_report
+        col = self.layout.column(align=True)
+        for i, (sev, where, msg) in enumerate(r.items):
+            if sev == "INFO":
+                continue
+            op = col.operator("wow.select_finding", text=f"{where}: {msg}", emboss=False,
+                              icon="ERROR" if sev == "ERROR" else "INFO")
+            op.index = i
+
+
 class WOW_UL_sequences(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         alias = bool(item.flags & 0x40)
@@ -134,7 +156,7 @@ class WOW_PT_m2_sequences(bpy.types.Panel):
         row.operator("wow.m2_loop_remove", text="Remove loop", icon="REMOVE")
 
 
-classes = (WowRecent, WOW_PT_browser, WOW_PT_m2, WOW_UL_sequences, WOW_PT_m2_sequences)
+classes = (WowRecent, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
 
 
 def register():

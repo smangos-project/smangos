@@ -3,10 +3,11 @@ import posixpath
 from pathlib import Path
 
 import bpy
-from . import client, fdids, m2_anim_export, m2_import, m2_materials_export, m2_mesh_export, m2_objects_export, m2_rig_export
+from . import client, fdids, m2_anim_export, m2_import, m2_materials_export, m2_mesh_export, m2_objects_export, m2_rig_export, m2_validate
 from .deep_compare import deep_diff
 from .report import Report
 
+last_report = None
 DEFAULTS = {"force": False, "dry_run": False, "write_anyway": False}
 
 
@@ -36,20 +37,25 @@ def differs(ref, m):
 
 def rebuild(top, m, report, opts):
     """Applies every section of the Blender data to the freshly read model `m`."""
+    m2_validate.check_blender(top, report)
     rig = m2_rig_export.plan(top, m.root)
+    m2_validate.check_source_refs(m.root, rig, report)
     if rig is not None:
         m2_rig_export.build(top, m, report, rig)
     report.extra_files += m2_materials_export.build(top, m, report, opts, top.wow_m2.path)
     m2_mesh_export.build(top, m, report, opts, rig)
     objects = m2_objects_export.build(top, m, report, rig)
     m2_anim_export.build(top, m.root, rig, objects, report)
+    m2_validate.check_model(m, report)
 
 
 def export(top, out_path=None, options=None):
     """Export M2 collection `top`; returns a Report with `.model` and `.files` (client paths written)."""
+    global last_report
     opts = dict(DEFAULTS)
     opts.update(options or {})
     report = Report(files_written=0, files_removed=0)
+    last_report = report
     report.files, report.extra_files, report.model, report.dirty = [], [], None, False
     bpy.context.view_layer.update()
     p = top.wow_m2

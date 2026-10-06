@@ -79,4 +79,22 @@ class WOW_OT_export_m2(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2)
+class WOW_OT_select_finding(bpy.types.Operator):
+    bl_idname = "wow.select_finding"
+    bl_label = "Select"
+    bl_description = "Select the object a finding refers to"
+    index: bpy.props.IntProperty()
+
+    def execute(self, context):
+        r = m2_export.last_report
+        ob = r.objects[self.index] if r and self.index < len(r.objects) else None
+        if ob is None or ob.name not in context.view_layer.objects:
+            return {"CANCELLED"}
+        for o in context.selected_objects:
+            o.select_set(False)
+        ob.select_set(True)
+        context.view_layer.objects.active = ob
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_select_finding)
