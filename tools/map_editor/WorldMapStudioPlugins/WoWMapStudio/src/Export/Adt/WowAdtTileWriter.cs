@@ -144,6 +144,55 @@ public static class WowAdtTileWriter
         }
     }
 
+    /// <summary>Writes a tile that has no file yet: the donor tile's file supplies the structure, which is flattened, repositioned to <paramref name="tile"/> and then filled like any other edit.</summary>
+    public static void WriteNew(FileSystem fs, WowWdt wdt, string donorMap, int donorX, int donorY, ImportedTile tile)
+    {
+        var id = tile.TileId;
+        var alpha = wdt.BigAlpha ? AlphaFormat.Highres8Bit : AlphaFormat.Lowres4Bit;
+        using var adt = new ADTBfaPlus();
+        adt.Read(fs, new FileKey($"world/maps/{donorMap}/{donorMap}_{donorX}_{donorY}.adt"), alpha);
+
+        adt.DoodadPlacements.Clear();
+        adt.WmoPlacements.Clear();
+        adt.TextureParams.Clear();
+        adt.TextureFlags.Clear();
+        for (int i = 0; i < tile.Textures.Count; i++)
+        {
+            adt.TextureParams.Add(new SMTextureParams());
+            adt.TextureFlags.Add(new SMTextureFlags());
+        }
+
+        for (int i = 0; i < adt.Chunks.Count; i++)
+        {
+            MapChunkCataPlus chunk = adt.Chunks[i];
+            var header = chunk.Header;
+            (float x, float y) = WowBlankTile.HeaderOrigin(id.FileX, id.FileY, (int)header.IndexX, (int)header.IndexY);
+            header.Position = new C3Vector { X = x, Y = y, Z = 0 };
+            for (int h = 0; h < chunk.Heights.Count; h++)
+            {
+                chunk.Heights[h] = 0;
+            }
+
+            foreach (McnrEntry normal in chunk.Normals)
+            {
+                normal.Normal[0] = 0;
+                normal.Normal[1] = 0;
+                normal.Normal[2] = 127;
+            }
+
+            for (int s = 0; s < chunk.ShadowMap.Count; s++)
+            {
+                chunk.ShadowMap[s] = 0;
+            }
+
+            chunk.DoodadRefs.Clear();
+            chunk.ObjectRefs.Clear();
+        }
+
+        Apply(adt, tile);
+        adt.Write(fs, new FileKey($"world/maps/{id.Map}/{id.Map}_{id.FileX}_{id.FileY}.adt"), alpha);
+    }
+
     private static void ApplyPlacements(ADTBfaPlus adt, ImportedTile tile)
     {
         var doodadUids = new HashSet<uint>(tile.Doodads.Select(d => d.UniqueId));
