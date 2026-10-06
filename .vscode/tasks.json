@@ -61,6 +61,20 @@
       "problemMatcher": []
     },
     {
+      "label": "worldmapstudio: build and run",
+      "type": "shell",
+      "command": "tools/map_editor/wms-run.sh",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "worldmapstudio: run (no build)",
+      "type": "shell",
+      "command": "tools/map_editor/wms-run.sh --no-build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
       "label": "server: setup",
       "type": "shell",
       "command": "cmake --build build --config RelWithDebInfo --target server_setup",
