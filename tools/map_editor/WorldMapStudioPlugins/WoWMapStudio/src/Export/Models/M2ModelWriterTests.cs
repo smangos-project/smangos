@@ -8,7 +8,7 @@ public static class M2ModelWriterTests
     [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
     public static void Single_surface_round_trips_through_the_real_readers()
     {
-        M2SurfaceInput surface = Quad(new Vector3(1, 2, 3), 4242, "alpha", twoSided: true, unlit: false, depthWrite: true);
+        ModelSurfaceInput surface = Quad(new Vector3(1, 2, 3), 4242, "alpha", twoSided: true, unlit: false, depthWrite: true);
 
         (byte[] m2Bytes, byte[] skinBytes) = M2ModelWriter.Write("TestPanel", [surface]);
 
@@ -43,8 +43,8 @@ public static class M2ModelWriterTests
     [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
     public static void Two_surfaces_get_separate_materials_textures_and_submeshes()
     {
-        M2SurfaceInput a = Quad(Vector3.Zero, 1, "opaque", false, false, true);
-        M2SurfaceInput b = Quad(new Vector3(5, 0, 0), 2, "add", false, true, false);
+        ModelSurfaceInput a = Quad(Vector3.Zero, 1, "opaque", false, false, true);
+        ModelSurfaceInput b = Quad(new Vector3(5, 0, 0), 2, "add", false, true, false);
 
         (byte[] m2Bytes, byte[] skinBytes) = M2ModelWriter.Write("TwoMats", [a, b]);
 
@@ -62,7 +62,7 @@ public static class M2ModelWriterTests
         Assert.AreEqual((ushort)4 + 0, (ushort)(skin.Indices[6]));
     }
 
-    private static M2SurfaceInput Quad(Vector3 origin, uint fdid, string blend, bool twoSided, bool unlit, bool depthWrite) => new(
+    private static ModelSurfaceInput Quad(Vector3 origin, uint fdid, string blend, bool twoSided, bool unlit, bool depthWrite) => new(
         new List<Vector3> { origin, origin + Vector3.Right, origin + new Vector3(1, 0, -1), origin + Vector3.Forward },
         new List<Vector3> { Vector3.Up, Vector3.Up, Vector3.Up, Vector3.Up },
         new List<Vector2> { new(0, 0), new(1, 0), new(1, 1), new(0, 1) },

@@ -48,7 +48,7 @@ public sealed class ProceduralModelExporter
     /// file data ids; the client-relative m2 path, or null when the asset has no surfaces.</summary>
     public string? WriteM2(string name, ModelAsset asset)
     {
-        var surfaces = new List<M2SurfaceInput>();
+        var surfaces = new List<ModelSurfaceInput>();
         foreach (ModelPart part in asset.Parts)
         {
             foreach (ModelSurface surface in part.Surfaces)
@@ -56,7 +56,7 @@ public sealed class ProceduralModelExporter
                 RawSurfaceArrays raw = ExtractRawArrays(surface, part.Transform);
                 MeshParameterValues values = surface.Material.Values;
                 string texture = values.GetTexture(M2Material.Texture);
-                surfaces.Add(new M2SurfaceInput(
+                surfaces.Add(new ModelSurfaceInput(
                     raw.Positions, raw.Normals, raw.Uvs, raw.Indices,
                     texture.Length > 0 ? _fileDataIds.IdOf(texture) ?? 0 : 0,
                     values.GetChoice(M2Material.Blend),

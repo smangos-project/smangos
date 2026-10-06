@@ -13,7 +13,7 @@ using WowM2Material = WoWLib.Formats.M2.Root.Record.M2Material;
 namespace WorldMapStudio.WoW;
 
 /// <summary>One material's worth of geometry: one texture, one material and one skin batch.</summary>
-public readonly record struct M2SurfaceInput(
+public readonly record struct ModelSurfaceInput(
     IReadOnlyList<Vector3> Positions,
     IReadOnlyList<Vector3> Normals,
     IReadOnlyList<Vector2> Uvs,
@@ -30,7 +30,7 @@ public static class M2ModelWriter
     private const uint FormatVersion = 274;
     private const uint GlobalFlagBits = 0x202000;
 
-    public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<M2SurfaceInput> surfaces, uint skinFileDataId = 0)
+    public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<ModelSurfaceInput> surfaces, uint skinFileDataId = 0)
     {
         using var root = new M2RootLegionPlus { FormatVersion = FormatVersion, Name = name, GlobalFlags = (GlobalFlags)GlobalFlagBits };
         using var skin = new SkinCataPlus();
@@ -38,7 +38,7 @@ public static class M2ModelWriter
 
         var wowPositions = new List<Vector3>();
         int indexTotal = 0;
-        foreach (M2SurfaceInput s in surfaces)
+        foreach (ModelSurfaceInput s in surfaces)
         {
             foreach (Vector3 p in s.Positions)
             {
@@ -74,7 +74,7 @@ public static class M2ModelWriter
         int indexStart = 0;
         for (int i = 0; i < surfaces.Count; i++)
         {
-            M2SurfaceInput s = surfaces[i];
+            ModelSurfaceInput s = surfaces[i];
             for (int v = 0; v < s.Positions.Count; v++)
             {
                 Vector3 pos = wowPositions[vertexStart + v];
@@ -138,7 +138,7 @@ public static class M2ModelWriter
         return (m2, skin.Write());
     }
 
-    private static MaterialFlags MaterialFlagsFor(M2SurfaceInput s)
+    private static MaterialFlags MaterialFlagsFor(ModelSurfaceInput s)
     {
         ushort bits = 0;
         if (s.Unlit) bits |= 0x1;
