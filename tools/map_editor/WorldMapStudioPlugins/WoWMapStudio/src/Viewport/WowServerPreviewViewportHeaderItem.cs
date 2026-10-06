@@ -27,6 +27,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
     private bool _terrain;
     private bool _collision;
     private bool _navmesh;
+    private bool _liquid;
     private string? _appliedKey;
     private string? _pendingKey;
     private Task<Built>? _task;
@@ -51,6 +52,8 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
         ImGui.Checkbox("Collision", ref _collision);
         ImGui.SameLine();
         ImGui.Checkbox("Navmesh", ref _navmesh);
+        ImGui.SameLine();
+        ImGui.Checkbox("Liquid", ref _liquid);
         ImGui.SameLine();
         if (ImGui.Button("Drift"))
         {
@@ -108,7 +111,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
             }
         }
 
-        if (!(_terrain || _collision || _navmesh))
+        if (!(_terrain || _collision || _navmesh || _liquid))
         {
             Clear();
             return;
@@ -122,7 +125,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
 
         Vector3 server = CreatureCoordinates.PositionFromGodot(cameraGodot);
         (int fileX, int fileY) = WowTileAddressing.TileAtServer(server.X, server.Y);
-        string key = $"{wowMap}:{fileX}:{fileY}:{_terrain}{_collision}{_navmesh}";
+        string key = $"{wowMap}:{fileX}:{fileY}:{_terrain}{_collision}{_navmesh}{_liquid}";
 
         double now = Time.GetTicksMsec() / 1000.0;
         if (key == _appliedKey && now - _lastStaleCheck > StaleCheckSeconds)
@@ -140,11 +143,11 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
         }
 
         _pendingKey = key;
-        bool terrain = _terrain, collision = _collision, navmesh = _navmesh;
-        _task = Task.Run(() => BuildTiles(key, roots, wowMap, fileX, fileY, terrain, collision, navmesh));
+        bool terrain = _terrain, collision = _collision, navmesh = _navmesh, liquid = _liquid;
+        _task = Task.Run(() => BuildTiles(key, roots, wowMap, fileX, fileY, terrain, collision, navmesh, liquid));
     }
 
-    private static Built BuildTiles(string key, WowServerRoots roots, int wowMap, int fileX, int fileY, bool terrain, bool collision, bool navmesh)
+    private static Built BuildTiles(string key, WowServerRoots roots, int wowMap, int fileX, int fileY, bool terrain, bool collision, bool navmesh, bool liquid)
     {
         var meshes = new List<(WowServerMeshData, string)>();
         var files = new List<string>();
@@ -158,12 +161,21 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
                 }
 
                 var tile = new WowServerTileKey(wowMap, x, y);
-                if (terrain && roots.MapFile(tile) is { } mapFile)
+                if ((terrain || liquid) && roots.MapFile(tile) is { } mapFile)
                 {
                     files.Add(mapFile);
                     if (File.Exists(mapFile))
                     {
-                        meshes.Add((WowServerTerrainMesh.Build(WowMapTileReader.Read(File.ReadAllBytes(mapFile)), x, y), "terrain"));
+                        WowMapTile map = WowMapTileReader.Read(File.ReadAllBytes(mapFile));
+                        if (terrain)
+                        {
+                            meshes.Add((WowServerTerrainMesh.Build(map, x, y), "terrain"));
+                        }
+
+                        if (liquid && WowServerLiquidMesh.Build(map, x, y) is { } liquidMesh)
+                        {
+                            meshes.Add((liquidMesh, "liquid"));
+                        }
                     }
                 }
 
@@ -232,7 +244,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
             child.QueueFree();
         }
 
-        if (!(_terrain || _collision || _navmesh))
+        if (!(_terrain || _collision || _navmesh || _liquid))
         {
             _appliedKey = null;
         }

@@ -19,3 +19,8 @@
 - D1 done: `WaterMapper` (+tests), `WowChunkGridOrientation.ToEditorGrid`, `WaterSurfaceMeshFunction`, liquid params/lattice snap/`Mh2oFormat`, `WowLiquidMaterialType`, `LiquidTextureLibrary` (frames from `LiquidTypeXTexture` FDIDs via `LiquidType.FrameFileDataIds`, lake_a fallback), tint updater. Import wired into `WowAdtImportBatchOperation` (importer v6, "Import water" setting, re-import deletes old water). Elwynn 32,48 imports 2 bodies on a scratch DB copy; WoW Import tests pass (34).
 - Not verified: rendering of the water in the viewport (`wms.scene.All()` is empty after import+Reload+Map.Open in a scratch run, the known live-editor issue), shader/depth-buffer behaviour on 4.x.
 - Left in D: D3 `RiverSurfaceMeshFunction` (CataBox Water/RiverSurfaceMeshFunction.cs), D4 export (`WowLiquidRasterizer` + `Mh2oChunkWriter` onto wowlib `Mh2OData`; `WowAdtTileWriter` has no MH2O yet; need export-channel plumbing or direct gather of ProceduralComponent water models), D5 server liquid preview.
+
+## Session 5 - D4/D5
+- D4 done: `WowLiquidRasterizer`, `WaterSurfacePatch`, `WowWaterTileBuilder`, `WowWaterPatches`; `WowAdtTileWriter.ApplyWater` rewrites only cells whose liquid differs from the file. Caveats: HeightUv UVs are written as zeros; if the map has no authored water at all, MH2O is left untouched (deleting all water doesn't strip it).
+- D5 done: `WowServerLiquidMesh` + "Liquid" toggle in the server preview header item (one quad per wet cell from `maps/*.map`). Only the 0002035 fixture is available (no 0002537/0004830 fixtures yet).
+- Still open: live-editor empty scene diagnosis, visual water check, E, F/G, H.
