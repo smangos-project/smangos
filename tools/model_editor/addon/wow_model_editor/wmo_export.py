@@ -8,7 +8,7 @@ import bpy
 import numpy as np
 import wowlib
 
-from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import
+from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import, wmo_root_export
 from .props import u32
 
 BBOX_PAD = 0.028
@@ -383,15 +383,25 @@ def apply_group(w, gi, arr, src, report):
     flags |= F_BSP if len(nodes) else 0
     flags |= F_COLOR if arr.colors else 0
     h.flags = type(h.flags)(flags)
-    lo, hi = _box_of(arr.vertices)
+    set_group_box(w, gi, arr.vertices)
+
+
+def set_group_box(w, gi, verts):
+    """Group and group-info boxes from the vertices plus any liquid."""
+    body = w.groups[gi].body
+    lo, hi = _box_of(verts)
     L = body.liquid
     if not L.empty and len(L.vertices):
         lv = np.array([(L.base_coords.x + (i % L.verts_dim.x) * wmo_import.UNIT_SIZE,
                         L.base_coords.y + (i // L.verts_dim.x) * wmo_import.UNIT_SIZE, v.height)
                        for i, v in enumerate(L.vertices)], np.float32)
         lo, hi = np.minimum(lo, lv.min(axis=0) - BBOX_PAD), np.maximum(hi, lv.max(axis=0) + BBOX_PAD)
-    _set_box(h.bounding_box, lo, hi)
+    _set_box(body.header.bounding_box, lo, hi)
     _set_box(w.root.group_infos[gi].bounding_box, lo, hi)
+
+
+def refresh_group_box(w, gi):
+    set_group_box(w, gi, np.asarray(w.groups[gi].body.vertices).view(np.float32).reshape(-1, 3))
 
 
 def default_group_class(flags):
@@ -455,6 +465,7 @@ def export(root, out_path=None, options=None):
     opts = {"force": False, "dry_run": False}
     opts.update(options or {})
     report = Report()
+    bpy.context.view_layer.update()
     p = root.wow_wmo
     src_path = p.path
     path = (out_path or src_path).replace("\\", "/").lower()
@@ -474,6 +485,10 @@ def export(root, out_path=None, options=None):
                 dirty.add(gi)
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
+    liquid_groups = wmo_root_export.update_root_objects(w, root, report)
+    for gi in liquid_groups:
+        refresh_group_box(w, gi)
+        dirty.add(gi)
     if dirty:
         update_root_boxes(w)
     if report.errors:

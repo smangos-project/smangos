@@ -376,7 +376,7 @@ def wmo_export_unedited_is_identical():
         coll, r = export_files(path)
         assert not r.errors, str(r)
         assert r.stats["groups_rebuilt"] == 0, (path, str(r))
-        assert differing(r.files) == [], path
+        assert differing(r.files) == [], (path, str(r))
         print(f"  {path}: {len(r.files)} files {time.time() - t:.1f}s")
 
 
@@ -505,6 +505,36 @@ def wmo_export_materials():
     assert open(lf).read().strip() == f"{fdid};world/wmo/custom/my_tex.blp"
     r2 = wmo_export.export(coll, options={"dry_run": True})
     assert open(lf).read().count("\n") == 1 and not r2.errors
+
+
+@test
+def wmo_export_root_objects():
+    path = REFS[1]
+    coll, r = export_files(path, import_opts={"doodads": True})
+    assert not r.errors and differing(r.files) == [], str(r)
+    doodads = [o for o in coll.all_objects if o.type == "EMPTY" and o.wow_wmo_doodad.index >= 0]
+    assert len(doodads) > 50
+    d0 = next(o for o in doodads if o.wow_wmo_doodad.index == 3)
+    d0.location.z += 1.5
+    extra = bpy.data.objects.new("new_doodad", None)
+    d0.users_collection[0].objects.link(extra)
+    extra.location = d0.location
+    p = extra.wow_wmo_doodad
+    p.index, p.doodad_set, p.fdid, p.scale, p.color = -1, 0, d0.wow_wmo_doodad.fdid, 1.0, (255, 255, 255, 255)
+    p.name_index = d0.wow_wmo_doodad.name_index
+    fog = next(o for o in coll.all_objects if o.name.startswith("fog_"))
+    fog.wow_wmo_fog.fog_end += 10
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    src = wmo_expect(path)[1]
+    n = len(src.doodad_defs)
+    assert len(new.root.doodad_defs) == n + 1 and new.validate().ok, str(new.validate())
+    assert abs(new.root.doodad_defs[3].position.z - src.doodad_defs[3].position.z - 1.5) < 1e-4
+    assert abs(new.root.fogs[fog.wow_wmo_fog.index].fog.end - src.fogs[fog.wow_wmo_fog.index].fog.end - 10) < 1e-3
+    assert sum(s.count for s in new.root.doodad_sets) >= sum(s.count for s in src.doodad_sets) + 1
+    refs = sum(len(g.body.doodad_refs) for g in new.groups) - sum(len(g.body.doodad_refs) for g in wmo_expect(path)[0].groups)
+    assert refs >= 1
 
 
 @test
@@ -712,11 +742,11 @@ def sweep_wmo_export(force):
             continue
         t = time.time()
         try:
-            coll, r = export_files(path, force, {"doodads": False, "lights": False})
+            coll, r = export_files(path, force, {"doodads": os.environ.get("SWEEP_DOODADS") == "1"})
             if r.errors:
                 fails.append((path, str(r)[:200]))
             elif not force and differing(r.files):
-                fails.append((path, f"differs: {differing(r.files)[:3]} rebuilt {r.stats['groups_rebuilt']}"))
+                fails.append((path, f"differs: {differing(r.files)[:3]} rebuilt {r.stats['groups_rebuilt']} {str(r)[:150]}"))
             elif force:
                 d = rebuild_diff(path, r.files)
                 if d:
