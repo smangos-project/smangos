@@ -42,3 +42,4 @@
 F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLightComponent env source auto-attached to WowLight, WowSkyEvaluation, WowOutdoorLighting; light falloff now /36. Weather slots, band editing, zone light env source not ported. Not seen in viewport.
 - G1: `Creature Template` / `GameObject Template` catalogs (ThinDbcFactory keyed by Entry, common fields only, no palette UI in spawn tools yet).
 - G2/G3: `Quest` (quest_template) and `Item` (dbc_itemsparse, edit only) catalogs.
+- Next: H1/H2 procedural export (CataBox Export/Models: ProceduralModelExporter, M2Writer, WMO writers, WowExportChannelSystem, WowModelExportChannels; port onto wowlib writers), then F5.
