@@ -30,7 +30,7 @@ public static class M2ModelWriter
     private const uint FormatVersion = 274;
     private const uint GlobalFlagBits = 0x202000;
 
-    public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<M2SurfaceInput> surfaces)
+    public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<M2SurfaceInput> surfaces, uint skinFileDataId = 0)
     {
         using var root = new M2RootLegionPlus { FormatVersion = FormatVersion, Name = name, GlobalFlags = (GlobalFlags)GlobalFlagBits };
         using var skin = new SkinCataPlus();
@@ -121,6 +121,11 @@ public static class M2ModelWriter
 
             vertexStart += s.Positions.Count;
             indexStart += s.Indices.Count;
+        }
+
+        if (skinFileDataId != 0)
+        {
+            chunked.SkinFdids.Add(skinFileDataId);
         }
 
         byte[] image = root.Write();
