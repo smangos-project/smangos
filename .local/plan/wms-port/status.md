@@ -62,3 +62,7 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 - `wms.wowImport.CreatePanelModel(name, size, texturePath, x, y, z)` creates + persists a panel_network ProceduralModel (M2 format) and places an entity in the open session (then `wms.session.Commit()`). Export wrote `world/generated/<name>_<id>.m2` + `00.skin`, and tile 32_48 obj0 MDDF gained entries with the custom FDID (787 vs 785 placements). Not loaded in the real client yet.
 - Gotcha: wms-run.sh rebuilds only when not `--no-build`; check `dotnet build` actually succeeded or the old binary keeps running (arg-binding errors "No public methods" = stale binary). Never `pkill -f godot-mono` inline.
 - Still open: WMO writers (WMO output format), F5, palette UI, procedural placements not removed from earlier scratch runs.
+
+## Palette UI (already covered)
+- Spawn menu picker is core (`SpawnMenu.Browse` via `ISpawnFactory.PickerCatalogName`); creature and gameobject spawn factories already return "Creature Template"/"Game Object Template", so the palette exists. No work left there.
+- Remaining: WMO writers (port wmo_*.py onto wowlib), F5 (CreatureDisplayInfoExtra appearance).
