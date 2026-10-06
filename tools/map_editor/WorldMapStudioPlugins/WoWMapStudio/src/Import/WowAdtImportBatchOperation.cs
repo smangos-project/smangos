@@ -46,7 +46,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
 
     /// <summary>The map's most-negative landscape chunk — a full 64×64-tile map's origin, which the
     /// map-wide height image's pixel (0,0) is aligned to (<see cref="AdtImportCatalog"/>).</summary>
-    private static readonly ChunkCoord MapMinChunk = new(
+    internal static readonly ChunkCoord MapMinChunk = new(
         -(WowTileAddressing.TilesPerMapEdge / 2) * WowTileAddressing.ChunksPerTileEdge,
         -(WowTileAddressing.TilesPerMapEdge / 2) * WowTileAddressing.ChunksPerTileEdge);
 
