@@ -67,7 +67,7 @@ def source_arrays(body):
     uvs = []
     for tc in body.texcoords:
         a = np.asarray(tc)
-        uvs.append(np.stack([a["x"], 1.0 - a["y"]], axis=1).astype(np.float32))
+        uvs.append(np.stack([a["x"], a["y"]], axis=1).astype(np.float32))
     cols = []
     for vc in body.vertex_colors:
         a = np.asarray(vc)
@@ -102,6 +102,12 @@ def mesh_corners(ob, slot_ids, default_class, src):
     cn = np.empty(nloop * 3, np.float32)
     me.corner_normals.foreach_get("vector", cn)
     cn = cn.reshape(-1, 3)
+    if "wow_normal" in me.attributes:
+        wn = np.empty(nv * 3, np.float32)
+        me.attributes["wow_normal"].data.foreach_get("vector", wn)
+        wn = wn.reshape(-1, 3)
+        has = np.linalg.norm(wn, axis=1) > 0.5
+        cn = np.where(has[lv][:, None], wn[lv], cn)
     co, _ = geo.transform(co, np.zeros((nv, 3), np.float32), ob.matrix_world)
     m = np.array(ob.matrix_world)
     if not np.array_equal(m, np.eye(4)):
@@ -168,7 +174,7 @@ def source_batch_info(body, header):
 
 
 def _equal(new, src):
-    return new.shape == src.shape and bool(np.array_equal(new, src))
+    return new.shape == src.shape and bool(np.array_equal(new, src, equal_nan=new.dtype.kind == "f"))
 
 
 def _merged(new, src, tol):
@@ -176,15 +182,16 @@ def _merged(new, src, tol):
 
 
 def compare(arr, src):
-    """Merge exact source values into the rebuilt arrays; returns (arrays, clean)."""
+    """Merge exact source values into the rebuilt arrays; returns (arrays, names of the arrays that differ)."""
     arr.vertices = _merged(arr.vertices, src["verts"], geo.VERT_TOL)
     arr.normals = _merged(arr.normals, src["normals"], geo.NORMAL_TOL)
     arr.uvs = [_merged(u, s, geo.UV_TOL) for u, s in zip(arr.uvs, src["uvs"])] + arr.uvs[len(src["uvs"]):]
-    clean = (_equal(arr.vertices, src["verts"]) and _equal(arr.normals, src["normals"])
-             and len(arr.uvs) == len(src["uvs"]) and all(_equal(a, b) for a, b in zip(arr.uvs, src["uvs"]))
-             and len(arr.colors) == len(src["cols"]) and all(_equal(a, b) for a, b in zip(arr.colors, src["cols"]))
-             and _equal(arr.indices, src["indices"]) and _equal(arr.poly_flags, src["flags"])
-             and _equal(arr.batches, src["batches"]) and _equal(arr.poly_mat, src["pmat"]))
+    checks = {"vertices": _equal(arr.vertices, src["verts"]), "normals": _equal(arr.normals, src["normals"]),
+              "uvs": len(arr.uvs) == len(src["uvs"]) and all(_equal(a, b) for a, b in zip(arr.uvs, src["uvs"])),
+              "colors": len(arr.colors) == len(src["cols"]) and all(_equal(a, b) for a, b in zip(arr.colors, src["cols"])),
+              "indices": _equal(arr.indices, src["indices"]), "poly flags": _equal(arr.poly_flags, src["flags"]),
+              "poly materials": _equal(arr.poly_mat, src["pmat"]), "batches": _equal(arr.batches, src["batches"])}
+    clean = [k for k, ok in checks.items() if not ok]
     return arr, clean
 
 
@@ -226,7 +233,7 @@ def apply_group(w, gi, arr, src, report):
         v = wowlib.VectorC2Vector()
         v.resize(n)
         a = np.asarray(v)
-        a["x"], a["y"] = u[:, 0], 1.0 - u[:, 1]
+        a["x"], a["y"] = u[:, 0], u[:, 1]
         body.append_texcoord_set(v)
     body.clear_vertex_color_layers()
     for c in arr.colors:
@@ -302,9 +309,10 @@ def update_group(w, gi, ob, report, force):
     c = mesh_corners(ob, ids, default_group_class(ob.wow_wmo_group.flags), src)
     c["src_class"], c["src_mat"] = cls, mats
     arr = geo.build_group(c)
-    arr, clean = compare(arr, src)
-    if clean and not force:
+    arr, changed = compare(arr, src)
+    if not changed and not force:
         return False
+    report.add("INFO", ob.name, "rebuilt: " + ", ".join(changed or ["forced"]))
     apply_group(w, gi, arr, src, report)
     report.stats["groups_rebuilt"] += 1
     return True

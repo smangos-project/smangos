@@ -9,7 +9,7 @@ MAX_VERTICES = 65535
 DEFAULT_RENDER_FLAGS = 0x20
 DEFAULT_COLLISION_FLAGS = 0x08
 NORMAL_QUANT, UV_QUANT = 256.0, 10000.0
-VERT_TOL, NORMAL_TOL, UV_TOL = 1e-5, 4e-3, 1e-5
+VERT_TOL, NORMAL_TOL, UV_TOL = 1e-5, 1.5e-2, 1e-5
 
 
 @dataclass
@@ -40,20 +40,23 @@ def _group_ids(keys):
     return order, np.cumsum(new) - 1, np.nonzero(new)[0]
 
 
-def split_vertices(co, tri_vi, tri_normal, tri_uv, vcol):
+def split_vertices(co, tri_vi, tri_normal, tri_uv, vcol, degenerate=None):
     """Unique (vertex, normal, uv...) corners, ordered by source vertex. Returns (arrays, tri indices)."""
     nv, nt = len(co), len(tri_vi)
     vi = tri_vi.reshape(-1)
+    ok = np.ones(len(vi), bool) if degenerate is None else np.repeat(~degenerate, 3)
     first_corner = np.full(nv, -1, np.int64)
     first_corner[vi[::-1]] = np.arange(len(vi))[::-1]
+    good = np.nonzero(ok)[0]
+    first_corner[vi[good[::-1]]] = good[::-1]
     ref = first_corner[vi]
 
     def snapped(values, tol, quant):
         """Rounded values, with corners that match their vertex's first corner collapsed to zero."""
         v = values.reshape(len(vi), -1)
-        same = (np.abs(v - v[ref]) <= tol).all(axis=1)
-        q = np.rint(v * quant)
-        q[same] = 0
+        same = ((np.abs(v - v[ref]) <= tol) | (np.isnan(v) & np.isnan(v[ref]))).all(axis=1)
+        q = np.nan_to_num(np.rint(v * quant))
+        q[same | ~ok] = 0
         return q
 
     cols = [vi[:, None], snapped(tri_normal, NORMAL_TOL, NORMAL_QUANT)]
@@ -147,7 +150,9 @@ def build_group(c):
     tri_vi, nrm_t = tri_vi[order], np.asarray(c["tri_normal"])[order]
     uv_t = [np.asarray(u)[order] for u in c["tri_uv"]]
     vcol = [np.asarray(v, np.uint8) for v in c["vcol"]]
-    out_co, nrm, uvs, cols, tris = split_vertices(co, tri_vi, nrm_t, uv_t, vcol)
+    tp = co[tri_vi].astype(np.float64)
+    degenerate = np.linalg.norm(np.cross(tp[:, 1] - tp[:, 0], tp[:, 2] - tp[:, 0]), axis=1) < 1e-10
+    out_co, nrm, uvs, cols, tris = split_vertices(co, tri_vi, nrm_t, uv_t, vcol, degenerate)
     if len(out_co) > MAX_VERTICES:
         raise ValueError(f"{len(out_co)} vertices exceed the {MAX_VERTICES} a group can hold; split the group")
     spos = pos[order]
@@ -179,4 +184,4 @@ def merge_source(new, src, tol):
     """`new` with the exact source values wherever both agree within `tol` (same length required)."""
     if new.shape != src.shape:
         return new
-    return np.where(np.abs(new - src) <= tol, src, new)
+    return np.where((np.abs(new - src) <= tol) | (np.isnan(new) & np.isnan(src)), src, new)

@@ -102,6 +102,8 @@ def build_group_mesh(name, body, mats, collision_mat, wmo_name):
     me.shade_smooth()
     nrm = np.asarray(body.normals).view(np.float32).reshape(-1, 3)
     if len(nrm) == nv:
+        a = me.attributes.new("wow_normal", "FLOAT_VECTOR", "POINT")
+        a.data.foreach_set("vector", nrm.ravel())
         me.normals_split_custom_set_from_vertices(nrm)
     return me, nt
 
