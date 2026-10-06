@@ -3,7 +3,7 @@ import posixpath
 from pathlib import Path
 
 import bpy
-from . import client, fdids, m2_anim_export, m2_import, m2_mesh_export, m2_rig_export
+from . import client, fdids, m2_anim_export, m2_import, m2_materials_export, m2_mesh_export, m2_rig_export
 from .deep_compare import deep_diff
 from .report import Report
 
@@ -39,6 +39,7 @@ def rebuild(top, m, report, opts):
     rig = m2_rig_export.plan(top, m.root)
     if rig is not None:
         m2_rig_export.build(top, m, report, rig)
+    report.extra_files += m2_materials_export.build(top, m, report, opts, top.wow_m2.path)
     m2_mesh_export.build(top, m, report, opts, rig)
     m2_anim_export.build(top, m.root, rig)
 
@@ -48,7 +49,7 @@ def export(top, out_path=None, options=None):
     opts = dict(DEFAULTS)
     opts.update(options or {})
     report = Report(files_written=0, files_removed=0)
-    report.files, report.model, report.dirty = [], None, False
+    report.files, report.extra_files, report.model, report.dirty = [], [], None, False
     bpy.context.view_layer.update()
     p = top.wow_m2
     src = p.path
@@ -93,6 +94,6 @@ def export(top, out_path=None, options=None):
             return report
     m.write(s.fs, client.key(path))
     fdids.adopt_session_ids()
-    report.files = [path, *skins]
+    report.files = [path, *skins, *report.extra_files]
     report.stats["files_written"] = len(report.files)
     return report

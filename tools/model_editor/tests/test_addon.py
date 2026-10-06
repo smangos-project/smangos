@@ -847,6 +847,45 @@ def m2_rig_delete_remaps_references():
 
 
 @test
+def m2_material_edit_round_trip():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.dirty, r.diff
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    p0 = mat.wow_m2_batches[0]
+    old_fdid = int(p0.texture_fdids[0])
+    img = bpy.data.images.new("lamp_retex", 16, 16, alpha=True)
+    node = next(n for n in mat.node_tree.nodes if n.bl_idname == "ShaderNodeTexImage"
+                and n.get("wow_batch") == p0.batch_index and n.get("wow_slot") == 0)
+    node.image = img
+    p0.blending_mode = 2
+    nt, nm = len(src.root.textures), len(src.root.materials)
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        assert r.dirty and any(f.endswith("lamp_retex.blp") for f in r.files), r.files
+        blp = next(f for f in r.files if f.endswith("lamp_retex.blp"))
+        assert (common.Path(client.session().project) / blp).is_file()
+        m = m2_import.read(path)
+        b = m.skins[0].profile.batches[p0.batch_index]
+        fd = int(m.chunks.texture_fdids[m.root.texture_lookup_table[b.texture_combo_index]])
+        assert fd != old_fdid and fd == img["wow_fdid"], (fd, old_fdid)
+        assert int(m.root.materials[b.material_index].blending_mode) == 2
+        assert len(m.root.textures) >= nt and len(m.root.materials) >= nm
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+        top2 = m2_import.load(path, {"display": "NONE", "collision": False})
+        assert any(b.texture_fdids[0] == fd for mt in bpy.data.materials for b in mt.wow_m2_batches)
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files:
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_anim_import():
     clear()
     t = time.time()

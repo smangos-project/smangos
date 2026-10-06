@@ -58,8 +58,10 @@ def _layer(nt, b):
     """(color, alpha) sockets of one batch: its textures combined, times the static color and weight."""
     nodes = []
     for k in range(min(max(b.texture_count, 1), 2)):
-        nodes.append(_texture(nt, b.texture_fdids[k], b.texture_types[k], b.uv_sets[k],
-                              b.preview_uv_offset, b.preview_uv_scale))
+        node = _texture(nt, b.texture_fdids[k], b.texture_types[k], b.uv_sets[k],
+                        b.preview_uv_offset, b.preview_uv_scale)
+        node["wow_batch"], node["wow_slot"] = b.batch_index, k
+        nodes.append(node)
     color, alpha = nodes[0].outputs["Color"], nodes[0].outputs["Alpha"]
     if len(nodes) > 1:
         color = _mix(nt, "ADD" if b.uv_sets[1] < 0 else "MULTIPLY", 1.0, color, nodes[1].outputs["Color"])
