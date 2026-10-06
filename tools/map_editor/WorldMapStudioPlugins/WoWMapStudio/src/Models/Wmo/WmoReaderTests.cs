@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace WorldMapStudio.WoW;
 
 public static class WmoReaderTests
@@ -11,6 +13,10 @@ public static class WmoReaderTests
         Assert.IsNotNull(root);
         Assert.Greater(root!.GroupCount, 0);
         Assert.Greater(root.Materials.Length, 0);
+        Assert.IsTrue(root.Materials[0].TexturePath.EndsWith(".blp"), $"material texture '{root.Materials[0].TexturePath}'");
+        WmoDoodadPlacement[] doodads = root.DoodadSets.SelectMany(set => set.Placements).ToArray();
+        Assert.Greater(doodads.Length, 0);
+        Assert.IsTrue(doodads.All(doodad => doodad.Path.EndsWith(".m2")), "every doodad resolves to an .m2 path");
 
         string groupFile = System.IO.Path.ChangeExtension(file, null) + "_000.wmo";
         WmoGroup? group = WmoGroupReader.Read(System.IO.File.ReadAllBytes(groupFile), root.Lighting);

@@ -31,9 +31,9 @@ internal sealed class WmoRoot
 }
 
 /// <summary>
-/// Reads the root <c>.wmo</c> file: MOHD (group count, bounds), MOTX (texture name blob), MOMT
-/// (materials, resolved against MOTX) and MODS/MODN/MODD (doodad sets). Everything else (portals,
-/// lights, fog) is out of scope for this pass and skipped generically.
+/// Reads the root <c>.wmo</c> file: MOHD (group count, bounds), MOMT (materials) and MODS/MODD (doodad
+/// sets). Texture and doodad names come from the MOTX/MODN blobs when present; files without them store
+/// FileDataIDs instead (MOMT texture fields, MODI). Everything else (portals, lights, fog) is skipped.
 /// </summary>
 internal static class WmoRootReader
 {
@@ -81,9 +81,12 @@ internal static class WmoRootReader
         uint motxSize = 0;
         int modnOffset = -1;
         uint modnSize = 0;
-        WmoMaterialDef[] materials = [];
+        int momtOffset = -1;
+        uint momtSize = 0;
+        int moddOffset = -1;
+        uint moddSize = 0;
+        uint[]? doodadFdids = null;
         (string Name, int Start, int Count)[] doodadSetRanges = [];
-        WmoDoodadPlacement[] placements = [];
 
         while (TryReadChunkHeader(bytes, ref offset, out id, out size))
         {
@@ -94,7 +97,8 @@ internal static class WmoRootReader
             }
             else if (id == ChunkId("MOMT"))
             {
-                materials = ReadMaterials(bytes, offset, size, motxOffset, motxSize);
+                momtOffset = offset;
+                momtSize = size;
             }
             else if (id == ChunkId("MODS"))
             {
@@ -107,11 +111,25 @@ internal static class WmoRootReader
             }
             else if (id == ChunkId("MODD"))
             {
-                placements = ReadDoodadPlacements(bytes, offset, size, modnOffset, modnSize);
+                moddOffset = offset;
+                moddSize = size;
+            }
+            else if (id == ChunkId("MODI"))
+            {
+                doodadFdids = new uint[size / 4];
+                for (int i = 0; i < doodadFdids.Length; i++)
+                {
+                    doodadFdids[i] = ReadU32(bytes, offset + (i * 4));
+                }
             }
 
             offset += (int)size;
         }
+
+        WmoMaterialDef[] materials = momtOffset < 0 ? [] : ReadMaterials(bytes, momtOffset, momtSize, motxOffset, motxSize);
+        WmoDoodadPlacement[] placements = moddOffset < 0
+            ? []
+            : ReadDoodadPlacements(bytes, moddOffset, moddSize, modnOffset, modnSize, doodadFdids);
 
         return new WmoRoot
         {
@@ -161,15 +179,19 @@ internal static class WmoRootReader
         return result;
     }
 
-    private static WmoDoodadPlacement[] ReadDoodadPlacements(byte[] bytes, int offset, uint size, int modnOffset, uint modnSize)
+    private static WmoDoodadPlacement[] ReadDoodadPlacements(
+        byte[] bytes, int offset, uint size, int modnOffset, uint modnSize, uint[]? doodadFdids)
     {
         int count = (int)(size / ModdStride);
         var result = new WmoDoodadPlacement[count];
         for (int i = 0; i < count; i++)
         {
             int at = offset + (i * ModdStride);
-            uint nameOffset = ReadU32(bytes, at) & 0xFFFFFF;
-            string path = NormalizeDoodadPath(ResolveBlobString(bytes, modnOffset, modnSize, nameOffset));
+            uint nameIndex = ReadU32(bytes, at) & 0xFFFFFF;
+            string path = doodadFdids != null
+                ? ResolveFdid(nameIndex < doodadFdids.Length ? doodadFdids[nameIndex] : 0)
+                : ResolveBlobString(bytes, modnOffset, modnSize, nameIndex);
+            path = NormalizeDoodadPath(path);
 
             Vector3 position = WowCoordinates.ToGodot(ReadVector3(bytes, at + 4));
             var rawRotation = new Quaternion(
@@ -214,11 +236,17 @@ internal static class WmoRootReader
                 TwoSided: (flagBits & 0x4) != 0,
                 RepeatTexture: (flagBits & 0x40) == 0);
 
-            result[i] = new WmoMaterialDef(flags, blendMode, ResolveBlobString(bytes, motxOffset, motxSize, textureOffset1));
+            string texture = motxOffset < 0
+                ? ResolveFdid(textureOffset1)
+                : ResolveBlobString(bytes, motxOffset, motxSize, textureOffset1);
+            result[i] = new WmoMaterialDef(flags, blendMode, texture);
         }
 
         return result;
     }
+
+    private static string ResolveFdid(uint fdid) =>
+        fdid != 0 && WowFileDataIds.Shared.PathOf(fdid) is { } path ? AssetPath.Normalize(path) : "";
 
     /// <summary>Resolves a byte-offset, NUL-terminated path out of a name blob (MOTX or MODN).</summary>
     private static string ResolveBlobString(byte[] bytes, int blobOffset, uint blobSize, uint relativeOffset)
