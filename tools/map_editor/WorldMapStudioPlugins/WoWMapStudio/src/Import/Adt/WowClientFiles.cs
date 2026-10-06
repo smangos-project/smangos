@@ -6,7 +6,7 @@ using WoWLib.Filesystem;
 namespace WorldMapStudio.WoW;
 
 /// <summary>The shared wowlib view of the client install, opened on first use from the repo's
-/// <c>.client</c> (CASC) and <c>.local/listfile.txt</c>.</summary>
+/// <c>.client</c> (CASC) with the names of <see cref="WowFileDataIds.Shared"/>.</summary>
 public static class WowClientFiles
 {
     private static FileSystem? _shared;
@@ -31,16 +31,17 @@ public static class WowClientFiles
         for (string? dir = AppContext.BaseDirectory; dir != null; dir = Path.GetDirectoryName(dir))
         {
             string client = Path.Combine(dir, ".client");
-            string listfile = Path.Combine(dir, ".local", "listfile.txt");
-            if (Directory.Exists(Path.Combine(client, "Data")) && File.Exists(listfile))
+            if (Directory.Exists(Path.Combine(client, "Data")))
             {
                 string project = projectDir ?? Path.Combine(Path.GetTempPath(), "wms-wowlib-project");
                 Directory.CreateDirectory(project);
-                var settings = FileSystemSettings.Detect(client, Locale.enUS, project, listfile, new FileDataId(1_000_000_000u));
+                string listfile = Path.Combine(project, "listfile.csv");
+                WowFileDataIds.Shared.WriteListfile(listfile);
+                var settings = FileSystemSettings.Detect(client, Locale.enUS, project, listfile, new FileDataId(WowFileDataIds.CustomBase));
                 return FileSystem.Open(settings);
             }
         }
 
-        throw new InvalidOperationException("client install (.client/Data) or .local/listfile.txt not found");
+        throw new InvalidOperationException("client install (.client/Data) not found");
     }
 }

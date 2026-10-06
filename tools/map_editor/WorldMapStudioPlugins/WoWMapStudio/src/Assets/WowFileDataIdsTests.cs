@@ -1,3 +1,6 @@
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 namespace WorldMapStudio.WoW;
 
 public static class WowFileDataIdsTests
@@ -14,21 +17,6 @@ public static class WowFileDataIdsTests
         Assert.IsNull(ids.IdOf("nope"));
     }
 
-    [EditorTest(Category = "WoW Assets", Thread = TestThread.Background)]
-    public static void Listfile_resolves_a_known_client_file()
-    {
-        string file = WowTestContent.RequireFile("interface/icons/inv_misc_questionmark.blp");
-        string listfile = System.IO.Path.GetFullPath(System.IO.Path.Combine(file, "..", "..", "..", "..", "..", ".local", "listfile.txt"));
-        if (!System.IO.File.Exists(listfile))
-        {
-            Assert.Skip("no listfile");
-        }
-
-        var ids = WowFileDataIds.Load(listfile);
-        uint id = ids.IdOf("interface/icons/inv_misc_questionmark.blp")!.Value;
-        Assert.AreEqual("interface/icons/inv_misc_questionmark.blp", ids.PathOf(id));
-    }
-
     [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
     public static void Allocate_reuses_known_paths_and_counts_up()
     {
@@ -40,27 +28,46 @@ public static class WowFileDataIdsTests
         Assert.AreEqual(first, ids.Allocate("World\\New1.adt"));
     }
 
-    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
-    public static void Registry_allocations_are_shared_between_instances_and_merge_legacy_files()
+    [EditorTest(Category = "WoW Export")]
+    public static void Table_allocations_are_shared_between_instances_and_make_no_dolt_commit()
     {
         string dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wms-fdid-" + System.Guid.NewGuid().ToString("N"));
         System.IO.Directory.CreateDirectory(dir);
         try
         {
-            System.IO.File.WriteAllText(System.IO.Path.Combine(dir, "wms.index"), "2000000000;World/Old.adt\n");
-            var a = WowFileDataIds.Parse(new[] { "10;World/A.adt" });
-            var b = WowFileDataIds.Parse(new[] { "10;World/A.adt" });
-            a.AttachRegistry(dir);
-            b.AttachRegistry(dir);
-            Assert.AreEqual(2_000_000_000u, a.IdOf("world/old.adt"));
-            Assert.IsFalse(System.IO.File.Exists(System.IO.Path.Combine(dir, "wms.index")));
+            var project = new Project { Name = "__wms_fdid_table_test__" };
+            project.StorageLocations["Editor"] = new StorageLocation { DatabasePath = System.IO.Path.Combine(dir, "world.doltlite") };
+            var context = new EditorContext(new Godot.Node3D(), project);
+            WorldStorage storage = context.Database.Storages.OfType<WorldStorage>().Single();
+            using (WorldDbContext db = storage.CreateContext())
+            {
+                db.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS file_data_id (id INTEGER PRIMARY KEY, path TEXT NOT NULL UNIQUE, source TEXT NOT NULL, retired INTEGER NOT NULL DEFAULT 0)");
+                db.Database.ExecuteSqlRaw("INSERT INTO file_data_id (id, path, source) VALUES (10, 'world/a.adt', 'listfile')");
+            }
 
+            long Commits()
+            {
+                using WorldDbContext db = storage.CreateContext();
+                return db.Database.SqlQuery<long>($"SELECT count(*) AS Value FROM dolt_log").AsEnumerable().Single();
+            }
+
+            long before = Commits();
+            var a = new WowFileDataIds();
+            var b = new WowFileDataIds();
+            a.Attach(storage);
+            b.Attach(storage);
+            Assert.AreEqual(10u, a.Allocate("World\\A.adt"));
             uint first = a.Allocate("world/new1.adt");
-            Assert.AreEqual(2_000_000_001u, first);
+            Assert.AreEqual(2_000_000_000u, first);
             Assert.AreEqual(first + 1, b.Allocate("world/new2.adt"));
             Assert.AreEqual(first, b.Allocate("World\\New1.adt"));
             Assert.AreEqual(first + 2, a.Allocate("world/new3.adt"));
-            Assert.AreEqual(4, System.IO.File.ReadAllLines(System.IO.Path.Combine(dir, "custom.index")).Length);
+
+            Assert.IsTrue(a.ExportIndex(dir));
+            Assert.IsFalse(a.ExportIndex(dir));
+            Assert.AreEqual(4, System.IO.File.ReadAllLines(System.IO.Path.Combine(dir, "fdid.index")).Length);
+
+            Assert.AreEqual(before, Commits());
         }
         finally
         {

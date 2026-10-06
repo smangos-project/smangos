@@ -82,8 +82,6 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             return;
         }
 
-        WowFileDataIds.Shared.AttachRegistry(content);
-
         var ledger = new Dictionary<long, long>(await WowExportEntityIds.LoadAsync(storage).ConfigureAwait(false));
         List<EditorPlacement> placements = await StoredPlacements.LoadAsync(storage, context.Editor.Assets, catalog.Map.Value).ConfigureAwait(false);
         var newUids = new Dictionary<long, long>();
@@ -143,6 +141,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             await WowExportEntityIds.UpsertAsync(storage, newUids).ConfigureAwait(false);
         }
 
+        WowFileDataIds.Shared.ExportIndex(content);
         context.Report($"Exported {written} edited tile(s) of {rows.Count} to {content}.");
     }
 }

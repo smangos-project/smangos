@@ -2,62 +2,110 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace WorldMapStudio.WoW;
 
 /// <summary>
-/// FileDataID to path mapping from a community listfile (<c>id;path</c> per line). Paths are
+/// FileDataID to path mapping backed by the world database's <c>file_data_id</c> table. Paths are
 /// compared lowercase with forward slashes, matching the client's loose content tree.
 /// </summary>
 public sealed class WowFileDataIds
 {
     private readonly Dictionary<uint, string> _paths = new();
     private readonly Dictionary<string, uint> _ids = new(StringComparer.Ordinal);
+    private readonly object _gate = new();
+    private WorldStorage? _storage;
+    private bool _loaded;
 
     private static WowFileDataIds? _shared;
 
-    /// <summary>The project listfile (<c>.local/listfile.txt</c> found above the editor binary), or an
-    /// empty map when none exists.</summary>
-    public static WowFileDataIds Shared => _shared ??= LoadShared();
+    /// <summary>The process-wide map. It reads the table of the attached <see cref="WorldStorage"/> on first use;
+    /// until one is attached it reads <c>.client/Content/fdid.index</c> and allocates in memory only.</summary>
+    public static WowFileDataIds Shared => _shared ??= new WowFileDataIds();
 
-    public int Count => _paths.Count;
+    public int Count
+    {
+        get
+        {
+            EnsureLoaded();
+            return _paths.Count;
+        }
+    }
 
-    private static WowFileDataIds LoadShared()
+    /// <summary>Makes <paramref name="storage"/> the backing table (null: the index file); the next lookup reloads.</summary>
+    public void Attach(WorldStorage? storage)
+    {
+        lock (_gate)
+        {
+            _storage = storage;
+            _loaded = false;
+        }
+    }
+
+    /// <summary>Attaches <paramref name="storage"/> unless one is already attached: the first world storage of the process
+    /// (the open project's) stays the backing table, scratch projects do not take it over.</summary>
+    public void AttachFirst(WorldStorage storage)
+    {
+        lock (_gate)
+        {
+            if (_storage == null)
+            {
+                Attach(storage);
+            }
+        }
+    }
+
+    private void EnsureLoaded()
+    {
+        lock (_gate)
+        {
+            if (_loaded)
+            {
+                return;
+            }
+
+            _paths.Clear();
+            _ids.Clear();
+            if (_storage != null)
+            {
+                using WorldDbContext db = _storage.CreateContext();
+                foreach (var row in db.FileDataId.AsNoTracking().Where(r => r.Retired == 0).Select(r => new { r.Id, r.Path }))
+                {
+                    Add((uint)row.Id, row.Path);
+                }
+            }
+            else if (FindIndexFile() is { } file)
+            {
+                foreach (string line in File.ReadLines(file))
+                {
+                    AddLine(line);
+                }
+            }
+
+            _loaded = true;
+        }
+    }
+
+    private static string? FindIndexFile()
     {
         for (string? dir = AppContext.BaseDirectory; dir != null; dir = Path.GetDirectoryName(dir))
         {
-            string candidate = Path.Combine(dir, ".local", "listfile.txt");
+            string candidate = Path.Combine(dir, ".client", "Content", "fdid.index");
             if (File.Exists(candidate))
             {
-                WowFileDataIds ids = Load(candidate);
-                string content = Path.Combine(dir, ".client", "Content");
-                if (Directory.Exists(content))
-                {
-                    ids.AttachRegistry(content);
-                }
-                return ids;
+                return candidate;
             }
         }
 
-        return new WowFileDataIds();
+        return null;
     }
 
     public static string Normalize(string path) => path.Replace('\\', '/').ToLowerInvariant();
 
-    public static WowFileDataIds Load(string listfilePath)
-    {
-        var result = new WowFileDataIds();
-        foreach (string line in File.ReadLines(listfilePath))
-        {
-            result.AddLine(line);
-        }
-        return result;
-    }
-
     public static WowFileDataIds Parse(IEnumerable<string> lines)
     {
-        var result = new WowFileDataIds();
+        var result = new WowFileDataIds { _loaded = true };
         foreach (string line in lines)
         {
             result.AddLine(line);
@@ -76,26 +124,26 @@ public sealed class WowFileDataIds
     /// <summary>First id handed out for project-created files, well above anything the stock client uses.</summary>
     public const uint CustomBase = 2_000_000_000;
 
-    /// <summary>File name of the shared custom id registry (<c>id;path</c> lines) in the Content directory; the client bypass reads it as a name table.</summary>
-    public const string RegistryFile = "custom.index";
-
-    private string? _registryPath;
-
-    /// <summary>The existing id of <paramref name="path"/>, or a new one from the custom range. With a registry attached
-    /// the id is allocated under the registry lock from the file's current contents, so other tools never get the same id.</summary>
+    /// <summary>The existing id of <paramref name="path"/>, or a new one from the custom range. With a storage attached the
+    /// id is allocated by one atomic statement on the table, so other tools never get the same id.</summary>
     public uint Allocate(string path)
     {
-        if (_registryPath != null)
+        EnsureLoaded();
+        lock (_gate)
         {
-            using var _ = CustomIndexLock.Acquire(_registryPath);
-            LoadRegistry();
-        }
+            if (IdOf(path) is { } existing)
+            {
+                return existing;
+            }
 
-        if (IdOf(path) is { } existing)
-        {
-            return existing;
+            uint next = _storage != null ? AllocateInTable(Normalize(path)) : NextLocal();
+            Add(next, path);
+            return next;
         }
+    }
 
+    private uint NextLocal()
+    {
         uint next = CustomBase;
         foreach (uint id in _paths.Keys)
         {
@@ -104,120 +152,71 @@ public sealed class WowFileDataIds
                 next = id + 1;
             }
         }
-
-        Add(next, path);
-        if (_registryPath != null)
-        {
-            AppendRegistry(next, Normalize(path));
-        }
         return next;
     }
 
-    /// <summary>Uses <c>custom.index</c> in <paramref name="contentDirectory"/> as the allocation file. The older allocation
-    /// files (<c>.local/listfile.custom.txt</c>, <c>wms.index</c>, <c>wms-custom-fdids.txt</c>) are merged into it once and deleted.</summary>
-    public void AttachRegistry(string contentDirectory)
+    private uint AllocateInTable(string path)
     {
-        string registry = Path.Combine(contentDirectory, RegistryFile);
-        if (_registryPath == registry)
-        {
-            return;
-        }
-
-        _registryPath = registry;
-        string[] legacy =
-        [
-            Path.Combine(contentDirectory, "..", "..", ".local", "listfile.custom.txt"),
-            Path.Combine(contentDirectory, "wms.index"),
-            Path.Combine(contentDirectory, "wms-custom-fdids.txt"),
-        ];
-        if (legacy.Any(File.Exists))
-        {
-            using var _ = CustomIndexLock.Acquire(registry);
-            MergeLegacy(registry, legacy);
-        }
-        LoadRegistry();
+        using WorldDbContext db = _storage!.CreateContext();
+        db.Database.ExecuteSql(
+            $"""
+            INSERT OR IGNORE INTO file_data_id (id, path, source)
+            SELECT max(coalesce(max(id), 0) + 1, {(int)CustomBase}), {path}, 'map_editor'
+            FROM file_data_id WHERE id >= {(int)CustomBase}
+            """);
+        db.Database.ExecuteSql($"UPDATE file_data_id SET retired = 0 WHERE path = {path} AND retired = 1");
+        return (uint)db.FileDataId.AsNoTracking().Where(r => r.Path == path).Select(r => r.Id).Single();
     }
 
-    private void LoadRegistry()
+    /// <summary>Rewrites <c>fdid.index</c> in <paramref name="contentDirectory"/> from the table (the format of
+    /// <c>database_tool fdid export</c>); true when the file changed.</summary>
+    public bool ExportIndex(string contentDirectory)
     {
-        if (File.Exists(_registryPath!))
+        if (_storage == null)
         {
-            foreach (string line in File.ReadLines(_registryPath!))
-            {
-                AddLine(line);
-            }
+            return false;
         }
+
+        using WorldDbContext db = _storage.CreateContext();
+        string text = string.Concat(db.FileDataId.AsNoTracking().Where(r => r.Retired == 0).OrderBy(r => r.Id)
+            .Select(r => new { r.Id, r.Path }).AsEnumerable().Select(r => $"{r.Id};{r.Path}\n"));
+        string target = Path.Combine(contentDirectory, "fdid.index");
+        if (File.Exists(target) && File.ReadAllText(target) == text)
+        {
+            return false;
+        }
+
+        string temp = target + ".tmp";
+        File.WriteAllText(temp, text);
+        File.Move(temp, target, true);
+        File.Delete(Path.Combine(contentDirectory, "custom.index"));
+        return true;
     }
 
-    private static void MergeLegacy(string registry, string[] legacy)
+    /// <summary>Writes every known pair as an <c>id;path</c> listfile for wowlib.</summary>
+    public void WriteListfile(string file)
     {
-        var entries = new SortedDictionary<uint, string>();
-        var byPath = new Dictionary<string, uint>(StringComparer.Ordinal);
-        void Read(string file, bool strict)
+        EnsureLoaded();
+        lock (_gate)
         {
-            foreach (string line in File.ReadLines(file))
-            {
-                int sep = line.IndexOf(';');
-                if (sep <= 0 || sep == line.Length - 1 || !uint.TryParse(line.AsSpan(0, sep), out uint id))
-                {
-                    continue;
-                }
-
-                string path = Normalize(line[(sep + 1)..]);
-                if (strict && ((entries.TryGetValue(id, out string? have) && have != path) || (byPath.TryGetValue(path, out uint other) && other != id)))
-                {
-                    Godot.GD.PushWarning($"fdid registry conflict in {Path.GetFileName(file)}: {id};{path} (kept the registry entry)");
-                    continue;
-                }
-
-                entries[id] = path;
-                byPath[path] = id;
-            }
-        }
-
-        if (File.Exists(registry))
-        {
-            Read(registry, false);
-        }
-        foreach (string file in legacy.Where(File.Exists))
-        {
-            Read(file, true);
-        }
-
-        File.WriteAllLines(registry, entries.Select(e => $"{e.Key};{e.Value}"));
-        foreach (string file in legacy.Where(File.Exists))
-        {
-            File.Delete(file);
+            File.WriteAllLines(file, _paths.OrderBy(p => p.Key).Select(p => $"{p.Key};{p.Value}"));
         }
     }
 
-    private void AppendRegistry(uint id, string path)
+    public string? PathOf(uint id)
     {
-        var entries = new SortedDictionary<uint, string>();
-        if (File.Exists(_registryPath!))
-        {
-            foreach (string line in File.ReadLines(_registryPath!))
-            {
-                int sep = line.IndexOf(';');
-                if (sep > 0 && uint.TryParse(line.AsSpan(0, sep), out uint existing))
-                {
-                    entries[existing] = line[(sep + 1)..];
-                }
-            }
-        }
-
-        entries[id] = path;
-        string temp = _registryPath + ".tmp";
-        File.WriteAllLines(temp, entries.Select(e => $"{e.Key};{e.Value}"));
-        File.Move(temp, _registryPath!, true);
+        EnsureLoaded();
+        return _paths.GetValueOrDefault(id);
     }
-
-    public string? PathOf(uint id) => _paths.GetValueOrDefault(id);
 
     /// <summary>The listed path, or a stable stand-in for ids the listfile does not know.</summary>
     public string PathOrPlaceholder(uint id) => PathOf(id) ?? $"unknown/{id}.blp";
 
-    public uint? IdOf(string path) => _ids.TryGetValue(Normalize(path), out uint id) ? id : null;
+    public uint? IdOf(string path)
+    {
+        EnsureLoaded();
+        return _ids.TryGetValue(Normalize(path), out uint id) ? id : null;
+    }
 
     private void AddLine(string line)
     {
@@ -228,44 +227,4 @@ public sealed class WowFileDataIds
         }
         Add(id, line[(separator + 1)..]);
     }
-}
-
-/// <summary>Exclusive <c>&lt;registry&gt;.lock</c> file shared with the Blender addon; locks older than a minute are taken over.</summary>
-internal sealed class CustomIndexLock : IDisposable
-{
-    private readonly string _lockPath;
-
-    private CustomIndexLock(string lockPath) => _lockPath = lockPath;
-
-    public static CustomIndexLock Acquire(string registryPath, TimeSpan? timeout = null)
-    {
-        string lockPath = registryPath + ".lock";
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(registryPath))!);
-        DateTime end = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(30));
-        while (true)
-        {
-            try
-            {
-                using (new FileStream(lockPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                {
-                }
-                return new CustomIndexLock(lockPath);
-            }
-            catch (IOException) when (File.Exists(lockPath))
-            {
-                if (DateTime.UtcNow - File.GetLastWriteTimeUtc(lockPath) > TimeSpan.FromSeconds(60))
-                {
-                    File.Delete(lockPath);
-                    continue;
-                }
-                if (DateTime.UtcNow > end)
-                {
-                    throw new TimeoutException($"{lockPath} is held by another process");
-                }
-                Thread.Sleep(20);
-            }
-        }
-    }
-
-    public void Dispose() => File.Delete(_lockPath);
 }

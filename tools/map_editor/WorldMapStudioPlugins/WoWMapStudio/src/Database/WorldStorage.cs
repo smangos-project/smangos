@@ -22,6 +22,7 @@ public sealed partial class WorldStorage : Storage, ISubsystemHost
     {
         _database = database;
         InitializeSubsystems();
+        WowFileDataIds.Shared.AttachFirst(this);
     }
 
     public override bool OwnsLocation => false;
