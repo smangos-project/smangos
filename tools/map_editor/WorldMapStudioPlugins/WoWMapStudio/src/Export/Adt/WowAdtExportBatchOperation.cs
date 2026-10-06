@@ -19,6 +19,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
     private string _sourceMap = "";
     private string _targetMap = "";
     private string _newTiles = "";
+    private string _removedTiles = "";
 
     public string Id => "wow.export.adt";
 
@@ -36,6 +37,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         ImGui.InputText("Client map folder", ref _sourceMap, 128);
         ImGui.InputText("Project map", ref _targetMap, 128);
         ImGui.InputText("New tiles (x,y;x,y)", ref _newTiles, 256);
+        ImGui.InputText("Removed tiles (x,y;x,y)", ref _removedTiles, 256);
     }
 
     public JsonObject SaveSettings() => new()
@@ -43,6 +45,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         ["sourceMap"] = _sourceMap,
         ["targetMap"] = _targetMap,
         ["newTiles"] = _newTiles,
+        ["removedTiles"] = _removedTiles,
     };
 
     public void LoadSettings(JsonObject settings)
@@ -50,6 +53,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
         _sourceMap = settings["sourceMap"]?.GetValue<string>() ?? "";
         _targetMap = settings["targetMap"]?.GetValue<string>() ?? "";
         _newTiles = settings["newTiles"]?.GetValue<string>() ?? "";
+        _removedTiles = settings["removedTiles"]?.GetValue<string>() ?? "";
     }
 
     public async Task RunAsync(BatchContext context, WorkContext work)
@@ -92,8 +96,20 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             .OrderBy(row => (row.FileY, row.FileX))
             .ToList();
         newTiles.RemoveAll(tile => wdt.Has(tile.FileX, tile.FileY));
+        List<(int FileX, int FileY)> removed = ParseTiles(context.Settings["removedTiles"]?.GetValue<string>() ?? "")
+            .Where(tile => wdt.Has(tile.FileX, tile.FileY) && !newTiles.Contains(tile))
+            .ToList();
+        rows.RemoveAll(row => removed.Contains((row.FileX, row.FileY)));
+        if (removed.Count > 0)
+        {
+            RemoveTileFiles(content, sourceMap, removed);
+            await Task.Run(() => WowWdtWriter.RemoveTiles(fs, sourceMap, removed)).ConfigureAwait(false);
+            context.Report($"Removed {removed.Count} tile(s) from the WDT.");
+        }
+
         if (rows.Count == 0 && newTiles.Count == 0)
         {
+            ids.ExportIndex(content);
             context.Report("Nothing to export — the map has no imported tiles.");
             return;
         }
@@ -194,6 +210,18 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
         ids.ExportIndex(content);
         context.Report($"Exported {written} edited tile(s) of {allRows.Count} to {content}.");
+    }
+
+    private static void RemoveTileFiles(string content, string map, IEnumerable<(int FileX, int FileY)> tiles)
+    {
+        foreach ((int fileX, int fileY) in tiles)
+        {
+            string stem = Path.Combine(content, "world", "maps", map, $"{map}_{fileX}_{fileY}");
+            foreach (string suffix in new[] { ".adt", "_obj0.adt", "_obj1.adt", "_tex0.adt" })
+            {
+                File.Delete(stem + suffix);
+            }
+        }
     }
 
     private static string[] NewTilePaths(string map, int fileX, int fileY)
