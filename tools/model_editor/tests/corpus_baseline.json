@@ -1,0 +1,7 @@
+{
+ "m2_clean": {
+  "cameras/flybydwarf.m2": "dirty: root.cameras[0].positions.interpolation_type",
+  "item/objectcomponents/weapon/axe_1h_zulgurub_d_01.m2": "dirty: root.attachment_lookup_table[]",
+  "world/dungeon/cavernsoftime/passivedoodads/energytrails/energytrail03b.m2": "dirty: root.vertices.len"
+ }
+}

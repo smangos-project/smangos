@@ -115,8 +115,23 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the custom listfile.
 - Not done: shadow-batch rules beyond the fallback, driving Blender lights/cameras from props, in-client checks of edited/new models, LOD decimation.
 
+### Custom file ids (registry)
+`Content/custom.index` (`fdid;path`, ids from 2000000000) is the single registry of custom ids; the addon (`registry.py`) and WorldMapStudio (`WowFileDataIds`) both allocate through it under an O_EXCL lock file, and merge older per-tool listfiles on first use. A preference `custom_listfile` overrides the path. Ids are never reused; uninstalling does not release them.
+
+### Install / uninstall (phase 7)
+`Install to Content` (`wow.install_model`) copies the last export (or everything in Output) into `.client/Content`, backing up each replaced stock file and recording a manifest in `.client/.model-editor-install` (outside Content). `Uninstall` restores every file hash-identically and removes the new ones. Both refuse while characters are online (mariadb check; skipped if the CLI is missing). Restart the client afterwards.
+
+### Game data (phase 7)
+`Write game data` (`wow.write_game_data`, `game_data.py`) builds rows for the active M2 and applies them to `.world/world.doltlite` through `database_tool`:
+- Creature: CreatureModelData (ids 60000..65535), CreatureDisplayInfo (ids from 1000000, other columns copied from a template display), `creature_display_info_addon` (radius/reach derived from the model bounds and scale). Game object: GameObjectDisplayInfo (ids from 1000000). A ModelFileData row is added when missing.
+- New rows go into a migration `sql/migrations/<timestamp>_world.sql` (marker comments `-- model-editor: <table> <id>` reserve ids until it is applied), applied with `database_tool update`; edits of rows the editor owns re-run as UPDATE migrations. Edits of stock rows (only with "Update stock rows") are in-place DoltLite commits. The db2 files are re-exported to `.client/Content/dbfilesclient`. Commit the migration file.
+- Rules from stock data: CollisionWidth is the collision box width, CollisionHeight its max z; stock GeoBox is not derived from the M2 bounding box exactly, so the editor writes the current mesh bounds. Bounding radius and combat reach are hand data in stock.
+- `tests/test_game_data.py` runs all of it on a scratch copy of the world; `database_tool` honours `DATABASE_TOOL_ROOT` for that.
+
+### Corpus suite
+`test.sh --filter zzz --corpus` imports every M2 and dry-run exports it (this is the unedited-clean check and the forced-rebuild comparison at once, `SWEEP_STEP=N` samples every Nth file, about 15 s per 170 files). Failures are compared with `tests/corpus_baseline.json`; only new ones fail. `--update-baseline` rewrites it. The older `--all-wmo-export`, `--all-wmo-rebuild`, `--all-m2-geo` and `--all-m2-anim` sweeps stay available.
+
 ### Phase 6 risks
-- The client may not resolve new fdids in the 2e9 range (unverified; needs an in-client check with backup/restore of the replaced files).
+- The client may not resolve new fdids in the 2e9 range for brand-new files (unverified; the phase 7 in-client check of a new model and of a model without a ModelFileData row is still open).
 - New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.
 - New doodads outside every group box get no group reference, so they will not render.
-- `import_m2_geometry` fails with KeyError `_rig` (pre-existing).

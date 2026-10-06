@@ -1,4 +1,5 @@
 """Headless addon tests. Run: blender -b --factory-startup --python test_addon.py -- [--all] [--filter SUBSTR]"""
+import json
 import os
 import sys
 import time
@@ -1202,6 +1203,50 @@ def sweep_wmo_export(force):
     return fails
 
 
+def sweep_m2_clean():
+    """Unedited import -> export must report no change and no errors (this is also the forced-rebuild comparison)."""
+    index.load(client.session().content, client.prefs().cache_dir)
+    fails, t0 = {}, time.time()
+    only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
+    entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
+    for fdid, path, _ in entries:
+        if path in KNOWN_BAD:
+            continue
+        try:
+            clear()
+            top = m2_import.load(path, {"display": "NONE"})
+            r = m2_export.export(top, options={"dry_run": True})
+            if r.errors:
+                fails[path] = "errors: " + str(r)[:160]
+            elif r.dirty:
+                fails[path] = f"dirty: {r.diff}"[:160]
+        except Exception as e:  # noqa: BLE001
+            fails[path] = f"{type(e).__name__}: {e}"[:160]
+    print(f"m2 clean sweep: {len(entries)} M2s, {len(fails)} not clean, {time.time() - t0:.0f}s")
+    return fails
+
+
+def corpus():
+    """Sweeps compared with tests/corpus_baseline.json ({"m2_clean": {path: message}}); new failures fail, fixed ones are listed."""
+    base_file = common.Path(__file__).with_name("corpus_baseline.json")
+    base = json.loads(base_file.read_text()) if base_file.is_file() else {}
+    found = {"m2_clean": sweep_m2_clean()}
+    if "--update-baseline" in ARGS:
+        base_file.write_text(json.dumps(found, indent=1, sort_keys=True) + "\n")
+        return 0
+    bad = 0
+    for kind, got in found.items():
+        known = base.get(kind, {})
+        new = sorted(set(got) - set(known))
+        fixed = sorted(set(known) - set(got))
+        for p in new:
+            print("  NEW", kind, p, got[p])
+        for p in fixed:
+            print("  FIXED", kind, p)
+        bad += len(new)
+    return bad
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:
@@ -1226,6 +1271,8 @@ if "--all-m2" in ARGS:
     failed += len(sweep_m2())
 if "--all-m2-geo" in ARGS:
     failed += len(sweep_m2_geo())
+if "--corpus" in ARGS:
+    failed += corpus()
 if "--all-m2-anim" in ARGS:
     failed += len(sweep_m2_anim())
 print("RESULT", "FAIL" if failed else "OK")
