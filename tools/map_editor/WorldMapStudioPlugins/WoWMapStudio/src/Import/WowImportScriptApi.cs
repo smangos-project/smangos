@@ -110,4 +110,52 @@ public sealed class WowImportScriptApi : IScriptModule
 
         return run.Id;
     }
+
+    /// <summary>
+    /// Creates and persists a procedural model that outputs an M2: one square panel (side <paramref name="size"/>)
+    /// textured with <paramref name="texturePath"/>, and places one instance at editor position (x, y, z) in the
+    /// current map's open edit session. Returns the catalog id.
+    /// </summary>
+    [ScriptFunction]
+    public async Task<int> CreatePanelModel(string name, double size, string texturePath, double x, double y, double z)
+    {
+        var network = new VertexNetwork();
+        float h = (float)size / 2.0f;
+        int a = network.AddVertex(new Godot.Vector3(-h, 0, -h));
+        int b = network.AddVertex(new Godot.Vector3(h, 0, -h));
+        int c = network.AddVertex(new Godot.Vector3(h, 0, h));
+        int d = network.AddVertex(new Godot.Vector3(-h, 0, h));
+        network.AddFace([a, b, c, d]);
+
+        var formats = new ProceduralFormats();
+        formats.Set(PanelNetworkMeshFunction.Output, M2Format.FormatId);
+
+        var materials = new ProceduralBindings();
+        var textureValues = new MeshParameterValues();
+        textureValues.Set(M2Material.Texture, texturePath);
+        materials.BindInline(PanelNetworkMeshFunction.Output, PanelNetworkMeshFunction.Surface, textureValues);
+
+        var model = new ProceduralModel
+        {
+            Name = name,
+            FunctionId = "builtin.mesh.panel_network",
+            Formats = formats.Serialize(),
+            Materials = materials.Serialize(),
+        };
+        model.LoadNetwork(network);
+        _context.Catalog.AssignId(model);
+        _context.Catalog.Add(model);
+        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([], [model])).ConfigureAwait(false);
+
+        var entity = new MapSceneEntity
+        {
+            Name = name,
+            Map = _context.Maps.CurrentMap,
+            Transform = new Godot.Transform3D(Godot.Basis.Identity, new Godot.Vector3((float)x, (float)y, (float)z)),
+        };
+        entity.AddComponent(new ProceduralComponent(_context.Procedural) { ModelId = model.RecordId });
+        _context.Scene.Add(entity);
+        _context.EditSessions.Record(new CreateEntityCommand(_context.Scene, entity));
+        return model.RecordId ?? 0;
+    }
 }
