@@ -82,3 +82,18 @@ WMO import option "Doodad meshes" shows each doodad as a collection instance of 
 Doodad colours are not applied. Preview materials approximate blending modes (mod/mod2x use alpha blend).
 
 `test.sh --all-m2` imports every M2 in the catalogue.
+
+### M2 animation (phase 4)
+
+Sequences are a list on the collection (`wow_m2` sequences, with Play/loop UI in the Sequences panel); each sequence becomes
+an action, global loops become loop actions. Bone tracks are fcurves on the `<model>_rig` pose bones (rest pose is identity).
+Model tracks (colors, texture weights, texture transforms) and object tracks (attachment visibility, lights, cameras incl.
+splines, particle emitters, ribbons) are stored as custom properties (`wow_color_i`, `wow_texweight_i`, `wow_tt_*_i`, ...) on
+the armature or the owning object and animated through the same actions; values use fixed16/quaternion codecs matching the
+file. Events are pose markers `event_<i>` on sequence/loop actions. Operators `wow.m2_sequence_add/duplicate/remove/key` and
+`wow.m2_loop_add/remove` author sequences. Export builds the tracks back from the actions in memory; the round trip is tested
+(`test.sh --filter m2_anim`, sweep with `SWEEP_STEP=8 ./test.sh --filter zzz --all-m2-anim`).
+
+Limits / phase 6 risks: lights and cameras do not drive real Blender light/camera data and preview materials are not driven by
+the colour/weight props; models without an armature carry only the model/object tracks; timestamps are milliseconds mapped
+to frames at a fixed rate, so edits off the grid are rounded on export.
