@@ -1287,6 +1287,22 @@ def import_item_display_unknown():
         pass
 
 
+@test
+def import_item_display_texture():
+    gd = common.submodule("game_data")
+    lay = gd.Layout.discover(client.dirs()[0])
+    db = lay.open()
+    try:
+        did = db.execute(f"SELECT d.ID FROM {gd.IDI} d JOIN {gd.TFD} t ON t.MaterialResourcesID = d.ModelMaterialResourcesID1 "
+                         f"WHERE d.ModelResourcesID1 > 0 AND d.ModelMaterialResourcesID1 > 0 AND d.ID < {gd.DISPLAY_FIRST_ID} ORDER BY d.ID LIMIT 1")[0][0]
+        _, textures = gd.item_display_models(db, did)
+    finally:
+        db.close()
+    bpy.ops.wow.import_item_display("EXEC_DEFAULT", display_id=did)
+    fds = {p.texture_fdids[k] for m in bpy.data.materials for p in m.wow_m2_batches for k in range(2)}
+    assert textures[0] in fds, (textures, fds)
+
+
 failed = 0
 sel = [a for a in ARGS if not a.startswith("--")]
 if "--filter" in ARGS:

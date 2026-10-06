@@ -13,7 +13,8 @@ from .props import s32
 MIN_BONE_LENGTH = 0.02
 SKIN_TYPES = {11: 0, 12: 1, 13: 2}
 DEFAULTS = {"skin": 0, "display": "AUTO", "display_id": 0, "attachments": True, "events": True, "cameras": True,
-            "lights": True, "emitters": True, "collision": True, "animations": "ALL", "armature": True, "mesh_only": False}
+            "lights": True, "emitters": True, "collision": True, "animations": "ALL", "armature": True, "mesh_only": False,
+            "object_skin": 0}
 _import_warnings = []
 
 
@@ -97,6 +98,8 @@ def resolve_replaceable(model):
         for typ, slot in SKIN_TYPES.items():
             if disp.textures[slot]:
                 out[typ] = disp.textures[slot]
+    if opts.get("object_skin"):
+        out[2] = opts["object_skin"]
     folder = posixpath.dirname(model.path)
     for typ in {t.type for t in model.root.textures if t.type and t.type not in out}:
         if typ == 1:

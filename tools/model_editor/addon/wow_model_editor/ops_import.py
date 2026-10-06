@@ -25,14 +25,15 @@ def resolve(text):
     return path
 
 
-def import_path(op, context, path):
+def import_path(op, context, path, extra=None):
     o = context.window_manager.wow_import
     try:
         if path.endswith(".m2"):
             from . import m2_import
             m2_import.load(path, {"skin": o.skin, "display": o.display, "display_id": o.display_id,
                                   "attachments": o.attachments, "events": o.events, "cameras": o.cameras,
-                                  "lights": o.m2_lights, "emitters": o.emitters, "collision": o.collision})
+                                  "lights": o.m2_lights, "emitters": o.emitters, "collision": o.collision,
+                                  **(extra or {})})
             for w in m2_import.take_warnings():
                 op.report({"WARNING"}, w)
         elif path.endswith(".wmo"):
@@ -149,8 +150,9 @@ class WOW_OT_import_item_display(bpy.types.Operator):
         except (game_data.GameDataError, ValueError, RuntimeError, OSError) as e:
             self.report({"ERROR"}, str(e))
             return {"CANCELLED"}
+        skin = next((t for t in textures if t), 0)
         self.report({"INFO"}, f"{len(models)} models, textures {textures}; importing {path}")
-        return import_path(self, context, path)
+        return import_path(self, context, path, {"object_skin": skin})
 
 
 def menu_import(self, context):
