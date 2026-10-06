@@ -53,6 +53,7 @@ class WOW_PT_browser(bpy.types.Panel):
                 box.prop(o, name)
         col.separator()
         col.operator("wow.new_wmo", icon="ADD")
+        col.operator("wow.new_m2", icon="ADD")
         col.operator("wow.export_wmo", icon="EXPORT")
         if wm.wow_recent:
             col.label(text="Recent")

@@ -164,6 +164,7 @@ def _seq_changed(props):
 
 class WowM2(bpy.types.PropertyGroup):
     path: StringProperty()
+    template: StringProperty(description="Model the unedited data is read from; empty for imported models")
     is_new: BoolProperty()
     fdid: IntProperty()
     name: StringProperty()

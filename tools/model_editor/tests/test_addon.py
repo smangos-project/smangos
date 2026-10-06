@@ -1044,6 +1044,25 @@ def m2_validate_findings():
 
 
 @test
+def m2_new_model_exports_and_reimports():
+    clear()
+    top = m2_export.new_m2("world/custom/testcube.m2")
+    assert top.wow_m2.is_new
+    ob = common.submodule("m2_mesh_export").submesh_objects(top)[0][0]
+    import bmesh
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bm.to_mesh(ob.data)
+    bm.free()
+    r = m2_export.export(top)
+    assert not r.errors and r.dirty and "world/custom/testcube.m2" in r.files, str(r)
+    clear()
+    again = m2_import.load("world/custom/testcube.m2", {"display": "NONE", "collision": False})
+    sub = common.submodule("m2_mesh_export").submesh_objects(again)[0]
+    assert [len(o.data.polygons) for o in sub][0] == 12, [len(o.data.polygons) for o in sub]
+
+
+@test
 def m2_anim_cquat_codec():
     raw = np.array([(-32768, -1, 0, 32767), (5, -5, 32766, -32767)], dtype=[(n, "<i2") for n in "xyzw"])
     dec = m2_anim._cquat(raw)

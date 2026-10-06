@@ -26,6 +26,22 @@ def find_root(ob):
     return None
 
 
+DEFAULT_TEMPLATE = "duskwoodlamppost.m2"
+
+
+def new_m2(path, template=None, parent=None):
+    """A copy of `template` (client path, default a small doodad) that exports as new model `path`."""
+    from . import index
+    index.load(client.session().content, client.prefs().cache_dir)
+    template = template or next(e[1] for e in index.entries("m2") if e[1].endswith("/" + DEFAULT_TEMPLATE))
+    path = path.replace("\\", "/").lower()
+    top = m2_import.load(template, {"display": "NONE", "collision": False}, parent)
+    p = top.wow_m2
+    p.template, p.path, p.fdid, p.is_new = template, path, 0, True
+    top.name = posixpath.basename(path)
+    return top
+
+
 def skin_path(path, i):
     return f"{posixpath.splitext(path)[0]}{i:02d}.skin"
 
@@ -59,8 +75,8 @@ def export(top, out_path=None, options=None):
     report.files, report.extra_files, report.model, report.dirty = [], [], None, False
     bpy.context.view_layer.update()
     p = top.wow_m2
-    src = p.path
-    path = (out_path or src).replace("\\", "/").lower()
+    src = p.template or p.path
+    path = (out_path or p.path).replace("\\", "/").lower()
     m = m2_import.read(src)
     ref = m2_import.read(src)
     rebuild(top, m, report, opts)

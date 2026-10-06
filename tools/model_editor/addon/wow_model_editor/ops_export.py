@@ -97,4 +97,22 @@ class WOW_OT_select_finding(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_select_finding)
+class WOW_OT_new_m2(bpy.types.Operator):
+    bl_idname = "wow.new_m2"
+    bl_label = "New M2"
+    bl_description = "Start a new model from a small template; edit it and export to a new path"
+    path: StringProperty(name="Client path", default="world/custom/new.m2")
+    template: StringProperty(name="Template", description="Client path of the model to start from; empty for a lamp post")
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        if not self.path.lower().endswith(".m2"):
+            self.report({"ERROR"}, "Path must end in .m2")
+            return {"CANCELLED"}
+        m2_export.new_m2(self.path, self.template or None)
+        return {"FINISHED"}
+
+
+classes = (WOW_OT_export_wmo, WOW_OT_new_wmo, WOW_OT_export_m2, WOW_OT_new_m2, WOW_OT_select_finding)
