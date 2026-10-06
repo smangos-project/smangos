@@ -74,4 +74,26 @@ public static class WowAdtTileWriterTests
             }
         }
     }
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Moved_doodad_is_written_back()
+    {
+        WowTestContent.RequireFile("world/maps/azeroth/azeroth_32_48.adt");
+        string project = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "wms-writer-test-" + System.Guid.NewGuid().ToString("N"));
+        var fs = WowClientFiles.OpenIsolated(project);
+        var wdt = WowWdt.Read(fs, "azeroth");
+        var id = new ImportedTileId("azeroth", 32, 48);
+        var tile = WowAdtTileReader.Read(fs, wdt, id);
+        Assert.IsTrue(tile.Doodads.Count > 0, "tile has doodads");
+
+        var doodads = tile.Doodads.ToList();
+        var moved = doodads[0] with { Position = doodads[0].Position + new Godot.Vector3(3, 0, 0) };
+        doodads[0] = moved;
+        var edited = new ImportedTile { TileId = id, Textures = tile.Textures, HeightTextures = tile.HeightTextures, Doodads = doodads, Objects = tile.Objects, Chunks = tile.Chunks };
+        WowAdtTileWriter.Write(fs, wdt, edited);
+        var back = WowAdtTileReader.Read(fs, wdt, id);
+        System.IO.Directory.Delete(project, true);
+
+        var found = back.Doodads.First(d => d.UniqueId == moved.UniqueId);
+        Assert.IsTrue(found.Position.DistanceTo(moved.Position) < 0.01f, "doodad position persists");
+    }
 }
