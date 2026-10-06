@@ -1,5 +1,5 @@
 """Game data rows on a scratch copy of the world. Run: python3 tests/test_game_data.py [SOURCE_ROOT]
-The world, client db2 files and migrations are copied to a temp root; the live data is never written."""
+The world, client db2 files are copied to a temp root; the live data is never written."""
 import shutil
 import sys
 import tempfile
@@ -31,7 +31,7 @@ def tearDownModule():
 
 def layout():
     lib = doltlite.find_library(REPO)
-    return gd.Layout(SCRATCH, SCRATCH / ".world" / "world.doltlite", SCRATCH / "sql" / "migrations",
+    return gd.Layout(SCRATCH, SCRATCH / ".world" / "world.doltlite",
                      REPO / "build" / "tools" / "database_tool" / "database_tool", lib)
 
 
@@ -46,10 +46,14 @@ class GameDataTests(unittest.TestCase):
             db.close()
         self.assertEqual([c.table for c in changes if c.kind == "insert"][:3], [gd.CMD, gd.CDI, gd.ADDON])
         self.assertGreaterEqual(display, gd.DISPLAY_FIRST_ID)
-        res = gd.apply_changes(lay, changes, "test creature")
-        self.assertTrue(res["migration"].is_file(), res)
+        db = lay.open()
+        commits, migrations = db.execute("SELECT count(*) FROM dolt_log"), sorted((SCRATCH / "sql" / "migrations").iterdir())
+        db.close()
+        gd.apply_changes(lay, changes)
         db = lay.open()
         try:
+            self.assertEqual(db.execute("SELECT count(*) FROM dolt_log"), commits)
+            self.assertEqual(sorted((SCRATCH / "sql" / "migrations").iterdir()), migrations)
             self.assertEqual(db.dicts(f"SELECT FileDataID FROM {gd.CMD} WHERE FileDataID = ?", (INFO.fdid,))[0]["FileDataID"], INFO.fdid)
             again, display2 = gd.plan_creature(db, lay, INFO, tdisp, scale=1.5)
             self.assertEqual((again, display2), ([], display))
@@ -57,8 +61,6 @@ class GameDataTests(unittest.TestCase):
             self.assertEqual([(c.kind, c.table) for c in upd], [("update", gd.CDI), ("update", gd.ADDON)])
         finally:
             db.close()
-        code, out = gd.run_tool(lay, "update", "--databases", "world")
-        self.assertEqual(code, 0, out)
 
     def test_game_object(self):
         lay = layout()
@@ -68,7 +70,7 @@ class GameDataTests(unittest.TestCase):
         finally:
             db.close()
         self.assertEqual(changes[0].table, gd.GODI)
-        gd.apply_changes(lay, changes, "test go")
+        gd.apply_changes(lay, changes)
         db = lay.open()
         try:
             row = db.dicts(f"SELECT * FROM {gd.GODI} WHERE ID = ?", (display,))[0]

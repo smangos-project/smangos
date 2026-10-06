@@ -112,19 +112,19 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 "Export M2" in the WoW panel (`wow.export_m2`) rebuilds the model from the collection: geometry/skins, rig, materials/textures, objects, animation. The source is re-read and each section is applied on top; if nothing differs from the source, nothing is written.
 - Geometry edits drop LOD skins unless "rebuild LODs" is set. Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
 - Non-linear animation keys are baked to linear; sequences are validated.
-- `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the custom listfile.
+- `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the `file_data_id` table.
 - Not done: shadow-batch rules beyond the fallback, in-client checks of edited/new models, LOD decimation.
 
 ### Custom file ids (registry)
-`Content/custom.index` (`fdid;path`, ids from 2000000000) is the single registry of custom ids; the addon (`registry.py`) and WorldMapStudio (`WowFileDataIds`) both allocate through it under an O_EXCL lock file, and merge older per-tool listfiles on first use. A preference `custom_listfile` overrides the path. Ids are never reused; uninstalling does not release them.
+The `file_data_id` table of `.world/world.doltlite` (`id`, `path`, `source`, `retired`; custom ids from 2000000000) is the single registry of file ids; the addon (`registry.py`), WorldMapStudio (`WowFileDataIds`) and `database_tool fdid` allocate through it in `BEGIN IMMEDIATE` transactions. The addon pre-allocates every path it writes and fails if wowlib invented an id. `Content/fdid.index` is rebuilt from the table after exports and installs (`database_tool fdid export` does the same). The preference `custom_listfile` names another world database. Ids are never reused: releasing sets `retired`. Nothing here makes dolt commits.
 
 ### Install / uninstall (phase 7)
 `Install to Content` (`wow.install_model`) copies the last export (or everything in Output) into `.client/Content`, backing up each replaced stock file and recording a manifest in `.client/.model-editor-install` (outside Content). `Uninstall` restores every file hash-identically and removes the new ones. Both refuse while characters are online (mariadb check; skipped if the CLI is missing). Restart the client afterwards.
 
 ### Game data (phase 7)
-`Write game data` (`wow.write_game_data`, `game_data.py`) builds rows for the active M2 and applies them to `.world/world.doltlite` through `database_tool`:
+`Write game data` (`wow.write_game_data`, `game_data.py`) builds rows for the active M2 and writes them to `.world/world.doltlite` in one transaction (no migration file, no dolt commit; committing `.world` is up to you):
 - Creature: CreatureModelData (ids 60000..65535), CreatureDisplayInfo (ids from 1000000, other columns copied from a template display), `creature_display_info_addon` (radius/reach derived from the model bounds and scale). Game object: GameObjectDisplayInfo (ids from 1000000). A ModelFileData row is added when missing.
-- New rows go into a migration `sql/migrations/<timestamp>_world.sql` (marker comments `-- model-editor: <table> <id>` reserve ids until it is applied), applied with `database_tool update`; edits of rows the editor owns re-run as UPDATE migrations. Edits of stock rows (only with "Update stock rows") are in-place DoltLite commits. The db2 files are re-exported to `.client/Content/dbfilesclient`. Commit the migration file.
+- Rows in the reserved id ranges are the editor's own and are updated in place; edits of other (stock) rows need "Update stock rows". The db2 files are re-exported to `.client/Content/dbfilesclient`.
 - Rules from stock data: CollisionWidth is the collision box width, CollisionHeight its max z; stock GeoBox is not derived from the M2 bounding box exactly, so the editor writes the current mesh bounds. Bounding radius and combat reach are hand data in stock.
 - `tests/test_game_data.py` runs all of it on a scratch copy of the world; `database_tool` honours `DATABASE_TOOL_ROOT` for that.
 

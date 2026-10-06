@@ -170,7 +170,7 @@ class WOW_OT_uninstall_model(bpy.types.Operator):
 class WOW_OT_write_game_data(bpy.types.Operator):
     bl_idname = "wow.write_game_data"
     bl_label = "Write game data"
-    bl_description = "Create or update the creature or game object display rows of the active M2 (migration plus client db2 export)"
+    bl_description = "Create or update the creature or game object display rows of the active M2 (written to the world database, client db2 export)"
     kind: EnumProperty(name="Kind", items=[("creature", "Creature", ""), ("object", "Game object", "")], default="creature")
     template_display: IntProperty(name="Template display", description="CreatureDisplayInfo id whose other fields are copied", min=0)
     scale: FloatProperty(name="Scale", default=1.0, min=0.01)
@@ -207,11 +207,11 @@ class WOW_OT_write_game_data(bpy.types.Operator):
             if self.dry_run or not changes:
                 self.report({"INFO"}, f"Display {display}: {len(changes)} changes" + (" (preview)" if self.dry_run else ""))
                 return {"FINISHED"}
-            res = game_data.apply_changes(layout, changes, f"{self.kind} display for {p.path}")
+            game_data.apply_changes(layout, changes)
         except (game_data.GameDataError, OSError, ValueError) as e:
             self.report({"ERROR"}, str(e))
             return {"CANCELLED"}
-        self.report({"INFO"}, f"Display {display} written" + (f", migration {res['migration'].name}" if res["migration"] else ""))
+        self.report({"INFO"}, f"Display {display} written to the world database (uncommitted)")
         return {"FINISHED"}
 
 

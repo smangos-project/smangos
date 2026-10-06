@@ -151,8 +151,3 @@ class DB:
             self.execute("ROLLBACK")
             raise
         self.execute("COMMIT")
-
-    def commit(self, message):
-        """Records the working changes as a dolt commit; returns its hash, or None when nothing changed."""
-        r = self.execute("SELECT dolt_commit('-A', '-m', ?)", (message,))
-        return r[0][0] if r and r[0][0] else None

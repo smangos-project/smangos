@@ -1,7 +1,5 @@
-"""Client/server table rows for a model (creature and game object displays), written as migrations or in-place edits of `.world`."""
-import datetime
+"""Client/server table rows for a model (creature and game object displays), written to `.world` in one transaction."""
 import os
-import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -10,7 +8,6 @@ from . import doltlite
 
 CREATURE_MODEL_IDS = (60000, 65535)
 DISPLAY_FIRST_ID = 1_000_000
-MARKER = "-- model-editor:"
 CMD, CDI, GODI, MFD, ADDON = ("dbc_creaturemodeldata", "dbc_creaturedisplayinfo", "dbc_gameobjectdisplayinfo",
                               "dbc_modelfiledata", "creature_display_info_addon")
 DB2_NAMES = {CMD: "CreatureModelData", CDI: "CreatureDisplayInfo", GODI: "GameObjectDisplayInfo", MFD: "ModelFileData"}
@@ -38,7 +35,6 @@ class Change:
     kind: str        # "insert" | "update"
     table: str
     values: dict
-    inplace: bool = False   # edit of a row that already exists in .world (not owned by a migration)
     changed: dict = field(default_factory=dict)  # for updates: the columns that differ
 
 
@@ -46,7 +42,6 @@ class Change:
 class Layout:
     root: Path
     world: Path
-    migrations: Path
     tool: Path
     lib: Path
 
@@ -54,7 +49,7 @@ class Layout:
     def discover(cls, content, world=None, root=None):
         root = Path(root) if root else Path(content).parent.parent
         lib = doltlite.find_library(root)
-        return cls(root, Path(world) if world else root / ".world" / "world.doltlite", root / "sql" / "migrations",
+        return cls(root, Path(world) if world else root / ".world" / "world.doltlite",
                    root / "build" / "tools" / "database_tool" / "database_tool", lib)
 
     def open(self):
@@ -65,40 +60,9 @@ class Layout:
         return doltlite.DB(self.world, self.lib)
 
 
-def sql_literal(v):
-    if v is None:
-        return "NULL"
-    if isinstance(v, float):
-        return repr(v)
-    if isinstance(v, int):
-        return str(v)
-    return "'" + str(v).replace("'", "''") + "'"
-
-
-def unapplied_migrations(layout, db):
-    applied = {r[0] for r in db.execute("SELECT id FROM migrations")}
-    out = []
-    for f in sorted(layout.migrations.glob("*_world.sql")):
-        mid = f.name.split("_", 1)[0]
-        if mid not in applied:
-            out.append(f)
-    return out
-
-
-def claimed_ids(layout, db):
-    """{table: {id}} claimed by migration files that are not applied yet (marker comments)."""
-    out = {}
-    for f in unapplied_migrations(layout, db):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            m = re.match(rf"{MARKER} (\w+) (\d+)", line)
-            if m:
-                out.setdefault(m.group(1), set()).add(int(m.group(2)))
-    return out
-
-
-def next_id(db, table, lo, hi, claimed=()):
+def next_id(db, table, lo, hi):
     top = db.execute(f"SELECT MAX(ID) FROM {table} WHERE ID >= ? AND ID <= ?", (lo, hi))[0][0]
-    n = max([lo - 1, top if top is not None else lo - 1, *claimed]) + 1
+    n = max([lo - 1, top if top is not None else lo - 1]) + 1
     if n > hi:
         raise GameDataError(f"no free id left in {table} range {lo}..{hi}")
     return n
@@ -155,14 +119,13 @@ def plan_creature(db, layout, info, template_display, scale=1.0, textures=(), di
     tmodel = _by_key(db, CMD, "ID", tdisp["ModelID"])
     if tmodel is None:
         raise GameDataError(f"template display {template_display} has no CreatureModelData row")
-    claimed = claimed_ids(layout, db)
     changes = []
     width, height = collision_size(info)
     derived = {"FileDataID": info.fdid, **{f"GeoBox{i + 1}": v for i, v in enumerate(geo_box(info))},
                "CollisionWidth": width, "CollisionHeight": height}
     existing = _by_key(db, CMD, "FileDataID", info.fdid)
     if existing is None:
-        row = {**tmodel, **derived, "ID": next_id(db, CMD, *CREATURE_MODEL_IDS, claimed.get(CMD, ()))}
+        row = {**tmodel, **derived, "ID": next_id(db, CMD, *CREATURE_MODEL_IDS)}
         changes.append(Change("insert", CMD, row))
         model_id = row["ID"]
     else:
@@ -171,7 +134,7 @@ def plan_creature(db, layout, info, template_display, scale=1.0, textures=(), di
         if owned or update_stock_model:
             diff = _diff(existing, derived)
             if diff:
-                changes.append(Change("update", CMD, {"ID": model_id, **diff}, inplace=not owned, changed=diff))
+                changes.append(Change("update", CMD, {"ID": model_id, **diff}, changed=diff))
     displays = db.dicts(f"SELECT * FROM {CDI} WHERE ModelID = ? AND ID >= ? ORDER BY ID", (model_id, DISPLAY_FIRST_ID)) if existing else []
     tex = {f"TextureVariationFileDataID{i + 1}": (textures[i] if i < len(textures) else 0) for i in range(4)}
     wanted = {"ModelID": model_id, "CreatureModelScale": float(scale), **tex}
@@ -182,7 +145,7 @@ def plan_creature(db, layout, info, template_display, scale=1.0, textures=(), di
         if diff:
             changes.append(Change("update", CDI, {"ID": display_id, **diff}, changed=diff))
     else:
-        display_id = next_id(db, CDI, DISPLAY_FIRST_ID, 2**31 - 1, claimed.get(CDI, ()))
+        display_id = next_id(db, CDI, DISPLAY_FIRST_ID, 2**31 - 1)
         changes.append(Change("insert", CDI, {**tdisp, **wanted, "ID": display_id}))
     radius, reach = radius_and_reach(info, scale)
     taddon = _by_key(db, ADDON, "display_id", template_display) or {}
@@ -206,12 +169,11 @@ def model_name(path):
 
 def plan_game_object(db, layout, info, update_stock=False, model_file_data=True):
     """Changes for a GameObjectDisplayInfo row of `info` (looked up by FileDataID)."""
-    claimed = claimed_ids(layout, db)
     derived = {"FileDataID": info.fdid, "ModelName": model_name(info.path), **{f"GeoBox{i + 1}": v for i, v in enumerate(geo_box(info))}}
     existing = _by_key(db, GODI, "FileDataID", info.fdid)
     changes = []
     if existing is None:
-        display_id = next_id(db, GODI, DISPLAY_FIRST_ID, 2**31 - 1, claimed.get(GODI, ()))
+        display_id = next_id(db, GODI, DISPLAY_FIRST_ID, 2**31 - 1)
         cols = [r[1] for r in db.execute(f"PRAGMA table_info({GODI})")]
         row = {c: 0 for c in cols}
         changes.append(Change("insert", GODI, {**row, **derived, "ID": display_id}))
@@ -220,41 +182,10 @@ def plan_game_object(db, layout, info, update_stock=False, model_file_data=True)
         if display_id >= DISPLAY_FIRST_ID or update_stock:
             diff = _diff(existing, derived)
             if diff:
-                changes.append(Change("update", GODI, {"ID": display_id, **diff}, inplace=display_id < DISPLAY_FIRST_ID, changed=diff))
+                changes.append(Change("update", GODI, {"ID": display_id, **diff}, changed=diff))
     if model_file_data:
         _model_file_data(db, info, changes)
     return changes, display_id
-
-
-def migration_sql(changes, migration_id, description=""):
-    lines = [f"INSERT INTO `migrations` VALUES ('{migration_id}');"]
-    if description:
-        lines.append(f"-- {description}")
-    for c in changes:
-        key = KEYS[c.table]
-        if c.kind == "insert":
-            lines.append(f"{MARKER} {c.table} {c.values[key]}")
-            cols = ", ".join(f"`{k}`" for k in c.values)
-            vals = ", ".join(sql_literal(v) for v in c.values.values())
-            lines.append(f"INSERT INTO `{c.table}` ({cols}) VALUES ({vals});")
-        else:
-            sets = ", ".join(f"`{k}` = {sql_literal(v)}" for k, v in c.values.items() if k != key)
-            lines.append(f"UPDATE `{c.table}` SET {sets} WHERE `{key}` = {sql_literal(c.values[key])};")
-    return "\n".join(lines) + "\n"
-
-
-def write_migration(layout, changes, description=""):
-    """Writes the migration file for the non-in-place `changes` with a unique UTC timestamp; returns its path."""
-    now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-    layout.migrations.mkdir(parents=True, exist_ok=True)
-    while True:
-        mid = now.strftime("%Y%m%d%H%M%S")
-        path = layout.migrations / f"{mid}_world.sql"
-        if not path.exists():
-            break
-        now += datetime.timedelta(seconds=1)
-    path.write_text(migration_sql(changes, mid, description), encoding="utf-8")
-    return path
 
 
 def run_tool(layout, *args):
@@ -265,28 +196,22 @@ def run_tool(layout, *args):
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
-def apply_changes(layout, changes, description, export=True):
-    """Applies `changes`: in-place edits through DoltLite (one transaction and a dolt commit), the rest as a migration file
-    run by database_tool. Returns {"migration": Path|None, "commit": str|None, "log": [str]}."""
-    result = {"migration": None, "commit": None, "log": []}
-    inplace = [c for c in changes if c.inplace]
-    migrated = [c for c in changes if not c.inplace]
-    if migrated:
-        path = write_migration(layout, migrated, description)
-        result["migration"] = path
-        code, out = run_tool(layout, "update", "--databases", "world")
-        result["log"].append(out)
-        if code != 0:
-            raise GameDataError(f"database_tool update failed, {path.name} kept: {out}")
-    if inplace:
+def apply_changes(layout, changes, export=True):
+    """Writes `changes` to the world in one transaction (no dolt commit), then re-exports the touched db2 files.
+    Returns {"log": [str]}."""
+    result = {"log": []}
+    if changes:
         db = layout.open()
         try:
             with db.transaction():
-                for c in inplace:
+                for c in changes:
                     key = KEYS[c.table]
-                    sets = ", ".join(f"`{k}` = ?" for k in c.changed)
-                    db.execute(f"UPDATE `{c.table}` SET {sets} WHERE `{key}` = ?", (*c.changed.values(), c.values[key]))
-            result["commit"] = db.commit(f"model editor: {description}")
+                    if c.kind == "insert":
+                        cols = ", ".join(f"`{k}`" for k in c.values)
+                        db.execute(f"INSERT INTO `{c.table}` ({cols}) VALUES ({', '.join('?' * len(c.values))})", tuple(c.values.values()))
+                    else:
+                        sets = ", ".join(f"`{k}` = ?" for k in c.changed)
+                        db.execute(f"UPDATE `{c.table}` SET {sets} WHERE `{key}` = ?", (*c.changed.values(), c.values[key]))
         finally:
             db.close()
     if export and changes:
