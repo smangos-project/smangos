@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -49,6 +50,26 @@ public sealed class WowMapScriptApi : IScriptModule
     [ScriptFunction]
     public int[] ProjectMapsFor(int wowMapId) =>
         WowMapBindings.For(_context).ProjectMapsFor(wowMapId).Select(id => id.Value).ToArray();
+
+    /// <summary>Waits until streaming has landed a scan started after this call, so entities around the camera
+    /// (e.g. after <c>wms.map.Open</c> or a camera move) are loaded. False on timeout.</summary>
+    [ScriptFunction]
+    public async Task<bool> WaitForStreaming(int timeoutMs = 30000)
+    {
+        _context.Streaming.Invalidate();
+        int start = _context.Streaming.ScanVersion;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(50);
+            if (_context.Streaming.ScanVersion > start && _context.Streaming.ScanMap.Equals(_context.Maps.CurrentMap))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>Every bound project map and the WoW map id it resolves to — unbound maps are left out.</summary>
     [ScriptFunction]
