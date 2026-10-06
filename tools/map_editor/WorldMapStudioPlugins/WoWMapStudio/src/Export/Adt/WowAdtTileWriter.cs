@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using WoWLib;
 using WoWLib.Filesystem;
@@ -19,7 +21,7 @@ public static class WowAdtTileWriter
     private const int Inner = ImportedChunk.InnerEdge;
     private const int AlphaSize = 64 * 64;
 
-    /// <summary>Applies <paramref name="tile"/> onto <paramref name="adt"/> (terrain, layers, textures) and moves of existing placements matched by unique id; added or removed placements are not written.</summary>
+    /// <summary>Applies <paramref name="tile"/> onto <paramref name="adt"/> (terrain, layers, textures) and placements matched by unique id: existing ones are moved, added ones appended (by FileDataID) and removed ones dropped, with the per-chunk reference lists rebuilt.</summary>
     public static void Apply(ADTBfaPlus adt, ImportedTile tile)
     {
         if (tile.Chunks.Count != ImportedTile.ChunkCount || adt.Chunks.Count != ImportedTile.ChunkCount)
@@ -57,6 +59,47 @@ public static class WowAdtTileWriter
 
     private static void ApplyPlacements(ADTBfaPlus adt, ImportedTile tile)
     {
+        var doodadUids = new HashSet<uint>(tile.Doodads.Select(d => d.UniqueId));
+        var objectUids = new HashSet<uint>(tile.Objects.Select(o => o.UniqueId));
+        var existingDoodads = Items(adt.DoodadPlacements);
+        var existingObjects = Items(adt.WmoPlacements);
+        bool membershipChanged =
+            !doodadUids.SetEquals(existingDoodads.Select(p => p.UniqueId)) ||
+            !objectUids.SetEquals(existingObjects.Select(p => p.UniqueId));
+
+        if (membershipChanged)
+        {
+            adt.DoodadPlacements.Clear();
+            foreach (var p in existingDoodads.Where(p => doodadUids.Contains(p.UniqueId)))
+            {
+                adt.DoodadPlacements.Add(p);
+            }
+
+            adt.WmoPlacements.Clear();
+            foreach (var p in existingObjects.Where(p => objectUids.Contains(p.UniqueId)))
+            {
+                adt.WmoPlacements.Add(p);
+            }
+
+            var knownDoodads = new HashSet<uint>(Items(adt.DoodadPlacements).Select(p => p.UniqueId));
+            foreach (var d in tile.Doodads)
+            {
+                if (knownDoodads.Add(d.UniqueId))
+                {
+                    adt.DoodadPlacements.Add(new SmDoodadDef { NameId = d.ModelFdid, UniqueId = d.UniqueId });
+                }
+            }
+
+            var knownObjects = new HashSet<uint>(Items(adt.WmoPlacements).Select(p => p.UniqueId));
+            foreach (var o in tile.Objects)
+            {
+                if (knownObjects.Add(o.UniqueId))
+                {
+                    adt.WmoPlacements.Add(new SmMapObjDef { NameId = o.WmoFdid, UniqueId = o.UniqueId });
+                }
+            }
+        }
+
         foreach (var d in tile.Doodads)
         {
             foreach (var p in adt.DoodadPlacements)
@@ -67,6 +110,10 @@ public static class WowAdtTileWriter
                     p.Rotation = ToC3(d.RotationDegrees);
                     p.Scale = d.Scale;
                     p.Flags = (DoodadDefFlags)d.Flags;
+                    if (membershipChanged && p.NameId == d.ModelFdid)
+                    {
+                        p.Flags |= DoodadDefFlags.EntryIsFdid;
+                    }
                 }
             }
         }
@@ -85,9 +132,59 @@ public static class WowAdtTileWriter
                     p.DoodadSet = o.DoodadSet;
                     p.NameSet = o.NameSet;
                     p.Scale = o.Scale;
+                    if (membershipChanged && p.NameId == o.WmoFdid)
+                    {
+                        p.Flags |= MapObjDefFlags.EntryIsFdid;
+                    }
                 }
             }
         }
+
+        if (membershipChanged)
+        {
+            RebuildRefs(adt, tile.TileId);
+        }
+    }
+
+    /// <summary>Rewrites every chunk's MCRD/MCRW lists from the placement positions; indices into the placement lists shift when records are added or removed.</summary>
+    private static void RebuildRefs(ADTBfaPlus adt, ImportedTileId id)
+    {
+        foreach (var chunk in adt.Chunks)
+        {
+            chunk.DoodadRefs.Clear();
+            chunk.ObjectRefs.Clear();
+        }
+
+        for (int i = 0; i < adt.DoodadPlacements.Count; i++)
+        {
+            var p = adt.DoodadPlacements[i];
+            foreach (int c in PlacementRefs.ChunksOverlapping(id.FileX, id.FileY, p.Position.X, p.Position.X, p.Position.Z, p.Position.Z))
+            {
+                adt.Chunks[c].DoodadRefs.Add((uint)i);
+            }
+        }
+
+        for (int i = 0; i < adt.WmoPlacements.Count; i++)
+        {
+            var e = adt.WmoPlacements[i].Extents;
+            foreach (int c in PlacementRefs.ChunksOverlapping(id.FileX, id.FileY,
+                         Math.Min(e.Min.X, e.Max.X), Math.Max(e.Min.X, e.Max.X),
+                         Math.Min(e.Min.Z, e.Max.Z), Math.Max(e.Min.Z, e.Max.Z)))
+            {
+                adt.Chunks[c].ObjectRefs.Add((uint)i);
+            }
+        }
+    }
+
+    private static List<T> Items<T>(Vector<T> v)
+    {
+        var list = new List<T>(v.Count);
+        for (int i = 0; i < v.Count; i++)
+        {
+            list.Add(v[i]);
+        }
+
+        return list;
     }
 
     private static C3Vector ToC3(Vector3 v) => new() { X = v.X, Y = v.Y, Z = v.Z };
