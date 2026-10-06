@@ -66,3 +66,4 @@ F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLight
 ## Palette UI (already covered)
 - Spawn menu picker is core (`SpawnMenu.Browse` via `ISpawnFactory.PickerCatalogName`); creature and gameobject spawn factories already return "Creature Template"/"Game Object Template", so the palette exists. No work left there.
 - Remaining: WMO writers (port wmo_*.py onto wowlib), F5 (CreatureDisplayInfoExtra appearance).
+- F5 (minimal): CreatureAppearanceResolver binds CreatureDisplayInfoExtra.BakeMaterialResourcesID -> TextureFileData FDID onto the Skin slot. Not seen in viewport; equipment/hair layers not done.

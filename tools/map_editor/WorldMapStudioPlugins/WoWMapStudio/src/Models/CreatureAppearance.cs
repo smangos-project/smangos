@@ -43,11 +43,25 @@ public static class CreatureAppearanceResolver
             return null;
         }
 
+        int bakedSkin = 0;
+        if (display.ExtendedDisplayInfoID > 0)
+        {
+            DbcCreaturedisplayinfoextraRecord? extra = await db.DbcCreaturedisplayinfoextra.AsNoTracking()
+                .FirstOrDefaultAsync(row => row.ID == display.ExtendedDisplayInfoID).ConfigureAwait(false);
+            if (extra is { BakeMaterialResourcesID: > 0 })
+            {
+                bakedSkin = await db.DbcTexturefiledata.AsNoTracking()
+                    .Where(row => row.MaterialResourcesID == extra.BakeMaterialResourcesID)
+                    .Select(row => row.FileDataID).FirstOrDefaultAsync().ConfigureAwait(false);
+            }
+        }
+
         return Build(ids ?? WowFileDataIds.Shared, model.FileDataID, display.CreatureModelScale,
-            [display.TextureVariationFileDataID1, display.TextureVariationFileDataID2, display.TextureVariationFileDataID3]);
+            [display.TextureVariationFileDataID1, display.TextureVariationFileDataID2, display.TextureVariationFileDataID3],
+            bakedSkin);
     }
 
-    internal static CreatureAppearance? Build(WowFileDataIds ids, int modelFileDataId, float scale, int[] variationFileDataIds)
+    internal static CreatureAppearance? Build(WowFileDataIds ids, int modelFileDataId, float scale, int[] variationFileDataIds, int bakedSkinFileDataId = 0)
     {
         if (modelFileDataId <= 0 || ids.PathOf((uint)modelFileDataId) is not { } modelPath)
         {
@@ -61,6 +75,11 @@ public static class CreatureAppearanceResolver
             {
                 textures[VariationSlots[i]] = path;
             }
+        }
+
+        if (bakedSkinFileDataId > 0 && ids.PathOf((uint)bakedSkinFileDataId) is { } skinPath)
+        {
+            textures[M2TextureSlot.Skin] = skinPath;
         }
 
         return new CreatureAppearance(modelPath, scale > 0 ? scale : 1f, textures);

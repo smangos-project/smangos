@@ -23,6 +23,14 @@ public static class CreatureAppearanceTests
     }
 
     [EditorTest(Category = "WoW Models", Thread = TestThread.Background)]
+    public static void Build_binds_a_baked_npc_skin_to_the_skin_slot()
+    {
+        CreatureAppearance? a = CreatureAppearanceResolver.Build(Ids(), 10, 1f, [], 11);
+
+        Assert.AreEqual("creature/boar/boarskin.blp", a!.SlotTextures[M2TextureSlot.Skin]);
+    }
+
+    [EditorTest(Category = "WoW Models", Thread = TestThread.Background)]
     public static void Build_without_a_known_model_resolves_nothing()
     {
         Assert.IsNull(CreatureAppearanceResolver.Build(Ids(), 0, 1f, []));
