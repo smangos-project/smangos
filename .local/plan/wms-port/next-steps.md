@@ -59,3 +59,8 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - ZMP (`interface/worldmap/*.zmp`, E5): only once a new/edited area shows wrong on the world map.
 - MCSH shadows: kept as is unless they look wrong.
 - Dropped: MPQ, StormLib, SmartAI paths, Cata-only catalogs, SpellIcon/CameraShakes (not in 1.15).
+
+### Step 1.4 findings (2026-10-08, third client look)
+- Reinstalled panels (ids 32..35, obj0 patched, inner ids patched); stock restored afterwards. Server vmaps were stock (no collision) because I did not re-extract.
+- Placements in obj0 are fine (MDDF/MODF + MCRD/MCRW refs present). The WMO is a FLAT 12x12 quad at z=92 (bbox height 0), the M2s at z=85.5 and 92; only a dark flat patch at ground level was seen, nothing overhead at (-8915,-130,92) even looking straight up.
+- Differences vs stock WMO: root lacks MOSB/MODS/MFOG/MOLT/MOPV.. chunks (stock cameron.wmo has them), group header FogIds[0]=0 with no MFOG, no MOCV, flag 0x2000 unset. Next: add MFOG/MODS/MOSB, try a 3D box instead of a quad, then retest. Debug-test visibility by placing at ground level rather than 11 above.
