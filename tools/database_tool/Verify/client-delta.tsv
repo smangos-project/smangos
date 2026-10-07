@@ -21,9 +21,9 @@ dbc_spellauraoptions	338	242	0
 dbc_spellaurarestrictions	7	0	0
 dbc_spellcastingrequirements	1	0	0
 dbc_spellcategories	585	104	0
-dbc_spellclassoptions	310	15	0
+dbc_spellclassoptions	311	193	0
 dbc_spellcooldowns	435	44	0
-dbc_spelleffect	1594	821	0
+dbc_spelleffect	1594	1123	0
 dbc_spellequippeditems	881	26	0
 dbc_spellinterrupts	306	12	0
 dbc_spellitemenchantment	0	13	0

@@ -174,9 +174,9 @@ only depart from that for one of four reasons:
   that code retires the entry.
 - G: spell gameplay. On every column `SpellMgr::LoadSpells` reads, a vmangos spell keeps its vmangos
   value even where that equals 1.12 (`LOADED` in `generators/spell_delta.py`), and effects db2
-  adds to it are cleared. Classic changed balance (honor items, NPC spells), procs (Seal Fate) and
-  spellmod semantics (extra effects) there. Exception: the family set and masks follow db2, which
-  the core is adapted to.
+  adds to it are cleared. Classic changed balance (honor items, NPC spells), procs (Seal Fate),
+  spellmod semantics (extra effects) and spell families there. The server therefore loads the same
+  spell data as vmangos; db2 supplies text, visuals and the columns it doesn't read.
 
 | Table / ids | Migration | Code that needs it |
 |---|---|---|

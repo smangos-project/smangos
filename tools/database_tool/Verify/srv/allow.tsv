@@ -25,15 +25,10 @@ taxi_nodes	mount_creature_id2	2	db2 wins: dead nodes 9/15 (vmangos 541/0, db2 0/
 spell_template	equippedItemSubClassMask	9348	representation: subclass mask of rows with item class -1 (spell_delta.py)
 spell_template	effectDieSides2	3	representation: signed vs unsigned die sides (spell_delta.py)
 spell_template	effectMultipleValue1	3	vmangos spell_effect_mod sets the value; the rest is float32 rounding
-spell_template	effectItemType1	262	db2 class mask bits merged into the vmangos affect mask (spell_delta.py)
-spell_template	effectItemType2	40	db2 class mask bits merged into the vmangos affect mask (spell_delta.py)
-spell_template	effectItemType3	9	db2 class mask bits merged into the vmangos affect mask (spell_delta.py)
 spell_template	name	33	db2 wins: spell text
 spell_template	nameSubtext	2	db2 wins: spell text
 spell_template	description	266	db2 wins: spell text
 spell_template	auraDescription	100	db2 wins: spell text
-spell_template	spellFamilyName	101	db2 wins: Classic family numbering, the core follows it (spell_delta.py)
-spell_template	spellFamilyFlags	133	db2 wins: Classic family numbering, the core follows it (spell_delta.py)
 spell_template	stanceBarOrder	667	db2 wins: the server does not read it
 spell_template	requiredAuraVision	1	db2 wins: the server does not read it
 item_template	allowable_class	87	db2 mask, same playable classes

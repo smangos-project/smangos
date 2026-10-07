@@ -9,7 +9,7 @@ The legacy migrations in spell_delta/ map vmangos spell data onto the db2 tables
 three times on copies of the db2 spell tables: with vmangos data (M), with vanilla 1.12 data
 (V) and with spell_template alone (T, only to tag where a value comes from). OUT.sql keeps:
   - cells where M differs from db2 and from V (a vmangos fix), text columns excepted;
-  - cells the server loader reads (LOADED) where M differs from db2, except the family set and masks;
+  - cells the server loader reads (LOADED) where M differs from db2;
   - rows the client lacks, with ids from per-table reserved bases, ordered by natural key;
   - spell_extra, built by the legacy migration from the vmangos data.
 Run with LD_PRELOAD=build/tools/database_tool/libdoltlite.so.0.
@@ -37,14 +37,13 @@ BASES = {
 }
 TABLES = ["dbc_spellname", "dbc_spell"] + sorted(BASES)
 TEXT = {"Name_lang", "NameSubtext_lang", "Description_lang", "AuraDescription_lang"}
-CLASS_MASKS = {"EffectSpellClassMask1", "EffectSpellClassMask2"}
 # Columns SpellMgr::LoadSpells reads. On these a vmangos value wins even where it equals 1.12:
-# Classic changed balance and mechanics there, and the server keeps vanilla behaviour.
+# Classic changed balance, mechanics and spell families there, and the server keeps vanilla behaviour.
 LOADED = {
     "dbc_spellmisc": {"Attributes1", "Attributes2", "Attributes3", "Attributes4", "Attributes5", "CastingTimeIndex",
                       "DurationIndex", "RangeIndex", "SchoolMask", "Speed"},
     "dbc_spellcategories": {"Category", "DispelType", "Mechanic", "DefenseType", "PreventionType", "StartRecoveryCategory"},
-    "dbc_spellclassoptions": set(),
+    "dbc_spellclassoptions": {"SpellClassSet", "SpellClassMask1", "SpellClassMask2"},
     "dbc_spellcooldowns": {"RecoveryTime", "CategoryRecoveryTime", "StartRecoveryTime"},
     "dbc_spellinterrupts": {"InterruptFlags", "AuraInterruptFlags1", "ChannelInterruptFlags1"},
     "dbc_spelllevels": {"BaseLevel", "MaxLevel", "SpellLevel"},
@@ -62,7 +61,7 @@ LOADED = {
                         "EffectPointsPerResource", "EffectAuraPeriod", "EffectAmplitude", "EffectChainAmplitude",
                         "EffectChainTargets", "EffectMechanic", "EffectMiscValue1", "EffectMiscValue2", "ImplicitTarget1",
                         "ImplicitTarget2", "EffectTriggerSpell", "EffectBonusCoefficient", "EffectRadiusIndex1",
-                        "EffectRadiusIndex2", "EffectItemType"},
+                        "EffectRadiusIndex2", "EffectItemType", "EffectSpellClassMask1", "EffectSpellClassMask2"},
 }
 # Loader values for a spell without the row.
 LOADED_DEFAULT = {"EquippedItemClass": -1, "ProcChance": 101}
@@ -266,13 +265,6 @@ def run(args, work):
                     if v is not None and same(m[i], v[i]) and col not in LOADED.get(t, ()):
                         continue
                     val = m[i]
-                    cleared = not m[i] and not (tr is not None and same(tr[i], m[i]))
-                    if col in CLASS_MASKS and spell not in REUSED and not cleared:
-                        # vmangos masks use db2's flag numbering but lack Classic's bits: keep db2's, add vmangos'.
-                        # A mask that spell_effect_mod clears stays cleared.
-                        val = (int(m[i] or 0) & 0xffffffff) | int(c[i] or 0)
-                        if val == c[i]:
-                            continue
                     kind = ("reused" if spell in REUSED else "vanilla" if v is not None and same(m[i], v[i])
                             else "template" if tr is not None and same(tr[i], m[i]) else "mod")
                     sets.append((col, val, kind))

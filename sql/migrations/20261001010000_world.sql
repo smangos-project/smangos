@@ -3964,61 +3964,62 @@ INSERT INTO `dbc_spellclassoptions` (`ID`, `SpellID`, `ModalNextSpell`, `SpellCl
 (80252, 23027, 0, 3, 1024, 0, 0, 0),
 (80253, 23437, 0, 4, 0, 0, 0, 0),
 (80254, 23438, 0, 4, 0, 0, 0, 0),
-(80255, 23546, 0, 3, 0, 0, 0, 0),
-(80256, 23846, 0, 4, 33554432, 0, 0, 0),
-(80257, 23847, 0, 4, 33554432, 0, 0, 0),
-(80258, 24118, 0, 9, 0, 0, 0, 0),
-(80259, 24119, 0, 9, 0, 0, 0, 0),
-(80260, 24120, 0, 9, 0, 0, 0, 0),
-(80261, 24269, 0, 9, 0, 0, 0, 0),
-(80262, 24270, 0, 9, 0, 0, 0, 0),
-(80263, 24271, 0, 9, 0, 0, 0, 0),
-(80264, 24272, 0, 9, 0, 0, 0, 0),
-(80265, 24273, 0, 9, 0, 0, 0, 0),
-(80266, 24286, 0, 9, 0, 0, 0, 0),
-(80267, 24287, 0, 9, 0, 0, 0, 0),
-(80268, 24298, 0, 9, 0, 0, 0, 0),
-(80269, 24299, 0, 9, 0, 0, 0, 0),
-(80270, 24403, 0, 3, 0, 0, 0, 0),
-(80271, 24404, 0, 3, 0, 0, 0, 0),
-(80272, 25205, 0, 7, 0, 0, 0, 0),
-(80273, 25333, 0, 7, 0, 0, 0, 0),
-(80274, 25715, 0, 10, 134218752, 0, 0, 0),
-(80275, 25727, 0, 10, 134218752, 0, 0, 0),
-(80276, 25728, 0, 10, 134218752, 0, 0, 0),
-(80277, 25729, 0, 10, 134218752, 0, 0, 0),
-(80278, 25730, 0, 10, 134218752, 0, 0, 0),
-(80279, 25731, 0, 10, 134218752, 0, 0, 0),
-(80280, 25732, 0, 10, 134218752, 0, 0, 0),
-(80281, 25733, 0, 10, 134218752, 0, 0, 0),
-(80282, 25734, 0, 10, 134218752, 0, 0, 0),
-(80283, 25745, 0, 10, 0, 0, 0, 0),
-(80284, 25759, 0, 10, 0, 0, 0, 0),
-(80285, 25760, 0, 10, 0, 0, 0, 0),
-(80286, 25761, 0, 10, 0, 0, 0, 0),
-(80287, 25762, 0, 10, 0, 0, 0, 0),
-(80288, 25837, 0, 5, 2147483648, 0, 0, 0),
-(80289, 25949, 0, 10, 0, 0, 0, 0),
-(80290, 25950, 0, 10, 0, 0, 0, 0),
-(80291, 26385, 0, 5, 0, 0, 0, 0),
-(80292, 27731, 0, 10, 0, 0, 0, 0),
-(80293, 27765, 0, 6, 0, 0, 0, 0),
-(80294, 27768, 0, 6, 0, 0, 0, 0),
-(80295, 27769, 0, 6, 0, 0, 0, 0),
-(80296, 27770, 0, 6, 0, 0, 0, 0),
-(80297, 27842, 0, 6, 2147483648, 0, 0, 0),
-(80298, 27869, 0, 13, 0, 0, 0, 0),
-(80299, 28171, 0, 7, 0, 0, 0, 0),
-(80300, 28398, 0, 3, 0, 0, 0, 0),
-(80301, 28399, 0, 3, 0, 0, 0, 0),
-(80302, 28400, 0, 3, 0, 0, 0, 0),
-(80303, 28430, 0, 3, 0, 0, 0, 0),
-(80304, 28435, 0, 3, 0, 0, 0, 0),
-(80305, 28436, 0, 3, 0, 0, 0, 0),
-(80306, 29142, 0, 7, 0, 0, 0, 0),
-(80307, 29218, 0, 9, 0, 0, 0, 0),
-(80308, 30640, 0, 11, 0, 0, 0, 0),
-(80309, 30965, 0, 8, 524288, 0, 0, 0);
+(80255, 23511, 0, 4, 131072, 0, 0, 0),
+(80256, 23546, 0, 3, 0, 0, 0, 0),
+(80257, 23846, 0, 4, 33554432, 0, 0, 0),
+(80258, 23847, 0, 4, 33554432, 0, 0, 0),
+(80259, 24118, 0, 9, 0, 0, 0, 0),
+(80260, 24119, 0, 9, 0, 0, 0, 0),
+(80261, 24120, 0, 9, 0, 0, 0, 0),
+(80262, 24269, 0, 9, 0, 0, 0, 0),
+(80263, 24270, 0, 9, 0, 0, 0, 0),
+(80264, 24271, 0, 9, 0, 0, 0, 0),
+(80265, 24272, 0, 9, 0, 0, 0, 0),
+(80266, 24273, 0, 9, 0, 0, 0, 0),
+(80267, 24286, 0, 9, 0, 0, 0, 0),
+(80268, 24287, 0, 9, 0, 0, 0, 0),
+(80269, 24298, 0, 9, 0, 0, 0, 0),
+(80270, 24299, 0, 9, 0, 0, 0, 0),
+(80271, 24403, 0, 3, 0, 0, 0, 0),
+(80272, 24404, 0, 3, 0, 0, 0, 0),
+(80273, 25205, 0, 7, 0, 0, 0, 0),
+(80274, 25333, 0, 7, 0, 0, 0, 0),
+(80275, 25715, 0, 10, 134218752, 0, 0, 0),
+(80276, 25727, 0, 10, 134218752, 0, 0, 0),
+(80277, 25728, 0, 10, 134218752, 0, 0, 0),
+(80278, 25729, 0, 10, 134218752, 0, 0, 0),
+(80279, 25730, 0, 10, 134218752, 0, 0, 0),
+(80280, 25731, 0, 10, 134218752, 0, 0, 0),
+(80281, 25732, 0, 10, 134218752, 0, 0, 0),
+(80282, 25733, 0, 10, 134218752, 0, 0, 0),
+(80283, 25734, 0, 10, 134218752, 0, 0, 0),
+(80284, 25745, 0, 10, 0, 0, 0, 0),
+(80285, 25759, 0, 10, 0, 0, 0, 0),
+(80286, 25760, 0, 10, 0, 0, 0, 0),
+(80287, 25761, 0, 10, 0, 0, 0, 0),
+(80288, 25762, 0, 10, 0, 0, 0, 0),
+(80289, 25837, 0, 5, 2147483648, 0, 0, 0),
+(80290, 25949, 0, 10, 0, 0, 0, 0),
+(80291, 25950, 0, 10, 0, 0, 0, 0),
+(80292, 26385, 0, 5, 0, 0, 0, 0),
+(80293, 27731, 0, 10, 0, 0, 0, 0),
+(80294, 27765, 0, 6, 0, 0, 0, 0),
+(80295, 27768, 0, 6, 0, 0, 0, 0),
+(80296, 27769, 0, 6, 0, 0, 0, 0),
+(80297, 27770, 0, 6, 0, 0, 0, 0),
+(80298, 27842, 0, 6, 2147483648, 0, 0, 0),
+(80299, 27869, 0, 13, 0, 0, 0, 0),
+(80300, 28171, 0, 7, 0, 0, 0, 0),
+(80301, 28398, 0, 3, 0, 0, 0, 0),
+(80302, 28399, 0, 3, 0, 0, 0, 0),
+(80303, 28400, 0, 3, 0, 0, 0, 0),
+(80304, 28430, 0, 3, 0, 0, 0, 0),
+(80305, 28435, 0, 3, 0, 0, 0, 0),
+(80306, 28436, 0, 3, 0, 0, 0, 0),
+(80307, 29142, 0, 7, 0, 0, 0, 0),
+(80308, 29218, 0, 9, 0, 0, 0, 0),
+(80309, 30640, 0, 11, 0, 0, 0, 0),
+(80310, 30965, 0, 8, 524288, 0, 0, 0);
 INSERT INTO `dbc_spellcooldowns` (`ID`, `DifficultyID`, `CategoryRecoveryTime`, `RecoveryTime`, `StartRecoveryTime`, `AuraSpellID`, `SpellID`) VALUES
 (100000, 0, 10000, 0, 0, 0, 87),
 (100001, 0, 0, 0, 1500, 0, 94),
@@ -10390,6 +10391,184 @@ UPDATE `dbc_spellcategories` SET `Category` = 0 WHERE `ID` = 159514;
 UPDATE `dbc_spellcategories` SET `Category` = 0 WHERE `ID` = 159515;
 UPDATE `dbc_spellcategories` SET `Category` = 0 WHERE `ID` = 159516;
 UPDATE `dbc_spellcategories` SET `Category` = 0 WHERE `ID` = 159518;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43503;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43506;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43543;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43556;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43594;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43610;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43653;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43765;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 0 WHERE `ID` = 43836;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43861;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43898;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43914;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 0 WHERE `ID` = 43925;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43955;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 43956;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44047;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44056;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44061;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44069;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44118;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44139;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44155;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44179;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44322;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44368;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44519;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44740;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44745;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44752;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 69206016 WHERE `ID` = 44775;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44790;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44799;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44856;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44863;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 44984;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45110;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 2147483648, `SpellClassMask2` = 0 WHERE `ID` = 45196;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45204;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45269;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 2147483650 WHERE `ID` = 45437;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45692;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45693;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 4, `SpellClassMask1` = 128, `SpellClassMask2` = 0 WHERE `ID` = 45811;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45921;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 45932;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 128 WHERE `ID` = 46001;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46085;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46123;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46143;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46154;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46161;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46271;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 46309;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46372;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46501;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46527;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46577;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46677;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46684;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46729;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46765;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46784;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46790;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46809;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46829;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46851;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46874;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46875;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 46912;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 65536, `SpellClassMask2` = 0 WHERE `ID` = 46923;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 264192 WHERE `ID` = 46963;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask1` = 524288 WHERE `ID` = 46997;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47020;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47027;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47053;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 4, `SpellClassMask1` = 128, `SpellClassMask2` = 0 WHERE `ID` = 47067;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47077;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47081;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47082;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47109;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47132;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 11, `SpellClassMask2` = 0 WHERE `ID` = 47146;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 4, `SpellClassMask1` = 128, `SpellClassMask2` = 0 WHERE `ID` = 47147;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47231;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47232;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47245;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 47432;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71274;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71275;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71276;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71277;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71278;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71279;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 71280;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71900;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71901;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71902;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71903;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71904;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71905;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71906;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71907;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71908;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71909;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71910;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71911;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71912;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71913;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71914;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71915;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71916;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71917;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71918;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71919;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 71920;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72884;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72885;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72886;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72887;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72888;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 72889;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 73072;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask1` = 0 WHERE `ID` = 73099;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 73205;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 73206;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 73207;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 73208;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 73214;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 74076;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 74077;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 74669;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 74712;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 74725;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 74826;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 75859;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 75860;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 76318;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask1` = 0, `SpellClassMask2` = 0 WHERE `ID` = 76343;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 76524;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 76525;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 76526;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 76527;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 76528;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 76929;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 76930;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 76931;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77081;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77082;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77083;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77084;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77086;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77106;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77166;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77167;
+UPDATE `dbc_spellclassoptions` SET `SpellClassMask2` = 0 WHERE `ID` = 77415;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77647;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77648;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77649;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77650;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77651;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77737;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77738;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77739;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77740;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77741;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77785;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 77788;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77813;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77821;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77822;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77823;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77824;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0 WHERE `ID` = 77885;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 78546;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 78596;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask1` = 0 WHERE `ID` = 78909;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask1` = 0 WHERE `ID` = 78910;
+UPDATE `dbc_spellclassoptions` SET `SpellClassSet` = 0, `SpellClassMask2` = 0 WHERE `ID` = 79073;
 UPDATE `dbc_spellcooldowns` SET `CategoryRecoveryTime` = 0 WHERE `ID` = 53336;
 UPDATE `dbc_spellcooldowns` SET `StartRecoveryTime` = 1500 WHERE `ID` = 53421;
 UPDATE `dbc_spellcooldowns` SET `RecoveryTime` = 300000 WHERE `ID` = 54005;
@@ -10437,7 +10616,11 @@ UPDATE `dbc_spelleffect` SET `Effect` = 3, `EffectBasePoints` = -76, `EffectDieS
 UPDATE `dbc_spelleffect` SET `EffectAuraPeriod` = 0 WHERE `ID` = 684162;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 684613;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 684750;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 685179;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 685180;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 685181;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 685300;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 524288 WHERE `ID` = 685331;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 138, `EffectBasePoints` = -26 WHERE `ID` = 685390;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 33, `EffectBasePoints` = -31 WHERE `ID` = 685391;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 685539;
@@ -10448,21 +10631,43 @@ UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 299, `EffectDieSides` = 1, `Ef
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 686553;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 687434;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 4 WHERE `ID` = 687617;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2185347403 WHERE `ID` = 687728;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 687809;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 688064;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688147;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 688184;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 688320;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688321;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 688322;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688323;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 688492;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 688526;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688553;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688604;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688620;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688624;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2359296, `EffectSpellClassMask2` = 0 WHERE `ID` = 688625;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688645;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688677;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688712;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688739;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688741;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 688822;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 1388 WHERE `ID` = 688833;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688871;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 688894;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 0 WHERE `ID` = 688992;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 689018;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689019;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20860 WHERE `ID` = 689176;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689269;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 524288, `EffectSpellClassMask2` = 0 WHERE `ID` = 689304;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689307;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689308;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689311;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689312;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689313;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689319;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 689331;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689400;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689401;
@@ -10470,17 +10675,25 @@ UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 1389 WHERE `ID` = 689412;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689414;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 689418;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689420;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 196608 WHERE `ID` = 689425;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 1392 WHERE `ID` = 689429;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689484;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 0 WHERE `ID` = 689523;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689557;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689558;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689564;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689583;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689683;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689684;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 0, `ImplicitTarget1` = 0 WHERE `ID` = 689702;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 689731;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 1390 WHERE `ID` = 689762;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 689781;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689784;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689785;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2048 WHERE `ID` = 689798;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689849;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 689874;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689876;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 689934;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 689973;
@@ -10488,40 +10701,124 @@ UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 1391 WHERE `ID` = 690082;
 UPDATE `dbc_spelleffect` SET `EffectDieSides` = 1 WHERE `ID` = 690126;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 6 WHERE `ID` = 690311;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 690335;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690373;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690449;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2048 WHERE `ID` = 690480;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 690485;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 690486;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690494;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 196608 WHERE `ID` = 690508;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 524288, `EffectSpellClassMask2` = 0 WHERE `ID` = 690513;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 690540;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690550;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 196608 WHERE `ID` = 690571;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2359296, `EffectSpellClassMask2` = 0 WHERE `ID` = 690573;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690604;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 196608 WHERE `ID` = 690613;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690618;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690619;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2359296, `EffectSpellClassMask2` = 0 WHERE `ID` = 690634;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2359296, `EffectSpellClassMask2` = 0 WHERE `ID` = 690704;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 690776;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget2` = 31 WHERE `ID` = 690790;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget2` = 31 WHERE `ID` = 690791;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 196608 WHERE `ID` = 690807;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 524288, `EffectSpellClassMask2` = 0 WHERE `ID` = 690840;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 100663310, `EffectSpellClassMask2` = 0 WHERE `ID` = 690880;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 690940;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690955;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 690956;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 690963;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 14189 WHERE `ID` = 690966;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 100663310, `EffectSpellClassMask2` = 0 WHERE `ID` = 690972;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691009;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2, `EffectSpellClassMask2` = 0 WHERE `ID` = 691035;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691061;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2185347403 WHERE `ID` = 691110;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2185347403 WHERE `ID` = 691111;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2, `EffectSpellClassMask2` = 0 WHERE `ID` = 691146;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691152;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691212;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2185347403 WHERE `ID` = 691221;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2185347403 WHERE `ID` = 691222;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 100663310, `EffectSpellClassMask2` = 0 WHERE `ID` = 691302;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 691331;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 0 WHERE `ID` = 691499;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 14189 WHERE `ID` = 691555;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 14189 WHERE `ID` = 691556;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 33, `EffectDieSides` = 1 WHERE `ID` = 691593;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20867 WHERE `ID` = 691613;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691624;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget2` = 30 WHERE `ID` = 691688;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20865 WHERE `ID` = 691691;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 691722;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 691724;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 691729;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 691730;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 691751;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691761;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691784;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 14189 WHERE `ID` = 691809;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691848;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691849;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 691866;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691895;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 691898;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 691913;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 691917;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691951;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691954;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691955;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691967;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691969;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 14189 WHERE `ID` = 691974;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691975;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691985;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 100663310, `EffectSpellClassMask2` = 0 WHERE `ID` = 691992;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692063;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692064;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14686967, `EffectSpellClassMask2` = 0 WHERE `ID` = 692065;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 131590, `EffectSpellClassMask2` = 0 WHERE `ID` = 692068;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 692092;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 151264832, `EffectSpellClassMask2` = 0 WHERE `ID` = 692104;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 100663310, `EffectSpellClassMask2` = 0 WHERE `ID` = 692156;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692164;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 736, `EffectSpellClassMask2` = 0 WHERE `ID` = 692191;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692192;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 156507776, `EffectSpellClassMask2` = 0 WHERE `ID` = 692220;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 692229;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 692230;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 156507776, `EffectSpellClassMask2` = 0 WHERE `ID` = 692260;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692294;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692318;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 3338141659 WHERE `ID` = 692356;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 3377741456 WHERE `ID` = 692357;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692418;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20866 WHERE `ID` = 692444;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 151264832, `EffectSpellClassMask2` = 0 WHERE `ID` = 692453;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692455;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692456;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14686967, `EffectSpellClassMask2` = 0 WHERE `ID` = 692457;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692530;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692658;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692698;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692699;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692724;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692728;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692729;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 692731;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692771;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 12 WHERE `ID` = 692808;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 12 WHERE `ID` = 692809;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 12 WHERE `ID` = 692810;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 151264832, `EffectSpellClassMask2` = 0 WHERE `ID` = 692868;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 151264832, `EffectSpellClassMask2` = 0 WHERE `ID` = 692986;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 693070;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693079;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 156507776, `EffectSpellClassMask2` = 0 WHERE `ID` = 693081;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693083;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693084;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693144;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 23 WHERE `ID` = 693146;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 24 WHERE `ID` = 693147;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693148;
@@ -10529,19 +10826,35 @@ UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 23 WHERE `ID` = 693149;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 24 WHERE `ID` = 693150;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693151;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20870 WHERE `ID` = 693157;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693165;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 8 WHERE `ID` = 693190;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693241;
 UPDATE `dbc_spelleffect` SET `Effect` = 77, `EffectAura` = 0 WHERE `ID` = 693249;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693259;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 23 WHERE `ID` = 693272;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 24 WHERE `ID` = 693273;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693274;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693291;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693295;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693296;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693315;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 156507776, `EffectSpellClassMask2` = 0 WHERE `ID` = 693320;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693330;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693332;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 156507776, `EffectSpellClassMask2` = 0 WHERE `ID` = 693335;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42 WHERE `ID` = 693348;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693372;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693373;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693391;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693393;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693407;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693453;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693454;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693455;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14686967, `EffectSpellClassMask2` = 0 WHERE `ID` = 693456;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693463;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20871 WHERE `ID` = 693504;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693546;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 23 WHERE `ID` = 693552;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 24 WHERE `ID` = 693553;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693554;
@@ -10550,48 +10863,169 @@ UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 24 WHERE `ID` = 693556;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693557;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 8 WHERE `ID` = 693591;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693602;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 151264832, `EffectSpellClassMask2` = 0 WHERE `ID` = 693631;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693664;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693665;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693720;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693738;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693747;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693756;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693770;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 693833;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42, `EffectTriggerSpell` = 20868 WHERE `ID` = 693836;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693948;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693957;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693966;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693971;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694004;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694009;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694010;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694016;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694030;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694049;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694059;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694070;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694096;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694147;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694149;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694150;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694153;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694167;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694178;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694179;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694205;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = -51, `EffectDieSides` = 1 WHERE `ID` = 694217;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694306;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694307;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694325;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694363;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694364;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694384;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694385;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694386;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694412;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694413;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694419;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694422;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 49, `EffectDieSides` = 1 WHERE `ID` = 694431;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694434;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694439;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694440;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 42 WHERE `ID` = 694474;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694505;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694532;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694548;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694628;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694629;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694636;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694638;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694641;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694653;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694739;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694756;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694770;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694775;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694793;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 694810;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 694811;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 694812;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 694836;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694863;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694864;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694911;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694915;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694916;
 UPDATE `dbc_spelleffect` SET `Effect` = 50, `EffectMiscValue1` = 176368, `ImplicitTarget1` = 32 WHERE `ID` = 694917;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694930;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694931;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694976;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695020;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695021;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695065;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695085;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695086;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695147;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695148;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695191;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695206;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695209;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695239;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695240;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695243;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695252;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695253;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695260;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 695287;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 695327;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 695383;
 UPDATE `dbc_spelleffect` SET `EffectChainTargets` = 0 WHERE `ID` = 695384;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695400;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695401;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695504;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 695530;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695555;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695556;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 695570;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695588;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695591;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695592;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695593;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695594;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695595;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695596;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 695599;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695607;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695608;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695609;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 695654;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 695692;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695715;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695747;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695748;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 131074, `EffectSpellClassMask2` = 0 WHERE `ID` = 695769;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695770;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695771;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695772;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 695800;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 695802;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 695824;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695834;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695858;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695859;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695860;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695880;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695881;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695882;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695912;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 695913;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 695931;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696008;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696009;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696010;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696069;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696070;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 131074, `EffectSpellClassMask2` = 0 WHERE `ID` = 696087;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 696092;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 131074, `EffectSpellClassMask2` = 0 WHERE `ID` = 696106;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696111;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696128;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 696156;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696188;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696189;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696216;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696223;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696281;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696282;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696283;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696306;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 696314;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696365;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696366;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696403;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696439;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696464;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696465;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696507;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 924, `EffectDieSides` = 151, `EffectRadiusIndex2` = 10 WHERE `ID` = 696547;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696571;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 0 WHERE `ID` = 696665;
@@ -10601,13 +11035,19 @@ UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696698;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696699;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 696759;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = -51, `EffectDieSides` = 1 WHERE `ID` = 696780;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 696992;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 696994;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 697002;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 697024;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 697025;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 697029;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 697107;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 8 WHERE `ID` = 697200;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 697248;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 8 WHERE `ID` = 697295;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 8 WHERE `ID` = 697296;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 697356;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 697364;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 697973;
 UPDATE `dbc_spelleffect` SET `Effect` = 17, `EffectBasePoints` = -1, `EffectDieSides` = 1 WHERE `ID` = 698093;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 698239;
@@ -10636,9 +11076,12 @@ UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 699748;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 699779;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 699962;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget1` = 0 WHERE `ID` = 699977;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 700018;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 700019;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 700076;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 700132;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 700146;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 700290;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 4 WHERE `ID` = 700379;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 700481;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 12 WHERE `ID` = 700554;
@@ -10652,20 +11095,32 @@ UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 701270;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 49 WHERE `ID` = 701347;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12 WHERE `ID` = 701433;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 4 WHERE `ID` = 701612;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 701621;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 701636;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 701637;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 701718;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 377, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 701745;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 701746;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 701747;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 701830;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 701907;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 701935;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 702136;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 702144;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 702174;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 397, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 702394;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 0, `ImplicitTarget1` = 38, `ImplicitTarget2` = 0 WHERE `ID` = 702488;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702606;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702646;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702680;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702759;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 81, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 702762;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702850;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 702887;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 49, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 702962;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 137, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 702963;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 227, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 702964;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 703029;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 703067;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 703068;
 UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 703127;
@@ -10673,19 +11128,33 @@ UPDATE `dbc_spelleffect` SET `EffectItemType` = 0 WHERE `ID` = 703145;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 0, `ImplicitTarget1` = 0 WHERE `ID` = 703328;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 397, `EffectDieSides` = 1, `ImplicitTarget1` = 0 WHERE `ID` = 703357;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 1, `EffectDieSides` = 1 WHERE `ID` = 703445;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2, `EffectSpellClassMask2` = 0 WHERE `ID` = 704010;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704011;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 10, `ImplicitTarget1` = 1 WHERE `ID` = 704104;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 23 WHERE `ID` = 704362;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex2` = 0, `ImplicitTarget1` = 25, `ImplicitTarget2` = 0 WHERE `ID` = 704416;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704563;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704719;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704780;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 29, `ImplicitTarget1` = 18, `ImplicitTarget2` = 16 WHERE `ID` = 704818;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704851;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 704855;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705014;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 16 WHERE `ID` = 705301;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705304;
 UPDATE `dbc_spelleffect` SET `Effect` = 6, `EffectAura` = 3, `EffectBasePoints` = 599, `EffectDieSides` = 1, `ImplicitTarget1` = 22, `ImplicitTarget2` = 15 WHERE `ID` = 705383;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 16, `EffectDieSides` = 1 WHERE `ID` = 705411;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 107, `EffectDieSides` = 1 WHERE `ID` = 705529;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 107, `EffectDieSides` = 1 WHERE `ID` = 705530;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705609;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 108, `EffectMiscValue1` = 3 WHERE `ID` = 705625;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 108, `EffectMiscValue1` = 8 WHERE `ID` = 705626;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 108, `EffectMiscValue1` = 3 WHERE `ID` = 705634;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 108, `EffectMiscValue1` = 8 WHERE `ID` = 705635;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705684;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705697;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705717;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 705719;
 UPDATE `dbc_spelleffect` SET `Effect` = 0, `EffectAura` = 0 WHERE `ID` = 809974;
 UPDATE `dbc_spelleffect` SET `Effect` = 0, `EffectAura` = 0 WHERE `ID` = 870983;
 UPDATE `dbc_spelleffect` SET `Effect` = 0, `EffectAura` = 0 WHERE `ID` = 871967;
@@ -12095,27 +12564,62 @@ UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 1, `I
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.714 WHERE `ID` = 681723;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 1.0 WHERE `ID` = 683741;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 1, `ImplicitTarget2` = 0 WHERE `ID` = 684687;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 549591799 WHERE `ID` = 685180;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14684919 WHERE `ID` = 685179;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 12589815 WHERE `ID` = 685180;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 687728;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 15208471 WHERE `ID` = 688147;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.714 WHERE `ID` = 688295;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.714 WHERE `ID` = 688510;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 4 WHERE `ID` = 688992;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 12589815 WHERE `ID` = 689319;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 4 WHERE `ID` = 689523;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 4 WHERE `ID` = 689702;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.8 WHERE `ID` = 689912;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.8 WHERE `ID` = 689914;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.8 WHERE `ID` = 689975;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 15208471 WHERE `ID` = 690373;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2359296 WHERE `ID` = 690550;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 15208471 WHERE `ID` = 690604;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 15208471 WHERE `ID` = 690955;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 15208471 WHERE `ID` = 690956;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 16779264 WHERE `ID` = 691003;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 67109382 WHERE `ID` = 691009;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691110;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691111;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 67109382 WHERE `ID` = 691212;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691221;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 691222;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 16779264 WHERE `ID` = 691386;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14684919 WHERE `ID` = 692063;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692327;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692356;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 692357;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14684919 WHERE `ID` = 692455;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 1.0 WHERE `ID` = 693154;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 65793 WHERE `ID` = 694068;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 65793 WHERE `ID` = 694120;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 65793 WHERE `ID` = 694125;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 65793 WHERE `ID` = 694196;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 14684919 WHERE `ID` = 693454;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693622;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 693623;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 3509583875 WHERE `ID` = 693747;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 1 WHERE `ID` = 694068;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 1 WHERE `ID` = 694120;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 1 WHERE `ID` = 694125;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694177;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 1 WHERE `ID` = 694196;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694531;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 0 WHERE `ID` = 694601;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 694804;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 695005;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 1, `ImplicitTarget2` = 0 WHERE `ID` = 695180;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 109223936 WHERE `ID` = 695401;
-UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 65793 WHERE `ID` = 695974;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 3 WHERE `ID` = 695684;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 695760;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 695761;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 695961;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 525322, `EffectSpellClassMask2` = 1 WHERE `ID` = 695974;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 696064;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 109223936 WHERE `ID` = 696111;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 109223936 WHERE `ID` = 696128;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 696330;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 1.0 WHERE `ID` = 696780;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 1, `ImplicitTarget2` = 0 WHERE `ID` = 697493;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 0, `ImplicitTarget1` = 1, `ImplicitTarget2` = 0 WHERE `ID` = 697494;
@@ -12127,6 +12631,12 @@ UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.0 WHERE `ID` = 701725;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.714 WHERE `ID` = 702679;
 UPDATE `dbc_spelleffect` SET `EffectBonusCoefficient` = 0.0 WHERE `ID` = 702832;
 UPDATE `dbc_spelleffect` SET `EffectAura` = 4 WHERE `ID` = 703328;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 12583671 WHERE `ID` = 704780;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask2` = 1 WHERE `ID` = 704814;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 33554438 WHERE `ID` = 704851;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 33685510 WHERE `ID` = 705304;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 12583671 WHERE `ID` = 705609;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 12583671 WHERE `ID` = 705684;
 UPDATE `dbc_spellmisc` SET `SchoolMask` = 514 WHERE `ID` = 333172;
 UPDATE `dbc_spelltargetrestrictions` SET `MaxTargetLevel` = 50 WHERE `ID` = 204395;
 
@@ -12327,6 +12837,7 @@ UPDATE `dbc_spelleffect` SET `Effect` = 130 WHERE `ID` = 696399;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 13 WHERE `ID` = 696540;
 UPDATE `dbc_spelleffect` SET `EffectBasePoints` = 3500, `EffectDieSides` = 800 WHERE `ID` = 696652;
 UPDATE `dbc_spelleffect` SET `EffectRadiusIndex1` = 8 WHERE `ID` = 696688;
+UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 2149588992 WHERE `ID` = 696789;
 UPDATE `dbc_spelleffect` SET `ImplicitTarget2` = 1 WHERE `ID` = 697109;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue1` = 12129 WHERE `ID` = 697328;
 UPDATE `dbc_spelleffect` SET `EffectMiscValue2` = 64 WHERE `ID` = 697349;
