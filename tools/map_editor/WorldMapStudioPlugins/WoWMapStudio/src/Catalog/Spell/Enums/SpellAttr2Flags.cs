@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExB` — spell attribute flags word 2.</summary>
+[System.Flags]
+public enum SpellAttr2Flags : uint
+{
+    None = 0,
+    AllowDeadTarget = 0x1,
+    NoShapeshiftUi = 0x2,
+    IgnoreLineOfSight = 0x4,
+    AllowLowLevelBuff = 0x8,
+    UseShapeshiftBar = 0x10,
+    AutoRepeat = 0x20,
+    CannotCastOnTapped = 0x40,
+    DoNotReportSpellFailure = 0x80,
+    IncludeInAdvancedCombatLog = 0x100,
+    AlwaysCastAsUnit = 0x200,
+    SpecialTamingFlag = 0x400,
+    NoTargetPerSecondCosts = 0x800,
+    ChainFromCaster = 0x1000,
+    EnchantOwnItemOnly = 0x2000,
+    AllowWhileInvisible = 0x4000,
+    DoNotConsumeIfGainedDuringCast = 0x8000,
+    NoActivePets = 0x10000,
+    DoNotResetCombatTimers = 0x20000,
+    NoJumpWhileCastPending = 0x40000,
+    AllowWhileNotShapeshiftedCasterForm = 0x80000,
+    InitiateCombatPostCastEnablesAutoAttack = 0x100000,
+    FailOnAllTargetsImmune = 0x200000,
+    NoInitialThreat = 0x400000,
+    ProcCooldownOnFailure = 0x800000,
+    ItemCastWithOwnerSkill = 0x1000000,
+    DontBlockManaRegen = 0x2000000,
+    NoSchoolImmunities = 0x4000000,
+    IgnoreWeaponskill = 0x8000000,
+    NotAnAction = 0x10000000,
+    CantCrit = 0x20000000,
+    ActiveThreat = 0x40000000,
+    RetainItemCast = 0x80000000,
+}

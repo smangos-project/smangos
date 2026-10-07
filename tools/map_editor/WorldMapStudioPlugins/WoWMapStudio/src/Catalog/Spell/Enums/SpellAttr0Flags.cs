@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.Attributes` — spell attribute flags word 0.</summary>
+[System.Flags]
+public enum SpellAttr0Flags : uint
+{
+    None = 0,
+    ProcFailureBurnsCharge = 0x1,
+    UsesRangedSlot = 0x2,
+    OnNextSwingNoDamage = 0x4,
+    DoNotLogImmuneMisses = 0x8,
+    IsAbility = 0x10,
+    IsTradeskill = 0x20,
+    Passive = 0x40,
+    DoNotDisplaySpellbookAuraIconCombatLog = 0x80,
+    DoNotLog = 0x100,
+    HeldItemOnly = 0x200,
+    OnNextSwing = 0x400,
+    WearerCastsProcTrigger = 0x800,
+    ServerOnly = 0x1000,
+    AllowItemSpellInPvp = 0x2000,
+    OnlyIndoors = 0x4000,
+    OnlyOutdoors = 0x8000,
+    NotShapeshifted = 0x10000,
+    OnlyStealthed = 0x20000,
+    DoNotSheath = 0x40000,
+    ScalesWithCreatureLevel = 0x80000,
+    CancelsAutoAttackCombat = 0x100000,
+    NoActiveDefense = 0x200000,
+    TrackTargetInCastPlayerOnly = 0x400000,
+    AllowCastWhileDead = 0x800000,
+    AllowWhileMounted = 0x1000000,
+    CooldownOnEvent = 0x2000000,
+    AuraIsDebuff = 0x4000000,
+    AllowWhileSitting = 0x8000000,
+    NotInCombatOnlyPeaceful = 0x10000000,
+    NoImmunities = 0x20000000,
+    HeartbeatResist = 0x40000000,
+    NoAuraCancel = 0x80000000,
+}

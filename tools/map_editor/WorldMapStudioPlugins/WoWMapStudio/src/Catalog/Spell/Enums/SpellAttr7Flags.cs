@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExG` — spell attribute flags word 7.</summary>
+[System.Flags]
+public enum SpellAttr7Flags : uint
+{
+    None = 0,
+    AllowSpellReflection = 0x1,
+    NoTargetDurationMod = 0x2,
+    DisableAuraWhileDead = 0x4,
+    DebugSpell = 0x8,
+    TreatAsRaidBuff = 0x10,
+    CanBeMultiCast = 0x20,
+    DontCauseSpellPushback = 0x40,
+    PrepareForVehicleControlEnd = 0x80,
+    HordeSpecificSpell = 0x100,
+    AllianceSpecificSpell = 0x200,
+    DispelRemovesCharges = 0x400,
+    CanCauseInterrupt = 0x800,
+    CanCauseSilence = 0x1000,
+    NoUiNotInterruptible = 0x2000,
+    RecastOnResummon = 0x4000,
+    ResetSwingTimerAtSpellStart = 0x8000,
+    OnlyInSpellbookUntilLearned = 0x10000,
+    DoNotLogPvpKill = 0x20000,
+    AttackOnChargeToUnit = 0x40000,
+    ReportSpellFailureToUnitTarget = 0x80000,
+    NoClientFailWhileStunnedFleeingConfused = 0x100000,
+    RetainCooldownThroughLoad = 0x200000,
+    IgnoresColdWeatherFlyingRequirement = 0x400000,
+    NoAttackDodge = 0x800000,
+    NoAttackParry = 0x1000000,
+    NoAttackMiss = 0x2000000,
+    TreatAsNpcAoe = 0x4000000,
+    BypassNoResurrectAura = 0x8000000,
+    DoNotCountForPvpScoreboard = 0x10000000,
+    ReflectionOnlyDefends = 0x20000000,
+    CanProcFromSuppressedTargetProcs = 0x40000000,
+    AlwaysCastLog = 0x80000000,
+}

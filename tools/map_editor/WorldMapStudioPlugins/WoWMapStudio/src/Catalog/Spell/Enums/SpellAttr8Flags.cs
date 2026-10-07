@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExH` — spell attribute flags word 8.</summary>
+[System.Flags]
+public enum SpellAttr8Flags : uint
+{
+    None = 0,
+    NoAttackBlock = 0x1,
+    IgnoreDynamicObjectCaster = 0x2,
+    RemoveOutsideDungeonsAndRaids = 0x4,
+    OnlyTargetIfSameCreator = 0x8,
+    CanHitAoeUntargetable = 0x10,
+    AllowWhileCharmed = 0x20,
+    AuraRequiredByClient = 0x40,
+    IgnoreSanctuary = 0x80,
+    UseTargetsLevelForSpellScaling = 0x100,
+    PeriodicCanCrit = 0x200,
+    MirrorCreatureName = 0x400,
+    OnlyPlayersCanCastThisSpell = 0x800,
+    AuraPointsOnClient = 0x1000,
+    NotInSpellbookUntilLearned = 0x2000,
+    TargetProcsOnCaster = 0x4000,
+    RequiresLocationToBeOnLiquidSurface = 0x8000,
+    OnlyTargetOwnSummons = 0x10000,
+    HasteAffectsDuration = 0x20000,
+    IgnoreSpellcastOverrideCost = 0x40000,
+    AllowTargetsHiddenBySpawnTracking = 0x80000,
+    RequiresEquippedInvTypes = 0x100000,
+    NoSummonDestFromClientTargetingPathingRequirement = 0x200000,
+    MeleeHasteAffectsPeriodic = 0x400000,
+    EnforceInCombatRessurectionLimit = 0x800000,
+    HealPrediction = 0x1000000,
+    NoLevelUpToast = 0x2000000,
+    SkipIsKnownCheck = 0x4000000,
+    AiFaceTarget = 0x8000000,
+    NotInBattleground = 0x10000000,
+    MasteryAffectsPoints = 0x20000000,
+    DisplayLargeAuraIconOnUnitFramesBossAura = 0x40000000,
+    AttackIgnoreImmuneToPcFlag = 0x80000000,
+}

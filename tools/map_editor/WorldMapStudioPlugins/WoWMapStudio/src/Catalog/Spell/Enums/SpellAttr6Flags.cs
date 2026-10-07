@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExF` — spell attribute flags word 6.</summary>
+[System.Flags]
+public enum SpellAttr6Flags : uint
+{
+    None = 0,
+    NoCooldownOnTooltip = 0x1,
+    DoNotResetCooldownInArena = 0x2,
+    NotAnAttack = 0x4,
+    CanAssistImmunePc = 0x8,
+    IgnoreForModTimeRate = 0x10,
+    DoNotConsumeResources = 0x20,
+    FloatingCombatTextOnCast = 0x40,
+    AuraIsWeaponProc = 0x80,
+    DoNotChainToCrowdControlledTargets = 0x100,
+    AllowOnCharmedTargets = 0x200,
+    NoAuraLog = 0x400,
+    NotInRaidInstances = 0x800,
+    AllowWhileRidingVehicle = 0x1000,
+    IgnorePhaseShift = 0x2000,
+    AiPrimaryRangedAttack = 0x4000,
+    NoPushback = 0x8000,
+    NoJumpPathing = 0x10000,
+    AllowEquipWhileCasting = 0x20000,
+    OriginateFromController = 0x40000,
+    DelayCombatTimerDuringCast = 0x80000,
+    AuraIconOnlyForCasterLimit10 = 0x100000,
+    ShowMechanicAsCombatText = 0x200000,
+    AbsorbCannotBeIgnore = 0x400000,
+    TapsImmediately = 0x800000,
+    CanTargetUntargetable = 0x1000000,
+    DoesntResetSwingTimerIfInstant = 0x2000000,
+    VehicleImmunityCategory = 0x4000000,
+    IgnoreHealingModifiers = 0x8000000,
+    DoNotAutoSelectTargetWithInitiatesCombat = 0x10000000,
+    IgnoreCasterDamageModifiers = 0x20000000,
+    DisableTiedEffectPoints = 0x40000000,
+    NoCategoryCooldownMods = 0x80000000,
+}

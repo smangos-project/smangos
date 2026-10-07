@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExA` — spell attribute flags word 1.</summary>
+[System.Flags]
+public enum SpellAttr1Flags : uint
+{
+    None = 0,
+    DismissPetFirst = 0x1,
+    UseAllMana = 0x2,
+    IsChannelled = 0x4,
+    NoRedirection = 0x8,
+    NoSkillIncrease = 0x10,
+    AllowWhileStealthed = 0x20,
+    IsSelfChannelled = 0x40,
+    NoReflection = 0x80,
+    OnlyPeacefulTargets = 0x100,
+    InitiatesCombatEnablesAutoAttack = 0x200,
+    NoThreat = 0x400,
+    AuraUnique = 0x800,
+    FailureBreaksStealth = 0x1000,
+    ToggleFarSight = 0x2000,
+    TrackTargetInChannel = 0x4000,
+    ImmunityPurgesEffect = 0x8000,
+    ImmunityToHostileAndFriendlyEffects = 0x10000,
+    NoAutocastAi = 0x20000,
+    PreventsAnim = 0x40000,
+    ExcludeCaster = 0x80000,
+    FinishingMoveDamage = 0x100000,
+    ThreatOnlyOnMiss = 0x200000,
+    FinishingMoveDuration = 0x400000,
+    IgnoreOwnersDeath = 0x800000,
+    SpecialSkillup = 0x1000000,
+    AuraStaysAfterCombat = 0x2000000,
+    RequireAllTargets = 0x4000000,
+    DiscountPowerOnMiss = 0x8000000,
+    NoAuraIcon = 0x10000000,
+    NameInChannelBar = 0x20000000,
+    DispelAllStacks = 0x40000000,
+    CastWhenLearned = 0x80000000,
+}

@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExJ` — spell attribute flags word 10.</summary>
+[System.Flags]
+public enum SpellAttr10Flags : uint
+{
+    None = 0,
+    BypassVisibilityCheck = 0x1,
+    IgnorePositiveDamageTakenMods = 0x2,
+    UsesRangedSlot = 0x4,
+    DontLogFullOverheal = 0x8,
+    WaterSpout = 0x10,
+    ForceNonbinaryResistance = 0x20,
+    NoSummonLog = 0x40,
+    TeleportPlayer = 0x80,
+    AreaEffectsUseTargetRadius = 0x100,
+    ChargeUseAbsoluteSpeed = 0x200,
+    ProcCooldownPerTarget = 0x400,
+    HerbGatheringMining = 0x800,
+    UseSpellBaseLevelForScaling = 0x1000,
+    ResetCooldownOnEncounterEnd = 0x2000,
+    RollingPeriodic = 0x4000,
+    SpellbookHiddenUntilOverriden = 0x8000,
+    DefendAgainstFriendlyCast = 0x10000,
+    AllowDefenseWhileCasting = 0x20000,
+    AllowDefenseWhileChanneling = 0x40000,
+    AllowFatalDuelDamage = 0x80000,
+    MultiClickGroundTargeting = 0x100000,
+    AoeCanHitSummonedInvis = 0x200000,
+    AllowWhileStunnedByHorror = 0x400000,
+    VisibleOnlyToCaster = 0x800000,
+    UpdatePassivesOnApplyRemove = 0x1000000,
+    NormalMeleeAttack = 0x2000000,
+    IgnoreFeignDeath = 0x4000000,
+    CasterDeathCancelsPersistentAreaAuras = 0x8000000,
+    DoNotLogAbsorb = 0x10000000,
+    MountNotAtAccountLevel = 0x20000000,
+    PreventClientCastCancel = 0x40000000,
+    EnforceFactingOnPrimaryTarget = 0x80000000,
+}

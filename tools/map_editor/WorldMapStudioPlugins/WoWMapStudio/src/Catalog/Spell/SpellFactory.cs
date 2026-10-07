@@ -332,7 +332,7 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         yield return F.TextMultiline("Description", () => e.Description, v => e.Description = v, TextMaxLength);
         yield return F.TextMultiline("Aura Description", () => e.AuraDescription, v => e.AuraDescription = v, TextMaxLength);
         yield return F.Separator();
-        yield return F.Int("School Mask", () => e.SchoolMask, v => e.SchoolMask = v);
+        yield return F.Flags<SpellSchoolMaskFlags>("School Mask", () => e.SchoolMask, v => e.SchoolMask = v);
         yield return F.Link("Casting Time", () => e.CastingTimeIndex, v => e.CastingTimeIndex = v, "Spell Cast Times");
         yield return F.Link("Duration", () => e.DurationIndex, v => e.DurationIndex = v, "Spell Duration");
         yield return F.Link("Range", () => e.RangeIndex, v => e.RangeIndex = v, "Spell Range");
@@ -340,21 +340,32 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         yield return F.Int("Spell Icon File ID", () => e.SpellIconFileDataID, v => e.SpellIconFileDataID = v);
         yield return F.Int("Active Icon File ID", () => e.ActiveIconFileDataID, v => e.ActiveIconFileDataID = v);
         yield return F.Separator();
-        yield return F.Int("Power Type", () => e.PowerType, v => e.PowerType = v);
+        yield return F.Enum<SpellPowerKind>("Power Type", () => e.PowerType, v => e.PowerType = v);
         yield return F.Int("Mana Cost", () => e.ManaCost, v => e.ManaCost = v);
         yield return F.Float("Power Cost %", () => e.PowerCostPct, v => e.PowerCostPct = v);
         yield return F.Int("Recovery Time (ms)", () => e.RecoveryTime, v => e.RecoveryTime = v);
         yield return F.Int("Category Recovery Time (ms)", () => e.CategoryRecoveryTime, v => e.CategoryRecoveryTime = v);
         yield return F.Int("Start Recovery Time (ms)", () => e.StartRecoveryTime, v => e.StartRecoveryTime = v);
         yield return F.Int("Category", () => e.Category, v => e.Category = v);
-        yield return F.Int("Dispel Type", () => e.DispelType, v => e.DispelType = v);
-        yield return F.Int("Mechanic", () => e.Mechanic, v => e.Mechanic = v);
+        yield return F.Enum<SpellDispelKind>("Dispel Type", () => e.DispelType, v => e.DispelType = v);
+        yield return F.Enum<SpellMechanicType>("Mechanic", () => e.Mechanic, v => e.Mechanic = v);
         yield return F.Int("Start Recovery Category", () => e.StartRecoveryCategory, v => e.StartRecoveryCategory = v);
         yield return F.Int("Base Level", () => e.BaseLevel, v => e.BaseLevel = v);
         yield return F.Int("Max Level", () => e.MaxLevel, v => e.MaxLevel = v);
         yield return F.Int("Spell Level", () => e.SpellLevel, v => e.SpellLevel = v);
         yield return F.Separator();
-        for (int i = 0; i < Spell.AttributeCount; i++)
+        yield return F.Flags<SpellAttr0Flags>("Attributes 1", () => e.Attributes[0], v => e.Attributes[0] = v);
+        yield return F.Flags<SpellAttr1Flags>("Attributes 2", () => e.Attributes[1], v => e.Attributes[1] = v);
+        yield return F.Flags<SpellAttr2Flags>("Attributes 3", () => e.Attributes[2], v => e.Attributes[2] = v);
+        yield return F.Flags<SpellAttr3Flags>("Attributes 4", () => e.Attributes[3], v => e.Attributes[3] = v);
+        yield return F.Flags<SpellAttr4Flags>("Attributes 5", () => e.Attributes[4], v => e.Attributes[4] = v);
+        yield return F.Flags<SpellAttr5Flags>("Attributes 6", () => e.Attributes[5], v => e.Attributes[5] = v);
+        yield return F.Flags<SpellAttr6Flags>("Attributes 7", () => e.Attributes[6], v => e.Attributes[6] = v);
+        yield return F.Flags<SpellAttr7Flags>("Attributes 8", () => e.Attributes[7], v => e.Attributes[7] = v);
+        yield return F.Flags<SpellAttr8Flags>("Attributes 9", () => e.Attributes[8], v => e.Attributes[8] = v);
+        yield return F.Flags<SpellAttr9Flags>("Attributes 10", () => e.Attributes[9], v => e.Attributes[9] = v);
+        yield return F.Flags<SpellAttr10Flags>("Attributes 11", () => e.Attributes[10], v => e.Attributes[10] = v);
+        for (int i = 11; i < Spell.AttributeCount; i++)
         {
             int slot = i;
             yield return F.Int($"Attributes {slot + 1}", () => e.Attributes[slot], v => e.Attributes[slot] = v);
@@ -379,16 +390,16 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
                 Apply(context, s.RemoveEffect(index));
             }
 
-            Int(context, s, index, "Effect", effect.Effect, nameof(SpellEffectEntry.Effect));
-            Int(context, s, index, "Aura", effect.EffectAura, nameof(SpellEffectEntry.EffectAura));
+            EnumInt<SpellEffectType>(context, s, index, "Effect", effect.Effect, nameof(SpellEffectEntry.Effect));
+            EnumInt<SpellAuraType>(context, s, index, "Aura", effect.EffectAura, nameof(SpellEffectEntry.EffectAura));
             Int(context, s, index, "Base Points", effect.EffectBasePoints, nameof(SpellEffectEntry.EffectBasePoints));
             Int(context, s, index, "Die Sides", effect.EffectDieSides, nameof(SpellEffectEntry.EffectDieSides));
             Float(context, s, index, "Points Per Level", effect.EffectRealPointsPerLevel, nameof(SpellEffectEntry.EffectRealPointsPerLevel));
             Float(context, s, index, "Bonus Coefficient", effect.EffectBonusCoefficient, nameof(SpellEffectEntry.EffectBonusCoefficient));
             Int(context, s, index, "Aura Period (ms)", effect.EffectAuraPeriod, nameof(SpellEffectEntry.EffectAuraPeriod));
-            Int(context, s, index, "Target 1", effect.ImplicitTarget1, nameof(SpellEffectEntry.ImplicitTarget1));
-            Int(context, s, index, "Target 2", effect.ImplicitTarget2, nameof(SpellEffectEntry.ImplicitTarget2));
-            Int(context, s, index, "Mechanic", effect.EffectMechanic, nameof(SpellEffectEntry.EffectMechanic));
+            EnumInt<SpellImplicitTarget>(context, s, index, "Target 1", effect.ImplicitTarget1, nameof(SpellEffectEntry.ImplicitTarget1));
+            EnumInt<SpellImplicitTarget>(context, s, index, "Target 2", effect.ImplicitTarget2, nameof(SpellEffectEntry.ImplicitTarget2));
+            EnumInt<SpellMechanicType>(context, s, index, "Mechanic", effect.EffectMechanic, nameof(SpellEffectEntry.EffectMechanic));
             Int(context, s, index, "Radius 1", effect.EffectRadiusIndex1, nameof(SpellEffectEntry.EffectRadiusIndex1));
             Int(context, s, index, "Radius 2", effect.EffectRadiusIndex2, nameof(SpellEffectEntry.EffectRadiusIndex2));
             Int(context, s, index, "Misc Value 1", (int)effect.EffectMiscValue1, nameof(SpellEffectEntry.EffectMiscValue1));
@@ -413,6 +424,15 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         if (ImGui.InputInt(label, ref value) && value != current)
         {
             Apply(context, s.SetEffectField(index, field, value));
+        }
+    }
+
+    private static void EnumInt<TEnum>(EditorContext context, Spell s, int index, string label, int current, string field)
+        where TEnum : struct, System.Enum
+    {
+        if (CatalogEnumField.DrawEnumPicker(label, current, typeof(TEnum), out int picked) && picked != current)
+        {
+            Apply(context, s.SetEffectField(index, field, picked));
         }
     }
 

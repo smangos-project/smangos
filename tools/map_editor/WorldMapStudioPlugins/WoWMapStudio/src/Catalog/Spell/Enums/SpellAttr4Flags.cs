@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExD` — spell attribute flags word 4.</summary>
+[System.Flags]
+public enum SpellAttr4Flags : uint
+{
+    None = 0,
+    NoCastLog = 0x1,
+    ClassTriggerOnlyOnTarget = 0x2,
+    AuraExpiresOffline = 0x4,
+    NoHelpfulThreat = 0x8,
+    NoHarmfulThreat = 0x10,
+    AllowClientTargeting = 0x20,
+    CannotBeStolen = 0x40,
+    AllowCastWhileCasting = 0x80,
+    IgnoreDamageTakenModifiers = 0x100,
+    CombatFeedbackWhenUsable = 0x200,
+    WeaponSpeedCostScaling = 0x400,
+    NoPartialImmunity = 0x800,
+    AuraIsBuff = 0x1000,
+    DoNotLogCaster = 0x2000,
+    ReactiveDamageProc = 0x4000,
+    NotInSpellbook = 0x8000,
+    NotInArenaOrRatedBattleground = 0x10000,
+    IgnoreDefaultArenaRestrictions = 0x20000,
+    BouncyChainMissiles = 0x40000,
+    AllowProcWhileSitting = 0x80000,
+    AuraNeverBounces = 0x100000,
+    AllowEnteringArena = 0x200000,
+    ProcSuppressSwingAnim = 0x400000,
+    SuppressWeaponProcs = 0x800000,
+    AutoRangedCombat = 0x1000000,
+    OwnerPowerScaling = 0x2000000,
+    OnlyFlyingAreas = 0x4000000,
+    ForceDisplayCastbar = 0x8000000,
+    IgnoreCombatTimer = 0x10000000,
+    AuraBounceFailsSpell = 0x20000000,
+    Obsolete = 0x40000000,
+    UseFacingFromSpell = 0x80000000,
+}

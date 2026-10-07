@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExC` — spell attribute flags word 3.</summary>
+[System.Flags]
+public enum SpellAttr3Flags : uint
+{
+    None = 0,
+    PvpEnabling = 0x1,
+    NoProcEquipRequirement = 0x2,
+    NoCastingBarText = 0x4,
+    CompletelyBlocked = 0x8,
+    NoResTimer = 0x10,
+    NoDurabilityLoss = 0x20,
+    NoAvoidance = 0x40,
+    DotStackingRule = 0x80,
+    OnlyOnPlayer = 0x100,
+    NotAProc = 0x200,
+    RequiresMainHandWeapon = 0x400,
+    OnlyBattlegrounds = 0x800,
+    OnlyOnGhosts = 0x1000,
+    HideChannelBar = 0x2000,
+    HideInRaidFilter = 0x4000,
+    NormalRangedAttack = 0x8000,
+    SuppressCasterProcs = 0x10000,
+    SuppressTargetProcs = 0x20000,
+    AlwaysHit = 0x40000,
+    InstantTargetProcs = 0x80000,
+    AllowAuraWhileDead = 0x100000,
+    OnlyProcOutdoors = 0x200000,
+    DoNotTriggerTargetStand = 0x400000,
+    NoDamageHistory = 0x800000,
+    RequiresOffHandWeapon = 0x1000000,
+    TreatAsPeriodic = 0x2000000,
+    CanProcFromProcs = 0x4000000,
+    OnlyProcOnCaster = 0x8000000,
+    IgnoreCasterAndTargetRestrictions = 0x10000000,
+    IgnoreCasterModifiers = 0x20000000,
+    DoNotDisplayRange = 0x40000000,
+    NotOnAoeImmune = 0x80000000,
+}

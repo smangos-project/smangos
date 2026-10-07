@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExE` — spell attribute flags word 5.</summary>
+[System.Flags]
+public enum SpellAttr5Flags : uint
+{
+    None = 0,
+    AllowActionsDuringChannel = 0x1,
+    NoReagentCostWithAura = 0x2,
+    RemoveEnteringArena = 0x4,
+    AllowWhileStunned = 0x8,
+    TriggersChanneling = 0x10,
+    LimitN = 0x20,
+    IgnoreAreaEffectPvpCheck = 0x40,
+    NotOnPlayer = 0x80,
+    NotOnPlayerControlledNpc = 0x100,
+    ExtraInitialPeriod = 0x200,
+    DoNotDisplayDuration = 0x400,
+    ImpliedTargeting = 0x800,
+    MeleeChainTargeting = 0x1000,
+    SpellHasteAffectsPeriodic = 0x2000,
+    NotAvailableWhileCharmed = 0x4000,
+    TreatAsAreaEffect = 0x8000,
+    AuraAffectsNotJustReqEquippedItem = 0x10000,
+    AllowWhileFleeing = 0x20000,
+    AllowWhileConfused = 0x40000,
+    AiDoesntFaceTarget = 0x80000,
+    DoNotAttemptAPetResummonWhenDismounting = 0x100000,
+    IgnoreTargetRequirements = 0x200000,
+    NotOnTrivial = 0x400000,
+    NoPartialResists = 0x800000,
+    IgnoreCasterRequirements = 0x1000000,
+    AlwaysLineOfSight = 0x2000000,
+    AlwaysAoeLineOfSight = 0x4000000,
+    NoCasterAuraIcon = 0x8000000,
+    NoTargetAuraIcon = 0x10000000,
+    AuraUniquePerCaster = 0x20000000,
+    AlwaysShowGroundTexture = 0x40000000,
+    AddMeleeHitRating = 0x80000000,
+}
