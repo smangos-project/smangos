@@ -300,7 +300,6 @@ void Spell::EffectDummy(SpellEffectIndex effIdx)
     switch (m_spellInfo->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
-        case SPELLFAMILY_WARRIOR:                          // Last Stand is a warrior spell in db2
         {
             switch (m_spellInfo->Id)
             {
@@ -1401,6 +1400,10 @@ void Spell::EffectDummy(SpellEffectIndex effIdx)
             break;
         }
         case SPELLFAMILY_MAGE:
+        {
+            break;
+        }
+        case SPELLFAMILY_WARRIOR:
         {
             break;
         }

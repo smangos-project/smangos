@@ -6480,9 +6480,7 @@ SpellAuraHolder::SpellAuraHolder(SpellEntry const* spellproto, Unit* target, Uni
     m_duration = m_maxDuration = spellproto->CalculateDuration(unitCaster, target, m_auraScript);
 
     // Checking visual because of The Green Tower shield equip effect and Natural Shapeshifter talent.
-    // Totem auras without a duration (Stoneskin, Windwall, Mana Tide) last as long as the totem.
-    bool totemAura = spellproto->DurationIndex == 0 && unitCaster && unitCaster->IsCreature() && static_cast<Creature*>(unitCaster)->IsTotem();
-    if (m_maxDuration == -1 || totemAura || (m_isPassive && (spellproto->DurationIndex == 0 || !spellproto->ClientVisualId)))
+    if (m_maxDuration == -1 || (m_isPassive && (spellproto->DurationIndex == 0 || !spellproto->ClientVisualId)))
         m_permanent = true;
 
     // Fixes how very short duration buffs are displayed in the combat log
