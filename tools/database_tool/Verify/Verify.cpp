@@ -341,8 +341,17 @@ static bool KeepsData(VerifySpecColumns const& spec, std::string const& key)
                        [](SpecColumnRow const& row) { return row.disposition != "drop"; });
 }
 
-// V1: every srv_ table is rebuilt exactly from the world database by Verify/srv/<table>.sql.
-// A table whose columns are all `drop` needs no mapping.
+// Allowed differing-row counts per table and column (`(missing)` for missing rows).
+static std::map<std::string, std::map<std::string, uint64_t>> ReadAllowed(std::filesystem::path const& path)
+{
+    std::map<std::string, std::map<std::string, uint64_t>> allowed;
+    for (std::vector<std::string> const& row : ReadTsv(path, 4))
+        allowed[row[0]][row[1]] = std::stoull(row[2]);
+    return allowed;
+}
+
+// V1: every srv_ table is rebuilt from the world database by Verify/srv/<table>.sql, up to the
+// differences in Verify/srv/allow.tsv. A table whose columns are all `drop` needs no mapping.
 static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const& specDir,
                                std::filesystem::path const& verifyDir, VerifySpecColumns const& spec,
                                VerifyOptions const& options, VerifyResult& result)
@@ -352,6 +361,7 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
     for (SpecTableRow const& row : ReadTablesTsv(specDir / "tables.tsv"))
         if (row.kind == "gone")
             movedTables.insert(row.table);
+    std::map<std::string, std::map<std::string, uint64_t>> allowed = ReadAllowed(verifyDir / "srv" / "allow.tsv");
 
     for (std::string const& originalTable : TablesWithPrefix(db, "ref", "srv_"))
     {
@@ -372,6 +382,8 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
             rules.dropped = it->second;
         // mangosd saves its runtime state here.
         rules.allowExtraRows = table == "variables" || movedTables.count(table);
+        if (auto it = allowed.find(table); it != allowed.end())
+            rules.allowed = it->second;
         VerifyMappedTable(db, result, "V1", originalTable, mappingPath, rules);
     }
 }
@@ -382,9 +394,7 @@ static void VerifyServerTables(DoltLiteDatabase& db, std::filesystem::path const
 static void VerifyVanillaTables(DoltLiteDatabase& db, std::filesystem::path const& verifyDir,
                                 VerifySpecColumns const& spec, VerifyOptions const& options, VerifyResult& result)
 {
-    std::map<std::string, std::map<std::string, uint64_t>> allowed;
-    for (std::vector<std::string> const& row : ReadTsv(verifyDir / "vdbc" / "allow.tsv", 4))
-        allowed[row[0]][row[1]] = std::stoull(row[2]);
+    std::map<std::string, std::map<std::string, uint64_t>> allowed = ReadAllowed(verifyDir / "vdbc" / "allow.tsv");
 
     std::vector<std::string> unmapped;
     for (std::string const& originalTable : TablesWithPrefix(db, "ref", "vdbc_"))

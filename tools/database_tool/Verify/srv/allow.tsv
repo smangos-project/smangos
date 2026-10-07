@@ -1,0 +1,24 @@
+table	column	rows	reason
+area_template	map_id	1	db2 wins: area 2917 continent
+area_template	flags	1	db2 wins: area 206 client flag 0x10000
+areatrigger_template	z	1	db2 wins: trigger position
+areatrigger_template	box_x	7	db2 wins: trigger boxes
+areatrigger_template	box_y	7	db2 wins: trigger boxes
+areatrigger_template	box_z	7	db2 wins: trigger boxes
+creature_display_info_addon	(missing)	1	display 3255 is used by no creature
+gameobject_display_info_addon	min_x	61	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+gameobject_display_info_addon	min_y	49	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+gameobject_display_info_addon	min_z	41	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+gameobject_display_info_addon	max_x	42	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+gameobject_display_info_addon	max_y	44	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+gameobject_display_info_addon	max_z	58	db2 wins: client GeoBoxes (float rounding, a few boxes vmangos left at 0)
+map_template	map_type	1	db2 wins: map 13 instance type
+map_template	player_limit	8	db2 wins: client MaxPlayers (map 109 stays a vmangos override)
+map_template	map_name	4	db2 wins: client map names
+skill_line_ability	(missing)	1	row 2503 files spell 818 under Survival; the client keeps it under Cooking
+skill_line_ability	class_mask	1	db2 wins over the vmangos (1.12) value
+skill_line_ability	req_skill_value	3	db2 wins over the vmangos (1.12) value
+skill_line_ability	max_value	1	db2 wins over the vmangos (1.12) value
+skill_line_ability	min_value	1	db2 wins over the vmangos (1.12) value
+taxi_nodes	mount_creature_id1	2	db2 wins: dead nodes 9/15, client mount slot order
+taxi_nodes	mount_creature_id2	2	db2 wins: dead nodes 9/15, client mount slot order

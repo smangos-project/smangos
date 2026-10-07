@@ -170,6 +170,10 @@ TEST_CASE("V1 rebuilds each srv_ table from its mapping and honours dropped colu
     VerifyResult dropped = RunVerify(worldPath, referencePath, dir.path, verifyDir, { false, false, { "V1" }, { "thing" } });
     REQUIRE(dropped.problems.size() == 1);
     CHECK(dropped.problems[0].message == "name differs in 1 rows, first id=2: original 'b', rebuilt 'c'");
+
+    WriteVerifyTestFile(verifyDir / "srv" / "allow.tsv", "table\tcolumn\trows\treason\nthing\tname\t1\tdb2 wins\n");
+    VerifyResult allowed = RunVerify(worldPath, referencePath, dir.path, verifyDir, { false, false, { "V1" }, { "thing" } });
+    CHECK(allowed.problems.empty());
 }
 
 TEST_CASE("V3 counts the dbc_ rows that differ from the client against client-delta.tsv", "[Verify]")

@@ -142,8 +142,8 @@ Checks `.world/world.doltlite` against `.world/reference.doltlite` and the spec 
 `0` only when no check reports a problem.
 
 - V0: the world's tables and server columns against `Spec/tables.tsv`/`columns.tsv`.
-- V1: `Verify/srv/<table>.sql` rebuilds each `srv_` table exactly (columns `drop` in
-  `columns.tsv` may be left out).
+- V1: `Verify/srv/<table>.sql` rebuilds each `srv_` table (columns `drop` in `columns.tsv` may be
+  left out), up to the exact differing-row counts in `Verify/srv/allow.tsv`.
 - V2: `Verify/vdbc/<Name>.sql` rebuilds each `vdbc_` table, up to the exact differing-row counts in
   `Verify/vdbc/allow.tsv` (`(missing)` for missing rows). Rows only the world has are fine. A table
   whose columns are all `drop` needs no mapping; one without a mapping yet is a note.

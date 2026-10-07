@@ -1,9 +1,9 @@
 table	column	rows	reason
 ChrRaces	ClientPrefix	1	race 9 is Gb in 1.12 and Go in the client; the ChrRaces phase 4 step decides
 ChrClasses	Flags	4	not read by the server; the client's flags stay
-CreatureDisplayInfo	TextureVariation1	10534	1.15 holds file ids, 1.12 texture names
-CreatureDisplayInfo	TextureVariation2	10534	1.15 holds file ids, 1.12 texture names
-CreatureDisplayInfo	TextureVariation3	10534	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	TextureVariation1	10533	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	TextureVariation2	10533	1.15 holds file ids, 1.12 texture names
+CreatureDisplayInfo	TextureVariation3	10533	1.15 holds file ids, 1.12 texture names
 CreatureDisplayInfo	NPCSoundID	1	not read by the server; the client's sound stays
 CreatureDisplayInfoExtra	DisplaySexID	1	not read by the server; the client's look stays
 CreatureDisplayInfoExtra	SkinID	2	not read by the server; the client's look stays
@@ -23,11 +23,10 @@ SkillLine	SpellIconID	119	1.15 holds file ids, 1.12 icon ids
 SpellItemEnchantment	EffectPointsMax1	1	not read by the server (it reads EffectPointsMin); the client's value stays
 SpellShapeshiftForm	AttackIconID	3	1.15 holds file ids, 1.12 icon ids
 TalentTab	SpellIconID	27	1.15 holds file ids, 1.12 icon ids
-WMOAreaTable	SoundProviderPref	186	not read by the server; the client's value stays (mostly 1.12 -1)
-WMOAreaTable	SoundProviderPrefUnderwater	1	not read by the server; the client's sound stays
-WMOAreaTable	AmbienceID	11	not read by the server; the client's value stays (mostly 1.12 -1)
-WMOAreaTable	ZoneMusic	80	not read by the server; the client's value stays (mostly 1.12 -1)
-WMOAreaTable	AreaName_lang	6	1.12 stored the apostrophe in a non-UTF-8 code page
+WMOAreaTable	SoundProviderPref	179	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	AmbienceID	4	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	ZoneMusic	79	not read by the server; the client's value stays (mostly 1.12 -1)
+WMOAreaTable	AreaName_lang	5	1.12 stored the apostrophe in a non-UTF-8 code page
 ItemSet	SetSpellID1	18	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
 ItemSet	SetSpellID2	19	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
 ItemSet	SetSpellID3	20	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
@@ -44,3 +43,26 @@ ItemSet	SetThreshold5	17	1.12 leaves empty slots between set bonuses; the client
 ItemSet	SetThreshold6	11	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
 ItemSet	SetThreshold7	6	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
 ItemSet	SetThreshold8	3	1.12 leaves empty slots between set bonuses; the client's rows have no slot, so the rebuilt bonuses are packed
+CreatureDisplayInfo	(missing)	1	display 3255 is used by no creature; not carried over
+CreatureDisplayInfo	ModelID	2	db2 wins: displays 1614/14733 use the client model
+CreatureDisplayInfo	CreatureModelScale	3	db2 wins: client scale on displays 16/17/19
+CreatureModelData	Flags	5	db2 wins: client model flags
+CreatureModelData	CollisionHeight	423	db2 wins: 1.12 rounded heights
+DurabilityCosts	(missing)	200	item levels above 100 do not exist in vmangos; missing rows are handled
+DurabilityCosts	ArmorSubClassCost7	2	db2 wins: vmangos keeps the 1.12 value
+DurabilityQuality	Data	1	db2 wins: float rounding
+GameObjectDisplayInfo	(missing)	13	vanilla-only displays no gameobject_template uses
+SkillRaceClassInfo	Flags	15	db2 wins on bit 0x2 (no skill-up message, not read by the server); 0x400 stays a vmangos override
+SpellDuration	(missing)	2	durations 507/508 are used by no spell
+SpellItemEnchantment	ItemVisual	1	client encoding of "none" (0, 1.12 -1)
+SpellShapeshiftForm	Name_lang	2	db2 wins: forms 22/24 have no live vmangos spell
+SpellShapeshiftForm	Flags	4	db2 wins: the extra client bits are not read by the server
+SpellShapeshiftForm	CreatureType	6	db2 wins: -1 and 0 both mean none to the server
+TalentTab	OrderIndex	1	db2 wins: the client tab order is consistent
+TaxiPathNode	Loc1	6	db2 wins: vmangos keeps the 1.12 Ironforge path
+TaxiPathNode	Loc2	5	db2 wins: vmangos keeps the 1.12 Ironforge path
+TaxiPathNode	Loc3	1	db2 wins: vmangos keeps the 1.12 Ironforge path
+TransportAnimation	Pos1	288	the tram axis override rebuilds 1.12 positions from db2 floats (noise below 0.01)
+TransportAnimation	Pos2	40	the tram axis override rebuilds 1.12 positions from db2 floats (noise below 0.01)
+WMOAreaTable	(missing)	13	db2 wins: vanilla-only WMO area rows
+WMOAreaTable	AreaTableID	46	db2 wins: client area links
