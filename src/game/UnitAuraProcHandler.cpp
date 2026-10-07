@@ -353,6 +353,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
     switch (dummySpell->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
+        case SPELLFAMILY_WARRIOR:                          // Sweeping Strikes and Retaliation are warrior spells in db2
         {
             switch (dummySpell->Id)
             {
@@ -644,8 +645,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
             }
             break;
         }
-        case SPELLFAMILY_WARRIOR:
-            break;
         case SPELLFAMILY_WARLOCK:
             break;
         case SPELLFAMILY_PRIEST:
