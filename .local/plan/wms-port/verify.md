@@ -19,3 +19,5 @@ Things written but not checked. Tick off when verified.
 
 ## Spell editor (G5)
 - [ ] Added below as it lands.
+- [ ] Spell catalog (`Spell`, SpellFactory): open an existing spell, edit, save, reopen; check satellite rows (`dbc_spellname/misc/cooldowns/categories/levels/spellpower/spelleffect`) updated in place, new spell inserts rows with fresh IDs, delete removes them. Staging (Upsert/NextId) has no automated test.
+- [ ] Spell links "Spell Cast Times"/"Spell Duration"/"Spell Range" resolve in the UI; effect editor draws and undoes.
