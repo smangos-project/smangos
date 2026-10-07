@@ -13,7 +13,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 
 ## Step 1: end-to-end checks of what's built (in this order)
 
-1. [~] **Terrain (Phase 7 exit)** (2026-10-07: hill +22 at editor (-8950,165) + dirt paint in 32,48 exported and RENDERS in the client; still to do: walk on it after `wow.extract`, Drift check, WDL from distance. Exported files are installed in the real client; stock originals in /tmp/orig_azeroth (may be wiped; else restore from `.wms` backup or re-run CASC extract). Test char Wefwefwefa (guid 13, acct CLAUDE) parked at server (-8950,-135,85).): in the editor, raise a hill and paint a texture in Northshire
+1. [x] **Terrain (Phase 7 exit)** (2026-10-07: hill +22 + dirt paint in 32,48 exported, renders in client, server re-extracted (`wowServer.Extract(0,row=48,col=32)`: row is the tile y) and the character stands on the hill; stock tiles restored afterwards. Still open: Drift check, WDL from distance.): in the editor, in the editor, raise a hill and paint a texture in Northshire
    (tile 32,48), export, start the client (`client/autologin.sh`), walk on it, check it from a distance
    (normals, WDL). Re-extract server data (`wow.extract` batch op, run through the UI, incl. dry run) and
    check the Drift layer reads ~0 and the server height matches.
