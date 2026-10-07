@@ -5,7 +5,8 @@
 #   client/launch-wine.sh <dir containing WowClassic.exe> [client / custom.dll arguments...]
 #
 # Env: BUILD_DIR (default build-client, where bin/ lives), WINEPREFIX (default ~/.local/share/classic-client-wine),
-#      NO_DEPLOY=1 to skip copying the binaries.
+#      NO_DEPLOY=1 to skip copying the binaries, NO_DB2_EXPORT=1 to skip exporting the client db2s from .world,
+#      DATABASE_TOOL (default build/tools/database_tool/database_tool) for the export.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,6 +18,12 @@ shift
 
 if [[ -z "${NO_DEPLOY:-}" ]]; then
     cp -f "$bin/custom_launcher.exe" "$bin/custom.dll" "$client/"
+fi
+
+if [[ -z "${NO_DB2_EXPORT:-}" ]]; then
+    dbtool="${DATABASE_TOOL:-$root/build/tools/database_tool/database_tool}"
+    [[ -x "$dbtool" ]] || { echo "database_tool not found at $dbtool; build it (make database_tool in build/) or set NO_DB2_EXPORT=1" >&2; exit 1; }
+    "$dbtool" export --format db2 --client || { echo "db2 export failed" >&2; exit 1; }
 fi
 
 export WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/classic-client-wine}"

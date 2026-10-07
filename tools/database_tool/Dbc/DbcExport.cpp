@@ -104,21 +104,31 @@ namespace
         }
     }
 
-    std::string RowKey(Wdc5Row const& row)
+    // Ints compare at the field's width: the reader returns 32-bit negatives zero-extended.
+    std::string RowKey(DbcTableMeta const& table, Wdc5Row const& row)
     {
         std::string key;
-        for (Wdc5Value const& value : row)
+        uint32_t column = 0;
+        for (uint32_t i = 0; i < table.fieldCount; ++i)
         {
-            float const f = static_cast<float>(value.floatValue);
-            key.append(reinterpret_cast<char const*>(&value.intValue), sizeof(value.intValue));
-            key.append(reinterpret_cast<char const*>(&f), sizeof(f));
-            key.append(value.stringValue);
-            key.push_back('\0');
+            DbcFieldMeta const& field = table.fields[i];
+            int const bits = field.bits ? field.bits : 32;
+            uint64_t const mask = bits >= 64 ? ~uint64_t(0) : (uint64_t(1) << bits) - 1;
+            for (uint16_t a = 0; a < field.arrayLength; ++a, ++column)
+            {
+                Wdc5Value const& value = row[column];
+                uint64_t const intBits = static_cast<uint64_t>(value.intValue) & mask;
+                float const f = static_cast<float>(value.floatValue);
+                key.append(reinterpret_cast<char const*>(&intBits), sizeof(intBits));
+                key.append(reinterpret_cast<char const*>(&f), sizeof(f));
+                key.append(value.stringValue);
+                key.push_back('\0');
+            }
         }
         return key;
     }
 
-    bool SameRows(std::vector<Wdc5Row> const& a, std::vector<Wdc5Row> const& b)
+    bool SameRows(DbcTableMeta const& table, std::vector<Wdc5Row> const& a, std::vector<Wdc5Row> const& b)
     {
         if (a.size() != b.size())
             return false;
@@ -126,9 +136,9 @@ namespace
         keysA.reserve(a.size());
         keysB.reserve(b.size());
         for (Wdc5Row const& row : a)
-            keysA.push_back(RowKey(row));
+            keysA.push_back(RowKey(table, row));
         for (Wdc5Row const& row : b)
-            keysB.push_back(RowKey(row));
+            keysB.push_back(RowKey(table, row));
         std::sort(keysA.begin(), keysA.end());
         std::sort(keysB.begin(), keysB.end());
         return keysA == keysB;
@@ -166,7 +176,7 @@ DbcExportResult ExportDb2Files(DoltLiteDatabase& world, std::filesystem::path co
         if (options.onlyChanged && exists)
         {
             Wdc5ReadResult existing = ReadWdc5File(filePath, table);
-            if (existing.error.empty() && SameRows(existing.rows, rows))
+            if (existing.error.empty() && SameRows(table, existing.rows, rows))
             {
                 tableResult.unchanged = true;
                 result.tables.push_back(std::move(tableResult));

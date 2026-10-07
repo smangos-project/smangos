@@ -207,6 +207,27 @@ TEST_CASE("ExportDb2Files with onlyChanged leaves a matching file untouched", "[
     CHECK_FALSE(std::filesystem::exists(options.backupDir / "test.db2"));
 }
 
+TEST_CASE("ExportDb2Files with onlyChanged treats a negative int32 as unchanged", "[DbcExport]")
+{
+    TempDir dir("only_changed_negative");
+    WriteFile(dir.path / "test.db2", BuildSimpleDb2(0xABCD, { { 1, 100 }, { 2, 200 } }));
+
+    TempDoltLiteFile file("only_changed_negative");
+    DoltLiteDatabase db(file.path.string());
+    db.Execute(BuildDbcFilesTableDdl());
+    REQUIRE(ImportDb2Files(db, dir.path, {}, std::span(&TestTable, 1)).error.empty());
+    db.Execute("UPDATE \"dbc_test\" SET \"Value\" = -1 WHERE \"ID\" = 2");
+
+    REQUIRE(ExportDb2Files(db, dir.path, {}, std::span(&TestTable, 1)).tables[0].error.empty());
+
+    ExportDb2Options options;
+    options.onlyChanged = true;
+    DbcExportResult result = ExportDb2Files(db, dir.path, {}, std::span(&TestTable, 1), options);
+
+    REQUIRE(result.tables.size() == 1);
+    CHECK(result.tables[0].unchanged);
+}
+
 TEST_CASE("ExportDb2Files with onlyChanged rewrites a changed file and keeps the first backup", "[DbcExport]")
 {
     TempDir dir("only_changed_diff");

@@ -24,7 +24,7 @@ The client is still a Windows exe, so on Linux the library and launcher are cros
     cmake --build build-client -j
     client/launch-wine.sh /path/to/_classic_era_ [client args...]
 
-`client/` builds standalone (no server dependencies). `launch-wine.sh` copies `custom_launcher.exe` and `custom.dll` from `build-client/bin` next to `WowClassic.exe` and starts the launcher in a wine prefix (`~/.local/share/classic-client-wine` by default, `WINEPREFIX` to override; it must not be under a directory you don't own, e.g. `/tmp`). Needs `mingw-w64-gcc` and `wine` (with vkd3d for the client's D3D12 renderer). Verified: custom.dll loads, applies its patches and the client renders under wine 11.
+`client/` builds standalone (no server dependencies). `launch-wine.sh` copies `custom_launcher.exe` and `custom.dll` from `build-client/bin` next to `WowClassic.exe` and starts the launcher in a wine prefix (`~/.local/share/classic-client-wine` by default, `WINEPREFIX` to override; it must not be under a directory you don't own, e.g. `/tmp`). Before starting, it runs `database_tool export --format db2 --client` (binary from `DATABASE_TOOL`, default `build/tools/database_tool/database_tool`) so the client db2s match `.world`; a failure stops the launch, `NO_DB2_EXPORT=1` skips it. Needs `mingw-w64-gcc` and `wine` (with vkd3d for the client's D3D12 renderer). Verified: custom.dll loads, applies its patches and the client renders under wine 11.
 
 ## Extracting a CASC client into Content/
 

@@ -124,6 +124,7 @@ launch_client() {
 for attempt in 1 2 3; do
     launch_client && break
     log "no realm connection after launch (attempt $attempt)"
+    export NO_DB2_EXPORT=1 # already exported by the first launch
     quit_client
 done
 
