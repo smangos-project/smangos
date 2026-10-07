@@ -35,6 +35,7 @@ BASES = {
 }
 TABLES = ["dbc_spellname", "dbc_spell"] + sorted(BASES)
 TEXT = {"Name_lang", "NameSubtext_lang", "Description_lang", "AuraDescription_lang"}
+CLASS_MASKS = {"EffectSpellClassMask1", "EffectSpellClassMask2"}
 NATURAL = ["SpellID", "DifficultyID", "OrderIndex", "EffectIndex"]
 # Ids the Classic client reuses for another spell (S): vmangos keeps the 1.12 spell, text included.
 REUSED = {379, 713, 974, 1234, 1329, 23598, 23920, 30167}
@@ -217,8 +218,16 @@ def main():
                 for i, col in enumerate(cols):
                     if col == "ID" or (col in TEXT and spell not in REUSED) or same(m[i], c[i]) or (v is not None and same(m[i], v[i])):
                         continue
-                    sets.append((col, m[i], "reused" if spell in REUSED else "template" if tr is not None and same(tr[i], m[i]) else "mod"))
-                    exp["changed"].append([[rid], col, c[i], m[i]])
+                    val = m[i]
+                    cleared = not m[i] and not (tr is not None and same(tr[i], m[i]))
+                    if col in CLASS_MASKS and spell not in REUSED and not cleared:
+                        # vmangos masks use db2's flag numbering but lack Classic's bits: keep db2's, add vmangos'.
+                        # A mask that spell_effect_mod clears stays cleared.
+                        val = (int(m[i] or 0) & 0xffffffff) | int(c[i] or 0)
+                        if val == c[i]:
+                            continue
+                    sets.append((col, val, "reused" if spell in REUSED else "template" if tr is not None and same(tr[i], m[i]) else "mod"))
+                    exp["changed"].append([[rid], col, c[i], val])
                 for src in updates:
                     s = [(col, val) for col, val, k in sets if k == src]
                     if s:
