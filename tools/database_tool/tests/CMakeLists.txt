@@ -21,6 +21,7 @@ add_executable(tests-database-tool
   Commands/PortMigrationFileTests.cpp
   Commands/GenerateWmsTests.cpp
   Dbc/DbcExportTests.cpp
+  Dbc/DbcHotfixesTests.cpp
   Dbc/DbcImportTests.cpp
   Dbc/DbcSchemaTests.cpp
   Dbc/WdbcTests.cpp

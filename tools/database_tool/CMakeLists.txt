@@ -22,6 +22,7 @@ add_library(database_tool_lib STATIC
   Fdid/FileDataIds.cpp
   Commands/PortMigrationFile.cpp
   Dbc/DbcExport.cpp
+  Dbc/DbcHotfixes.cpp
   Dbc/DbcImport.cpp
   Dbc/DbcSchema.cpp
   Dbc/InputManifest.cpp

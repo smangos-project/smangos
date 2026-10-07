@@ -1,6 +1,7 @@
 #ifndef DATABASE_TOOL_CREATEWORLDDATABASE_H
 #define DATABASE_TOOL_CREATEWORLDDATABASE_H
 
+#include "Dbc/DbcHotfixes.h"
 #include "Dbc/DbcImport.h"
 #include "Dbc/DbcSchema.h"
 #include "Sql/MysqlDumpImport.h"
@@ -34,6 +35,7 @@ struct WorldCreateResult
     WorldUpdateResult update;
     DbcSchemaResult dbcSchema;
     DbcImportResult dbcImport; // untouched (default-constructed) when importDbc is false
+    DbcHotfixResult hotfixes;  // likewise
     std::string error; // empty on success; sourced from whichever step failed
 };
 
@@ -42,8 +44,9 @@ struct WorldCreateResult
 // it (ImportMysqlDump), applies every pending `_world` migration
 // (UpdateWorldDatabase) -- vmangos' own recipe, in SQLite (world-sql.md) --
 // creates the dbc_* tables (CreateDbcTables), then, unless importDbc is
-// false, imports every resolved dbfilesclientDir/*.db2 (ImportDb2Files).
+// false, imports every resolved dbfilesclientDir/*.db2 (ImportDb2Files) and applies
+// hotfixesDir/*.sql over them (ApplyDbcHotfixes) before the migrations run.
 WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
-    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc = true);
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, std::filesystem::path const& hotfixesDir, bool importDbc = true);
 
 #endif

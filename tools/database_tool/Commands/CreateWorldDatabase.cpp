@@ -1,5 +1,6 @@
 #include "CreateWorldDatabase.h"
 
+#include "Dbc/DbcHotfixes.h"
 #include "Migrations/MigrationFile.h"
 #include "Migrations/MigrationRunner.h"
 #include "Migrations/MigrationState.h"
@@ -27,7 +28,7 @@ WorldUpdateResult UpdateWorldDatabase(DoltLiteDatabase& world, std::filesystem::
 }
 
 WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
-    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc)
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, std::filesystem::path const& hotfixesDir, bool importDbc)
 {
     WorldCreateResult result;
 
@@ -66,6 +67,13 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
         if (!result.dbcImport.error.empty())
         {
             result.error = result.dbcImport.error;
+            return result;
+        }
+
+        result.hotfixes = ApplyDbcHotfixes(world, hotfixesDir);
+        if (!result.hotfixes.error.empty())
+        {
+            result.error = "hotfixes: " + result.hotfixes.error;
             return result;
         }
     }

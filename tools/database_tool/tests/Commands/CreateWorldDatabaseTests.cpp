@@ -144,7 +144,7 @@ TEST_CASE("CreateWorldDatabase refuses to overwrite an existing .world", "[Creat
     TempDir cache("exists_cache");
     TempDir migrations("exists_migrations");
 
-    WorldCreateResult result = CreateWorldDatabase(world.path, cache.path, migrations.path, "", false);
+    WorldCreateResult result = CreateWorldDatabase(world.path, cache.path, migrations.path, "", "", false);
 
     CHECK(result.alreadyExisted);
     CHECK(result.error.find("already exists") != std::string::npos);
@@ -164,7 +164,7 @@ TEST_CASE("CreateWorldDatabase builds the real pinned world database end to end"
 
     // dbc import is covered separately (DbcImportTests.cpp, Wdc5RealFilesTests.cpp); this test is
     // only about the migration corpus, so it stays off here.
-    WorldCreateResult result = CreateWorldDatabase(world.path, cache.path, DATABASE_TOOL_TEST_MIGRATIONS_DIR, "", false);
+    WorldCreateResult result = CreateWorldDatabase(world.path, cache.path, DATABASE_TOOL_TEST_MIGRATIONS_DIR, "", "", false);
 
     REQUIRE_FALSE(result.alreadyExisted);
     CHECK(result.dumpImport.ok);

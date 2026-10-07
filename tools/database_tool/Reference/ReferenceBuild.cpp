@@ -1,5 +1,6 @@
 #include "ReferenceBuild.h"
 
+#include "Dbc/DbcHotfixes.h"
 #include "Dbc/DbcSchema.h"
 #include "Dbc/DbcTableMeta.h"
 #include "Dbc/Wdbc.h"
@@ -385,7 +386,8 @@ void LoadVanillaDbcTables(DoltLiteDatabase& db, std::filesystem::path const& van
 ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referencePath,
                                              std::filesystem::path const& worldPath,
                                              std::filesystem::path const& vanillaDbcDir,
-                                             std::filesystem::path const& clientDbfilesclientDir)
+                                             std::filesystem::path const& clientDbfilesclientDir,
+                                             std::filesystem::path const& hotfixesDir)
 {
     ReferenceBuildResult result;
 
@@ -419,6 +421,9 @@ ReferenceBuildResult BuildReferenceDatabase(std::filesystem::path const& referen
         {
             DoltLiteDatabase cdbcPart(cdbcPartPath.string());
             BuildCdbcTables(cdbcPart, clientDbfilesclientDir, result);
+            DbcHotfixResult hotfixes = ApplyDbcHotfixes(cdbcPart, hotfixesDir, "cdbc_");
+            if (!hotfixes.error.empty())
+                throw std::runtime_error("hotfixes: " + hotfixes.error);
         }
         MergeIsolatedPart(reference, cdbcPartPath, "cdbc", result);
 

@@ -186,7 +186,8 @@ namespace
             return 1;
         }
 
-        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir, importDbc);
+        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir,
+            DataRoot() / "sql" / "hotfixes", importDbc);
         if (!result.error.empty())
         {
             std::printf("create world: %s\n", result.error.c_str());
@@ -213,7 +214,11 @@ namespace
             result.dumpImport.tablesCreated, static_cast<unsigned long long>(result.dumpImport.rowsInserted),
             result.update.appliedMigrationIds.size());
         if (importDbc)
+        {
             PrintDbcImportSummary("db2", result.dbcImport);
+            std::printf("create world: applied %llu hotfix statements from %zu files\n",
+                static_cast<unsigned long long>(result.hotfixes.statements), result.hotfixes.files.size());
+        }
         return 0;
     }
 
@@ -576,7 +581,8 @@ namespace
             return 1;
         }
 
-        ReferenceBuildResult result = BuildReferenceDatabase(referencePath, worldPath, vanillaDbcDir, clientDir);
+        ReferenceBuildResult result = BuildReferenceDatabase(referencePath, worldPath, vanillaDbcDir, clientDir,
+            DataRoot() / "sql" / "hotfixes");
         for (std::string const& error : result.tableErrors)
             std::printf("%s\n", error.c_str());
         if (!result.error.empty())
