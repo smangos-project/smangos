@@ -772,7 +772,6 @@ INSERT INTO `tmp_proc_aura` VALUES (30808, 20, 100, 0, 0, 0, 0);
 INSERT INTO `tmp_proc_aura` VALUES (30809, 20, 100, 0, 0, 0, 0);
 INSERT INTO `tmp_proc_aura` VALUES (30810, 20, 100, 0, 0, 0, 0);
 INSERT INTO `tmp_proc_aura` VALUES (31255, 20, 100, 5000, 0, 0, 0);
-INSERT INTO `dbc_spellauraoptions` (`ID`, `DifficultyID`, `CumulativeAura`, `ProcCategoryRecovery`, `ProcChance`, `ProcCharges`, `SpellProcsPerMinuteID`, `ProcTypeMask1`, `ProcTypeMask2`, `SpellID`) SELECT (SELECT MAX(`ID`) FROM `dbc_spellauraoptions`) + ROW_NUMBER() OVER (ORDER BY t.`spell_id`), 0, t.`stack`, t.`cd`, t.`chance`, t.`charges`, t.`ppm`, t.`flags`, 0, t.`spell_id` FROM `tmp_proc_aura` t WHERE NOT EXISTS (SELECT 1 FROM `dbc_spellauraoptions` a WHERE a.`SpellID` = t.`spell_id` AND a.`DifficultyID` = 0);
 DROP TABLE `tmp_proc_aura`;
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 0, `EffectSpellClassMask2` = 0 WHERE `SpellID` = 324 AND `DifficultyID` = 0 AND `EffectIndex` = 0 AND `Effect` <> 0 AND `EffectAura` NOT IN (107, 108, 109, 112);
 UPDATE `dbc_spelleffect` SET `EffectSpellClassMask1` = 0, `EffectSpellClassMask2` = 0 WHERE `SpellID` = 324 AND `DifficultyID` = 0 AND `EffectIndex` = 1 AND `Effect` <> 0 AND `EffectAura` NOT IN (107, 108, 109, 112);
