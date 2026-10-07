@@ -1,0 +1,11 @@
+{
+  "name": "smangos-debug",
+  "axisX": "PosX", "axisY": "NegZ", "axisZ": "PosY",
+  "storageLocations": { "Editor": { "databasePath": "/tmp/wmsdbg/world.doltlite" } },
+  "paths": {
+    "wow.clientContent": "/tmp/wmsdbg/content",
+    "wow.serverData": "/home/ihm/Documents/Dev/Default/smangos/.server/data"
+  },
+  "assetSources": [ { "id": "wow", "name": "WoW Client", "type": "FileSystem", "enabled": true,
+    "rootPath": "/home/ihm/Documents/Dev/Default/smangos/.client/Content", "lowercasePaths": true } ]
+}

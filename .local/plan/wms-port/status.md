@@ -1,95 +1,72 @@
-# WMS port status
+# WMS port status (rewritten 2026-10-07)
 
-## Session 4 (2026-10-06)
-- B5 done as script-only: `wms.adtHoles` (Cells/Cut/Fill/CutAt/FillAt), `Landscape/AdtHoles`. No brush tool.
-- C2 done (removal only): `Export/Adt/AdtObj1Patcher`. Stock `_obj1` = MLFD (12 u32: doodad level offsets[3], lengths[3], WMO offsets[3], lengths[3]),
-  MLDD (36B, same as MDDF, uid at +4, different order), MLDX (28B bounds), MLDL (4B), MLMD (40B, uid +4), MLMX (28B). Export drops removed uids and fixes MLFD ranges; added placements get no LOD entry.
-- Next: D (water, MH2O), E, F, G, H per next-steps.md. Live-editor import check (A2/A3) and all client verification still pending by user's choice.
+Overall plan: `plan.md` (phases 0-8). What to do next: `next-steps.md`. This file: what exists and the
+facts needed to work on it. Code: `WMS = tools/map_editor/WorldMapStudioPlugins/WoWMapStudio/src`.
+CataBox reference: `CB = .local/reference/CataBox/src/tools/map_editor/WorldMapStudioPlugins/WoWMapStudio/src`.
 
-## D (water) findings, not started in code
-- Core already has the procedural stack (`WorldMapStudio/src/Procedural`, `Network`, `PolygonTriangulator`, `ProceduralOutputBuilder`, `MeshParameter`), so CataBox's `Water/*` ports on it.
-- Our `WowAdtImportBatchOperation` already has a comment about water models going into the same commit (~line 588), but no water code; `ImportedChunk.Liquid` (ImportedChunkLiquid) is read by `WowAdtTileReader.ConvertLiquid`.
-- CataBox source to port (CB/...): `Import/Mapping/WaterMapper.cs` (pure, needs `WowLiquidRasterizer.SubchunksPerCell` and `WowChunkGridOrientation.ToEditorGrid`; reads MapChunkLiquid -> bodies of quads),
-  `WowAdtImportBatchOperation` water parts (BuildWaterModelsAsync/BuildWaterEntities/DeleteExistingWaterAsync, importWater setting, version bump),
-  `Water/WaterSurfaceMeshFunction`, `WaterLatticeSnap`, `WaterAttributeParameters`, `WowLiquidParameters`, `WowLiquidMaterialType`, `Mh2oFormat` (Rendering/Water), `WowLiquidRasterizer` + `Mh2o/Mh2oChunkWriter`, `Export/Adt/WowWaterTileBuilder`, `WowMh2oExportChannel`.
-- Our wowlib already has MapChunkLiquid/LiquidInstance/Mh2OData, so CataBox's own `Water/Mh2o/*` copies are not needed.
-- Suggested order: WaterMapper + tests -> liquid parameters/material (1.15 LiquidType/LiquidMaterial) -> surface function + import wiring -> rasterizer -> export (ADTBfaPlus.Water).
+## What is built
 
-## Session 4 - D (water)
-- D1 done: `WaterMapper` (+tests), `WowChunkGridOrientation.ToEditorGrid`, `WaterSurfaceMeshFunction`, liquid params/lattice snap/`Mh2oFormat`, `WowLiquidMaterialType`, `LiquidTextureLibrary` (frames from `LiquidTypeXTexture` FDIDs via `LiquidType.FrameFileDataIds`, lake_a fallback), tint updater. Import wired into `WowAdtImportBatchOperation` (importer v6, "Import water" setting, re-import deletes old water). Elwynn 32,48 imports 2 bodies on a scratch DB copy; WoW Import tests pass (34).
-- Not verified: rendering of the water in the viewport (`wms.scene.All()` is empty after import+Reload+Map.Open in a scratch run, the known live-editor issue), shader/depth-buffer behaviour on 4.x.
-- Left in D: D3 `RiverSurfaceMeshFunction` (CataBox Water/RiverSurfaceMeshFunction.cs), D4 export (`WowLiquidRasterizer` + `Mh2oChunkWriter` onto wowlib `Mh2OData`; `WowAdtTileWriter` has no MH2O yet; need export-channel plumbing or direct gather of ProceduralComponent water models), D5 server liquid preview.
+Nearly everything below is unit-tested but has **not** been checked in the real client or by hand in
+the editor (see next-steps.md step 1).
 
-## Session 5 - D4/D5
-- D4 done: `WowLiquidRasterizer`, `WaterSurfacePatch`, `WowWaterTileBuilder`, `WowWaterPatches`; `WowAdtTileWriter.ApplyWater` rewrites only cells whose liquid differs from the file. Caveats: HeightUv UVs are written as zeros; if the map has no authored water at all, MH2O is left untouched (deleting all water doesn't strip it).
-- D5 done: `WowServerLiquidMesh` + "Liquid" toggle in the server preview header item (one quad per wet cell from `maps/*.map`). Only the 0002035 fixture is available (no 0002537/0004830 fixtures yet).
-- Still open: live-editor empty scene diagnosis, visual water check, E, F/G, H.
+- **Catalogs**: simple db2s (Map, AreaTable, Emote, Faction, Liquid*, LightSkybox, LightParams, SkillLine,
+  Quest info/sort, CharTitle, CurrencyType, TerrainType, GroundEffect, SpellDuration/Range/Radius/CastTimes),
+  Creature/GameObject Template (spawn palettes), Quest (quest_template), Item (dbc_itemsparse, edit only),
+  Spell (`Catalog/Spell`: dbc_spell + name/misc/cooldowns/categories/levels/power/effects/aura options/
+  interrupts/class options/target restrictions/reagents, enum + flag pickers, all 16 attribute words).
+  `ThinDbcFactory` has LoadExtrasAsync/StageExtras/StageDeleteExtras hooks for satellite tables.
+- **Assets**: M2/WMO/BLP loading through FDIDs (chunked MD21, MOMT/MODI FDIDs).
+- **Import**: ADT tiles (`wms.wowImport.Run`), incl. MH2O water as `wow.water.surface` procedural models.
+- **Entities on vmangos tables**: creature/gameobject spawns (drawn with their models; NPCs with
+  CreatureDisplayInfoExtra get only the baked skin), tele, taxi, area trigger, graveyard, waypoints,
+  spell_target_position.
+- **Viewport**: zone/area header, light/sky preview (LightParams/LightData), server preview layers
+  (height, collision, navmesh, liquid, drift).
+- **Terrain tools** (`Landscape/`): height sculpt, vertex colour paint, texture paint (4 slots/chunk).
+  Holes: script only (`wms.adtHoles`).
+- **Export** (`wms.wowImport.Export`): rewrites edited tiles (heights, normals, holes, area, layers+alpha,
+  vertex colours, placements, MH2O, `_obj1` removals), WDL entries, new tiles from a blank template + WDT
+  MAIN/MAID, tile removal, new map (`wow.export.map`: WDT from donor, dbc_map/map_template/game_tele).
+- **Procedural models**: `M2ModelWriter` (with collision), `WmoModelWriter` + `WmoBspBuilder` (+ MOGN),
+  `ProceduralModelExporter`, `WowProceduralPlacements` (MDDF/MODF). Script helpers
+  `wms.wowImport.CreatePanelModel` / `CreatePanelWmoModel`.
+- **Server tooling**: `wow.extract` batch op (wraps `WowServerExtractor`, dry run logs staleness).
+- **Started, untracked (2026-10-07)**: `Catalog/SpellVisual`, `Catalog/SpellVisualKit` (someone else may
+  be working on them; check `git status`/`git log` before touching).
+- `WorldMap/WorldMapProjection.cs` is the only piece of the world map editor (G6).
 
-## Session 6 - E3/E4 and empty-scene diagnosis
-- E3: export setting "Removed tiles" (drops overlay files, clears WDT MAIN/MAID). E4: `wow.export.map` batch op (WDT from donor without tiles, dbc_map + map_template + game_tele rows, ids from 3000); export op has "Donor map for new tiles". Untested end to end.
-- Empty scene: NOT a bug. On a scratch copy, import 32,48 + `wms.editor.Reload()` + `wms.map.Open(1)` + `wms.viewport.SetPosition(-8800,650,266)` + `wms.wowMap.WaitForStreaming()` gives 255 entities (terrain, m2/wmo, creatures, water "ADT Water 32_48 #1"); screenshot shows terrain with trees. Entities stream in asynchronously, so `scene.All()` right after Open is empty. Water not yet inspected up close (Focus(entity from All()) fails; use look.sh with a Create()d entity).
+## Verified in the real client so far
+- A procedural WMO panel (MODF repointed by hand in Stormwind, then restored).
+- Creature/gameobject models render in the editor at Northshire; Elwynn 32,48 import shows terrain+trees.
+- Unedited import -> export writes 0 tiles.
 
-## Session 7 - F1/F2
-- F1/F2 done (minimal): `Component/WowSpawnModelComponent` + `SpawnAppearances` replace the point marker on creature and gameobject spawns (same marker type ids). Creature = `creature_template.display_id1` (+`display_scale1`) -> CreatureDisplayInfo -> CreatureModelData FDID; gameobject = `GameObjectDisplayInfo.FileDataID` x template size. Placeholder box until loaded/unresolved. Checked in the live editor at Northshire (NPC and objects render). Not done: NPCs with `CreatureDisplayInfoExtra` (F5), equipment, display_id2-4 variants, thumbnails.
-- Next: F3 light preview, F4 spell_target_position, F6, G catalogs, H.
+## Important: export writes into the live client
+The real project (`tools/map_editor/wms-project.json`) has `wow.clientContent = .client/Content`, and the
+exporter writes ADT/WDT/WDL/models **straight into it with no backup**. Before exporting against the real
+project, either back up the affected files or use the sandbox below. See next-steps.md step 0.
 
-## Session 8 - F4
-- F4 done: `WowSpellTargetPosition` entity (+factory, inspector, view category) on `spell_target_position` (key id + target_map, no effect index). Create doesn't validate the map (Stage does). Commit path untested against a DB. Next: F3 light preview, F6, G, H.
+## Sandbox for editor experiments
+`.local/plan/wms-port/sandbox/` has copies of the `/tmp/wmsdbg` scripts (`/tmp` may be wiped):
+- `/tmp/wmsdbg/content`: symlinks to every entry of `.client/Content` except `world/maps/azeroth`, which
+  holds real copies of tiles 32_48, 31_49, 32_49 (+ wdt/wdl). `project.json` points `wow.clientContent`
+  there and the editor DB at `/tmp/wmsdbg/world.doltlite` (a copy of `.world/world.doltlite`; map 1 has
+  those 3 tiles imported, plus leftover TestPanel entities).
+- `up.sh` (restart + wait), `stop.sh`, `js.sh 'code'` (port 8799), `shot.sh out.png`,
+  `look.sh camx camy camz tx ty tz` (aim camera). Adjust paths in the scripts if /tmp/wmsdbg moves.
+- Typical flow: `wms.map.Open(1)`, `wms.viewport.SetPosition(-8800,650,266)`,
+  `wms.view.SetViewDistanceChunks(16)`, `wms.wowMap.WaitForStreaming()`, then query/edit, `wms.session.Commit()`,
+  `wms.wowImport.Export("azeroth","Azeroth")`.
 
-## Session 8 - F6 (partial)
-- `wow.extract` batch op (`Server/WowExtractBatchOperation`): map, optional tile, stages, force, dry run, wraps `WowServerExtractor`. Compiles, not run through the UI. Dry run now logs a staleness summary. Not done: tile-rect (map_extractor only has `--tile`), drift layer exists already. Next: F3 light preview, G, H, F5.
-
-F3 done: LightParams catalog (read-only, LightData time keys -> bands), WowLightComponent env source auto-attached to WowLight, WowSkyEvaluation, WowOutdoorLighting; light falloff now /36. Weather slots, band editing, zone light env source not ported. Not seen in viewport.
-- G1: `Creature Template` / `GameObject Template` catalogs (ThinDbcFactory keyed by Entry, common fields only, no palette UI in spawn tools yet).
-- G2/G3: `Quest` (quest_template) and `Item` (dbc_itemsparse, edit only) catalogs.
-- Next: H1/H2 procedural export (CataBox Export/Models: ProceduralModelExporter, M2Writer, WMO writers, WowExportChannelSystem, WowModelExportChannels; port onto wowlib writers), then F5.
-
-## Session: H1 research (no code)
-- Do NOT copy CataBox M2Writer/M2SkinWriter: they emit WotLK MD20 (v264) + external skin; the 1.15 client loads chunked MD21 + SkinCataPlus, and our M2Reader reads exactly that. Build with wowlib instead.
-- wowlib C# (net8, WoWLib.dll 0.0.11) write path: `M2RootLegionPlus` (Vertices, Textures, Materials, TextureLookupTable, BoneLookupTable, BoundingBox, ... all `WoWLib.Vector<T>` with Add/Clear/CopyFrom), `SkinCataPlus.Profile` (`M2SkinProfileCataPlus`: Vertices, Indices, Submeshes, Batches), `M2ChunkedFile.ForVersion(ClientEra)` (SkinFdids, TextureFdids). Unknown yet: how MD21 chunk + chunked file combine on Write, and the submesh element type (reflect with /tmp/refl.fsx: `dotnet fsi refl.fsx <type>`; may be gone).
-- Alternative: start from a template model like the Python addon (m2_export.new_m2 copies a small doodad then rewrites geometry) and call `M2.Write(fs,key)`.
-- ProceduralModelExporter, WowExportChannelSystem, WowModelExportChannels, WowExportRun are still to port (reference Export/). WMO writers (WmoRootWriter/WmoGroupWriter/WmoBspBuilder) should likewise target 1.15 WMO via wowlib; see tools/model_editor/addon/wow_model_editor/wmo_*.py for the working Python equivalent.
-
-- H1 started: `Export/Models/M2ModelWriter` (wowlib `M2RootLegionPlus` + `SkinCataPlus` + `M2ChunkedFile`, MD21 assembled by hand) with round-trip tests through M2Reader; WoW Export tests pass (37). Wowlib `M2Vertex`/`M2Material` clash with ours: use aliases. Skin `Bones` take a `FixedArray<byte>` copied from `M2Vertex.BoneIndices`. Still to port: ProceduralModelExporter, export channel system, WMO writers.
-- H1: `ProceduralModelExporter` (M2 only; takes a `WowFileDataIds`, allocates ids for `.m2` and `00.skin`, writes the skin id into the chunked file's SFID, texture strings resolved via `IdOf`). Tested with a live ArrayMesh. WMO output, export channel system (`WowExportChannelSystem`, `WowModelExportChannels`, `WowExportRun`) and WMO writers still to port.
-- H2: no channel registry (our export already gathers per tile). `WowProceduralPlacements.Gather` turns procedural entities whose output format is M2 into generated files (via `ProceduralModelExporter`) + `EditorPlacement`s (keyed by entity RecordId) that the ADT export feeds to `PlacementExtractor`. Compiles, existing tests pass, NOT run end to end. WMO output still needs the WMO writers.
-
-## E2E check of procedural M2 export (in progress, not done)
-- Sandbox made so the real client data isn't touched: `/tmp/wmsdbg/content` = symlinks to `.client/Content` except `world/maps/azeroth`, where the three imported tiles' ADT files (32_48, 31_49, 32_49) and wdt/wdl are real copies; `/tmp/wmsdbg/project.json` points `wow.clientContent` there and the editor DB at the scratch `/tmp/wmsdbg/world.doltlite` (map 1 "Azeroth" has those 3 tiles imported). Start with `/tmp/wmsdbg/restart.sh`, script port 8799, `/tmp/wmsdbg/js.sh`. /tmp may be gone; rebuild the same way.
-- Blocker: no script API creates a procedural model (catalog Add) and the live context isn't reachable from [EditorTest]. Next step: add a small `[ScriptFunction]` (or temp one) that creates a `ProceduralModel` (function `builtin.mesh.panel_network`, Formats `{"mesh":"wow.format.m2"}` via `ProceduralFormats`, a VertexNetwork with one face, texture param set on the surface material), adds a MapSceneEntity with `ProceduralComponent` on map 1 near tile 32,48, commits, then `wms.wowImport.Export("azeroth","Azeroth")` and check `/tmp/wmsdbg/content/world/generated/*.m2` + the tile's obj0 MDDF, then load via the client only after installing deliberately.
-
-## H2 end-to-end check (done)
-- `wms.wowImport.CreatePanelModel(name, size, texturePath, x, y, z)` creates + persists a panel_network ProceduralModel (M2 format) and places an entity in the open session (then `wms.session.Commit()`). Export wrote `world/generated/<name>_<id>.m2` + `00.skin`, and tile 32_48 obj0 MDDF gained entries with the custom FDID (787 vs 785 placements). Not loaded in the real client yet.
-- Gotcha: wms-run.sh rebuilds only when not `--no-build`; check `dotnet build` actually succeeded or the old binary keeps running (arg-binding errors "No public methods" = stale binary). Never `pkill -f godot-mono` inline.
-- Still open: WMO writers (WMO output format), F5, palette UI, procedural placements not removed from earlier scratch runs.
-
-## Palette UI (already covered)
-- Spawn menu picker is core (`SpawnMenu.Browse` via `ISpawnFactory.PickerCatalogName`); creature and gameobject spawn factories already return "Creature Template"/"Game Object Template", so the palette exists. No work left there.
-- Remaining: WMO writers (port wmo_*.py onto wowlib), F5 (CreatureDisplayInfoExtra appearance).
-- F5 (minimal): CreatureAppearanceResolver binds CreatureDisplayInfoExtra.BakeMaterialResourcesID -> TextureFileData FDID onto the Skin slot. Not seen in viewport; equipment/hair layers not done.
-
-## WMO writers (research only, no code yet)
-- wowlib C# (0.0.11, `/tmp/refl.fsx <FullName>` reflects a type): `WoWLib.Formats.WMO.WMO.ForVersion(Expansion/ClientVersion)` (Root: WMORoot, Groups: FamilyVector), `Write(FileSystem, FileKey)`, `Validate()`. Concrete `WMOLegion` (Root WMORootLegion, Groups Vector<WMOGroupLegion>; group `.Body` is `WMOGroupBodyLegion`: Header WMOGroupHeaderVanillaToBfa, Polys, Indices, Vertices, Normals, Batches, BspNodes, BspFaceIndices, Liquid; texcoord sets/vertex colour layers via AppendTexcoordSet/AppendVertexColorLayer; chunk types in `WoWLib.Formats.WMO.Group.Chunks`: SmoPoly, WMOBatch(Legion+), CAaBspNode, PointLight). Root chunks under `WoWLib.Formats.WMO.Root.Chunks` (reflect `WMORootLegion` for materials/group infos/header/group names/group fdids).
-- Python reference to port (numpy-free parts): wmo_geometry.build_group (vertex split, batch ordering trans/int/ext, MOPY), wmo_bsp.build (median-split AABB BSP, leaf 128 faces), wmo_export.apply_group/add_group/update_root_boxes (flags F_BSP 0x1, F_COLOR 0x4, F_EXTERIOR 0x8; bbox pad 0.028), wmo_root_export for root fields. Skip all Blender/material-node code.
-- Plan: `Export/Models/WmoModelWriter` (surfaces like M2SurfaceInput -> one exterior group, one MOMT per surface with texture FDID, BSP, boxes), then `ProceduralModelExporter` branch for format `wow.format.wmo` (ids via WowFileDataIds for root + `_000` group), and `WowProceduralPlacements` MODF placement. Round-trip test via WmoRootReader/WmoGroupReader.
-
-## WMO writer (done, not client-loaded)
-- `Export/Models/WmoModelWriter` (wowlib WMORootLegion + WMOGroupLegion; one exterior group, one MOMT/batch per surface, GFID), `WmoBspBuilder` (port of wmo_bsp.build), `ModelSurfaceInput` (renamed from M2SurfaceInput). `ProceduralModelExporter.WriteWmo` writes `name.wmo` + `name_000.wmo`; `WowProceduralPlacements` accepts wow.format.wmo (MODF via PlacementExtractor). WoW Export 41/41 pass.
-- Not done: no group/header names (MOGN), no doodad sets, poly flags fixed at Render|CullObjects (0x60 as stock), no E2E with a WMO ProceduralModel (CreatePanelModel is M2 only) and nothing loaded in the real client.
-
-## WMO E2E
-`wms.wowImport.CreatePanelWmoModel` added. Export in /tmp/wmsdbg wrote `testwmo_1.wmo` + `_000.wmo` and a MODF entry (custom FDID, at the placed position) in azeroth_32_48_obj0. Not loaded in the real client yet.
-WMO verified in the real client (Stormwind, MODF[0] of azeroth_32_48_obj0 repointed to a remapped FDID, files + fdid.index lines added by hand, then restored from /tmp backup): a 60-wide two-sided panel renders, no crash. Panels from CreatePanel*Model are now two-sided. autologin picks the last played character (Wefwefwefa), ignoring the CHARACTER arg.
-
-## MH2O HeightUv (investigated, nothing to change)
-- Scanned all stock 1.15 ADTs: no MH2O instance uses vertex format 1/3 (HeightUv); stock files use liquid object ids (>=42) or HeightDepth, so there are no reference UV values and zero UVs are harmless. `WaterImported` flag (wow_adt_import_tiles) now lets export clear MH2O on tiles whose imported water was deleted.
-
-## WMO MOGN
-- WmoModelWriter writes MOGN ("" + "Exterior") and the group info name offset. Doodad sets skipped: wowlib `SmoDoodadSet.name` is read-only and procedural models have no doodad input. Not client-loaded.
-- Next from the agreed order: vmap/mmap collision for generated models (unchecked), then small catalogs, Spell editor, world map editor.
-
-## Procedural M2 collision + Spell catalog (done)
-- `M2ModelWriter.AddCollision` writes a collision mesh, so the vmap extractor no longer returns NoCollision for generated M2s; WoW Export 42/42.
-- G5 Spell catalog: `Catalog/Spell/{Spell,SpellFactory,SpellTests}.cs` over dbc_spell, spellname, spellmisc, spellcooldowns, spellcategories, spelllevels, spellpower (index 0) and the spelleffect list, difficulty 0; WoW Catalog 5/5. `ThinDbcFactory` gained LoadExtrasAsync/StageExtras/StageDeleteExtras hooks (SpellFactory is the first user).
-- Gaps: effect/aura/target/school/attribute fields are plain ints (CataBox Enums/ has pickers); icons are FDIDs only; satellites not covered: auraoptions, interrupts, classoptions, reagents, targetrestrictions, visuals; spell staging (Upsert/NextId) untested (see verify.md).
-- Next: G6 UiMap world map editor, G7 race/class, MailTemplate/battlegrounds/CinematicCamera catalogs.
+## Gotchas
+- `wms-run.sh` without `--no-build` rebuilds; check the build succeeded, otherwise the old binary runs
+  ("No public methods" errors = stale binary). Never `pkill -f godot-mono` inline (kills the shell).
+- Entities stream in asynchronously: `scene.All()` right after `map.Open` is empty. `Focus(entity from
+  All())` fails; use look.sh.
+- wowlib (`WoWLib.dll` 0.0.11) types clash with ours (`M2Vertex`, `M2Material`): use aliases.
+  Reflect a wowlib type with a small `dotnet fsi` script (old one at `/tmp/refl.fsx`, may be gone).
+- Do not use CataBox's M2Writer/M2SkinWriter: they write WotLK MD20; 1.15 needs chunked MD21 + SkinCataPlus.
+- `_obj1` layout: MLFD (12 u32: doodad level offsets[3], lengths[3], WMO offsets[3], lengths[3]), MLDD (36 B,
+  uid at +4), MLDX (28 B bounds), MLDL (4 B), MLMD (40 B, uid at +4), MLMX (28 B).
+- Stock 1.15 ADTs never use MH2O vertex format HeightUv; zero UVs are harmless. With no authored water
+  MH2O is left alone unless the tile is flagged `WaterImported` (wow_adt_import_tiles).
+- `autologin.sh` picks the last played character and ignores the CHARACTER argument.
