@@ -87,12 +87,10 @@ def _attachments(top, m, report, arm, rig):
         report.add("INFO", "objects", f"{len(src)} -> {len(out)} attachments")
     _rebuild(root.attachments, out)
     ids = [int(a.id) for a in out]
-    size = max(ids) + 1 if ids else 0
-    lut = [0xFFFF] * size
-    for j, i in enumerate(ids):
-        if lut[i] == 0xFFFF:
+    if ids != [int(a.id) for a in src]:
+        lut = [0xFFFF] * (max(ids) + 1 if ids else 0)
+        for j, i in enumerate(ids):
             lut[i] = j
-    if list(root.attachment_lookup_table) != lut:
         _rebuild(root.attachment_lookup_table, lut)
     return {("attachment", j): ob for j, ob in enumerate(order)}
 

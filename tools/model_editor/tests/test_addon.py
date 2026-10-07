@@ -936,6 +936,16 @@ def m2_filename_textures():
 
 
 @test
+def m2_attachment_lookup_duplicates():
+    for stem in ("orcfemale.m2", "axe_1h_horde_c_02.m2"):
+        path = find_m2(stem)
+        clear()
+        top = m2_import.load(path, {"display": "NONE"})
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors and not r.dirty, (stem, str(r), r.diff)
+
+
+@test
 def m2_objects_unedited_clean():
     for path in ("creature/wolf/wolf.m2", "character/human/male/humanmale.m2", find_m2("duskwoodlamppost.m2")):
         clear()
