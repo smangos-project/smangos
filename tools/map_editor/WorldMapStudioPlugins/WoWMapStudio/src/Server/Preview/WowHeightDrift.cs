@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace WorldMapStudio.WoW;
 
@@ -41,5 +42,30 @@ public readonly record struct WowHeightDrift(int Samples, int Drifted, float Max
         }
 
         return new WowHeightDrift(samples, drifted, max, samples == 0 ? 0 : sum / samples);
+    }
+
+    /// <summary>One-line drift summary of server tile (<paramref name="fileX"/>, <paramref name="fileY"/>) against the loaded editor terrain.</summary>
+    public static string Describe(EditorContext context, int wowMap, int fileX, int fileY)
+    {
+        if (context.WowServerPaths.Roots.MapFile(new WowServerTileKey(wowMap, fileX, fileY)) is not { } file || !File.Exists(file))
+        {
+            return "no server .map for tile";
+        }
+
+        var tile = WowMapTileReader.Read(File.ReadAllBytes(file));
+        if (AdtMapWorld.FromEditor(context, context.Maps.CurrentMap, out _) is not { } world)
+        {
+            return "no imported ADT height data";
+        }
+
+        WowHeightDrift drift = Measure(tile, (row, col) =>
+        {
+            Godot.Vector3 at = WowMapGrid.ToGodot(row, col, 0f, fileX, fileY);
+            AdtVertex vertex = world.NearestVertex(at);
+            return AdtVertexProbe.TryRead(world, AdtVertexKind.Height, vertex, out System.Numerics.Vector3 height) ? height.X : null;
+        }, 0.1f);
+        return drift.Samples == 0
+            ? "no terrain loaded under tile"
+            : $"{drift.Drifted}/{drift.Samples} verts >0.1, max {drift.MaxAbs:F2}, mean {drift.MeanAbs:F3}";
     }
 }

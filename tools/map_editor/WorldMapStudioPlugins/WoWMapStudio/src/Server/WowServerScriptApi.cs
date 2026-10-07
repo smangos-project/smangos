@@ -36,6 +36,13 @@ public sealed class WowServerScriptApi : IScriptModule
         return result.ExitCode;
     });
 
+    /// <summary>Compares the loaded editor terrain of the open map's tile (<paramref name="fileX"/>, <paramref name="fileY"/>) with its extracted server heights.</summary>
+    [ScriptFunction]
+    public string Drift(int fileX, int fileY) =>
+        WowMapBindings.For(_context).Resolve(_context.Maps.CurrentMap) is int wowMap
+            ? WowHeightDrift.Describe(_context, wowMap, fileX, fileY)
+            : "no map binding";
+
     private static WowServerExtractRequest Request(int mapId, int row, int col, string stages, bool force) =>
         row >= 0 && col >= 0 ? new WowServerExtractRequest(mapId, row, col, stages, force) : new WowServerExtractRequest(mapId, Stages: stages, Force: force);
 

@@ -156,7 +156,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
         EditorStorage storage = _batch.Context.Database.EditorStorage;
         IReadOnlyList<AdtImportTileRecord> rows = await AdtImportTileStore.LoadForMapAsync(storage, map.Value).ConfigureAwait(false);
         IEnumerable<AdtImportTileRecord> stale = rows.Where(row =>
-            row.SourceId == source && row.ImporterVersion < ImporterVersion &&
+            string.Equals(row.SourceId, source, StringComparison.OrdinalIgnoreCase) && row.ImporterVersion < ImporterVersion &&
             row.FileX >= minX && row.FileX <= maxX && row.FileY >= minY && row.FileY <= maxY);
         return await AdtReimportGuard.EditedTilesAsync(storage, map, stale).ConfigureAwait(false);
     }
@@ -392,7 +392,7 @@ public sealed class WowAdtImportBatchOperation : IBatchOperation
         using (context.Timings.Measure("load imported-tile rows"))
         {
             existingRows = (await AdtImportTileStore.LoadForMapAsync(storage, catalog.Map.Value).ConfigureAwait(false))
-                .Where(row => row.SourceId == sourceMap)
+                .Where(row => string.Equals(row.SourceId, sourceMap, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(row => (row.FileX, row.FileY));
         }
 

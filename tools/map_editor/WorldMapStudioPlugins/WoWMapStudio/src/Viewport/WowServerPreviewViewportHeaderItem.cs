@@ -78,21 +78,7 @@ public sealed class WowServerPreviewViewportHeaderItem : IViewportHeaderItem
 
         Vector3 server = CreatureCoordinates.PositionFromGodot(cameraGodot);
         (int fileX, int fileY) = WowTileAddressing.TileAtServer(server.X, server.Y);
-        if (_context.WowServerPaths.Roots.MapFile(new WowServerTileKey(wowMap, fileX, fileY)) is not { } file || !File.Exists(file))
-        {
-            return "no server .map for tile";
-        }
-
-        var tile = WowMapTileReader.Read(File.ReadAllBytes(file));
-        var probe = new TerrainProbe(_context.Landscape);
-        var drift = WowHeightDrift.Measure(tile, (row, col) =>
-        {
-            Vector3 world = WowMapGrid.ToGodot(row, col, 0f, fileX, fileY);
-            return probe.TryHeight(world.X, world.Z, out float height) ? height : null;
-        }, 0.1f);
-        return drift.Samples == 0
-            ? "no terrain loaded under tile"
-            : $"{drift.Drifted}/{drift.Samples} verts >0.1, max {drift.MaxAbs:F2}, mean {drift.MeanAbs:F3}";
+        return WowHeightDrift.Describe(_context, wowMap, fileX, fileY);
     }
 
     private void Update(Vector3 cameraGodot)
