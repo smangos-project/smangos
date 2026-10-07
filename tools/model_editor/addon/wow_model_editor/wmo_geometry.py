@@ -181,7 +181,7 @@ def transform(co, normals, matrix):
 
 
 def merge_source(new, src, tol):
-    """`new` with the exact source values wherever both agree within `tol` (same length required)."""
+    """`new` with the exact source values wherever both agree within `tol`, scaled up for magnitudes above 1 (same length required)."""
     if new.shape != src.shape:
         return new
-    return np.where((np.abs(new - src) <= tol) | (np.isnan(new) & np.isnan(src)), src, new)
+    return np.where((np.abs(new - src) <= tol * np.maximum(1.0, np.abs(src))) | (np.isnan(new) & np.isnan(src)), src, new)

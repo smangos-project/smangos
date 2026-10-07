@@ -266,6 +266,19 @@ def _equal(new, src):
     return new.shape == src.shape and bool(np.array_equal(new, src, equal_nan=new.dtype.kind == "f"))
 
 
+def _batches_match(new, src):
+    """Batch lists equal up to source quirks: counts not a multiple of 3 and a stale max_index."""
+    if new.shape != src.shape:
+        return False
+    return (all(np.array_equal(new[f], src[f]) for f in ("start", "min_index", "material"))
+            and np.array_equal(new["count"], src["count"] // 3 * 3))
+
+
+def _poly_materials_match(new, src):
+    """Materials equal on every batched triangle; triangles outside all batches carry no information."""
+    return new.shape == src.shape and bool(np.all((new == src) | (new == 0xFF)))
+
+
 def _merged(new, src, tol):
     return geo.merge_source(new, src, tol) if new.shape == src.shape else new
 
@@ -280,6 +293,9 @@ def compare(arr, src):
               "colors": len(arr.colors) == len(src["cols"]) and all(_equal(a, b) for a, b in zip(arr.colors, src["cols"])),
               "indices": _equal(arr.indices, src["indices"]), "poly flags": _equal(arr.poly_flags, src["flags"]),
               "poly materials": _equal(arr.poly_mat, src["pmat"]), "batches": _equal(arr.batches, src["batches"])}
+    if not checks["batches"] and _batches_match(arr.batches, src["batches"]) and _poly_materials_match(arr.poly_mat, src["pmat"]):
+        arr.batches, arr.poly_mat = src["batches"], src["pmat"]
+        checks["batches"] = checks["poly materials"] = True
     clean = [k for k, ok in checks.items() if not ok]
     return arr, clean
 

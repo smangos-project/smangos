@@ -48,7 +48,8 @@ def _read(b, action, off_grid=None):
     if not curves:
         return None
     frames = np.unique(np.concatenate([_co(fc)[0] for fc in curves]))
-    bake = any(k.interpolation not in ("CONSTANT", "LINEAR") for fc in curves for k in fc.keyframe_points)
+    spline = b.decode in (m2_anim._spline_vec3, m2_anim._spline_float)
+    bake = not spline and any(k.interpolation not in ("CONSTANT", "LINEAR") for fc in curves for k in fc.keyframe_points)
     if bake:
         frames = np.unique(np.concatenate([frames, np.arange(np.ceil(frames[0]), frames[-1], BAKE_STEP)]))
     if off_grid is not None and np.any(frames != np.rint(frames)):
@@ -66,7 +67,11 @@ def _read(b, action, off_grid=None):
         else:
             vals[:, c] = [fc.evaluate(x) for x in frames]
     first = curves[0].keyframe_points[0].interpolation
-    ipo = 1 if bake else {"CONSTANT": 0, "LINEAR": 1}.get(first, 1)
+    if spline:
+        src_ipo = int(b.track.interpolation_type)
+        ipo = src_ipo if src_ipo in (2, 3) else 2
+    else:
+        ipo = 1 if bake else {"CONSTANT": 0, "LINEAR": 1}.get(first, 1)
     return np.rint(frames).astype(np.int64), vals, ipo
 
 
@@ -153,7 +158,7 @@ def _write_events(model, seq_actions, loop_actions):
         if loops:
             t.timestamps = type(t.timestamps)([_vec_uint(loops[0][1])])
             t.global_sequence = loops[0][0]
-        elif any(per_seq) or t.timeline_count():
+        elif per_seq and (any(per_seq) or t.timeline_count()):
             t.timestamps = type(t.timestamps)([_vec_uint(ts) for ts in per_seq])
             t.global_sequence = NONE
 

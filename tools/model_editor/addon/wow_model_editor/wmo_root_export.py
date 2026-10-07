@@ -27,7 +27,9 @@ def _set_rgba(c, vals):
 def _same_rotation(src, rot):
     """True if the source quaternion, normalised as Blender does, equals `rot` (either sign)."""
     sq = np.array(src, np.float64)
-    sq = sq / np.linalg.norm(sq) if np.linalg.norm(sq) else sq
+    if not np.linalg.norm(sq):
+        return True  # zero quaternion: Blender substitutes some rotation, so it can't be edited meaningfully
+    sq = sq / np.linalg.norm(sq)
     rq = np.array((rot.x, rot.y, rot.z, rot.w))
     return _close(sq, rq, 1e-5) or _close(-sq, rq, 1e-5)
 
@@ -193,6 +195,8 @@ def update_lights(w, root, report):
         color = tuple(int(round(c * 255)) for c in data.color) + (p.color[3],)
         intensity = data.energy / 100.0
         atten_end = data.cutoff_distance if data.use_custom_distance else p.atten_end
+        if abs(atten_end - max(p.atten_end, 0.01)) <= 1e-4:
+            atten_end = p.atten_end
         if p.index < 0 or p.index >= len(r.lights):
             new.append((ob, loc, rot, color, intensity, atten_end))
             continue

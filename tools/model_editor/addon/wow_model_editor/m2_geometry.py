@@ -25,6 +25,8 @@ class SubmeshIn:
     level: int = 0
     center_bone: int = 0
     src: "SubmeshSrc | None" = None
+    keep_source_skin: bool = False  # no armature to read weights from
+    tri_import_normal: "np.ndarray | None" = None  # corner normals Blender reported right after import
 
 
 @dataclass
@@ -110,12 +112,27 @@ def _same_influences(new_b, new_w, src_b, src_w):
     return ok
 
 
+def _snap_corner_normals(sub, src_normals):
+    """Corner normals take the source vertex normal when they agree with it or either side is degenerate, so only edited normals split vertices."""
+    sv = sub.src_vertex[sub.tri_vi]
+    has = sv >= 0
+    snrm = src_normals[np.where(has, sv, 0)]
+    ln = np.linalg.norm(snrm, axis=-1, keepdims=True)
+    unit = snrm / np.where(ln > 0, ln, 1)
+    close = (np.abs(sub.tri_normal - unit) <= NORMAL_TOL).all(axis=-1, keepdims=True)
+    degenerate = (ln < 1e-3) | (np.linalg.norm(sub.tri_normal, axis=-1, keepdims=True) < 0.5)
+    if sub.tri_import_normal is not None:
+        close |= (np.abs(sub.tri_normal - sub.tri_import_normal) <= NORMAL_TOL).all(axis=-1, keepdims=True)
+    return np.where(has[..., None] & (close | degenerate), snrm, sub.tri_normal)
+
+
 def split(sub, src_arrays):
     """Unique corner records of one submesh object: (pos, normal, uv0, uv1, bones, weights, tris, src_ids)."""
     nv = len(sub.co)
     cols = [np.arange(nv), sub.bones, sub.weights, sub.src_vertex]
+    tri_normal = sub.tri_normal if src_arrays is None else _snap_corner_normals(sub, src_arrays[1])
     co, nrm, uv, (vid, bones, weights, src_id), tris = wg.split_vertices(
-        sub.co, sub.tri_vi, sub.tri_normal, sub.tri_uv, cols)
+        sub.co, sub.tri_vi, tri_normal, sub.tri_uv, cols)
     uv0, uv1 = uv
     if src_arrays is not None:
         has = src_id >= 0
@@ -130,7 +147,7 @@ def split(sub, src_arrays):
         nrm = np.where(has[:, None], np.where(orphan[:, None] | close | (np.linalg.norm(nrm, axis=1, keepdims=True) < 1e-3), snrm, nrm), nrm)
         uv0 = np.where(has[:, None], np.where(orphan[:, None], suv0, wg.merge_source(uv0, suv0, UV_TOL)), uv0)
         uv1 = np.where(has[:, None], np.where(orphan[:, None], suv1, wg.merge_source(uv1, suv1, UV_TOL)), uv1)
-        same = has & _same_influences(bones, weights, sbones, sweights)
+        same = has & (sub.keep_source_skin | _same_influences(bones, weights, sbones, sweights))
         bones = np.where(same[:, None], sbones, bones)
         weights = np.where(same[:, None], sweights, weights)
     return co, nrm, uv0, uv1, bones, weights, tris, src_id
@@ -204,7 +221,7 @@ def build(subs, src_arrays, src_lookup, names):
         if len(combo) and cb not in combo:
             cb = int(combo[0])
         outs.append(SubmeshOut(vstart, nvert, istart, nidx, combo, starts[si], _influence_count(weights, sub.src), cb,
-                               centre, sort_centre, radius, sub.skin_section_id, sub.level,
+                               centre, sort_centre, radius, sub.skin_section_id, istart >> 16,
                                sub.src.index if sub.src is not None else -1))
         vstart += nvert
         istart += nidx

@@ -49,6 +49,11 @@ def source_arrays(root):
     return pos, nrm, uv0, uv1, bones, weights
 
 
+def index_start(sm):
+    """First index of a skin section; `level` holds the bits above 16."""
+    return int(sm.index_start) | int(sm.level) << 16
+
+
 def source_submeshes(m, arrays):
     """{index: SubmeshSrc} for skin 0."""
     prof = m.skins[0].profile
@@ -84,6 +89,12 @@ def gather(ob, top, arm, bmap, report, rig=None):
     cn = np.empty(nl * 3, np.float32)
     me.corner_normals.foreach_get("vector", cn)
     tri_normal = cn.reshape(-1, 3)[tri_loops].reshape(nt, 3, 3)
+    tri_ref = None
+    drift = me.attributes.get("wow_import_normal")
+    if drift is not None and len(drift.data) == nl:
+        ref = np.empty(nl * 3, np.float32)
+        drift.data.foreach_get("vector", ref)
+        tri_ref = ref.reshape(-1, 3)[tri_loops].reshape(nt, 3, 3)
     uvs = []
     for k in range(2):
         layer = me.uv_layers.get(f"uv_{k}")
@@ -100,6 +111,9 @@ def gather(ob, top, arm, bmap, report, rig=None):
         flat_n = tri_normal.reshape(-1, 3)
         co, flat_n = wg.transform(co, flat_n, mat)
         tri_normal = flat_n.reshape(nt, 3, 3)
+        if tri_ref is not None:
+            flat_r = tri_ref.reshape(-1, 3)
+            tri_ref = wg.transform(flat_r, flat_r, mat)[1].reshape(nt, 3, 3)
     attr = me.attributes.get("wow_vertex")
     src_vertex = np.full(nv, -1, np.int32)
     if attr is not None:
@@ -107,10 +121,10 @@ def gather(ob, top, arm, bmap, report, rig=None):
     p = ob.wow_m2_submesh
     center = rig.map(p.center_bone_index) if rig is not None else p.center_bone_index
     bones, weights, missing = _weights(ob, me, bmap, center if p.index >= 0 else 0)
-    if missing:
+    if missing and bmap:
         report.add("WARNING", "geometry", f"{ob.name}: {missing} vertices without weights use bone {center}")
     return geo.SubmeshIn(co, tri_vi.reshape(-1, 3), tri_normal, uvs, bones, weights, src_vertex,
-                         p.skin_section_id, p.level, center)
+                         p.skin_section_id, p.level, center, keep_source_skin=not bmap, tri_import_normal=tri_ref)
 
 
 def _weights(ob, me, bmap, fallback):
@@ -155,14 +169,15 @@ def same_as_source(pool, m, arrays, srcs):
         return False
     for o, sm in zip(pool.submeshes, prof.submeshes):
         cp, sc = sm.center_position, sm.sort_center_position
-        tris = src_idx[sm.index_start:sm.index_start + sm.index_count].reshape(-1, 3)
+        i0 = index_start(sm)
+        tris = src_idx[i0:i0 + sm.index_count].reshape(-1, 3)
         tris = importable_triangles(tris)
         if not np.array_equal(pool.indices[o.index_start:o.index_start + o.index_count], tris.reshape(-1)):
             return False
         if (o.vertex_start, o.vertex_count, o.combo_index, len(o.combo), o.bone_influences,
-                o.center_bone_index, o.skin_section_id, o.level) != (
+                o.center_bone_index, o.skin_section_id) != (
                 sm.vertex_start, sm.vertex_count, sm.bone_combo_index, sm.bone_count,
-                sm.bone_influences, sm.center_bone_index, sm.skin_section_id, sm.level):
+                sm.bone_influences, sm.center_bone_index, sm.skin_section_id):
             return False
         if (tuple(o.center_position), tuple(o.sort_center_position), o.sort_radius) != (
                 (cp.x, cp.y, cp.z), (sc.x, sc.y, sc.z), sm.sort_radius):
@@ -211,8 +226,8 @@ def apply(m, pool, opts, report):
     prof.submeshes.resize(len(pool.submeshes))
     for j, o in enumerate(pool.submeshes):
         sm = prof.submeshes[j]
-        sm.skin_section_id, sm.level = o.skin_section_id, o.level
-        sm.vertex_start, sm.vertex_count, sm.index_start, sm.index_count = o.vertex_start, o.vertex_count, o.index_start, o.index_count
+        sm.skin_section_id, sm.level = o.skin_section_id, o.index_start >> 16
+        sm.vertex_start, sm.vertex_count, sm.index_start, sm.index_count = o.vertex_start, o.vertex_count, o.index_start & 0xFFFF, o.index_count
         sm.bone_combo_index, sm.bone_count, sm.bone_influences = o.combo_index, len(o.combo), o.bone_influences
         sm.center_bone_index = o.center_bone_index
         _set_vec(sm.center_position, o.center_position)

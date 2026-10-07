@@ -410,6 +410,17 @@ def wmo_export_unedited_is_identical():
 
 
 @test
+def wmo_export_large_uvs_unedited_clean():
+    path = "world/wmo/dungeon/kl_wailing/wailingcaverns.wmo"
+    coll, r = export_files(path)
+    assert not r.errors and r.stats["groups_rebuilt"] == 0, str(r)
+    ob = mesh_groups(coll)[0]
+    ob.data.uv_layers[0].data[0].uv.x += 0.01
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors and r.stats["groups_rebuilt"] == 1, str(r)
+
+
+@test
 def wmo_export_forced_rebuild_is_equivalent():
     for path in (REFS[0], REFS[1], MPY2_WMO):
         coll, r = export_files(path, force=True)
@@ -744,6 +755,46 @@ def m2_geometry_unedited_clean():
         top = m2_import.load(path, {"display": "NONE", "collision": False})
         r = m2_export.export(top, options={"dry_run": True})
         assert not r.errors and not r.dirty, (path, r.diff, str(r))
+
+
+@test
+def m2_normals_snap_to_source():
+    for stem in ("cat.m2", "fishdeadblue.m2", "energytrail03.m2", "sword_2h_blackwing_a_02.m2"):
+        path = find_m2(stem)
+        clear()
+        top = m2_import.load(path, {"display": "NONE", "collision": False})
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors and not r.dirty, (stem, r.diff, str(r))
+    geo = common.submodule("m2_geometry")
+    z = np.zeros((3, 2), np.float32)
+    src = (np.zeros((3, 3), np.float32), np.array([[0, 0, 1], [0, 0, 1], [1e-8, 0, 0]], np.float32),
+           np.zeros((3, 2), np.float32), np.zeros((3, 2), np.float32), np.zeros((3, 4), np.uint8), np.zeros((3, 4), np.uint8))
+    nrm = np.array([[[0, 0, 1], [0, 1, 0], [0, 0, 1]]], np.float32)
+    sub = geo.SubmeshIn(src[0], np.array([[0, 1, 2]], np.int32), nrm, [np.zeros((1, 3, 2), np.float32)] * 2,
+                        src[4], src[5], np.arange(3, dtype=np.int32))
+    out = geo.split(sub, src)[1]
+    assert np.allclose(out[0], (0, 0, 1)) and np.allclose(out[1], (0, 1, 0)), out
+    assert np.array_equal(out[2], src[1][2]), out
+
+
+@test
+def m2_index_level_forced_rebuild():
+    path = find_m2("10fx_custom_shadow_ring.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    r = m2_export.export(top, options={"force": True})
+    try:
+        assert not r.errors, str(r)
+        again = m2_import.read(path)
+        assert len(again.root.vertices) == len(src.root.vertices)
+        sm = again.skins[0].profile.submeshes
+        assert max(int(s.level) for s in sm) >= 1 and again.validate().ok
+        clear()
+        top = m2_import.load(path, {"display": "NONE", "collision": False})
+        assert not m2_export.export(top, options={"dry_run": True}).dirty
+    finally:
+        _cleanup_out(path, len(src.skins))
 
 
 @test
@@ -1137,6 +1188,11 @@ def m2_anim_round_trip():
         assert d is None, (path, d)
 
 
+def matches(only, path):
+    """SWEEP_ONLY is a comma-separated list of path fragments."""
+    return any(f in path for f in only.split(","))
+
+
 def progress(label, i, n):
     if i % 200 == 0:
         print(f"  {label}: {i}/{n}", flush=True)
@@ -1165,7 +1221,7 @@ def sweep_m2():
     entries = index.entries("m2")
     only = os.environ.get("SWEEP_ONLY")
     if only:
-        entries = [e for e in entries if only in e[1]]
+        entries = [e for e in entries if matches(only, e[1])]
     for fdid, path, _ in entries:
         clear()
         if os.environ.get("SWEEP_VERBOSE"):
@@ -1187,7 +1243,7 @@ def sweep_m2_anim():
     entries = index.entries("m2")
     only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
     if only:
-        entries = [e for e in entries if only in e[1]]
+        entries = [e for e in entries if matches(only, e[1])]
     entries = entries[::step]
     for i, (fdid, path, _) in enumerate(entries):
         progress("m2 anim", i, len(entries))
@@ -1220,7 +1276,7 @@ def sweep_m2_geo():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = [], time.time()
     only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
-    entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
+    entries = [e for e in index.entries("m2") if not only or matches(only, e[1])][::step]
     for i, (fdid, path, _) in enumerate(entries):
         progress("m2 geometry", i, len(entries))
         if path in KNOWN_BAD:
@@ -1244,7 +1300,7 @@ def sweep_wmo_export(force):
     wmos = index.entries("wmo")[::step]
     only = os.environ.get("SWEEP_ONLY")
     if only:
-        wmos = [e for e in wmos if only in e[1]]
+        wmos = [e for e in wmos if matches(only, e[1])]
     slowest = []
     for i, (fdid, path, _) in enumerate(wmos):
         progress(f"wmo export (force={force})", i, len(wmos))
@@ -1276,7 +1332,7 @@ def sweep_m2_clean():
     index.load(client.session().content, client.prefs().cache_dir)
     fails, t0 = {}, time.time()
     only, step = os.environ.get("SWEEP_ONLY"), int(os.environ.get("SWEEP_STEP", "1"))
-    entries = [e for e in index.entries("m2") if not only or only in e[1]][::step]
+    entries = [e for e in index.entries("m2") if not only or matches(only, e[1])][::step]
     for i, (fdid, path, _) in enumerate(entries):
         progress("m2 clean", i, len(entries))
         if path in KNOWN_BAD:

@@ -240,12 +240,25 @@ def build_armature(model, coll):
     return arm
 
 
+def _keep_normal_drift(me, n):
+    """Blender can report other corner normals than the ones set (fan averaging); remember them so export can tell edits from drift."""
+    vi = np.empty(len(me.loops), np.int32)
+    me.loops.foreach_get("vertex_index", vi)
+    want = n[vi]
+    got = np.empty(len(me.loops) * 3, np.float32)
+    me.corner_normals.foreach_get("vector", got)
+    got = got.reshape(-1, 3)
+    if np.abs(got - want / np.maximum(np.linalg.norm(want, axis=1, keepdims=True), 1e-12)).max(initial=0) > 2e-2:
+        me.attributes.new("wow_import_normal", "FLOAT_VECTOR", "CORNER").data.foreach_set("vector", got.ravel())
+
+
 def _submesh_mesh(model, name, sm, arrays):
     co, nrm, uv0, uv1, bone_idx, bone_w = arrays
     prof = model.profile
     vstart, vcount = sm.vertex_start, sm.vertex_count
     skin_verts = np.asarray(prof.vertices, dtype=np.int64)[vstart:vstart + vcount]
-    idx = np.asarray(prof.indices, dtype=np.int64)[sm.index_start:sm.index_start + sm.index_count]
+    i0 = int(sm.index_start) | int(sm.level) << 16
+    idx = np.asarray(prof.indices, dtype=np.int64)[i0:i0 + sm.index_count]
     tris = (idx - vstart)[: len(idx) // 3 * 3].reshape(-1, 3)
     if len(tris) and (tris.min() < 0 or tris.max() >= min(vcount, len(skin_verts))):
         _import_warnings.append(f"{name}: triangle indices leave the submesh vertex range")
@@ -280,6 +293,7 @@ def _submesh_mesh(model, name, sm, arrays):
         ln = np.linalg.norm(n, axis=1)
         n[ln < 1e-6] = (0.0, 0.0, 1.0)
         me.normals_split_custom_set_from_vertices(n)
+        _keep_normal_drift(me, n)
     return me, skin_verts
 
 
