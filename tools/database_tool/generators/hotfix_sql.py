@@ -50,7 +50,11 @@ def convert(value, kind):
 
 def literal(v):
     if isinstance(v, str):
-        return "'" + v.replace("'", "''") + "'"
+        # Control characters are spelled out: git normalises line endings in .sql files.
+        quoted = "'" + v.replace("'", "''") + "'"
+        for ch in "\r\n":
+            quoted = quoted.replace(ch, f"' || char({ord(ch)}) || '")
+        return quoted
     if isinstance(v, float):
         return repr(v)
     return str(v)
