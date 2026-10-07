@@ -164,7 +164,7 @@ column read back from its `dbc_` target through the rule's inverse.
 ## Departures from db2
 
 `create` builds `dbc_*` from the stock 1.15 db2 files plus `sql/hotfixes/*.sql`; migrations may
-only depart from that for one of three reasons:
+only depart from that for one of four reasons:
 
 - F: a vmangos fix (its value differs from vanilla 1.12), e.g. `spell_mod`/`spell_effect_mod`
   cells in 20261001010000, item cells in 20260930210000, raid `CorpseMapID` -1, cones.
@@ -172,6 +172,11 @@ only depart from that for one of three reasons:
   sub-rows, 114 items, areatriggers, sound kits, display infos, mail template, skill line 762).
 - S: vmangos C++ needs the vanilla meaning of an id or bit. Each entry names the code; changing
   that code retires the entry.
+- G: spell gameplay. On every column `SpellMgr::LoadSpells` reads, a vmangos spell keeps its vmangos
+  value even where that equals 1.12 (`LOADED` in `generators/spell_delta.py`), and effects db2
+  adds to it are cleared. Classic changed balance (honor items, NPC spells), procs (Seal Fate) and
+  spellmod semantics (extra effects) there. Exception: the family set and masks follow db2, which
+  the core is adapted to.
 
 | Table / ids | Migration | Code that needs it |
 |---|---|---|

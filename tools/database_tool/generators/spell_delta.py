@@ -9,6 +9,7 @@ The legacy migrations in spell_delta/ map vmangos spell data onto the db2 tables
 three times on copies of the db2 spell tables: with vmangos data (M), with vanilla 1.12 data
 (V) and with spell_template alone (T, only to tag where a value comes from). OUT.sql keeps:
   - cells where M differs from db2 and from V (a vmangos fix), text columns excepted;
+  - cells the server loader reads (LOADED) where M differs from db2, except the family set and masks;
   - rows the client lacks, with ids from per-table reserved bases, ordered by natural key;
   - spell_extra, built by the legacy migration from the vmangos data.
 Run with LD_PRELOAD=build/tools/database_tool/libdoltlite.so.0.
@@ -36,6 +37,34 @@ BASES = {
 TABLES = ["dbc_spellname", "dbc_spell"] + sorted(BASES)
 TEXT = {"Name_lang", "NameSubtext_lang", "Description_lang", "AuraDescription_lang"}
 CLASS_MASKS = {"EffectSpellClassMask1", "EffectSpellClassMask2"}
+# Columns SpellMgr::LoadSpells reads. On these a vmangos value wins even where it equals 1.12:
+# Classic changed balance and mechanics there, and the server keeps vanilla behaviour.
+LOADED = {
+    "dbc_spellmisc": {"Attributes1", "Attributes2", "Attributes3", "Attributes4", "Attributes5", "CastingTimeIndex",
+                      "DurationIndex", "RangeIndex", "SchoolMask", "Speed"},
+    "dbc_spellcategories": {"Category", "DispelType", "Mechanic", "DefenseType", "PreventionType", "StartRecoveryCategory"},
+    "dbc_spellclassoptions": set(),
+    "dbc_spellcooldowns": {"RecoveryTime", "CategoryRecoveryTime", "StartRecoveryTime"},
+    "dbc_spellinterrupts": {"InterruptFlags", "AuraInterruptFlags1", "ChannelInterruptFlags1"},
+    "dbc_spelllevels": {"BaseLevel", "MaxLevel", "SpellLevel"},
+    "dbc_spellauraoptions": {"CumulativeAura", "ProcChance", "ProcCharges", "ProcTypeMask1", "ProcCategoryRecovery",
+                             "SpellProcsPerMinuteID"},
+    "dbc_spellaurarestrictions": {"CasterAuraState", "TargetAuraState"},
+    "dbc_spellcastingrequirements": {"RequiresSpellFocus"},
+    "dbc_spellequippeditems": {"EquippedItemClass", "EquippedItemSubclass", "EquippedItemInvTypes"},
+    "dbc_spellpower": {"PowerType", "ManaCost", "ManaCostPerLevel", "ManaPerSecond", "PowerCostPct"},
+    "dbc_spellreagents": {f"Reagent{i}" for i in range(1, 9)} | {f"ReagentCount{i}" for i in range(1, 9)},
+    "dbc_spellshapeshift": {"ShapeshiftMask1", "ShapeshiftExclude1"},
+    "dbc_spelltargetrestrictions": {"Targets", "TargetCreatureType", "MaxTargets", "MaxTargetLevel"},
+    "dbc_spelltotems": {"Totem1", "Totem2"},
+    "dbc_spelleffect": {"Effect", "EffectAura", "EffectBasePoints", "EffectDieSides", "EffectRealPointsPerLevel",
+                        "EffectPointsPerResource", "EffectAuraPeriod", "EffectAmplitude", "EffectChainAmplitude",
+                        "EffectChainTargets", "EffectMechanic", "EffectMiscValue1", "EffectMiscValue2", "ImplicitTarget1",
+                        "ImplicitTarget2", "EffectTriggerSpell", "EffectBonusCoefficient", "EffectRadiusIndex1",
+                        "EffectRadiusIndex2", "EffectItemType"},
+}
+# Loader values for a spell without the row.
+LOADED_DEFAULT = {"EquippedItemClass": -1, "ProcChance": 101}
 NATURAL = ["SpellID", "DifficultyID", "OrderIndex", "EffectIndex"]
 # Ids the Classic client reuses for another spell (S): vmangos keeps the 1.12 spell, text included.
 REUSED = {379, 713, 974, 1234, 1329, 23598, 23920, 30167}
@@ -163,6 +192,14 @@ def load(db, table, alias="main"):
     return cols, {r[0]: r for r in db.execute(f"SELECT * FROM {alias}.`{table}`")}
 
 
+def loader_default(t, cols, row):
+    """The loader ends up with the same values whether or not the row exists."""
+    get = dict(zip(cols, row))
+    if t == "dbc_spellequippeditems":
+        return get["EquippedItemClass"] == -1
+    return all(same(get[c] or 0, LOADED_DEFAULT.get(c, 0)) for c in LOADED.get(t, ()))
+
+
 def natural(cols, row):
     return tuple(row[cols.index(c)] for c in NATURAL if c in cols)
 
@@ -195,7 +232,7 @@ def main():
     server_effect_spells = {s for s, d, e, trig in M.execute(
         "SELECT SpellID, DifficultyID, EffectIndex, EffectTriggerSpell FROM main.dbc_spelleffect")
         if (s, d, e) not in c_effects and trig not in client_spells and trig in world_spells}
-    updates = {"reused": [], "template": [], "mod": []}
+    updates = {"reused": [], "vanilla": [], "template": [], "mod": []}
     inserts = []
     expect = {}
     stats = {}
@@ -216,7 +253,9 @@ def main():
                 tr = t_rows.get(rid)
                 sets = []
                 for i, col in enumerate(cols):
-                    if col == "ID" or (col in TEXT and spell not in REUSED) or same(m[i], c[i]) or (v is not None and same(m[i], v[i])):
+                    if col == "ID" or (col in TEXT and spell not in REUSED) or same(m[i], c[i]):
+                        continue
+                    if v is not None and same(m[i], v[i]) and col not in LOADED.get(t, ()):
                         continue
                     val = m[i]
                     cleared = not m[i] and not (tr is not None and same(tr[i], m[i]))
@@ -226,7 +265,9 @@ def main():
                         val = (int(m[i] or 0) & 0xffffffff) | int(c[i] or 0)
                         if val == c[i]:
                             continue
-                    sets.append((col, val, "reused" if spell in REUSED else "template" if tr is not None and same(tr[i], m[i]) else "mod"))
+                    kind = ("reused" if spell in REUSED else "vanilla" if v is not None and same(m[i], v[i])
+                            else "template" if tr is not None and same(tr[i], m[i]) else "mod")
+                    sets.append((col, val, kind))
                     exp["changed"].append([[rid], col, c[i], val])
                 for src in updates:
                     s = [(col, val) for col, val, k in sets if k == src]
@@ -236,7 +277,7 @@ def main():
                 continue
             if spell in client_spells and spell not in REUSED and not (t == "dbc_spelleffect" and spell in server_effect_spells):
                 v = v_nat.get(key)
-                if v is not None and all(same(m[i], v[i]) for i, col in enumerate(cols) if col != "ID"):
+                if v is not None and all(same(m[i], v[i]) for i, col in enumerate(cols) if col != "ID") and loader_default(t, cols, m):
                     continue
             inserts.append((t, key, cols, m))
             ni += 1
@@ -273,6 +314,7 @@ def main():
     out += ins_sql
     out.append("")
     labels = {"reused": "-- Ids the client reuses for another spell: vmangos keeps the 1.12 spell (SpellMgr, scripts).",
+              "vanilla": "-- Cells the server reads where the client changed the 1.12 value: vmangos keeps vanilla behaviour.",
               "template": "-- Cells where vmangos spell_template differs from 1.12 and the client.",
               "mod": "-- Cells from vmangos spell_mod, spell_effect_mod and core spell fixes."}
     for src in updates:
