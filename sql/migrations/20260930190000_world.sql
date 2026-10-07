@@ -460,15 +460,7 @@ INSERT INTO `areatrigger_extra` (`id`, `name`, `cooldown`, `condition_id`, `scri
 (4294, 'Eastern Plaguelands, Eastwall Tower - Unused', 0, 0, 0, ''),
 (4299, 'Silithus, Southwind Village - Unused', 0, 0, 0, '');
 
-UPDATE `dbc_areatrigger` SET `ContinentID` = 489, `Pos1` = 1449.77, `Pos2` = 1470.57, `Pos3` = 342.625, `Radius` = 4.0, `Box_length` = 0.3333, `Box_width` = 0.3333, `Box_height` = 0.3333, `Box_yaw` = 0.0 WHERE `ID` = 3686;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 489, `Pos1` = 1005.27, `Pos2` = 1447.27, `Pos3` = 335.893, `Radius` = 4.0, `Box_length` = 0.3333, `Box_width` = 0.3333, `Box_height` = 0.3333, `Box_yaw` = 0.0 WHERE `ID` = 3687;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 489, `Pos1` = 1316.97, `Pos2` = 1550.97, `Pos3` = 313.234, `Radius` = 4.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 3706;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 489, `Pos1` = 1319.77, `Pos2` = 1378.67, `Pos3` = 314.753, `Radius` = 4.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 3707;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 489, `Pos1` = 1112.64, `Pos2` = 1351.11, `Pos3` = 316.619, `Radius` = 4.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 3708;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 1, `Pos1` = 1332.27, `Pos2` = -4607.67, `Pos3` = 24.3695, `Radius` = 2.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 4027;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 0, `Pos1` = -8823.48, `Pos2` = 540.301, `Pos3` = 96.9036, `Radius` = 2.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 4032;
-UPDATE `dbc_areatrigger` SET `ContinentID` = 533, `Pos1` = 3006.09, `Pos2` = -3434.17, `Pos3` = 306.195, `Radius` = 6.0, `Box_length` = 0.2778, `Box_width` = 0.2778, `Box_height` = 0.2778, `Box_yaw` = 0.0 WHERE `ID` = 4156;
-
+-- Triggers that areatrigger_extra and vmangos scripts use and the client lacks.
 INSERT INTO `dbc_areatrigger` (`ID`, `ContinentID`, `Pos1`, `Pos2`, `Pos3`, `Radius`, `Box_length`, `Box_width`, `Box_height`, `Box_yaw`, `Message_lang`) VALUES
 (1629, 269, -2061.12, 6635.97, -144.596, 70.0, 0.0, 0.0, 0.0, 0.0, ''),
 (1631, 1, -8280.79, -4025.14, -181.059, 70.0, 0.0, 0.0, 0.0, 0.0, ''),
