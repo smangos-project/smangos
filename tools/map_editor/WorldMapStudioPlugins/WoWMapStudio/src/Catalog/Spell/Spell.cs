@@ -37,6 +37,7 @@ public readonly record struct SpellEffectEntry
 public sealed class Spell : CatalogEntity, IDbcCatalogEntity
 {
     public const int AttributeCount = 16;
+    public const int ReagentCount = 8;
 
     private readonly List<SpellEffectEntry> _effects = [];
 
@@ -117,6 +118,75 @@ public sealed class Spell : CatalogEntity, IDbcCatalogEntity
 
     [ScriptProperty(Mutable = true)]
     public float PowerCostPct { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int CumulativeAura { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ProcCategoryRecovery { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ProcChance { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ProcCharges { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int SpellProcsPerMinuteID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ProcTypeMask1 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ProcTypeMask2 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int InterruptFlags { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int AuraInterruptFlags1 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int AuraInterruptFlags2 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ChannelInterruptFlags1 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ChannelInterruptFlags2 { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int ModalNextSpell { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int SpellClassSet { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float ConeDegrees { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int MaxTargets { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int MaxTargetLevel { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int TargetCreatureType { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Targets { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Width { get; set; }
+
+    /// <summary>`dbc_spellclassoptions.SpellClassMask1..4`.</summary>
+    public int[] SpellClassMask { get; } = new int[4];
+
+    /// <summary>`dbc_spellreagents.Reagent1..8`.</summary>
+    public int[] Reagents { get; } = new int[ReagentCount];
+
+    /// <summary>`dbc_spellreagents.ReagentCount1..8`.</summary>
+    public int[] ReagentCounts { get; } = new int[ReagentCount];
 
     public bool IsSaved { get; set; }
 

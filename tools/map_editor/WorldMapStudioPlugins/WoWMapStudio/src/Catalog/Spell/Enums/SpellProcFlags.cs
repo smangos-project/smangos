@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spellauraoptions.ProcTypeMask`.</summary>
+[System.Flags]
+public enum SpellProcFlags : uint
+{
+    None = 0x0,
+    Heartbeat = 0x1,
+    Kill = 0x2,
+    DealMeleeSwing = 0x4,
+    TakeMeleeSwing = 0x8,
+    DealMeleeAbility = 0x10,
+    TakeMeleeAbility = 0x20,
+    DealRangedAttack = 0x40,
+    TakeRangedAttack = 0x80,
+    DealRangedAbility = 0x100,
+    TakeRangedAbility = 0x200,
+    DealHelpfulAbility = 0x400,
+    TakeHelpfulAbility = 0x800,
+    DealHarmfulAbility = 0x1000,
+    TakeHarmfulAbility = 0x2000,
+    DealHelpfulSpell = 0x4000,
+    TakeHelpfulSpell = 0x8000,
+    DealHarmfulSpell = 0x10000,
+    TakeHarmfulSpell = 0x20000,
+    DealHarmfulPeriodic = 0x40000,
+    TakeHarmfulPeriodic = 0x80000,
+    TakeAnyDamage = 0x100000,
+    DealHelpfulPeriodic = 0x200000,
+    MainHandWeaponSwing = 0x400000,
+    OffHandWeaponSwing = 0x800000,
+    Death = 0x1000000,
+    Jump = 0x2000000,
+    ProcCloneSpell = 0x4000000,
+    EnterCombat = 0x8000000,
+    EncounterStart = 0x10000000,
+    CastEnded = 0x20000000,
+    Looted = 0x40000000,
+    TakeHelpfulPeriodic = 0x80000000,
+}

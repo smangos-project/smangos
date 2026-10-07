@@ -86,6 +86,31 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
             ReadPower(p, s);
         }
 
+        if (await db.DbcSpellauraoptions.AsNoTracking().FirstOrDefaultAsync(r => r.SpellID == id && r.DifficultyID == 0).ConfigureAwait(false) is { } ao)
+        {
+            ReadAuraOptions(ao, s);
+        }
+
+        if (await db.DbcSpellinterrupts.AsNoTracking().FirstOrDefaultAsync(r => r.SpellID == id && r.DifficultyID == 0).ConfigureAwait(false) is { } ir)
+        {
+            ReadInterrupts(ir, s);
+        }
+
+        if (await db.DbcSpellclassoptions.AsNoTracking().FirstOrDefaultAsync(r => r.SpellID == id).ConfigureAwait(false) is { } co)
+        {
+            ReadClassOptions(co, s);
+        }
+
+        if (await db.DbcSpelltargetrestrictions.AsNoTracking().FirstOrDefaultAsync(r => r.SpellID == id && r.DifficultyID == 0).ConfigureAwait(false) is { } tr)
+        {
+            ReadTargetRestrictions(tr, s);
+        }
+
+        if (await db.DbcSpellreagents.AsNoTracking().FirstOrDefaultAsync(r => r.SpellID == id).ConfigureAwait(false) is { } rg)
+        {
+            ReadReagents(rg, s);
+        }
+
         List<DbcSpelleffectRecord> effects = await db.DbcSpelleffect.AsNoTracking()
             .Where(r => r.SpellID == id && r.DifficultyID == 0).ToListAsync().ConfigureAwait(false);
         s.ReplaceEffects(effects.Select(ToEffectEntry));
@@ -126,6 +151,29 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
             r => { r.SpellID = id; r.OrderIndex = 0; }, r => WritePower(s, r),
             s.PowerType != 0 || s.ManaCost != 0 || s.PowerCostPct != 0);
 
+        Upsert(db.DbcSpellauraoptions, r => r.ID, r => r.SpellID == id && r.DifficultyID == 0,
+            r => { r.SpellID = id; r.DifficultyID = 0; }, r => WriteAuraOptions(s, r),
+            s.CumulativeAura != 0 || s.ProcCategoryRecovery != 0 || s.ProcChance != 0 || s.ProcCharges != 0
+            || s.SpellProcsPerMinuteID != 0 || s.ProcTypeMask1 != 0 || s.ProcTypeMask2 != 0);
+
+        Upsert(db.DbcSpellinterrupts, r => r.ID, r => r.SpellID == id && r.DifficultyID == 0,
+            r => { r.SpellID = id; r.DifficultyID = 0; }, r => WriteInterrupts(s, r),
+            s.InterruptFlags != 0 || s.AuraInterruptFlags1 != 0 || s.AuraInterruptFlags2 != 0
+            || s.ChannelInterruptFlags1 != 0 || s.ChannelInterruptFlags2 != 0);
+
+        Upsert(db.DbcSpellclassoptions, r => r.ID, r => r.SpellID == id,
+            r => r.SpellID = id, r => WriteClassOptions(s, r),
+            s.ModalNextSpell != 0 || s.SpellClassSet != 0 || s.SpellClassMask.Any(m => m != 0));
+
+        Upsert(db.DbcSpelltargetrestrictions, r => r.ID, r => r.SpellID == id && r.DifficultyID == 0,
+            r => { r.SpellID = id; r.DifficultyID = 0; }, r => WriteTargetRestrictions(s, r),
+            s.ConeDegrees != 0 || s.MaxTargets != 0 || s.MaxTargetLevel != 0 || s.TargetCreatureType != 0
+            || s.Targets != 0 || s.Width != 0);
+
+        Upsert(db.DbcSpellreagents, r => r.ID, r => r.SpellID == id,
+            r => r.SpellID = id, r => WriteReagents(s, r),
+            s.Reagents.Any(x => x != 0) || s.ReagentCounts.Any(x => x != 0));
+
         List<DbcSpelleffectRecord> existing = db.DbcSpelleffect.Where(r => r.SpellID == id && r.DifficultyID == 0).ToList();
         foreach (DbcSpelleffectRecord row in existing.Where(r => s.Effects.All(e => e.EffectIndex != r.EffectIndex)))
         {
@@ -154,6 +202,11 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         db.DbcSpellcategories.RemoveRange(db.DbcSpellcategories.Where(r => r.SpellID == id));
         db.DbcSpelllevels.RemoveRange(db.DbcSpelllevels.Where(r => r.SpellID == id));
         db.DbcSpellpower.RemoveRange(db.DbcSpellpower.Where(r => r.SpellID == id));
+        db.DbcSpellauraoptions.RemoveRange(db.DbcSpellauraoptions.Where(r => r.SpellID == id));
+        db.DbcSpellinterrupts.RemoveRange(db.DbcSpellinterrupts.Where(r => r.SpellID == id));
+        db.DbcSpellclassoptions.RemoveRange(db.DbcSpellclassoptions.Where(r => r.SpellID == id));
+        db.DbcSpelltargetrestrictions.RemoveRange(db.DbcSpelltargetrestrictions.Where(r => r.SpellID == id));
+        db.DbcSpellreagents.RemoveRange(db.DbcSpellreagents.Where(r => r.SpellID == id));
         db.DbcSpelleffect.RemoveRange(db.DbcSpelleffect.Where(r => r.SpellID == id));
     }
 
@@ -277,6 +330,104 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         p.PowerCostPct = s.PowerCostPct;
     }
 
+    private static void ReadAuraOptions(DbcSpellauraoptionsRecord a, Spell s)
+    {
+        s.CumulativeAura = a.CumulativeAura;
+        s.ProcCategoryRecovery = a.ProcCategoryRecovery;
+        s.ProcChance = a.ProcChance;
+        s.ProcCharges = a.ProcCharges;
+        s.SpellProcsPerMinuteID = a.SpellProcsPerMinuteID;
+        s.ProcTypeMask1 = unchecked((int)a.ProcTypeMask1);
+        s.ProcTypeMask2 = a.ProcTypeMask2;
+    }
+
+    private static void WriteAuraOptions(Spell s, DbcSpellauraoptionsRecord a)
+    {
+        a.CumulativeAura = s.CumulativeAura;
+        a.ProcCategoryRecovery = s.ProcCategoryRecovery;
+        a.ProcChance = s.ProcChance;
+        a.ProcCharges = s.ProcCharges;
+        a.SpellProcsPerMinuteID = s.SpellProcsPerMinuteID;
+        a.ProcTypeMask1 = unchecked((uint)s.ProcTypeMask1);
+        a.ProcTypeMask2 = s.ProcTypeMask2;
+    }
+
+    private static void ReadInterrupts(DbcSpellinterruptsRecord i, Spell s)
+    {
+        s.InterruptFlags = i.InterruptFlags;
+        s.AuraInterruptFlags1 = unchecked((int)i.AuraInterruptFlags1);
+        s.AuraInterruptFlags2 = i.AuraInterruptFlags2;
+        s.ChannelInterruptFlags1 = unchecked((int)i.ChannelInterruptFlags1);
+        s.ChannelInterruptFlags2 = i.ChannelInterruptFlags2;
+    }
+
+    private static void WriteInterrupts(Spell s, DbcSpellinterruptsRecord i)
+    {
+        i.InterruptFlags = s.InterruptFlags;
+        i.AuraInterruptFlags1 = unchecked((uint)s.AuraInterruptFlags1);
+        i.AuraInterruptFlags2 = s.AuraInterruptFlags2;
+        i.ChannelInterruptFlags1 = unchecked((uint)s.ChannelInterruptFlags1);
+        i.ChannelInterruptFlags2 = s.ChannelInterruptFlags2;
+    }
+
+    private static void ReadClassOptions(DbcSpellclassoptionsRecord c, Spell s)
+    {
+        s.ModalNextSpell = c.ModalNextSpell;
+        s.SpellClassSet = c.SpellClassSet;
+        s.SpellClassMask[0] = unchecked((int)c.SpellClassMask1);
+        s.SpellClassMask[1] = unchecked((int)c.SpellClassMask2);
+        s.SpellClassMask[2] = unchecked((int)c.SpellClassMask3);
+        s.SpellClassMask[3] = unchecked((int)c.SpellClassMask4);
+    }
+
+    private static void WriteClassOptions(Spell s, DbcSpellclassoptionsRecord c)
+    {
+        c.ModalNextSpell = s.ModalNextSpell;
+        c.SpellClassSet = s.SpellClassSet;
+        c.SpellClassMask1 = unchecked((uint)s.SpellClassMask[0]);
+        c.SpellClassMask2 = unchecked((uint)s.SpellClassMask[1]);
+        c.SpellClassMask3 = unchecked((uint)s.SpellClassMask[2]);
+        c.SpellClassMask4 = unchecked((uint)s.SpellClassMask[3]);
+    }
+
+    private static void ReadTargetRestrictions(DbcSpelltargetrestrictionsRecord t, Spell s)
+    {
+        s.ConeDegrees = t.ConeDegrees;
+        s.MaxTargets = t.MaxTargets;
+        s.MaxTargetLevel = t.MaxTargetLevel;
+        s.TargetCreatureType = t.TargetCreatureType;
+        s.Targets = t.Targets;
+        s.Width = t.Width;
+    }
+
+    private static void WriteTargetRestrictions(Spell s, DbcSpelltargetrestrictionsRecord t)
+    {
+        t.ConeDegrees = s.ConeDegrees;
+        t.MaxTargets = s.MaxTargets;
+        t.MaxTargetLevel = s.MaxTargetLevel;
+        t.TargetCreatureType = s.TargetCreatureType;
+        t.Targets = s.Targets;
+        t.Width = s.Width;
+    }
+
+    private static void ReadReagents(DbcSpellreagentsRecord r, Spell s)
+    {
+        int[] items = [r.Reagent1, r.Reagent2, r.Reagent3, r.Reagent4, r.Reagent5, r.Reagent6, r.Reagent7, r.Reagent8];
+        int[] counts = [r.ReagentCount1, r.ReagentCount2, r.ReagentCount3, r.ReagentCount4, r.ReagentCount5, r.ReagentCount6, r.ReagentCount7, r.ReagentCount8];
+        items.CopyTo(s.Reagents, 0);
+        counts.CopyTo(s.ReagentCounts, 0);
+    }
+
+    private static void WriteReagents(Spell s, DbcSpellreagentsRecord r)
+    {
+        int[] a = s.Reagents;
+        int[] c = s.ReagentCounts;
+        r.Reagent1 = a[0]; r.Reagent2 = a[1]; r.Reagent3 = a[2]; r.Reagent4 = a[3];
+        r.Reagent5 = a[4]; r.Reagent6 = a[5]; r.Reagent7 = a[6]; r.Reagent8 = a[7];
+        r.ReagentCount1 = c[0]; r.ReagentCount2 = c[1]; r.ReagentCount3 = c[2]; r.ReagentCount4 = c[3];
+        r.ReagentCount5 = c[4]; r.ReagentCount6 = c[5]; r.ReagentCount7 = c[6]; r.ReagentCount8 = c[7];
+    }
+
     internal static SpellEffectEntry ToEffectEntry(DbcSpelleffectRecord r) => new()
     {
         EffectIndex = r.EffectIndex,
@@ -370,6 +521,42 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         yield return F.Flags<SpellAttr13Flags>("Attributes 14", () => e.Attributes[13], v => e.Attributes[13] = v);
         yield return F.Flags<SpellAttr14Flags>("Attributes 15", () => e.Attributes[14], v => e.Attributes[14] = v);
         yield return F.Flags<SpellAttr15Flags>("Attributes 16", () => e.Attributes[15], v => e.Attributes[15] = v);
+        yield return F.Separator();
+        yield return F.Int("Cumulative Aura", () => e.CumulativeAura, v => e.CumulativeAura = v);
+        yield return F.Int("Proc Chance", () => e.ProcChance, v => e.ProcChance = v);
+        yield return F.Int("Proc Charges", () => e.ProcCharges, v => e.ProcCharges = v);
+        yield return F.Int("Proc Category Recovery (ms)", () => e.ProcCategoryRecovery, v => e.ProcCategoryRecovery = v);
+        yield return F.Int("Procs Per Minute ID", () => e.SpellProcsPerMinuteID, v => e.SpellProcsPerMinuteID = v);
+        yield return F.Flags<SpellProcFlags>("Proc Type Mask 1", () => e.ProcTypeMask1, v => e.ProcTypeMask1 = v);
+        yield return F.Int("Proc Type Mask 2", () => e.ProcTypeMask2, v => e.ProcTypeMask2 = v);
+        yield return F.Flags<SpellInterruptFlags>("Interrupt Flags", () => e.InterruptFlags, v => e.InterruptFlags = v);
+        yield return F.Flags<SpellAuraInterruptFlags>("Aura Interrupt Flags 1", () => e.AuraInterruptFlags1, v => e.AuraInterruptFlags1 = v);
+        yield return F.Flags<SpellAuraInterruptFlags2>("Aura Interrupt Flags 2", () => e.AuraInterruptFlags2, v => e.AuraInterruptFlags2 = v);
+        yield return F.Flags<SpellAuraInterruptFlags>("Channel Interrupt Flags 1", () => e.ChannelInterruptFlags1, v => e.ChannelInterruptFlags1 = v);
+        yield return F.Flags<SpellAuraInterruptFlags2>("Channel Interrupt Flags 2", () => e.ChannelInterruptFlags2, v => e.ChannelInterruptFlags2 = v);
+        yield return F.Separator();
+        yield return F.Enum<SpellFamilyName>("Spell Class Set", () => e.SpellClassSet, v => e.SpellClassSet = v);
+        yield return F.Link("Modal Next Spell", () => e.ModalNextSpell, v => e.ModalNextSpell = v, "Spell");
+        for (int i = 0; i < 4; i++)
+        {
+            int slot = i;
+            yield return F.Int($"Spell Class Mask {slot + 1}", () => e.SpellClassMask[slot], v => e.SpellClassMask[slot] = v);
+        }
+
+        yield return F.Separator();
+        yield return F.Flags<SpellCastTargetFlags>("Target Flags", () => e.Targets, v => e.Targets = v);
+        yield return F.Flags<SpellTargetCreatureTypeMask>("Target Creature Types", () => e.TargetCreatureType, v => e.TargetCreatureType = v);
+        yield return F.Int("Max Targets", () => e.MaxTargets, v => e.MaxTargets = v);
+        yield return F.Int("Max Target Level", () => e.MaxTargetLevel, v => e.MaxTargetLevel = v);
+        yield return F.Float("Cone Degrees", () => e.ConeDegrees, v => e.ConeDegrees = v);
+        yield return F.Float("Width", () => e.Width, v => e.Width = v);
+        yield return F.Separator();
+        for (int i = 0; i < Spell.ReagentCount; i++)
+        {
+            int slot = i;
+            yield return F.Link($"Reagent {slot + 1}", () => e.Reagents[slot], v => e.Reagents[slot] = v, "Item");
+            yield return F.Int($"Reagent {slot + 1} Count", () => e.ReagentCounts[slot], v => e.ReagentCounts[slot] = v);
+        }
     }
 
     public override void DrawFields(EditorContext context, CatalogEntity entity, FieldEditTracker tracker,

@@ -1,0 +1,41 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spellinterrupts.AuraInterruptFlags1` / `ChannelInterruptFlags1`.</summary>
+[System.Flags]
+public enum SpellAuraInterruptFlags : uint
+{
+    None = 0x0,
+    Hostileactionreceived = 0x1,
+    Damage = 0x2,
+    Action = 0x4,
+    Moving = 0x8,
+    Turning = 0x10,
+    Anim = 0x20,
+    Dismount = 0x40,
+    Underwater = 0x80,
+    Abovewater = 0x100,
+    Sheathing = 0x200,
+    Interacting = 0x400,
+    Looting = 0x800,
+    Attacking = 0x1000,
+    Itemuse = 0x2000,
+    Damagechannelduration = 0x4000,
+    Shapeshifting = 0x8000,
+    Actiondelayed = 0x10000,
+    Mount = 0x20000,
+    Standing = 0x40000,
+    Leaveworld = 0x80000,
+    Stealthorinvis = 0x100000,
+    Invulnerabilitybuff = 0x200000,
+    Enterworld = 0x400000,
+    Pvpactive = 0x800000,
+    Nonperiodicdamage = 0x1000000,
+    Landingorflight = 0x2000000,
+    Release = 0x4000000,
+    Damagecancelsscript = 0x8000000,
+    Enteringcombat = 0x10000000,
+    Login = 0x20000000,
+    Summon = 0x40000000,
+    Leavingcombat = 0x80000000,
+    Anydamagemask = 0x9000002,
+}
