@@ -186,6 +186,12 @@ def main():
             return False
         i = cols.index("EffectTriggerSpell")
         return c[i] != 0 and c[i] not in world_spells and m[i] != c[i]
+    # Client spells whose db2 row drops effects that trigger a spell only the server has (riding 33388):
+    # vmangos keeps all of that spell's missing effects.
+    c_effects = {r for r in M.execute("SELECT SpellID, DifficultyID, EffectIndex FROM pre.dbc_spelleffect")}
+    server_effect_spells = {s for s, d, e, trig in M.execute(
+        "SELECT SpellID, DifficultyID, EffectIndex, EffectTriggerSpell FROM main.dbc_spelleffect")
+        if (s, d, e) not in c_effects and trig not in client_spells and trig in world_spells}
     updates = {"reused": [], "template": [], "mod": []}
     inserts = []
     expect = {}
@@ -217,7 +223,7 @@ def main():
                         updates[src].append((t, rid, s))
                         nu += 1
                 continue
-            if spell in client_spells and spell not in REUSED:
+            if spell in client_spells and spell not in REUSED and not (t == "dbc_spelleffect" and spell in server_effect_spells):
                 v = v_nat.get(key)
                 if v is not None and all(same(m[i], v[i]) for i, col in enumerate(cols) if col != "ID"):
                     continue
