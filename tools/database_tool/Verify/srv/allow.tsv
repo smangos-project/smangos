@@ -33,6 +33,3 @@ spell_template	stanceBarOrder	667	db2 wins: the server does not read it
 spell_template	requiredAuraVision	1	db2 wins: the server does not read it
 item_template	allowable_class	87	db2 mask, same playable classes
 item_template	allowable_race	146	db2 mask, same playable races
-item_template	dmg_min1	55	db2 wins: weapon damage without vmangos record
-item_template	dmg_max1	54	db2 wins: weapon damage without vmangos record
-item_template	armor	195	db2 wins: armor without vmangos record

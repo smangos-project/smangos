@@ -176,7 +176,10 @@ only depart from that for one of four reasons:
   value even where that equals 1.12 (`LOADED` in `generators/spell_delta.py`), and effects db2
   adds to it are cleared. Classic changed balance (honor items, NPC spells), procs (Seal Fate),
   spellmod semantics (extra effects) and spell families there. The server therefore loads the same
-  spell data as vmangos; db2 supplies text, visuals and the columns it doesn't read.
+  spell data as vmangos; db2 supplies text, visuals and the columns it doesn't read. Items follow
+  the same rule: 20260930210000 keeps every vmangos `item_template` value that differs from db2
+  (armor and damage included), except class/race masks with the same playable bits
+  (`generators/item_delta.py`).
 
 | Table / ids | Migration | Code that needs it |
 |---|---|---|
