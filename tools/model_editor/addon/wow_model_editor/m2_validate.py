@@ -75,5 +75,5 @@ def check_model(m, report):
                 report.add("WARNING", f"skin {si} submesh {j}", "is empty")
     fd = list(m.chunks.texture_fdids)
     for i, t in enumerate(root.textures):
-        if int(t.type) == 0 and not (i < len(fd) and fd[i]):
+        if int(t.type) == 0 and not (i < len(fd) and fd[i]) and not t.filename:
             report.add("ERROR", f"texture {i}", "file texture without a file id")

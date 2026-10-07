@@ -905,6 +905,37 @@ def m2_material_edit_round_trip():
 
 
 @test
+def m2_filename_textures():
+    for stem in ("talktome_chat.m2", "bellow.m2"):
+        path = find_m2(stem)
+        clear()
+        top = m2_import.load(path, {"display": "NONE"})
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors and not r.dirty, (stem, str(r), r.diff)
+    src = m2_import.read(path)
+    assert not len(src.chunks.texture_fdids) and src.root.textures[0].filename
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    p0 = mat.wow_m2_batches[0]
+    img = bpy.data.images.new("bellow_retex", 16, 16, alpha=True)
+    next(n for n in mat.node_tree.nodes if n.bl_idname == "ShaderNodeTexImage"
+         and n.get("wow_batch") == p0.batch_index and n.get("wow_slot") == 0).image = img
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        fd = list(m.chunks.texture_fdids)
+        assert len(fd) == len(m.root.textures) and img["wow_fdid"] in fd and all(fd), fd
+        assert not any(t.filename for t in m.root.textures)
+        for i, t in enumerate(src.root.textures):
+            assert index.fdid_of(t.filename) in fd, t.filename
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files:
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_objects_unedited_clean():
     for path in ("creature/wolf/wolf.m2", "character/human/male/humanmale.m2", find_m2("duskwoodlamppost.m2")):
         clear()
@@ -1365,6 +1396,9 @@ if "--all-m2" in ARGS:
     failed += len(sweep_m2())
 if "--all-m2-geo" in ARGS:
     failed += len(sweep_m2_geo())
+if "--m2-clean" in ARGS:
+    for k, v in sweep_m2_clean().items():
+        print("  FAIL", k, v)
 if "--corpus" in ARGS:
     failed += corpus()
 print("RESULT", "FAIL" if failed else "OK")

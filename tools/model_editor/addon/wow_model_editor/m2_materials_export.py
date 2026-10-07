@@ -5,7 +5,7 @@ import re
 
 from wowlib.formats.m2.root import record
 
-from . import fdids, textures
+from . import fdids, index, textures
 
 
 def _slug(name):
@@ -64,6 +64,33 @@ class _Images:
             self.files.append(path)
 
 
+def _source_fdid(m, ti):
+    """File id of texture `ti`: the TXID entry, else the legacy filename resolved through the index."""
+    fd = m.chunks.texture_fdids
+    if 0 <= ti < len(fd) and fd[ti]:
+        return int(fd[ti])
+    t = m.root.textures[ti] if 0 <= ti < len(m.root.textures) else None
+    if t is not None and not int(t.type) and t.filename:
+        return index.fdid_of(t.filename) or 0
+    return 0
+
+
+def _filenames_to_fdids(m, report):
+    """Converts legacy filename textures to TXID entries so the file never mixes both."""
+    root, fd = m.root, m.chunks.texture_fdids
+    if not any(not int(t.type) and t.filename for t in root.textures):
+        return
+    out = [_source_fdid(m, i) if not int(t.type) else 0 for i, t in enumerate(root.textures)]
+    for i, t in enumerate(root.textures):
+        if not int(t.type) and t.filename and not out[i]:
+            report.add("ERROR", f"texture {i}", f"'{t.filename}' has no file id; cannot convert to TXID")
+    for i, t in enumerate(root.textures):
+        if not int(t.type):
+            t.filename = ""
+    fd.clear()
+    fd.extend(out)
+
+
 def _find_or_add_texture(m, type_, fdid, like):
     root = m.root
     fd = m.chunks.texture_fdids
@@ -110,8 +137,7 @@ def _apply(m, b, p, mat, images, report):
     src_fd = []
     for k in range(n):
         ti = src[k][0]
-        fd = m.chunks.texture_fdids
-        src_fd.append(int(fd[ti]) if 0 <= ti < len(fd) else 0)
+        src_fd.append(_source_fdid(m, ti))
     want_tex, want_uv = [], []
     tex_changed = uv_changed = False
     for k in range(n):
@@ -127,6 +153,7 @@ def _apply(m, b, p, mat, images, report):
         if (t_new, fd_new) == (typ, src_fd[k] if typ == 0 else 0) and ti >= 0:
             want_tex.append(ti)
         else:
+            _filenames_to_fdids(m, report)
             like = root.textures[ti] if ti >= 0 else None
             want_tex.append(_find_or_add_texture(m, t_new, fd_new, like))
             tex_changed = True

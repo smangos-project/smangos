@@ -118,6 +118,8 @@ def _texture_info(model, batch, k):
         return -1, 0, 0, 0
     t = root.textures[ti]
     fdid = model.tex_fdids[ti] if ti < len(model.tex_fdids) else 0
+    if not fdid and not t.type and t.filename:
+        fdid = index.fdid_of(t.filename) or 0
     if t.type:
         fdid = model.replaceable.get(int(t.type), 0)
     mi = batch.texture_coord_combo_index + k
