@@ -17,7 +17,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
    (tile 32,48), export, start the client (`client/autologin.sh`), walk on it, check it from a distance
    (normals, WDL). Re-extract server data (`wow.extract` batch op, run through the UI, incl. dry run) and
    check the Drift layer reads ~0 and the server height matches.
-2. [ ] **Spawns (Phase 5 exit)**: place a creature in Northshire, commit, restart/reload the server, see it in
+2. [x] **Spawns (Phase 5 exit, verified 2026-10-07 via wms.spawn.Create + Commit, server pointed at sandbox DB, guard visible in client)**: place a creature in Northshire, commit, restart/reload the server, see it in
    the client. Spawn guids must not collide with a running server.
 3. [ ] **Water (D exit)**: imported water looks right up close in the viewport (look.sh); add a pond,
    export, swim in it; after re-extract the server sees water (breath bar).
