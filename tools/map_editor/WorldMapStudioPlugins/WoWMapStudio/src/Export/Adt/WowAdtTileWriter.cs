@@ -282,6 +282,9 @@ public static class WowAdtTileWriter
         }
     }
 
+    /// <summary>Stand-in for the model bounds: doodads are listed in every chunk within this distance, as stock lists them by bounding box.</summary>
+    private const float DoodadRefMargin = 15f;
+
     /// <summary>Rewrites every chunk's MCRD/MCRW lists from the placement positions; indices into the placement lists shift when records are added or removed.</summary>
     private static void RebuildRefs(ADTBfaPlus adt, ImportedTileId id)
     {
@@ -294,7 +297,7 @@ public static class WowAdtTileWriter
         for (int i = 0; i < adt.DoodadPlacements.Count; i++)
         {
             var p = adt.DoodadPlacements[i];
-            foreach (int c in PlacementRefs.ChunksOverlapping(id.FileX, id.FileY, p.Position.X, p.Position.X, p.Position.Z, p.Position.Z))
+            foreach (int c in PlacementRefs.ChunksOverlapping(id.FileX, id.FileY, p.Position.X - DoodadRefMargin, p.Position.X + DoodadRefMargin, p.Position.Z - DoodadRefMargin, p.Position.Z + DoodadRefMargin))
             {
                 adt.Chunks[c].DoodadRefs.Add((uint)i);
             }
