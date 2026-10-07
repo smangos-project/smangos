@@ -266,3 +266,8 @@ dbc_questobjective	placeholder	ID	quest_template			decision 11: shipped empty; o
 dbc_questpoiblob	placeholder	ID	quest_template			decision 11: shipped empty; POIs are quest_template Point* columns (Q6)
 dbc_questpoipoint	placeholder	ID	quest_template			decision 11: shipped empty; POIs are quest_template Point* columns (Q6)
 dbc_spelllearnspell	placeholder	ID	spell_learn_spell			decision 11: shipped empty; the data is spell_learn_spell
+file_data_id	tool					fdid allocation table (database_tool fdid, WMS, model editor)
+wow_adt_import_tiles	tool					WMS plugin: imported ADT tiles
+wow_adt_tile_chunks	tool					WMS plugin: imported ADT chunks
+wow_adt_tile_components	tool					WMS plugin: imported ADT components
+wow_export_entity_ids	tool					WMS plugin: editor entity to exported id map

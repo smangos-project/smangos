@@ -323,10 +323,12 @@ SpecCheckResult CheckSpec(std::filesystem::path const& referencePath, std::files
     for (SpecTableRow const& row : tableRows)
     {
         std::string const& name = row.table;
+        if (row.kind == "tool")
+            continue;
         bool const dbcKind = row.kind == "dbc" || row.kind == "placeholder";
         if (!dbcKind && row.kind != "server" && row.kind != "gone")
         {
-            report(6, name + " has kind \"" + row.kind + "\", expected dbc, placeholder, server or gone");
+            report(6, name + " has kind \"" + row.kind + "\", expected dbc, placeholder, server, gone or tool");
             continue;
         }
         auto const clientIt = name.compare(0, 4, "dbc_") == 0 ? live["cdbc"].find(name.substr(4)) : live["cdbc"].end();

@@ -769,6 +769,8 @@ static void VerifySchema(DoltLiteDatabase& db, std::filesystem::path const& spec
             ReportFinal(result, options, "V0", table, "table is not in tables.tsv", count);
             continue;
         }
+        if (kind->second == "tool")
+            continue;
         if (kind->second == "gone")
         {
             ReportFinal(result, options, "V0", table, "table is gone in the finished database", count);
@@ -788,7 +790,7 @@ static void VerifySchema(DoltLiteDatabase& db, std::filesystem::path const& spec
     }
 
     for (auto const& [table, kind] : kinds)
-        if (kind != "gone" && !worldTables.count(table) && WantsTable(options, table))
+        if (kind != "gone" && kind != "tool" && !worldTables.count(table) && WantsTable(options, table))
             ReportFinal(result, options, "V0", table, "missing " + kind + " table", count);
 
     if (count && !options.final)
