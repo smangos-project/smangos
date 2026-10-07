@@ -156,7 +156,7 @@ public sealed class WowImportScriptApi : IScriptModule
         model.LoadNetwork(network);
         _context.Catalog.AssignId(model);
         _context.Catalog.Add(model);
-        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([], [model])).ConfigureAwait(false);
+        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([model], [])).ConfigureAwait(false);
 
         var entity = new MapSceneEntity { Name = name, Map = _context.Maps.CurrentMap, Transform = new Godot.Transform3D(Godot.Basis.Identity, origin) };
         entity.AddComponent(new ProceduralComponent(_context.Procedural) { ModelId = model.RecordId });
@@ -194,7 +194,7 @@ public sealed class WowImportScriptApi : IScriptModule
         model.LoadNetwork(network);
         _context.Catalog.AssignId(model);
         _context.Catalog.Add(model);
-        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([], [model])).ConfigureAwait(false);
+        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([model], [])).ConfigureAwait(false);
 
         var entity = new MapSceneEntity
         {
