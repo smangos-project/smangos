@@ -15,4 +15,5 @@ public enum SpellDispelKind
     Enrage = 9,
     ZgTicket = 10,
     DespelOldUnused = 11,
+    Max = 12,
 }

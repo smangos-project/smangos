@@ -365,11 +365,11 @@ public sealed class SpellFactory : ThinDbcFactory<Spell, DbcSpellRecord>
         yield return F.Flags<SpellAttr8Flags>("Attributes 9", () => e.Attributes[8], v => e.Attributes[8] = v);
         yield return F.Flags<SpellAttr9Flags>("Attributes 10", () => e.Attributes[9], v => e.Attributes[9] = v);
         yield return F.Flags<SpellAttr10Flags>("Attributes 11", () => e.Attributes[10], v => e.Attributes[10] = v);
-        for (int i = 11; i < Spell.AttributeCount; i++)
-        {
-            int slot = i;
-            yield return F.Int($"Attributes {slot + 1}", () => e.Attributes[slot], v => e.Attributes[slot] = v);
-        }
+        yield return F.Flags<SpellAttr11Flags>("Attributes 12", () => e.Attributes[11], v => e.Attributes[11] = v);
+        yield return F.Flags<SpellAttr12Flags>("Attributes 13", () => e.Attributes[12], v => e.Attributes[12] = v);
+        yield return F.Flags<SpellAttr13Flags>("Attributes 14", () => e.Attributes[13], v => e.Attributes[13] = v);
+        yield return F.Flags<SpellAttr14Flags>("Attributes 15", () => e.Attributes[14], v => e.Attributes[14] = v);
+        yield return F.Flags<SpellAttr15Flags>("Attributes 16", () => e.Attributes[15], v => e.Attributes[15] = v);
     }
 
     public override void DrawFields(EditorContext context, CatalogEntity entity, FieldEditTracker tracker,

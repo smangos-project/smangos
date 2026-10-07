@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExL` — spell attribute flags word 12.</summary>
+[System.Flags]
+public enum SpellAttr12Flags : uint
+{
+    None = 0,
+    EnableProcsFromSuppressedCasterProcs = 0x1,
+    CanProcFromSuppressedCasterProcs = 0x2,
+    Unk2 = 0x4,
+    Unk3 = 0x8,
+    Unk4 = 0x10,
+    Unk5 = 0x20,
+    Unk6 = 0x40,
+    Unk7 = 0x80,
+    Unk8 = 0x100,
+    IgnoreCastingDisabled = 0x200,
+    Unk10 = 0x400,
+    Unk11 = 0x800,
+    Unk12 = 0x1000,
+    Unk13 = 0x2000,
+    Unk14 = 0x4000,
+    Unk15 = 0x8000,
+    Unk16 = 0x10000,
+    Unk17 = 0x20000,
+    Unk18 = 0x40000,
+    Unk19 = 0x80000,
+    Unk20 = 0x100000,
+    UseFloatValuesForScalingAmounts = 0x200000,
+    Unk22 = 0x400000,
+    StartCooldownOnCastStart = 0x800000,
+    IsGarrisonBuff = 0x1000000,
+    Unk25 = 0x2000000,
+    Unk26 = 0x4000000,
+    IsReadinessSpell = 0x8000000,
+    Unk28 = 0x10000000,
+    Unk29 = 0x20000000,
+    Unk30 = 0x40000000,
+    OnlyProcFromClassAbilities = 0x80000000,
+}

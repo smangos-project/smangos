@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExN` — spell attribute flags word 14.</summary>
+[System.Flags]
+public enum SpellAttr14Flags : uint
+{
+    None = 0,
+    Unk0 = 0x1,
+    ReagentCostConsumesCharges = 0x2,
+    Unk2 = 0x4,
+    HidePassiveFromTooltip = 0x8,
+    Unk4 = 0x10,
+    Unk5 = 0x20,
+    Unk6 = 0x40,
+    Unk7 = 0x80,
+    Unk8 = 0x100,
+    Unk9 = 0x200,
+    Unk10 = 0x400,
+    Unk11 = 0x800,
+    Unk12 = 0x1000,
+    Unk13 = 0x2000,
+    Unk14 = 0x4000,
+    Unk15 = 0x8000,
+    Unk16 = 0x10000,
+    Unk17 = 0x20000,
+    Unk18 = 0x40000,
+    Unk19 = 0x80000,
+    AuraIsPrivate = 0x100000,
+    Unk21 = 0x200000,
+    Unk22 = 0x400000,
+    Unk23 = 0x800000,
+    Unk24 = 0x1000000,
+    Unk25 = 0x2000000,
+    Unk26 = 0x4000000,
+    Unk27 = 0x8000000,
+    Unk28 = 0x10000000,
+    Unk29 = 0x20000000,
+    Unk30 = 0x40000000,
+    Unk31 = 0x80000000,
+}

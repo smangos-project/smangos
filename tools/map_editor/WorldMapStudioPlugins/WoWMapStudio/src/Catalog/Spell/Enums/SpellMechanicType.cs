@@ -36,4 +36,8 @@ public enum SpellMechanicType
     Sapped = 30,
     Enraged = 31,
     Wounded = 32,
+    Infected2 = 33,
+    Infected3 = 34,
+    Infected4 = 35,
+    Taunted = 36,
 }

@@ -1,0 +1,40 @@
+namespace WorldMapStudio.WoW;
+
+/// <summary>`dbc_spell.AttributesExK` — spell attribute flags word 11.</summary>
+[System.Flags]
+public enum SpellAttr11Flags : uint
+{
+    None = 0,
+    Unk0 = 0x1,
+    Unk1 = 0x2,
+    ScalesWithItemLevel = 0x4,
+    Unk3 = 0x8,
+    Unk4 = 0x10,
+    AbsorbEnvironmentalDamage = 0x20,
+    Unk6 = 0x40,
+    RankIgnoresCasterLevel = 0x80,
+    Unk8 = 0x100,
+    IgnoreSpellcastOverrideShapeshiftRequirements = 0x200,
+    Unk10 = 0x400,
+    NotUsableInInstances = 0x800,
+    Unk12 = 0x1000,
+    Unk13 = 0x2000,
+    CanAssistUninteractible = 0x4000,
+    Unk15 = 0x8000,
+    NotUsableInChallengeMode = 0x10000,
+    Unk17 = 0x20000,
+    IgnoreCasterAbsorbModifiers = 0x40000,
+    IgnoreTargetAbsorbModifiers = 0x80000,
+    Unk20 = 0x100000,
+    Unk21 = 0x200000,
+    Unk22 = 0x400000,
+    Unk23 = 0x800000,
+    Unk24 = 0x1000000,
+    Unk25 = 0x2000000,
+    Unk26 = 0x4000000,
+    Unk27 = 0x8000000,
+    Unk28 = 0x10000000,
+    Unk29 = 0x20000000,
+    Unk30 = 0x40000000,
+    Unk31 = 0x80000000,
+}

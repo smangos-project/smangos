@@ -36,5 +36,5 @@ public enum SpellAttr8Flags : uint
     NotInBattleground = 0x10000000,
     MasteryAffectsPoints = 0x20000000,
     DisplayLargeAuraIconOnUnitFramesBossAura = 0x40000000,
-    AttackIgnoreImmuneToPcFlag = 0x80000000,
+    CanAttackImmunePc = 0x80000000,
 }
