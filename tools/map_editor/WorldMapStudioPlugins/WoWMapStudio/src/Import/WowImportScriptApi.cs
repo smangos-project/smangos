@@ -125,6 +125,46 @@ public sealed class WowImportScriptApi : IScriptModule
     public Task<int> CreatePanelWmoModel(string name, double size, string texturePath, double x, double y, double z)
         => CreatePanel(name, size, texturePath, x, y, z, WmoFormat.FormatId, WmoMaterial.Texture, WmoMaterial.TwoSided);
 
+    /// <summary>
+    /// Creates and persists a square water surface (side <paramref name="size"/>, liquid type
+    /// <paramref name="liquidTypeId"/>) with its corners snapped to the MH2O lattice, and places it at editor
+    /// position (x, y, z) in the current map's open edit session. Returns the catalog id.
+    /// </summary>
+    [ScriptFunction]
+    public async Task<int> CreatePondModel(string name, double size, int liquidTypeId, double x, double y, double z)
+    {
+        var origin = new Godot.Vector3((float)x, (float)y, (float)z);
+        float h = (float)size / 2.0f;
+        var network = new VertexNetwork();
+        int[] ids = new int[4];
+        Godot.Vector3[] corners = [new(-h, 0, -h), new(h, 0, -h), new(h, 0, h), new(-h, 0, h)];
+        for (int i = 0; i < 4; i++)
+        {
+            ids[i] = network.AddVertex(WaterLatticeSnap.ToSubchunkCorner(_context, origin + corners[i]) - origin);
+        }
+
+        network.AddFace(ids);
+
+        var values = new MeshParameterValues();
+        values.Set(WowLiquidParameters.LiquidTypeIdLookup, liquidTypeId);
+        values.Set(WowLiquidParameters.FrameDuration, 0.15f);
+        values.Set(WaterSurfaceMeshFunction.UvScale, 0.05f);
+        values.Set(WaterAttributeParameters.Fishable, false);
+        values.Set(WaterAttributeParameters.Fatigue, false);
+
+        var model = new ProceduralModel { Name = name, FunctionId = WaterSurfaceMeshFunction.FunctionId, Parameters = values.Serialize() };
+        model.LoadNetwork(network);
+        _context.Catalog.AssignId(model);
+        _context.Catalog.Add(model);
+        await Task.Run(() => _context.Database.EditorStorage.CommitAsync([], [model])).ConfigureAwait(false);
+
+        var entity = new MapSceneEntity { Name = name, Map = _context.Maps.CurrentMap, Transform = new Godot.Transform3D(Godot.Basis.Identity, origin) };
+        entity.AddComponent(new ProceduralComponent(_context.Procedural) { ModelId = model.RecordId });
+        _context.Scene.Add(entity);
+        _context.EditSessions.Record(new CreateEntityCommand(_context.Scene, entity));
+        return model.RecordId ?? 0;
+    }
+
     private async Task<int> CreatePanel(string name, double size, string texturePath, double x, double y, double z, string formatId, MeshParameter textureParameter, MeshParameter twoSided)
     {
         var network = new VertexNetwork();
