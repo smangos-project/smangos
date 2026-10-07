@@ -18,6 +18,7 @@ import argparse
 import json
 import math
 import os
+import shutil
 import sqlite3
 import sys
 import tempfile
@@ -213,6 +214,13 @@ def main():
     args = ap.parse_args()
 
     work = tempfile.mkdtemp(prefix="spell_delta_")
+    try:
+        run(args, work)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def run(args, work):
     M = simulate(args.pre, args.reference, work, "vmangos")
     V = simulate(args.pre, args.reference, work, "vanilla")
     T = simulate(args.pre, args.reference, work, "template")
