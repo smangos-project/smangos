@@ -3,7 +3,7 @@ srv	area_template	entry	dbc	dbc_areatable.ID	identity	0 differences (data-plan.m
 srv	area_template	map_id	dbc	dbc_areatable.ContinentID	identity	1 difference (data-plan.md 3.1)	yes
 srv	area_template	zone_id	dbc	dbc_areatable.ParentAreaID	identity	0 differences (data-plan.md 3.1)	yes
 srv	area_template	explore_flag	drop			the exploration bit is wire data the client reads with its own AreaTable.AreaBit; mangosd uses the client value (vanilla gave 8 instance areas duplicate or unknown bits)	yes
-srv	area_template	flags	dbc	dbc_areatable.Flags1	area_flag_added_bit	the client adds 0x40000000; 1.15.6 further splits the vanilla flags across Flags1/Flags2, so the rule alone only reaches 959/1081 (known gap, phase0-plan.md step 4.3 Progress note)	yes
+srv	area_template	flags	dbc	dbc_areatable.Flags1	area_flag_added_bit	the client adds 0x40000000 on 960 of 1,081 areas, so the inverse rule (mask the bit off, as SQLStorages.cpp does) is what matches: 1,080/1,081, area 206 differs by client flag 0x10000	yes
 srv	area_template	area_level	dbc	dbc_areatable.ExplorationLevel	identity	0 differences (data-plan.md 3.1)	yes
 srv	area_template	name	dbc	dbc_areatable.AreaName_lang	identity	0 differences (data-plan.md 3.1)	yes
 srv	area_template	team	dbc	dbc_areatable.FactionGroupMask	identity	0 differences (data-plan.md 3.1)	yes
