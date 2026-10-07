@@ -114,3 +114,8 @@ spell_template	stanceBarOrder	668	db2 wins: vmangos value equals 1.12 (spell_del
 spell_template	dmgMultiplier2	95	db2 wins: vmangos value equals 1.12 (spell_delta.py)
 spell_template	dmgMultiplier3	42	db2 wins: vmangos value equals 1.12 (spell_delta.py)
 spell_template	requiredAuraVision	1	db2 wins: vmangos value equals 1.12 (spell_delta.py)
+item_template	allowable_class	87	db2 mask, same playable classes
+item_template	allowable_race	146	db2 mask, same playable races
+item_template	dmg_min1	55	db2 wins: weapon damage without vmangos record
+item_template	dmg_max1	54	db2 wins: weapon damage without vmangos record
+item_template	armor	195	db2 wins: armor without vmangos record
