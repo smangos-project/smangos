@@ -83,3 +83,7 @@ WMO verified in the real client (Stormwind, MODF[0] of azeroth_32_48_obj0 repoin
 
 ## MH2O HeightUv (investigated, nothing to change)
 - Scanned all stock 1.15 ADTs: no MH2O instance uses vertex format 1/3 (HeightUv); stock files use liquid object ids (>=42) or HeightDepth, so there are no reference UV values and zero UVs are harmless. `WaterImported` flag (wow_adt_import_tiles) now lets export clear MH2O on tiles whose imported water was deleted.
+
+## WMO MOGN
+- WmoModelWriter writes MOGN ("" + "Exterior") and the group info name offset. Doodad sets skipped: wowlib `SmoDoodadSet.name` is read-only and procedural models have no doodad input. Not client-loaded.
+- Next from the agreed order: vmap/mmap collision for generated models (unchecked), then small catalogs, Spell editor, world map editor.

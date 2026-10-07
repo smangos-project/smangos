@@ -54,7 +54,9 @@ public static class WmoModelWriter
         root.Header.NTextures = (uint)surfaces.Count;
         root.Header.BoundingBox = new CAaBox(box);
         root.Header.AmbientColor = new CArgb();
-        root.GroupInfos.Add(new SmoGroupInfo(GroupFlags.HasBsp | GroupFlags.Exterior, new CAaBox(box), 0));
+        root.GroupNames.Add("");
+        int nameOffset = (int)root.GroupNames.Add("Exterior");
+        root.GroupInfos.Add(new SmoGroupInfo(GroupFlags.HasBsp | GroupFlags.Exterior, new CAaBox(box), nameOffset));
         root.GroupFdids.Add(groupFileDataId);
         foreach (ModelSurfaceInput s in surfaces)
         {
