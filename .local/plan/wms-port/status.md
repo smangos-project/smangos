@@ -40,10 +40,9 @@ the editor (see next-steps.md step 1).
 - Creature/gameobject models render in the editor at Northshire; Elwynn 32,48 import shows terrain+trees.
 - Unedited import -> export writes 0 tiles.
 
-## Important: export writes into the live client
-The real project (`tools/map_editor/wms-project.json`) has `wow.clientContent = .client/Content`, and the
-exporter writes ADT/WDT/WDL/models **straight into it with no backup**. Before exporting against the real
-project, either back up the affected files or use the sandbox below. See next-steps.md step 0.
+## Export safety
+Exports write straight into `.client/Content` but first back up originals (`WowExportBackup`, restore with the
+`wow.export.restore` batch op) and refuse while the client runs. Models written outside `world/generated` are not covered.
 
 ## Sandbox for editor experiments
 `.local/plan/wms-port/sandbox/` has copies of the `/tmp/wmsdbg` scripts (`/tmp` may be wiped):

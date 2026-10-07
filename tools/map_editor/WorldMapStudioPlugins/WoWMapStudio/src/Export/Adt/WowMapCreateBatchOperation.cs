@@ -58,6 +58,20 @@ public sealed class WowMapCreateBatchOperation : IBatchOperation
 
     public async Task RunAsync(BatchContext context, WorkContext work)
     {
+        string root = context.Editor.WowClientPaths.Content
+            ?? throw new InvalidOperationException(WowClientPaths.MissingContentMessage);
+        if (WowExportBackup.ClientRunning())
+        {
+            throw new InvalidOperationException("The WoW client is running; close it before exporting.");
+        }
+
+        string directory = context.Settings["directory"]?.GetValue<string>() ?? "";
+        await new WowExportBackup(root).ProtectAsync(
+            [$"world/maps/{directory}"], ["fdid.index"], () => CreateAsync(context)).ConfigureAwait(false);
+    }
+
+    private async Task CreateAsync(BatchContext context)
+    {
         string donor = context.Settings["donorMap"]?.GetValue<string>() ?? "";
         string directory = context.Settings["directory"]?.GetValue<string>() ?? "";
         string name = context.Settings["name"]?.GetValue<string>() ?? "";

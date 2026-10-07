@@ -5,12 +5,11 @@ Priority: most features are written but never seen working end to end. **Verify 
 Each step ends in something checked in the real client/server (screenshots published), or a written-up
 bug. Fix what breaks before moving on. Tick items here as they're done.
 
-## Step 0: safe export into the client
-- [ ] The exporter writes straight into `.client/Content` with no backup. Give it the same safety as the
-  model editor's install (backups + manifest, cf. `.client/.model-editor-install`, tools/model_editor/README.md):
-  back up every stock file before the first overwrite, and offer a "restore stock files" operation.
-  Minimum alternative: document a manual backup of the tile files before each test.
-- [ ] Only export/restart the client when `characters.online` is 0 (the user may be playing).
+## Step 0: safe export into the client (done 2026-10-07)
+- [x] `WowExportBackup` saves each stock file once before an export overwrites it (copy in
+  `.client/.wms-export-backup`, manifest of originals/absent files); `wow.export.restore` batch op puts everything back.
+  Covers `world/maps/<map>`, `world/generated`, `fdid.index`. Used by `wow.export.adt` and `wow.export.map`.
+- [x] Both ops refuse to run while a WowClassic.exe process exists (no character DB access from the plugin).
 
 ## Step 1: end-to-end checks of what's built (in this order)
 

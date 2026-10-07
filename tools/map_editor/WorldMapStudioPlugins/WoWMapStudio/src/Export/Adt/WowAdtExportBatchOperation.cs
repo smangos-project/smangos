@@ -62,6 +62,20 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
 
     public async Task RunAsync(BatchContext context, WorkContext work)
     {
+        string map = context.Settings["sourceMap"]?.GetValue<string>() ?? "";
+        string root = context.Editor.WowClientPaths.Content
+            ?? throw new InvalidOperationException(WowClientPaths.MissingContentMessage);
+        if (WowExportBackup.ClientRunning())
+        {
+            throw new InvalidOperationException("The WoW client is running; close it before exporting.");
+        }
+
+        await new WowExportBackup(root).ProtectAsync(
+            [$"world/maps/{map}", WowExportBackup.GeneratedDirectory], ["fdid.index"], () => ExportAsync(context, work)).ConfigureAwait(false);
+    }
+
+    private async Task ExportAsync(BatchContext context, WorkContext work)
+    {
         string sourceMap = context.Settings["sourceMap"]?.GetValue<string>() ?? "";
         string targetMap = context.Settings["targetMap"]?.GetValue<string>() ?? "";
         if (sourceMap.Length == 0 || targetMap.Length == 0)
