@@ -20,8 +20,8 @@ skill_line_ability	class_mask	1	db2 wins over the vmangos (1.12) value
 skill_line_ability	req_skill_value	3	db2 wins over the vmangos (1.12) value
 skill_line_ability	max_value	1	db2 wins over the vmangos (1.12) value
 skill_line_ability	min_value	1	db2 wins over the vmangos (1.12) value
-taxi_nodes	mount_creature_id1	2	db2 wins: dead nodes 9/15, client mount slot order
-taxi_nodes	mount_creature_id2	2	db2 wins: dead nodes 9/15, client mount slot order
+taxi_nodes	mount_creature_id1	2	db2 wins: dead nodes 9/15 (vmangos 541/0, db2 0/541)
+taxi_nodes	mount_creature_id2	2	db2 wins: dead nodes 9/15 (vmangos 541/0, db2 0/541)
 spell_effect_mod	EffectDieSides	1	db2 wins: vmangos value equals 1.12 (spell_delta.py)
 spell_effect_mod	EffectBaseDice	1	db2 wins: vmangos value equals 1.12 (spell_delta.py)
 spell_template	category	18	db2 wins: vmangos value equals 1.12 (spell_delta.py)

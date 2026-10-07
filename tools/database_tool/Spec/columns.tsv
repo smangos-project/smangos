@@ -2093,8 +2093,8 @@ srv	taxi_nodes	x	dbc	dbc_taxinodes.Pos1	identity	pos/name 0 differences (data-pl
 srv	taxi_nodes	y	dbc	dbc_taxinodes.Pos2	identity	positions are one Pos[3] array, same override as x	yes
 srv	taxi_nodes	z	dbc	dbc_taxinodes.Pos3	identity	positions are one Pos[3] array, same override as x	yes
 srv	taxi_nodes	name	dbc	dbc_taxinodes.Name_lang	identity	0 differences (data-plan.md 3.1)	yes
-srv	taxi_nodes	mount_creature_id1	dbc	dbc_taxinodes.MountCreatureID2	identity	5 differences; the Alliance/Horde mount order is swapped between vmangos [0]/[1] and DB2 (data-plan.md 3.1, data-plan.md 5)	yes
-srv	taxi_nodes	mount_creature_id2	dbc	dbc_taxinodes.MountCreatureID1	identity	mount order swapped, same note as mount_creature_id1	yes
+srv	taxi_nodes	mount_creature_id1	dbc	dbc_taxinodes.MountCreatureID1	identity	79/84 equal; nodes 9/15/85-87 differ in value (world keeps the vmangos mounts there)	yes
+srv	taxi_nodes	mount_creature_id2	dbc	dbc_taxinodes.MountCreatureID2	identity	same as mount_creature_id1	yes
 srv	taxi_path_transitions	in_path	server			fully read by ObjectMgr::LoadTaxiPathTransitions (ObjectMgr.cpp:9366)	yes
 srv	taxi_path_transitions	out_path	server			fully read by ObjectMgr::LoadTaxiPathTransitions (ObjectMgr.cpp:9366)	yes
 srv	taxi_path_transitions	in_node	server			fully read by ObjectMgr::LoadTaxiPathTransitions (ObjectMgr.cpp:9366)	yes
