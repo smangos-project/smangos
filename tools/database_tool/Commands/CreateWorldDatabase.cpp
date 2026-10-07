@@ -3,7 +3,6 @@
 #include "Migrations/MigrationFile.h"
 #include "Migrations/MigrationRunner.h"
 #include "Migrations/MigrationState.h"
-#include "Reference/ReferenceBuild.h"
 #include "World/DoltLiteDatabase.h"
 
 #include <filesystem>
@@ -28,8 +27,7 @@ WorldUpdateResult UpdateWorldDatabase(DoltLiteDatabase& world, std::filesystem::
 }
 
 WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, std::filesystem::path const& cacheDirectory,
-    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc,
-    std::filesystem::path const& vanillaDbcDir)
+    std::filesystem::path const& migrationsDirectory, std::filesystem::path const& dbfilesclientDir, bool importDbc)
 {
     WorldCreateResult result;
 
@@ -72,30 +70,12 @@ WorldCreateResult CreateWorldDatabase(std::filesystem::path const& worldPath, st
         }
     }
 
-    std::vector<std::string> stagingTables;
-    if (!vanillaDbcDir.empty())
-    {
-        ReferenceBuildResult staged;
-        LoadVanillaDbcTables(world, vanillaDbcDir, staged);
-        result.stagingErrors = std::move(staged.tableErrors);
-        for (ReferenceTableInfo const& info : staged.tables)
-            stagingTables.push_back(info.table);
-    }
-
     // Migrations may edit dbc_* rows, so the tables and their rows must already exist.
     result.update = UpdateWorldDatabase(world, migrationsDirectory);
     if (!result.update.error.empty())
     {
         result.error = result.update.failedFile + ": " + result.update.error;
         return result;
-    }
-
-    if (!stagingTables.empty())
-    {
-        world.Begin();
-        for (std::string const& table : stagingTables)
-            world.Execute("DROP TABLE \"" + table + "\"");
-        world.Commit();
     }
 
     return result;

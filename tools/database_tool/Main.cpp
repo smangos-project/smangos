@@ -186,15 +186,7 @@ namespace
             return 1;
         }
 
-        std::string vdbcError = VerifyInputManifest(VanillaDbcDir(), InputsDir() / "vanilla-dbc.sha256");
-        if (!vdbcError.empty())
-        {
-            std::printf("create world: %s\n", vdbcError.c_str());
-            return 1;
-        }
-
-        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir, importDbc,
-            baseOnly ? std::filesystem::path() : VanillaDbcDir());
+        WorldCreateResult result = CreateWorldDatabase(worldPath, cacheDirectory, migrationsDirectory, clientDir, importDbc);
         if (!result.error.empty())
         {
             std::printf("create world: %s\n", result.error.c_str());
@@ -220,8 +212,6 @@ namespace
         std::printf("create world: imported %u tables, %llu rows; applied %zu migrations\n",
             result.dumpImport.tablesCreated, static_cast<unsigned long long>(result.dumpImport.rowsInserted),
             result.update.appliedMigrationIds.size());
-        for (std::string const& stagingError : result.stagingErrors)
-            std::printf("create world: vdbc not staged: %s\n", stagingError.c_str());
         if (importDbc)
             PrintDbcImportSummary("db2", result.dbcImport);
         return 0;
