@@ -87,3 +87,9 @@ WMO verified in the real client (Stormwind, MODF[0] of azeroth_32_48_obj0 repoin
 ## WMO MOGN
 - WmoModelWriter writes MOGN ("" + "Exterior") and the group info name offset. Doodad sets skipped: wowlib `SmoDoodadSet.name` is read-only and procedural models have no doodad input. Not client-loaded.
 - Next from the agreed order: vmap/mmap collision for generated models (unchecked), then small catalogs, Spell editor, world map editor.
+
+## Procedural M2 collision + Spell catalog (done)
+- `M2ModelWriter.AddCollision` writes a collision mesh, so the vmap extractor no longer returns NoCollision for generated M2s; WoW Export 42/42.
+- G5 Spell catalog: `Catalog/Spell/{Spell,SpellFactory,SpellTests}.cs` over dbc_spell, spellname, spellmisc, spellcooldowns, spellcategories, spelllevels, spellpower (index 0) and the spelleffect list, difficulty 0; WoW Catalog 5/5. `ThinDbcFactory` gained LoadExtrasAsync/StageExtras/StageDeleteExtras hooks (SpellFactory is the first user).
+- Gaps: effect/aura/target/school/attribute fields are plain ints (CataBox Enums/ has pickers); icons are FDIDs only; satellites not covered: auraoptions, interrupts, classoptions, reagents, targetrestrictions, visuals; spell staging (Upsert/NextId) untested (see verify.md).
+- Next: G6 UiMap world map editor, G7 race/class, MailTemplate/battlegrounds/CinematicCamera catalogs.
