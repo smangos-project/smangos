@@ -161,6 +161,32 @@ A mapping file is one SELECT with a `-- key: a, b` line (absent: rows match on e
 one, and with `--vdbc` the mapping `columns.tsv` implies for the named vanilla tables: each kept
 column read back from its `dbc_` target through the rule's inverse.
 
+## Departures from db2
+
+`create` builds `dbc_*` from the stock 1.15 db2 files plus `sql/hotfixes/*.sql`; migrations may
+only depart from that for one of three reasons:
+
+- F: a vmangos fix (its value differs from vanilla 1.12), e.g. `spell_mod`/`spell_effect_mod`
+  cells in 20261001010000, item cells in 20260930210000, raid `CorpseMapID` -1, cones.
+- R: a row the client lacks that vmangos content or code references (1,384 spells and their
+  sub-rows, 114 items, areatriggers, sound kits, display infos, mail template, skill line 762).
+- S: vmangos C++ needs the vanilla meaning of an id or bit. Each entry names the code; changing
+  that code retires the entry.
+
+| Table / ids | Migration | Code that needs it |
+|---|---|---|
+| `chatchannels` 24 `Flags` 0 | 20260930010000 | `Channel.cpp` treats flag 0x40000 as an LFG channel |
+| `transportanimation` 176080-176085 `Pos1/2` | 20260930020000 | `TransportMgr::LoadTransportAnimationAndRotation` expects the vanilla axis order |
+| `lock` 1647 slot 2 | 20260930060000 | `GameObject`/`Spell` lock checks would accept the second (SoD) key |
+| `skillraceclassinfo` `Flags` 0x400 | 20260930060000 | `Player::UpdateSkillsForLevel`, `Player::UpdateSpellTrainedSkills` test `SKILL_FLAG_MONO_VALUE` |
+| `spellitemenchantment` 3-5, 25, 26, 283, 284, 523, 525, 1665, 1666, 1669, 1900 | 20260930070000 | SoD runes reuse the ids; vmangos items/spells apply them through `Player::ApplyEnchantment` |
+| `factiontemplate` 21, 50, 54, 1014, 1254, 1475 | 20260930090000 | SoD hostility changes; `FactionTemplateEntry::IsFriendlyTo`/`IsHostileTo` |
+| `creaturedisplayinfo` `Gender` (546) | 20260930140000 | `creature_display_info_addon` gender, read through `SQLStorages.cpp` |
+| `spell`/`spellname` 379, 713, 974, 1234, 1329, 23598, 23920, 30167 | 20261001010000 | Classic reused the ids; vmangos items, creatures and scripts cast the old spell |
+
+`generators/dbc_overrides.py REFERENCE WORLD` lists every departure cell with its vanilla and
+vmangos values; V3 (`Verify/client-delta.tsv`) counts them per table.
+
 ## Testing
 
 `ctest`/`tests-database-tool` covers everything with fixtures; four suites are opt-in, since they
