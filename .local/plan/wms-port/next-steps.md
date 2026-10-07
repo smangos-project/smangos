@@ -13,7 +13,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 
 ## Step 1: end-to-end checks of what's built (in this order)
 
-1. [ ] **Terrain (Phase 7 exit)**: in the editor, raise a hill and paint a texture in Northshire
+1. [~] **Terrain (Phase 7 exit)** (2026-10-07: hill +22 at editor (-8950,165) + dirt paint in 32,48 exported and RENDERS in the client; still to do: walk on it after `wow.extract`, Drift check, WDL from distance. Exported files are installed in the real client; stock originals in /tmp/orig_azeroth (may be wiped; else restore from `.wms` backup or re-run CASC extract). Test char Wefwefwefa (guid 13, acct CLAUDE) parked at server (-8950,-135,85).): in the editor, raise a hill and paint a texture in Northshire
    (tile 32,48), export, start the client (`client/autologin.sh`), walk on it, check it from a distance
    (normals, WDL). Re-extract server data (`wow.extract` batch op, run through the UI, incl. dry run) and
    check the Drift layer reads ~0 and the server height matches.
@@ -32,7 +32,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
    effect editor undoes. Then `database_tool export --client` and see the change in game.
 7. [ ] **Editor look-through** (one screenshot each): catalog row edit, Goldshire M2+WMO, NPC appearance
    (CreatureDisplayInfoExtra skin), markers around Northshire, server preview toggles, light preview.
-8. [ ] Data: the `WaterImported` column against an old editor DB (migration path); clean up TestPanel
+8. [~] Data: `WaterImported` column was missing in old DBs and exports crashed (fixed: EditorStorage now owns plugin tables mapped by its entities; the migration screen offers AddColumn; the sandbox DB was patched by hand; the real `.world` needs the Apply click on next editor start; generated `WowAdtImportTilesRecord` in WorldStorage still lacks the column, regenerate with generate-wms after migrating `.world`). Clean up TestPanel
    entities in the sandbox DB.
 
 ## Step 2: close small gaps found useful during step 1
