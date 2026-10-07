@@ -94,8 +94,11 @@ def main():
         data = list(r["data"])
         if len(data) != len(cols):
             sys.exit(f"{tn} {rid}: {len(data)} values for {len(cols)} columns")
-        if data[0] in ("", None):
-            data[0] = rid
+        id_index = [c[1] for c in cols].index("ID")
+        if data[id_index] in ("", None):
+            data[id_index] = rid
+        elif int(data[id_index]) != rid:
+            sys.exit(f"{tn} {rid}: row has ID {data[id_index]}")
         row = [convert(v, c[2]) for v, c in zip(data, cols)]
         if "c" + t in ref_tables:
             stock = ref.execute(f'SELECT * FROM "c{t}" WHERE "ID" = ?', (rid,)).fetchone()

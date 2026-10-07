@@ -147,10 +147,12 @@ def lit(v):
     if v is None:
         return "NULL"
     if isinstance(v, str):
-        return "'" + v.replace("'", "''") + "'"
+        # Control characters are spelled out: git normalises line endings in .sql files.
+        quoted = "'" + v.replace("'", "''") + "'"
+        for ch in "\r\n":
+            quoted = quoted.replace(ch, f"' || char({ord(ch)}) || '")
+        return quoted
     if isinstance(v, float):
-        if v == int(v) and abs(v) < 1e15:
-            return repr(v)
         return repr(v)
     return str(v)
 

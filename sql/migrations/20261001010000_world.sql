@@ -2321,12 +2321,9 @@ INSERT INTO `dbc_spell` (`ID`, `NameSubtext_lang`, `Description_lang`, `AuraDesc
 (12871, '', '', 'Deals fire damage every $t1 sec.'),
 (12874, 'Rank 4', 'Your Scorch spells have a $s1% chance to cause your target to be vulnerable to Fire damage.  This vulnerability increases the Fire damage dealt to your target by $22959s1% and lasts $22959d.  Stacks up to $22959u times.', ''),
 (12875, 'Rank 5', 'Your Scorch spells have a $s1% chance to cause your target to be vulnerable to Fire damage.  This vulnerability increases the Fire damage dealt to your target by $22959s1% and lasts $22959d.  Stacks up to $22959u times.', ''),
-(13034, 'Rank 5', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.
-', 'Absorbs damage.'),
-(13035, 'Rank 6', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.
-', 'Absorbs damage.'),
-(13036, 'Rank 7', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.
-', 'Absorbs damage.'),
+(13034, 'Rank 5', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.' || char(13) || '' || char(10) || '', 'Absorbs damage.'),
+(13035, 'Rank 6', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.' || char(13) || '' || char(10) || '', 'Absorbs damage.'),
+(13036, 'Rank 7', 'Instantly shields you, absorbing $s1 damage.  Lasts $d.  While the shield holds, spells will not be interrupted.' || char(13) || '' || char(10) || '', 'Absorbs damage.'),
 (13040, 'Rank 5', '', ''),
 (13041, 'Rank 6', '', ''),
 (13042, 'Rank 7', '', ''),
@@ -2505,8 +2502,7 @@ INSERT INTO `dbc_spell` (`ID`, `NameSubtext_lang`, `Description_lang`, `AuraDesc
 (17612, '', '', ''),
 (17967, 'Rank 1', '', ''),
 (18065, '', 'Increases your attack speed by $s1%.', ''),
-(18102, '', 'Stuns an enemy and inflicts Frost damage every $t1 sec. for $d.', 'Stunned.
-Frost damage inflicted every $t1 sec.'),
+(18102, '', 'Stuns an enemy and inflicts Frost damage every $t1 sec. for $d.', 'Stunned.' || char(13) || '' || char(10) || 'Frost damage inflicted every $t1 sec.'),
 (18235, 'Rank 1', '', '$s1 damage every $t1 seconds.  Escalates after $d.'),
 (18236, 'Rank 1', '', '$s1 damage every $t1 seconds.'),
 (18237, 'Rank 1', 'Curses the target with agony, causing $o1 damage over $d.  Only one Curse per Warlock can be active on any one target.', '$o1 damage over $d.'),
@@ -2566,9 +2562,7 @@ Frost damage inflicted every $t1 sec.'),
 (20110, 'Rank 5', 'Increases the duration of your Blessing of Freedom by $/1000;s1 sec.', ''),
 (20151, 'Rank 4', 'Increases the amount of damage absorbed by your shield by $s1%.', ''),
 (20152, 'Rank 5', 'Increases the amount of damage absorbed by your shield by $s1%.', ''),
-(20163, 'Rank 1', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will judge an enemy for $20183d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
+(20163, 'Rank 1', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20183d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
 (20169, 'Rank 1', 'Increases chance to block by $s1% for $d, and deals $s2 Holy damage for each attack blocked while active.  Each block expends a charge.  $n charges.', 'Block chance increased by $s1%.  $s2 Holy damage dealt to attacker when blocked.  $n charges.'),
 (20183, 'Rank 1', '', 'Holy damage spells cast on you cause additional threat.'),
 (20204, 'Rank 1', 'Places a Blessing on the friendly target, reducing damage dealt from all sources by up to $s1 for $d.  In addition, when the target blocks a melee attack the attacker will take $s2 Holy damage.  Players may only have one Blessing on them per Paladin at any one time.', 'Damage taken reduced by up to $s1 and blocked melee attacks cause $s2 Holy damage to the attacker.'),
@@ -2582,9 +2576,7 @@ Unleashing this Seal''s energy will judge an enemy for $20183d, causing Holy dam
 (20247, 'Rank 4', 'Increases the effect of your Blessing of Wisdom and Blessing of Light by $s1%.', ''),
 (20248, 'Rank 5', 'Increases the effect of your Blessing of Wisdom and Blessing of Light by $s1%.', ''),
 (20304, 'Rank 6', '', 'Increases Holy damage taken by up to $s1.'),
-(20309, 'Rank 6', 'Fills the Paladin with the spirit of a crusader for $d, granting $s1 attack power.  The Paladin also attacks $s2% faster, but deals less damage with each attack.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will judge an enemy for $20304d, increasing Holy damage taken by up to $20304s1.  Only one Judgement per Paladin can be active at any one time.', 'Attack power increased by $s1.  Melee attacks are $s2% faster, but deal less damage.'),
+(20309, 'Rank 6', 'Fills the Paladin with the spirit of a crusader for $d, granting $s1 attack power.  The Paladin also attacks $s2% faster, but deals less damage with each attack.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20304d, increasing Holy damage taken by up to $20304s1.  Only one Judgement per Paladin can be active at any one time.', 'Attack power increased by $s1.  Melee attacks are $s2% faster, but deal less damage.'),
 (20338, 'Rank 5', 'Increases the Attack Power bonus of your Seal of the Crusader and the Holy damage increase of your Judgement of the Crusader by $s1%.', ''),
 (20339, 'Rank 4', 'Increases the Attack Power bonus of your Seal of the Crusader and the Holy damage increase of your Judgement of the Crusader by $s1%.', ''),
 (20362, 'Rank 4', 'Increases the amount healed by your Seal of Light by $s1% and the duration of your Judgement of Light by $/1000;s2 sec.', ''),
@@ -2597,18 +2589,10 @@ Unleashing this Seal''s energy will judge an enemy for $20304d, increasing Holy 
 (20416, 'Rank 3', 'Designer Note:  Effect 1 points = desired threat per second, before misses.', ''),
 (20417, 'Rank 4', 'Designer Note:  Effect 1 points = desired threat per second, before misses.', ''),
 (20418, 'Rank 5', 'Designer Note:  Effect 1 points = desired threat per second, before misses.', ''),
-(20419, 'Rank 2', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 1).
-
-Unleashing this Seal''s energy will judge an enemy for $20411d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
-(20421, 'Rank 3', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 2).
-
-Unleashing this Seal''s energy will judge an enemy for $20412d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
-(20422, 'Rank 4', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 3).
-
-Unleashing this Seal''s energy will judge an enemy for $20413d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
-(20423, 'Rank 5', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 4).
-
-Unleashing this Seal''s energy will judge an enemy for $20414d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
+(20419, 'Rank 2', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 1).' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20411d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
+(20421, 'Rank 3', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 2).' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20412d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
+(20422, 'Rank 4', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 3).' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20413d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
+(20423, 'Rank 5', 'Fills the Paladin with divine fury for $d, allowing melee attacks to cause additional threat.  Only one Seal can be active on the Paladin at any one time.  More effective than Seal of Fury (Rank 4).' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will judge an enemy for $20414d, causing Holy damage spells cast on that enemy to generate additional threat.  Only one Judgement per Paladin can be active at any one time.', 'Melee attacks cause additional threat.'),
 (20471, 'Rank 4', 'Increases the amount of threat generated by your Seal of Fury and Judgement of Fury by $s1%.', ''),
 (20472, 'Rank 5', 'Increases the amount of threat generated by your Seal of Fury and Judgement of Fury by $s1%.', ''),
 (20490, 'Rank 4', 'Increases the chance your Seal of Justice will stun the opponent by 53%.', ''),
@@ -2686,8 +2670,7 @@ Unleashing this Seal''s energy will judge an enemy for $20414d, causing Holy dam
 (24287, 'Rank 5', 'Increases hit chance by $s3% and increases the chance movement impairing effects will be resisted by $s1%.', ''),
 (24298, 'Rank 1', 'Increases the duration of your Freezing Trap by $/1000;s1 sec.', ''),
 (24299, 'Rank 2', 'Increases the duration of your Freezing Trap by $/1000;s1 sec.', ''),
-(24330, '', '', 'Deals $s1 damage every $t1 sec.
-Spreads to nearby allies.'),
+(24330, '', '', 'Deals $s1 damage every $t1 sec.' || char(13) || '' || char(10) || 'Spreads to nearby allies.'),
 (24398, '', '', ''),
 (24403, '', 'Your Frostbolt spells have a $s1% chance to restore $s2 mana when cast.', ''),
 (24404, '', 'Your Frostbolt spells have a $s1% chance to restore $s2 mana when cast.', ''),
@@ -2698,30 +2681,14 @@ Spreads to nearby allies.'),
 (25205, '', 'Increases your movement speed by $s1% while outdoors in Cat Form and increases your chance to dodge while in Cat Form by $24864s1%.', ''),
 (25333, '', '', ''),
 (25598, '', '', ''),
-(25715, 'Rank 8', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20286s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25727, 'Rank 7', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20285s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25728, 'Rank 6', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20284s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25729, 'Rank 5', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20283s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25730, 'Rank 4', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20282s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25731, 'Rank 3', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20281s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25732, 'Rank 2', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20280s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
-(25733, 'Rank 1', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.
-
-Unleashing this Seal''s energy will cause $20187s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25715, 'Rank 8', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20286s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25727, 'Rank 7', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20285s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25728, 'Rank 6', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20284s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25729, 'Rank 5', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20283s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25730, 'Rank 4', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20282s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25731, 'Rank 3', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20281s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25732, 'Rank 2', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20280s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
+(25733, 'Rank 1', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.' || char(13) || '' || char(10) || '' || char(13) || '' || char(10) || 'Unleashing this Seal''s energy will cause $20187s1 Holy damage to an enemy.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
 (25734, 'Rank 1', 'Fills the Paladin with holy spirit for $d, giving each melee attack a chance to cause $s1 additional Holy damage.  Only one Seal can be active on the Paladin at any one time.', 'Melee attacks have a chance to cause $s1 additional Holy damage.'),
 (25745, 'Rank 1', '', '$20467s1 Holy damage taken when stunned.'),
 (25759, 'Rank 2', '', '$20963s1 Holy damage taken when stunned.'),
@@ -2770,12 +2737,7 @@ Unleashing this Seal''s energy will cause $20187s1 Holy damage to an enemy.', 'M
 (30169, '', '', ''),
 (30640, 'Rank 2', 'Increases the amount healed to targets beyond the first by $s1%.', ''),
 (30896, 'Rank 3', 'Increases your Stealth detection slightly and reduces the chance you are hit by spells and ranged attacks by $s2%.', ''),
-(30965, '', 'Finishing move that exposes the target for $d, reducing armor per combo point:
-   1 point  : -8% armor
-   2 points: -16% armor
-   3 points: -24% armor
-   4 points: -32% armor
-   5 points: -40% armor', ''),
+(30965, '', 'Finishing move that exposes the target for $d, reducing armor per combo point:' || char(13) || '' || char(10) || '   1 point  : -8% armor' || char(13) || '' || char(10) || '   2 points: -16% armor' || char(13) || '' || char(10) || '   3 points: -24% armor' || char(13) || '' || char(10) || '   4 points: -32% armor' || char(13) || '' || char(10) || '   5 points: -40% armor', ''),
 (30996, '', '', ''),
 (31004, '', '', ''),
 (31005, '', '', ''),
