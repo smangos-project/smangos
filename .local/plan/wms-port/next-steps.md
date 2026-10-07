@@ -19,7 +19,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
    check the Drift layer reads ~0 and the server height matches.
 2. [x] **Spawns (Phase 5 exit, verified 2026-10-07 via wms.spawn.Create + Commit, server pointed at sandbox DB, guard visible in client)**: place a creature in Northshire, commit, restart/reload the server, see it in
    the client. Spawn guids must not collide with a running server.
-3. [ ] **Water (D exit)**: imported water looks right up close in the viewport (look.sh); add a pond,
+3. [~] **Water (D exit)** (2026-10-07: added `wms.wowImport.CreatePondModel(name,size,liquidTypeId,x,y,z)`; pond at editor (-8935,85.5,135) exported into 32,48 (MH2O now 8 cells) but NOT yet seen in the client or by the server. FINDING: the sandbox tile 32,48 is not flagged WaterImported and has no imported water entities, so export REPLACED the stock stream MH2O (42 cells) with only the pond: re-import the tile with water (wow.import.adt importWater=true) before testing, or fix the export to merge. Also 31_49/32_49 get rewritten only because of doodad ordering (benign). Stock tiles restored in the client afterwards.)**: imported water looks right up close in the viewport (look.sh); add a pond,
    export, swim in it; after re-extract the server sees water (breath bar).
 4. [ ] **Procedural models (H exit)**: an M2 panel/road and a WMO wall in Northshire render in the client;
    run the vmap extractor on them (collision present, not NoCollision), walk on the WMO, server LoS blocks.
