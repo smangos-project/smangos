@@ -60,6 +60,8 @@ public static class M2ModelWriter
         root.CollisionBox = new CAaBox(box);
         root.CollisionSphereRadius = radius;
 
+        AddCollision(root, wowPositions, surfaces);
+
         root.GlobalLoops.Add(new M2Loop());
         root.Sequences.Add(new M2SequenceWodPlus());
         root.Bones.Add(new M2CompBoneWotlkPlus { KeyBoneId = -1, ParentBone = -1 });
@@ -136,6 +138,35 @@ public static class M2ModelWriter
         image.CopyTo(m2, 8);
         Array.Copy(rest, 8, m2, 8 + image.Length, rest.Length - 8);
         return (m2, skin.Write());
+    }
+
+    /// <summary>Every surface collides: the render mesh doubles as the bounding mesh the server extractor reads.</summary>
+    private static void AddCollision(M2RootLegionPlus root, List<Vector3> wowPositions, IReadOnlyList<ModelSurfaceInput> surfaces)
+    {
+        foreach (Vector3 p in wowPositions)
+        {
+            root.CollisionVertices.Add(new C3Vector(p.X, p.Y, p.Z));
+        }
+
+        int vertexStart = 0;
+        foreach (ModelSurfaceInput s in surfaces)
+        {
+            for (int i = 0; i + 2 < s.Indices.Count; i += 3)
+            {
+                int a = vertexStart + s.Indices[i], b = vertexStart + s.Indices[i + 1], c = vertexStart + s.Indices[i + 2];
+                Vector3 n = (wowPositions[b] - wowPositions[a]).Cross(wowPositions[c] - wowPositions[a]).Normalized();
+                for (int k = 0; k < 3; k++)
+                {
+                    root.CollisionNormals.Add(new C3Vector(n.X, n.Y, n.Z));
+                }
+
+                root.CollisionTriangles.Add((ushort)a);
+                root.CollisionTriangles.Add((ushort)b);
+                root.CollisionTriangles.Add((ushort)c);
+            }
+
+            vertexStart += s.Positions.Count;
+        }
     }
 
     private static MaterialFlags MaterialFlagsFor(ModelSurfaceInput s)

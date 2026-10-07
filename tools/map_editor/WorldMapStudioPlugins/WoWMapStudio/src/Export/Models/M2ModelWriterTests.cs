@@ -62,6 +62,17 @@ public static class M2ModelWriterTests
         Assert.AreEqual((ushort)4 + 0, (ushort)(skin.Indices[6]));
     }
 
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Written_m2_has_collision_triangles()
+    {
+        (byte[] m2Bytes, _) = M2ModelWriter.Write("Solid", [Quad(Vector3.Zero, 1, "opaque", false, false, true)]);
+
+        using var root = new WoWLib.Formats.M2.Root.M2RootLegionPlus();
+        root.Read(m2Bytes[8..(8 + (int)System.BitConverter.ToUInt32(m2Bytes, 4))]);
+        Assert.AreEqual(6, root.CollisionTriangles.Count);
+        Assert.AreEqual(4, root.CollisionVertices.Count);
+    }
+
     private static ModelSurfaceInput Quad(Vector3 origin, uint fdid, string blend, bool twoSided, bool unlit, bool depthWrite) => new(
         new List<Vector3> { origin, origin + Vector3.Right, origin + new Vector3(1, 0, -1), origin + Vector3.Forward },
         new List<Vector3> { Vector3.Up, Vector3.Up, Vector3.Up, Vector3.Up },
