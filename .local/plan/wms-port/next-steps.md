@@ -13,7 +13,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 
 ## Step 1: end-to-end checks of what's built (in this order)
 
-1. [x] **Terrain (Phase 7 exit)** (2026-10-07: hill +22 + dirt paint in 32,48 exported, renders in client, server re-extracted (`wowServer.Extract(0,row=48,col=32)`: row is the tile y) and the character stands on the hill; stock tiles restored afterwards. Drift check verified 2026-10-08 via new `wms.wowServer.Drift(fileX,fileY)`: 0/16625 on unedited tile, 21 verts (max 25.0) after a +25 raise, 0 again after export + re-extract. Still open: WDL from distance.): in the editor, in the editor, raise a hill and paint a texture in Northshire
+1. [x] **Terrain (Phase 7 exit)** (2026-10-07: hill +22 + dirt paint in 32,48 exported, renders in client, server re-extracted (`wowServer.Extract(0,row=48,col=32)`: row is the tile y) and the character stands on the hill; stock tiles restored afterwards. Drift check verified 2026-10-08 via new `wms.wowServer.Drift(fileX,fileY)`: 0/16625 on unedited tile, 21 verts (max 25.0) after a +25 raise, 0 again after export + re-extract. WDL: export with a big +365 spire changed azeroth.wdl (999 bytes), but the visual check from a distance is not done (could not aim the client camera from Goldshire; /run needs the custom-scripts prompt accepted, batch format is {"actions":[{"key":..},{"wait_ms":..},{"type":..}]}).): in the editor, in the editor, raise a hill and paint a texture in Northshire
    (tile 32,48), export, start the client (`client/autologin.sh`), walk on it, check it from a distance
    (normals, WDL). Re-extract server data (`wow.extract` batch op, run through the UI, incl. dry run) and
    check the Drift layer reads ~0 and the server height matches.
