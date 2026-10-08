@@ -21,6 +21,8 @@ public static class AdtObj1Patcher
     private const float TileOrigin = 17066.666667f;
     private const int MddfSize = 36;
     private const int ModfSize = 64;
+    private const byte StockDoodadFlags = 0x20;
+    private const byte StockObjectFlags = 0x04;
 
     /// <summary>
     /// Appends an LOD entry for every <c>MDDF</c>/<c>MODF</c> placement of <paramref name="obj0"/> the file lacks (the
@@ -56,6 +58,7 @@ public static class AdtObj1Patcher
             }
 
             float x = BitConverter.ToSingle(entry, 8), y = BitConverter.ToSingle(entry, 12), z = BitConverter.ToSingle(entry, 16);
+            entry[34] |= StockDoodadFlags;
             doodads.AddRange(entry);
             bounds.AddRange(Bounds(TileOrigin - z - 3, TileOrigin - x - 3, y - 3, TileOrigin - z + 3, TileOrigin - x + 3, y + 3));
             lods.AddRange(lodValue);
@@ -77,7 +80,9 @@ public static class AdtObj1Patcher
             float ax = BitConverter.ToSingle(entry, 32), ay = BitConverter.ToSingle(entry, 36), az = BitConverter.ToSingle(entry, 40);
             float bx = BitConverter.ToSingle(entry, 44), by = BitConverter.ToSingle(entry, 48), bz = BitConverter.ToSingle(entry, 52);
             objects.AddRange(entry[..32]);
-            objects.AddRange(entry[56..64]);
+            byte[] tail = entry[56..64];
+            tail[0] |= StockObjectFlags;
+            objects.AddRange(tail);
             objectBounds.AddRange(Bounds(
                 TileOrigin - MathF.Max(az, bz), TileOrigin - MathF.Max(ax, bx), MathF.Min(ay, by),
                 TileOrigin - MathF.Min(az, bz), TileOrigin - MathF.Min(ax, bx), MathF.Max(ay, by)));
