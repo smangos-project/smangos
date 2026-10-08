@@ -7,6 +7,7 @@ import types
 import traceback
 
 import bpy
+import mathutils
 import numpy as np
 
 sys.path.insert(0, __file__.rsplit("/", 1)[0])
@@ -708,6 +709,38 @@ def wmo_light_fog_delete():
     assert int(new.root.header.n_lights) == nl - 2
     assert abs(new.root.lights[3].position.x - keep_pos[0]) < 1e-4
     assert all(int(x) < nf - 1 for g in new.groups for x in g.body.header.fog_ids)
+
+
+@test
+def wmo_portal_create_delete():
+    path = REFS[1]
+    coll, r = export_files(path)
+    src = wmo_expect(path)[1]
+    n = len(src.portals)
+    portals = sorted((o for o in coll.all_objects if o.name.startswith("portal_")), key=lambda o: o.wow_wmo_portal.index)
+    assert n > 3
+    keep_v = [(v.x, v.y, v.z) for v in src.portal_vertices[src.portals[3].start_vertex:src.portals[3].start_vertex + src.portals[3].count]]
+    keep_refs = sorted((int(x.group_index), int(x.side)) for x in src.portal_refs if int(x.portal_index) == 3)
+    bpy.data.objects.remove(portals[1])
+    old = portals[0]
+    ob = bpy.data.objects.new("portal_new", bpy.data.meshes.new("portal_new"))
+    c = old.data.vertices[0].co
+    ob.data.from_pydata([c, c + mathutils.Vector((0, 0, 3)), c + mathutils.Vector((3, 0, 3)), c + mathutils.Vector((3, 0, 0))], [], [[0, 1, 2, 3]])
+    ob.location = old.matrix_world.translation
+    next(c for c in coll.children_recursive if c.name.startswith("portals")).objects.link(ob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.root.portals) == n and new.validate().ok, str(new.validate())
+    assert sum(int(g.body.header.portal_count) for g in new.groups) == len(new.root.portal_refs)
+    got_refs = sorted((int(x.group_index), int(x.side)) for x in new.root.portal_refs if int(x.portal_index) == 2)
+    assert got_refs == keep_refs, (got_refs, keep_refs, [(int(x.portal_index), int(x.group_index)) for x in new.root.portal_refs])
+    last = new.root.portals[n - 1]
+    assert last.count == 4
+    assert any(int(x.portal_index) == n - 1 for x in new.root.portal_refs)
+    p2 = new.root.portals[2]
+    got = [(v.x, v.y, v.z) for v in new.root.portal_vertices[p2.start_vertex:p2.start_vertex + p2.count]]
+    assert np.allclose(got, keep_v, atol=1e-4)
 
 
 @test

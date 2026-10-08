@@ -72,7 +72,7 @@ class WowWmoGroup(bpy.types.PropertyGroup):
 
 
 class WowWmoPortal(bpy.types.PropertyGroup):
-    index: IntProperty()
+    index: IntProperty(default=-1)
     plane_normal: FloatVectorProperty(size=3)
     plane_distance: FloatProperty()
     refs: CollectionProperty(type=WowPortalRef)

@@ -330,17 +330,106 @@ def _plane(pts):
     return n, float(-np.dot(n, np.mean(pts, axis=0)))
 
 
+def _portal_polygon(ob):
+    me = ob.data
+    order = list(me.polygons[0].vertices) if len(me.polygons) else range(len(me.vertices))
+    return np.array([tuple(ob.matrix_world @ me.vertices[i].co) for i in order], np.float32)
+
+
+def _group_box(g):
+    b = g.body.header.bounding_box
+    return np.array(_vec(b.min)), np.array(_vec(b.max))
+
+
+def _auto_refs(w, co):
+    """The two smallest groups whose box the polygon touches, with the side of the plane each lies on."""
+    n, d = _plane(co.astype(np.float64))
+    lo, hi = co.min(axis=0) - 0.05, co.max(axis=0) + 0.05
+    hits = []
+    for gi, g in enumerate(w.groups):
+        glo, ghi = _group_box(g)
+        if np.all(glo <= hi) and np.all(ghi >= lo):
+            hits.append((float(np.prod(ghi - glo)), gi, 1 if float(np.dot(n, (glo + ghi) / 2) + d) >= 0 else -1))
+    hits.sort()
+    return [(gi, side) for _, gi, side in hits[:2]]
+
+
+def rebuild_portals(w, objs, report):
+    """Rewrites MOPT/MOPV/MOPR and each group's portal slice for the given portal objects (old indices keep their refs)."""
+    r = w.root
+    old_refs = []
+    for g in w.groups:
+        h = g.body.header
+        old_refs.append([(int(x.portal_index), int(x.group_index), int(x.side)) for x in r.portal_refs[h.portal_start:h.portal_start + h.portal_count]])
+    index_of = {}
+    polys, per_group = [], [[] for _ in w.groups]
+    for ob in objs:
+        co = _portal_polygon(ob)
+        if len(co) < 3:
+            report.add("ERROR", ob.name, f"portal needs at least 3 vertices, has {len(co)}")
+            continue
+        i = ob.wow_wmo_portal.index
+        index_of[ob] = len(polys)
+        polys.append(co)
+    new_index = {}
+    for ob, k in index_of.items():
+        i = ob.wow_wmo_portal.index
+        if 0 <= i < len(r.portals):
+            new_index[i] = k
+    for gi, refs in enumerate(old_refs):
+        for pi, other, side in refs:
+            if pi in new_index:
+                per_group[gi].append((new_index[pi], other, side))
+    for ob, k in index_of.items():
+        i = ob.wow_wmo_portal.index
+        if 0 <= i < len(r.portals):
+            continue
+        refs = [(e.group_index, e.side) for e in ob.wow_wmo_portal.refs if e.group_index < len(w.groups)]
+        if len(refs) < 2:
+            refs = _auto_refs(w, polys[k])
+        if len(refs) < 2:
+            report.add("WARNING", ob.name, "portal touches fewer than two groups")
+        for gi, side in refs:
+            for oi, _ in refs:
+                if oi != gi:
+                    per_group[gi].append((k, oi, side))
+    r.portals.clear()
+    r.portal_vertices.clear()
+    r.portal_refs.clear()
+    for co in polys:
+        pt = r.portals.new()
+        pt.start_vertex, pt.count = len(r.portal_vertices), len(co)
+        for c in co:
+            _set_vec(r.portal_vertices.new(), c)
+        n, dist = _plane(co.astype(np.float64))
+        _set_vec(pt.plane.normal, n)
+        pt.plane.distance = dist
+    for gi, refs in enumerate(per_group):
+        h = w.groups[gi].body.header
+        h.portal_start, h.portal_count = len(r.portal_refs), len(refs)
+        for pi, other, side in refs:
+            e = r.portal_refs.new()
+            e.portal_index, e.group_index, e.side = pi, other, side
+
+
 def update_portals(w, root, report):
     r = w.root
     changed = False
-    for ob in sorted((o for o in root.all_objects if o.type == "MESH" and o.name.startswith("portal_")), key=lambda o: o.name):
-        i = ob.wow_wmo_portal.index
-        if i >= len(r.portals):
-            report.add("WARNING", ob.name, "new portals are not supported, ignored")
-            continue
-        pt = r.portals[i]
-        me = ob.data
-        co = np.array([tuple(ob.matrix_world @ v.co) for v in me.vertices], np.float32)
+    objs = sorted((o for o in root.all_objects if o.type == "MESH" and o.name.startswith("portal_")), key=lambda o: o.name)
+    seen = {o.wow_wmo_portal.index for o in objs}
+    n_src = len(r.portals)
+    has_coll = any(c.name.startswith("portals") for c in root.children)
+    gone = set(range(n_src)) - seen
+    new = [o for o in objs if not 0 <= o.wow_wmo_portal.index < n_src]
+    if new or (gone and has_coll):
+        order = sorted((o for o in objs if 0 <= o.wow_wmo_portal.index < n_src), key=lambda o: o.wow_wmo_portal.index) + new
+        rebuild_portals(w, order, report)
+        return True
+    if gone:
+        report.add("WARNING", "portals", f"{len(gone)} portal objects missing, portals kept")
+    for ob in objs:
+        pt = r.portals[ob.wow_wmo_portal.index]
+        co = _portal_polygon(ob)
         if len(co) != pt.count:
             report.add("ERROR", ob.name, f"portal needs {pt.count} vertices, has {len(co)}")
             continue
