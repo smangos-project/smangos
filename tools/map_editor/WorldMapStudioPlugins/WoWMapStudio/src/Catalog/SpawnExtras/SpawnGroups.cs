@@ -1,0 +1,221 @@
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+
+namespace WorldMapStudio.WoW;
+
+/// <summary>A `game_event` row. `ID` is the event entry.</summary>
+public sealed class GameEvent : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public string StartTime { get; set; } = string.Empty;
+
+    [ScriptProperty(Mutable = true)]
+    public string EndTime { get; set; } = string.Empty;
+
+    [ScriptProperty(Mutable = true)]
+    public int Occurence { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Length { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Holiday { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public string Description { get; set; } = string.Empty;
+
+    [ScriptProperty(Mutable = true)]
+    public int Hardcoded { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Disabled { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Game Event {ID}: {Description}";
+}
+
+/// <summary>A `creature_groups` row. `ID` is the member spawn guid.</summary>
+public sealed class CreatureGroupMember : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int LeaderGuid { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Dist { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Angle { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Flags { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Group Member {ID} (leader {LeaderGuid})";
+}
+
+/// <summary>A `creature_linking` row. `ID` is the linked spawn guid.</summary>
+public sealed class CreatureLink : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int MasterGuid { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Flag { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Link {ID} (master {MasterGuid})";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventFactory : ThinDbcFactory<GameEvent, GameEventRecord>
+{
+    public GameEventFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Game Event";
+
+    protected override string KeyPropertyName => "Entry";
+
+    protected override string DisplayText(GameEventRecord record) => record.Description ?? string.Empty;
+
+    protected override Expression<Func<GameEventRecord, bool>> TextFilter(string term) =>
+        record => EF.Functions.Like(record.Description, $"%{term}%");
+
+    protected override GameEvent ToEntity(GameEventRecord r) => new()
+    {
+        ID = r.Entry,
+        StartTime = r.StartTime,
+        EndTime = r.EndTime,
+        Occurence = r.Occurence,
+        Length = r.Length,
+        Holiday = r.Holiday,
+        Description = r.Description ?? string.Empty,
+        Hardcoded = r.Hardcoded,
+        Disabled = r.Disabled,
+        IsSaved = true,
+    };
+
+    protected override void Write(GameEvent e, GameEventRecord r)
+    {
+        r.Entry = e.ID;
+        r.StartTime = e.StartTime;
+        r.EndTime = e.EndTime;
+        r.Occurence = e.Occurence;
+        r.Length = e.Length;
+        r.Holiday = e.Holiday;
+        r.Description = e.Description.Length == 0 ? null : e.Description;
+        r.Hardcoded = e.Hardcoded;
+        r.Disabled = e.Disabled;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(GameEvent e) =>
+    [
+        F.Text("Description", () => e.Description, v => e.Description = v, 255),
+        F.Text("Start Time", () => e.StartTime, v => e.StartTime = v, 32),
+        F.Text("End Time", () => e.EndTime, v => e.EndTime = v, 32),
+        F.Int("Occurence (min)", () => e.Occurence, v => e.Occurence = v),
+        F.Int("Length (min)", () => e.Length, v => e.Length = v),
+        F.Int("Holiday", () => e.Holiday, v => e.Holiday = v),
+        F.Int("Hardcoded", () => e.Hardcoded, v => e.Hardcoded = v),
+        F.Int("Disabled", () => e.Disabled, v => e.Disabled = v),
+    ];
+
+    internal GameEvent CallToEntity(GameEventRecord record) => ToEntity(record);
+
+    internal void CallWrite(GameEvent entity, GameEventRecord record) => Write(entity, record);
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureGroupMemberFactory : ThinDbcFactory<CreatureGroupMember, CreatureGroupsRecord>
+{
+    public CreatureGroupMemberFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature Group Member";
+
+    protected override string KeyPropertyName => "MemberGuid";
+
+    protected override CreatureGroupMember ToEntity(CreatureGroupsRecord r) => new()
+    {
+        ID = r.MemberGuid,
+        LeaderGuid = r.LeaderGuid,
+        Dist = r.Dist,
+        Angle = r.Angle,
+        Flags = r.Flags,
+        IsSaved = true,
+    };
+
+    protected override void Write(CreatureGroupMember e, CreatureGroupsRecord r)
+    {
+        r.MemberGuid = e.ID;
+        r.LeaderGuid = e.LeaderGuid;
+        r.Dist = e.Dist;
+        r.Angle = e.Angle;
+        r.Flags = e.Flags;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(CreatureGroupMember e) =>
+    [
+        F.Int("Leader Guid", () => e.LeaderGuid, v => e.LeaderGuid = v),
+        F.Float("Distance", () => e.Dist, v => e.Dist = v),
+        F.Float("Angle", () => e.Angle, v => e.Angle = v),
+        F.Int("Flags", () => e.Flags, v => e.Flags = v),
+    ];
+
+    internal CreatureGroupMember CallToEntity(CreatureGroupsRecord record) => ToEntity(record);
+
+    internal void CallWrite(CreatureGroupMember entity, CreatureGroupsRecord record) => Write(entity, record);
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureLinkFactory : ThinDbcFactory<CreatureLink, CreatureLinkingRecord>
+{
+    public CreatureLinkFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature Link";
+
+    protected override string KeyPropertyName => "Guid";
+
+    protected override CreatureLink ToEntity(CreatureLinkingRecord r) => new()
+    {
+        ID = r.Guid,
+        MasterGuid = r.MasterGuid,
+        Flag = r.Flag,
+        IsSaved = true,
+    };
+
+    protected override void Write(CreatureLink e, CreatureLinkingRecord r)
+    {
+        r.Guid = e.ID;
+        r.MasterGuid = e.MasterGuid;
+        r.Flag = e.Flag;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(CreatureLink e) =>
+    [
+        F.Int("Master Guid", () => e.MasterGuid, v => e.MasterGuid = v),
+        F.Int("Flag", () => e.Flag, v => e.Flag = v),
+    ];
+
+    internal CreatureLink CallToEntity(CreatureLinkingRecord record) => ToEntity(record);
+
+    internal void CallWrite(CreatureLink entity, CreatureLinkingRecord record) => Write(entity, record);
+}

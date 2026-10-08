@@ -98,6 +98,35 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Game_event_group_and_link_round_trip_through_their_records()
+    {
+        var events = new GameEventFactory(null!);
+        GameEvent ev = events.CallToEntity(new GameEventRecord { Entry = 5, Description = "Fair", Length = 60 });
+        ev.Description = string.Empty;
+        var evRow = new GameEventRecord();
+        events.CallWrite(ev, evRow);
+        Assert.AreEqual(5, evRow.Entry);
+        Assert.IsTrue(evRow.Description is null);
+        Assert.AreEqual(60, evRow.Length);
+
+        var groups = new CreatureGroupMemberFactory(null!);
+        CreatureGroupMember member = groups.CallToEntity(new CreatureGroupsRecord { MemberGuid = 9, LeaderGuid = 4, Dist = 2.5f });
+        member.Angle = 1.5f;
+        var groupRow = new CreatureGroupsRecord();
+        groups.CallWrite(member, groupRow);
+        Assert.AreEqual(9, groupRow.MemberGuid);
+        Assert.AreEqual(4, groupRow.LeaderGuid);
+        Assert.AreEqual(1.5f, groupRow.Angle);
+
+        var links = new CreatureLinkFactory(null!);
+        CreatureLink link = links.CallToEntity(new CreatureLinkingRecord { Guid = 7, MasterGuid = 3, Flag = 2 });
+        var linkRow = new CreatureLinkingRecord();
+        links.CallWrite(link, linkRow);
+        Assert.AreEqual(7, linkRow.Guid);
+        Assert.AreEqual(3, linkRow.MasterGuid);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);
