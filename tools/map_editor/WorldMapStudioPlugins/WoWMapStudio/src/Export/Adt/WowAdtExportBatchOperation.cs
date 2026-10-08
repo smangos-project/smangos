@@ -244,7 +244,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
                 (string donorMap, int donorX, int donorY) = donor.Value;
                 await Task.Run(() => WowAdtTileWriter.WriteNew(fs, wdt, donorMap, donorX, donorY, tile)).ConfigureAwait(false);
                 string[] paths = NewTilePaths(sourceMap, id.FileX, id.FileY);
-                created.Add(((id.FileX, id.FileY), new WowTileFiles(ids.Allocate(paths[0]), ids.Allocate(paths[1]), 0, ids.Allocate(paths[2]), 0, 0, 0, 0)));
+                created.Add(((id.FileX, id.FileY), new WowTileFiles(ids.Allocate(paths[0]), ids.Allocate(paths[1]), ids.Allocate(paths[3]), ids.Allocate(paths[2]), 0, 0, 0, 0)));
             }
             else
             {
@@ -289,7 +289,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
     private static string[] NewTilePaths(string map, int fileX, int fileY)
     {
         string stem = $"world/maps/{map}/{map}_{fileX}_{fileY}";
-        return [$"{stem}.adt", $"{stem}_obj0.adt", $"{stem}_tex0.adt"];
+        return [$"{stem}.adt", $"{stem}_obj0.adt", $"{stem}_tex0.adt", $"{stem}_obj1.adt"];
     }
 
     private static (string Map, int X, int Y)? FindDonor(WoWLib.Filesystem.FileSystem fs, WowWdt wdt, string map, string donorMap)
