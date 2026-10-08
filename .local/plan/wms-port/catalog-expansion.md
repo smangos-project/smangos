@@ -4,7 +4,7 @@ Order (value first):
 - [x] 1 Loot templates: creature/gameobject/reference/item/skinning/pickpocketing/fishing/disenchant/mail (all share columns entry,item,ChanceOrQuestChance,groupid,mincountOrRef,maxcount,condition_id; key entry+item+groupid)
 - [x] 2 Vendor/trainer: npc_vendor, npc_vendor_template, npc_trainer, npc_trainer_template
 - [x] 3 Gossip: gossip_menu + gossip_menu_option done + npc_text + broadcast_text done
-- [ ] 4 Quest relations (creature/gameobject questrelation + involvedrelation)
+- [x] 4 Quest relations (4 catalogs; areatrigger_involvedrelation skipped, one quest per trigger)
 - [ ] 5 Spawn extras: creature_addon, creature_equip_template, pools, creature_groups, creature_linking, game_event_*
 - [ ] 6 Player: playercreateinfo*, player_levelstats
 - [ ] 7 More DBC: ItemSet, Talent/TalentTab, SpellItemEnchantment, Lock, Holiday
