@@ -765,6 +765,22 @@ def wmo_group_meta_edit():
 
 
 @test
+def wmo_header_edit():
+    path = REFS[0]
+    coll, r = export_files(path)
+    p = coll.wow_wmo
+    src = wmo_expect(path)[1].header
+    p.wmo_id = 4321
+    p.flags = int(src.flags) ^ 0x2
+    p.ambient_color = (10, 20, 30, 255)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    h = reread(path, r.files).root.header
+    assert h.wmo_id == 4321 and int(h.flags) ^ int(src.flags) == 0x2
+    assert (h.ambient_color.r, h.ambient_color.g, h.ambient_color.b) == (10, 20, 30)
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})

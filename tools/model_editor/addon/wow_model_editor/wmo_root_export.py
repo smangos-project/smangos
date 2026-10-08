@@ -488,9 +488,26 @@ def update_liquids(w, root, report):
     return changed
 
 
+def update_header(w, root, report):
+    h = w.root.header
+    p = root.wow_wmo
+    changed = False
+    if u32(p.flags) != u32(int(h.flags)):
+        h.flags = type(h.flags)(u32(p.flags))
+        changed = True
+    if p.wmo_id != h.wmo_id:
+        h.wmo_id = p.wmo_id
+        changed = True
+    amb = tuple(p.ambient_color)
+    if amb != (h.ambient_color.r, h.ambient_color.g, h.ambient_color.b, h.ambient_color.a):
+        _set_rgba(h.ambient_color, amb)
+        changed = True
+    return changed
+
+
 def update_root_objects(w, root, report):
     """Returns the set of group indices whose liquids changed; root edits are applied in place."""
-    for fn in (update_doodads, update_lights, update_fogs, update_portals):
+    for fn in (update_header, update_doodads, update_lights, update_fogs, update_portals):
         if fn(w, root, report):
             report.add("INFO", fn.__name__.replace("update_", ""), "updated")
     return update_liquids(w, root, report)
