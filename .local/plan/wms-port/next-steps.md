@@ -117,3 +117,8 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 ### Step 1.4/1.5 (twelfth session, later)
 - Fresh sandbox export (fixed M2 writer) installed WITHOUT manual patches loads into the world. Panels at (-8930,-130,92): USER TO CHECK VISUALLY LATER (client left running + installed; control server on 8790 hung, no screenshots). Restore stock afterwards: copy /tmp/stock32/azeroth_32_48{,_obj0,_obj1,_tex0}.adt into .client/Content/world/maps/azeroth/, rm -rf .client/Content/world/generated, `sed -i '/^20000000[0-9][0-9];/d' .client/Content/fdid.index`, reset character 13 to -8949.95,-132.493,83.53, kill client (script file, no inline pkill).
 - `map_extractor --output /tmp/sdata --stages vmap --map 0` (scratch output) converts both panel models (FILE77359420.m2.vmo, FILE77359422.wmo.vmo). Not yet run on live .server/data nor tested for collision/LOS in the server.
+
+### Step 1.4 (thirteenth session, 2026-10-08)
+- ROOT CAUSE of vanishing distant trees: stock obj1 MLDD/MLDX/MLDL are sorted by bounds radius DESCENDING; front insertion broke the order. AdtObj1Patcher.AddMissing now inserts at the sorted position (committed 976152a6d + offset fix). Trees are back (user confirmed); WMO panel shows.
+- M2 panel exported with TXID 0 (the e2e panel has no texture): patched TXID to 189080 in .client generated m2 to test; awaiting user answer. wms-test.sh with scratch config hangs; use `--attach --port 8799` after /tmp/wmsdbg/up.sh.
+- Client currently running with the installed panels; restore stock afterwards (see twelfth-session note).
