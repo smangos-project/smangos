@@ -530,6 +530,21 @@ def warn_stale_lods(path, dirty, report):
             report.add("WARNING", f"group {gi}", f"{lod.name} is not updated and no longer matches the edited group")
 
 
+def patch_set_names(root_bytes, names):
+    """Writes the doodad set names into the MODS chunk (the bindings expose them read-only)."""
+    out = bytearray(root_bytes)
+    pos = 0
+    while pos + 8 <= len(out):
+        tag, size = bytes(out[pos:pos + 4]), int.from_bytes(out[pos + 4:pos + 8], "little")
+        if tag == b"SDOM":
+            for i, name in enumerate(names[:size // 0x20]):
+                at = pos + 8 + i * 0x20
+                out[at:at + 20] = name.encode()[:19].ljust(20, b"\0")
+            break
+        pos += 8 + size
+    return bytes(out)
+
+
 def serialize(w):
     root = io.BytesIO()
     groups = [io.BytesIO() for _ in w.groups]
@@ -628,6 +643,8 @@ def export(root, out_path=None, options=None):
         for issue in vr.issues:
             report.add("WARNING", "validate", str(issue))
     root_bytes, group_bytes = serialize(w)
+    if getattr(report, "set_names", None) is not None:
+        root_bytes = patch_set_names(root_bytes, report.set_names)
     files[path] = root_bytes
     for i, data in enumerate(group_bytes):
         files[group_path(path, i)] = data

@@ -214,6 +214,7 @@ def import_doodads(root, parent, meshes=None):
     set_colls = []
     for si, s in enumerate(sets):
         c = _link(parent, s.name or f"set_{si}")
+        c["wow_set"] = si
         c.hide_viewport = c.hide_render = si != 0
         set_colls.append(c)
     unassigned = None

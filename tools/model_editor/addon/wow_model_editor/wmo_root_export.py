@@ -97,8 +97,11 @@ def update_doodads(w, root, report):
             r.doodad_fdids[i] = v
         r.header.n_doodad_names = int(r.header.n_doodad_names) + len(names) - n_names
         changed = True
-    if new or drop:
-        rebuild_doodads(w, new, drop, report)
+    layout = _set_layout(root, r)
+    if layout and not layout[3] and not (new or drop):
+        layout = None
+    if new or drop or layout:
+        rebuild_doodads(w, new, drop, report, layout)
         changed = True
     return changed
 
@@ -118,30 +121,60 @@ def _write_def(d, t):
     _set_rgba(d.color, t[5])
 
 
-def rebuild_doodads(w, new, drop, report):
+def _set_layout(root, r):
+    """Final doodad sets from the child collections of `doodads`: (names, {old doodad: set}, {object name: set}, changed)."""
+    dc = next((c for c in root.children if c.name.startswith("doodads")), None)
+    if dc is None:
+        return None
+    old_sets = [(s.name, s.start_index, s.count) for s in r.doodad_sets]
+    colls = [c for c in dc.children if not c.name.startswith("unassigned")]
+    final_of_old_set, names, set_of_obj = {}, [], {}
+    for fi, c in enumerate(colls):
+        old = c.get("wow_set")
+        if old is not None and old < len(old_sets) and old not in final_of_old_set:
+            final_of_old_set[old] = fi
+            names.append(old_sets[old][0] if c.name == (old_sets[old][0] or f"set_{old}") else c.name)
+        else:
+            names.append(c.name)
+        for ob in c.all_objects:
+            set_of_obj[ob.name] = fi
+    of_old = {}
+    for si, (_, start, count) in enumerate(old_sets):
+        for i in range(start, start + count):
+            of_old.setdefault(i, final_of_old_set.get(si))
+    changed = names != [x[0] for x in old_sets]
+    for ob in root.all_objects:
+        d = ob.wow_wmo_doodad
+        if ob.type == "EMPTY" and 0 <= d.index < len(r.doodad_defs) and of_old.get(d.index) != set_of_obj.get(ob.name):
+            of_old[d.index] = set_of_obj.get(ob.name)
+            changed = True
+    return names, of_old, set_of_obj, changed
+
+
+def rebuild_doodads(w, new, drop, report, layout=None):
     """Rewrite MODD ordered by set: drop `drop` (old indices), add `new` at the end of their set; remaps set ranges,
-    group doodad references and compacts unused names."""
+    group doodad references and compacts unused names. `layout` (from _set_layout) replaces the set structure."""
     r = w.root
     n = len(r.doodad_defs)
     sets = [(s.name, s.start_index, s.count) for s in r.doodad_sets]
     items = [_def_tuple(r.doodad_defs[i]) for i in range(n)]
-    set_of_old = {}
-    for si, (_, start, count) in enumerate(sets):
-        for i in range(start, start + count):
-            set_of_old[i] = si
-    by_set = {}
-    for ob, want in new:
-        si = min(max(ob.wow_wmo_doodad.doodad_set, 0), len(sets) - 1) if sets else -1
-        by_set.setdefault(si, []).append((ob, want))
-    order = []
+    if layout:
+        set_names, set_of_old, set_of_new, _ = layout
+    else:
+        set_names = [x[0] for x in sets]
+        set_of_old = {}
+        for si, (_, start, count) in enumerate(sets):
+            for i in range(start, start + count):
+                set_of_old[i] = si
+        set_of_new = {ob.name: min(max(ob.wow_wmo_doodad.doodad_set, 0), len(sets) - 1) for ob, _ in new} if sets else {}
+    members, loose = [[] for _ in set_names], []
     for old in range(n):
         if old not in drop:
-            order.append(("old", old, None))
-        si = set_of_old.get(old)
-        if si in by_set and old == sets[si][1] + sets[si][2] - 1:
-            order += [("new", ob, want) for ob, want in by_set.pop(si)]
-    for lst in by_set.values():
-        order += [("new", ob, want) for ob, want in lst]
+            (members[set_of_old[old]] if set_of_old.get(old) is not None else loose).append(("old", old, None))
+    for ob, want in new:
+        si = set_of_new.get(ob.name)
+        (members[si] if si is not None else loose).append(("new", ob, want))
+    order = [x for m in members for x in m] + loose
     remap, out, out_set, new_ids = {}, [], [], {}
     for kind, a, b in order:
         if kind == "old":
@@ -151,7 +184,7 @@ def rebuild_doodads(w, new, drop, report):
         else:
             new_ids[a.name] = len(out)
             out.append(((b["flags"] & 0xFF) << 24 | b["name_index"], b["name_index"], b["pos"], b["q"], b["scale"], b["color"]))
-            out_set.append(min(max(a.wow_wmo_doodad.doodad_set, 0), len(sets) - 1) if sets else None)
+            out_set.append(set_of_new.get(a.name))
     used = sorted({t[0] & 0xFFFFFF for t in out})
     names = list(r.doodad_fdids)
     if drop and len(used) < len(names):
@@ -164,6 +197,10 @@ def rebuild_doodads(w, new, drop, report):
     r.doodad_defs.resize(len(out))
     for i, t in enumerate(out):
         _write_def(r.doodad_defs[i], t)
+    if len(r.doodad_sets) != len(set_names):
+        r.doodad_sets.resize(len(set_names))
+    if layout:
+        report.set_names = list(set_names)
     ends = 0
     for si, s in enumerate(r.doodad_sets):
         members = [i for i, x in enumerate(out_set) if x == si]

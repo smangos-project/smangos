@@ -802,6 +802,32 @@ def wmo_add_menu_objects_export():
 
 
 @test
+def wmo_doodad_sets_edit():
+    path = REFS[1]
+    clear()
+    coll = wmo_import.load(path, {"doodads": True})
+    src = wmo_expect(path)[1]
+    sets = [(s.name, s.start_index, s.count) for s in src.doodad_sets]
+    dc = next(c for c in coll.children if c.name.startswith("doodads"))
+    colls = [c for c in dc.children if "wow_set" in c]
+    assert len(colls) == len(sets) == 1, sets
+    movers = sorted(colls[0].objects, key=lambda o: o.name)[:2]
+    fresh = bpy.data.collections.new("fresh_set")
+    dc.children.link(fresh)
+    for ob in movers:
+        colls[0].objects.unlink(ob)
+        fresh.objects.link(ob)
+    colls[0].name = "renamed_set"
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    got = [(s.name, s.count) for s in new.root.doodad_sets]
+    assert len(got) == len(sets) + 1 and got[-1] == ("fresh_set", 2), got
+    assert got[0] == ("renamed_set", sets[0][2] - 2), got
+    assert len(new.root.doodad_defs) == len(src.doodad_defs) and new.validate().ok, str(new.validate())
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})
