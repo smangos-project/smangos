@@ -159,6 +159,10 @@ public static class ServerTemplateCatalogTests
         Assert.AreEqual(1, added.Count);
         Assert.AreEqual(12, added[0].Event);
         Assert.AreEqual(50, added[0].Guid);
+
+        var quests = new GameEventQuestFactory(null!);
+        PlayerRowTable<EventQuestRow> qTable = quests.CallToEntity(3, [new GameEventQuestRecord { Event = 3, Quest = 77 }]);
+        Assert.AreEqual(77, qTable.Rows[0].Quest);
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]

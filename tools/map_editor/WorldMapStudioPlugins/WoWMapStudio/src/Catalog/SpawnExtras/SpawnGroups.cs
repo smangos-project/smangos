@@ -454,6 +454,36 @@ public sealed class GameEventGameObjectFactory : PlayerRowsFactory<GameEventGame
     protected override IEnumerable<EventSpawnRow> Order(IEnumerable<EventSpawnRow> rows) => System.Linq.Enumerable.OrderBy(rows, r => r.Guid);
 }
 
+/// <summary>One quest of a `game_event_quest` entry.</summary>
+public readonly record struct EventQuestRow
+{
+    public int Quest { get; init; }
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventQuestFactory : PlayerRowsFactory<GameEventQuestRecord, EventQuestRow>
+{
+    public GameEventQuestFactory(WorldStorage storage) : base(storage, ["Quest"])
+    {
+    }
+
+    public override string CatalogName => "Game Event Quests";
+
+    protected override System.Linq.Expressions.Expression<Func<GameEventQuestRecord, int>> EntryExpression() => r => r.Event;
+
+    protected override void SetEntry(GameEventQuestRecord r, int entry) => r.Event = entry;
+
+    protected override EventQuestRow ToRow(GameEventQuestRecord r) => new() { Quest = r.Quest };
+
+    protected override void WriteRow(EventQuestRow row, GameEventQuestRecord r)
+    {
+    }
+
+    protected override void WriteKey(EventQuestRow row, GameEventQuestRecord r) => r.Quest = row.Quest;
+
+    protected override IEnumerable<EventQuestRow> Order(IEnumerable<EventQuestRow> rows) => System.Linq.Enumerable.OrderBy(rows, r => r.Quest);
+}
+
 /// <summary>Keys the game event spawn tables on (event, guid).</summary>
 [Subsystem(nameof(WorldStorage))]
 public sealed class GameEventSpawnKeys : ITableConfiguration
@@ -466,5 +496,6 @@ public sealed class GameEventSpawnKeys : ITableConfiguration
     {
         model.Entity<GameEventCreatureRecord>().HasKey(r => new { r.Event, r.Guid });
         model.Entity<GameEventGameobjectRecord>().HasKey(r => new { r.Event, r.Guid });
+        model.Entity<GameEventQuestRecord>().HasKey(r => new { r.Event, r.Quest });
     }
 }
