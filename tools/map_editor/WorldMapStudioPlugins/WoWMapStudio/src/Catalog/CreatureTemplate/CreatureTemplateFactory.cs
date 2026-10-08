@@ -77,7 +77,7 @@ public sealed class CreatureTemplateFactory : ThinDbcFactory<CreatureTemplate, C
         F.Float("Display Scale", () => e.DisplayScale1, v => e.DisplayScale1 = v),
         F.Int("Type", () => e.Type, v => e.Type = v),
         F.Int("Rank", () => e.Rank, v => e.Rank = v),
-        F.Int("Loot Id", () => e.LootId, v => e.LootId = v),
+        F.Link("Loot Id", () => e.LootId, v => e.LootId = v, "Creature Loot"),
         F.Int("Vendor Id", () => e.VendorId, v => e.VendorId = v),
         F.Int("Trainer Id", () => e.TrainerId, v => e.TrainerId = v),
         F.Int("Gossip Menu Id", () => e.GossipMenuId, v => e.GossipMenuId = v),

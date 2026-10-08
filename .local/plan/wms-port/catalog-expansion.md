@@ -18,3 +18,4 @@ Order (value first):
 - Generated records exist for every table (src/Database/Generated/*Record.cs, e.g. CreatureLootTemplateRecord).
 - Wire creature_template LootId/VendorId/TrainerId fields to Link into the new catalogs.
 - Tests go beside ServerTemplateCatalogTests.cs (round-trip via internal CallToEntity/CallWrite); run `tools/map_editor/wms-test.sh --filter 'WoW Catalog'`.
+- Loot done (cf425f6b4); creature_template LootId links to "Creature Loot". Item column in loot rows is a plain int (no Item link yet).
