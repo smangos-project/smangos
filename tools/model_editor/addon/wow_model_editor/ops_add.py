@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 
-from . import m2_export, m2_particles, wmo_export, wmo_lod
+from . import m2_camera_bake, m2_export, m2_particles, wmo_export, wmo_lod
 
 M2_KINDS = (("attachment", "Attachment", ""), ("event", "Event", ""), ("light", "Light", ""), ("camera", "Camera", ""),
             ("particle", "Particle emitter", ""), ("ribbon", "Ribbon emitter", ""))
@@ -262,6 +262,31 @@ class WOW_OT_m2_light_from_blender(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class WOW_OT_m2_bake_camera(bpy.types.Operator):
+    bl_idname = "wow.m2_bake_camera"
+    bl_label = "Bake camera path"
+    bl_description = "Sample the camera (and its Track To target) over the active sequence into M2 camera spline keys"
+    bl_options = {"REGISTER", "UNDO"}
+    step: IntProperty(name="Step (ms)", default=100, min=1)
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        top = m2_export.find_root(ob) if ob is not None else None
+        return (ob is not None and ob.type == "CAMERA" and ob.wow_m2_object.kind == "camera" and top is not None
+                and 0 <= top.wow_m2.active_sequence < len(top.wow_m2.sequences))
+
+    def execute(self, context):
+        ob = context.active_object
+        top = m2_export.find_root(ob)
+        seq = top.wow_m2.sequences[top.wow_m2.active_sequence]
+        if seq.action is None:
+            self.report({"ERROR"}, "active sequence has no action")
+            return {"CANCELLED"}
+        m2_camera_bake.bake(context.scene, ob, seq.action, 0, max(int(seq.duration), 1), self.step)
+        return {"FINISHED"}
+
+
 class WOW_OT_generate_wmo_lods(bpy.types.Operator):
     bl_idname = "wow.generate_wmo_lods"
     bl_label = "Generate LODs"
@@ -311,7 +336,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_generate_wmo_lods, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_generate_wmo_lods, WOW_MT_add)
 
 
 def register():

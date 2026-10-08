@@ -25,6 +25,7 @@ m2_import = common.submodule("m2_import")
 m2_names = common.submodule("m2_names")
 displays = common.submodule("displays")
 m2_anim = common.submodule("m2_anim")
+m2_camera_bake = common.submodule("m2_camera_bake")
 m2_anim_export = common.submodule("m2_anim_export")
 m2_export = common.submodule("m2_export")
 fdids = common.submodule("fdids")
@@ -1801,6 +1802,42 @@ def m2_light_create_delete():
         v = old2.diffuse_color.timeline_values(0)[0]
         assert np.allclose((v.x, v.y, v.z), keep_col, atol=1e-4)
     assert m.validate().ok, [str(i) for i in m.validate().issues]
+
+
+@test
+def m2_camera_bake_roundtrip():
+    path = "character/human/male/humanmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    cam = _kind_obs(top, "camera")[1]
+    top.wow_m2.active_sequence = 0
+    tgt = next(k.target for k in cam.constraints if k.type == "TRACK_TO")
+    tgt.location = (0.0, 0.0, 0.0)
+    cam.location = (1.0, 2.0, 3.0)
+    cam.keyframe_insert("location", frame=0)
+    cam.location = (11.0, 2.0, 3.0)
+    cam.keyframe_insert("location", frame=1000)
+    for fc in cam.animation_data.action.layers[0].strips[0].channelbags[0].fcurves:
+        for k in fc.keyframe_points:
+            k.interpolation = "LINEAR"
+    seq = top.wow_m2.sequences[0]
+    assert seq.action is not None
+    frames = m2_camera_bake.bake(bpy.context.scene, cam, seq.action, 0, 1000, 250)
+    assert frames == [0, 250, 500, 750, 1000], frames
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    c = r.model.root.cameras[1]
+    assert np.allclose(_vec3(c.position_base), (1, 2, 3), atol=1e-3), _vec3(c.position_base)
+    tl = c.positions
+    assert tl.timeline_count() > 0
+    ts = list(tl.timeline_timestamps(0))
+    vals = m2_anim._spline_vec3(tl.timeline_values(0))
+    assert ts == frames, ts
+    assert np.allclose(vals[:, 0], [0, 2.5, 5, 7.5, 10], atol=1e-3) and np.allclose(vals[:, 1:3], 0, atol=1e-4), vals
+    assert np.allclose(vals[:, 6], vals[:, 3]) and abs(vals[2, 6] - 2.5) < 1e-3, vals[:, 3:]
+    assert abs(m2_anim._spline_float(c.fov.timeline_values(0))[0, 0] - cam.data.angle_y) < 1e-4
+    assert r.model.validate().ok
+    clear()
 
 
 @test

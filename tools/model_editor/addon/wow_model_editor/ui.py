@@ -251,6 +251,8 @@ class WOW_PT_object(bpy.types.Panel):
             draw_group(col, attr, getattr(ob, attr), skip, FLAGS.get(attr))
             if attr == "wow_m2_object" and ob.type == "LIGHT":
                 col.operator("wow.m2_light_from_blender", icon="LIGHT")
+            if attr == "wow_m2_object" and ob.type == "CAMERA":
+                col.operator("wow.m2_bake_camera", icon="CAMERA_DATA")
 
 
 FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {7: "Unreachable", 26: "Antiportal"}, "flags2": {}}}

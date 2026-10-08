@@ -143,9 +143,10 @@ def _cameras(top, m, report):
             c.near_clip = ob.data.clip_start
         if abs(c.far_clip - ob.data.clip_end) > POS_TOL:
             c.far_clip = ob.data.clip_end
-        _set_pos(c.position_base, tuple(float(x) for x in ob.matrix_world.translation),
-                 old.position_base if old is not None else None)
-        _set_pos(c.target_position_base, _camera_target(ob), old.target_position_base if old is not None else None)
+        base = tuple(ob["wow_base"]) if "wow_base" in ob else tuple(float(x) for x in ob.matrix_world.translation)
+        tbase = tuple(ob["wow_target_base"]) if "wow_target_base" in ob else _camera_target(ob)
+        _set_pos(c.position_base, base, old.position_base if old is not None else None)
+        _set_pos(c.target_position_base, tbase, old.target_position_base if old is not None else None)
         out.append(c)
     if len(out) != len(src):
         report.add("INFO", "objects", f"{len(src)} -> {len(out)} cameras")
