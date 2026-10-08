@@ -482,11 +482,35 @@ def update_portals(w, root, report):
     return changed
 
 
+def _create_liquid(g, ob, report):
+    """Gives a liquid-less group the grid described by new liquid object `ob`."""
+    p = ob.wow_wmo_liquid
+    xv, yv = p.verts_dim
+    if xv < 2 or yv < 2 or len(ob.data.vertices) != xv * yv:
+        report.add("ERROR", ob.name, f"new liquid needs a {xv}x{yv} vertex grid")
+        return False
+    L = g.body.liquid
+    L.verts_dim.x, L.verts_dim.y = xv, yv
+    L.tiles_dim.x, L.tiles_dim.y = xv - 1, yv - 1
+    _set_vec(L.base_coords, p.base_coords)
+    L.material_id = p.material_id
+    L.vertices.resize(xv * yv)
+    L.tiles.resize((xv - 1) * (yv - 1))
+    h = g.body.header
+    h.flags = type(h.flags)(int(h.flags) | 0x1000)
+    if not int(h.group_liquid):
+        h.group_liquid = 1
+    return True
+
+
 def update_liquid(g, ob, report):
     L = g.body.liquid
     if L.empty:
-        report.add("WARNING", ob.name, "group has no liquid, ignored")
-        return False
+        if not _create_liquid(g, ob, report):
+            return False
+        created = True
+    else:
+        created = False
     me = ob.data
     nv = L.verts_dim.x * L.verts_dim.y
     if len(me.vertices) != nv:
@@ -513,7 +537,7 @@ def update_liquid(g, ob, report):
     if L.material_id != mid:
         L.material_id = mid
         changed = True
-    return changed
+    return changed or created
 
 
 def update_liquids(w, root, report):

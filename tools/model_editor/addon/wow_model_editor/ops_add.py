@@ -73,8 +73,28 @@ class WOW_OT_add_m2_object(bpy.types.Operator):
 
 
 WMO_KINDS = (("doodad", "Doodad", ""), ("light", "Light", ""), ("fog", "Fog", ""), ("portal", "Portal", ""),
-             ("group", "Group", ""))
-WMO_GROUPS = {"doodad": "doodads", "light": "lights", "fog": "fogs", "portal": "portals", "group": "groups"}
+             ("group", "Group", ""), ("liquid", "Liquid", ""))
+WMO_GROUPS = {"doodad": "doodads", "light": "lights", "fog": "fogs", "portal": "portals", "group": "groups", "liquid": "liquids"}
+
+
+def new_wmo_liquid(top, group_ob, tiles=(8, 8), location=(0.0, 0.0, 0.0)):
+    """A flat liquid grid for the group of `group_ob`, anchored at `location`; exported as the group's new liquid."""
+    import numpy as np
+    from .wmo_import import UNIT_SIZE
+    gi = group_ob.wow_wmo_group.index
+    xv, yv = tiles[0] + 1, tiles[1] + 1
+    gx, gy = np.meshgrid(np.arange(xv), np.arange(yv))
+    co = np.stack([location[0] + gx.ravel() * UNIT_SIZE, location[1] + gy.ravel() * UNIT_SIZE,
+                   np.full(xv * yv, location[2])], axis=1)
+    v0 = (np.arange(tiles[1])[:, None] * xv + np.arange(tiles[0])[None, :]).ravel()
+    me = bpy.data.meshes.new(f"liquid_{gi:03d}")
+    me.from_pydata(co.tolist(), [], np.stack([v0, v0 + 1, v0 + xv + 1, v0 + xv], axis=1).tolist())
+    ob = bpy.data.objects.new(me.name, me)
+    ob.display_type = "WIRE"
+    _child(top, "liquids").objects.link(ob)
+    p = ob.wow_wmo_liquid
+    p.group_index, p.verts_dim, p.tiles_dim, p.base_coords = gi, (xv, yv), tiles, location
+    return ob
 
 
 def new_wmo_object(top, kind, location=(0.0, 0.0, 0.0), path="", doodad_set=0):
@@ -134,7 +154,14 @@ class WOW_OT_add_wmo_object(bpy.types.Operator):
         if self.kind == "doodad" and not self.path:
             self.report({"ERROR"}, "Doodads need a model path")
             return {"CANCELLED"}
-        ob = new_wmo_object(top, self.kind, tuple(context.scene.cursor.location), self.path.replace("\\", "/").lower())
+        if self.kind == "liquid":
+            g = context.active_object
+            if g.type != "MESH" or g.wow_wmo_group.index < 0:
+                self.report({"ERROR"}, "Select an existing group mesh first")
+                return {"CANCELLED"}
+            ob = new_wmo_liquid(top, g, location=tuple(context.scene.cursor.location))
+        else:
+            ob = new_wmo_object(top, self.kind, tuple(context.scene.cursor.location), self.path.replace("\\", "/").lower())
         for o in context.selected_objects:
             o.select_set(False)
         ob.select_set(True)

@@ -855,6 +855,30 @@ def wmo_add_menu_objects_export():
 
 
 @test
+def wmo_liquid_create():
+    path = REFS[1]
+    clear()
+    coll = wmo_import.load(path, {"doodads": False, "liquids": False})
+    src = wmo_expect(path)[0]
+    gi = next(i for i, g in enumerate(src.groups) if g.body.liquid.empty)
+    ob = mesh_groups(coll)[gi]
+    bpy.context.view_layer.objects.active = ob
+    assert bpy.ops.wow.add_wmo_object(kind="liquid") == {"FINISHED"}
+    liq = bpy.context.view_layer.objects.active
+    assert liq.name.startswith("liquid_") and liq.wow_wmo_liquid.group_index == gi
+    for v in liq.data.vertices:
+        v.co.z = 3.0
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    L = new.groups[gi].body.liquid
+    assert not L.empty and (L.verts_dim.x, L.verts_dim.y) == (9, 9) and (L.tiles_dim.x, L.tiles_dim.y) == (8, 8)
+    assert all(abs(v.height - 3.0) < 1e-4 for v in L.vertices)
+    assert int(new.groups[gi].body.header.flags) & 0x1000
+    assert new.validate().ok, str(new.validate())
+
+
+@test
 def wmo_doodad_sets_edit():
     path = REFS[1]
     clear()
