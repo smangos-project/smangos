@@ -5,7 +5,7 @@ import re
 
 from wowlib.formats.m2.root import record
 
-from . import fdids, index, textures
+from . import fdids, index, m2_import, textures
 
 
 def _slug(name):
@@ -116,10 +116,61 @@ def _find_or_add_material(root, flags, blend):
     return len(root.materials) - 1
 
 
-def _apply(m, b, p, mat, images, report):
+def _differs(a, b, tol=1e-4):
+    return any(abs(float(x) - float(y)) > tol for x, y in zip(a, b))
+
+
+def _static_key(report, arm, key, attr, value):
+    """Sets the armature property a new record's static track is written from."""
+    if arm is not None:
+        arm[attr] = value
+    report.static_keys.append(key)
+
+
+def _new_combo(lut, old, n_src, n, first):
+    """Appends a lookup row per texture unit (copy of the batch's rows, unit 0 = `first`); returns its start."""
+    start = len(lut)
+    rows = [int(lut[old + k]) if k < n_src and old + k < len(lut) else -1 for k in range(n)]
+    rows[0] = first
+    for v in rows:
+        lut.append(v & 0xFFFF if v < 0 and 'Unsigned' in type(lut).__name__ else v)
+    return start
+
+
+def _static_tracks(m, b, p, src, n, n_src, arm, report):
+    """Static color, weight and texture transform edits become new records with static tracks; returns True on change."""
+    root = m.root
+    rgba, weight, off, scale = src
+    changed = False
+    if _differs(p.preview_color, rgba):
+        i = len(root.colors)
+        root.colors.append(record.M2ColorWotlkPlus())
+        _static_key(report, arm, f"color/{i}/color", f"wow_color_{i}", tuple(p.preview_color[:3]))
+        _static_key(report, arm, f"color/{i}/alpha", f"wow_alpha_{i}", float(p.preview_color[3]))
+        b.color_index = i
+        changed = True
+    if _differs((p.preview_weight,), (weight,)):
+        i = len(root.texture_weights)
+        root.texture_weights.append(record.M2TextureWeightWotlkPlus())
+        _static_key(report, arm, f"texweight/{i}", f"wow_texweight_{i}", float(p.preview_weight))
+        b.texture_weight_combo_index = _new_combo(root.transparency_lookup_table, int(b.texture_weight_combo_index), n_src, n, i)
+        changed = True
+    if _differs(p.preview_uv_offset, off) or _differs(p.preview_uv_scale, scale):
+        i = len(root.texture_transforms)
+        root.texture_transforms.append(record.M2TextureTransformWotlkPlus())
+        _static_key(report, arm, f"texxform/{i}/translation", f"wow_tt_translation_{i}", (p.preview_uv_offset[0], p.preview_uv_offset[1], 0.0))
+        _static_key(report, arm, f"texxform/{i}/rotation", f"wow_tt_rotation_{i}", (1.0, 0.0, 0.0, 0.0))
+        _static_key(report, arm, f"texxform/{i}/scaling", f"wow_tt_scaling_{i}", (p.preview_uv_scale[0], p.preview_uv_scale[1], 1.0))
+        b.texture_transform_combo_index = _new_combo(root.texture_transforms_lookup_table, int(b.texture_transform_combo_index), n_src, n, i)
+        changed = True
+    return changed
+
+
+def _apply(m, b, p, mat, images, report, arm=None):
     """Writes the differences of material item `p` against source batch `b` into the model."""
     root = m.root
     changed = False
+    src_vals = m2_import._preview_values(root, b)
     for f in ("flags", "priority_plane", "shader_id", "material_layer"):
         if int(getattr(b, f)) != getattr(p, f):
             setattr(b, f, getattr(p, f))
@@ -167,6 +218,7 @@ def _apply(m, b, p, mat, images, report):
         b.texture_coord_combo_index = len(root.texture_mapping_lookup_table)
         root.texture_mapping_lookup_table.extend(want_uv)
         changed = True
+    changed |= _static_tracks(m, b, p, src_vals, n, n_src, arm, report)
     if n != n_src:
         for lut, attr in ((root.transparency_lookup_table, "texture_weight_combo_index"),
                           (root.texture_transforms_lookup_table, "texture_transform_combo_index")):
@@ -179,7 +231,7 @@ def _apply(m, b, p, mat, images, report):
     return changed
 
 
-def _rebuild_batches(m, prof, structural, images, report):
+def _rebuild_batches(m, prof, structural, images, report, arm):
     """Rewrites the batch list of sections whose layers were added or removed."""
     snapshot = [copy.copy(b) for b in prof.batches]
     drop, fresh_after = set(), {}
@@ -191,7 +243,7 @@ def _rebuild_batches(m, prof, structural, images, report):
         for p in items:
             if p.slot < 0 or p.slot >= len(idxs):
                 nb = copy.copy(tmpl)
-                _apply(m, nb, p, mat, images, report)
+                _apply(m, nb, p, mat, images, report, arm)
                 fresh.append(nb)
         fresh_after[max(idxs)] = fresh
     out = []
@@ -217,6 +269,8 @@ def build(top, m, report, opts, model_path):
         items.sort(key=lambda i: (int(prof.batches[i].material_layer), int(prof.batches[i].priority_plane)))
     images = _Images(model_path, opts, report)
     structural = {}
+    report.static_keys = []
+    arm = next((o for o in top.all_objects if o.type == "ARMATURE"), None)
     old, _ = m2_mesh_export.submesh_objects(top)
     for ob in old:
         si = ob.wow_m2_submesh.index
@@ -230,8 +284,8 @@ def build(top, m, report, opts, model_path):
             structural[si] = (idxs, items, mat)
         for p in items:
             if 0 <= p.slot < len(idxs):
-                _apply(m, prof.batches[idxs[p.slot]], p, mat, images, report)
+                _apply(m, prof.batches[idxs[p.slot]], p, mat, images, report, arm)
     if structural:
-        _rebuild_batches(m, prof, structural, images, report)
+        _rebuild_batches(m, prof, structural, images, report, arm)
     images.write()
     return images.files

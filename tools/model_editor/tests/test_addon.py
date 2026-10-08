@@ -1219,6 +1219,38 @@ def m2_material_layer_add_remove():
 
 
 @test
+def m2_batch_static_tracks_new_records():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    nc, nw, nt = len(src.root.colors), len(src.root.texture_weights), len(src.root.texture_transforms)
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    p = mat.wow_m2_batches[0]
+    p.preview_color = (0.25, 0.5, 0.75, 0.5)
+    p.preview_weight = 0.5
+    p.preview_uv_offset = (0.125, 0.25)
+    r = None
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        root = m.root
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+        assert len(root.colors) == nc + 1 and len(root.texture_weights) == nw + 1 and len(root.texture_transforms) == nt + 1
+        users = [b for b in m.skins[0].profile.batches if int(b.color_index) == nc]
+        assert users
+        vals = m2_import._preview_values(root, users[0])
+        assert np.allclose(vals[0], (0.25, 0.5, 0.75, 0.5), atol=1e-3) and abs(vals[1] - 0.5) < 1e-3
+        assert np.allclose(vals[2], (0.125, 0.25), atol=1e-4)
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files if r else ():
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_filename_textures():
     for stem in ("talktome_chat.m2", "bellow.m2"):
         path = find_m2(stem)

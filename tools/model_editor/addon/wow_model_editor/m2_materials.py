@@ -238,7 +238,8 @@ class WOW_PT_m2_material(bpy.types.Panel):
             row.operator("wow.remove_m2_batch", text="", icon="X").index = i
             col = box.column(align=True)
             for name in ("flags", "shader_id", "priority_plane", "render_flags", "texture_count", "texture_fdids",
-                         "texture_types", "uv_sets", "material_layer", "blending_mode"):
+                         "texture_types", "uv_sets", "material_layer", "blending_mode", "preview_color", "preview_weight",
+                         "preview_uv_offset", "preview_uv_scale"):
                 col.prop(p, name)
         self.layout.operator("wow.add_m2_batch", icon="ADD")
         self.layout.operator("wow.rebuild_m2_material")

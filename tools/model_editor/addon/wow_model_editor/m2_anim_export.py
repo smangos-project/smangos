@@ -163,7 +163,7 @@ def _write_events(model, seq_actions, loop_actions):
             t.global_sequence = NONE
 
 
-def static_keys(top, objects):
+def static_keys(top, objects, extra=()):
     """Static track keys with object indices renumbered to the rebuilt record lists, plus a prefix test for new objects."""
     new_of, fresh = {}, []
     for (kind, j), ob in (objects or {}).items():
@@ -173,7 +173,7 @@ def static_keys(top, objects):
         else:
             fresh.append(f"{kind}/{j}/")
     kinds = {k for k, _ in (objects or {})}
-    out = set()
+    out = set(extra)
     for key in top.get(m2_anim.STATIC_PROP, []):
         head, _, rest = key.partition("/")
         if head in kinds:
@@ -192,7 +192,7 @@ def build(top, root, rig=None, objects=None, report=None):
     model = _Shim(top, root, rig, objects)
     write_sequences(root, list(p.sequences))
     write_loops(root, list(p.loops))
-    static, fresh = static_keys(top, objects)
+    static, fresh = static_keys(top, objects, getattr(report, "static_keys", ()))
     seq_actions = [None if s.flags & ALIAS_FLAG else s.action for s in p.sequences]
     loop_actions = [l.action for l in p.loops]
     off_grid = [] if report is not None else None
