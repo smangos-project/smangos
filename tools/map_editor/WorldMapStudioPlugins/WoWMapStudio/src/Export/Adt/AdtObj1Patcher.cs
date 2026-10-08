@@ -7,7 +7,7 @@ namespace WorldMapStudio.WoW;
 /// <summary>
 /// Drops placements that an export removed from a tile's <c>_obj1</c> LOD lists (<c>MLDD</c>/<c>MLDX</c>/<c>MLDL</c>
 /// for doodads, <c>MLMD</c>/<c>MLMX</c> for WMOs, ranges in <c>MLFD</c>), so removed objects do not linger in the
-/// distance. Added placements get no LOD entry. Everything else keeps its bytes.
+/// distance. Everything else keeps its bytes.
 /// </summary>
 public static class AdtObj1Patcher
 {
@@ -43,11 +43,12 @@ public static class AdtObj1Patcher
         uint[] lod = new uint[12];
         Buffer.BlockCopy(chunks[fd].Data, 0, lod, 0, 48);
         bool changed = false;
+        int added = 0;
 
         var known = Uids(chunks[dd].Data, MddfSize);
-        var doodads = new List<byte>(chunks[dd].Data);
-        var bounds = new List<byte>(chunks[dx].Data);
-        var lods = new List<byte>(chunks[dl].Data);
+        var doodads = new List<byte>();
+        var bounds = new List<byte>();
+        var lods = new List<byte>();
         byte[] lodValue = chunks[dl].Data.Length >= DoodadLodSize ? chunks[dl].Data[..DoodadLodSize] : new byte[DoodadLodSize];
         for (int p = 0; mddf >= 0 && p + MddfSize <= source[mddf].Data.Length; p += MddfSize)
         {
@@ -62,8 +63,26 @@ public static class AdtObj1Patcher
             doodads.AddRange(entry);
             bounds.AddRange(Bounds(TileOrigin - z - 3, TileOrigin - x - 3, y - 3, TileOrigin - z + 3, TileOrigin - x + 3, y + 3));
             lods.AddRange(lodValue);
-            lod[3 + LastLevel(lod, 0)]++;
+            added++;
             changed = true;
+        }
+
+        if (added > 0)
+        {
+            // The client ignores doodad entries appended after the last one, so they go in front of level 0.
+            int at = (int)lod[0];
+            chunks[dd] = ("MLDD", Splice(chunks[dd].Data, at * DoodadSize, doodads));
+            chunks[dx] = ("MLDX", Splice(chunks[dx].Data, at * DoodadBoundsSize, bounds));
+            chunks[dl] = ("MLDL", Splice(chunks[dl].Data, at * DoodadLodSize, lods));
+            for (int level = 1; level < LodLevels; level++)
+            {
+                if (lod[LodLevels + level] > 0 && lod[level] >= at)
+                {
+                    lod[level] += (uint)added;
+                }
+            }
+
+            lod[LodLevels] += (uint)added;
         }
 
         known = Uids(chunks[md].Data, ObjectSize);
@@ -98,15 +117,12 @@ public static class AdtObj1Patcher
         var lodBytes = new byte[48];
         Buffer.BlockCopy(lod, 0, lodBytes, 0, 48);
         chunks[fd] = ("MLFD", lodBytes);
-        chunks[dd] = ("MLDD", doodads.ToArray());
-        chunks[dx] = ("MLDX", bounds.ToArray());
-        chunks[dl] = ("MLDL", lods.ToArray());
         chunks[md] = ("MLMD", objects.ToArray());
         chunks[mx] = ("MLMX", objectBounds.ToArray());
         return Serialize(chunks);
     }
 
-    // Appended entries extend the last occupied level so the ranges of the earlier ones stay valid.
+    // Appended WMO entries extend the last occupied level so the ranges of the earlier ones stay valid.
     private static int LastLevel(uint[] lod, int first)
     {
         for (int level = LodLevels - 1; level > 0; level--)
@@ -118,6 +134,13 @@ public static class AdtObj1Patcher
         }
 
         return 0;
+    }
+
+    private static byte[] Splice(byte[] data, int at, List<byte> inserted)
+    {
+        var result = new List<byte>(data);
+        result.InsertRange(Math.Min(at, result.Count), inserted);
+        return result.ToArray();
     }
 
     private static byte[] Bounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)

@@ -80,7 +80,7 @@ public static class AdtObj1PatcherTests
         Assert.IsNull(AdtObj1Patcher.Patch(patched!, new HashSet<uint> { 10, 13 }, new HashSet<uint> { 21, 22 }), "nothing left to drop");
     }
     [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
-    public static void Added_placements_get_lod_entries_in_the_last_level()
+    public static void Added_placements_get_lod_entries_in_front_of_level_zero()
     {
         uint[] lod = [0, 0, 0, 2, 0, 0, 0, 0, 1, 1, 0, 1];
         var lodBytes = new byte[48];
@@ -101,7 +101,7 @@ public static class AdtObj1PatcherTests
         Assert.AreEqual(3 * 28, parts["MLDX"].Length);
         Assert.AreEqual(3 * 4, parts["MLDL"].Length);
         Assert.AreEqual(2 * 40, parts["MLMD"].Length);
-        Assert.AreEqual(12u, BitConverter.ToUInt32(parts["MLDD"], (2 * 36) + 4));
+        Assert.AreEqual(12u, BitConverter.ToUInt32(parts["MLDD"], 4));
         Assert.AreEqual(21u, BitConverter.ToUInt32(parts["MLMD"], 40 + 4));
         var back = new uint[12];
         Buffer.BlockCopy(parts["MLFD"], 0, back, 0, 48);
