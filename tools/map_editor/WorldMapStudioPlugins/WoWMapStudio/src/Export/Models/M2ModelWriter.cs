@@ -66,7 +66,16 @@ public static class M2ModelWriter
         AddCollision(root, wowPositions, surfaces);
 
         root.GlobalLoops.Add(new M2Loop());
-        root.Sequences.Add(new M2SequenceWodPlus());
+        root.Sequences.Add(new M2SequenceWodPlus
+        {
+            Duration = 1000,
+            Flags = (SequenceFlags)0x820,
+            Frequency = 0x7fff,
+            BlendTimeIn = 150,
+            BlendTimeOut = 0,
+            VariationNext = -1,
+            AliasNext = 0,
+        });
         root.Bones.Add(new M2CompBoneWotlkPlus { KeyBoneId = -1, ParentBone = -1 });
         root.BoneLookupTable.Add(0);
         root.TextureWeights.Add(new M2TextureWeightWotlkPlus());
