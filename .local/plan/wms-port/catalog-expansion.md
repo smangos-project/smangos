@@ -1,7 +1,7 @@
 # WMS catalog expansion checklist
 
 Order (value first):
-- [ ] 1 Loot templates: creature/gameobject/reference/item/skinning/pickpocketing/fishing/disenchant/mail (all share columns entry,item,ChanceOrQuestChance,groupid,mincountOrRef,maxcount,condition_id; key entry+item+groupid)
+- [x] 1 Loot templates: creature/gameobject/reference/item/skinning/pickpocketing/fishing/disenchant/mail (all share columns entry,item,ChanceOrQuestChance,groupid,mincountOrRef,maxcount,condition_id; key entry+item+groupid)
 - [ ] 2 Vendor/trainer: npc_vendor, npc_vendor_template, npc_trainer, npc_trainer_template
 - [ ] 3 Gossip: gossip_menu, gossip_menu_option, npc_text, broadcast_text
 - [ ] 4 Quest relations (creature/gameobject questrelation + involvedrelation)
