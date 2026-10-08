@@ -127,6 +127,25 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Pool_members_round_trip_through_their_records()
+    {
+        var creatures = new PoolCreatureMemberFactory(null!);
+        PoolCreatureMember c = creatures.CallToEntity(new PoolCreatureRecord { Guid = 6, PoolEntry = 2, Chance = 10 });
+        c.PoolEntry = 3;
+        var cRow = new PoolCreatureRecord();
+        creatures.CallWrite(c, cRow);
+        Assert.AreEqual(6, cRow.Guid);
+        Assert.AreEqual(3, cRow.PoolEntry);
+
+        var pools = new PoolPoolMemberFactory(null!);
+        PoolPoolMember p = pools.CallToEntity(new PoolPoolRecord { PoolId = 8, MotherPool = 1 });
+        var pRow = new PoolPoolRecord();
+        pools.CallWrite(p, pRow);
+        Assert.AreEqual(8, pRow.PoolId);
+        Assert.AreEqual(1, pRow.MotherPool);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);

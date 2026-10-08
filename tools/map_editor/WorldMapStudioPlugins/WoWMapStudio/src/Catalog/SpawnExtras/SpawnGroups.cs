@@ -219,3 +219,183 @@ public sealed class CreatureLinkFactory : ThinDbcFactory<CreatureLink, CreatureL
 
     internal void CallWrite(CreatureLink entity, CreatureLinkingRecord record) => Write(entity, record);
 }
+
+/// <summary>A `PoolCreature` row. `ID` is the creature spawn guid.</summary>
+public sealed class PoolCreatureMember : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int PoolEntry { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Chance { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Flags { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Pool Creature Member {ID} (pool {PoolEntry})";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class PoolCreatureMemberFactory : ThinDbcFactory<PoolCreatureMember, PoolCreatureRecord>
+{
+    public PoolCreatureMemberFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Pool Creature Member";
+
+    protected override string KeyPropertyName => "Guid";
+
+    protected override PoolCreatureMember ToEntity(PoolCreatureRecord r) => new()
+    {
+        ID = r.Guid,
+        PoolEntry = r.PoolEntry,
+        Chance = r.Chance,
+        Flags = r.Flags,
+        IsSaved = true,
+    };
+
+    protected override void Write(PoolCreatureMember e, PoolCreatureRecord r)
+    {
+        r.Guid = e.ID;
+        r.PoolEntry = e.PoolEntry;
+        r.Chance = e.Chance;
+        r.Flags = e.Flags;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(PoolCreatureMember e) =>
+    [
+        F.Link("Pool Entry", () => e.PoolEntry, v => e.PoolEntry = v, "Pool"),
+        F.Float("Chance", () => e.Chance, v => e.Chance = v),
+        F.Int("Flags", () => e.Flags, v => e.Flags = v),
+    ];
+
+    internal PoolCreatureMember CallToEntity(PoolCreatureRecord record) => ToEntity(record);
+
+    internal void CallWrite(PoolCreatureMember entity, PoolCreatureRecord record) => Write(entity, record);
+}
+
+/// <summary>A `PoolGameobject` row. `ID` is the gameobject spawn guid.</summary>
+public sealed class PoolGameObjectMember : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int PoolEntry { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Chance { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Flags { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Pool GameObject Member {ID} (pool {PoolEntry})";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class PoolGameObjectMemberFactory : ThinDbcFactory<PoolGameObjectMember, PoolGameobjectRecord>
+{
+    public PoolGameObjectMemberFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Pool GameObject Member";
+
+    protected override string KeyPropertyName => "Guid";
+
+    protected override PoolGameObjectMember ToEntity(PoolGameobjectRecord r) => new()
+    {
+        ID = r.Guid,
+        PoolEntry = r.PoolEntry,
+        Chance = r.Chance,
+        Flags = r.Flags,
+        IsSaved = true,
+    };
+
+    protected override void Write(PoolGameObjectMember e, PoolGameobjectRecord r)
+    {
+        r.Guid = e.ID;
+        r.PoolEntry = e.PoolEntry;
+        r.Chance = e.Chance;
+        r.Flags = e.Flags;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(PoolGameObjectMember e) =>
+    [
+        F.Link("Pool Entry", () => e.PoolEntry, v => e.PoolEntry = v, "Pool"),
+        F.Float("Chance", () => e.Chance, v => e.Chance = v),
+        F.Int("Flags", () => e.Flags, v => e.Flags = v),
+    ];
+
+    internal PoolGameObjectMember CallToEntity(PoolGameobjectRecord record) => ToEntity(record);
+
+    internal void CallWrite(PoolGameObjectMember entity, PoolGameobjectRecord record) => Write(entity, record);
+}
+
+/// <summary>A `PoolPool` row. `ID` is the child pool entry.</summary>
+public sealed class PoolPoolMember : CatalogEntity, IDbcCatalogEntity
+{
+    [ScriptProperty]
+    public int ID { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int MotherPool { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public float Chance { get; set; }
+
+    [ScriptProperty(Mutable = true)]
+    public int Flags { get; set; }
+
+    public bool IsSaved { get; set; }
+
+    public override string DisplayName => $"Pool Pool Member {ID} (pool {MotherPool})";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class PoolPoolMemberFactory : ThinDbcFactory<PoolPoolMember, PoolPoolRecord>
+{
+    public PoolPoolMemberFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Pool Pool Member";
+
+    protected override string KeyPropertyName => "PoolId";
+
+    protected override PoolPoolMember ToEntity(PoolPoolRecord r) => new()
+    {
+        ID = r.PoolId,
+        MotherPool = r.MotherPool,
+        Chance = r.Chance,
+        Flags = r.Flags,
+        IsSaved = true,
+    };
+
+    protected override void Write(PoolPoolMember e, PoolPoolRecord r)
+    {
+        r.PoolId = e.ID;
+        r.MotherPool = e.MotherPool;
+        r.Chance = e.Chance;
+        r.Flags = e.Flags;
+    }
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(PoolPoolMember e) =>
+    [
+        F.Link("Mother Pool", () => e.MotherPool, v => e.MotherPool = v, "Pool"),
+        F.Float("Chance", () => e.Chance, v => e.Chance = v),
+        F.Int("Flags", () => e.Flags, v => e.Flags = v),
+    ];
+
+    internal PoolPoolMember CallToEntity(PoolPoolRecord record) => ToEntity(record);
+
+    internal void CallWrite(PoolPoolMember entity, PoolPoolRecord record) => Write(entity, record);
+}
