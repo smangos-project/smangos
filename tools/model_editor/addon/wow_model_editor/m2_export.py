@@ -52,6 +52,27 @@ def differs(ref, m):
     return deep_diff(ref.root, m.root, "root") or deep_diff(ref.skins, m.skins, "skins")
 
 
+def sync_shadow_batches(ref, m, report):
+    """After skin 0 edits, opaque batches without a shadow batch (new meshes) cast shadows."""
+    prof = m.skins[0].profile
+    if not len(prof.shadow_batches) or not deep_diff(ref.skins[0], m.skins[0], "skin"):
+        return
+    have = {int(sb.submesh_id) for sb in prof.shadow_batches}
+    proto = prof.shadow_batches[0]
+    added = 0
+    for b in prof.batches:
+        si = int(b.skin_section_index)
+        if si in have or int(m.root.materials[int(b.material_index)].blending_mode) != 0:
+            continue
+        sb = copy.copy(proto)
+        sb.submesh_id, sb.texture_id, sb.color_id = si, int(b.texture_combo_index), int(b.color_index)
+        prof.shadow_batches.append(sb)
+        have.add(si)
+        added += 1
+    if added:
+        report.add("INFO", "geometry", f"{added} shadow batch(es) added")
+
+
 def sync_lods(ref, m, report):
     """LOD skins are replaced by copies of skin 0 once skin 0 was edited."""
     if len(m.skins) < 2 or not deep_diff(ref.skins[0], m.skins[0], "skin"):
@@ -91,6 +112,7 @@ def export(top, out_path=None, options=None):
     ref = m2_import.read(src)
     rebuild(top, m, report, opts)
     report.model = m
+    sync_shadow_batches(ref, m, report)
     sync_lods(ref, m, report)
     if report.errors:
         return report

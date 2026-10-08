@@ -1092,6 +1092,32 @@ def m2_geoset_id_edit():
         _cleanup_out(path, 2)
 
 
+@test
+def m2_new_mesh_shadow_batch():
+    path = "creature/wolf/wolf.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    subs = sorted((o for o in top.all_objects if o.type == "MESH"), key=lambda o: o.wow_m2_submesh.index)
+    n_sub = len(subs)
+    nob = subs[0].copy()
+    nob.data = subs[0].data.copy()
+    nob.name = "extra"
+    nob.wow_m2_submesh.index = -1
+    for c in subs[0].users_collection:
+        c.objects.link(nob)
+    nob.parent = subs[0].parent
+    nob.data.transform(__import__("mathutils").Matrix.Translation((0, 0, 1)))
+    try:
+        r = m2_export.export(top, options={"force": True})
+        assert not r.errors and r.dirty, str(r)
+        again = m2_import.read(path)
+        prof = again.skins[0].profile
+        assert len(prof.submeshes) == n_sub + 1 and again.validate().ok
+        assert {int(sb.submesh_id) for sb in prof.shadow_batches} >= {int(b.skin_section_index) for b in prof.batches}
+    finally:
+        _cleanup_out(path, 2)
+
+
 def _edit_bones(top, fn):
     arm = next(o for o in top.all_objects if o.type == "ARMATURE")
     bpy.context.view_layer.objects.active = arm

@@ -113,7 +113,7 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - After geometry or batch edits, LOD skins are replaced by copies of skin 0 (no decimation). Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
 - Non-linear animation keys are baked to linear; sequences are validated.
 - `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the `file_data_id` table.
-- Not done: shadow-batch rules beyond the fallback, in-client checks of edited/new models, LOD decimation.
+- Not done: in-client checks of edited/new models, LOD decimation.
 
 ### Custom file ids (registry)
 The `file_data_id` table of `.world/world.doltlite` (`id`, `path`, `source`, `retired`; custom ids from 2000000000) is the single registry of file ids; the addon (`registry.py`), WorldMapStudio (`WowFileDataIds`) and `database_tool fdid` allocate through it in `BEGIN IMMEDIATE` transactions. The addon pre-allocates every path it writes and fails if wowlib invented an id. `Content/fdid.index` is rebuilt from the table after exports and installs (`database_tool fdid export` does the same). The preference `custom_listfile` names another world database. Ids are never reused: releasing sets `retired`. Nothing here makes dolt commits.
