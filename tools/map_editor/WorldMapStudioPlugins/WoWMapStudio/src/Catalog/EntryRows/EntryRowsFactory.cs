@@ -30,7 +30,7 @@ public abstract class EntryRowsFactory<TRecord, TTable, TRow> : ILazyCatalogEnti
 {
     private const int SearchLimit = 50;
 
-    private static readonly PropertyInfo EntryProp = Prop("Entry");
+    private static readonly PropertyInfo EntryProp = typeof(TRecord).GetProperty("Entry") ?? Prop("MenuId");
 
     private bool _createOpenRequested;
     private bool _createActive;

@@ -26,6 +26,16 @@ internal static class RowWidgets
         }
     }
 
+    public static void Text(EditorContext context, string label, string current, Func<string, IEditCommand> edit)
+    {
+        string value = current;
+        ImGui.SetNextItemWidth(300.0f);
+        if (ImGui.InputText(label, ref value, 512) && value != current)
+        {
+            Record(context, edit(value));
+        }
+    }
+
     private static void Record(EditorContext context, IEditCommand command)
     {
         command.Apply();

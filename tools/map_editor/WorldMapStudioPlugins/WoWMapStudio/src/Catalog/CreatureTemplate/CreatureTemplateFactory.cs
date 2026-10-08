@@ -80,7 +80,7 @@ public sealed class CreatureTemplateFactory : ThinDbcFactory<CreatureTemplate, C
         F.Link("Loot Id", () => e.LootId, v => e.LootId = v, "Creature Loot"),
         F.Link("Vendor Id", () => e.VendorId, v => e.VendorId = v, "Vendor"),
         F.Link("Trainer Id", () => e.TrainerId, v => e.TrainerId = v, "Trainer"),
-        F.Int("Gossip Menu Id", () => e.GossipMenuId, v => e.GossipMenuId = v),
+        F.Link("Gossip Menu Id", () => e.GossipMenuId, v => e.GossipMenuId = v, "Gossip Menu"),
         F.Text("AI Name", () => e.AiName, v => e.AiName = v, 64),
         F.Text("Script Name", () => e.ScriptName, v => e.ScriptName = v, 64),
     ];
