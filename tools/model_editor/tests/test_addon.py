@@ -853,6 +853,77 @@ def wmo_doodad_delete():
     assert sum(len(g.body.doodad_refs) for g in new.groups) < old_total
 
 
+def _box_of(h):
+    b = h.bounding_box
+    return np.array([b.min.x, b.min.y, b.min.z]), np.array([b.max.x, b.max.y, b.max.z])
+
+
+@test
+def wmo_doodad_refs_moved_and_new_group():
+    path = REFS[1]
+    coll, r = export_files(path, import_opts={"doodads": True})
+    src = wmo_expect(path)[0]
+    refs = [set(int(x) for x in g.body.doodad_refs) for g in src.groups]
+    idx = next(i for i in range(len(src.root.doodad_defs)) if sum(i in s for s in refs) == 1)
+    home = next(g for g, s in enumerate(refs) if idx in s)
+    other = next(g for g in range(len(refs)) if g != home and not refs[g] & refs[home]
+                 and (np.array(_box_of(src.groups[g].body.header)) != np.array(_box_of(src.groups[home].body.header))).any())
+    lo, hi = _box_of(src.groups[other].body.header)
+    ob = next(o for o in coll.all_objects if o.type == "EMPTY" and o.wow_wmo_doodad.index == idx)
+    ob.location = tuple((lo + hi) / 2)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    got = [i for i, g in enumerate(new.groups) if idx in [int(x) for x in g.body.doodad_refs]]
+    want = [g for g in range(len(new.groups)) if all(l <= v <= h for v, l, h in zip(ob.location, *_box_of(new.groups[g].body.header)))]
+    assert got == want and other in got and new.validate().ok, (got, want)
+    assert all(int(new.groups[g].body.header.flags) & 0x800 for g in got)
+    clear()
+    coll = wmo_import.load(path, {"doodads": True})
+    gob = mesh_groups(coll)[home]
+    nob = gob.copy()
+    nob.data = gob.data.copy()
+    nob.name = "copy_group"
+    nob.wow_wmo_group.index = -1
+    next(c for c in coll.children if c.name.startswith("groups")).objects.link(nob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    gn = r.new_groups["copy_group"]
+    refs_new = {int(x) for x in new.groups[gn].body.doodad_refs}
+    assert idx in refs_new and int(new.groups[gn].body.header.flags) & 0x800, sorted(refs_new)
+
+
+@test
+def wmo_light_refs_follow_position():
+    path = next(p for p in REFS if len(wmo_expect(p)[0].root.lights) > 1 and len(wmo_expect(p)[0].groups) > 3)
+    src = wmo_expect(path)[0]
+    coll, r = export_files(path, import_opts={"doodads": False, "lights": True})
+    boxes = [(np.array([g.body.header.bounding_box.min.x, g.body.header.bounding_box.min.y, g.body.header.bounding_box.min.z]),
+              np.array([g.body.header.bounding_box.max.x, g.body.header.bounding_box.max.y, g.body.header.bounding_box.max.z]))
+             for g in src.groups]
+    gi = max(range(len(boxes)), key=lambda i: np.prod(boxes[i][1] - boxes[i][0]))
+    centre = (boxes[gi][0] + boxes[gi][1]) / 2
+    n = len(src.root.lights)
+    ob = bpy.data.objects.new("light_new", bpy.data.lights.new("light_new", "POINT"))
+    ob.wow_wmo_light.index = -1
+    ob.location = tuple(centre)
+    next(c for c in coll.children_recursive if c.name.startswith("lights")).objects.link(ob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    holders = [i for i, g in enumerate(new.groups) if n in [int(x) for x in g.body.light_refs]]
+    assert gi in holders and all(int(new.groups[i].body.header.flags) & 0x200 for i in holders), holders
+    assert new.validate().ok, str(new.validate())
+    lights = sorted((o for o in coll.all_objects if o.type == "LIGHT" and o.wow_wmo_light.index == 0))
+    other = next(i for i in range(len(boxes)) if i not in holders)
+    lights[0].location = tuple((boxes[other][0] + boxes[other][1]) / 2)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    new = reread(path, r.files)
+    now = [i for i, g in enumerate(new.groups) if 0 in [int(x) for x in g.body.light_refs]]
+    assert other in now, now
+
+
 @test
 def wmo_light_fog_delete():
     path = REFS[2]

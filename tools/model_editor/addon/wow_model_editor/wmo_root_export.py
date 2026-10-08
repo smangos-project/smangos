@@ -52,7 +52,7 @@ def update_doodads(w, root, report):
     n_src = len(r.doodad_defs)
     seen = set()
     changed = False
-    new = []
+    new, moved = [], {}
     for ob in sorted(objs, key=lambda o: o.name):
         p = ob.wow_wmo_doodad
         fdid = u32(p.fdid)
@@ -73,6 +73,8 @@ def update_doodads(w, root, report):
         seen.add(p.index)
         d = r.doodad_defs[p.index]
         q = d.orientation
+        if not _close(_vec(d.position), want["pos"], 1e-4):
+            moved[p.index] = want["pos"]
         if not (_close(_vec(d.position), want["pos"], 1e-4) and _same_rotation((q.x, q.y, q.z, q.w), rot)
                 and abs(d.scale - want["scale"]) < 1e-5):
             _set_vec(d.position, want["pos"])
@@ -101,8 +103,10 @@ def update_doodads(w, root, report):
     if layout and not layout[3] and not (new or drop):
         layout = None
     if new or drop or layout:
-        rebuild_doodads(w, new, drop, report, layout)
+        rebuild_doodads(w, new, drop, report, layout, moved)
         changed = True
+    else:
+        rereference_doodads(w, moved)
     return changed
 
 
@@ -151,7 +155,7 @@ def _set_layout(root, r):
     return names, of_old, set_of_obj, changed
 
 
-def rebuild_doodads(w, new, drop, report, layout=None):
+def rebuild_doodads(w, new, drop, report, layout=None, moved=None):
     """Rewrite MODD ordered by set: drop `drop` (old indices), add `new` at the end of their set; remaps set ranges,
     group doodad references and compacts unused names. `layout` (from _set_layout) replaces the set structure."""
     r = w.root
@@ -221,16 +225,54 @@ def rebuild_doodads(w, new, drop, report, layout=None):
         if kind != "new":
             continue
         idx = new_ids[a.name]
-        hit = False
-        for g, box in zip(w.groups, boxes):
-            p = b["pos"]
-            if all(lo <= v <= hi for v, lo, hi in zip(p, _vec(box.min), _vec(box.max))):
-                g.body.doodad_refs.append(idx)
-                g.body.header.flags = type(g.body.header.flags)(u32(int(g.body.header.flags)) | 0x800)
-                hit = True
-        if not hit:
+        hits = groups_containing(w, b["pos"])
+        set_group_refs(w, "doodad_refs", 0x800, idx, hits)
+        if not hits:
             report.add("WARNING", a.name, "doodad is outside every group box and is not referenced by any group")
         a.wow_wmo_doodad.index = -1
+    rereference_doodads(w, {remap[o]: pos for o, pos in (moved or {}).items() if o in remap})
+    return remap
+
+
+def rereference_doodads(w, moved):
+    """Recompute the group references of doodads (`{index: position}`) that moved."""
+    for idx, pos in moved.items():
+        set_group_refs(w, "doodad_refs", 0x800, idx, groups_containing(w, pos))
+
+
+def groups_containing(w, pos, radius=0.0):
+    """Indices of the groups whose bounding box, grown by `radius`, contains `pos`."""
+    return [gi for gi, g in enumerate(w.groups)
+            if all(lo - radius <= v <= hi + radius
+                   for v, lo, hi in zip(pos, _vec(g.body.header.bounding_box.min), _vec(g.body.header.bounding_box.max)))]
+
+
+def set_group_refs(w, attr, flag, idx, hits):
+    """Make exactly the groups `hits` reference `idx` in their `attr` vector (sorted); keeps the group `flag` in sync."""
+    for gi, g in enumerate(w.groups):
+        vec = getattr(g.body, attr)
+        old = [int(x) for x in vec]
+        refs = sorted(set(old) - {idx} | ({idx} if gi in hits else set()))
+        if refs != old:
+            _set_vec_ints(vec, refs)
+        h = g.body.header
+        has = bool(refs)
+        if has != bool(int(h.flags) & flag) and (refs != old or has):
+            h.flags = type(h.flags)(u32(int(h.flags)) & ~flag | (flag if has else 0))
+
+
+def reference_new_groups(w, new_groups):
+    """Groups added by the export start without references: give them the doodads and lights inside their box."""
+    r = w.root
+    for gi in new_groups:
+        g = w.groups[gi]
+        for attr, flag, items in (("doodad_refs", 0x800, [(i, _vec(d.position), 0.0) for i, d in enumerate(r.doodad_defs)]),
+                                  ("light_refs", 0x200, [(i, _vec(l.position), float(l.atten_end)) for i, l in enumerate(r.lights)])):
+            refs = [i for i, pos, rad in items if gi in groups_containing(w, pos, rad)]
+            if refs:
+                _set_vec_ints(getattr(g.body, attr), refs)
+                h = g.body.header
+                h.flags = type(h.flags)(u32(int(h.flags)) | flag)
 
 
 def compact(vec, keep):
@@ -310,7 +352,7 @@ def update_lights(w, root, report):
     r = w.root
     changed = False
     seen = set()
-    new = []
+    new, moved = [], []
     for ob in sorted((o for o in root.all_objects if o.type == "LIGHT" and o.wow_wmo_light.index is not None), key=lambda o: o.name):
         p = ob.wow_wmo_light
         data = ob.data
@@ -327,6 +369,7 @@ def update_lights(w, root, report):
         l = r.lights[p.index]
         if not _close(_vec(l.position), tuple(loc), 1e-4):
             _set_vec(l.position, loc)
+            moved.append(p.index)
             changed = True
         q = l.rotation
         if not _same_rotation((q.x, q.y, q.z, q.w), rot):
@@ -340,6 +383,8 @@ def update_lights(w, root, report):
             changed = True
         if abs(l.atten_end - atten_end) > 1e-4:
             l.atten_end = atten_end
+            if p.index not in moved:
+                moved.append(p.index)
             changed = True
         wtype = p.type if wmo_import.LIGHT_KINDS.get(p.type) == data.type else LIGHT_TYPES.get(data.type, 0)
         if l.atten_start != p.atten_start or l.use_atten != p.use_atten or l.type != wtype:
@@ -348,6 +393,7 @@ def update_lights(w, root, report):
     gone = set(range(len(r.lights))) - seen
     if gone and any(c.name.startswith("lights") for c in root.children):
         remap = compact(r.lights, [i for i in range(len(r.lights)) if i in seen])
+        moved = [remap[i] for i in moved if i in remap]
         for g in w.groups:
             old = [int(x) for x in g.body.light_refs]
             kept = [remap[x] for x in old if x in remap]
@@ -367,7 +413,11 @@ def update_lights(w, root, report):
         _set_rgba(l.color, color[:3] + (255,))
         l.intensity, l.atten_start, l.atten_end = intensity, 0.0, atten_end
         r.header.n_lights = int(r.header.n_lights) + 1
+        moved.append(len(r.lights) - 1)
         changed = True
+    for idx in moved:
+        l = r.lights[idx]
+        set_group_refs(w, "light_refs", 0x200, idx, groups_containing(w, _vec(l.position), float(l.atten_end)))
     return changed
 
 
@@ -687,4 +737,5 @@ def update_root_objects(w, root, report):
     for fn in (update_header, update_doodads, update_lights, update_fogs, update_portals):
         if fn(w, root, report):
             report.add("INFO", fn.__name__.replace("update_", ""), "updated")
+    reference_new_groups(w, sorted(getattr(report, "new_groups", {}).values()))
     return update_liquids(w, root, report)
