@@ -246,6 +246,24 @@ class WOW_PT_object(bpy.types.Panel):
 FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {}, "flags2": {}}}
 
 
+WMO_MATERIAL_FLAGS = {0: "Unlit", 1: "Unfogged", 2: "Two-sided", 3: "Exterior light", 4: "Night glow", 5: "Window", 6: "Clamp S", 7: "Clamp T"}
+
+
+class WOW_PT_wmo_material(bpy.types.Panel):
+    bl_label = "WoW WMO material"
+    bl_space_type, bl_region_type, bl_context = "PROPERTIES", "WINDOW", "material"
+
+    @classmethod
+    def poll(cls, context):
+        m = context.material
+        return m is not None and context.active_object is not None and \
+            (m.wow_wmo_material.material_index >= 0 or bool(m.wow_wmo_material.texture1))
+
+    def draw(self, context):
+        p = context.material.wow_wmo_material
+        draw_group(self.layout, "active_material.wow_wmo_material", p, ("material_index", "run_time_data"), {"flags": WMO_MATERIAL_FLAGS, "flags2": {}})
+
+
 class WOW_PT_collection(bpy.types.Panel):
     bl_label = "WoW model"
     bl_space_type, bl_region_type, bl_context = "PROPERTIES", "WINDOW", "collection"
@@ -263,7 +281,7 @@ class WOW_PT_collection(bpy.types.Panel):
             draw_group(self.layout, "", c.wow_m2, skip=("sequences", "loops", "active_sequence", "textures", "materials"))
 
 
-classes = (WowRecent, WOW_PT_object, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
+classes = (WowRecent, WOW_PT_object, WOW_PT_wmo_material, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
 
 
 def register():

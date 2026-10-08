@@ -767,6 +767,23 @@ def wmo_group_delete():
 
 
 @test
+def wmo_material_flag_toggle():
+    path = REFS[0]
+    coll, _ = export_files(path)
+    ob = mesh_groups(coll)[0]
+    mat = next(s.material for s in ob.material_slots if s.material.wow_wmo_material.material_index >= 0)
+    i = mat.wow_wmo_material.material_index
+    before = int(wmo_expect(path)[0].root.materials[i].flags)
+    assert bpy.types.WOW_PT_wmo_material.poll(types.SimpleNamespace(material=mat, active_object=ob))
+    ob.active_material_index = [s.material for s in ob.material_slots].index(mat)
+    with bpy.context.temp_override(active_object=ob):
+        bpy.ops.wow.toggle_flag(owner="active_material.wow_wmo_material", attr="flags", bit=2)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    assert int(reread(path, r.files).root.materials[i].flags) == before ^ 4
+
+
+@test
 def wmo_group_meta_edit():
     path = REFS[1]
     coll, r = export_files(path)
