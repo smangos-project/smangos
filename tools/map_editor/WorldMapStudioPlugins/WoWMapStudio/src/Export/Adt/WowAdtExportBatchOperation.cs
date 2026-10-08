@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Godot;
 using ImGuiNET;
+using Microsoft.EntityFrameworkCore;
 
 namespace WorldMapStudio.WoW;
 
@@ -74,6 +75,42 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             [$"world/maps/{map}", WowExportBackup.GeneratedDirectory], ["fdid.index"], () => ExportAsync(context, work)).ConfigureAwait(false);
     }
 
+    private const int CustomAreaIdBase = 90000;
+
+    /// <summary>The area id for chunks of new tiles: the map's own area (continent = map id), created when the map has none.</summary>
+    private static async Task<uint> EnsureMapAreaAsync(BatchContext context, string directory)
+    {
+        WorldStorage world = context.Editor.Database.Storages.OfType<WorldStorage>().Single();
+        await using WorldDbContext db = world.CreateContext();
+        DbcMapRecord? map = await db.DbcMap.AsNoTracking().FirstOrDefaultAsync(row => row.Directory == directory).ConfigureAwait(false);
+        if (map == null)
+        {
+            return 0;
+        }
+
+        int existing = await db.DbcAreatable.Where(row => row.ContinentID == map.ID && row.ParentAreaID == 0)
+            .OrderBy(row => row.ID).Select(row => row.ID).FirstOrDefaultAsync().ConfigureAwait(false);
+        if (existing != 0)
+        {
+            return (uint)existing;
+        }
+
+        int id = Math.Max(CustomAreaIdBase, await db.DbcAreatable.MaxAsync(row => row.ID).ConfigureAwait(false) + 1);
+        db.DbcAreatable.Add(new DbcAreatableRecord
+        {
+            ID = id,
+            ZoneName = "",
+            AreaNameLang = map.MapNameLang,
+            ContinentID = map.ID,
+            AreaBit = -1,
+            Flags1 = 0,
+            AmbientMultiplier = 1,
+        });
+        await db.SaveChangesAsync().ConfigureAwait(false);
+        context.Report($"Created area {id} for map {map.ID}.");
+        return (uint)id;
+    }
+
     private async Task ExportAsync(BatchContext context, WorkContext work)
     {
         string sourceMap = context.Settings["sourceMap"]?.GetValue<string>() ?? "";
@@ -107,6 +144,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             }
         }
 
+        uint newTileArea = newTiles.Count > 0 ? await EnsureMapAreaAsync(context, sourceMap).ConfigureAwait(false) : 0;
         var fs = WowClientFiles.OpenIsolated(content);
         WowWdt wdt = await Task.Run(() => WowWdt.Read(fs, sourceMap)).ConfigureAwait(false);
         List<AdtImportTileRecord> rows = (await AdtImportTileStore.LoadForMapAsync(storage, catalog.Map.Value).ConfigureAwait(false))
@@ -164,7 +202,7 @@ public sealed class WowAdtExportBatchOperation : IBatchOperation
             context.Progress(i / (float)allRows.Count);
 
             ImportedTile template = isNew
-                ? WowBlankTile.Create(new ImportedTileId(sourceMap, id.FileX, id.FileY), ids.IdOf("tileset/generic/black.blp") ?? 0)
+                ? WowBlankTile.Create(new ImportedTileId(sourceMap, id.FileX, id.FileY), ids.IdOf("tileset/generic/black.blp") ?? 0, newTileArea)
                 : await Task.Run(() => WowAdtTileReader.Read(fs, wdt, new ImportedTileId(sourceMap, id.FileX, id.FileY))).ConfigureAwait(false);
             StoredTerrainImages stored = await StoredTerrainImages.LoadAsync(storage, images, catalog, id).ConfigureAwait(false);
             var slotTextures = await StoredSlotTextures.LoadAsync(storage, catalog.Map.Value, id.FileX, id.FileY, ResolveTexture).ConfigureAwait(false);
