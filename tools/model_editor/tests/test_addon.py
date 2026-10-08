@@ -1360,6 +1360,9 @@ def corpus():
     if "--update-baseline" in ARGS:
         if os.environ.get("SWEEP_STEP", "1") != "1" or os.environ.get("SWEEP_ONLY"):
             raise SystemExit("--update-baseline needs a full run (no SWEEP_STEP/SWEEP_ONLY)")
+        added = [(k, p) for k, got in found.items() for p in sorted(set(got) - set(base.get(k, {})))]
+        if added and "--allow-new" not in ARGS:
+            raise SystemExit(f"--update-baseline would add {len(added)} entries (e.g. {added[0]}); pass --allow-new to accept them")
         base_file.write_text(json.dumps(found, indent=1, sort_keys=True) + "\n")
         return 0
     bad = 0

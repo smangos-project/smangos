@@ -69,7 +69,7 @@ def _read(b, action, off_grid=None):
     first = curves[0].keyframe_points[0].interpolation
     if spline:
         src_ipo = int(b.track.interpolation_type)
-        ipo = src_ipo if src_ipo in (2, 3) else 2
+        ipo = src_ipo if src_ipo in (0, 1, 2, 3) else 2
     else:
         ipo = 1 if bake else {"CONSTANT": 0, "LINEAR": 1}.get(first, 1)
     return np.rint(frames).astype(np.int64), vals, ipo
