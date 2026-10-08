@@ -3,7 +3,7 @@ import copy
 
 import numpy as np
 
-from . import fdids
+from . import fdids, wmo_import
 from .props import u32
 
 TOL = 1e-5
@@ -283,8 +283,9 @@ def update_lights(w, root, report):
         if abs(l.atten_end - atten_end) > 1e-4:
             l.atten_end = atten_end
             changed = True
-        if l.atten_start != p.atten_start or l.use_atten != p.use_atten or l.type != p.type:
-            l.atten_start, l.use_atten, l.type = p.atten_start, p.use_atten, p.type
+        wtype = p.type if wmo_import.LIGHT_KINDS.get(p.type) == data.type else LIGHT_TYPES.get(data.type, 0)
+        if l.atten_start != p.atten_start or l.use_atten != p.use_atten or l.type != wtype:
+            l.atten_start, l.use_atten, l.type = p.atten_start, p.use_atten, wtype
             changed = True
     gone = set(range(len(r.lights))) - seen
     if gone and any(c.name.startswith("lights") for c in root.children):

@@ -784,6 +784,19 @@ def wmo_material_flag_toggle():
 
 
 @test
+def wmo_light_type_edit():
+    path = next(p for p in REFS if any(l for l in wmo_expect(p)[0].root.lights))
+    coll, _ = export_files(path, import_opts={"doodads": False})
+    ob = next(o for o in coll.all_objects if o.type == "LIGHT" and o.wow_wmo_light.index >= 0)
+    i = ob.wow_wmo_light.index
+    ob.data.type = "SUN" if ob.data.type != "SUN" else "POINT"
+    want = 2 if ob.data.type == "SUN" else 0
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    assert int(reread(path, r.files).root.lights[i].type) == want
+
+
+@test
 def wmo_group_meta_edit():
     path = REFS[1]
     coll, r = export_files(path)
