@@ -327,6 +327,7 @@ def load(client_path, options=None, parent=None):
     p = top.wow_wmo
     h = root.header
     p.path, p.fdid, p.mver = path, s32(index.fdid_of(path) or 0), root.mver
+    p.all_groups = opts["group_filter"] == "ALL"
     p.flags, p.wmo_id, p.num_lod, p.ambient_color = s32(int(h.flags)), h.wmo_id, h.num_lod, _rgba(h.ambient_color)
 
     multi_uv = any(len(g.body.texcoords) > 1 for g in w.groups)

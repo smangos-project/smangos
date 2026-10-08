@@ -744,6 +744,29 @@ def wmo_portal_create_delete():
 
 
 @test
+def wmo_group_delete():
+    path = REFS[1]
+    coll, r = export_files(path)
+    w0 = wmo_expect(path)[0]
+    src = w0.root
+    n = len(w0.groups)
+    assert n > 3 and coll.wow_wmo.all_groups
+    victim = 1
+    ob = next(o for o in coll.all_objects if o.type == "MESH" and o.wow_wmo_group.index == victim)
+    keep_verts = len(w0.groups[2].body.vertices)
+    bpy.data.objects.remove(ob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.groups) == n - 1 and len(new.root.group_infos) == n - 1 and len(new.root.group_fdids) == n - 1
+    assert len(new.groups[1].body.vertices) == keep_verts
+    assert new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
+    assert all(int(x.group_index) < n - 1 for x in new.root.portal_refs)
+    assert sum(int(g.body.header.portal_count) for g in new.groups) == len(new.root.portal_refs)
+    assert len(new.root.portals) < len(src.portals)
+
+
+@test
 def wmo_group_meta_edit():
     path = REFS[1]
     coll, r = export_files(path)

@@ -41,6 +41,7 @@ class WowWmo(bpy.types.PropertyGroup):
     wmo_id: IntProperty()
     num_lod: IntProperty()
     is_new: BoolProperty()
+    all_groups: BoolProperty(description="Every group was imported, so a missing group object deletes the group")
     ambient_color: IntVectorProperty(size=4)
 
 

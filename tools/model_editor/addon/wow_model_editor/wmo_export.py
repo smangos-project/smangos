@@ -609,10 +609,14 @@ def export(root, out_path=None, options=None):
     files = {}
     if update_materials(w, root, files, report):
         report.add("INFO", "materials", "MOMT updated")
+    deleted = set()
     for gi in range(len(w.groups)):
         ob = objs.get(gi)
         if ob is None:
-            report.add("WARNING", f"group {gi}", "no object, group kept as in the source")
+            if p.all_groups and not p.is_new and len(objs) < len(w.groups):
+                deleted.add(gi)
+            else:
+                report.add("WARNING", f"group {gi}", "no object, group kept as in the source")
             continue
         try:
             if update_group(w, gi, ob, report, opts["force"]):
@@ -629,10 +633,15 @@ def export(root, out_path=None, options=None):
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
     liquid_groups = wmo_root_export.update_root_objects(w, root, report)
+    if deleted:
+        remap = wmo_root_export.delete_groups(w, deleted, report)
+        dirty = {remap[g] for g in dirty if g in remap}
+        liquid_groups = [remap[g] for g in liquid_groups if g in remap]
+        report.new_groups = {k: remap[v] for k, v in report.new_groups.items()}
     for gi in liquid_groups:
         refresh_group_box(w, gi)
         dirty.add(gi)
-    if dirty:
+    if dirty or deleted:
         update_root_boxes(w)
         if not p.is_new:
             warn_stale_lods(path, dirty, report)

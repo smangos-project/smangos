@@ -542,6 +542,57 @@ def update_header(w, root, report):
     return changed
 
 
+def delete_groups(w, gone, report):
+    """Drops groups `gone` with their group info, portals touching them and every reference to them; returns {old: new}."""
+    r = w.root
+    n = len(w.groups)
+    remap = {}
+    for i in range(n):
+        if i not in gone:
+            remap[i] = len(remap)
+    dead_portals = {int(x.portal_index) for x in r.portal_refs if int(x.group_index) in gone}
+    for gi in gone:
+        h = w.groups[gi].body.header
+        dead_portals |= {int(x.portal_index) for x in r.portal_refs[h.portal_start:h.portal_start + h.portal_count]}
+    pkeep = [i for i in range(len(r.portals)) if i not in dead_portals]
+    premap = {old: new for new, old in enumerate(pkeep)}
+    refs = []
+    for gi in range(n):
+        h = w.groups[gi].body.header
+        refs.append([(premap[int(x.portal_index)], remap[int(x.group_index)], int(x.side))
+                     for x in r.portal_refs[h.portal_start:h.portal_start + h.portal_count]
+                     if int(x.portal_index) in premap and int(x.group_index) in remap])
+    verts = [[copy.copy(r.portal_vertices[k]) for k in range(r.portals[i].start_vertex, r.portals[i].start_vertex + r.portals[i].count)] for i in pkeep]
+    compact(r.portals, pkeep)
+    r.portal_vertices.clear()
+    for pt, vs in zip(r.portals, verts):
+        pt.start_vertex = len(r.portal_vertices)
+        for v in vs:
+            r.portal_vertices.append(v)
+    r.portal_refs.clear()
+    for gi in remap:
+        h = w.groups[gi].body.header
+        h.portal_start, h.portal_count = len(r.portal_refs), len(refs[gi])
+        for pi, other, side in refs[gi]:
+            e = r.portal_refs.new()
+            e.portal_index, e.group_index, e.side = pi, other, side
+    for gi in sorted(gone, reverse=True):
+        w.groups.pop(gi)
+        r.group_infos.pop(gi)
+    for g in w.groups:
+        h = g.body.header
+        for f in ("parent_or_first_child_split_group_index", "next_split_child_group_index"):
+            v = int(getattr(h, f))
+            if v in remap:
+                setattr(h, f, remap[v])
+            elif v in gone:
+                setattr(h, f, 0xFFFF)
+    ids = [int(x) for x in r.group_fdids][:len(remap)]
+    _set_vec_ints(r.group_fdids, ids)
+    report.add("INFO", "groups", f"{len(gone)} groups deleted, {len(dead_portals)} portals removed")
+    return remap
+
+
 def update_root_objects(w, root, report):
     """Returns the set of group indices whose liquids changed; root edits are applied in place."""
     for fn in (update_header, update_doodads, update_lights, update_fogs, update_portals):
