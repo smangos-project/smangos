@@ -136,6 +136,6 @@ In-client checks (2026-10-06, `tests/gate_items.py`, `tests/gate_item.py`): a cu
 ### Corpus suite
 `test.sh --filter zzz --corpus` imports every M2 and dry-run exports it (this is the unedited-clean check and the forced-rebuild comparison at once, `SWEEP_STEP=N` samples every Nth file, about 15 s per 170 files). Failures are compared with `tests/corpus_baseline.json`; only new ones fail. `--update-baseline` rewrites it from a full run and refuses to add entries without `--allow-new`. The remaining 15 entries are source-data quirks (filename textures without a file id in the cata menu models, a handful of NaN/duplicate-id normals, bounds and attachment lookups). The cat sequence-lookup warning is a stock quirk: export keeps the stock lookup. It also runs the WMO export, WMO forced-rebuild and M2 animation sweeps; `--all-m2-geo` stays separate.
 
-### Phase 6 risks
-- New groups/WMOs, LOD files, doodad/light deletion and new portals are not exported; deleted objects stay in the file.
-- New doodads outside every group box get no group reference, so they will not render.
+### Phase 6 notes
+- Exported: new groups and WMOs, LOD files, doodad/light/fog/portal create and delete, doodad sets, group names and flags, header edits.
+- New doodads outside every group box get no group reference, so they will not render (the export warns).
