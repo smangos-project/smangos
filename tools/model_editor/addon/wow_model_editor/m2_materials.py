@@ -245,4 +245,54 @@ class WOW_PT_m2_material(bpy.types.Panel):
         self.layout.operator("wow.rebuild_m2_material")
 
 
-classes = (WOW_OT_add_m2_batch, WOW_OT_remove_m2_batch, WOW_OT_rebuild_m2_material, WOW_PT_m2_material)
+class WOW_OT_add_m2_texture(bpy.types.Operator):
+    bl_idname = "wow.add_m2_texture"
+    bl_label = "Add texture"
+    bl_description = "Append a texture entry (type 0 = file id, other types are replaceable slots)"
+
+    @classmethod
+    def poll(cls, context):
+        return context.collection is not None and bool(context.collection.wow_m2.path)
+
+    def execute(self, context):
+        e = context.collection.wow_m2.textures.add()
+        e.type, e.flags, e.fdid = 0, 3, 0
+        return {"FINISHED"}
+
+
+class WOW_OT_remove_m2_texture(bpy.types.Operator):
+    bl_idname = "wow.remove_m2_texture"
+    bl_label = "Remove last texture"
+    bl_description = "Remove the last texture entry (entries of the source model stay in the file)"
+
+    @classmethod
+    def poll(cls, context):
+        return context.collection is not None and len(context.collection.wow_m2.textures) > 0
+
+    def execute(self, context):
+        t = context.collection.wow_m2.textures
+        t.remove(len(t) - 1)
+        return {"FINISHED"}
+
+
+class WOW_PT_m2_textures(bpy.types.Panel):
+    bl_label = "WoW M2 textures"
+    bl_space_type, bl_region_type, bl_context = "PROPERTIES", "WINDOW", "collection"
+
+    @classmethod
+    def poll(cls, context):
+        return context.collection is not None and bool(context.collection.wow_m2.path)
+
+    def draw(self, context):
+        for i, e in enumerate(context.collection.wow_m2.textures):
+            row = self.layout.row(align=True)
+            row.label(text=str(i))
+            row.prop(e, "type", text="Type")
+            row.prop(e, "fdid", text="FDID")
+            row.prop(e, "flags", text="Flags")
+        row = self.layout.row(align=True)
+        row.operator("wow.add_m2_texture", icon="ADD")
+        row.operator("wow.remove_m2_texture", icon="REMOVE")
+
+
+classes = (WOW_OT_add_m2_texture, WOW_OT_remove_m2_texture, WOW_PT_m2_textures, WOW_OT_add_m2_batch, WOW_OT_remove_m2_batch, WOW_OT_rebuild_m2_material, WOW_PT_m2_material)

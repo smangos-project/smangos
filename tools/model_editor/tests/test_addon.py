@@ -1219,6 +1219,34 @@ def m2_material_layer_add_remove():
 
 
 @test
+def m2_texture_entries_edit_add():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    n0 = len(src.root.textures)
+    top.wow_m2.textures[0].flags = 0
+    with bpy.context.temp_override(collection=top):
+        bpy.ops.wow.add_m2_texture()
+    top.wow_m2.textures[n0].fdid = 189514
+    top.wow_m2.textures[n0].flags = 1
+    r = None
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        assert len(m.root.textures) == n0 + 1, len(m.root.textures)
+        assert int(m.root.textures[0].flags) == 0 and int(m.root.textures[n0].flags) == 1
+        assert int(m.chunks.texture_fdids[n0]) == 189514
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files if r else ():
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_batch_static_tracks_new_records():
     path = find_m2("duskwoodlamppost.m2")
     clear()
@@ -1257,7 +1285,7 @@ def m2_filename_textures():
         clear()
         top = m2_import.load(path, {"display": "NONE"})
         r = m2_export.export(top, options={"dry_run": True})
-        assert not r.errors and not r.dirty, (stem, str(r), r.diff)
+        assert not r.errors and not r.dirty, (stem, str(r), getattr(r, "diff", None))
     src = m2_import.read(path)
     assert not len(src.chunks.texture_fdids) and src.root.textures[0].filename
     mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
@@ -1288,7 +1316,7 @@ def m2_attachment_lookup_duplicates():
         clear()
         top = m2_import.load(path, {"display": "NONE"})
         r = m2_export.export(top, options={"dry_run": True})
-        assert not r.errors and not r.dirty, (stem, str(r), r.diff)
+        assert not r.errors and not r.dirty, (stem, str(r), getattr(r, "diff", None))
 
 
 @test

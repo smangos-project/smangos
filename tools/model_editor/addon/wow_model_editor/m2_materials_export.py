@@ -231,6 +231,30 @@ def _apply(m, b, p, mat, images, report, arm=None):
     return changed
 
 
+def _texture_entries(top, m, n_src, report):
+    """Applies the model's texture list: edits to source entries, new entries appended (or matched to batch-added ones)."""
+    root, fd = m.root, m.chunks.texture_fdids
+    entries = list(top.wow_m2.textures)
+    for i, e in enumerate(entries):
+        typ, fdid, flags = int(e.type), int(e.fdid) & 0xFFFFFFFF, int(e.flags) & 0xFFFFFFFF
+        if i >= n_src:
+            j = _find_or_add_texture(m, typ, fdid, root.textures[0] if len(root.textures) else None)
+            t = root.textures[j]
+        elif i < len(root.textures):
+            t = root.textures[i]
+            if int(t.type) != typ or (not typ and fdid and fdid != _source_fdid(m, i)):
+                _filenames_to_fdids(m, report)
+                t.type = typ
+                while len(fd) < len(root.textures):
+                    fd.append(0)
+                fd[i] = 0 if typ else fdid
+            j = i
+        else:
+            continue
+        if int(t.flags) != flags:
+            t.flags = type(t.flags)(flags)
+
+
 def _rebuild_batches(m, prof, structural, images, report, arm):
     """Rewrites the batch list of sections whose layers were added or removed."""
     snapshot = [copy.copy(b) for b in prof.batches]
@@ -268,6 +292,7 @@ def build(top, m, report, opts, model_path):
     for items in by_section.values():
         items.sort(key=lambda i: (int(prof.batches[i].material_layer), int(prof.batches[i].priority_plane)))
     images = _Images(model_path, opts, report)
+    n_src_tex = len(m.root.textures)
     structural = {}
     report.static_keys = []
     arm = next((o for o in top.all_objects if o.type == "ARMATURE"), None)
@@ -287,5 +312,6 @@ def build(top, m, report, opts, model_path):
                 _apply(m, prof.batches[idxs[p.slot]], p, mat, images, report, arm)
     if structural:
         _rebuild_batches(m, prof, structural, images, report, arm)
+    _texture_entries(top, m, n_src_tex, report)
     images.write()
     return images.files
