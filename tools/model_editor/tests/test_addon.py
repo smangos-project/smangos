@@ -1956,6 +1956,21 @@ def m2_camera_bake_roundtrip():
 
 
 @test
+def m2_influence_limits():
+    geo = common.submodule("m2_geometry")
+    groups = [[(b, w) for b, w in zip(range(10, 16), (0.3, 0.25, 0.2, 0.1, 0.1, 0.05))], [(3, 1.0)]]
+    bones, w = geo.pick_influences(groups, 2)
+    assert list(bones[0]) == [10, 11, 12, 13] and bones.shape == (2, 4)
+    q = geo.quantize_weights(w)
+    assert int(q[0].sum()) == 255 and int(q[1].sum()) == 255 and q.shape == (2, 4)
+    try:
+        geo.pick_influences([[(256, 1.0)]], 1)
+    except ValueError:
+        return
+    raise AssertionError("bone 256 accepted")
+
+
+@test
 def m2_key_track_operator():
     clear()
     top = m2_import.load("character/human/male/humanmale.m2", {"display": "NONE"})

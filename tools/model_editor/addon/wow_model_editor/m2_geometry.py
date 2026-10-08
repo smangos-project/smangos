@@ -95,6 +95,8 @@ def pick_influences(groups, nv):
     bones = np.zeros((nv, MAX_BONES_PER_VERTEX), np.uint8)
     w = np.zeros((nv, MAX_BONES_PER_VERTEX), np.float64)
     for v, gs in enumerate(groups):
+        if any(b > 255 for b, _ in gs):
+            raise ValueError("vertex weights reference a bone above index 255, which M2 vertices cannot address")
         if len(gs) > MAX_BONES_PER_VERTEX:
             gs = sorted(gs, key=lambda x: -x[1])[:MAX_BONES_PER_VERTEX]
         for k, (b, wt) in enumerate(sorted(gs, key=lambda x: -x[1])):

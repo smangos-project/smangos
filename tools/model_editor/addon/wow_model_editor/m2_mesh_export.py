@@ -252,7 +252,11 @@ def build(top, m, report, opts, rig=None):
     srcs = source_submeshes(m, arrays)
     subs, names = [], []
     for ob in objs:
-        sub = gather(ob, top, arm, bmap, report, rig)
+        try:
+            sub = gather(ob, top, arm, bmap, report, rig)
+        except ValueError as e:
+            report.add("ERROR", "geometry", f"{ob.name}: {e}")
+            return
         if sub is None:
             continue
         sub.src = srcs.get(ob.wow_m2_submesh.index)
