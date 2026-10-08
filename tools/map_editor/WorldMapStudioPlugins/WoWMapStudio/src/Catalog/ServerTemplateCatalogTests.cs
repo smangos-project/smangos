@@ -75,4 +75,25 @@ public static class ServerTemplateCatalogTests
         Assert.AreEqual("Hello", row.FemaleText);
         Assert.AreEqual(1, row.EmoteId1);
     }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Pool_and_creature_addon_round_trip_through_their_records()
+    {
+        var pools = new PoolTemplateFactory(null!);
+        PoolTemplate pool = pools.CallToEntity(new PoolTemplateRecord { Entry = 4, MaxLimit = 2, Description = "Ore" });
+        pool.MaxLimit = 3;
+        var poolRow = new PoolTemplateRecord();
+        pools.CallWrite(pool, poolRow);
+        Assert.AreEqual(4, poolRow.Entry);
+        Assert.AreEqual(3, poolRow.MaxLimit);
+
+        var addons = new CreatureAddonFactory(null!);
+        CreatureAddon addon = addons.CallToEntity(new CreatureAddonRecord { Guid = 8, Auras = "1 2", EmoteState = 3 });
+        addon.Auras = string.Empty;
+        var addonRow = new CreatureAddonRecord();
+        addons.CallWrite(addon, addonRow);
+        Assert.AreEqual(8, addonRow.Guid);
+        Assert.IsTrue(addonRow.Auras is null);
+        Assert.AreEqual(3, addonRow.EmoteState);
+    }
 }

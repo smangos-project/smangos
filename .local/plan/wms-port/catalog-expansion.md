@@ -5,7 +5,7 @@ Order (value first):
 - [x] 2 Vendor/trainer: npc_vendor, npc_vendor_template, npc_trainer, npc_trainer_template
 - [x] 3 Gossip: gossip_menu + gossip_menu_option done + npc_text + broadcast_text done
 - [x] 4 Quest relations (4 catalogs; areatrigger_involvedrelation skipped, one quest per trigger)
-- [ ] 5 Spawn extras: creature_addon, creature_equip_template, pools, creature_groups, creature_linking, game_event_*
+- [~] 5 Spawn extras: creature_addon, creature_equip_template, pool_template done; creature_groups, creature_linking, pool membership, game_event_* left
 - [ ] 6 Player: playercreateinfo*, player_levelstats
 - [ ] 7 More DBC: ItemSet, Talent/TalentTab, SpellItemEnchantment, Lock, Holiday
 - [ ] 8 AI/scripts: creature_ai_events, creature_spells, generic_scripts, creature_movement
