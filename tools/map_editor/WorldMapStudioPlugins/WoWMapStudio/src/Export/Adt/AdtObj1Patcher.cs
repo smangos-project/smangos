@@ -43,12 +43,8 @@ public static class AdtObj1Patcher
         uint[] lod = new uint[12];
         Buffer.BlockCopy(chunks[fd].Data, 0, lod, 0, 48);
         bool changed = false;
-        int added = 0;
 
         var known = Uids(chunks[dd].Data, MddfSize);
-        var doodads = new List<byte>();
-        var bounds = new List<byte>();
-        var lods = new List<byte>();
         byte[] lodValue = chunks[dl].Data.Length >= DoodadLodSize ? chunks[dl].Data[..DoodadLodSize] : new byte[DoodadLodSize];
         for (int p = 0; mddf >= 0 && p + MddfSize <= source[mddf].Data.Length; p += MddfSize)
         {
@@ -60,29 +56,36 @@ public static class AdtObj1Patcher
 
             float x = BitConverter.ToSingle(entry, 8), y = BitConverter.ToSingle(entry, 12), z = BitConverter.ToSingle(entry, 16);
             entry[34] |= StockDoodadFlags;
-            doodads.AddRange(entry);
-            bounds.AddRange(Bounds(TileOrigin - z - 3, TileOrigin - x - 3, y - 3, TileOrigin - z + 3, TileOrigin - x + 3, y + 3));
-            lods.AddRange(lodValue);
-            added++;
-            changed = true;
-        }
+            byte[] box = Bounds(TileOrigin - z - 3, TileOrigin - x - 3, y - 3, TileOrigin - z + 3, TileOrigin - x + 3, y + 3);
 
-        if (added > 0)
-        {
-            // The client ignores doodad entries appended after the last one, so they go in front of level 0.
-            int at = (int)lod[0];
-            chunks[dd] = ("MLDD", Splice(chunks[dd].Data, at * DoodadSize, doodads));
-            chunks[dx] = ("MLDX", Splice(chunks[dx].Data, at * DoodadBoundsSize, bounds));
-            chunks[dl] = ("MLDL", Splice(chunks[dl].Data, at * DoodadLodSize, lods));
-            for (int level = 1; level < LodLevels; level++)
+            // The client walks the list in descending bounds-radius order, so entries must keep that order.
+            float radius = BitConverter.ToSingle(box, 24);
+            int at = 0;
+            int count = chunks[dx].Data.Length / DoodadBoundsSize;
+            while (at < count && BitConverter.ToSingle(chunks[dx].Data, (at * DoodadBoundsSize) + 24) >= radius)
             {
-                if (lod[LodLevels + level] > 0 && lod[level] >= at)
+                at++;
+            }
+
+            chunks[dd] = ("MLDD", Splice(chunks[dd].Data, at * DoodadSize, [.. entry]));
+            chunks[dx] = ("MLDX", Splice(chunks[dx].Data, at * DoodadBoundsSize, [.. box]));
+            chunks[dl] = ("MLDL", Splice(chunks[dl].Data, at * DoodadLodSize, [.. lodValue]));
+            int owner = 0;
+            for (int level = 0; level < LodLevels; level++)
+            {
+                if (lod[LodLevels + level] > 0 && lod[level] <= at)
                 {
-                    lod[level] += (uint)added;
+                    owner = level;
                 }
             }
 
-            lod[LodLevels] += (uint)added;
+            for (int level = owner + 1; level < LodLevels; level++)
+            {
+                lod[level]++;
+            }
+
+            lod[LodLevels + owner]++;
+            changed = true;
         }
 
         known = Uids(chunks[md].Data, ObjectSize);
