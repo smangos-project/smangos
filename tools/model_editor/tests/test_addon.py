@@ -1055,6 +1055,47 @@ def wmo_light_type_edit():
 
 
 @test
+def wmo_group_flip_interior_exterior():
+    path = REFS[1]
+    src = wmo_expect(path)[0]
+    gi = next(i for i, g in enumerate(src.groups) if int(g.body.header.flags) & 0x2000 and int(g.body.header.int_batch_count) > 0)
+    h0 = src.groups[gi].body.header
+    coll, r = export_files(path)
+    ob = mesh_groups(coll)[gi]
+    ob.wow_wmo_group.flags = ((ob.wow_wmo_group.flags & 0xFFFFFFFF) & ~0x2000) | 0x8
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    h = reread(path, r.files).groups[gi].body.header
+    assert int(h.int_batch_count) == 0 and int(h.ext_batch_count) == int(h0.int_batch_count) + int(h0.ext_batch_count)
+    assert int(h.trans_batch_count) == int(h0.trans_batch_count)
+
+
+@test
+def wmo_group_names_rebuilt():
+    path = REFS[1]
+    coll, r = export_files(path)
+    ob = mesh_groups(coll)[2]
+    p = ob.wow_wmo_group
+    old_size = wmo_expect(path)[0].root.group_names.size
+    p.group_name = "first_rename_that_is_long"
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    p.group_name = "b"
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    names = new.root.group_names
+    used = {names.at(int(g.body.header.group_name)) for g in new.groups} | {names.at(int(g.body.header.descriptive_group_name)) for g in new.groups}
+    assert "first_rename_that_is_long" not in used and names.at(new.groups[2].body.header.group_name) == "b"
+    assert names.size <= old_size + 2, (names.size, old_size)
+    old = wmo_expect(path)[0].root
+    for i in range(len(new.groups)):
+        if i != 2 and 0 <= int(old.group_infos[i].name_offset) < old.group_names.size:
+            assert names.at(int(new.root.group_infos[i].name_offset)) == old.group_names.at(int(old.group_infos[i].name_offset))
+    assert new.validate().ok and int(new.root.header.n_textures) == len(new.root.materials)
+
+
+@test
 def wmo_group_meta_edit():
     path = REFS[1]
     coll, r = export_files(path)

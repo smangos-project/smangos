@@ -138,4 +138,5 @@ In-client checks (2026-10-06, `tests/gate_items.py`, `tests/gate_item.py`): a cu
 
 ### Phase 6 notes
 - Exported: new groups and WMOs, LOD files, doodad/light/fog/portal create and delete, doodad sets, group names and flags, header edits.
-- New doodads outside every group box get no group reference, so they will not render (the export warns).
+- Doodad and light group references (MODR/MOLR) follow moved objects and cover new groups; a doodad outside every group box gets none and does not render (the export warns).
+- MOGN is rebuilt when group names change or groups are deleted; flipping a group interior/exterior reclassifies its batches; group flag mismatches (both classes, liquid flag without liquid, derived 0x800/0x200) are reported as warnings.

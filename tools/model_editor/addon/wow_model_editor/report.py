@@ -7,6 +7,7 @@ class Report:
         self.objects = []
         self.material_index = {}
         self.new_groups = {}
+        self.names_changed = False
         self.stats = dict(stats)
 
     def add(self, severity, where, message, obj=None):

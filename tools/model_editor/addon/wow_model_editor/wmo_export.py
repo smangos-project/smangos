@@ -449,12 +449,18 @@ def update_group(w, gi, ob, report, force, bsp=True):
     else:
         ids = slot_material_ids(ob, report)
     cls, mats = source_batch_info(body, body.header)
-    c = mesh_corners(ob, ids, default_group_class(ob.wow_wmo_group.flags), src)
+    file_cls = list(cls)
+    default = default_group_class(group_flags(ob))
+    if default != default_group_class(int(body.header.flags)):
+        cls = [x if x == geo.TRANS else default for x in cls]
+    c = mesh_corners(ob, ids, default, src)
     c["src_class"], c["src_mat"] = cls, mats
     arr = geo.build_group(c)
     if not bsp:
         arr.poly_flags, arr.poly_mat = arr.poly_flags[:0], arr.poly_mat[:0]
     arr, changed = compare(arr, src)
+    if not changed and [int(x) for x in arr.batch_class] != file_cls:
+        changed = ["batch classes"]
     if not changed and not force:
         return False
     report.add("INFO", ob.name, "rebuilt: " + ", ".join(changed or ["forced"]))
@@ -473,6 +479,7 @@ def update_group_meta(w, gi, ob, report):
         want = getattr(p, field)
         if want != wmo_import._string(w.root.group_names, cur):
             setattr(h, attr, w.root.group_names.add(want))
+            report.names_changed = True
             if field == "group_name":
                 info.name_offset = h.group_name
             changed = True
@@ -523,6 +530,7 @@ def add_group(w, ob, path, report):
     flags = group_flags(ob) or F_EXTERIOR
     h = w.groups[gi].body.header
     h.flags = type(h.flags)(flags)
+    report.names_changed = True
     h.group_name = w.root.group_names.add(p.group_name)
     h.descriptive_group_name = w.root.group_names.add(p.descriptive_name)
     info.name_offset = h.group_name
@@ -555,10 +563,26 @@ def check_lod_tables(w, report):
         report.add("WARNING", "lods", f"GFID has {len(r.group_fdids)} entries for {n} groups")
 
 
+def check_group_flags(gi, body, report):
+    h = body.header
+    f = int(h.flags)
+    where = f"group {gi}"
+    if f & F_INTERIOR and f & F_EXTERIOR:
+        report.add("WARNING", where, "flags mark the group as both interior and exterior")
+    if f & 0x1000 and (body.liquid.empty or not len(body.liquid.vertices)):
+        report.add("WARNING", where, "liquid flag set but the group has no liquid")
+    for flag, attr, label in ((0x800, "doodad_refs", "doodads"), (0x200, "light_refs", "lights")):
+        if bool(f & flag) != bool(len(getattr(body, attr))):
+            report.add("WARNING", where, f"{label} flag {flag:#x} does not match its references")
+    if f & F_EXTERIOR and not f & F_INTERIOR and int(h.int_batch_count):
+        report.add("WARNING", where, "exterior group has interior batches")
+
+
 def check_output(w, report):
     """Cross-checks the structural validator does not cover: material ranges and texture ids."""
     n = len(w.root.materials)
     for gi, g in enumerate(w.groups):
+        check_group_flags(gi, g.body, report)
         for b in g.body.batches:
             m = b.material_id_large if b.flags & wmo_import.BATCH_LARGE_MATERIAL else b.material_id
             if m >= n and m != 0xFF:
@@ -693,6 +717,9 @@ def export(root, out_path=None, options=None):
     if dirty or deleted:
         update_root_boxes(w)
     wmo_lod.apply_lods(w, root, path, report, files, remap, dirty)
+    if deleted or report.names_changed:
+        wmo_root_export.rebuild_group_names(w)
+    wmo_root_export.fix_header_counts(w)
     if report.errors:
         return report
     vr = w.validate()

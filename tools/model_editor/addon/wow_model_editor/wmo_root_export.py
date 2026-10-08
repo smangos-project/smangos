@@ -675,6 +675,42 @@ def update_header(w, root, report):
     return changed
 
 
+def rebuild_group_names(w):
+    """Rewrites MOGN with the strings the groups still use and repoints MOGI and the group headers at them."""
+    r = w.root
+    old = r.group_names
+    new = type(old)()
+    new.add("")
+    seen = {}
+
+    def remap(offset):
+        offset = int(offset)
+        try:
+            text = old.at(offset) if 0 <= offset < old.size else None
+        except Exception:  # noqa: BLE001
+            text = None
+        if text is None:
+            return offset
+        if text not in seen:
+            seen[text] = new.add(text)
+        return seen[text]
+
+    for i, g in enumerate(w.groups):
+        h = g.body.header
+        h.group_name = remap(h.group_name)
+        h.descriptive_group_name = remap(h.descriptive_group_name)
+        r.group_infos[i].name_offset = remap(r.group_infos[i].name_offset)
+    r.group_names = new
+
+
+def fix_header_counts(w):
+    """MOHD counts that mirror table sizes (the doodad counts are not: stock headers keep stale values)."""
+    r = w.root
+    for name, n in (("n_lights", len(r.lights)), ("n_textures", len(r.materials))):
+        if int(getattr(r.header, name)) != n:
+            setattr(r.header, name, n)
+
+
 def delete_groups(w, gone, report, order=None):
     """Drops groups `gone` with their group info, portals touching them and every reference to them; returns {old: new}.
 
