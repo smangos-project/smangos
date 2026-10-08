@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import BoolProperty, EnumProperty, IntProperty, StringProperty
 
-from . import m2_export, m2_particles
+from . import m2_export, m2_particles, wmo_export
 
 M2_KINDS = (("attachment", "Attachment", ""), ("event", "Event", ""), ("light", "Light", ""), ("camera", "Camera", ""),
             ("particle", "Particle emitter", ""), ("ribbon", "Ribbon emitter", ""))
@@ -72,6 +72,76 @@ class WOW_OT_add_m2_object(bpy.types.Operator):
         return {"FINISHED"}
 
 
+WMO_KINDS = (("doodad", "Doodad", ""), ("light", "Light", ""), ("fog", "Fog", ""), ("portal", "Portal", ""),
+             ("group", "Group", ""))
+WMO_GROUPS = {"doodad": "doodads", "light": "lights", "fog": "fogs", "portal": "portals", "group": "groups"}
+
+
+def new_wmo_object(top, kind, location=(0.0, 0.0, 0.0), path="", doodad_set=0):
+    """Create and link a new `kind` object of WMO `top`; doodads need a model path."""
+    coll = _child(top, WMO_GROUPS[kind])
+    if kind == "doodad":
+        if coll.children:
+            coll = coll.children[min(doodad_set, len(coll.children) - 1)]
+        ob = bpy.data.objects.new(path.rsplit("/", 1)[-1].rsplit(".", 1)[0] or "doodad", None)
+        ob.empty_display_type, ob.empty_display_size = "ARROWS", 0.5
+        ob.wow_wmo_doodad.path = path
+        ob.wow_wmo_doodad.doodad_set = doodad_set
+    elif kind == "light":
+        ob = bpy.data.objects.new("light_new", bpy.data.lights.new("light_new", "POINT"))
+        ob.data.use_custom_distance, ob.data.cutoff_distance, ob.data.energy = True, 10.0, 100.0
+        ob.wow_wmo_light.atten_end = 10.0
+    elif kind == "fog":
+        ob = bpy.data.objects.new("fog_new", None)
+        ob.empty_display_type, ob.empty_display_size = "SPHERE", 10.0
+        p = ob.wow_wmo_fog
+        p.larger_radius, p.smaller_radius, p.fog_end, p.fog_start_scalar = 10.0, 5.0, 100.0, 0.1
+        p.fog_color = p.uw_color = (128, 128, 128, 255)
+        p.uw_end, p.uw_start_scalar = 100.0, 0.1
+    elif kind == "portal":
+        me = bpy.data.meshes.new("portal_new")
+        me.from_pydata([(-1, 0, 0), (1, 0, 0), (1, 0, 2), (-1, 0, 2)], [], [[0, 1, 2, 3]])
+        ob = bpy.data.objects.new("portal_new", me)
+        ob.display_type = "WIRE"
+    else:
+        me = bpy.data.meshes.new("group_new")
+        me.from_pydata([(-5, -5, 0), (5, -5, 0), (5, 5, 0), (-5, 5, 0)], [], [[0, 1, 2, 3]])
+        ob = bpy.data.objects.new("group_new", me)
+    coll.objects.link(ob)
+    ob.location = location
+    return ob
+
+
+class WOW_OT_add_wmo_object(bpy.types.Operator):
+    bl_idname = "wow.add_wmo_object"
+    bl_label = "WoW WMO object"
+    bl_options = {"REGISTER", "UNDO"}
+    kind: EnumProperty(items=WMO_KINDS)
+    path: StringProperty(name="Model path", description="Doodad M2 path, e.g. world/generic/human/passive doodads/barrel01.m2")
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and wmo_export.find_root(ob) is not None
+
+    def invoke(self, context, event):
+        if self.kind == "doodad":
+            return context.window_manager.invoke_props_dialog(self)
+        return self.execute(context)
+
+    def execute(self, context):
+        top = wmo_export.find_root(context.active_object)
+        if self.kind == "doodad" and not self.path:
+            self.report({"ERROR"}, "Doodads need a model path")
+            return {"CANCELLED"}
+        ob = new_wmo_object(top, self.kind, tuple(context.scene.cursor.location), self.path.replace("\\", "/").lower())
+        for o in context.selected_objects:
+            o.select_set(False)
+        ob.select_set(True)
+        context.view_layer.objects.active = ob
+        return {"FINISHED"}
+
+
 class WOW_OT_toggle_flag(bpy.types.Operator):
     bl_idname = "wow.toggle_flag"
     bl_label = "Toggle flag"
@@ -111,6 +181,11 @@ class WOW_MT_add(bpy.types.Menu):
     bl_label = "WoW"
 
     def draw(self, context):
+        ob = context.active_object
+        if ob is not None and wmo_export.find_root(ob) is not None:
+            for kind, label, _ in WMO_KINDS:
+                self.layout.operator("wow.add_wmo_object", text=label).kind = kind
+            return
         for kind, label, _ in M2_KINDS:
             self.layout.operator("wow.add_m2_object", text=label).kind = kind
 
@@ -119,7 +194,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_toggle_flag, WOW_OT_m2_light_from_blender, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_light_from_blender, WOW_MT_add)
 
 
 def register():

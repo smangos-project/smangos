@@ -781,6 +781,27 @@ def wmo_header_edit():
 
 
 @test
+def wmo_add_menu_objects_export():
+    path = REFS[1]
+    clear()
+    coll = wmo_import.load(path, {"doodads": True, "lights": True})
+    src = wmo_expect(path)[1]
+    bpy.context.view_layer.objects.active = next(iter(mesh_groups(coll).values()))
+    model = index.path_of(src.doodad_fdids[0])
+    for kind in ("doodad", "light", "fog", "portal"):
+        assert bpy.ops.wow.add_wmo_object(kind=kind, path=model) == {"FINISHED"}, kind
+        bpy.context.view_layer.objects.active = next(iter(mesh_groups(coll).values()))
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    root = new.root
+    assert len(root.doodad_defs) == len(src.doodad_defs) + 1, (len(root.doodad_defs), len(src.doodad_defs))
+    assert len(root.lights) == len(src.lights) + 1, (len(root.lights), len(src.lights))
+    assert len(root.fogs) == len(src.fogs) + 1 and len(root.portals) == len(src.portals) + 1
+    assert new.validate().ok, str(new.validate())
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})

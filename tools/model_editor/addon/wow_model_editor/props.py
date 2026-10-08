@@ -79,7 +79,7 @@ class WowWmoPortal(bpy.types.PropertyGroup):
 
 
 class WowWmoLight(bpy.types.PropertyGroup):
-    index: IntProperty()
+    index: IntProperty(default=-1)
     type: IntProperty()
     use_atten: IntProperty()
     color: IntVectorProperty(size=4)
@@ -109,7 +109,7 @@ class WowWmoLiquid(bpy.types.PropertyGroup):
 
 
 class WowWmoFog(bpy.types.PropertyGroup):
-    index: IntProperty()
+    index: IntProperty(default=-1)
     flags: IntProperty()
     larger_radius: FloatProperty()
     smaller_radius: FloatProperty()

@@ -44,7 +44,7 @@ def _world(ob):
 def update_doodads(w, root, report):
     """Edits existing doodad definitions and inserts new objects; returns True if anything changed."""
     r = w.root
-    objs = [o for o in root.all_objects if o.type == "EMPTY" and (o.wow_wmo_doodad.index >= 0 or o.wow_wmo_doodad.fdid)]
+    objs = [o for o in root.all_objects if o.type == "EMPTY" and (o.wow_wmo_doodad.index >= 0 or o.wow_wmo_doodad.fdid or o.wow_wmo_doodad.path)]
     if not objs:
         return False
     names = list(r.doodad_fdids)
