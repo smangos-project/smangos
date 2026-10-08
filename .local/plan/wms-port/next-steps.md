@@ -97,3 +97,10 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - WMO panel renders TEXTURED in the client: the e2e panel's MOMT Texture1 was 0 (black = no texture), not a writer bug. Patched Texture1 to stock FDID 189080 via /tmp/inst.py: hazard-stripe panel floats near the abbey door. Writer already emits Texture1 from the surface texture path.
 - Viewing tips: control server `/batch` actions are `{"key":{"keys":"escape"}}`, `{"drag":{"from":[x,y],"to":[x,y],"button":"right"}}` (right-drag turns/pitches the camera, ~100px = ~30deg pitch). Put the character offline-in-DB at (-8944,-130,83.6) orientation 0 to face the abbey door/panel.
 - Client restored to stock (obj0/obj1, generated, fdid lines); character back at Northshire start. Remaining: M2 panels not identified, vmap collision (step 1.5), then new map.
+
+### Step 1.4 (tenth session, 2026-10-08): M2 panels
+- Tried the M2 path with a STOCK model (189929 canopy) in the added obj1 MLDD entries at the panel positions, with flags 0x260 (stock) and small uids: still nothing drawn. So the problem is the added MLDD entries (or how doodads are culled), not the custom M2 model. WMO via MLMD works.
+- MLDD entries have MDDF layout (rot floats at +20/+24/+28, scale u16 +32, flags u16 +34); stock rot y is e.g. 232, ours -180 (probably fine). MLFD = m2 offsets[3], m2 lengths[3], wmo offsets[3], wmo lengths[3].
+- Ideas not yet tried: move an existing stock MLDD entry (edit pos+MLDX) to see if edits show; check whether doodads draw from obj0 MDDF only within a near range (obj0 5000-height test may have been masked); try MLDL non-zero values / other LOD level for the added entries.
+- Camera: right-drag pitch is unreliable (goes to first person); `scroll` action {"scroll":{"x":..,"y":..,"delta":N}} exists. Escape opens the game menu once chat is closed.
+- Client restored to stock, character 13 back at Northshire start.
