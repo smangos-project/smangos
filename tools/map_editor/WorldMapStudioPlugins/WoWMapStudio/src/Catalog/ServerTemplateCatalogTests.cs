@@ -52,4 +52,27 @@ public static class ServerTemplateCatalogTests
         Assert.AreEqual("Hearthstone", itemRow.DisplayLang);
         Assert.AreEqual(5, itemRow.BuyPrice);
     }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Npc_and_broadcast_text_round_trip_through_their_records()
+    {
+        var texts = new NpcTextFactory(null!);
+        NpcText text = texts.CallToEntity(new NpcTextRecord { ID = 5, BroadcastTextID2 = 77, Probability2 = 0.5f });
+        Assert.AreEqual(77, text.BroadcastTextIds[2]);
+        text.BroadcastTextIds[7] = 9;
+        var textRow = new NpcTextRecord();
+        texts.CallWrite(text, textRow);
+        Assert.AreEqual(77, textRow.BroadcastTextID2);
+        Assert.AreEqual(0.5f, textRow.Probability2);
+        Assert.AreEqual(9, textRow.BroadcastTextID7);
+
+        var broadcasts = new BroadcastTextFactory(null!);
+        BroadcastText broadcast = broadcasts.CallToEntity(new BroadcastTextRecord { Entry = 77, MaleText = "Hi", EmoteId1 = 1 });
+        broadcast.FemaleText = "Hello";
+        var row = new BroadcastTextRecord();
+        broadcasts.CallWrite(broadcast, row);
+        Assert.AreEqual("Hi", row.MaleText);
+        Assert.AreEqual("Hello", row.FemaleText);
+        Assert.AreEqual(1, row.EmoteId1);
+    }
 }
