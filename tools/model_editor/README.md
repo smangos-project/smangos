@@ -110,7 +110,7 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 
 ### M2 export (phase 6)
 "Export M2" in the WoW panel (`wow.export_m2`) rebuilds the model from the collection: geometry/skins, rig, materials/textures, objects, animation. The source is re-read and each section is applied on top; if nothing differs from the source, nothing is written.
-- Geometry edits drop LOD skins unless "rebuild LODs" is set. Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
+- After geometry or batch edits, LOD skins are replaced by copies of skin 0 (no decimation). Findings (errors/warnings) show in the report panel and click-to-select; `m.validate()` errors abort unless "Write anyway" (errors already present in the source are warnings).
 - Non-linear animation keys are baked to linear; sequences are validated.
 - `New M2` (`wow.new_m2`) copies a template (default the Duskwood lamp post), marks it new and exports it to the given client path with fdids from the `file_data_id` table.
 - Not done: shadow-batch rules beyond the fallback, in-client checks of edited/new models, LOD decimation.

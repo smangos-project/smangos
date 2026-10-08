@@ -1,4 +1,5 @@
 """Writes an imported M2 back as a 1.15 chunked M2 plus skins. Unchanged models are not written."""
+import copy
 import posixpath
 from pathlib import Path
 
@@ -51,6 +52,15 @@ def differs(ref, m):
     return deep_diff(ref.root, m.root, "root") or deep_diff(ref.skins, m.skins, "skins")
 
 
+def sync_lods(ref, m, report):
+    """LOD skins are replaced by copies of skin 0 once skin 0 was edited."""
+    if len(m.skins) < 2 or not deep_diff(ref.skins[0], m.skins[0], "skin"):
+        return
+    for i in range(1, len(m.skins)):
+        m.skins[i] = copy.deepcopy(m.skins[0])
+    report.add("INFO", "geometry", f"{len(m.skins) - 1} LOD skin(s) replaced by copies of skin 0")
+
+
 def rebuild(top, m, report, opts):
     """Applies every section of the Blender data to the freshly read model `m`."""
     m2_validate.check_blender(top, report)
@@ -81,6 +91,7 @@ def export(top, out_path=None, options=None):
     ref = m2_import.read(src)
     rebuild(top, m, report, opts)
     report.model = m
+    sync_lods(ref, m, report)
     if report.errors:
         return report
     report.diff = differs(ref, m)

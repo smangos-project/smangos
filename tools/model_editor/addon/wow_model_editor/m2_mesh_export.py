@@ -240,12 +240,6 @@ def apply(m, pool, opts, report):
         _set_vec(root.bounding_box.min, lo)
         _set_vec(root.bounding_box.max, hi)
         root.bounding_sphere_radius = radius
-    if len(m.skins) > 1:
-        report.add("WARNING", "geometry", f"geometry edited: {len(m.skins) - 1} LOD skin(s) dropped")
-        while len(m.skins) > 1:
-            m.skins.pop()
-        sf = m.chunks.skin_fdids
-        sf.resize(1)
 
 
 def build(top, m, report, opts, rig=None):

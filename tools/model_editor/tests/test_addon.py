@@ -1056,7 +1056,8 @@ def m2_geometry_edit_round_trip():
     r = m2_export.export(top, options={"force": True})
     assert not r.errors and r.dirty, str(r)
     again = m2_import.read(path)
-    assert len(again.skins) == 1 and len(again.skins[0].profile.submeshes) == n_sub
+    assert len(again.skins) == len(m2_import.read(path).skins) and len(again.skins[0].profile.submeshes) == n_sub
+    assert all(len(s.profile.submeshes) == n_sub and len(s.profile.indices) == len(again.skins[0].profile.indices) for s in again.skins)
     assert again.validate().ok, [str(i) for i in again.validate().issues]
     v = again.root.vertices[0]
     assert abs(v.pos.x - moved[0]) < 1e-5, (v.pos.x, moved)
