@@ -124,3 +124,6 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - Client currently running with the installed panels; restore stock afterwards (see twelfth-session note).
 
 - 2026-10-08: M2 panel fixed (commit 91f8ee5c0: seq bounds, skin boneInfluences/BoneCountMax 0, flags 0x202080): renders as flat dark textured quad in client. Its TXID is still 0 from the e2e panel (test-only). Client restored to stock, character 13 reset. Next: step 1.5 (vmap extract of map 0 on live .server/data with panels installed, collision/LOS), then new map.
+
+### Step 1.4/1.5 (thirteenth session)
+- Re-exported with the fixed M2 writer, installed (inst2.py), full map 0 vmap extract (5 models converted, WMO panel vmo has a 2-triangle quad). In the client the WMO panel renders textured; `.gps` (works from the client chat via `/batch {"actions":[{"key":{"keys":"enter"}},{"type":".gps"},...]}` for CLAUDE) reports GroundZ/FloorZ 92.0 with VMap data at the panel: server collision height sees the panel. LOS block not tested. Client restored to stock, character 13 reset.
