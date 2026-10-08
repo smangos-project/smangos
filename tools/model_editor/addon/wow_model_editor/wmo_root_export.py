@@ -86,7 +86,8 @@ def update_doodads(w, root, report):
             d.name_and_flags = nf
             changed = True
     missing = sorted(set(range(n_src)) - seen)
-    if missing:
+    drop = set(missing) if any(c.name.startswith("doodads") for c in root.children) else set()
+    if missing and not drop:
         report.add("WARNING", "doodads", f"{len(missing)} doodad objects missing, definitions kept")
     if len(names) != n_names:
         r.doodad_fdids.resize(len(names))
@@ -94,8 +95,8 @@ def update_doodads(w, root, report):
             r.doodad_fdids[i] = v
         r.header.n_doodad_names = int(r.header.n_doodad_names) + len(names) - n_names
         changed = True
-    if new:
-        insert_doodads(w, new, report)
+    if new or drop:
+        rebuild_doodads(w, new, drop, report)
         changed = True
     return changed
 
@@ -115,58 +116,68 @@ def _write_def(d, t):
     _set_rgba(d.color, t[5])
 
 
-def insert_doodads(w, new, report):
-    """Append new doodads to the end of their set's range, remapping later sets and group doodad references."""
+def rebuild_doodads(w, new, drop, report):
+    """Rewrite MODD ordered by set: drop `drop` (old indices), add `new` at the end of their set; remaps set ranges,
+    group doodad references and compacts unused names."""
     r = w.root
     n = len(r.doodad_defs)
     sets = [(s.name, s.start_index, s.count) for s in r.doodad_sets]
-    items = [("old", i, _def_tuple(r.doodad_defs[i])) for i in range(n)]
-    pos_of_set = {}
+    items = [_def_tuple(r.doodad_defs[i]) for i in range(n)]
+    set_of_old = {}
+    for si, (_, start, count) in enumerate(sets):
+        for i in range(start, start + count):
+            set_of_old[i] = si
+    by_set = {}
     for ob, want in new:
         si = min(max(ob.wow_wmo_doodad.doodad_set, 0), len(sets) - 1) if sets else -1
-        pos_of_set.setdefault(si, []).append((ob, want))
+        by_set.setdefault(si, []).append((ob, want))
     order = []
     for old in range(n):
-        order.append(("old", old, None))
-        for si, lst in pos_of_set.items():
-            name, start, count = sets[si]
-            if old == start + count - 1:
-                order += [("new", ob, want) for ob, want in lst]
-    for si, lst in pos_of_set.items():
-        if sets[si][2] == 0:
-            order += [("new", ob, want) for ob, want in lst]
-    remap = {}
-    out = []
+        if old not in drop:
+            order.append(("old", old, None))
+        si = set_of_old.get(old)
+        if si in by_set and old == sets[si][1] + sets[si][2] - 1:
+            order += [("new", ob, want) for ob, want in by_set.pop(si)]
+    for lst in by_set.values():
+        order += [("new", ob, want) for ob, want in lst]
+    remap, out, out_set, new_ids = {}, [], [], {}
     for kind, a, b in order:
         if kind == "old":
             remap[a] = len(out)
-            out.append(items[a][2])
+            out.append(items[a])
+            out_set.append(set_of_old.get(a))
         else:
+            new_ids[a.name] = len(out)
             out.append(((b["flags"] & 0xFF) << 24 | b["name_index"], b["name_index"], b["pos"], b["q"], b["scale"], b["color"]))
-    new_ids = {}
-    for i, (kind, a, b) in enumerate(order):
-        if kind == "new":
-            new_ids[a.name] = i
+            out_set.append(min(max(a.wow_wmo_doodad.doodad_set, 0), len(sets) - 1) if sets else None)
+    used = sorted({t[0] & 0xFFFFFF for t in out})
+    names = list(r.doodad_fdids)
+    if drop and len(used) < len(names):
+        name_map = {o: j for j, o in enumerate(used)}
+        out = [((t[0] & ~0xFFFFFF) | name_map[t[0] & 0xFFFFFF], *t[1:]) for t in out]
+        r.doodad_fdids.resize(len(used))
+        for j, o in enumerate(used):
+            r.doodad_fdids[j] = names[o]
+        r.header.n_doodad_names = len(used)
     r.doodad_defs.resize(len(out))
     for i, t in enumerate(out):
         _write_def(r.doodad_defs[i], t)
+    ends = 0
     for si, s in enumerate(r.doodad_sets):
-        name, start, count = sets[si]
-        added = len(pos_of_set.get(si, []))
-        if count:
-            ns = remap[start]
-            s.start_index, s.count = ns, remap[start + count - 1] + 1 + added - ns
-        elif added:
-            s.start_index, s.count = len(out) - sum(len(v) for k, v in pos_of_set.items() if k >= si and sets[k][2] == 0), added
-    delta = len(out) - n
-    r.header.n_doodad_defs = int(r.header.n_doodad_defs) + delta
+        members = [i for i, x in enumerate(out_set) if x == si]
+        s.start_index, s.count = (members[0], len(members)) if members else (ends, 0)
+        ends = s.start_index + s.count
+    r.header.n_doodad_defs = len(out)
     boxes = [g.body.header.bounding_box for g in w.groups]
     for g in w.groups:
-        refs = [remap.get(int(x), int(x)) for x in g.body.doodad_refs]
-        if len(refs) != len(g.body.doodad_refs) or refs != list(g.body.doodad_refs):
+        old_refs = [int(x) for x in g.body.doodad_refs]
+        refs = [remap.get(x, x) for x in old_refs if x in remap or x >= n]
+        if refs != old_refs:
             g.body.doodad_refs.resize(len(refs))
             for i, v in enumerate(refs):
                 g.body.doodad_refs[i] = v
+            if not refs:
+                g.body.header.flags = type(g.body.header.flags)(u32(int(g.body.header.flags)) & ~0x800)
     for kind, a, b in order:
         if kind != "new":
             continue

@@ -659,6 +659,36 @@ def wmo_export_root_objects():
 
 
 @test
+def wmo_doodad_delete():
+    path = REFS[1]
+    coll, r = export_files(path, import_opts={"doodads": True})
+    src = wmo_expect(path)[1]
+    n = len(src.doodad_defs)
+    obs = {o.wow_wmo_doodad.index: o for o in coll.all_objects if o.type == "EMPTY" and o.wow_wmo_doodad.index >= 0}
+    name3 = int(src.doodad_defs[3].name_index)
+    gone = [i for i in range(n) if int(src.doodad_defs[i].name_index) == name3] + [10]
+    for i in set(gone):
+        bpy.data.objects.remove(obs[i])
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    root = new.root
+    drop = set(gone)
+    assert len(root.doodad_defs) == n - len(drop) and new.validate().ok, str(new.validate())
+    assert sum(s.count for s in root.doodad_sets) == sum(s.count for s in src.doodad_sets) - len(drop)
+    assert len(root.doodad_fdids) == len({int(src.doodad_defs[i].name_index) for i in range(n) if i not in drop})
+    assert all((int(d.name_index)) < len(root.doodad_fdids) for d in root.doodad_defs)
+    keep = [i for i in range(n) if i not in drop]
+    for j, i in enumerate(keep[:40]):
+        assert abs(root.doodad_defs[j].position.x - src.doodad_defs[i].position.x) < 1e-4
+        assert root.doodad_fdids[int(root.doodad_defs[j].name_index)] == src.doodad_fdids[int(src.doodad_defs[i].name_index)]
+    for g in new.groups:
+        assert all(int(x) < len(root.doodad_defs) for x in g.body.doodad_refs)
+    old_total = sum(len(g.body.doodad_refs) for g in wmo_expect(path)[0].groups)
+    assert sum(len(g.body.doodad_refs) for g in new.groups) < old_total
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})
