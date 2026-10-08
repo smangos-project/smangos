@@ -73,8 +73,10 @@ class WOW_OT_add_m2_object(bpy.types.Operator):
 
 
 WMO_KINDS = (("doodad", "Doodad", ""), ("light", "Light", ""), ("fog", "Fog", ""), ("portal", "Portal", ""),
-             ("group", "Group", ""), ("liquid", "Liquid", ""))
-WMO_GROUPS = {"doodad": "doodads", "light": "lights", "fog": "fogs", "portal": "portals", "group": "groups", "liquid": "liquids"}
+             ("group", "Group", ""), ("antiportal", "Antiportal", ""), ("liquid", "Liquid", ""))
+WMO_GROUPS = {"doodad": "doodads", "light": "lights", "fog": "fogs", "portal": "portals", "group": "groups",
+              "antiportal": "groups", "liquid": "liquids"}
+ANTIPORTAL_FLAGS = 0x4000000 | 0x80 | 0x8
 
 
 def new_wmo_liquid(top, group_ob, tiles=(8, 8), location=(0.0, 0.0, 0.0)):
@@ -123,6 +125,13 @@ def new_wmo_object(top, kind, location=(0.0, 0.0, 0.0), path="", doodad_set=0):
         me.from_pydata([(-1, 0, 0), (1, 0, 0), (1, 0, 2), (-1, 0, 2)], [], [[0, 1, 2, 3]])
         ob = bpy.data.objects.new("portal_new", me)
         ob.display_type = "WIRE"
+    elif kind == "antiportal":
+        me = bpy.data.meshes.new("antiportal_new")
+        me.from_pydata([(-2, 0, 0), (2, 0, 0), (2, 0, 4), (-2, 0, 4)], [], [[0, 1, 2, 3]])
+        ob = bpy.data.objects.new("antiportal_new", me)
+        ob.display_type = "WIRE"
+        ob.wow_wmo_group.flags = ANTIPORTAL_FLAGS
+        ob.wow_wmo_group.group_name = "antiportal"
     else:
         me = bpy.data.meshes.new("group_new")
         me.from_pydata([(-5, -5, 0), (5, -5, 0), (5, 5, 0), (-5, 5, 0)], [], [[0, 1, 2, 3]])

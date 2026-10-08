@@ -30,6 +30,7 @@ m2_export = common.submodule("m2_export")
 fdids = common.submodule("fdids")
 m2_seq = common.submodule("m2_seq")
 wmo_export = common.submodule("wmo_export")
+ops_add = common.submodule("ops_add")
 wmo_bsp = common.submodule("wmo_bsp")
 wmo_geometry = common.submodule("wmo_geometry")
 
@@ -563,6 +564,28 @@ def wmo_export_validation():
     r = wmo_export.export(coll, options={"dry_run": True})
     assert not r.errors, str(r)
     assert any("power of two" in i[2] for i in r.items), str(r)
+
+
+@test
+def wmo_export_antiportal():
+    path = REFS[0]
+    clear()
+    common.scratch_world("wmo_ap")
+    coll = wmo_import.load(path, {"doodads": False})
+    top = wmo_export.find_root(mesh_groups(coll)[0])
+    ob = ops_add.new_wmo_object(top, "antiportal", (0, 0, 10))
+    assert ob.wow_wmo_group.group_name == "antiportal" and ob.wow_wmo_group.flags & 0x4000000
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    n = len(wmo_expect(path)[0].groups)
+    assert len(new.groups) == n + 1 and r.new_groups[ob.name] == n
+    h = new.groups[n].body.header
+    assert int(h.flags) & 0x4000000 and int(new.root.group_infos[n].flags) & 0x4000000
+    assert len(new.groups[n].body.batches) == 0 and h.int_batch_count == h.ext_batch_count == h.trans_batch_count == 0
+    assert len(new.groups[n].body.indices) == 6
+    assert wmo_import._string(new.root.group_names, h.group_name) == "antiportal"
+    assert new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
 
 
 @test

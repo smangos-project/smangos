@@ -105,6 +105,7 @@ Select a WMO collection (or an object inside it) and use "Export WMO" in the WoW
 - Root objects: doodads (moved, retargeted, added to their set with group references), lights, fogs, portal vertices/planes and liquid heights/tile flags are written when they differ from the source. Deleted objects are kept in the file with a warning.
 - Export checks: `w.validate()` issues and out-of-range material ids (errors/warnings), texture ids missing from every listfile and non-power-of-two new textures (warnings).
 - New groups: a mesh object in the `groups` collection with no group index is appended as a new group (file `<wmo>_NNN.wmo`, group fdid from the custom listfile). `New WMO` (`wow.new_wmo`) creates an empty collection whose export writes a new file from scratch.
+- Antiportals: `Add > Antiportal` creates a group with flag `0x4000000` (plus unreachable/exterior) named `antiportal`. The client draws no batches for such groups, so export ignores materials and writes the mesh as collision-only geometry with zero batches. Geometry rules of the client's occluder (convexity, winding) and in-client verification (`showOccluders`) are still open.
 - LOD group files (`*_lodN.wmo`) are neither imported nor exported; editing a group that has them warns that they are stale.
 - Not yet: LOD editing, deleting doodads/lights, new portals, group-name and MOGN edits, in-client verification.
 

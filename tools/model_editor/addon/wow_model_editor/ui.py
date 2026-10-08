@@ -252,7 +252,7 @@ class WOW_PT_object(bpy.types.Panel):
                 col.operator("wow.m2_light_from_blender", icon="LIGHT")
 
 
-FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {}, "flags2": {}}}
+FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {7: "Unreachable", 26: "Antiportal"}, "flags2": {}}}
 
 
 WMO_MATERIAL_FLAGS = {0: "Unlit", 1: "Unfogged", 2: "Two-sided", 3: "Exterior light", 4: "Night glow", 5: "Window", 6: "Clamp S", 7: "Clamp T"}

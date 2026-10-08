@@ -17,6 +17,7 @@ from .report import Report as _Report
 
 BBOX_PAD = 0.028
 F_BSP, F_COLOR, F_EXTERIOR, F_INTERIOR = 0x1, 0x4, 0x8, 0x2000
+F_ANTIPORTAL = 0x4000000
 COLLISION_NAME = "wow_collision"
 
 
@@ -416,10 +417,29 @@ def default_group_class(flags):
     return geo.INT if u32(flags) & F_INTERIOR else geo.EXT
 
 
+def is_antiportal(ob):
+    p = ob.wow_wmo_group
+    return bool(u32(p.flags) & F_ANTIPORTAL) or p.group_name == "antiportal"
+
+
+def check_antiportal(ob, report):
+    """Antiportals are occluder geometry: the client draws no batches for them, so materials are ignored."""
+    if len(ob.data.polygons) == 0:
+        report.add("WARNING", ob.name, "antiportal has no faces")
+    if any(s.material is not None for s in ob.material_slots):
+        report.add("WARNING", ob.name, "antiportal materials are ignored")
+    if not u32(ob.wow_wmo_group.flags) & F_ANTIPORTAL:
+        report.add("INFO", ob.name, "named antiportal without the antiportal flag; the client sets the flag itself")
+
+
 def update_group(w, gi, ob, report, force):
     body = w.groups[gi].body
     src = source_arrays(body)
-    ids = slot_material_ids(ob, report)
+    if is_antiportal(ob):
+        check_antiportal(ob, report)
+        ids = [-1] * len(ob.material_slots)
+    else:
+        ids = slot_material_ids(ob, report)
     cls, mats = source_batch_info(body, body.header)
     c = mesh_corners(ob, ids, default_group_class(ob.wow_wmo_group.flags), src)
     c["src_class"], c["src_mat"] = cls, mats
