@@ -32,6 +32,7 @@ m2_seq = common.submodule("m2_seq")
 wmo_export = common.submodule("wmo_export")
 ops_add = common.submodule("ops_add")
 wmo_bsp = common.submodule("wmo_bsp")
+wmo_lod = common.submodule("wmo_lod")
 wmo_geometry = common.submodule("wmo_geometry")
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -439,7 +440,7 @@ def group_files(r, path):
 def reread(path, files):
     from wowlib.formats import wmo as wwmo
     w = wwmo.WMO.for_version(client.VERSION)
-    gp = [k for k in sorted(files) if k != path and k.endswith(".wmo")]
+    gp = [k for k in sorted(files) if k != path and k.endswith(".wmo") and "_lod" not in k]
     w.read(files[path], [files[k] for k in gp])
     return w
 
@@ -715,6 +716,47 @@ def wmo_lod_delete_and_new_group_keep_tables():
     lod_check(new)
     t1 = lod_tables(new)
     assert [t[7] for t in t1[1:]] == [t[7] for t in lod_tables(w0)[1:]] and [t[n] for t in t1[1:]] == [0, 0, 0]
+
+
+def lod_objs(coll):
+    return {(o.parent.wow_wmo_group.index, o.wow_wmo_group.lod): o for o in coll.all_objects
+            if o.type == "MESH" and o.wow_wmo_group.lod > 0}
+
+
+@test
+def wmo_lod_import_roundtrip():
+    clear()
+    coll = wmo_import.load(LOD_PATH, {"doodads": False, "lods": True})
+    objs = lod_objs(coll)
+    assert sorted(objs) == [(0, 1), (0, 2), (7, 1), (7, 2), (7, 3)], sorted(objs)
+    w0 = wmo_expect(LOD_PATH)[0]
+    assert all(o.hide_viewport and o.parent is not None for o in objs.values())
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    bad = differing(r.files)
+    assert bad == [], (bad, str(r))
+
+
+@test
+def wmo_lod_edit_and_remove():
+    clear()
+    coll = wmo_import.load(LOD_PATH, {"doodads": False, "lods": True})
+    w0 = wmo_expect(LOD_PATH)[0]
+    objs = lod_objs(coll)
+    objs[(7, 3)].data.vertices[0].co.z += 0.25
+    bpy.data.objects.remove(objs[(0, 2)])
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(LOD_PATH, r.files)
+    lod_check(new)
+    t0, t1 = lod_tables(w0), lod_tables(new)
+    assert t1[2][0] == 0 and t1[1][0] == t0[1][0] and t1[3][7] == t0[3][7] and t1[1][7] == t0[1][7]
+    assert int(new.root.group_infos2[0].lod_index) & 0xFF == 1 and int(new.root.group_infos2[7].lod_index) & 0xFF == 3
+    built = [k for k in r.files if "_lod" in k]
+    assert len(built) == 1 and "_007_lod3" in built[0], built
+    bases = [r.files[k] for k in sorted(r.files) if k != LOD_PATH and "_lod" not in k]
+    lw = wmo_lod.level_wmo(r.files[LOD_PATH], bases, {7: r.files[built[0]]}).groups[7].body
+    assert not int(lw.header.flags) & 1 and int(lw.header.flags) & 0x400 and len(lw.bsp_nodes) == 0
 
 
 @test

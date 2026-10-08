@@ -42,6 +42,7 @@ class WowWmo(bpy.types.PropertyGroup):
     num_lod: IntProperty()
     is_new: BoolProperty()
     all_groups: BoolProperty(description="Every group was imported, so a missing group object deletes the group")
+    lods_imported: BoolProperty(description="LOD groups were imported, so a missing LOD object removes that LOD file")
     ambient_color: IntVectorProperty(size=4)
 
 
@@ -71,6 +72,7 @@ class WowWmoGroup(bpy.types.PropertyGroup):
     parent_split: IntProperty()
     next_split: IntProperty()
     fdid: IntProperty()
+    lod: IntProperty(min=0, description="LOD level this object is for (0 is the group itself); LOD objects are children of their group")
 
 
 class WowWmoPortal(bpy.types.PropertyGroup):
@@ -316,6 +318,7 @@ class WowImportOptions(bpy.types.PropertyGroup):
     lights: BoolProperty(name="Lights", default=True)
     portals: BoolProperty(name="Portals", default=True)
     liquids: BoolProperty(name="Liquids", default=True)
+    lods: BoolProperty(name="LOD groups", description="Import the _lodN group files as hidden child objects", default=False)
     group_filter: bpy.props.EnumProperty(
         name="Groups", default="ALL",
         items=[("ALL", "All", ""), ("EXTERIOR", "Exterior", ""), ("INTERIOR", "Interior", "")])

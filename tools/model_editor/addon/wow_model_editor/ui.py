@@ -41,6 +41,7 @@ class WOW_PT_browser(bpy.types.Panel):
         box.prop(o, "lights")
         box.prop(o, "portals")
         box.prop(o, "liquids")
+        box.prop(o, "lods")
         box.prop(o, "group_filter")
         box.prop(o, "doodad_meshes")
         if wm.wow_kind == "m2" or wm.wow_query.endswith(".m2"):

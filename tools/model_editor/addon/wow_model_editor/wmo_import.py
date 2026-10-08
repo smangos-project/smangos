@@ -314,7 +314,7 @@ def read(path):
 
 def load(client_path, options=None, parent=None):
     """Import `client_path` (e.g. world/wmo/cameron.wmo); returns the root collection."""
-    opts = {"doodads": True, "lights": True, "portals": True, "liquids": True, "group_filter": "ALL"}
+    opts = {"doodads": True, "lights": True, "portals": True, "liquids": True, "lods": False, "group_filter": "ALL"}
     opts.update(options or {})
     s = client.session()
     index.load(s.content, client.prefs().cache_dir)
@@ -339,6 +339,9 @@ def load(client_path, options=None, parent=None):
         import_lights(root, _link(top, "lights"))
     if opts["doodads"]:
         import_doodads(root, _link(top, "doodads"), opts.get("doodad_meshes"))
+    if opts["lods"]:
+        from . import wmo_lod
+        p.lods_imported = wmo_lod.import_lods(w, _link(top, "lods"), mats, group_objs, path, stem)
     if opts["liquids"]:
         lc = _link(top, "liquids")
         for ob in group_objs:

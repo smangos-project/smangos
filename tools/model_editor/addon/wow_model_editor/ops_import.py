@@ -39,7 +39,7 @@ def import_path(op, context, path, extra=None):
         elif path.endswith(".wmo"):
             from . import wmo_import
             wmo_import.load(path, {"doodads": o.doodads, "lights": o.lights, "portals": o.portals,
-                                   "liquids": o.liquids, "group_filter": o.group_filter,
+                                   "liquids": o.liquids, "lods": o.lods, "group_filter": o.group_filter,
                                    "doodad_meshes": o.doodad_meshes})
         else:
             op.report({"ERROR"}, f"{path} is not a .wmo/.m2")

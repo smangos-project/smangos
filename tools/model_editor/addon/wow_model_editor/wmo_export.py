@@ -11,7 +11,7 @@ import numpy as np
 import wowlib
 from wowlib.formats import wmo as wwmo
 
-from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import, wmo_root_export
+from . import client, fdids, index, textures, wmo_bsp, wmo_geometry as geo, wmo_import, wmo_lod, wmo_root_export
 from .props import u32
 from .report import Report as _Report
 
@@ -231,7 +231,7 @@ def apply_material(m, mat, tex):
 def update_materials(w, root, files, report):
     """Sync wow materials used by the group objects into MOMT; new materials are appended."""
     mats = {}
-    for ob in [*group_objects(root).values(), *new_group_objects(root)]:
+    for ob in [*group_objects(root).values(), *new_group_objects(root), *wmo_lod.lod_objects(root)]:
         for s in ob.material_slots:
             m = s.material
             if m is not None and not m.name.startswith(COLLISION_NAME):
@@ -325,7 +325,7 @@ def _set_box(box, lo, hi):
     box.max.x, box.max.y, box.max.z = (float(v) for v in hi)
 
 
-def apply_group(w, gi, arr, src, report):
+def apply_group(w, gi, arr, src, report, bsp=True):
     """Write rebuilt arrays into group `gi` and regenerate the derived data."""
     body = w.groups[gi].body
     h = body.header
@@ -378,7 +378,7 @@ def apply_group(w, gi, arr, src, report):
     h.int_batch_count = int((cls == geo.INT).sum())
     h.ext_batch_count = int((cls == geo.EXT).sum())
     tris = arr.indices.reshape(-1, 3)
-    nodes, faces = wmo_bsp.build(arr.vertices, tris)
+    nodes, faces = wmo_bsp.build(arr.vertices, tris) if bsp else ([], [])
     body.bsp_nodes.resize(len(nodes))
     if len(nodes):
         np.asarray(body.bsp_nodes)[...] = nodes
@@ -440,7 +440,7 @@ def check_antiportal(ob, report):
         report.add("INFO", ob.name, "named antiportal without the antiportal flag; flag set on export")
 
 
-def update_group(w, gi, ob, report, force):
+def update_group(w, gi, ob, report, force, bsp=True):
     body = w.groups[gi].body
     src = source_arrays(body)
     if is_antiportal(ob):
@@ -452,11 +452,13 @@ def update_group(w, gi, ob, report, force):
     c = mesh_corners(ob, ids, default_group_class(ob.wow_wmo_group.flags), src)
     c["src_class"], c["src_mat"] = cls, mats
     arr = geo.build_group(c)
+    if not bsp:
+        arr.poly_flags, arr.poly_mat = arr.poly_flags[:0], arr.poly_mat[:0]
     arr, changed = compare(arr, src)
     if not changed and not force:
         return False
     report.add("INFO", ob.name, "rebuilt: " + ", ".join(changed or ["forced"]))
-    apply_group(w, gi, arr, src, report)
+    apply_group(w, gi, arr, src, report, bsp)
     report.stats["groups_rebuilt"] += 1
     return True
 
@@ -678,6 +680,7 @@ def export(root, out_path=None, options=None):
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
     liquid_groups = wmo_root_export.update_root_objects(w, root, report)
+    remap = None
     order = group_order(root, w, deleted, report)
     if deleted or order is not None:
         remap = wmo_root_export.delete_groups(w, deleted, report, order)
@@ -689,7 +692,7 @@ def export(root, out_path=None, options=None):
         dirty.add(gi)
     if dirty or deleted:
         update_root_boxes(w)
-        wmo_root_export.clear_group_lods(w.root, dirty, report)
+    wmo_lod.apply_lods(w, root, path, report, files, remap, dirty)
     if report.errors:
         return report
     vr = w.validate()
