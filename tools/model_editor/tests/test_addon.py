@@ -1216,6 +1216,17 @@ def wmo_liquid_create():
 
 
 @test
+def wmo_stock_no_second_uv_warnings():
+    for path in REFS:
+        clear()
+        coll = wmo_import.load(path, {"doodads": False})
+        r = wmo_export.export(coll, options={"dry_run": True})
+        bad = [str(i) for i in r.items if "second UV" in i[2]]
+        assert not bad, bad[:3]
+    clear()
+
+
+@test
 def wmo_liquid_tile_type():
     path = REFS[1]
     clear()
