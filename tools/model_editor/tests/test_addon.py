@@ -646,16 +646,75 @@ def wmo_export_new_wmo():
     assert path in r.files and path.replace(".wmo", "_000.wmo") in r.files
 
 
+LOD_PATH = "world/wmo/dungeon/md_crypt/classic_md_crypt_d.wmo"
+
+
+def lod_tables(w):
+    n = len(w.root.group_infos)
+    ids = [int(x) for x in w.root.group_fdids]
+    return [ids[k:k + n] for k in range(0, len(ids), n)]
+
+
+def lod_check(new):
+    bad = [str(i.message) + str(i.path) for i in new.validate().issues if "light_extensions" not in str(i.path)]
+    assert not bad, "; ".join(bad)
+    n = len(new.groups)
+    assert len(new.root.group_fdids) == 4 * n and len(new.root.group_infos2) == n
+
+
 @test
-def wmo_export_lod_warning():
-    path = "world/wmo/dungeon/md_crypt/classic_md_crypt_d.wmo"
+def wmo_lod_roundtrip_unchanged():
     clear()
-    coll = wmo_import.load(path, {"doodads": False})
-    ob = mesh_groups(coll)[0]
-    ob.data.vertices[0].co.z += 0.5
+    coll = wmo_import.load(LOD_PATH, {"doodads": False})
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors and differing(r.files) == [], str(r)
+
+
+@test
+def wmo_lod_edit_drops_group_lods():
+    clear()
+    coll = wmo_import.load(LOD_PATH, {"doodads": False})
+    w0 = wmo_expect(LOD_PATH)[0]
+    mesh_groups(coll)[0].data.vertices[0].co.z += 0.5
     r = wmo_export.export(coll, options={"dry_run": True})
     assert not r.errors, str(r)
-    assert any("_lod1.wmo" in i[2] for i in r.items), str(r)
+    new = reread(LOD_PATH, r.files)
+    lod_check(new)
+    t0, t1 = lod_tables(w0), lod_tables(new)
+    assert t1[1][0] == 0 and t1[2][0] == 0 and t1[0] == t0[0]
+    assert [t[7] for t in t1] == [t[7] for t in t0]
+    assert not int(new.root.group_infos[0].flags) & 0x400 and int(new.root.group_infos[7].flags) & 0x400
+    assert int(new.root.group_infos2[0].lod_index) & 0xFF == 0 and int(new.root.group_infos2[7].lod_index) & 0xFF == 3
+
+
+@test
+def wmo_lod_delete_and_new_group_keep_tables():
+    clear()
+    coll = wmo_import.load(LOD_PATH, {"doodads": False})
+    w0 = wmo_expect(LOD_PATH)[0]
+    n = len(w0.groups)
+    bpy.data.objects.remove(mesh_groups(coll)[3])
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(LOD_PATH, r.files)
+    lod_check(new)
+    t0, t1 = lod_tables(w0), lod_tables(new)
+    assert [t[6] for t in t1[1:]] == [t[7] for t in t0[1:]] and [t[0] for t in t1[1:]] == [t[0] for t in t0[1:]]
+    assert len(t1[0]) == n - 1
+    clear()
+    coll = wmo_import.load(LOD_PATH, {"doodads": False})
+    src = mesh_groups(coll)[1]
+    ob = src.copy()
+    ob.data = src.data.copy()
+    ob.wow_wmo_group.index = -1
+    ob.name = "extra"
+    next(c for c in coll.children_recursive if c.name.split(".")[0] == "groups").objects.link(ob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(LOD_PATH, r.files)
+    lod_check(new)
+    t1 = lod_tables(new)
+    assert [t[7] for t in t1[1:]] == [t[7] for t in lod_tables(w0)[1:]] and [t[n] for t in t1[1:]] == [0, 0, 0]
 
 
 @test

@@ -478,7 +478,7 @@ def update_group_meta(w, gi, ob, report):
     want = (group_flags(ob) & ~derived) | (u32(int(h.flags)) & derived)
     if want != u32(int(h.flags)):
         h.flags = type(h.flags)(want)
-        info.flags = type(info.flags)(want)
+        info.flags = type(info.flags)(want | int(info.flags) & wmo_root_export.GROUP_LOD)
         report.add("INFO", ob.name, f"flags -> {want:#x}")
         changed = True
     ids = [int(x) for x in p.fog_ids]
@@ -515,6 +515,7 @@ def add_group(w, ob, path, report):
     """Append an empty group for `ob` (to be filled by update_group); returns its index."""
     gi = len(w.groups)
     w.groups.new()
+    wmo_root_export.append_group_info(w.root, fdids.allocate(group_path(path, gi)))
     info = w.root.group_infos.new()
     p = ob.wow_wmo_group
     flags = group_flags(ob) or F_EXTERIOR
@@ -527,7 +528,6 @@ def add_group(w, ob, path, report):
     h.unique_id = 0
     h.group_liquid = p.group_liquid
     h.batch_type_d = 0
-    w.root.group_fdids.append(fdids.allocate(group_path(path, gi)))
     report.new_groups[ob.name] = gi
     return gi
 
@@ -540,6 +540,19 @@ def update_root_boxes(w):
         _set_box(w.root.header.bounding_box, boxes[:, :3].min(axis=0), boxes[:, 3:].max(axis=0))
 
 
+def check_lod_tables(w, report):
+    r = w.root
+    n = len(r.group_infos)
+    if len(r.group_infos2) and len(r.group_infos2) != n:
+        report.add("ERROR", "lods", f"{len(r.group_infos2)} MGI2 entries for {n} groups")
+    if int(r.header.flags) & wmo_root_export.HAS_LOD:
+        levels = int(r.header.num_lod) or 3
+        if len(r.group_fdids) != levels * n:
+            report.add("ERROR", "lods", f"GFID has {len(r.group_fdids)} entries, expected {levels} tables of {n}")
+    elif len(r.group_fdids) != n:
+        report.add("WARNING", "lods", f"GFID has {len(r.group_fdids)} entries for {n} groups")
+
+
 def check_output(w, report):
     """Cross-checks the structural validator does not cover: material ranges and texture ids."""
     n = len(w.root.materials)
@@ -548,6 +561,7 @@ def check_output(w, report):
             m = b.material_id_large if b.flags & wmo_import.BATCH_LARGE_MATERIAL else b.material_id
             if m >= n and m != 0xFF:
                 report.add("ERROR", f"group {gi}", f"batch material {m} out of range ({n} materials)")
+    check_lod_tables(w, report)
     custom = fdids.read()
     for mi, m in enumerate(w.root.materials):
         for f in TEXTURE_FIELDS:
@@ -559,15 +573,6 @@ def check_output(w, report):
             wd, ht = struct.unpack_from("<II", data, 12)
             if wd & (wd - 1) or ht & (ht - 1):
                 report.add("WARNING", path, f"texture size {wd}x{ht} is not a power of two")
-
-
-def warn_stale_lods(path, dirty, report):
-    """LOD group files are not exported; they stay as in Content and go stale when their group changes."""
-    content = Path(client.session().content)
-    for gi in sorted(dirty):
-        base = Path(group_path(path, gi))
-        for lod in (content / base.parent).glob(base.stem + "_lod*.wmo"):
-            report.add("WARNING", f"group {gi}", f"{lod.name} is not updated and no longer matches the edited group")
 
 
 def patch_set_names(root_bytes, names):
@@ -684,8 +689,7 @@ def export(root, out_path=None, options=None):
         dirty.add(gi)
     if dirty or deleted:
         update_root_boxes(w)
-        if not p.is_new:
-            warn_stale_lods(path, dirty, report)
+        wmo_root_export.clear_group_lods(w.root, dirty, report)
     if report.errors:
         return report
     vr = w.validate()

@@ -242,6 +242,64 @@ def compact(vec, keep):
     return {old: new for new, old in enumerate(keep)}
 
 
+HAS_LOD = 0x10
+GROUP_LOD = 0x400
+
+
+def lod_tables(r):
+    """GFID as `tables[lod][group]`; a root without the Lod flag has the base table only."""
+    ids = [int(x) for x in r.group_fdids]
+    n = len(r.group_infos)
+    if not int(r.header.flags) & HAS_LOD or n == 0:
+        return [ids]
+    ids += [0] * (-len(ids) % n)
+    return [ids[k:k + n] for k in range(0, len(ids), n)]
+
+
+def set_lod_tables(r, tables):
+    _set_vec_ints(r.group_fdids, [v for t in tables for v in t])
+
+
+def append_group_info(r, base_fdid):
+    """Registers a new group in GFID (no LOD files) and MGI2; call before adding its group info."""
+    tables = lod_tables(r)
+    tables[0].append(base_fdid)
+    for t in tables[1:]:
+        t.append(0)
+    set_lod_tables(r, tables)
+    if len(r.group_infos2):
+        r.group_infos2.new()
+
+
+def clear_group_lods(r, groups, report=None):
+    """Drops the LOD files of `groups`: the base group then draws at every distance."""
+    tables = lod_tables(r)
+    cleared = []
+    for gi in sorted(groups):
+        if any(t[gi] for t in tables[1:]) or int(r.group_infos[gi].flags) & GROUP_LOD:
+            cleared.append(gi)
+            for t in tables[1:]:
+                t[gi] = 0
+            r.group_infos[gi].flags = type(r.group_infos[gi].flags)(int(r.group_infos[gi].flags) & ~GROUP_LOD)
+            if len(r.group_infos2):
+                r.group_infos2[gi].lod_index = int(r.group_infos2[gi].lod_index) & ~0xFF
+    if cleared and report:
+        report.add("INFO", "lods", f"LOD files of groups {cleared} dropped because the groups changed")
+    set_lod_tables(r, tables)
+    prune_lod_header(r)
+
+
+def prune_lod_header(r):
+    """Removes the Lod flag and empty LOD tables once no group has a LOD file."""
+    tables = lod_tables(r)
+    if int(r.header.flags) & HAS_LOD and not any(any(t) for t in tables[1:]):
+        r.header.flags = type(r.header.flags)(int(r.header.flags) & ~HAS_LOD)
+        r.header.num_lod = 0
+        set_lod_tables(r, tables[:1])
+        for info in r.group_infos:
+            info.flags = type(info.flags)(int(info.flags) & ~GROUP_LOD)
+
+
 def _set_vec_ints(vec, vals):
     vec.resize(len(vals))
     for i, v in enumerate(vals):
@@ -573,6 +631,7 @@ def delete_groups(w, gone, report, order=None):
     `order` lists the surviving old indices in their new order (default: unchanged)."""
     r = w.root
     n = len(w.groups)
+    tables = lod_tables(r)
     order = [i for i in (order if order is not None else range(n)) if i not in gone]
     remap = {old: new for new, old in enumerate(order)}
     dead_portals = {int(x.portal_index) for x in r.portal_refs if int(x.group_index) in gone}
@@ -607,6 +666,8 @@ def delete_groups(w, gone, report, order=None):
         for g in groups:
             w.groups.append(g)
         compact(r.group_infos, order)
+        if len(r.group_infos2):
+            compact(r.group_infos2, order)
     for g in w.groups:
         h = g.body.header
         for f in ("parent_or_first_child_split_group_index", "next_split_child_group_index"):
@@ -615,8 +676,7 @@ def delete_groups(w, gone, report, order=None):
                 setattr(h, f, remap[v])
             elif v in gone:
                 setattr(h, f, 0xFFFF)
-    ids = [int(x) for x in r.group_fdids][:len(remap)]
-    _set_vec_ints(r.group_fdids, ids)
+    set_lod_tables(r, [tables[0][:len(remap)]] + [[t[i] for i in order] for t in tables[1:]])
     if gone:
         report.add("INFO", "groups", f"{len(gone)} groups deleted, {len(dead_portals)} portals removed")
     return remap
