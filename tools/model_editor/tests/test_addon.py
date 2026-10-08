@@ -587,6 +587,12 @@ def wmo_export_antiportal():
     assert wmo_import._string(new.root.group_names, h.group_name) == "antiportal"
     assert new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
 
+    ob.wow_wmo_group.flags = 0x8
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert any("flag set on export" in i[2] for i in r.items), str(r)
+    new = reread(path, r.files)
+    assert int(new.root.group_infos[n].flags) & 0x4000080 == 0x4000080
+
 
 @test
 def wmo_export_new_group():

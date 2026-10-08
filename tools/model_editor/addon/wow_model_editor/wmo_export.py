@@ -17,7 +17,7 @@ from .report import Report as _Report
 
 BBOX_PAD = 0.028
 F_BSP, F_COLOR, F_EXTERIOR, F_INTERIOR = 0x1, 0x4, 0x8, 0x2000
-F_ANTIPORTAL = 0x4000000
+F_ANTIPORTAL, F_UNREACHABLE = 0x4000000, 0x80
 COLLISION_NAME = "wow_collision"
 
 
@@ -351,6 +351,8 @@ def apply_group(w, gi, arr, src, report):
     body.indices.resize(len(arr.indices))
     if len(arr.indices):
         np.asarray(body.indices)[...] = arr.indices.astype(np.uint16)
+    if len(body.large_indices):
+        body.large_indices.resize(0)
     nf = len(arr.poly_flags)
     if src["mpy2"]:
         body.polys.resize(0)
@@ -422,14 +424,20 @@ def is_antiportal(ob):
     return bool(u32(p.flags) & F_ANTIPORTAL) or p.group_name == "antiportal"
 
 
+def group_flags(ob):
+    """The group's flags; antiportals always carry the antiportal flag, which the client reads from MOGI."""
+    f = u32(ob.wow_wmo_group.flags)
+    return f | F_ANTIPORTAL | F_UNREACHABLE if is_antiportal(ob) else f
+
+
 def check_antiportal(ob, report):
     """Antiportals are occluder geometry: the client draws no batches for them, so materials are ignored."""
     if len(ob.data.polygons) == 0:
-        report.add("WARNING", ob.name, "antiportal has no faces")
+        report.add("WARNING", ob.name, "antiportal has no faces and occludes nothing")
     if any(s.material is not None for s in ob.material_slots):
         report.add("WARNING", ob.name, "antiportal materials are ignored")
     if not u32(ob.wow_wmo_group.flags) & F_ANTIPORTAL:
-        report.add("INFO", ob.name, "named antiportal without the antiportal flag; the client sets the flag itself")
+        report.add("INFO", ob.name, "named antiportal without the antiportal flag; flag set on export")
 
 
 def update_group(w, gi, ob, report, force):
@@ -467,7 +475,7 @@ def update_group_meta(w, gi, ob, report):
                 info.name_offset = h.group_name
             changed = True
     derived = F_BSP | F_COLOR
-    want = (u32(p.flags) & ~derived) | (u32(int(h.flags)) & derived)
+    want = (group_flags(ob) & ~derived) | (u32(int(h.flags)) & derived)
     if want != u32(int(h.flags)):
         h.flags = type(h.flags)(want)
         info.flags = type(info.flags)(want)
@@ -509,7 +517,7 @@ def add_group(w, ob, path, report):
     w.groups.new()
     info = w.root.group_infos.new()
     p = ob.wow_wmo_group
-    flags = u32(p.flags) or F_EXTERIOR
+    flags = group_flags(ob) or F_EXTERIOR
     h = w.groups[gi].body.header
     h.flags = type(h.flags)(flags)
     h.group_name = w.root.group_names.add(p.group_name)
