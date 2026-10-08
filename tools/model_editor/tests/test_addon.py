@@ -1643,6 +1643,26 @@ def m2_second_uv_and_env_mapping():
 
 
 @test
+def m2_shader_preset_and_validation():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    p0 = mat.wow_m2_batches[0]
+    with bpy.context.temp_override(material=mat):
+        assert bpy.ops.wow.m2_set_shader_preset(preset="14:2", index=0) == {"FINISHED"}
+    assert (p0.shader_id, p0.texture_count) == (14, 2)
+    r = m2_export.export(top, options={"dry_run": True})
+    bi = next(b for b in r.model.skins[0].profile.batches if b.skin_section_index == p0.skin_section_index)
+    assert int(bi.shader_id) == 14 and int(bi.texture_count) == 2
+    bi.texture_count = 7
+    rep = types.SimpleNamespace(items=[], add=lambda *a, **k: rep.items.append(a))
+    common.submodule("m2_validate").check_model(r.model, rep)
+    assert any("texture count 7" in i[2] for i in rep.items), rep.items
+    clear()
+
+
+@test
 def m2_material_layer_add_remove():
     path = find_m2("duskwoodlamppost.m2")
     clear()

@@ -73,6 +73,9 @@ def check_model(m, report):
                 report.add("WARNING", f"skin {si} submesh {j}", f"uses {sm.bone_count} bones (client limit {MAX_SUBMESH_BONES})")
             if not sm.index_count:
                 report.add("WARNING", f"skin {si} submesh {j}", "is empty")
+        for j, b in enumerate(skin.profile.batches):
+            if not 1 <= int(b.texture_count) <= 4:
+                report.add("WARNING", f"skin {si} batch {j}", f"texture count {int(b.texture_count)} (shader {int(b.shader_id):#x})")
     fd = list(m.chunks.texture_fdids)
     for i, t in enumerate(root.textures):
         if int(t.type) == 0 and not (i < len(fd) and fd[i]) and not t.filename:

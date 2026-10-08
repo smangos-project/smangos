@@ -317,6 +317,31 @@ class WOW_OT_wmo_mark_collision(bpy.types.Operator):
         return {"FINISHED"}
 
 
+SHADER_PRESETS = (("0:1", "Opaque (0)", "Single texture"), ("16:1", "Diffuse (16)", "Single texture"),
+                  ("14:2", "Two-layer (14)", "Two textures"), ("7:2", "Env two-layer (7)", "Two textures"),
+                  ("32768:2", "Combiner 0x8000", "Two textures"), ("32769:2", "Combiner 0x8001", "Two textures"),
+                  ("16404:2", "Combiner 0x4014", "Two textures"), ("144:1", "Single (0x90)", "Single texture"))
+
+
+class WOW_OT_m2_set_shader_preset(bpy.types.Operator):
+    bl_idname = "wow.m2_set_shader_preset"
+    bl_label = "Set shader preset"
+    bl_description = "Set the active batch's shader id and texture count to a combination found in stock models"
+    bl_options = {"REGISTER", "UNDO"}
+    preset: EnumProperty(items=SHADER_PRESETS)
+    index: IntProperty(default=0, min=0)
+
+    @classmethod
+    def poll(cls, context):
+        return context.material is not None and len(context.material.wow_m2_batches) > 0
+
+    def execute(self, context):
+        b = context.material.wow_m2_batches[min(self.index, len(context.material.wow_m2_batches) - 1)]
+        shader, count = (int(x) for x in self.preset.split(":"))
+        b.shader_id, b.texture_count = shader, count
+        return {"FINISHED"}
+
+
 LIQUID_TYPES = (("0", "Water", ""), ("1", "Ocean", ""), ("2", "Magma", ""), ("3", "Slime", ""))
 TILE_TYPE_MASK, TILE_NO_RENDER, TILE_FISHABLE = 0x07, 0x08, 0x40
 
@@ -422,7 +447,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_wmo_mark_collision, WOW_OT_wmo_set_liquid_tile, WOW_OT_generate_wmo_lods, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_m2_set_shader_preset, WOW_OT_wmo_mark_collision, WOW_OT_wmo_set_liquid_tile, WOW_OT_generate_wmo_lods, WOW_MT_add)
 
 
 def register():

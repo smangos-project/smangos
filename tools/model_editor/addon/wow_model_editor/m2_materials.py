@@ -237,6 +237,7 @@ class WOW_PT_m2_material(bpy.types.Panel):
             row.label(text=f"Batch {p.batch_index}: layer {p.material_layer}, {m2_names.BLENDING[p.blending_mode % 8]}")
             row.operator("wow.remove_m2_batch", text="", icon="X").index = i
             col = box.column(align=True)
+            col.operator_menu_enum("wow.m2_set_shader_preset", "preset", text="Shader preset").index = i
             for name in ("flags", "shader_id", "priority_plane", "render_flags", "texture_count", "texture_fdids",
                          "texture_types", "uv_sets", "material_layer", "blending_mode", "preview_color", "preview_weight",
                          "preview_uv_offset", "preview_uv_scale"):
