@@ -497,5 +497,96 @@ public sealed class GameEventSpawnKeys : ITableConfiguration
         model.Entity<GameEventCreatureRecord>().HasKey(r => new { r.Event, r.Guid });
         model.Entity<GameEventGameobjectRecord>().HasKey(r => new { r.Event, r.Guid });
         model.Entity<GameEventQuestRecord>().HasKey(r => new { r.Event, r.Quest });
+        model.Entity<GameEventCreatureDataRecord>().HasKey(r => new { r.Event, r.Guid });
+        model.Entity<GameEventMailRecord>().HasKey(r => new { r.Event, r.RaceMask, r.Quest });
+    }
+}
+
+/// <summary>One `game_event_creature_data` override of a spawn during an event.</summary>
+public readonly record struct EventCreatureDataRow
+{
+    public int Guid { get; init; }
+    public int EntryId { get; init; }
+    public int DisplayId { get; init; }
+    public int EquipmentId { get; init; }
+    public int SpellStart { get; init; }
+    public int SpellEnd { get; init; }
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventCreatureDataFactory : PlayerRowsFactory<GameEventCreatureDataRecord, EventCreatureDataRow>
+{
+    public GameEventCreatureDataFactory(WorldStorage storage)
+        : base(storage, ["Creature Guid", "Entry Id", "Display Id", "Equipment Id", "Spell Start", "Spell End"])
+    {
+    }
+
+    public override string CatalogName => "Game Event Creature Data";
+
+    protected override System.Linq.Expressions.Expression<Func<GameEventCreatureDataRecord, int>> EntryExpression() => r => r.Event;
+
+    protected override void SetEntry(GameEventCreatureDataRecord r, int entry) => r.Event = entry;
+
+    protected override EventCreatureDataRow ToRow(GameEventCreatureDataRecord r) => new()
+    {
+        Guid = r.Guid, EntryId = r.EntryId, DisplayId = r.DisplayId,
+        EquipmentId = r.EquipmentId, SpellStart = r.SpellStart, SpellEnd = r.SpellEnd,
+    };
+
+    protected override void WriteRow(EventCreatureDataRow row, GameEventCreatureDataRecord r)
+    {
+        r.EntryId = row.EntryId;
+        r.DisplayId = row.DisplayId;
+        r.EquipmentId = row.EquipmentId;
+        r.SpellStart = row.SpellStart;
+        r.SpellEnd = row.SpellEnd;
+    }
+
+    protected override void WriteKey(EventCreatureDataRow row, GameEventCreatureDataRecord r) => r.Guid = row.Guid;
+
+    protected override IEnumerable<EventCreatureDataRow> Order(IEnumerable<EventCreatureDataRow> rows) =>
+        System.Linq.Enumerable.OrderBy(rows, r => r.Guid);
+}
+
+/// <summary>One `game_event_mail` row.</summary>
+public readonly record struct EventMailRow
+{
+    public int RaceMask { get; init; }
+    public int Quest { get; init; }
+    public int MailTemplateId { get; init; }
+    public int SenderEntry { get; init; }
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventMailFactory : PlayerRowsFactory<GameEventMailRecord, EventMailRow>
+{
+    public GameEventMailFactory(WorldStorage storage)
+        : base(storage, ["Race Mask", "Quest", "Mail Template Id", "Sender Entry"])
+    {
+    }
+
+    public override string CatalogName => "Game Event Mail";
+
+    protected override object KeyOf(EventMailRow row) => (row.RaceMask, row.Quest);
+
+    protected override System.Linq.Expressions.Expression<Func<GameEventMailRecord, int>> EntryExpression() => r => r.Event;
+
+    protected override void SetEntry(GameEventMailRecord r, int entry) => r.Event = entry;
+
+    protected override EventMailRow ToRow(GameEventMailRecord r) => new()
+    {
+        RaceMask = r.RaceMask, Quest = r.Quest, MailTemplateId = r.MailTemplateId, SenderEntry = r.SenderEntry,
+    };
+
+    protected override void WriteRow(EventMailRow row, GameEventMailRecord r)
+    {
+        r.MailTemplateId = row.MailTemplateId;
+        r.SenderEntry = row.SenderEntry;
+    }
+
+    protected override void WriteKey(EventMailRow row, GameEventMailRecord r)
+    {
+        r.RaceMask = row.RaceMask;
+        r.Quest = row.Quest;
     }
 }

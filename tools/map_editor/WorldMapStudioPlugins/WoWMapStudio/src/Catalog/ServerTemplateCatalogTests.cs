@@ -197,6 +197,30 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Start_position_event_mail_and_ai_script_round_trip()
+    {
+        var positions = new StartPositionFactory(null!);
+        StartPositionTable pos = positions.CallToEntity(1001, [new PlayercreateinfoRecord { Race = 1, Class = 1, Map = 0, PositionX = 2.5f }]);
+        Assert.AreEqual(2.5f, pos.Rows[0].X);
+        var changed = new System.Collections.Generic.List<PlayercreateinfoRecord>();
+        positions.CallDiff(1001, [new PlayercreateinfoRecord { Race = 1, Class = 1 }],
+            [new StartPositionRow { X = 7 }], _ => { }, changed.Add);
+        Assert.AreEqual(0, changed.Count);
+
+        var mail = new GameEventMailFactory(null!);
+        PlayerRowTable<EventMailRow> mt = mail.CallToEntity(4, [new GameEventMailRecord { Event = 4, RaceMask = 3, Quest = 8, SenderEntry = 55 }]);
+        Assert.AreEqual(55, mt.Rows[0].SenderEntry);
+
+        var data = new GameEventCreatureDataFactory(null!);
+        PlayerRowTable<EventCreatureDataRow> dt = data.CallToEntity(4, [new GameEventCreatureDataRecord { Event = 4, Guid = 6, DisplayId = 9 }]);
+        Assert.AreEqual(9, dt.Rows[0].DisplayId);
+
+        var ai = new CreatureAiScriptFactory(null!);
+        ScriptTable at = ai.CallToEntity(2, [new CreatureAiScriptsRecord { Id = 2, Command = 4, Datalong2 = 5 }]);
+        Assert.AreEqual(5, at.Rows[0].Datalong2);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);

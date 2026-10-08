@@ -20,3 +20,5 @@ Order (value first):
 - Tests go beside ServerTemplateCatalogTests.cs (round-trip via internal CallToEntity/CallWrite); run `tools/map_editor/wms-test.sh --filter 'WoW Catalog'`.
 - Loot done (cf425f6b4); creature_template LootId links to "Creature Loot". Item column in loot rows is a plain int (no Item link yet).
 - Vendor/trainer done on shared EntryRowsFactory<TRecord,TTable,TRow> (Catalog/EntryRows); trainer tables are keyless in the DB so TrainerTableKeys (ITableConfiguration) keys them on (entry,spell). New child-row catalog = subclass EntryRowTable + EntryRowsFactory. Script mutators (e.AddRow(..)) currently fail in the sandbox with a Closure cast error, for Spell.AddEffect too (pre-existing).
+
+- [x] 10 Remaining tables done: Creature AI Script, Game Event Creature Data/Mail, Start Position. Catalog expansion complete.

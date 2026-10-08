@@ -76,7 +76,7 @@ public abstract class ScriptFactory<TRecord> : EntryRowsFactory<TRecord, ScriptT
         System.Reflection.PropertyInfo[] rowProps = typeof(ScriptRow).GetProperties();
         for (int i = 0; i < rowProps.Length; i++)
         {
-            rowProps[i].SetValue(row, Props[i].GetValue(r));
+            rowProps[i].SetValue(row, Convert.ChangeType(Props[i].GetValue(r), rowProps[i].PropertyType));
         }
 
         return (ScriptRow)row;
@@ -91,7 +91,7 @@ public abstract class ScriptFactory<TRecord> : EntryRowsFactory<TRecord, ScriptT
         System.Reflection.PropertyInfo[] rowProps = typeof(ScriptRow).GetProperties();
         for (int i = 0; i < rowProps.Length; i++)
         {
-            Props[i].SetValue(r, rowProps[i].GetValue(row));
+            Props[i].SetValue(r, Convert.ChangeType(rowProps[i].GetValue(row), Props[i].PropertyType));
         }
     }
 
@@ -152,6 +152,16 @@ public sealed class GenericScriptFactory : ScriptFactory<GenericScriptsRecord>
     }
 
     public override string CatalogName => "Generic Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureAiScriptFactory : ScriptFactory<CreatureAiScriptsRecord>
+{
+    public CreatureAiScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature AI Script";
 }
 
 [Subsystem(nameof(WorldStorage))]
@@ -263,6 +273,7 @@ public sealed class ScriptTableKeys : ITableConfiguration
         Key<QuestEndScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
         Key<CreatureSpellsScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
         Key<CreatureMovementScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<CreatureAiScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
         Key<AreatriggerScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
     }
 
