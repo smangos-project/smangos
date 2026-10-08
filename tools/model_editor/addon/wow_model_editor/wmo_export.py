@@ -464,6 +464,18 @@ def update_group_meta(w, gi, ob, report):
     return changed
 
 
+def group_order(root, w, deleted, report):
+    """Surviving old group indices sorted by their objects' `position` (unset: current index), or None if unchanged."""
+    by_index = group_objects(root)
+    by_index.update({gi: o for o in new_group_objects(root) if (gi := report.new_groups.get(o.name)) is not None})
+    keys = {}
+    for gi in range(len(w.groups)):
+        pos = by_index[gi].wow_wmo_group.position if gi in by_index else -1
+        keys[gi] = pos if pos >= 0 else gi
+    order = sorted((gi for gi in keys if gi not in deleted), key=lambda g: (keys[g], g))
+    return None if order == sorted(order) else order
+
+
 def new_group_objects(root):
     """Mesh objects in the groups collection without a group index; they are appended as new groups."""
     objs = [o for c in root.children_recursive if c.name.split(".")[0] == "groups" for o in c.objects
@@ -633,8 +645,9 @@ def export(root, out_path=None, options=None):
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
     liquid_groups = wmo_root_export.update_root_objects(w, root, report)
-    if deleted:
-        remap = wmo_root_export.delete_groups(w, deleted, report)
+    order = group_order(root, w, deleted, report)
+    if deleted or order is not None:
+        remap = wmo_root_export.delete_groups(w, deleted, report, order)
         dirty = {remap[g] for g in dirty if g in remap}
         liquid_groups = [remap[g] for g in liquid_groups if g in remap]
         report.new_groups = {k: remap[v] for k, v in report.new_groups.items()}

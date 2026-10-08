@@ -567,14 +567,14 @@ def update_header(w, root, report):
     return changed
 
 
-def delete_groups(w, gone, report):
-    """Drops groups `gone` with their group info, portals touching them and every reference to them; returns {old: new}."""
+def delete_groups(w, gone, report, order=None):
+    """Drops groups `gone` with their group info, portals touching them and every reference to them; returns {old: new}.
+
+    `order` lists the surviving old indices in their new order (default: unchanged)."""
     r = w.root
     n = len(w.groups)
-    remap = {}
-    for i in range(n):
-        if i not in gone:
-            remap[i] = len(remap)
+    order = [i for i in (order if order is not None else range(n)) if i not in gone]
+    remap = {old: new for new, old in enumerate(order)}
     dead_portals = {int(x.portal_index) for x in r.portal_refs if int(x.group_index) in gone}
     for gi in gone:
         h = w.groups[gi].body.header
@@ -595,15 +595,18 @@ def delete_groups(w, gone, report):
         for v in vs:
             r.portal_vertices.append(v)
     r.portal_refs.clear()
-    for gi in remap:
+    for gi in order:
         h = w.groups[gi].body.header
         h.portal_start, h.portal_count = len(r.portal_refs), len(refs[gi])
         for pi, other, side in refs[gi]:
             e = r.portal_refs.new()
             e.portal_index, e.group_index, e.side = pi, other, side
-    for gi in sorted(gone, reverse=True):
-        w.groups.pop(gi)
-        r.group_infos.pop(gi)
+    if order != list(range(n)):
+        groups = [copy.copy(w.groups[i]) for i in order]
+        w.groups.clear()
+        for g in groups:
+            w.groups.append(g)
+        compact(r.group_infos, order)
     for g in w.groups:
         h = g.body.header
         for f in ("parent_or_first_child_split_group_index", "next_split_child_group_index"):
@@ -614,7 +617,8 @@ def delete_groups(w, gone, report):
                 setattr(h, f, 0xFFFF)
     ids = [int(x) for x in r.group_fdids][:len(remap)]
     _set_vec_ints(r.group_fdids, ids)
-    report.add("INFO", "groups", f"{len(gone)} groups deleted, {len(dead_portals)} portals removed")
+    if gone:
+        report.add("INFO", "groups", f"{len(gone)} groups deleted, {len(dead_portals)} portals removed")
     return remap
 
 

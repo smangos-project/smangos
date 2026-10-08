@@ -767,6 +767,29 @@ def wmo_group_delete():
 
 
 @test
+def wmo_group_reorder():
+    path = REFS[1]
+    coll, r = export_files(path)
+    w0 = wmo_expect(path)[0]
+    n = len(w0.groups)
+    objs = {o.wow_wmo_group.index: o for o in coll.all_objects if o.type == "MESH" and o.wow_wmo_group.index >= 0}
+    objs[0].wow_wmo_group.position = 2
+    objs[2].wow_wmo_group.position = 0
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.groups) == n
+    for a, b in ((0, 2), (2, 0), (1, 1)):
+        assert len(new.groups[a].body.vertices) == len(w0.groups[b].body.vertices)
+    assert new.validate().ok, "; ".join(str(i.message) + str(i.path) for i in new.validate().issues)
+    assert len(new.root.portals) == len(w0.root.portals)
+    assert sum(int(g.body.header.portal_count) for g in new.groups) == len(new.root.portal_refs)
+    old_pairs = sorted((int(x.group_index) for x in w0.root.portal_refs))
+    swap = {0: 2, 2: 0}
+    assert sorted(int(x.group_index) for x in new.root.portal_refs) == sorted(swap.get(g, g) for g in old_pairs)
+
+
+@test
 def wmo_material_flag_toggle():
     path = REFS[0]
     coll, _ = export_files(path)

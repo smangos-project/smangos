@@ -53,6 +53,7 @@ class WowPortalRef(bpy.types.PropertyGroup):
 
 class WowWmoGroup(bpy.types.PropertyGroup):
     index: IntProperty(default=-1)
+    position: IntProperty(default=-1, min=-1, description="Output group index; -1 keeps the current order")
     flags: IntProperty()
     flags2: IntProperty()
     group_liquid: IntProperty()
