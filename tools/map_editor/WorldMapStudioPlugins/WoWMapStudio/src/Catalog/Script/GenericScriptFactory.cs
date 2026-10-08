@@ -57,37 +57,42 @@ public sealed class ScriptTable : EntryRowTable<ScriptRow>
     });
 }
 
-[Subsystem(nameof(WorldStorage))]
-public sealed class GenericScriptFactory : EntryRowsFactory<GenericScriptsRecord, ScriptTable, ScriptRow>
+/// <summary>The script tables share their columns, so one factory covers them all.</summary>
+public abstract class ScriptFactory<TRecord> : EntryRowsFactory<TRecord, ScriptTable, ScriptRow>
+    where TRecord : class, new()
 {
-    public GenericScriptFactory(WorldStorage storage) : base(storage)
+    private static readonly System.Reflection.PropertyInfo[] Props = typeof(ScriptRow).GetProperties()
+        .Select(p => typeof(TRecord).GetProperty(p.Name)!).ToArray();
+
+    protected ScriptFactory(WorldStorage storage) : base(storage)
     {
     }
-
-    public override string CatalogName => "Generic Script";
 
     protected override ScriptTable NewTable(int entry) => new(Kind) { ID = entry };
 
-    protected override ScriptRow ToRow(GenericScriptsRecord r) => new()
+    protected override ScriptRow ToRow(TRecord r)
     {
-        Delay = r.Delay, Priority = r.Priority, Command = r.Command,
-        Datalong = r.Datalong, Datalong2 = r.Datalong2, Datalong3 = r.Datalong3, Datalong4 = r.Datalong4,
-        TargetParam1 = r.TargetParam1, TargetParam2 = r.TargetParam2, TargetType = r.TargetType,
-        DataFlags = r.DataFlags, Dataint = r.Dataint, Dataint2 = r.Dataint2, Dataint3 = r.Dataint3, Dataint4 = r.Dataint4,
-        X = r.X, Y = r.Y, Z = r.Z, O = r.O, ConditionId = r.ConditionId,
-    };
+        object row = new ScriptRow();
+        System.Reflection.PropertyInfo[] rowProps = typeof(ScriptRow).GetProperties();
+        for (int i = 0; i < rowProps.Length; i++)
+        {
+            rowProps[i].SetValue(row, Props[i].GetValue(r));
+        }
 
-    protected override void WriteRow(ScriptRow row, GenericScriptsRecord r)
+        return (ScriptRow)row;
+    }
+
+    protected override void WriteRow(ScriptRow row, TRecord r)
     {
     }
 
-    protected override void WriteKey(ScriptRow row, GenericScriptsRecord r)
+    protected override void WriteKey(ScriptRow row, TRecord r)
     {
-        r.Delay = row.Delay; r.Priority = row.Priority; r.Command = row.Command;
-        r.Datalong = row.Datalong; r.Datalong2 = row.Datalong2; r.Datalong3 = row.Datalong3; r.Datalong4 = row.Datalong4;
-        r.TargetParam1 = row.TargetParam1; r.TargetParam2 = row.TargetParam2; r.TargetType = row.TargetType;
-        r.DataFlags = row.DataFlags; r.Dataint = row.Dataint; r.Dataint2 = row.Dataint2; r.Dataint3 = row.Dataint3; r.Dataint4 = row.Dataint4;
-        r.X = row.X; r.Y = row.Y; r.Z = row.Z; r.O = row.O; r.ConditionId = row.ConditionId;
+        System.Reflection.PropertyInfo[] rowProps = typeof(ScriptRow).GetProperties();
+        for (int i = 0; i < rowProps.Length; i++)
+        {
+            Props[i].SetValue(r, rowProps[i].GetValue(row));
+        }
     }
 
     protected override object KeyOf(ScriptRow row) => row;
@@ -139,19 +144,128 @@ public sealed class GenericScriptFactory : EntryRowsFactory<GenericScriptsRecord
     }
 }
 
-/// <summary>Keys the keyless `generic_scripts` table on all its columns.</summary>
 [Subsystem(nameof(WorldStorage))]
-public sealed class GenericScriptKeys : ITableConfiguration
+public sealed class GenericScriptFactory : ScriptFactory<GenericScriptsRecord>
 {
-    public GenericScriptKeys(WorldStorage storage)
+    public GenericScriptFactory(WorldStorage storage) : base(storage)
     {
     }
 
-    public void Configure(ModelBuilder model) =>
-        model.Entity<GenericScriptsRecord>().HasKey(r => new
-        {
-            r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4,
-            r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4,
-            r.X, r.Y, r.Z, r.O, r.ConditionId,
-        });
+    public override string CatalogName => "Generic Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class EventScriptFactory : ScriptFactory<EventScriptsRecord>
+{
+    public EventScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Event Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class SpellScriptFactory : ScriptFactory<SpellScriptsRecord>
+{
+    public SpellScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Spell Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GossipScriptFactory : ScriptFactory<GossipScriptsRecord>
+{
+    public GossipScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Gossip Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameObjectScriptFactory : ScriptFactory<GameobjectScriptsRecord>
+{
+    public GameObjectScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "GameObject Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class QuestStartScriptFactory : ScriptFactory<QuestStartScriptsRecord>
+{
+    public QuestStartScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Quest Start Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class QuestEndScriptFactory : ScriptFactory<QuestEndScriptsRecord>
+{
+    public QuestEndScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Quest End Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureSpellScriptFactory : ScriptFactory<CreatureSpellsScriptsRecord>
+{
+    public CreatureSpellScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature Spell Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureMovementScriptFactory : ScriptFactory<CreatureMovementScriptsRecord>
+{
+    public CreatureMovementScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature Movement Script";
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class AreatriggerScriptFactory : ScriptFactory<AreatriggerScriptsRecord>
+{
+    public AreatriggerScriptFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Areatrigger Script";
+}
+
+/// <summary>Keys the keyless script tables on all their columns.</summary>
+[Subsystem(nameof(WorldStorage))]
+public sealed class ScriptTableKeys : ITableConfiguration
+{
+    public ScriptTableKeys(WorldStorage storage)
+    {
+    }
+
+    public void Configure(ModelBuilder model)
+    {
+        Key<GenericScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<EventScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<SpellScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<GossipScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<GameobjectScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<QuestStartScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<QuestEndScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<CreatureSpellsScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<CreatureMovementScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+        Key<AreatriggerScriptsRecord>(model, r => new { r.Id, r.Delay, r.Priority, r.Command, r.Datalong, r.Datalong2, r.Datalong3, r.Datalong4, r.TargetParam1, r.TargetParam2, r.TargetType, r.DataFlags, r.Dataint, r.Dataint2, r.Dataint3, r.Dataint4, r.X, r.Y, r.Z, r.O, r.ConditionId });
+    }
+
+    private static void Key<T>(ModelBuilder model, System.Linq.Expressions.Expression<Func<T, object?>> key) where T : class =>
+        model.Entity<T>().HasKey(key);
 }

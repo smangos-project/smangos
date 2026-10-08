@@ -8,7 +8,7 @@ Order (value first):
 - [x] 5 Spawn extras: creature_addon, equip, pool_template, game_event, creature_groups, creature_linking done; pool membership done; game_event_creature/gameobject done; game_event_creature_data, mail, quest left
 - [x] 6 Player: Start Spells/Items/Actions, Level Stats, Class Level Stats (entry = race*1000+class); playercreateinfo position row not done
 - [x] 7 More DBC: Item Set, Lock, Enchantment, Talent, TalentTab, Holiday (RecordBackedFactory, record copy)
-- [~] 8 AI: Creature Spells + Creature AI Event + Generic Script done. Left: creature_ai_scripts, other *_scripts tables (same shape as generic), game_event_creature_data/mail/quest, playercreateinfo position row; creature_movement is covered by the waypoint path entity
+- [~] 8 AI: Creature Spells + Creature AI Event + Generic, Event, Spell, Gossip, GameObject, Quest Start/End, Creature Spell, Creature Movement and Areatrigger Script done (ScriptFactory). Left: creature_ai_scripts (no datalong2 column), game_event_creature_data/mail/quest, playercreateinfo position row; creature_movement is covered by the waypoint path entity
 - [ ] 9 Commit the untracked SpellVisual/SpellVisualKit catalog dirs once they build and test
 
 ## Design findings (so far, nothing implemented)
