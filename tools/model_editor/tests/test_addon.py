@@ -1115,6 +1115,81 @@ def m2_camera_create_delete():
 
 
 @test
+def m2_particle_create_delete_edit():
+    path = "interface/glues/models/ui_deathknight/ui_deathknight.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors and not r.dirty, (r.diff, str(r))
+    src = m2_import.read(path)
+    n = len(src.root.particle_emitters)
+    ps = _kind_obs(top, "particle")
+    assert n == len(ps) > 5
+    edit = ps[4]
+    edit.wow_m2_particle.drag = 0.75
+    edit.wow_m2_particle.rows = 2
+    edit.wow_m2_particle.alpha_keys[1].value = (0.5, 0, 0)
+    edit.wow_m2_particle.color_keys.add().time = 32767
+    bpy.data.objects.remove(ps[1])
+    ob = bpy.data.objects.new("spark", None)
+    top.objects.link(ob)
+    ob.wow_m2_object.kind, ob.wow_m2_object.id = "particle", -1
+    ob.location = (1.0, 2.0, 3.0)
+    ob.wow_m2_particle.tail_length = 3.0
+    ob.wow_m2_particle.rows = ob.wow_m2_particle.columns = 1
+    m2_particles = common.submodule("m2_particles")
+    m2_particles.set_defaults(ob.wow_m2_particle)
+    ob["wow_emission_rate"] = 12.0
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    ps_out = list(r.model.root.particle_emitters)
+    assert len(ps_out) == n
+    e = ps_out[3]
+    assert abs(e.drag - 0.75) < 1e-6 and e.rows == 2
+    assert abs(e.alpha_track.keys[1].value / 32767.0 - 0.5) < 1e-3 and len(e.color_track.keys) == len(e.color_track.timestamps)
+    new = ps_out[-1]
+    assert np.allclose(_vec3(new.position), (1, 2, 3), atol=1e-4) and abs(new.tail_length - 3.0) < 1e-6
+    assert len(new.color_track.keys) == 3 and list(new.alpha_track.timestamps) == [0, 16384, 32767]
+    assert new.emission_rate.timeline_count() == 1 and new.emission_rate.key_count(0) == 1
+    assert ps_out[1].position.x == src.root.particle_emitters[2].position.x
+    assert r.model.validate().ok, [str(i) for i in r.model.validate().issues]
+
+
+@test
+def m2_ribbon_create_delete_edit():
+    path = "creature/spells/fireelementaltotem.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors and not r.dirty, (r.diff, str(r))
+    src = m2_import.read(path)
+    n = len(src.root.ribbon_emitters)
+    rs = _kind_obs(top, "ribbon")
+    assert n == len(rs) == 3
+    rs[2].wow_m2_ribbon.edges_per_second = 33.0
+    rs[2].wow_m2_ribbon.texture_indices.add().value = 0
+    bpy.data.objects.remove(rs[0])
+    ob = bpy.data.objects.new("trail", None)
+    top.objects.link(ob)
+    ob.wow_m2_object.kind, ob.wow_m2_object.id = "ribbon", -1
+    ob.location = (0.0, 1.0, 2.0)
+    ob.wow_m2_ribbon.texture_indices.add().value = 1
+    ob.wow_m2_ribbon.material_indices.add().value = 0
+    ob["wow_height_above"] = 0.5
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    out = list(r.model.root.ribbon_emitters)
+    assert len(out) == 3
+    assert abs(out[1].edges_per_second - 33.0) < 1e-5 and len(out[1].texture_indices) == len(src.root.ribbon_emitters[2].texture_indices) + 1
+    new = out[2]
+    assert np.allclose(_vec3(new.position), (0, 1, 2), atol=1e-4) and list(new.texture_indices) == [1]
+    assert new.height_above.timeline_count() == 1
+    ob.wow_m2_ribbon.texture_indices[0].value = 99
+    r = m2_export.export(top, options={"dry_run": True})
+    assert r.errors
+
+
+@test
 def m2_anim_import():
     clear()
     t = time.time()

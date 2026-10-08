@@ -6,7 +6,7 @@ import numpy as np
 from wowlib.formats.common import C3Vector
 from wowlib.formats.m2.root import record as rec
 
-from . import m2_mesh_export
+from . import m2_mesh_export, m2_particles
 from .m2_import import _vec
 
 POS_TOL = 1e-4
@@ -68,20 +68,6 @@ def _rebuild(vec, records):
     vec.clear()
     for r in records:
         vec.append(r)
-
-
-def _simple(top, m, report, arm, rig, kind, vec, bone_field, kind_label):
-    """Modify-only objects: bone and position of each source record from its Blender object."""
-    objs, extra = _kind_objects(top, kind)
-    for i, r in enumerate(vec):
-        ob = objs.get(i)
-        if ob is None:
-            report.add("WARNING", "objects", f"{kind_label} {i} was deleted; deleting is not supported, kept")
-            continue
-        setattr(r, bone_field, _bone(ob, arm, rig, int(getattr(r, bone_field))))
-        _set_pos(r.position, _position(ob, arm), r.position)
-    if extra:
-        report.add("WARNING", "objects", f"new {kind_label}s are not supported, {len(extra)} ignored")
 
 
 def _attachments(top, m, report, arm, rig):
@@ -192,9 +178,49 @@ def _lights(top, m, report, arm, rig):
     return {("light", j): ob for j, ob in enumerate(order)}
 
 
-def _emitters(top, m, report, arm, rig):
-    _simple(top, m, report, arm, rig, "particle", m.root.particle_emitters, "bone_id", "particle emitter")
-    _simple(top, m, report, arm, rig, "ribbon", m.root.ribbon_emitters, "bone_index", "ribbon emitter")
+def _particles(top, m, report, arm, rig):
+    root = m.root
+    objs, new = _kind_objects(top, "particle")
+    src = list(root.particle_emitters)
+    order, _ = plan(objs, new, len(src))
+    out = []
+    for ob in order:
+        e, old = _record(ob, src, rec.M2ParticleCataPlus)
+        e.particle_id, e.bone_id = ob.wow_m2_object.id & 0xFFFFFFFF, _bone(ob, arm, rig, int(e.bone_id))
+        _set_pos(e.position, _position(ob, arm), old.position if old is not None else None)
+        m2_particles.write_from(ob.wow_m2_particle, e)
+        used = [int(t) for t in ob.wow_m2_particle.texture_slots[: 3 if int(e.flags) & 0x10000000 else 1]]
+        if any(t >= len(root.textures) for t in used):
+            report.add("ERROR", ob.name, f"particle texture slot {max(used)} is not an M2 texture")
+        out.append(e)
+    if len(out) != len(src):
+        report.add("INFO", "objects", f"{len(src)} -> {len(out)} particle emitters")
+    _rebuild(root.particle_emitters, out)
+    return {("particle", j): ob for j, ob in enumerate(order)}
+
+
+def _ribbons(top, m, report, arm, rig):
+    root = m.root
+    objs, new = _kind_objects(top, "ribbon")
+    src = list(root.ribbon_emitters)
+    order, _ = plan(objs, new, len(src))
+    out = []
+    for ob in order:
+        e, old = _record(ob, src, rec.M2RibbonWotlkPlus)
+        e.ribbon_id, e.bone_index = ob.wow_m2_object.id & 0xFFFFFFFF, _bone(ob, arm, rig, int(e.bone_index))
+        _set_pos(e.position, _position(ob, arm), old.position if old is not None else None)
+        m2_particles.ribbon_write_from(ob.wow_m2_ribbon, e)
+        for k in ob.wow_m2_ribbon.texture_indices:
+            if k.value >= len(root.textures):
+                report.add("ERROR", ob.name, f"ribbon texture {k.value} is not an M2 texture")
+        for k in ob.wow_m2_ribbon.material_indices:
+            if k.value >= len(root.materials):
+                report.add("ERROR", ob.name, f"ribbon material {k.value} is not an M2 material")
+        out.append(e)
+    if len(out) != len(src):
+        report.add("INFO", "objects", f"{len(src)} -> {len(out)} ribbon emitters")
+    _rebuild(root.ribbon_emitters, out)
+    return {("ribbon", j): ob for j, ob in enumerate(order)}
 
 
 def _tuple(v):
@@ -258,9 +284,7 @@ def build(top, m, report, rig):
     objects.update(_events(top, m, report, arm, rig))
     objects.update(_cameras(top, m, report))
     objects.update(_lights(top, m, report, arm, rig))
-    _emitters(top, m, report, arm, rig)
+    objects.update(_particles(top, m, report, arm, rig))
+    objects.update(_ribbons(top, m, report, arm, rig))
     _collision(top, m, report)
-    for kind, vec in (("particle", m.root.particle_emitters), ("ribbon", m.root.ribbon_emitters)):
-        o, _ = _kind_objects(top, kind)
-        objects.update({(kind, i): ob for i, ob in o.items() if i < len(vec)})
     return objects

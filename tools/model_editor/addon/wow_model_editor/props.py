@@ -251,6 +251,63 @@ class WowM2Object(bpy.types.PropertyGroup):
     animated: BoolProperty()
 
 
+class WowM2RampKey(bpy.types.PropertyGroup):
+    time: IntProperty(description="Lifetime position, 0..32767")
+    value: FloatVectorProperty(size=3)
+
+
+class WowM2Particle(bpy.types.PropertyGroup):
+    flags: IntProperty()
+    emitter_type: IntProperty(default=1, description="1 plane, 2 sphere, 3 spline")
+    blending_type: IntProperty(default=4)
+    texture_slots: IntVectorProperty(size=3, description="M2 texture indices (packed 5 bits each)")
+    rows: IntProperty(default=1, min=1)
+    columns: IntProperty(default=1, min=1)
+    priority_plane: IntProperty()
+    particle_color_index: IntProperty()
+    tail_length: FloatProperty()
+    drag: FloatProperty()
+    base_spin: FloatProperty()
+    base_spin_variation: FloatProperty()
+    spin_speed: FloatProperty()
+    spin_speed_variation: FloatProperty()
+    tumble_min: FloatVectorProperty(size=3)
+    tumble_max: FloatVectorProperty(size=3)
+    wind_vector: FloatVectorProperty(size=3)
+    wind_time: FloatProperty()
+    follow_speed1: FloatProperty()
+    follow_speed2: FloatProperty()
+    follow_scale1: FloatProperty()
+    follow_scale2: FloatProperty()
+    twinkle_speed: FloatProperty()
+    twinkle_percent: FloatProperty(default=1.0)
+    twinkle_scale: FloatVectorProperty(size=2, default=(1.0, 1.0), description="min, max")
+    inherit_velocity_scale: FloatProperty()
+    emission_rate_variation: FloatProperty()
+    lifespan_variation: FloatProperty()
+    scale_vary: FloatVectorProperty(size=2)
+    color_keys: CollectionProperty(type=WowM2RampKey)
+    alpha_keys: CollectionProperty(type=WowM2RampKey)
+    scale_keys: CollectionProperty(type=WowM2RampKey)
+
+
+class WowM2Index(bpy.types.PropertyGroup):
+    value: IntProperty()
+
+
+class WowM2Ribbon(bpy.types.PropertyGroup):
+    texture_indices: CollectionProperty(type=WowM2Index)
+    material_indices: CollectionProperty(type=WowM2Index)
+    edges_per_second: FloatProperty(default=20.0)
+    edge_lifetime: FloatProperty(default=1.0)
+    gravity: FloatProperty()
+    texture_rows: IntProperty(default=1, min=1)
+    texture_cols: IntProperty(default=1, min=1)
+    priority_plane: IntProperty()
+    ribbon_color_index: IntProperty()
+    texture_transform_lookup_index: IntProperty()
+
+
 class WowImportOptions(bpy.types.PropertyGroup):
     doodads: BoolProperty(name="Doodads", default=True)
     lights: BoolProperty(name="Lights", default=True)
@@ -274,7 +331,7 @@ class WowImportOptions(bpy.types.PropertyGroup):
     collision: BoolProperty(name="Collision", default=True)
 
 
-classes = (WowM2Texture, WowM2Material, WowM2Sequence, WowM2Loop, WowM2, WowM2Submesh, WowM2Bone, WowM2Batch, WowM2Object, WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
+classes = (WowM2Texture, WowM2Material, WowM2Sequence, WowM2Loop, WowM2, WowM2Submesh, WowM2Bone, WowM2Batch, WowM2Object, WowM2RampKey, WowM2Particle, WowM2Index, WowM2Ribbon, WowWmoMaterial, WowWmo, WowPortalRef, WowWmoGroup, WowWmoPortal, WowWmoLight, WowWmoDoodad,
            WowWmoLiquid, WowWmoFog, WowImportOptions)
 
 _attach = (
@@ -291,6 +348,8 @@ _attach = (
     (bpy.types.Object, "wow_m2_submesh", WowM2Submesh),
     (bpy.types.Bone, "wow_m2_bone", WowM2Bone),
     (bpy.types.Object, "wow_m2_object", WowM2Object),
+    (bpy.types.Object, "wow_m2_particle", WowM2Particle),
+    (bpy.types.Object, "wow_m2_ribbon", WowM2Ribbon),
 )
 
 

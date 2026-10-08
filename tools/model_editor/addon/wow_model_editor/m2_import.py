@@ -7,7 +7,7 @@ import mathutils
 import numpy as np
 from wowlib.formats import m2 as wm2
 
-from . import client, displays, index, m2_anim, m2_materials, m2_names
+from . import client, displays, index, m2_anim, m2_materials, m2_names, m2_particles
 from .props import s32
 
 MIN_BONE_LENGTH = 0.02
@@ -471,9 +471,11 @@ def import_emitters(model, top):
         ob = _empty(model, coll, f"particle_{i}", "CUBE", 0.1, "particle", i, int(e.bone_id), _vec(e.position))
         ob.wow_m2_object.id = s32(e.particle_id)
         ob.wow_m2_object.flags = s32(int(e.flags))
+        m2_particles.read_into(ob.wow_m2_particle, e)
     for i, e in enumerate(model.root.ribbon_emitters):
         ob = _empty(model, coll, f"ribbon_{i}", "CIRCLE", 0.1, "ribbon", i, int(e.bone_index), _vec(e.position))
         ob.wow_m2_object.id = s32(e.ribbon_id)
+        m2_particles.ribbon_read_into(ob.wow_m2_ribbon, e)
 
 
 def import_collision(model, top):
