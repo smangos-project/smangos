@@ -89,3 +89,11 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - Stock obj1 MLDD entries always have flags 0x20 set (u16 at +34; ours only 0x40), stock MLMD flags 0x0c (ours 0x08). AdtObj1Patcher now ORs 0x20 / 0x04 into added entries (committed). Installed obj0/obj1 (flags forced) + generated + fdid lines via /tmp/inst.py with `NO_DB2_EXPORT=1 client/autologin.sh`: still no panel visible from the start position, but the camera could not be pointed at (-8930,-130,92) (`/batch` takes `{"actions":[...]}`, typed /run did not execute). Client files restored to stock, guid 13 back at Northshire start.
 - Next: isolate with a stock FDID model in the same obj1 entry (e.g. 189929 doodad at the panel position), and put the character at ground level right below/near it with a screenshot of the sky; or compare MLDL/MLFD semantics (MLFD counts: ours {5,5,0,5}).
 - RESULT (user screenshot, fly mode): with the flag fix (0x20 MLDD / 0x04 MLMD) the WMO panel IS drawn: a flat black square floating in front of the abbey door. So obj1 entries needed those flags. Black = untextured material. The M2 panels were not identified yet. Next: texture the WMO material, check M2s, vmap collision (step 1.5).
+
+### Step 1.4 (eighth session, 2026-10-08)
+- State check only: client off, stock files in place, /tmp/inst.py and /tmp/stock32 still exist, sandbox editor (port 8799) running. WMO panel visible (black = untextured). Remaining: textured WMO export, M2 panel visibility, vmap collision/LOS (step 1.5), then step 1.5 new map.
+
+### Step 1.4 (ninth session, 2026-10-08)
+- WMO panel renders TEXTURED in the client: the e2e panel's MOMT Texture1 was 0 (black = no texture), not a writer bug. Patched Texture1 to stock FDID 189080 via /tmp/inst.py: hazard-stripe panel floats near the abbey door. Writer already emits Texture1 from the surface texture path.
+- Viewing tips: control server `/batch` actions are `{"key":{"keys":"escape"}}`, `{"drag":{"from":[x,y],"to":[x,y],"button":"right"}}` (right-drag turns/pitches the camera, ~100px = ~30deg pitch). Put the character offline-in-DB at (-8944,-130,83.6) orientation 0 to face the abbey door/panel.
+- Client restored to stock (obj0/obj1, generated, fdid lines); character back at Northshire start. Remaining: M2 panels not identified, vmap collision (step 1.5), then new map.
