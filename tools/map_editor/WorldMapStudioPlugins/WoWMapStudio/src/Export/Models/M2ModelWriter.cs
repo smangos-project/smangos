@@ -30,6 +30,9 @@ public static class M2ModelWriter
     private const uint FormatVersion = 274;
     private const uint GlobalFlagBits = 0x202000;
 
+    // The client needs a non-zero skin profile count in the header even though SFID lists the skins.
+    private const int SkinProfileCountOffset = 68;
+
     public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<ModelSurfaceInput> surfaces, uint skinFileDataId = 0)
     {
         using var root = new M2RootLegionPlus { FormatVersion = FormatVersion, Name = name, GlobalFlags = (GlobalFlags)GlobalFlagBits };
@@ -131,6 +134,7 @@ public static class M2ModelWriter
         }
 
         byte[] image = root.Write();
+        BitConverter.GetBytes(1u).CopyTo(image, SkinProfileCountOffset);
         byte[] rest = chunked.Write();
         var m2 = new byte[8 + image.Length + rest.Length - 8];
         BitConverter.GetBytes(0x3132444Du).CopyTo(m2, 0);

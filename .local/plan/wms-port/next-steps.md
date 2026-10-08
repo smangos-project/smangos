@@ -109,3 +109,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - Client ignores MLDD entries APPENDED at the end of the array (stock model, correct flags/bounds: not drawn). Replacing a slot or INSERTING at the front draws them. AdtObj1Patcher.AddMissing now inserts new doodad entries at level 0's start (committed, 44/44 WoW Export tests pass). WMO (MLMD) appends work.
 - With the new obj1 and the exported custom M2 (fdid 2000000032) the client hangs on the loading screen (connected, never enters world). Swapping that FDID for stock 189793 in obj1 loads fine and the doodad panels are drawn at the panel positions. So the custom M2 panel file (generated/e2e m2 panel_4.m2 + skin, inner id patch 984->33) makes the client hang: next, diff its M2 structure against a stock M2 (chunks, header version, skin/SFID, bounds).
 - Install with /tmp/inst2.py (inst.py without flag forcing) + `NO_DB2_EXPORT=1 client/autologin.sh`. Never run plain autologin during an install (rewrites fdid.index). Client restored to stock.
+
+### Step 1.4 (twelfth session, 2026-10-08): custom M2 hang FIXED
+- Cause: M2 header skin-profile count (u32 at MD20 offset 68) was 0 although SFID lists a skin; client hung on load. M2ModelWriter now sets it to 1 (test added). Patched installed copy (inst4.py) loads fine. Texture FDID 0 was not the cause. Panel visual not checked (client control server hung); client restored to stock, character 13 reset.
+- Next: build+run WoW Export tests, re-export, view M2 panels; then step 1.5 vmap re-extract.

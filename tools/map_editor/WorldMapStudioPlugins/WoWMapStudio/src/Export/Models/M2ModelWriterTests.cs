@@ -38,6 +38,7 @@ public static class M2ModelWriterTests
         Assert.AreEqual(4, skin.Submeshes[0].VertexCount);
         Assert.AreEqual(6, skin.Submeshes[0].IndexCount);
         Assert.AreEqual(1, skin.Batches.Length);
+        Assert.AreEqual(1u, BitConverter.ToUInt32(m2Bytes, 8 + 68));
     }
 
     [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
