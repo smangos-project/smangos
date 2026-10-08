@@ -111,4 +111,25 @@ public static class ServerTemplateCatalogTests
         Assert.AreEqual(55, row.ItemID2);
         Assert.AreEqual(9, row.ItemID17);
     }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Creature_spells_and_ai_events_round_trip()
+    {
+        var spells = new CreatureSpellsFactory(null!);
+        RecordEntity<CreatureSpellsRecord> list = spells.CallToEntity(new CreatureSpellsRecord { Entry = 12, SpellId3 = 100 });
+        Assert.AreEqual(12, list.ID);
+        list.SetNumber("SpellId8", 7);
+        var row = new CreatureSpellsRecord();
+        spells.CallWrite(list, row);
+        Assert.AreEqual(12, row.Entry);
+        Assert.AreEqual(100, row.SpellId3);
+        Assert.AreEqual(7, row.SpellId8);
+
+        var events = new CreatureAiEventFactory(null!);
+        RecordEntity<CreatureAiEventsRecord> ev = events.CallToEntity(new CreatureAiEventsRecord { Id = 5, CreatureId = 99, EventType = 4 });
+        var evRow = new CreatureAiEventsRecord();
+        events.CallWrite(ev, evRow);
+        Assert.AreEqual(5, evRow.Id);
+        Assert.AreEqual(99, evRow.CreatureId);
+    }
 }

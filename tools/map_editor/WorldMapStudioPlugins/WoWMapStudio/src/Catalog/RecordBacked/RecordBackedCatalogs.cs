@@ -44,7 +44,7 @@ public abstract class RecordBackedFactory<TRecord> : ThinDbcFactory<RecordEntity
     {
     }
 
-    private static readonly PropertyInfo IdProp = typeof(TRecord).GetProperty("ID")!;
+    private PropertyInfo IdProp => typeof(TRecord).GetProperty(KeyPropertyName)!;
 
     protected override RecordEntity<TRecord> ToEntity(TRecord record)
     {
@@ -242,4 +242,59 @@ public sealed class HolidayFactory : RecordBackedFactory<DbcHolidaysRecord>
         .Concat(Series(e, "Date", "Date", 16))
         .Concat(Series(e, "Calendar Flags", "CalendarFlags", 10))
         .Concat(Series(e, "Texture", "TextureFileDataID", 3));
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureSpellsFactory : RecordBackedFactory<CreatureSpellsRecord>
+{
+    private static readonly (string Label, string Column)[] Columns =
+    [
+        ("Spell", "SpellId"), ("Probability", "Probability"), ("Cast Target", "CastTarget"),
+        ("Target Param 1", "TargetParam1"), ("Target Param 2", "TargetParam2"), ("Cast Flags", "CastFlags"),
+        ("Initial Delay Min", "DelayInitialMin"), ("Initial Delay Max", "DelayInitialMax"),
+        ("Repeat Delay Min", "DelayRepeatMin"), ("Repeat Delay Max", "DelayRepeatMax"), ("Script", "ScriptId"),
+    ];
+
+    public CreatureSpellsFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature Spells";
+
+    protected override string KeyPropertyName => "Entry";
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(RecordEntity<CreatureSpellsRecord> e) =>
+        Enumerable.Range(1, 8).SelectMany(slot => Columns.Select(c =>
+            c.Column == "SpellId"
+                ? Link(e, $"Slot {slot} {c.Label}", c.Column + slot, "Spell")
+                : Int(e, $"Slot {slot} {c.Label}", c.Column + slot)));
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class CreatureAiEventFactory : RecordBackedFactory<CreatureAiEventsRecord>
+{
+    public CreatureAiEventFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Creature AI Event";
+
+    protected override string KeyPropertyName => "Id";
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(RecordEntity<CreatureAiEventsRecord> e) =>
+    [
+        Link(e, "Creature", nameof(CreatureAiEventsRecord.CreatureId), "Creature Template"),
+        Int(e, "Condition", nameof(CreatureAiEventsRecord.ConditionId)),
+        Int(e, "Event Type", nameof(CreatureAiEventsRecord.EventType)),
+        Int(e, "Inverse Phase Mask", nameof(CreatureAiEventsRecord.EventInversePhaseMask)),
+        Int(e, "Chance", nameof(CreatureAiEventsRecord.EventChance)),
+        Int(e, "Flags", nameof(CreatureAiEventsRecord.EventFlags)),
+        Int(e, "Param 1", nameof(CreatureAiEventsRecord.EventParam1)),
+        Int(e, "Param 2", nameof(CreatureAiEventsRecord.EventParam2)),
+        Int(e, "Param 3", nameof(CreatureAiEventsRecord.EventParam3)),
+        Int(e, "Param 4", nameof(CreatureAiEventsRecord.EventParam4)),
+        Int(e, "Action 1 Script", nameof(CreatureAiEventsRecord.Action1Script)),
+        Int(e, "Action 2 Script", nameof(CreatureAiEventsRecord.Action2Script)),
+        Int(e, "Action 3 Script", nameof(CreatureAiEventsRecord.Action3Script)),
+    ];
 }

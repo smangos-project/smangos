@@ -8,7 +8,7 @@ Order (value first):
 - [~] 5 Spawn extras: creature_addon, creature_equip_template, pool_template done; creature_groups, creature_linking, pool membership, game_event_* left
 - [x] 6 Player: Start Spells/Items/Actions, Level Stats, Class Level Stats (entry = race*1000+class); playercreateinfo position row not done
 - [x] 7 More DBC: Item Set, Lock, Enchantment, Talent, Holiday (RecordBackedFactory, record copy; TalentTab not done)
-- [ ] 8 AI/scripts: creature_ai_events, creature_spells, generic_scripts, creature_movement
+- [~] 8 AI: Creature Spells + Creature AI Event done (RecordBackedFactory). Left: generic_scripts, creature_ai_scripts, creature_movement; from 5: creature_groups, creature_linking, pool membership, game_event_*; also TalentTab, playercreateinfo position row
 - [ ] 9 Commit the untracked SpellVisual/SpellVisualKit catalog dirs once they build and test
 
 ## Design findings (so far, nothing implemented)
