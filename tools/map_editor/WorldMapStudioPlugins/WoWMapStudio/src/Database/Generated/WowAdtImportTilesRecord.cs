@@ -28,6 +28,9 @@ public sealed class WowAdtImportTilesRecord
 
     [Column("ImporterVersion")]
     public int ImporterVersion { get; set; }
+
+    [Column("WaterImported")]
+    public int WaterImported { get; set; }
 }
 
 public sealed partial class WorldDbContext
