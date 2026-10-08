@@ -1084,6 +1084,37 @@ def m2_light_create_delete():
 
 
 @test
+def m2_camera_create_delete():
+    path = "character/human/male/humanmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    src = m2_import.read(path)
+    cams = _kind_obs(top, "camera")
+    assert len(cams) == len(src.root.cameras) == 2
+    keep_pos = _vec3(src.root.cameras[1].position_base)
+    bpy.data.objects.remove(cams[0])
+    ob = bpy.data.objects.new("flyby", bpy.data.cameras.new("flyby"))
+    top.objects.link(ob)
+    ob.wow_m2_object.kind, ob.wow_m2_object.id = "camera", 5
+    ob.location = (4.0, 5.0, 6.0)
+    ob.rotation_euler = (np.pi / 2, 0, 0)
+    ob.data.clip_start, ob.data.clip_end = 0.5, 90.0
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    m = r.model
+    assert len(m.root.cameras) == 2
+    old, new = m.root.cameras[0], m.root.cameras[1]
+    assert np.allclose(_vec3(old.position_base), keep_pos, atol=1e-4)
+    assert int(new.type) == 5 and np.allclose(_vec3(new.position_base), (4, 5, 6), atol=1e-4)
+    assert np.allclose(_vec3(new.target_position_base), (4, 5 + 10, 6), atol=1e-3), _vec3(new.target_position_base)
+    assert abs(new.far_clip - 90.0) < 1e-4 and abs(new.near_clip - 0.5) < 1e-4
+    assert new.fov.timeline_count() == 1 and new.positions.timeline_count() == 1
+    lut = list(m.root.camera_lookup_table)
+    assert lut[int(old.type)] == 0 and len(lut) >= 6 and lut[5] == 1, lut
+    assert m.validate().ok, [str(i) for i in m.validate().issues]
+
+
+@test
 def m2_anim_import():
     clear()
     t = time.time()

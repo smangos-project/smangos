@@ -1,6 +1,7 @@
 """Attachments, events, lights, cameras, emitters and collision geometry back into a freshly read wowlib M2."""
 import copy
 
+import mathutils
 import numpy as np
 from wowlib.formats.common import C3Vector
 from wowlib.formats.m2.root import record as rec
@@ -131,25 +132,46 @@ def _events(top, m, report, arm, rig):
     return {("event", j): ob for j, ob in enumerate(order)}
 
 
+def _camera_target(ob):
+    con = next((k for k in ob.constraints if k.type == "TRACK_TO" and k.target is not None), None)
+    if con is not None:
+        return tuple(float(x) for x in con.target.matrix_world.translation)
+    return tuple(float(x) for x in (ob.matrix_world @ mathutils.Vector((0.0, 0.0, -10.0))))
+
+
 def _cameras(top, m, report):
     root = m.root
-    objs, extra = _kind_objects(top, "camera")
-    for i, c in enumerate(root.cameras):
-        ob = objs.get(i)
-        if ob is None:
-            report.add("WARNING", "objects", f"camera {i} was deleted; deleting is not supported, kept")
-            continue
+    objs, new = _kind_objects(top, "camera")
+    src = list(root.cameras)
+    order, remap = plan(objs, new, len(src))
+    out = []
+    for ob in order:
+        c, old = _record(ob, src, rec.M2CameraCataPlus)
+        if old is None:
+            c.type = ob.wow_m2_object.id & 0xFFFFFFFF
+            for key, val in (("wow_positions", (0.0,) * 9), ("wow_target_position", (0.0,) * 9), ("wow_roll", (0.0,) * 3),
+                             ("wow_fov", (ob.data.angle_y, 0.0, 0.0))):
+                if key not in ob:
+                    ob[key] = val
         if abs(c.near_clip - ob.data.clip_start) > POS_TOL:
             c.near_clip = ob.data.clip_start
         if abs(c.far_clip - ob.data.clip_end) > POS_TOL:
             c.far_clip = ob.data.clip_end
-        _set_pos(c.position_base, tuple(float(x) for x in ob.matrix_world.translation), c.position_base)
-        con = next((k for k in ob.constraints if k.type == "TRACK_TO" and k.target is not None), None)
-        if con is not None:
-            _set_pos(c.target_position_base, tuple(float(x) for x in con.target.matrix_world.translation),
-                     c.target_position_base)
-    if extra:
-        report.add("WARNING", "objects", f"new cameras are not supported, {len(extra)} ignored")
+        _set_pos(c.position_base, tuple(float(x) for x in ob.matrix_world.translation),
+                 old.position_base if old is not None else None)
+        _set_pos(c.target_position_base, _camera_target(ob), old.target_position_base if old is not None else None)
+        out.append(c)
+    if len(out) != len(src):
+        report.add("INFO", "objects", f"{len(src)} -> {len(out)} cameras")
+    types = [int(c.type) for c in out]
+    if types != [int(c.type) for c in src]:
+        lut = [0xFFFF] * max(len(root.camera_lookup_table), max((t + 1 for t in types if t < 0xFFFF), default=0))
+        for j, t in reversed(list(enumerate(types))):
+            if t < len(lut):
+                lut[t] = j
+        _rebuild(root.camera_lookup_table, lut)
+    _rebuild(root.cameras, out)
+    return {("camera", j): ob for j, ob in enumerate(order)}
 
 
 def _lights(top, m, report, arm, rig):
@@ -234,12 +256,11 @@ def build(top, m, report, rig):
     objects = {}
     objects.update(_attachments(top, m, report, arm, rig))
     objects.update(_events(top, m, report, arm, rig))
-    _cameras(top, m, report)
+    objects.update(_cameras(top, m, report))
     objects.update(_lights(top, m, report, arm, rig))
     _emitters(top, m, report, arm, rig)
     _collision(top, m, report)
-    for kind, vec in (("camera", m.root.cameras),
-                      ("particle", m.root.particle_emitters), ("ribbon", m.root.ribbon_emitters)):
+    for kind, vec in (("particle", m.root.particle_emitters), ("ribbon", m.root.ribbon_emitters)):
         o, _ = _kind_objects(top, kind)
         objects.update({(kind, i): ob for i, ob in o.items() if i < len(vec)})
     return objects
