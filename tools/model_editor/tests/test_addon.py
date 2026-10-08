@@ -1048,6 +1048,25 @@ def m2_geometry_edit_round_trip():
     client.close()
 
 
+@test
+def m2_geoset_id_edit():
+    path = "creature/wolf/wolf.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    subs = sorted((o for o in top.all_objects if o.type == "MESH"), key=lambda o: o.wow_m2_submesh.index)
+    ob = subs[0]
+    assert any(a == "wow_m2_submesh" for a, _ in common.submodule("ui").active_groups(ob))
+    new_id = ob.wow_m2_submesh.skin_section_id + 7
+    ob.wow_m2_submesh.skin_section_id = new_id
+    try:
+        r = m2_export.export(top, options={"force": True})
+        assert not r.errors and r.dirty, str(r)
+        again = m2_import.read(path)
+        assert int(again.skins[0].profile.submeshes[0].skin_section_id) == new_id
+    finally:
+        _cleanup_out(path, 2)
+
+
 def _edit_bones(top, fn):
     arm = next(o for o in top.all_objects if o.type == "ARMATURE")
     bpy.context.view_layer.objects.active = arm

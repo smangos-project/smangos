@@ -197,6 +197,11 @@ def draw_group(layout, owner_path, group, skip=(), flags=None):
             layout.prop(group, name)
 
 
+def _in_m2(ob):
+    from . import m2_export, m2_mesh_export
+    return m2_export.find_root(ob) is not None and not m2_mesh_export.is_collision(ob)
+
+
 def active_groups(ob):
     """(attribute, kind label) of the wow_* groups that apply to object `ob`."""
     out = []
@@ -219,7 +224,7 @@ def active_groups(ob):
         out.append(("wow_wmo_fog", "WMO fog"))
     if ob.wow_wmo_liquid.verts_dim[0]:
         out.append(("wow_wmo_liquid", "WMO liquid"))
-    if ob.type == "MESH" and ob.wow_m2_submesh.index >= 0:
+    if ob.type == "MESH" and (ob.wow_m2_submesh.index >= 0 or _in_m2(ob)):
         out.append(("wow_m2_submesh", "M2 submesh"))
     return out
 
@@ -237,7 +242,11 @@ class WOW_PT_object(bpy.types.Panel):
         for attr, label in active_groups(ob):
             col = self.layout.column()
             col.label(text=label)
-            skip = {"wow_m2_object": ("kind", "animated", "position", "target", "index")}.get(attr, ())
+            skip = {"wow_m2_object": ("kind", "animated", "position", "target", "index"),
+                    "wow_m2_submesh": ("index",) if ob.wow_m2_submesh.index < 0 else ()}.get(attr, ())
+            if attr == "wow_m2_submesh" and ob.wow_m2_submesh.index < 0:
+                skip += ("level", "bone_combo_index", "bone_count", "bone_influences", "center_bone_index",
+                         "center_position", "sort_center_position", "sort_radius")
             draw_group(col, attr, getattr(ob, attr), skip, FLAGS.get(attr))
             if attr == "wow_m2_object" and ob.type == "LIGHT":
                 col.operator("wow.m2_light_from_blender", icon="LIGHT")
