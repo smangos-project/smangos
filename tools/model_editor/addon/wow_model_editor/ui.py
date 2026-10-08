@@ -279,6 +279,7 @@ class WOW_PT_collection(bpy.types.Panel):
             draw_group(self.layout, "", c.wow_wmo)
         if c.wow_m2.path:
             draw_group(self.layout, "", c.wow_m2, skip=("sequences", "loops", "active_sequence", "textures", "materials"))
+            self.layout.operator("wow.m2_recompute_bounds", icon="MESH_DATA")
 
 
 classes = (WowRecent, WOW_PT_object, WOW_PT_wmo_material, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)

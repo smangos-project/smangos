@@ -227,6 +227,21 @@ def _tuple(v):
     return (float(v.x), float(v.y), float(v.z))
 
 
+def _header(top, m):
+    """Global flags and bounding volume edited on the model collection."""
+    root, p = m.root, top.wow_m2
+    flags = p.global_flags & 0xFFFFFFFF
+    if int(root.global_flags) != flags:
+        root.global_flags = type(root.global_flags)(flags)
+    if not any(p.bounding_min) and not any(p.bounding_max) and not p.bounding_radius:
+        return
+    for end in ("min", "max"):
+        box = getattr(root.bounding_box, end)
+        _set_pos(box, tuple(float(x) for x in getattr(p, f"bounding_{end}")), box)
+    if abs(root.bounding_sphere_radius - p.bounding_radius) > POS_TOL:
+        root.bounding_sphere_radius = p.bounding_radius
+
+
 def _collision(top, m, report):
     root = m.root
     p = top.wow_m2
@@ -287,4 +302,5 @@ def build(top, m, report, rig):
     objects.update(_particles(top, m, report, arm, rig))
     objects.update(_ribbons(top, m, report, arm, rig))
     _collision(top, m, report)
+    _header(top, m)
     return objects

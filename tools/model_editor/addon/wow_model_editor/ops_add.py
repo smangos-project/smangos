@@ -157,6 +157,39 @@ class WOW_OT_toggle_flag(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class WOW_OT_m2_recompute_bounds(bpy.types.Operator):
+    bl_idname = "wow.m2_recompute_bounds"
+    bl_label = "Recompute bounds"
+    bl_description = "Set the model bounding box and radius from its submesh geometry"
+    bl_options = {"UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.collection is not None and bool(context.collection.wow_m2.path)
+
+    def execute(self, context):
+        import numpy as np
+        from . import m2_mesh_export as mx
+        top = context.collection
+        arm = mx.find_armature(top)
+        pts = []
+        for ob in sum(mx.submesh_objects(top), []):
+            n = len(ob.data.vertices)
+            if not n:
+                continue
+            co = np.empty(n * 3, np.float32)
+            ob.data.vertices.foreach_get("co", co)
+            mat = np.asarray(ob.matrix_world if arm is None else arm.matrix_world.inverted() @ ob.matrix_world)
+            pts.append(co.reshape(-1, 3) @ mat[:3, :3].T + mat[:3, 3])
+        if not pts:
+            self.report({"WARNING"}, "No submesh geometry")
+            return {"CANCELLED"}
+        lo, hi, radius = mx.bounds_of(np.concatenate(pts).astype(np.float32))
+        p = top.wow_m2
+        p.bounding_min, p.bounding_max, p.bounding_radius = lo, hi, radius
+        return {"FINISHED"}
+
+
 class WOW_OT_m2_light_from_blender(bpy.types.Operator):
     bl_idname = "wow.m2_light_from_blender"
     bl_label = "Set M2 light from Blender light"
@@ -194,7 +227,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_light_from_blender, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_MT_add)
 
 
 def register():

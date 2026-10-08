@@ -1247,6 +1247,34 @@ def m2_texture_entries_edit_add():
 
 
 @test
+def m2_header_flags_and_bounds():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    p = top.wow_m2
+    with bpy.context.temp_override(collection=top):
+        bpy.ops.wow.m2_recompute_bounds()
+    sm = src.root.bounding_box.max
+    assert all(a <= b + 1e-3 for a, b in zip(p.bounding_max, (sm.x, sm.y, sm.z))) and p.bounding_radius > 0
+    p.global_flags = int(src.root.global_flags) ^ 0x10
+    p.bounding_radius = p.bounding_radius + 5
+    want = p.bounding_radius
+    r = None
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        assert int(m.root.global_flags) == int(src.root.global_flags) ^ 0x10
+        assert abs(m.root.bounding_sphere_radius - want) < 1e-3
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files if r else ():
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_batch_static_tracks_new_records():
     path = find_m2("duskwoodlamppost.m2")
     clear()
