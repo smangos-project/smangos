@@ -140,3 +140,4 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - Verified: exporter-style obj1 (no MLFD) loads fine in client; step 1.6 load works. Remaining: walk/height compare, lgt/occ ids, texture, tile removal.
 - Walk check: char stays at z=0 on map 3001 (0,0), server flat heights agree with client. Remaining step 1.6: tile removal, lgt/occ ids, textured blank terrain.
 - 2026-10-08: tile removal e2e at file level OK: wow.export.adt {removedTiles:"33,33"} on sandbox smangosthree deleted the 4 tile files and cleared MAIN flag + MAID entry, other tiles untouched. Not loaded in the real client (low risk: same WDT mechanism as additions). Next: step 6 (spell editor e2e).
+- 2026-10-08: step 6 DB half covered by test SpellCommitTests (create fresh ids, edit in place, reopen, delete). Left: db2 export + in-game check; spell edit has no script API (catalog handles are read-only).
