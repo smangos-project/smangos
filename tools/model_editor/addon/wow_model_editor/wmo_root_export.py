@@ -1,4 +1,6 @@
 """Writes edits to root-level WMO objects (doodads, lights, fogs, portals, liquids) back into the parsed WMO."""
+import copy
+
 import numpy as np
 
 from . import fdids
@@ -194,6 +196,21 @@ def rebuild_doodads(w, new, drop, report):
         a.wow_wmo_doodad.index = -1
 
 
+def compact(vec, keep):
+    """Keep only the records at old indices `keep` (ascending); returns {old: new}."""
+    recs = [copy.copy(vec[i]) for i in keep]
+    vec.clear()
+    for x in recs:
+        vec.append(x)
+    return {old: new for new, old in enumerate(keep)}
+
+
+def _set_vec_ints(vec, vals):
+    vec.resize(len(vals))
+    for i, v in enumerate(vals):
+        vec[i] = v
+
+
 def update_lights(w, root, report):
     r = w.root
     changed = False
@@ -232,8 +249,18 @@ def update_lights(w, root, report):
         if l.atten_start != p.atten_start or l.use_atten != p.use_atten or l.type != p.type:
             l.atten_start, l.use_atten, l.type = p.atten_start, p.use_atten, p.type
             changed = True
-    if len(seen) < len(r.lights):
-        report.add("WARNING", "lights", f"{len(r.lights) - len(seen)} light objects missing, lights kept")
+    gone = set(range(len(r.lights))) - seen
+    if gone and any(c.name.startswith("lights") for c in root.children):
+        remap = compact(r.lights, [i for i in range(len(r.lights)) if i in seen])
+        for g in w.groups:
+            old = [int(x) for x in g.body.light_refs]
+            kept = [remap[x] for x in old if x in remap]
+            if kept != old:
+                _set_vec_ints(g.body.light_refs, kept)
+        r.header.n_lights = len(r.lights)
+        changed = True
+    elif gone:
+        report.add("WARNING", "lights", f"{len(gone)} light objects missing, lights kept")
     for ob, loc, rot, color, intensity, atten_end in new:
         l = r.lights.new()
         p = ob.wow_wmo_light
@@ -252,6 +279,7 @@ def update_fogs(w, root, report):
     r = w.root
     changed = False
     seen = set()
+    n_src = len(r.fogs)
     for ob in sorted((o for o in root.all_objects if o.type == "EMPTY" and o.name.startswith("fog_")), key=lambda o: o.name):
         p = ob.wow_wmo_fog
         loc = tuple(ob.matrix_basis.translation)
@@ -278,8 +306,16 @@ def update_fogs(w, root, report):
             f.under_water_fog.end, f.under_water_fog.start_scalar = p.uw_end, p.uw_start_scalar
             _set_rgba(f.under_water_fog.color, p.uw_color)
             changed = True
-    if len(seen) < len(r.fogs):
-        report.add("WARNING", "fogs", "fog objects missing, fogs kept")
+    gone = set(range(n_src)) - seen
+    if gone:
+        remap = compact(r.fogs, [i for i in range(len(r.fogs)) if i in seen or i >= n_src])
+        for g in w.groups:
+            ids = [int(x) for x in g.body.header.fog_ids]
+            new = [remap.get(x, 0) for x in ids]
+            if new != ids:
+                for k, v in enumerate(new):
+                    g.body.header.fog_ids[k] = v
+        changed = True
     return changed
 
 

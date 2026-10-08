@@ -689,6 +689,28 @@ def wmo_doodad_delete():
 
 
 @test
+def wmo_light_fog_delete():
+    path = REFS[2]
+    coll, r = export_files(path, import_opts={"lights": True})
+    src = wmo_expect(path)[1]
+    nl, nf = len(src.lights), len(src.fogs)
+    lights = sorted((o for o in coll.all_objects if o.type == "LIGHT"), key=lambda o: o.wow_wmo_light.index)
+    fogs = sorted((o for o in coll.all_objects if o.name.startswith("fog_")), key=lambda o: o.wow_wmo_fog.index)
+    assert nl > 5 and nf >= 3
+    keep_pos = (src.lights[5].position.x, src.lights[5].position.y)
+    bpy.data.objects.remove(lights[0])
+    bpy.data.objects.remove(lights[4])
+    bpy.data.objects.remove(fogs[0])
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.root.lights) == nl - 2 and len(new.root.fogs) == nf - 1 and new.validate().ok, str(new.validate())
+    assert int(new.root.header.n_lights) == nl - 2
+    assert abs(new.root.lights[3].position.x - keep_pos[0]) < 1e-4
+    assert all(int(x) < nf - 1 for g in new.groups for x in g.body.header.fog_ids)
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})
