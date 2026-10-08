@@ -146,6 +146,22 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Game_event_spawn_rows_round_trip()
+    {
+        var factory = new GameEventCreatureFactory(null!);
+        PlayerRowTable<EventSpawnRow> table = factory.CallToEntity(12,
+            [new GameEventCreatureRecord { Event = 12, Guid = 40 }, new GameEventCreatureRecord { Event = 12, Guid = 30 }]);
+        Assert.AreEqual(2, table.Rows.Count);
+        Assert.AreEqual(30, table.Rows[0].Guid);
+        var added = new System.Collections.Generic.List<GameEventCreatureRecord>();
+        factory.CallDiff(12, [new GameEventCreatureRecord { Event = 12, Guid = 40 }],
+            [new EventSpawnRow { Guid = 40 }, new EventSpawnRow { Guid = 50 }], _ => { }, added.Add);
+        Assert.AreEqual(1, added.Count);
+        Assert.AreEqual(12, added[0].Event);
+        Assert.AreEqual(50, added[0].Guid);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);

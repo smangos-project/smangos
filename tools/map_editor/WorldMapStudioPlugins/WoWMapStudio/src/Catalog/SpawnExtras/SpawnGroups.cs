@@ -399,3 +399,72 @@ public sealed class PoolPoolMemberFactory : ThinDbcFactory<PoolPoolMember, PoolP
 
     internal void CallWrite(PoolPoolMember entity, PoolPoolRecord record) => Write(entity, record);
 }
+
+/// <summary>One spawn guid of a `game_event_creature` / `game_event_gameobject` entry.</summary>
+public readonly record struct EventSpawnRow
+{
+    public int Guid { get; init; }
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventCreatureFactory : PlayerRowsFactory<GameEventCreatureRecord, EventSpawnRow>
+{
+    public GameEventCreatureFactory(WorldStorage storage) : base(storage, ["Creature Guid"])
+    {
+    }
+
+    public override string CatalogName => "Game Event Creatures";
+
+    protected override System.Linq.Expressions.Expression<Func<GameEventCreatureRecord, int>> EntryExpression() => r => r.Event;
+
+    protected override void SetEntry(GameEventCreatureRecord r, int entry) => r.Event = entry;
+
+    protected override EventSpawnRow ToRow(GameEventCreatureRecord r) => new() { Guid = r.Guid };
+
+    protected override void WriteRow(EventSpawnRow row, GameEventCreatureRecord r)
+    {
+    }
+
+    protected override void WriteKey(EventSpawnRow row, GameEventCreatureRecord r) => r.Guid = row.Guid;
+
+    protected override IEnumerable<EventSpawnRow> Order(IEnumerable<EventSpawnRow> rows) => System.Linq.Enumerable.OrderBy(rows, r => r.Guid);
+}
+
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventGameObjectFactory : PlayerRowsFactory<GameEventGameobjectRecord, EventSpawnRow>
+{
+    public GameEventGameObjectFactory(WorldStorage storage) : base(storage, ["GameObject Guid"])
+    {
+    }
+
+    public override string CatalogName => "Game Event GameObjects";
+
+    protected override System.Linq.Expressions.Expression<Func<GameEventGameobjectRecord, int>> EntryExpression() => r => r.Event;
+
+    protected override void SetEntry(GameEventGameobjectRecord r, int entry) => r.Event = entry;
+
+    protected override EventSpawnRow ToRow(GameEventGameobjectRecord r) => new() { Guid = r.Guid };
+
+    protected override void WriteRow(EventSpawnRow row, GameEventGameobjectRecord r)
+    {
+    }
+
+    protected override void WriteKey(EventSpawnRow row, GameEventGameobjectRecord r) => r.Guid = row.Guid;
+
+    protected override IEnumerable<EventSpawnRow> Order(IEnumerable<EventSpawnRow> rows) => System.Linq.Enumerable.OrderBy(rows, r => r.Guid);
+}
+
+/// <summary>Keys the game event spawn tables on (event, guid).</summary>
+[Subsystem(nameof(WorldStorage))]
+public sealed class GameEventSpawnKeys : ITableConfiguration
+{
+    public GameEventSpawnKeys(WorldStorage storage)
+    {
+    }
+
+    public void Configure(ModelBuilder model)
+    {
+        model.Entity<GameEventCreatureRecord>().HasKey(r => new { r.Event, r.Guid });
+        model.Entity<GameEventGameobjectRecord>().HasKey(r => new { r.Event, r.Guid });
+    }
+}
