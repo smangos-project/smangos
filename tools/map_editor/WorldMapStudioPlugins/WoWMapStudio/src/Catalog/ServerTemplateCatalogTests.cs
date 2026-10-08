@@ -162,6 +162,19 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Talent_tab_round_trips_through_its_record()
+    {
+        var tabs = new TalentTabFactory(null!);
+        RecordEntity<DbcTalenttabRecord> tab = tabs.CallToEntity(new DbcTalenttabRecord { ID = 4, NameLang = "Arms", ClassMask = 1 });
+        tab.SetNumber("OrderIndex", 2);
+        var row = new DbcTalenttabRecord();
+        tabs.CallWrite(tab, row);
+        Assert.AreEqual(4, row.ID);
+        Assert.AreEqual("Arms", row.NameLang);
+        Assert.AreEqual(2, row.OrderIndex);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);

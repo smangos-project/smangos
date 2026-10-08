@@ -219,6 +219,34 @@ public sealed class TalentFactory : RecordBackedFactory<DbcTalentRecord>
 }
 
 [Subsystem(nameof(WorldStorage))]
+public sealed class TalentTabFactory : RecordBackedFactory<DbcTalenttabRecord>
+{
+    public TalentTabFactory(WorldStorage storage) : base(storage)
+    {
+    }
+
+    public override string CatalogName => "Talent Tab";
+
+    protected override string DisplayText(DbcTalenttabRecord record) => record.NameLang;
+
+    protected override Expression<Func<DbcTalenttabRecord, bool>> TextFilter(string term) => NameLike(nameof(DbcTalenttabRecord.NameLang), term);
+
+    protected override IEnumerable<CatalogFieldSpec> Fields(RecordEntity<DbcTalenttabRecord> e) =>
+    [
+        Text(e, "Name", nameof(DbcTalenttabRecord.NameLang)),
+        Text(e, "Description", nameof(DbcTalenttabRecord.DescriptionLang), 1024),
+        Text(e, "Background File", nameof(DbcTalenttabRecord.BackgroundFile)),
+        Int(e, "Order", nameof(DbcTalenttabRecord.OrderIndex)),
+        Int(e, "Class Mask", nameof(DbcTalenttabRecord.ClassMask)),
+        Int(e, "Category", nameof(DbcTalenttabRecord.CategoryEnumID)),
+        Int(e, "Spell Icon", nameof(DbcTalenttabRecord.SpellIconID)),
+        Int(e, "Role Mask", nameof(DbcTalenttabRecord.RoleMask)),
+        Link(e, "Mastery Spell 1", nameof(DbcTalenttabRecord.MasterySpellID1), "Spell"),
+        Link(e, "Mastery Spell 2", nameof(DbcTalenttabRecord.MasterySpellID2), "Spell"),
+    ];
+}
+
+[Subsystem(nameof(WorldStorage))]
 public sealed class HolidayFactory : RecordBackedFactory<DbcHolidaysRecord>
 {
     public HolidayFactory(WorldStorage storage) : base(storage)
