@@ -30,7 +30,7 @@ public abstract class EntryRowsFactory<TRecord, TTable, TRow> : ILazyCatalogEnti
 {
     private const int SearchLimit = 50;
 
-    private static readonly PropertyInfo EntryProp = typeof(TRecord).GetProperty("Entry") ?? typeof(TRecord).GetProperty("MenuId") ?? Prop("Id");
+    private static readonly PropertyInfo? EntryProp = typeof(TRecord).GetProperty("Entry") ?? typeof(TRecord).GetProperty("MenuId") ?? typeof(TRecord).GetProperty("Id");
 
     private bool _createOpenRequested;
     private bool _createActive;
@@ -115,41 +115,44 @@ public abstract class EntryRowsFactory<TRecord, TTable, TRow> : ILazyCatalogEnti
             }
 
             record = new TRecord();
-            EntryProp.SetValue(record, entry);
+            SetEntry(record, entry);
             WriteKey(row, record);
             WriteRow(row, record);
             add(record);
         }
     }
 
-    private static Expression<Func<TRecord, bool>> EntryEquals(int entry)
+    /// <summary>The integer a record's entry is read from; override with a composite such as
+    /// <c>r =&gt; r.Race * 1000 + r.Class</c> when the table has no single entry column.</summary>
+    protected virtual Expression<Func<TRecord, int>> EntryExpression()
     {
         ParameterExpression p = Expression.Parameter(typeof(TRecord), "r");
-        return Expression.Lambda<Func<TRecord, bool>>(
-            Expression.Equal(Expression.Property(p, EntryProp), Expression.Constant(entry)), p);
+        return Expression.Lambda<Func<TRecord, int>>(Expression.Property(p, EntryProp!), p);
     }
 
-    private static Expression<Func<TRecord, int>> EntrySelector()
+    /// <summary>Writes <paramref name="entry"/> into the entry column(s) of a new record.</summary>
+    protected virtual void SetEntry(TRecord record, int entry) => EntryProp!.SetValue(record, entry);
+
+    private Expression<Func<TRecord, bool>> EntryEquals(int entry)
     {
-        ParameterExpression p = Expression.Parameter(typeof(TRecord), "r");
-        return Expression.Lambda<Func<TRecord, int>>(Expression.Property(p, EntryProp), p);
+        Expression<Func<TRecord, int>> sel = EntryExpression();
+        return Expression.Lambda<Func<TRecord, bool>>(Expression.Equal(sel.Body, Expression.Constant(entry)), sel.Parameters);
     }
 
-    private static Expression<Func<TRecord, int?>> NullableEntrySelector()
+    private Expression<Func<TRecord, int?>> NullableEntrySelector()
     {
-        ParameterExpression p = Expression.Parameter(typeof(TRecord), "r");
-        return Expression.Lambda<Func<TRecord, int?>>(
-            Expression.Convert(Expression.Property(p, EntryProp), typeof(int?)), p);
+        Expression<Func<TRecord, int>> sel = EntryExpression();
+        return Expression.Lambda<Func<TRecord, int?>>(Expression.Convert(sel.Body, typeof(int?)), sel.Parameters);
     }
 
     private static readonly MethodInfo ListContains =
         typeof(List<int>).GetMethod(nameof(List<int>.Contains), [typeof(int)])!;
 
-    private static Expression<Func<TRecord, bool>> EntryIn(List<int> entries)
+    private Expression<Func<TRecord, bool>> EntryIn(List<int> entries)
     {
-        ParameterExpression p = Expression.Parameter(typeof(TRecord), "r");
+        Expression<Func<TRecord, int>> sel = EntryExpression();
         return Expression.Lambda<Func<TRecord, bool>>(
-            Expression.Call(Expression.Constant(entries), ListContains, Expression.Property(p, EntryProp)), p);
+            Expression.Call(Expression.Constant(entries), ListContains, sel.Body), sel.Parameters);
     }
 
     public async Task<IReadOnlyList<CatalogSearchResult>> SearchAsync(string filter)
@@ -166,7 +169,7 @@ public abstract class EntryRowsFactory<TRecord, TTable, TRow> : ILazyCatalogEnti
             query = query.Where(EntryEquals(id));
         }
 
-        List<int> entries = await query.Select(EntrySelector()).Distinct().OrderBy(e => e).Take(SearchLimit)
+        List<int> entries = await query.Select(EntryExpression()).Distinct().OrderBy(e => e).Take(SearchLimit)
             .ToListAsync().ConfigureAwait(false);
         return (await CountsAsync(db, entries).ConfigureAwait(false))
             .Select(p => new CatalogSearchResult(p.Key.ToString(), RowCountText(p.Value))).ToList();
@@ -174,11 +177,11 @@ public abstract class EntryRowsFactory<TRecord, TTable, TRow> : ILazyCatalogEnti
 
     private static string RowCountText(int count) => count == 1 ? "1 row" : $"{count} rows";
 
-    private static async Task<SortedDictionary<int, int>> CountsAsync(WorldDbContext db, List<int> entries)
+    private async Task<SortedDictionary<int, int>> CountsAsync(WorldDbContext db, List<int> entries)
     {
         List<int> all = entries.Count == 0
             ? []
-            : await db.Set<TRecord>().AsNoTracking().Where(EntryIn(entries)).Select(EntrySelector())
+            : await db.Set<TRecord>().AsNoTracking().Where(EntryIn(entries)).Select(EntryExpression())
                 .ToListAsync().ConfigureAwait(false);
         var counts = new SortedDictionary<int, int>();
         foreach (int e in all)
