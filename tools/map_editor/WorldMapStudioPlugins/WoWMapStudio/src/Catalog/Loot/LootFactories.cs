@@ -11,8 +11,6 @@ public sealed class CreatureLootFactory : LootFactory<CreatureLootTemplateRecord
     }
 
     public override string CatalogName => "Creature Loot";
-
-    protected override string Kind => "Creature";
 }
 
 /// <summary>`gameobject_loot_template` as a browsable catalog.</summary>
@@ -24,8 +22,6 @@ public sealed class GameobjectLootFactory : LootFactory<GameobjectLootTemplateRe
     }
 
     public override string CatalogName => "Gameobject Loot";
-
-    protected override string Kind => "Gameobject";
 }
 
 /// <summary>`reference_loot_template` as a browsable catalog.</summary>
@@ -37,8 +33,6 @@ public sealed class ReferenceLootFactory : LootFactory<ReferenceLootTemplateReco
     }
 
     public override string CatalogName => "Reference Loot";
-
-    protected override string Kind => "Reference";
 }
 
 /// <summary>`item_loot_template` as a browsable catalog.</summary>
@@ -50,8 +44,6 @@ public sealed class ItemLootFactory : LootFactory<ItemLootTemplateRecord>
     }
 
     public override string CatalogName => "Item Loot";
-
-    protected override string Kind => "Item";
 }
 
 /// <summary>`skinning_loot_template` as a browsable catalog.</summary>
@@ -63,8 +55,6 @@ public sealed class SkinningLootFactory : LootFactory<SkinningLootTemplateRecord
     }
 
     public override string CatalogName => "Skinning Loot";
-
-    protected override string Kind => "Skinning";
 }
 
 /// <summary>`pickpocketing_loot_template` as a browsable catalog.</summary>
@@ -76,8 +66,6 @@ public sealed class PickpocketingLootFactory : LootFactory<PickpocketingLootTemp
     }
 
     public override string CatalogName => "Pickpocketing Loot";
-
-    protected override string Kind => "Pickpocketing";
 }
 
 /// <summary>`fishing_loot_template` as a browsable catalog.</summary>
@@ -89,8 +77,6 @@ public sealed class FishingLootFactory : LootFactory<FishingLootTemplateRecord>
     }
 
     public override string CatalogName => "Fishing Loot";
-
-    protected override string Kind => "Fishing";
 }
 
 /// <summary>`disenchant_loot_template` as a browsable catalog.</summary>
@@ -102,8 +88,6 @@ public sealed class DisenchantLootFactory : LootFactory<DisenchantLootTemplateRe
     }
 
     public override string CatalogName => "Disenchant Loot";
-
-    protected override string Kind => "Disenchant";
 }
 
 /// <summary>`mail_loot_template` as a browsable catalog.</summary>
@@ -115,6 +99,4 @@ public sealed class MailLootFactory : LootFactory<MailLootTemplateRecord>
     }
 
     public override string CatalogName => "Mail Loot";
-
-    protected override string Kind => "Mail";
 }

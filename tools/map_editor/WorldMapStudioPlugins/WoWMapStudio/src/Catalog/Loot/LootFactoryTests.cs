@@ -37,7 +37,7 @@ public static class LootFactoryTests
     public static void Loot_diff_rejects_duplicate_items()
     {
         var factory = new SkinningLootFactory(null!);
-        var table = new LootTable("Skinning") { ID = 1 };
+        var table = new LootTable("Skinning Loot") { ID = 1 };
         table.AddRow(7).Apply();
         table.AddRow(7).Apply();
         bool threw = false;

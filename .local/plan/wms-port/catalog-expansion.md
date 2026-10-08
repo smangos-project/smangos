@@ -2,7 +2,7 @@
 
 Order (value first):
 - [x] 1 Loot templates: creature/gameobject/reference/item/skinning/pickpocketing/fishing/disenchant/mail (all share columns entry,item,ChanceOrQuestChance,groupid,mincountOrRef,maxcount,condition_id; key entry+item+groupid)
-- [ ] 2 Vendor/trainer: npc_vendor, npc_vendor_template, npc_trainer, npc_trainer_template
+- [x] 2 Vendor/trainer: npc_vendor, npc_vendor_template, npc_trainer, npc_trainer_template
 - [ ] 3 Gossip: gossip_menu, gossip_menu_option, npc_text, broadcast_text
 - [ ] 4 Quest relations (creature/gameobject questrelation + involvedrelation)
 - [ ] 5 Spawn extras: creature_addon, creature_equip_template, pools, creature_groups, creature_linking, game_event_*
@@ -19,3 +19,4 @@ Order (value first):
 - Wire creature_template LootId/VendorId/TrainerId fields to Link into the new catalogs.
 - Tests go beside ServerTemplateCatalogTests.cs (round-trip via internal CallToEntity/CallWrite); run `tools/map_editor/wms-test.sh --filter 'WoW Catalog'`.
 - Loot done (cf425f6b4); creature_template LootId links to "Creature Loot". Item column in loot rows is a plain int (no Item link yet).
+- Vendor/trainer done on shared EntryRowsFactory<TRecord,TTable,TRow> (Catalog/EntryRows); trainer tables are keyless in the DB so TrainerTableKeys (ITableConfiguration) keys them on (entry,spell). New child-row catalog = subclass EntryRowTable + EntryRowsFactory. Script mutators (e.AddRow(..)) currently fail in the sandbox with a Closure cast error, for Spell.AddEffect too (pre-existing).
