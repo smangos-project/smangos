@@ -540,6 +540,8 @@ void SetOverlayParameter(std::string const& name, float value)
         TestGrid = static_cast<int>(value);
     else if (name == "map")
         SetServerDataMap(static_cast<int>(value));
+    else if (name == "serverdata")
+        SetServerDataShown(value != 0.f, value != 0.f);
     else if (name == "enabled")
         Enabled = value != 0.f;
 }

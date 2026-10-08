@@ -480,3 +480,9 @@ void SetServerDataMap(int map)
 {
     MapId = map;
 }
+
+void SetServerDataShown(bool collision, bool navmesh)
+{
+    ShowCollision = collision;
+    ShowNavmesh = navmesh;
+}

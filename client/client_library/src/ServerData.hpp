@@ -4,3 +4,4 @@
 // SMANGOS_SERVER_DATA names the server data directory. Ctrl+Shift+C toggles collision, Ctrl+Shift+N the navmesh.
 void StartServerData();
 void SetServerDataMap(int map);
+void SetServerDataShown(bool collision, bool navmesh);
