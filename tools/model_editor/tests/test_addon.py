@@ -31,6 +31,7 @@ m2_export = common.submodule("m2_export")
 fdids = common.submodule("fdids")
 m2_seq = common.submodule("m2_seq")
 wmo_export = common.submodule("wmo_export")
+materials = common.submodule("materials")
 ops_add = common.submodule("ops_add")
 wmo_bsp = common.submodule("wmo_bsp")
 wmo_lod = common.submodule("wmo_lod")
@@ -624,6 +625,42 @@ def wmo_export_new_group():
 
 
 @test
+def wmo_new_group_colors_uvs_collision():
+    path = REFS[0]
+    clear()
+    common.scratch_world("wmo5")
+    coll = wmo_import.load(path, {"doodads": False})
+    src = mesh_groups(coll)[0]
+    nob = src.copy()
+    nob.data = src.data.copy()
+    nob.name = "multi"
+    nob.wow_wmo_group.index = -1
+    me = nob.data
+    me.uv_layers.new(name="uv_extra")
+    while len(me.color_attributes) < 2:
+        me.color_attributes.new(f"col{len(me.color_attributes)}", "BYTE_COLOR", "POINT")
+    me.color_attributes["col1"].data.foreach_set("color_srgb", np.tile([0.2, 0.4, 0.6, 1.0], len(me.vertices)))
+    mat = materials.collision_material()
+    me.materials.append(mat)
+    ci = len(me.materials) - 1
+    me.polygons[0].material_index = ci
+    me.attributes["wow_poly_flags"].data[0].value = 0x20
+    next(c for c in coll.children if c.name.startswith("groups")).objects.link(nob)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    n = r.new_groups["multi"]
+    h = new.groups[n].body.header
+    assert int(h.flags) & 0x1000000 and int(h.flags) & 0x2000000 and int(h.flags) & 0x4, hex(int(h.flags))
+    assert len(new.groups[n].body.texcoords) == 2 and len(new.groups[n].body.vertex_colors) == 2
+    vc = new.groups[n].body.vertex_colors[1]
+    assert abs(vc[0].r - 51) <= 1 and abs(vc[0].g - 102) <= 1 and abs(vc[0].b - 153) <= 1
+    polys = np.asarray(new.groups[n].body.polys if len(new.groups[n].body.polys) else new.groups[n].body.polys2)
+    assert (polys["materialId"] == 0xFF).sum() >= 1, polys["materialId"]
+    clear()
+
+
+@test
 def wmo_export_new_wmo():
     clear()
     common.scratch_world("wmo4")
@@ -1176,6 +1213,27 @@ def wmo_liquid_create():
     assert all(abs(v.height - 3.0) < 1e-4 for v in L.vertices)
     assert int(new.groups[gi].body.header.flags) & 0x1000
     assert new.validate().ok, str(new.validate())
+
+
+@test
+def wmo_liquid_tile_type():
+    path = REFS[1]
+    clear()
+    coll = wmo_import.load(path, {"doodads": False, "liquids": False})
+    src = wmo_expect(path)[0]
+    gi = next(i for i, g in enumerate(src.groups) if g.body.liquid.empty)
+    bpy.context.view_layer.objects.active = mesh_groups(coll)[gi]
+    assert bpy.ops.wow.add_wmo_object(kind="liquid") == {"FINISHED"}
+    liq = bpy.context.view_layer.objects.active
+    for poly in liq.data.polygons:
+        poly.select = poly.index in (0, 1, 8, 9)
+    assert bpy.ops.wow.wmo_set_liquid_tile(liquid_type="2", fishable="YES") == {"FINISHED"}
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    tiles = [int(t.flags) for t in reread(path, r.files).groups[gi].body.liquid.tiles]
+    assert [tiles[i] & 0x47 for i in (0, 1, 8, 9)] == [0x42] * 4, tiles[:10]
+    assert all(t & 0x47 == 0 for i, t in enumerate(tiles) if i not in (0, 1, 8, 9)), tiles
+    clear()
 
 
 @test

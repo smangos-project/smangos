@@ -287,6 +287,92 @@ class WOW_OT_m2_bake_camera(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class WOW_OT_wmo_mark_collision(bpy.types.Operator):
+    bl_idname = "wow.wmo_mark_collision"
+    bl_label = "Mark collision only"
+    bl_description = "Assign the selected faces to the collision material: no render batch; poly flags reset to the collision default"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and ob.type == "MESH" and context.mode == "EDIT_MESH"
+
+    def execute(self, context):
+        import bmesh
+        from . import materials
+        ob = context.active_object
+        me = ob.data
+        mat = materials.collision_material()
+        if mat.name not in [s.material.name for s in ob.material_slots if s.material]:
+            me.materials.append(mat)
+        idx = next(i for i, s in enumerate(ob.material_slots) if s.material == mat)
+        bm = bmesh.from_edit_mesh(me)
+        layer = bm.faces.layers.int.get("wow_poly_flags") or bm.faces.layers.int.new("wow_poly_flags")
+        for f in bm.faces:
+            if f.select:
+                f.material_index = idx
+                f[layer] = 0
+        bmesh.update_edit_mesh(me)
+        return {"FINISHED"}
+
+
+LIQUID_TYPES = (("0", "Water", ""), ("1", "Ocean", ""), ("2", "Magma", ""), ("3", "Slime", ""))
+TILE_TYPE_MASK, TILE_NO_RENDER, TILE_FISHABLE = 0x07, 0x08, 0x40
+
+
+def apply_tile_type(flags, liquid_type, fishable, no_render):
+    """Tile flag byte with the type, fishable and no-render bits replaced (`fishable`/`no_render` None keep them)."""
+    f = flags & ~TILE_TYPE_MASK | liquid_type
+    if fishable is not None:
+        f = f | TILE_FISHABLE if fishable else f & ~TILE_FISHABLE
+    if no_render is not None:
+        f = f | TILE_NO_RENDER if no_render else f & ~TILE_NO_RENDER
+    return f
+
+
+class WOW_OT_wmo_set_liquid_tile(bpy.types.Operator):
+    bl_idname = "wow.wmo_set_liquid_tile"
+    bl_label = "Set liquid tile type"
+    bl_description = "Set the liquid type of the selected tiles of a WMO liquid"
+    bl_options = {"REGISTER", "UNDO"}
+    liquid_type: EnumProperty(name="Type", items=LIQUID_TYPES)
+    fishable: EnumProperty(name="Fishable", items=(("KEEP", "Keep", ""), ("YES", "Yes", ""), ("NO", "No", "")))
+    no_render: EnumProperty(name="No liquid", items=(("KEEP", "Keep", ""), ("YES", "Yes", ""), ("NO", "No", "")))
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and ob.type == "MESH" and ob.wow_wmo_liquid.verts_dim[0] > 0
+
+    def execute(self, context):
+        import bmesh
+        ob = context.active_object
+        me = ob.data
+        fish = {"KEEP": None, "YES": True, "NO": False}[self.fishable]
+        hide = {"KEEP": None, "YES": True, "NO": False}[self.no_render]
+        edit = ob.mode == "EDIT"
+        if edit:
+            bm = bmesh.from_edit_mesh(me)
+            layer = bm.faces.layers.int.get("wow_tile_flags") or bm.faces.layers.int.new("wow_tile_flags")
+            for f in bm.faces:
+                if f.select:
+                    f[layer] = apply_tile_type(f[layer], int(self.liquid_type), fish, hide)
+                    if hide is not None:
+                        f.hide_set(hide)
+            bmesh.update_edit_mesh(me)
+            return {"FINISHED"}
+        if "wow_tile_flags" not in me.attributes:
+            me.attributes.new("wow_tile_flags", "INT", "FACE")
+        data = me.attributes["wow_tile_flags"].data
+        for poly in me.polygons:
+            if poly.select:
+                data[poly.index].value = apply_tile_type(data[poly.index].value, int(self.liquid_type), fish, hide)
+                if hide is not None:
+                    poly.hide = hide
+        return {"FINISHED"}
+
+
 class WOW_OT_generate_wmo_lods(bpy.types.Operator):
     bl_idname = "wow.generate_wmo_lods"
     bl_label = "Generate LODs"
@@ -336,7 +422,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_generate_wmo_lods, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_wmo_mark_collision, WOW_OT_wmo_set_liquid_tile, WOW_OT_generate_wmo_lods, WOW_MT_add)
 
 
 def register():

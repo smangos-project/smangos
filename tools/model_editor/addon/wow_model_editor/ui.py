@@ -253,6 +253,10 @@ class WOW_PT_object(bpy.types.Panel):
                 col.operator("wow.m2_light_from_blender", icon="LIGHT")
             if attr == "wow_m2_object" and ob.type == "CAMERA":
                 col.operator("wow.m2_bake_camera", icon="CAMERA_DATA")
+            if attr == "wow_wmo_liquid":
+                col.operator("wow.wmo_set_liquid_tile", icon="MOD_FLUIDSIM")
+            if attr == "wow_wmo_group" and context.mode == "EDIT_MESH":
+                col.operator("wow.wmo_mark_collision", icon="MOD_PHYSICS")
 
 
 FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {7: "Unreachable", 26: "Antiportal"}, "flags2": {}}}

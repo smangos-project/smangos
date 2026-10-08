@@ -17,7 +17,9 @@ from .report import Report as _Report
 
 BBOX_PAD = 0.028
 F_BSP, F_COLOR, F_EXTERIOR, F_INTERIOR = 0x1, 0x4, 0x8, 0x2000
+F_COLOR2, F_UV2, F_UV3 = 0x1000000, 0x2000000, 0x40000000
 F_ANTIPORTAL, F_UNREACHABLE = 0x4000000, 0x80
+TWO_LAYER_SHADERS = {6, 7, 8, 13, 14, 15, 16}
 COLLISION_NAME = "wow_collision"
 
 
@@ -393,6 +395,8 @@ def apply_group(w, gi, arr, src, report, bsp=True):
     flags = u32(int(h.flags)) & ~(F_BSP | F_COLOR)
     flags |= F_BSP if len(nodes) else 0
     flags |= F_COLOR if arr.colors else 0
+    for bit, on in ((F_COLOR2, len(arr.colors) > 1), (F_UV2, len(arr.uvs) > 1), (F_UV3, len(arr.uvs) > 2)):
+        flags = flags | bit if on else flags & ~bit
     h.flags = type(h.flags)(flags)
     set_group_box(w, gi, arr.vertices)
 
@@ -483,7 +487,7 @@ def update_group_meta(w, gi, ob, report):
             if field == "group_name":
                 info.name_offset = h.group_name
             changed = True
-    derived = F_BSP | F_COLOR
+    derived = F_BSP | F_COLOR | F_COLOR2 | F_UV2 | F_UV3
     want = (group_flags(ob) & ~derived) | (u32(int(h.flags)) & derived)
     if want != u32(int(h.flags)):
         h.flags = type(h.flags)(want)
@@ -587,6 +591,8 @@ def check_output(w, report):
             m = b.material_id_large if b.flags & wmo_import.BATCH_LARGE_MATERIAL else b.material_id
             if m >= n and m != 0xFF:
                 report.add("ERROR", f"group {gi}", f"batch material {m} out of range ({n} materials)")
+            elif m < n and int(w.root.materials[m].shader) in TWO_LAYER_SHADERS and len(g.body.texcoords) < 2:
+                report.add("WARNING", f"group {gi}", f"material {m} shader {int(w.root.materials[m].shader)} needs a second UV map")
     check_lod_tables(w, report)
     custom = fdids.read()
     for mi, m in enumerate(w.root.materials):
