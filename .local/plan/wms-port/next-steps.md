@@ -122,3 +122,5 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 - ROOT CAUSE of vanishing distant trees: stock obj1 MLDD/MLDX/MLDL are sorted by bounds radius DESCENDING; front insertion broke the order. AdtObj1Patcher.AddMissing now inserts at the sorted position (committed 976152a6d + offset fix). Trees are back (user confirmed); WMO panel shows.
 - M2 panel exported with TXID 0 (the e2e panel has no texture): patched TXID to 189080 in .client generated m2 to test; awaiting user answer. wms-test.sh with scratch config hangs; use `--attach --port 8799` after /tmp/wmsdbg/up.sh.
 - Client currently running with the installed panels; restore stock afterwards (see twelfth-session note).
+
+- 2026-10-08: M2 panel fixed (commit 91f8ee5c0: seq bounds, skin boneInfluences/BoneCountMax 0, flags 0x202080): renders as flat dark textured quad in client. Its TXID is still 0 from the e2e panel (test-only). Client restored to stock, character 13 reset. Next: step 1.5 (vmap extract of map 0 on live .server/data with panels installed, collision/LOS), then new map.
