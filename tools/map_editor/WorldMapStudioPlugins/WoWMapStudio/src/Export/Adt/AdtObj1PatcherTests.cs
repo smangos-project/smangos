@@ -79,4 +79,34 @@ public static class AdtObj1PatcherTests
 
         Assert.IsNull(AdtObj1Patcher.Patch(patched!, new HashSet<uint> { 10, 13 }, new HashSet<uint> { 21, 22 }), "nothing left to drop");
     }
+    [EditorTest(Category = "WoW Export", Thread = TestThread.Background)]
+    public static void Added_placements_get_lod_entries_in_the_last_level()
+    {
+        uint[] lod = [0, 0, 0, 2, 0, 0, 0, 0, 1, 1, 0, 1];
+        var lodBytes = new byte[48];
+        Buffer.BlockCopy(lod, 0, lodBytes, 0, 48);
+        byte[] file = Chunk("MLFD", lodBytes)
+            .Concat(Chunk("MLDD", Entries(36, 10, 11)))
+            .Concat(Chunk("MLDX", Entries(28, 0, 0)))
+            .Concat(Chunk("MLDL", new byte[8]))
+            .Concat(Chunk("MLMD", Entries(40, 20)))
+            .Concat(Chunk("MLMX", Entries(28, 0)))
+            .ToArray();
+        byte[] obj0 = Chunk("MDDF", Entries(36, 10, 12)).Concat(Chunk("MODF", Entries(64, 20, 21))).ToArray();
+
+        byte[]? patched = AdtObj1Patcher.AddMissing(file, obj0);
+        Assert.IsNotNull(patched);
+        var parts = Parse(patched!);
+        Assert.AreEqual(3 * 36, parts["MLDD"].Length);
+        Assert.AreEqual(3 * 28, parts["MLDX"].Length);
+        Assert.AreEqual(3 * 4, parts["MLDL"].Length);
+        Assert.AreEqual(2 * 40, parts["MLMD"].Length);
+        Assert.AreEqual(12u, BitConverter.ToUInt32(parts["MLDD"], (2 * 36) + 4));
+        Assert.AreEqual(21u, BitConverter.ToUInt32(parts["MLMD"], 40 + 4));
+        var back = new uint[12];
+        Buffer.BlockCopy(parts["MLFD"], 0, back, 0, 48);
+        Assert.AreEqual(3u, back[3]);
+        Assert.AreEqual(2u, back[11]);
+        Assert.IsNull(AdtObj1Patcher.AddMissing(patched!, obj0), "nothing left to add");
+    }
 }

@@ -18,6 +18,154 @@ public static class AdtObj1Patcher
     private const int ObjectBoundsSize = 28;
     private const int LodLevels = 3;
 
+    private const float TileOrigin = 17066.666667f;
+    private const int MddfSize = 36;
+    private const int ModfSize = 64;
+
+    /// <summary>
+    /// Appends an LOD entry for every <c>MDDF</c>/<c>MODF</c> placement of <paramref name="obj0"/> the file lacks (the
+    /// client draws doodads from <c>MLDD</c>, not from the <c>_obj0</c> list). Null when nothing was missing.
+    /// </summary>
+    public static byte[]? AddMissing(byte[] file, byte[] obj0)
+    {
+        var chunks = Parse(file);
+        var source = Parse(obj0);
+        int Find(string tag) => chunks.FindIndex(c => c.Tag == tag);
+        int fd = Find("MLFD"), dd = Find("MLDD"), dx = Find("MLDX"), dl = Find("MLDL"), md = Find("MLMD"), mx = Find("MLMX");
+        int mddf = source.FindIndex(c => c.Tag == "MDDF"), modf = source.FindIndex(c => c.Tag == "MODF");
+        if (fd < 0 || chunks[fd].Data.Length != 48 || dd < 0 || dx < 0 || dl < 0 || md < 0 || mx < 0)
+        {
+            return null;
+        }
+
+        uint[] lod = new uint[12];
+        Buffer.BlockCopy(chunks[fd].Data, 0, lod, 0, 48);
+        bool changed = false;
+
+        var known = Uids(chunks[dd].Data, MddfSize);
+        var doodads = new List<byte>(chunks[dd].Data);
+        var bounds = new List<byte>(chunks[dx].Data);
+        var lods = new List<byte>(chunks[dl].Data);
+        byte[] lodValue = chunks[dl].Data.Length >= DoodadLodSize ? chunks[dl].Data[..DoodadLodSize] : new byte[DoodadLodSize];
+        for (int p = 0; mddf >= 0 && p + MddfSize <= source[mddf].Data.Length; p += MddfSize)
+        {
+            byte[] entry = source[mddf].Data[p..(p + MddfSize)];
+            if (!known.Add(BitConverter.ToUInt32(entry, 4)))
+            {
+                continue;
+            }
+
+            float x = BitConverter.ToSingle(entry, 8), y = BitConverter.ToSingle(entry, 12), z = BitConverter.ToSingle(entry, 16);
+            doodads.AddRange(entry);
+            bounds.AddRange(Bounds(TileOrigin - z - 3, TileOrigin - x - 3, y - 3, TileOrigin - z + 3, TileOrigin - x + 3, y + 3));
+            lods.AddRange(lodValue);
+            lod[3 + LastLevel(lod, 0)]++;
+            changed = true;
+        }
+
+        known = Uids(chunks[md].Data, ObjectSize);
+        var objects = new List<byte>(chunks[md].Data);
+        var objectBounds = new List<byte>(chunks[mx].Data);
+        for (int p = 0; modf >= 0 && p + ModfSize <= source[modf].Data.Length; p += ModfSize)
+        {
+            byte[] entry = source[modf].Data[p..(p + ModfSize)];
+            if (!known.Add(BitConverter.ToUInt32(entry, 4)))
+            {
+                continue;
+            }
+
+            float ax = BitConverter.ToSingle(entry, 32), ay = BitConverter.ToSingle(entry, 36), az = BitConverter.ToSingle(entry, 40);
+            float bx = BitConverter.ToSingle(entry, 44), by = BitConverter.ToSingle(entry, 48), bz = BitConverter.ToSingle(entry, 52);
+            objects.AddRange(entry[..32]);
+            objects.AddRange(entry[56..64]);
+            objectBounds.AddRange(Bounds(
+                TileOrigin - MathF.Max(az, bz), TileOrigin - MathF.Max(ax, bx), MathF.Min(ay, by),
+                TileOrigin - MathF.Min(az, bz), TileOrigin - MathF.Min(ax, bx), MathF.Max(ay, by)));
+            lod[6 + LodLevels + LastLevel(lod, 6)]++;
+            changed = true;
+        }
+
+        if (!changed)
+        {
+            return null;
+        }
+
+        var lodBytes = new byte[48];
+        Buffer.BlockCopy(lod, 0, lodBytes, 0, 48);
+        chunks[fd] = ("MLFD", lodBytes);
+        chunks[dd] = ("MLDD", doodads.ToArray());
+        chunks[dx] = ("MLDX", bounds.ToArray());
+        chunks[dl] = ("MLDL", lods.ToArray());
+        chunks[md] = ("MLMD", objects.ToArray());
+        chunks[mx] = ("MLMX", objectBounds.ToArray());
+        return Serialize(chunks);
+    }
+
+    // Appended entries extend the last occupied level so the ranges of the earlier ones stay valid.
+    private static int LastLevel(uint[] lod, int first)
+    {
+        for (int level = LodLevels - 1; level > 0; level--)
+        {
+            if (lod[first + LodLevels + level] > 0)
+            {
+                return level;
+            }
+        }
+
+        return 0;
+    }
+
+    private static byte[] Bounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+    {
+        float radius = MathF.Sqrt(((maxX - minX) * (maxX - minX)) + ((maxY - minY) * (maxY - minY)) + ((maxZ - minZ) * (maxZ - minZ))) * 0.5f;
+        var bytes = new byte[DoodadBoundsSize];
+        float[] values = [minX, minY, minZ, maxX, maxY, maxZ, radius];
+        Buffer.BlockCopy(values, 0, bytes, 0, bytes.Length);
+        return bytes;
+    }
+
+    private static HashSet<uint> Uids(byte[] data, int size)
+    {
+        var uids = new HashSet<uint>();
+        for (int p = 0; p + size <= data.Length; p += size)
+        {
+            uids.Add(BitConverter.ToUInt32(data, p + 4));
+        }
+
+        return uids;
+    }
+
+    private static List<(string Tag, byte[] Data)> Parse(byte[] file)
+    {
+        var chunks = new List<(string Tag, byte[] Data)>();
+        for (int p = 0; p + 8 <= file.Length;)
+        {
+            string tag = new([(char)file[p + 3], (char)file[p + 2], (char)file[p + 1], (char)file[p]]);
+            int size = BitConverter.ToInt32(file, p + 4);
+            chunks.Add((tag, file.AsSpan(p + 8, size).ToArray()));
+            p += 8 + size;
+        }
+
+        return chunks;
+    }
+
+    private static byte[] Serialize(List<(string Tag, byte[] Data)> chunks)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream);
+        foreach ((string tag, byte[] bytes) in chunks)
+        {
+            writer.Write((byte)tag[3]);
+            writer.Write((byte)tag[2]);
+            writer.Write((byte)tag[1]);
+            writer.Write((byte)tag[0]);
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
+        }
+
+        return stream.ToArray();
+    }
+
     /// <summary>The patched file, or null when nothing in it referred to a removed placement.</summary>
     public static byte[]? Patch(byte[] file, ISet<uint> doodadUids, ISet<uint> objectUids)
     {

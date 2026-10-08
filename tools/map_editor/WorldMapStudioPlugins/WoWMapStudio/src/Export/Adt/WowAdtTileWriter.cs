@@ -142,6 +142,13 @@ public static class WowAdtTileWriter
         {
             fs.AddFile(lodPath, patched);
         }
+
+        string placementPath = $"world/maps/{id.Map}/{id.Map}_{id.FileX}_{id.FileY}_obj0.adt";
+        if (fs.Exists(lodPath) && fs.Exists(placementPath) &&
+            AdtObj1Patcher.AddMissing(fs.ReadFile(lodPath), fs.ReadFile(placementPath)) is { } extended)
+        {
+            fs.AddFile(lodPath, extended);
+        }
     }
 
     /// <summary>Writes a tile that has no file yet: the donor tile's file supplies the structure, which is flattened, repositioned to <paramref name="tile"/> and then filled like any other edit.</summary>
