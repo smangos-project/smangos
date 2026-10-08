@@ -73,6 +73,16 @@ def sync_shadow_batches(ref, m, report):
         report.add("INFO", "geometry", f"{added} shadow batch(es) added")
 
 
+def check_split_files(ref, m, report):
+    """Bones and sequences of a model with a skeleton or animation files live in those files, which are not rewritten."""
+    c = m.chunks
+    if not (len(c.skeleton_fdid) or len(c.anim_fdids) or len(c.bone_fdids)):
+        return
+    for what in ("bones", "sequences"):
+        if deep_diff(getattr(ref.root, what), getattr(m.root, what), what):
+            report.add("ERROR", "export", f"{what} were edited but this model keeps them in separate skeleton/animation files, which the exporter does not write")
+
+
 def sync_lods(ref, m, report):
     """LOD skins are replaced by copies of skin 0 once skin 0 was edited."""
     if len(m.skins) < 2 or not deep_diff(ref.skins[0], m.skins[0], "skin"):
@@ -112,6 +122,7 @@ def export(top, out_path=None, options=None):
     ref = m2_import.read(src)
     rebuild(top, m, report, opts)
     report.model = m
+    check_split_files(ref, m, report)
     sync_shadow_batches(ref, m, report)
     sync_lods(ref, m, report)
     if report.errors:

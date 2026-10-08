@@ -1971,6 +1971,23 @@ def m2_influence_limits():
 
 
 @test
+def m2_split_file_guard():
+    path = "character/goblin/male/goblinmale.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors and not r.dirty, str(r)
+    ref, m = m2_import.read(path), m2_import.read(path)
+    rep = m2_export.Report(files_written=0, files_removed=0)
+    m2_export.check_split_files(ref, m, rep)
+    assert not rep.errors
+    m.root.sequences.resize(len(m.root.sequences) + 1)
+    m2_export.check_split_files(ref, m, rep)
+    assert len(rep.errors) == 1, str(rep)
+    clear()
+
+
+@test
 def m2_key_track_operator():
     clear()
     top = m2_import.load("character/human/male/humanmale.m2", {"display": "NONE"})
