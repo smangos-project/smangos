@@ -160,6 +160,12 @@ def export(top, out_path=None, options=None):
         if report.errors:
             return report
     m.write(s.fs, client.key(path))
+    for kind in ("bounding", "collision"):
+        if not any(getattr(p, f"{kind}_min")) and not any(getattr(p, f"{kind}_max")):
+            box = getattr(m.root, f"{kind}_box")
+            setattr(p, f"{kind}_min", (box.min.x, box.min.y, box.min.z))
+            setattr(p, f"{kind}_max", (box.max.x, box.max.y, box.max.z))
+            setattr(p, f"{kind}_radius", getattr(m.root, f"{kind}_sphere_radius"))
     fdids.adopt_session_ids()
     if path == p.path:
         p.fdid = fdids.allocate(path)
