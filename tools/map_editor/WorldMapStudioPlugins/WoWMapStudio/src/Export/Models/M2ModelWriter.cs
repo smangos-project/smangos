@@ -28,10 +28,12 @@ public readonly record struct ModelSurfaceInput(
 public static class M2ModelWriter
 {
     private const uint FormatVersion = 274;
-    private const uint GlobalFlagBits = 0x202000;
+    private const uint GlobalFlagBits = 0x202080;
 
     // The client needs a non-zero skin profile count in the header even though SFID lists the skins.
     private const int SkinProfileCountOffset = 68;
+    private const int SequenceArrayOffset = 28;
+    private const int SequenceBoundsOffset = 32;
 
     public static (byte[] M2Bytes, byte[] SkinBytes) Write(string name, IReadOnlyList<ModelSurfaceInput> surfaces, uint skinFileDataId = 0)
     {
@@ -83,7 +85,7 @@ public static class M2ModelWriter
         root.TextureTransformsLookupTable.Add(-1);
 
         var profile = skin.Profile;
-        profile.BoneCountMax = 1;
+        profile.BoneCountMax = 0;
         int vertexStart = 0;
         int indexStart = 0;
         for (int i = 0; i < surfaces.Count; i++)
@@ -126,7 +128,7 @@ public static class M2ModelWriter
                 IndexStart = (ushort)(indexStart & 0xFFFF),
                 IndexCount = (ushort)s.Indices.Count,
                 BoneCount = 1,
-                BoneInfluences = 1,
+                BoneInfluences = 0,
                 CenterPosition = new C3Vector((min.X + max.X) / 2, (min.Y + max.Y) / 2, (min.Z + max.Z) / 2),
                 SortCenterPosition = new C3Vector((min.X + max.X) / 2, (min.Y + max.Y) / 2, (min.Z + max.Z) / 2),
                 SortRadius = radius,
@@ -144,6 +146,13 @@ public static class M2ModelWriter
 
         byte[] image = root.Write();
         BitConverter.GetBytes(1u).CopyTo(image, SkinProfileCountOffset);
+        int sequenceStart = BitConverter.ToInt32(image, SequenceArrayOffset + 4) + SequenceBoundsOffset;
+        float[] bounds = { min.X, min.Y, min.Z, max.X, max.Y, max.Z, radius };
+        for (int i = 0; i < bounds.Length; i++)
+        {
+            BitConverter.GetBytes(bounds[i]).CopyTo(image, sequenceStart + i * 4);
+        }
+
         byte[] rest = chunked.Write();
         var m2 = new byte[8 + image.Length + rest.Length - 8];
         BitConverter.GetBytes(0x3132444Du).CopyTo(m2, 0);
