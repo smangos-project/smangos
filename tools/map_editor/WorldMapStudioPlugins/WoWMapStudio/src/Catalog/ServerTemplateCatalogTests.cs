@@ -175,6 +175,24 @@ public static class ServerTemplateCatalogTests
     }
 
     [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Generic_script_rows_round_trip()
+    {
+        var factory = new GenericScriptFactory(null!);
+        ScriptTable table = factory.CallToEntity(9,
+            [new GenericScriptsRecord { Id = 9, Delay = 5, Command = 1 }, new GenericScriptsRecord { Id = 9, Delay = 2, Command = 15, X = 1.5f }]);
+        Assert.AreEqual(2, table.Rows[0].Delay);
+        Assert.AreEqual(1.5f, table.Rows[0].X);
+        var added = new System.Collections.Generic.List<GenericScriptsRecord>();
+        var removed = new System.Collections.Generic.List<GenericScriptsRecord>();
+        factory.CallDiff(9, [new GenericScriptsRecord { Id = 9, Delay = 5, Command = 1 }],
+            [new ScriptRow { Delay = 5, Command = 2 }], removed.Add, added.Add);
+        Assert.AreEqual(1, removed.Count);
+        Assert.AreEqual(1, added.Count);
+        Assert.AreEqual(9, added[0].Id);
+        Assert.AreEqual(2, added[0].Command);
+    }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
     public static void Record_backed_dbc_catalogs_round_trip()
     {
         var sets = new ItemSetFactory(null!);
