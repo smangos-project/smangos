@@ -744,6 +744,27 @@ def wmo_portal_create_delete():
 
 
 @test
+def wmo_group_meta_edit():
+    path = REFS[1]
+    coll, r = export_files(path)
+    ob = mesh_groups(coll)[2]
+    p = ob.wow_wmo_group
+    src = wmo_expect(path)[0].groups[2].body.header
+    p.group_name, p.descriptive_name = "renamed_group", "A fresh description"
+    p.flags = int(src.flags) ^ 0x1000
+    p.fog_ids = (1, 0, 0, 0)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    h = new.groups[2].body.header
+    names = new.root.group_names
+    assert names.at(h.group_name) == "renamed_group" and names.at(h.descriptive_group_name) == "A fresh description"
+    assert names.at(new.root.group_infos[2].name_offset) == "renamed_group"
+    assert (int(h.flags) ^ int(src.flags)) == 0x1000 and int(new.root.group_infos[2].flags) == int(h.flags)
+    assert int(h.fog_ids[0]) == 1 and new.validate().ok, str(new.validate())
+
+
+@test
 def wmo_export_operator():
     clear()
     coll = wmo_import.load(REFS[0], {"doodads": False})

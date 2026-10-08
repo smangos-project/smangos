@@ -433,6 +433,37 @@ def update_group(w, gi, ob, report, force):
     return True
 
 
+def update_group_meta(w, gi, ob, report):
+    """Applies name, flag, fog and liquid-type edits from the group's properties; returns True if anything changed."""
+    p = ob.wow_wmo_group
+    h = w.groups[gi].body.header
+    info = w.root.group_infos[gi]
+    changed = False
+    for field, attr, cur in (("group_name", "group_name", h.group_name), ("descriptive_name", "descriptive_group_name", h.descriptive_group_name)):
+        want = getattr(p, field)
+        if want != wmo_import._string(w.root.group_names, cur):
+            setattr(h, attr, w.root.group_names.add(want))
+            if field == "group_name":
+                info.name_offset = h.group_name
+            changed = True
+    derived = F_BSP | F_COLOR
+    want = (u32(p.flags) & ~derived) | (u32(int(h.flags)) & derived)
+    if want != u32(int(h.flags)):
+        h.flags = type(h.flags)(want)
+        info.flags = type(info.flags)(want)
+        report.add("INFO", ob.name, f"flags -> {want:#x}")
+        changed = True
+    ids = [int(x) for x in p.fog_ids]
+    if ids != [int(x) for x in h.fog_ids]:
+        for k, v in enumerate(ids):
+            h.fog_ids[k] = v
+        changed = True
+    if int(h.group_liquid) != p.group_liquid:
+        h.group_liquid = p.group_liquid
+        changed = True
+    return changed
+
+
 def new_group_objects(root):
     """Mesh objects in the groups collection without a group index; they are appended as new groups."""
     objs = [o for c in root.children_recursive if c.name.split(".")[0] == "groups" for o in c.objects
@@ -570,6 +601,8 @@ def export(root, out_path=None, options=None):
             continue
         try:
             if update_group(w, gi, ob, report, opts["force"]):
+                dirty.add(gi)
+            if update_group_meta(w, gi, ob, report):
                 dirty.add(gi)
         except ValueError as e:
             report.add("ERROR", ob.name, str(e))
