@@ -2,6 +2,7 @@
 import re
 
 import bpy
+import numpy as np
 from wowlib.formats import wmo as wwmo
 
 from . import client, fdids, index, materials, wmo_import
@@ -157,6 +158,26 @@ def group_vertices(ob):
     return len(ob.data.vertices)
 
 
+def _transfer_normals(src, me):
+    """Stock LODs keep the LOD0 normal of the nearest vertex instead of recomputing smooth normals."""
+    from mathutils.kdtree import KDTree
+    if not len(src.vertices) or not len(me.vertices):
+        return
+    if "wow_normal" in src.attributes:
+        nrm = np.empty(len(src.vertices) * 3, np.float32)
+        src.attributes["wow_normal"].data.foreach_get("vector", nrm)
+    else:
+        nrm = np.empty(len(src.vertices) * 3, np.float32)
+        src.vertex_normals.foreach_get("vector", nrm)
+    nrm = nrm.reshape(-1, 3)
+    tree = KDTree(len(src.vertices))
+    for i, v in enumerate(src.vertices):
+        tree.insert(v.co, i)
+    tree.balance()
+    out = np.array([nrm[tree.find(v.co)[1]] for v in me.vertices], np.float32)
+    me.normals_split_custom_set_from_vertices(out)
+
+
 def generate_lods(root, groups, ratios, min_vertices=200, merge_materials=False, skip_interior=True):
     """(Re)builds LOD objects `1..len(ratios)` for `groups` (WMO group objects); returns {group name: levels made}."""
     from . import wmo_export as ex
@@ -190,6 +211,7 @@ def generate_lods(root, groups, ratios, min_vertices=200, merge_materials=False,
                 if name in me.attributes:
                     me.attributes.remove(me.attributes[name])
             me.shade_smooth()
+            _transfer_normals(base.data, me)
             if merge_materials and len(me.polygons):
                 idx = [pl.material_index for pl in me.polygons]
                 top = max(set(idx), key=idx.count)

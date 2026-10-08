@@ -825,6 +825,13 @@ def wmo_lod_generate_and_export():
     bases = [r.files[k] for k in sorted(r.files) if k != path and "_lod" not in k]
     lw = wmo_lod.level_wmo(r.files[path], bases, {gi: r.files[lods[0]]}).groups[gi].body
     assert 0 < len(lw.vertices) < v0 and len(lw.bsp_nodes) == 0 and not int(lw.header.flags) & 1
+    b0 = w0.groups[gi].body
+    bn = np.asarray(b0.normals).view(np.float32).reshape(-1, 3)
+    bp = np.asarray(b0.vertices).view(np.float32).reshape(-1, 3)
+    ln = np.asarray(lw.normals).view(np.float32).reshape(-1, 3)
+    lp = np.asarray(lw.vertices).view(np.float32).reshape(-1, 3)
+    near = bn[np.linalg.norm(lp[:, None] - bp[None], axis=2).argmin(axis=1)]
+    assert np.median((ln * near).sum(axis=1)) > 0.99
     clear()
     coll = wmo_import.load(path, {"doodads": False})
     again = wmo_lod.generate_lods(coll, [mesh_groups(coll)[gi]], [0.5], 0, False, False)
