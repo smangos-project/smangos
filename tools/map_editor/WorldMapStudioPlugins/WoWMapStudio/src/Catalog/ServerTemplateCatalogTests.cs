@@ -96,4 +96,19 @@ public static class ServerTemplateCatalogTests
         Assert.IsTrue(addonRow.Auras is null);
         Assert.AreEqual(3, addonRow.EmoteState);
     }
+
+    [EditorTest(Category = "WoW Catalog", Thread = TestThread.Background)]
+    public static void Record_backed_dbc_catalogs_round_trip()
+    {
+        var sets = new ItemSetFactory(null!);
+        RecordEntity<DbcItemsetRecord> set = sets.CallToEntity(new DbcItemsetRecord { ID = 3, NameLang = "Dungeon Set", ItemID2 = 55 });
+        Assert.AreEqual(55, set.Record.ItemID2);
+        set.SetNumber("ItemID17", 9);
+        var row = new DbcItemsetRecord();
+        sets.CallWrite(set, row);
+        Assert.AreEqual(3, row.ID);
+        Assert.AreEqual("Dungeon Set", row.NameLang);
+        Assert.AreEqual(55, row.ItemID2);
+        Assert.AreEqual(9, row.ItemID17);
+    }
 }

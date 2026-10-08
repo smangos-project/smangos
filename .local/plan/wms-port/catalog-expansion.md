@@ -7,7 +7,7 @@ Order (value first):
 - [x] 4 Quest relations (4 catalogs; areatrigger_involvedrelation skipped, one quest per trigger)
 - [~] 5 Spawn extras: creature_addon, creature_equip_template, pool_template done; creature_groups, creature_linking, pool membership, game_event_* left
 - [x] 6 Player: Start Spells/Items/Actions, Level Stats, Class Level Stats (entry = race*1000+class); playercreateinfo position row not done
-- [ ] 7 More DBC: ItemSet, Talent/TalentTab, SpellItemEnchantment, Lock, Holiday
+- [x] 7 More DBC: Item Set, Lock, Enchantment, Talent, Holiday (RecordBackedFactory, record copy; TalentTab not done)
 - [ ] 8 AI/scripts: creature_ai_events, creature_spells, generic_scripts, creature_movement
 - [ ] 9 Commit the untracked SpellVisual/SpellVisualKit catalog dirs once they build and test
 
