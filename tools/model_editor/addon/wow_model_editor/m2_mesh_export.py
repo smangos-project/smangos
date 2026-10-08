@@ -97,7 +97,7 @@ def gather(ob, top, arm, bmap, report, rig=None):
         tri_ref = ref.reshape(-1, 3)[tri_loops].reshape(nt, 3, 3)
     uvs = []
     for k in range(2):
-        layer = me.uv_layers.get(f"uv_{k}")
+        layer = me.uv_layers.get(f"uv_{k}") or (me.uv_layers[k] if k < len(me.uv_layers) else None)
         if layer is None:
             uvs.append(np.zeros((nt, 3, 2), np.float32))
             continue

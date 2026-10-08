@@ -1617,6 +1617,32 @@ def m2_material_edit_round_trip():
 
 
 @test
+def m2_second_uv_and_env_mapping():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    p0 = mat.wow_m2_batches[0]
+    obs = [o for o in top.all_objects if o.type == "MESH" and o.material_slots and o.material_slots[0].material == mat]
+    me = obs[0].data
+    if me.uv_layers.get("uv_1") is None:
+        me.uv_layers.new(name="uv_1")
+    n = len(me.loops)
+    me.uv_layers["uv_1"].data.foreach_set("uv", np.tile([0.25, 0.75], n))
+    for mode, want in ((1, 1), (-1, -1)):
+        p0.uv_sets[0] = mode
+        r = m2_export.export(top, options={"dry_run": True})
+        assert not r.errors, str(r)
+        root = r.model.root
+        bi = next(b for b in r.model.skins[0].profile.batches if int(b.texture_count) and b.skin_section_index == p0.skin_section_index)
+        lut = list(root.texture_mapping_lookup_table)
+        assert int(np.int16(lut[int(bi.texture_coord_combo_index)])) == want, lut
+    uv1 = np.array([(v.tex_coords[1].x, v.tex_coords[1].y) for v in r.model.root.vertices])
+    assert np.isclose(uv1, (0.25, 0.25)).all(axis=1).any(), uv1[:4]
+    clear()
+
+
+@test
 def m2_material_layer_add_remove():
     path = find_m2("duskwoodlamppost.m2")
     clear()
