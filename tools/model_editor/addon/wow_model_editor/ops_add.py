@@ -287,6 +287,50 @@ class WOW_OT_m2_bake_camera(bpy.types.Operator):
         return {"FINISHED"}
 
 
+TRACK_PREFIXES = ("wow_color_", "wow_alpha_", "wow_texweight_", "wow_tt_")
+TRACK_FIELDS = {"wow_animate_attached", "wow_ambient_color", "wow_ambient_intensity", "wow_diffuse_color", "wow_diffuse_intensity",
+                "wow_attenuation_start", "wow_attenuation_end", "wow_visibility", "wow_positions", "wow_target_position", "wow_roll", "wow_fov",
+                "wow_emission_speed", "wow_speed_variation", "wow_vertical_range", "wow_horizontal_range", "wow_gravity", "wow_lifespan",
+                "wow_emission_rate", "wow_emission_area_length", "wow_emission_area_width", "wow_z_source", "wow_enabled_in", "wow_color",
+                "wow_alpha", "wow_height_above", "wow_height_below", "wow_tex_slot"}
+
+
+def track_props(ob):
+    """Animatable `wow_*` custom properties of an object, in key order."""
+    return [k for k in ob.keys() if k in TRACK_FIELDS or k.startswith(TRACK_PREFIXES)]
+
+
+class WOW_OT_m2_key_track(bpy.types.Operator):
+    bl_idname = "wow.m2_key_track"
+    bl_label = "Key track"
+    bl_description = "Insert a key for this property into the active sequence's action at the current frame"
+    bl_options = {"REGISTER", "UNDO"}
+    prop: StringProperty()
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        top = m2_export.find_root(ob) if ob is not None else None
+        return top is not None and 0 <= top.wow_m2.active_sequence < len(top.wow_m2.sequences)
+
+    def execute(self, context):
+        ob = context.active_object
+        top = m2_export.find_root(ob)
+        seq = top.wow_m2.sequences[top.wow_m2.active_sequence]
+        if seq.action is None or self.prop not in ob.keys():
+            self.report({"ERROR"}, "no action or property")
+            return {"CANCELLED"}
+        cb = m2_camera_bake._channelbag(seq.action, ob)
+        v = ob[self.prop]
+        vals = list(v) if hasattr(v, "__len__") else [v]
+        path = f'["{self.prop}"]'
+        for c, x in enumerate(vals):
+            fc = cb.fcurves.find(path, index=c) or cb.fcurves.new(path, index=c)
+            fc.keyframe_points.insert(context.scene.frame_current, x)
+            fc.update()
+        return {"FINISHED"}
+
+
 class WOW_OT_wmo_mark_collision(bpy.types.Operator):
     bl_idname = "wow.wmo_mark_collision"
     bl_label = "Mark collision only"
@@ -447,7 +491,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_m2_set_shader_preset, WOW_OT_wmo_mark_collision, WOW_OT_wmo_set_liquid_tile, WOW_OT_generate_wmo_lods, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_m2_bake_camera, WOW_OT_m2_key_track, WOW_OT_m2_set_shader_preset, WOW_OT_wmo_mark_collision, WOW_OT_wmo_set_liquid_tile, WOW_OT_generate_wmo_lods, WOW_MT_add)
 
 
 def register():

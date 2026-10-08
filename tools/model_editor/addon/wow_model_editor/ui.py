@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import CollectionProperty, EnumProperty, StringProperty
 
-from . import client, index, m2_names
+from . import client, index, m2_names, ops_add
 
 
 def _search(self, context, edit_text):
@@ -230,6 +230,23 @@ def active_groups(ob):
     return out
 
 
+class WOW_PT_tracks(bpy.types.Panel):
+    bl_label = "WoW tracks"
+    bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and bool(ops_add.track_props(ob))
+
+    def draw(self, context):
+        ob = context.active_object
+        for k in ops_add.track_props(ob):
+            row = self.layout.row(align=True)
+            row.prop(ob, f'["{k}"]', text=k[4:])
+            row.operator("wow.m2_key_track", text="", icon="KEY_HLT").prop = k
+
+
 class WOW_PT_object(bpy.types.Panel):
     bl_label = "WoW properties"
     bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
@@ -299,7 +316,7 @@ class WOW_PT_collection(bpy.types.Panel):
             self.layout.operator("wow.m2_recompute_bounds", icon="MESH_DATA")
 
 
-classes = (WowRecent, WOW_PT_object, WOW_PT_wmo_material, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
+classes = (WowRecent, WOW_PT_object, WOW_PT_tracks, WOW_PT_wmo_material, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
 
 
 def register():

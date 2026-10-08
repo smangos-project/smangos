@@ -1956,6 +1956,23 @@ def m2_camera_bake_roundtrip():
 
 
 @test
+def m2_key_track_operator():
+    clear()
+    top = m2_import.load("character/human/male/humanmale.m2", {"display": "NONE"})
+    top.wow_m2.active_sequence = 0
+    cam = _kind_obs(top, "camera")[1]
+    assert "wow_fov" in ops_add.track_props(cam)
+    cam["wow_fov"] = (0.5, 0.0, 0.0)
+    bpy.context.view_layer.objects.active = cam
+    bpy.context.scene.frame_current = 300
+    assert bpy.ops.wow.m2_key_track(prop="wow_fov") == {"FINISHED"}
+    cb = m2_camera_bake._channelbag(top.wow_m2.sequences[0].action, cam)
+    fc = cb.fcurves.find('["wow_fov"]', index=0)
+    assert fc is not None and [(k.co[0], round(k.co[1], 3)) for k in fc.keyframe_points] == [(300.0, 0.5)]
+    clear()
+
+
+@test
 def m2_camera_create_delete():
     path = "character/human/male/humanmale.m2"
     clear()
