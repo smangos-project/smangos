@@ -132,6 +132,22 @@ def build_preview(mat, multi_uv=False):
         L.new(tr.outputs[0], mixs.inputs[1])
         L.new(em.outputs[0], mixs.inputs[2])
         shader_out = mixs.outputs[0]
+    elif blend in (4, 5):
+        bw = N.new("ShaderNodeRGBToBW")
+        L.new(color, bw.inputs["Color"])
+        inv = N.new("ShaderNodeMath")
+        inv.operation, inv.use_clamp = "MULTIPLY_ADD", True
+        inv.inputs[1].default_value = -1.0 if blend == 4 else -2.0
+        inv.inputs[2].default_value = 1.0
+        L.new(bw.outputs["Val"], inv.inputs[0])
+        black = N.new("ShaderNodeEmission")
+        black.inputs["Color"].default_value = (0, 0, 0, 1)
+        tr = N.new("ShaderNodeBsdfTransparent")
+        mixs = N.new("ShaderNodeMixShader")
+        L.new(inv.outputs[0], mixs.inputs["Fac"])
+        L.new(tr.outputs[0], mixs.inputs[1])
+        L.new(black.outputs[0], mixs.inputs[2])
+        shader_out = mixs.outputs[0]
     L.new(shader_out, out.inputs["Surface"])
     mat.use_backface_culling = not flags & F_TWO_SIDED
     for i, n in enumerate(N):

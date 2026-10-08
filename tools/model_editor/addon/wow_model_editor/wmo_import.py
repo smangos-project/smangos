@@ -250,6 +250,7 @@ def import_doodads(root, parent, meshes=None):
         p.fdid, p.path, p.name_index = s32(fdid), path, d.name_index
         p.flags = d.name_and_flags >> 24
         p.color, p.scale = _rgba(d.color), d.scale
+        ob.color = p.color
 
 
 def import_liquid(group_obj, g, gi, coll):
