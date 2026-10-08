@@ -41,6 +41,11 @@ public static class WowWdlWriter
     public static void Write(FileSystem fs, string map, params ImportedTile[] tiles)
     {
         var key = new FileKey($"world/maps/{map}/{map}.wdl");
+        if (!fs.Exists($"world/maps/{map}/{map}.wdl"))
+        {
+            return;
+        }
+
         using var wdl = WDL.ForVersion(Expansion.Bfa);
         wdl.Read(fs, key);
         foreach (var tile in tiles)
