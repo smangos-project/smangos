@@ -164,7 +164,106 @@ class WOW_PT_m2_sequences(bpy.types.Panel):
         row.operator("wow.m2_loop_remove", text="Remove loop", icon="REMOVE")
 
 
-classes = (WowRecent, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
+def draw_flags(layout, owner_path, group, attr, names=None, bits=32):
+    """Toggle buttons for the bits of an int property; `names` maps bit -> label, other bits show their number."""
+    names = names or {}
+    box = layout.box()
+    box.label(text=f"{attr} 0x{getattr(group, attr) & 0xFFFFFFFF:x}")
+    grid = box.grid_flow(columns=2, align=True)
+    for bit in range(bits):
+        op = grid.operator("wow.toggle_flag", text=names.get(bit, f"bit {bit}"),
+                           depress=bool((getattr(group, attr) >> bit) & 1))
+        op.owner, op.attr, op.bit = owner_path, attr, bit
+
+
+def draw_group(layout, owner_path, group, skip=(), flags=None):
+    """Every property of a PropertyGroup; lists of sub-groups are drawn as boxes. `flags` maps attr -> {bit: label}."""
+    flags = flags or {}
+    for prop in group.bl_rna.properties:
+        name = prop.identifier
+        if name in ("rna_type", "name") or name in skip:
+            continue
+        if name in flags:
+            draw_flags(layout, owner_path, group, name, flags[name])
+        elif prop.type == "COLLECTION":
+            box = layout.box()
+            box.label(text=prop.name or name)
+            for i, item in enumerate(getattr(group, name)):
+                row = box.row(align=True)
+                for sub in item.bl_rna.properties:
+                    if sub.identifier not in ("rna_type", "name"):
+                        row.prop(item, sub.identifier, text="")
+        else:
+            layout.prop(group, name)
+
+
+def active_groups(ob):
+    """(attribute, kind label) of the wow_* groups that apply to object `ob`."""
+    out = []
+    m2k = ob.wow_m2_object.kind
+    if m2k:
+        out.append(("wow_m2_object", m2k))
+        if m2k == "particle":
+            out.append(("wow_m2_particle", "particle"))
+        elif m2k == "ribbon":
+            out.append(("wow_m2_ribbon", "ribbon"))
+    if ob.wow_wmo_group.index >= 0 and ob.type == "MESH":
+        out.append(("wow_wmo_group", "WMO group"))
+    if ob.wow_wmo_doodad.index >= 0 or ob.wow_wmo_doodad.fdid:
+        out.append(("wow_wmo_doodad", "WMO doodad"))
+    if ob.type == "LIGHT" and not m2k and ob.wow_wmo_light.type >= 0 and ob.wow_wmo_light.index >= 0:
+        out.append(("wow_wmo_light", "WMO light"))
+    if ob.name.startswith("portal_"):
+        out.append(("wow_wmo_portal", "WMO portal"))
+    if ob.name.startswith("fog_"):
+        out.append(("wow_wmo_fog", "WMO fog"))
+    if ob.wow_wmo_liquid.verts_dim[0]:
+        out.append(("wow_wmo_liquid", "WMO liquid"))
+    if ob.type == "MESH" and ob.wow_m2_submesh.index >= 0:
+        out.append(("wow_m2_submesh", "M2 submesh"))
+    return out
+
+
+class WOW_PT_object(bpy.types.Panel):
+    bl_label = "WoW properties"
+    bl_space_type, bl_region_type, bl_category = "VIEW_3D", "UI", "WoW"
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and bool(active_groups(context.active_object))
+
+    def draw(self, context):
+        ob = context.active_object
+        for attr, label in active_groups(ob):
+            col = self.layout.column()
+            col.label(text=label)
+            skip = {"wow_m2_object": ("kind", "animated", "position", "target", "index")}.get(attr, ())
+            draw_group(col, attr, getattr(ob, attr), skip, FLAGS.get(attr))
+            if attr == "wow_m2_object" and ob.type == "LIGHT":
+                col.operator("wow.m2_light_from_blender", icon="LIGHT")
+
+
+FLAGS = {"wow_m2_particle": {"flags": {}}, "wow_wmo_group": {"flags": {}, "flags2": {}}}
+
+
+class WOW_PT_collection(bpy.types.Panel):
+    bl_label = "WoW model"
+    bl_space_type, bl_region_type, bl_context = "PROPERTIES", "WINDOW", "collection"
+
+    @classmethod
+    def poll(cls, context):
+        c = context.collection
+        return c is not None and bool(c.wow_wmo.path or c.wow_m2.path)
+
+    def draw(self, context):
+        c = context.collection
+        if c.wow_wmo.path:
+            draw_group(self.layout, "", c.wow_wmo)
+        if c.wow_m2.path:
+            draw_group(self.layout, "", c.wow_m2, skip=("sequences", "loops", "active_sequence", "textures", "materials"))
+
+
+classes = (WowRecent, WOW_PT_object, WOW_PT_collection, WOW_PT_browser, WOW_PT_m2, WOW_PT_m2_report, WOW_UL_sequences, WOW_PT_m2_sequences)
 
 
 def register():

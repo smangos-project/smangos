@@ -1190,6 +1190,32 @@ def m2_ribbon_create_delete_edit():
 
 
 @test
+def m2_add_menu_objects_export():
+    path = "interface/glues/models/ui_characterselect/ui_characterselect.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    src = m2_import.read(path)
+    bpy.context.view_layer.objects.active = _kind_obs(top, "light")[0]
+    for kind in ("attachment", "event", "light", "camera", "particle", "ribbon"):
+        assert bpy.ops.wow.add_m2_object(kind=kind) == {"FINISHED"}
+        assert bpy.context.active_object.wow_m2_object.kind == kind
+        bpy.context.view_layer.objects.active = _kind_obs(top, "light")[0]
+    ob = next(o for o in top.all_objects if o.wow_m2_object.kind == "particle")
+    bpy.context.view_layer.objects.active = ob
+    assert bpy.ops.wow.toggle_flag(owner="wow_m2_particle", attr="flags", bit=3) == {"FINISHED"}
+    assert ob.wow_m2_particle.flags == 8
+    ob.wow_m2_particle.texture_slots[0] = 0
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    root = r.model.root
+    assert len(root.lights) == len(src.root.lights) + 1 and len(root.cameras) == len(src.root.cameras) + 1
+    assert len(root.particle_emitters) == len(src.root.particle_emitters) + 1
+    assert len(root.ribbon_emitters) == len(src.root.ribbon_emitters) + 1
+    assert len(root.attachments) == len(src.root.attachments) + 1 and len(root.events) == len(src.root.events) + 1
+    assert int(root.particle_emitters[-1].flags) == 8
+
+
+@test
 def m2_anim_import():
     clear()
     t = time.time()

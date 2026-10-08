@@ -1,6 +1,6 @@
 import importlib
 
-_names = ("prefs", "client", "index", "props", "textures", "materials", "m2_materials", "wmo_import", "fdids", "wmo_root_export", "wmo_export", "m2_anim", "m2_anim_export", "m2_seq", "m2_import", "ops_import", "ops_export", "ui")
+_names = ("prefs", "client", "index", "props", "textures", "materials", "m2_materials", "wmo_import", "fdids", "wmo_root_export", "wmo_export", "m2_anim", "m2_anim_export", "m2_seq", "m2_import", "ops_import", "ops_export", "ops_add", "ui")
 _mods = []
 
 
