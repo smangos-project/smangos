@@ -151,3 +151,60 @@ def apply_lods(w, root, path, report, files, remap, dirty):
     r.header.flags = type(r.header.flags)(int(r.header.flags) | rx.HAS_LOD)
     r.header.num_lod = depth + 1
     rx.set_lod_tables(r, tables)
+
+
+def group_vertices(ob):
+    return len(ob.data.vertices)
+
+
+def generate_lods(root, groups, ratios, min_vertices=200, merge_materials=False, skip_interior=True):
+    """(Re)builds LOD objects `1..len(ratios)` for `groups` (WMO group objects); returns {group name: levels made}."""
+    from . import wmo_export as ex
+    dg = bpy.context.evaluated_depsgraph_get()
+    lods = next((c for c in root.children if c.name.split(".")[0] == "lods"), None)
+    if lods is None:
+        lods = bpy.data.collections.new("lods")
+        root.children.link(lods)
+    made = {}
+    for base in groups:
+        p = base.wow_wmo_group
+        if base.type != "MESH" or p.lod or ex.is_antiportal(base) or group_vertices(base) < min_vertices:
+            continue
+        if skip_interior and int(p.flags) & 0x2000 and not int(p.flags) & 0x8:
+            continue
+        for old in [o for o in lod_objects(root) if o.parent is base]:
+            bpy.data.objects.remove(old)
+        for k, ratio in enumerate(ratios, 1):
+            tmp = base.copy()
+            tmp.data = base.data.copy()
+            bpy.context.scene.collection.objects.link(tmp)
+            tmp.parent = None
+            tmp.matrix_world = base.matrix_world
+            m = tmp.modifiers.new("lod", "DECIMATE")
+            m.decimate_type, m.ratio, m.use_collapse_triangulate = "COLLAPSE", ratio, True
+            dg.update()
+            me = bpy.data.meshes.new_from_object(tmp.evaluated_get(dg))
+            bpy.data.objects.remove(tmp)
+            me.name = f"{base.name}_lod{k}"
+            for name in ("wow_batch", "wow_poly_flags", "wow_poly_material", "wow_normal"):
+                if name in me.attributes:
+                    me.attributes.remove(me.attributes[name])
+            me.shade_smooth()
+            if merge_materials and len(me.polygons):
+                idx = [pl.material_index for pl in me.polygons]
+                top = max(set(idx), key=idx.count)
+                for pl in me.polygons:
+                    pl.material_index = top
+            ob = bpy.data.objects.new(me.name, me)
+            c = next((c for c in lods.children if c.name.split(".")[0] == f"lod{k}"), None)
+            if c is None:
+                c = bpy.data.collections.new(f"lod{k}")
+                lods.children.link(c)
+            c.objects.link(ob)
+            ob.parent = base
+            ob.hide_viewport = True
+            q = ob.wow_wmo_group
+            q.lod, q.flags = k, p.flags
+            q.group_name, q.descriptive_name = p.group_name, p.descriptive_name
+            made[base.name] = k
+    return made

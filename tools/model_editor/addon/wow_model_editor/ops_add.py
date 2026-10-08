@@ -1,8 +1,8 @@
 """Add menu entries that create correctly tagged model objects, and small property operators."""
 import bpy
-from bpy.props import BoolProperty, EnumProperty, IntProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 
-from . import m2_export, m2_particles, wmo_export
+from . import m2_export, m2_particles, wmo_export, wmo_lod
 
 M2_KINDS = (("attachment", "Attachment", ""), ("event", "Event", ""), ("light", "Light", ""), ("camera", "Camera", ""),
             ("particle", "Particle emitter", ""), ("ribbon", "Ribbon emitter", ""))
@@ -245,6 +245,37 @@ class WOW_OT_m2_light_from_blender(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class WOW_OT_generate_wmo_lods(bpy.types.Operator):
+    bl_idname = "wow.generate_wmo_lods"
+    bl_label = "Generate LODs"
+    bl_description = "Build LOD group objects for the selected WMO groups (all groups when none is selected) by decimating them"
+    bl_options = {"REGISTER", "UNDO"}
+    levels: IntProperty(name="Levels", min=1, max=3, default=3)
+    ratio1: FloatProperty(name="LOD 1", min=0.01, max=1.0, default=0.6)
+    ratio2: FloatProperty(name="LOD 2", min=0.01, max=1.0, default=0.35)
+    ratio3: FloatProperty(name="LOD 3", min=0.01, max=1.0, default=0.2)
+    min_vertices: IntProperty(name="Minimum vertices", min=0, default=200, description="Smaller groups get no LODs")
+    merge_materials: BoolProperty(name="Merge materials", description="Give every LOD face the group's most used material", default=False)
+    skip_interior: BoolProperty(name="Skip interior groups", default=True)
+
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and wmo_export.find_root(ob) is not None
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        root = wmo_export.find_root(context.active_object)
+        groups = [o for o in context.selected_objects if o.type == "MESH" and o.wow_wmo_group.index >= 0]
+        groups = groups or sorted(wmo_export.group_objects(root).values(), key=lambda o: o.wow_wmo_group.index)
+        ratios = [self.ratio1, self.ratio2, self.ratio3][:self.levels]
+        made = wmo_lod.generate_lods(root, groups, ratios, self.min_vertices, self.merge_materials, self.skip_interior)
+        self.report({"INFO"}, f"LODs built for {len(made)} of {len(groups)} groups")
+        return {"FINISHED"}
+
+
 class WOW_MT_add(bpy.types.Menu):
     bl_idname = "WOW_MT_add"
     bl_label = "WoW"
@@ -263,7 +294,7 @@ def _menu(self, context):
     self.layout.menu("WOW_MT_add")
 
 
-classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_MT_add)
+classes = (WOW_OT_add_m2_object, WOW_OT_add_wmo_object, WOW_OT_toggle_flag, WOW_OT_m2_recompute_bounds, WOW_OT_m2_light_from_blender, WOW_OT_generate_wmo_lods, WOW_MT_add)
 
 
 def register():

@@ -213,7 +213,7 @@ def active_groups(ob):
             out.append(("wow_m2_particle", "particle"))
         elif m2k == "ribbon":
             out.append(("wow_m2_ribbon", "ribbon"))
-    if ob.wow_wmo_group.index >= 0 and ob.type == "MESH":
+    if (ob.wow_wmo_group.index >= 0 or ob.wow_wmo_group.lod > 0) and ob.type == "MESH":
         out.append(("wow_wmo_group", "WMO group"))
     if ob.wow_wmo_doodad.index >= 0 or ob.wow_wmo_doodad.fdid:
         out.append(("wow_wmo_doodad", "WMO doodad"))
@@ -287,6 +287,7 @@ class WOW_PT_collection(bpy.types.Panel):
         c = context.collection
         if c.wow_wmo.path:
             draw_group(self.layout, "", c.wow_wmo)
+            self.layout.operator("wow.generate_wmo_lods", icon="MOD_DECIM")
         if c.wow_m2.path:
             draw_group(self.layout, "", c.wow_m2, skip=("sequences", "loops", "active_sequence", "textures", "materials"))
             self.layout.operator("wow.m2_recompute_bounds", icon="MESH_DATA")

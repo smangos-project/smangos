@@ -760,6 +760,40 @@ def wmo_lod_edit_and_remove():
 
 
 @test
+def wmo_lod_generate_and_export():
+    path = REFS[1]
+    clear()
+    coll = wmo_import.load(path, {"doodads": False})
+    w0 = wmo_expect(path)[0]
+    n = len(w0.groups)
+    big = max(mesh_groups(coll).values(), key=lambda o: len(o.data.vertices))
+    gi = big.wow_wmo_group.index
+    made = wmo_lod.generate_lods(coll, [big], [0.5, 0.25], 0, False, False)
+    assert made == {big.name: 2}, made
+    kids = lod_objs(coll)
+    assert sorted(kids) == [(gi, 1), (gi, 2)]
+    v0, v1, v2 = (len(big.data.vertices), len(kids[(gi, 1)].data.vertices), len(kids[(gi, 2)].data.vertices))
+    assert v2 < v1 < v0, (v0, v1, v2)
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert int(new.root.header.flags) & 0x10 and int(new.root.header.num_lod) == 3
+    assert len(new.root.group_fdids) == 3 * n and len(new.root.group_infos2) == n
+    t = lod_tables(new)
+    assert [t[0][gi] != 0, t[1][gi] != 0, t[2][gi] != 0] == [True] * 3 and sum(1 for k in (1, 2) for x in t[k] if x) == 2
+    assert int(new.root.group_infos2[gi].lod_index) & 0xFF == 2 and int(new.root.group_infos[gi].flags) & 0x400
+    lods = sorted(k for k in r.files if "_lod" in k)
+    assert len(lods) == 2, lods
+    bases = [r.files[k] for k in sorted(r.files) if k != path and "_lod" not in k]
+    lw = wmo_lod.level_wmo(r.files[path], bases, {gi: r.files[lods[0]]}).groups[gi].body
+    assert 0 < len(lw.vertices) < v0 and len(lw.bsp_nodes) == 0 and not int(lw.header.flags) & 1
+    clear()
+    coll = wmo_import.load(path, {"doodads": False})
+    again = wmo_lod.generate_lods(coll, [mesh_groups(coll)[gi]], [0.5], 0, False, False)
+    assert len(again) == 1 and sorted(lod_objs(coll)) == [(gi, 1)]
+
+
+@test
 def wmo_export_root_objects():
     path = REFS[1]
     coll, r = export_files(path, import_opts={"doodads": True})
