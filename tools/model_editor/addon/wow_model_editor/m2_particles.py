@@ -60,6 +60,66 @@ def _write_ramp(block, kind, ts, vals):
 RAMPS = (("color_track", "color_keys", "c3"), ("alpha_track", "alpha_keys", "fixed"), ("scale_track", "scale_keys", "c2"))
 
 
+UV_RAMPS = (("head_uv_anim", "head_uv_keys"), ("tail_uv_anim", "tail_uv_keys"))
+
+
+def _pairs(arr):
+    return [int(v) for x in arr for v in (x.x, x.y)]
+
+
+def _set_pairs(arr, vals):
+    for i, x in enumerate(arr):
+        x.x, x.y = int(vals[2 * i]), int(vals[2 * i + 1])
+
+
+def _uv_read(block):
+    return [int(t) for t in block.timestamps], [int(k) for k in block.keys]
+
+
+def _uv_write(block, ts, keys):
+    block.keys = type(block.keys)([int(k) for k in keys])
+    block.timestamps = VectorShortUnsignedInt([int(t) for t in ts])
+
+
+def _extras_read(p, e):
+    p.geometry_model, p.recursion_model = e.geometry_model_filename, e.recursion_model_filename
+    p.multi_tex_scale = tuple(int(x) for x in e.multi_tex_scale)
+    p.multi_tex_scroll_mid, p.multi_tex_scroll_range = _pairs(e.multi_tex_scroll_mid), _pairs(e.multi_tex_scroll_range)
+    for field, coll in UV_RAMPS:
+        c = getattr(p, coll)
+        c.clear()
+        for t, v in zip(*_uv_read(getattr(e, field))):
+            k = c.add()
+            k.time, k.value = t, (float(v), 0.0, 0.0)
+    p.spline_points.clear()
+    for v in e.spline_points:
+        p.spline_points.add().value = _v3(v)
+
+
+def _extras_write(p, e):
+    for name, field in (("geometry_model", "geometry_model_filename"), ("recursion_model", "recursion_model_filename")):
+        if getattr(p, name) != getattr(e, field):
+            setattr(e, field, getattr(p, name))
+    if tuple(int(x) for x in e.multi_tex_scale) != tuple(p.multi_tex_scale):
+        for i, v in enumerate(p.multi_tex_scale):
+            e.multi_tex_scale[i] = int(v)
+    for name, field in (("multi_tex_scroll_mid", "multi_tex_scroll_mid"), ("multi_tex_scroll_range", "multi_tex_scroll_range")):
+        if _pairs(getattr(e, field)) != list(getattr(p, name)):
+            _set_pairs(getattr(e, field), list(getattr(p, name)))
+    for field, coll in UV_RAMPS:
+        ts, ks = _uv_read(getattr(e, field))
+        mine = list(getattr(p, coll))
+        nts, nks = [k.time for k in mine], [int(round(k.value[0])) for k in mine]
+        if (ts, ks) != (nts, nks):
+            _uv_write(getattr(e, field), nts, nks)
+    cur = [_v3(v) for v in e.spline_points]
+    new = [tuple(k.value) for k in p.spline_points]
+    if len(cur) != len(new) or any(_differs(a, b) for a, b in zip(cur, new)):
+        e.spline_points.clear()
+        for v in new:
+            _set_v3(e.spline_points.new(), v)
+
+
 def read_into(p, e):
     """Fill property group `p` from record `e`."""
     p.flags = _s32(int(e.flags))
@@ -79,6 +139,7 @@ def read_into(p, e):
         for t, v in zip(ts, vals):
             k = c.add()
             k.time, k.value = t, v
+    _extras_read(p, e)
 
 
 def _s32(v):
@@ -123,6 +184,7 @@ def write_from(p, e):
         if ts == nts and len(vals) == len(nvals) and not any(_differs(a, b) for a, b in zip(vals, nvals)):
             continue
         _write_ramp(block, kind, nts, nvals)
+    _extras_write(p, e)
 
 
 def set_defaults(p):

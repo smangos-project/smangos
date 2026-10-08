@@ -1876,6 +1876,31 @@ def m2_particle_create_delete_edit():
 
 
 @test
+def m2_particle_extra_fields():
+    path = "spells/flamestrike_impactdd_med_base.m2"
+    clear()
+    top = m2_import.load(path, {"display": "NONE"})
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors and not r.dirty, (r.diff, str(r))
+    src = m2_import.read(path)
+    ps = _kind_obs(top, "particle")
+    p = ps[0].wow_m2_particle
+    assert len(p.head_uv_keys) == len(src.root.particle_emitters[0].head_uv_anim.keys) > 0
+    p.head_uv_keys[1].value = (7.0, 0.0, 0.0)
+    p.multi_tex_scale = (3, 5)
+    p.multi_tex_scroll_mid = (1, 2, 3, 4)
+    p.spline_points.add().value = (1.0, 2.0, 3.0)
+    p.geometry_model = "spells/arrow.m2"
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    e = r.model.root.particle_emitters[0]
+    assert list(e.head_uv_anim.keys)[1] == 7 and tuple(int(x) for x in e.multi_tex_scale) == (3, 5)
+    assert [(int(x.x), int(x.y)) for x in e.multi_tex_scroll_mid] == [(1, 2), (3, 4)]
+    assert len(e.spline_points) == len(src.root.particle_emitters[0].spline_points) + 1
+    assert e.geometry_model_filename == "spells/arrow.m2"
+
+
+@test
 def m2_ribbon_create_delete_edit():
     path = "creature/spells/fireelementaltotem.m2"
     clear()

@@ -294,6 +294,14 @@ class WowM2Particle(bpy.types.PropertyGroup):
     color_keys: CollectionProperty(type=WowM2RampKey)
     alpha_keys: CollectionProperty(type=WowM2RampKey)
     scale_keys: CollectionProperty(type=WowM2RampKey)
+    geometry_model: StringProperty(description="M2 path of the model particles")
+    recursion_model: StringProperty(description="M2 path of the child emitter model")
+    multi_tex_scale: IntVectorProperty(size=2)
+    multi_tex_scroll_mid: IntVectorProperty(size=4, description="two x/y pairs, 6.9 fixed point")
+    multi_tex_scroll_range: IntVectorProperty(size=4, description="two x/y pairs, 6.9 fixed point")
+    head_uv_keys: CollectionProperty(type=WowM2RampKey, description="time, value[0]=cell")
+    tail_uv_keys: CollectionProperty(type=WowM2RampKey, description="time, value[0]=cell")
+    spline_points: CollectionProperty(type=WowM2RampKey, description="value=position")
 
 
 class WowM2Index(bpy.types.PropertyGroup):
