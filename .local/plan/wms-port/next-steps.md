@@ -113,3 +113,7 @@ bug. Fix what breaks before moving on. Tick items here as they're done.
 ### Step 1.4 (twelfth session, 2026-10-08): custom M2 hang FIXED
 - Cause: M2 header skin-profile count (u32 at MD20 offset 68) was 0 although SFID lists a skin; client hung on load. M2ModelWriter now sets it to 1 (test added). Patched installed copy (inst4.py) loads fine. Texture FDID 0 was not the cause. Panel visual not checked (client control server hung); client restored to stock, character 13 reset.
 - Next: build+run WoW Export tests, re-export, view M2 panels; then step 1.5 vmap re-extract.
+
+### Step 1.4/1.5 (twelfth session, later)
+- Fresh sandbox export (fixed M2 writer) installed WITHOUT manual patches loads into the world. Panels at (-8930,-130,92): USER TO CHECK VISUALLY LATER (client left running + installed; control server on 8790 hung, no screenshots). Restore stock afterwards: copy /tmp/stock32/azeroth_32_48{,_obj0,_obj1,_tex0}.adt into .client/Content/world/maps/azeroth/, rm -rf .client/Content/world/generated, `sed -i '/^20000000[0-9][0-9];/d' .client/Content/fdid.index`, reset character 13 to -8949.95,-132.493,83.53, kill client (script file, no inline pkill).
+- `map_extractor --output /tmp/sdata --stages vmap --map 0` (scratch output) converts both panel models (FILE77359420.m2.vmo, FILE77359422.wmo.vmo). Not yet run on live .server/data nor tested for collision/LOS in the server.
