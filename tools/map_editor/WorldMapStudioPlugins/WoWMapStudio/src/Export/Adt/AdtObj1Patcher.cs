@@ -81,7 +81,10 @@ public static class AdtObj1Patcher
 
             for (int level = owner + 1; level < LodLevels; level++)
             {
-                lod[level]++;
+                if (lod[LodLevels + level] > 0)
+                {
+                    lod[level]++;
+                }
             }
 
             lod[LodLevels + owner]++;
