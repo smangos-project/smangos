@@ -44,6 +44,21 @@ def _bone(ob, arm, rig, keep):
     return keep
 
 
+def plan(objs, new, count):
+    """Output order of a record list: surviving source objects by index, then new ones; plus {old index: new index}."""
+    order = [objs[i] for i in sorted(objs) if i < count] + new
+    remap = {ob.wow_m2_object.index: j for j, ob in enumerate(order) if ob.wow_m2_object.index >= 0}
+    return order, remap
+
+
+def _record(ob, src, cls):
+    """Copy of the source record `ob` was imported from, or a fresh one."""
+    i = ob.wow_m2_object.index
+    if 0 <= i < len(src):
+        return copy.copy(src[i]), src[i]
+    return cls(), None
+
+
 def _identifier(code):
     return int.from_bytes((code + "\0\0\0\0")[:4].encode("latin-1", "replace"), "little")
 
@@ -72,7 +87,7 @@ def _attachments(top, m, report, arm, rig):
     root = m.root
     objs, new = _kind_objects(top, "attachment")
     src = list(root.attachments)
-    order = [objs[i] for i in sorted(objs) if i < len(src)] + new
+    order, _ = plan(objs, new, len(src))
     out, index_of = [], {}
     cls = rec.M2AttachmentWotlkPlus
     for ob in order:
@@ -99,7 +114,7 @@ def _events(top, m, report, arm, rig):
     root = m.root
     objs, new = _kind_objects(top, "event")
     src = list(root.events)
-    order = [objs[i] for i in sorted(objs) if i < len(src)] + new
+    order, _ = plan(objs, new, len(src))
     out = []
     cls = rec.M2EventWotlkPlus
     for ob in order:
@@ -138,7 +153,21 @@ def _cameras(top, m, report):
 
 
 def _lights(top, m, report, arm, rig):
-    _simple(top, m, report, arm, rig, "light", m.root.lights, "bone", "light")
+    root = m.root
+    objs, new = _kind_objects(top, "light")
+    src = list(root.lights)
+    order, _ = plan(objs, new, len(src))
+    out = []
+    for ob in order:
+        l, old = _record(ob, src, rec.M2LightWotlkPlus)
+        l.type = 0 if ob.type == "LIGHT" and ob.data.type == "SUN" else 1
+        l.bone = _bone(ob, arm, rig, int(l.bone))
+        _set_pos(l.position, _position(ob, arm), old.position if old is not None else None)
+        out.append(l)
+    if len(out) != len(src):
+        report.add("INFO", "objects", f"{len(src)} -> {len(out)} lights")
+    _rebuild(root.lights, out)
+    return {("light", j): ob for j, ob in enumerate(order)}
 
 
 def _emitters(top, m, report, arm, rig):
@@ -206,10 +235,10 @@ def build(top, m, report, rig):
     objects.update(_attachments(top, m, report, arm, rig))
     objects.update(_events(top, m, report, arm, rig))
     _cameras(top, m, report)
-    _lights(top, m, report, arm, rig)
+    objects.update(_lights(top, m, report, arm, rig))
     _emitters(top, m, report, arm, rig)
     _collision(top, m, report)
-    for kind, vec in (("camera", m.root.cameras), ("light", m.root.lights),
+    for kind, vec in (("camera", m.root.cameras),
                       ("particle", m.root.particle_emitters), ("ribbon", m.root.ribbon_emitters)):
         o, _ = _kind_objects(top, kind)
         objects.update({(kind, i): ob for i, ob in o.items() if i < len(vec)})

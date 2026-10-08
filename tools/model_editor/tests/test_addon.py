@@ -1039,6 +1039,50 @@ def m2_object_edit_round_trip():
         _cleanup_out(path, len(src.skins))
 
 
+LIGHT_MODEL = "interface/glues/models/ui_characterselect/ui_characterselect.m2"
+
+
+def _kind_obs(top, kind):
+    return sorted((o for o in top.all_objects if o.wow_m2_object.kind == kind), key=lambda o: o.wow_m2_object.index)
+
+
+@test
+def m2_light_create_delete():
+    clear()
+    top = m2_import.load(LIGHT_MODEL, {"display": "NONE"})
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors and not r.dirty, (r.diff, str(r))
+    src = m2_import.read(LIGHT_MODEL)
+    n = len(src.root.lights)
+    lights = _kind_obs(top, "light")
+    assert n == 3 and len(lights) == 3
+    keep = lights[2]
+    keep_col = tuple(keep["wow_diffuse_color"]) if "wow_diffuse_color" in keep else None
+    bpy.data.objects.remove(lights[1])
+    ob = bpy.data.objects.new("new_light", bpy.data.lights.new("new_light", "POINT"))
+    top.objects.link(ob)
+    ob.wow_m2_object.kind = "light"
+    ob.location = (1.0, 2.0, 3.0)
+    ob["wow_diffuse_color"] = (0.25, 0.5, 0.75)
+    ob["wow_diffuse_intensity"] = 2.0
+    ob["wow_attenuation_end"] = 7.0
+    r = m2_export.export(top, options={"dry_run": True})
+    assert not r.errors, str(r)
+    m = r.model
+    assert len(m.root.lights) == 3
+    old2, new = m.root.lights[1], m.root.lights[2]
+    assert _vec3(old2.position) == _vec3(src.root.lights[2].position)
+    assert new.type == 1 and np.allclose(_vec3(new.position), (1, 2, 3), atol=1e-4)
+    assert new.diffuse_color.timeline_count() == 1 and new.attenuation_end.timeline_count() == 1
+    assert np.allclose(np.asarray(new.diffuse_intensity.timeline_values(0), np.float32), 2.0)
+    d = new.diffuse_color.timeline_values(0)[0]
+    assert np.allclose((d.x, d.y, d.z), (0.25, 0.5, 0.75))
+    if keep_col is not None:
+        v = old2.diffuse_color.timeline_values(0)[0]
+        assert np.allclose((v.x, v.y, v.z), keep_col, atol=1e-4)
+    assert m.validate().ok, [str(i) for i in m.validate().issues]
+
+
 @test
 def m2_anim_import():
     clear()

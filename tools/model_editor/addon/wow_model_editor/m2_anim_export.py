@@ -163,13 +163,36 @@ def _write_events(model, seq_actions, loop_actions):
             t.global_sequence = NONE
 
 
+def static_keys(top, objects):
+    """Static track keys with object indices renumbered to the rebuilt record lists, plus a prefix test for new objects."""
+    new_of, fresh = {}, []
+    for (kind, j), ob in (objects or {}).items():
+        i = ob.wow_m2_object.index
+        if i >= 0:
+            new_of[(kind, i)] = j
+        else:
+            fresh.append(f"{kind}/{j}/")
+    kinds = {k for k, _ in (objects or {})}
+    out = set()
+    for key in top.get(m2_anim.STATIC_PROP, []):
+        head, _, rest = key.partition("/")
+        if head in kinds:
+            idx, _, tail = rest.partition("/")
+            j = new_of.get((head, int(idx)))
+            if j is None:
+                continue
+            key = f"{head}/{j}/{tail}"
+        out.add(key)
+    return out, tuple(fresh)
+
+
 def build(top, root, rig=None, objects=None, report=None):
     """Rewrites sequences, loops and every animated track of `root` from the Blender data under `top`."""
     p = top.wow_m2
     model = _Shim(top, root, rig, objects)
     write_sequences(root, list(p.sequences))
     write_loops(root, list(p.loops))
-    static = set(top.get(m2_anim.STATIC_PROP, []))
+    static, fresh = static_keys(top, objects)
     seq_actions = [None if s.flags & ALIAS_FLAG else s.action for s in p.sequences]
     loop_actions = [l.action for l in p.loops]
     off_grid = [] if report is not None else None
@@ -185,7 +208,7 @@ def build(top, root, rig=None, objects=None, report=None):
             _set_timelines(b, [(r[0], r[1]) if r else None for r in per_seq])
             b.track.global_sequence = NONE
             b.track.interpolation_type = next(r[2] for r in per_seq if r)
-        elif b.key in static:
+        elif b.key in static or b.key.startswith(fresh):
             _set_timelines(b, [(np.zeros(1, np.int64), b.get_static())])
             b.track.global_sequence = NONE
         else:
