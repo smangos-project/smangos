@@ -18,6 +18,13 @@ def _child(top, name):
     return c
 
 
+EMITTER_DEFAULTS = {
+    "particle": {"emission_rate": 10.0, "lifespan": 1.0, "emission_speed": 1.0, "emission_area_length": 0.5,
+                 "emission_area_width": 0.5, "enabled_in": 1.0},
+    "ribbon": {"height_above": 0.2, "height_below": 0.2},
+}
+
+
 def new_m2_object(top, kind, location=(0.0, 0.0, 0.0)):
     """Create and link a new `kind` object of M2 model `top`."""
     coll = _child(top, GROUPS[kind])
@@ -41,6 +48,16 @@ def new_m2_object(top, kind, location=(0.0, 0.0, 0.0)):
         p.identifier = "$AH1"
     if kind == "particle":
         m2_particles.set_defaults(ob.wow_m2_particle)
+        for name, v in EMITTER_DEFAULTS["particle"].items():
+            ob[f"wow_{name}"] = v
+    if kind == "ribbon":
+        for name, v in EMITTER_DEFAULTS["ribbon"].items():
+            ob[f"wow_{name}"] = v
+        ob.wow_m2_ribbon.edges_per_second, ob.wow_m2_ribbon.edge_lifetime = 30.0, 0.5
+        if len(top.wow_m2.textures):
+            ob.wow_m2_ribbon.texture_indices.add().value = 0
+        if len(top.wow_m2.materials):
+            ob.wow_m2_ribbon.material_indices.add().value = 0
     if kind == "camera":
         tgt = bpy.data.objects.new("camera_new_target", None)
         tgt.empty_display_type, tgt.empty_display_size = "PLAIN_AXES", 0.1

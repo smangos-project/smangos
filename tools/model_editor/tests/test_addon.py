@@ -1821,6 +1821,9 @@ def m2_add_menu_objects_export():
     assert len(root.ribbon_emitters) == len(src.root.ribbon_emitters) + 1
     assert len(root.attachments) == len(src.root.attachments) + 1 and len(root.events) == len(src.root.events) + 1
     assert int(root.particle_emitters[-1].flags) == 8
+    pe, rb = root.particle_emitters[-1], root.ribbon_emitters[-1]
+    assert pe.emission_rate.timeline_count() == 1 and pe.lifespan.timeline_count() == 1
+    assert rb.height_above.timeline_count() == 1 and len(rb.texture_indices) == 1
 
 
 @test
