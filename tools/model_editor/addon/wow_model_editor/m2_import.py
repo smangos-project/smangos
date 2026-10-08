@@ -167,7 +167,7 @@ def build_materials(model):
         items.sort(key=lambda x: (x[1].material_layer, x[1].priority_plane))
         entries = []
         for bi, b in items:
-            slots = [_texture_info(model, b, k) for k in range(2)]
+            slots = [_texture_info(model, b, k) if k < max(int(b.texture_count), 1) else (-1, 0, 0, 0) for k in range(4)]
             entries.append((bi, b, slots, _preview_values(root, b)))
         key = tuple((int(b.flags), b.shader_id, b.material_index, b.material_layer, b.priority_plane,
                      b.texture_count, tuple(s[2] for s in slots), tuple(s[3] for s in slots), vals)
@@ -175,7 +175,7 @@ def build_materials(model):
         mat = shared.get(key)
         if mat is None:
             mat = bpy.data.materials.new(f"{model.stem}_mat{items[0][0]}")
-            for bi, b, slots, vals in entries:
+            for slot, (bi, b, slots, vals) in enumerate(entries):
                 rm = root.materials[b.material_index] if b.material_index < len(root.materials) else None
                 if rm is None:
                     class _M:
@@ -183,7 +183,7 @@ def build_materials(model):
                     rm = _M
                 m2_materials.set_batch(
                     mat.wow_m2_batches.add(), b, bi, rm, [s[0] for s in slots], [s[1] for s in slots],
-                    [s[2] for s in slots], [s[3] for s in slots], vals)
+                    [s[2] for s in slots], [s[3] for s in slots], vals, slot)
             m2_materials.build_preview(mat)
             shared[key] = mat
         out[si] = mat

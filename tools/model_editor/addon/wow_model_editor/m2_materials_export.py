@@ -130,16 +130,12 @@ def _apply(m, b, p, mat, images, report):
     if (p.render_flags, p.blending_mode) != (sflags, sblend):
         b.material_index = _find_or_add_material(root, p.render_flags, p.blending_mode)
         changed = True
-    n = max(min(int(b.texture_count), 2), 0)
-    if p.texture_count != int(b.texture_count):
-        report.add("WARNING", "materials", f"batch {p.batch_index}: texture count changes are ignored")
-    src = [_source_slot(root, b, k) for k in range(n)]
-    src_fd = []
-    for k in range(n):
-        ti = src[k][0]
-        src_fd.append(_source_fdid(m, ti))
+    n_src = max(min(int(b.texture_count), 4), 0)
+    n = max(min(int(p.texture_count), 4), 1)
+    src = [_source_slot(root, b, k) if k < n_src else (-1, 0, 0, 0) for k in range(n)]
+    src_fd = [_source_fdid(m, src[k][0]) for k in range(n)]
     want_tex, want_uv = [], []
-    tex_changed = uv_changed = False
+    tex_changed = uv_changed = n != n_src
     for k in range(n):
         ti, typ, _, uv = src[k]
         t_new = int(p.texture_types[k])
@@ -148,13 +144,15 @@ def _apply(m, b, p, mat, images, report):
             img = images.fdid(_node_image(mat, p.batch_index, k))
             if img is not None and img != fd_new:
                 fd_new = img
-            elif int(p.texture_fdids[k]) != fd_new and typ == 0:
+            elif int(p.texture_fdids[k]) != fd_new:
                 fd_new = int(p.texture_fdids[k])
+            if not fd_new:
+                report.add("ERROR", "materials", f"batch {p.batch_index}: texture {k} has no image")
         if (t_new, fd_new) == (typ, src_fd[k] if typ == 0 else 0) and ti >= 0:
             want_tex.append(ti)
         else:
             _filenames_to_fdids(m, report)
-            like = root.textures[ti] if ti >= 0 else None
+            like = root.textures[ti] if ti >= 0 else (root.textures[0] if len(root.textures) else None)
             want_tex.append(_find_or_add_texture(m, t_new, fd_new, like))
             tex_changed = True
         uv_new = int(p.uv_sets[k])
@@ -169,7 +167,42 @@ def _apply(m, b, p, mat, images, report):
         b.texture_coord_combo_index = len(root.texture_mapping_lookup_table)
         root.texture_mapping_lookup_table.extend(want_uv)
         changed = True
+    if n != n_src:
+        for lut, attr in ((root.transparency_lookup_table, "texture_weight_combo_index"),
+                          (root.texture_transforms_lookup_table, "texture_transform_combo_index")):
+            old = int(getattr(b, attr))
+            rows = [int(lut[old + k]) if k < n_src and old + k < len(lut) else (0xFFFF if 'Unsigned' in type(lut).__name__ else -1) for k in range(n)]
+            setattr(b, attr, len(lut))
+            for v in rows:
+                lut.append(v)
+        b.texture_count = n
     return changed
+
+
+def _rebuild_batches(m, prof, structural, images, report):
+    """Rewrites the batch list of sections whose layers were added or removed."""
+    snapshot = [copy.copy(b) for b in prof.batches]
+    drop, fresh_after = set(), {}
+    for idxs, items, mat in structural.values():
+        kept = {p.slot for p in items if 0 <= p.slot < len(idxs)}
+        drop.update(idxs[j] for j in range(len(idxs)) if j not in kept)
+        tmpl = snapshot[idxs[min(kept)]] if kept else snapshot[idxs[0]]
+        fresh = []
+        for p in items:
+            if p.slot < 0 or p.slot >= len(idxs):
+                nb = copy.copy(tmpl)
+                _apply(m, nb, p, mat, images, report)
+                fresh.append(nb)
+        fresh_after[max(idxs)] = fresh
+    out = []
+    for i, b in enumerate(snapshot):
+        if i not in drop:
+            out.append(b)
+        out.extend(fresh_after.get(i, []))
+    prof.batches.clear()
+    for b in out:
+        prof.batches.append(b)
+    report.add("INFO", "materials", f"{len(snapshot)} -> {len(out)} batches")
 
 
 def build(top, m, report, opts, model_path):
@@ -178,22 +211,27 @@ def build(top, m, report, opts, model_path):
 
     prof = m.skins[0].profile
     by_section = {}
-    for b in prof.batches:
-        by_section.setdefault(int(b.skin_section_index), []).append(b)
+    for i, b in enumerate(prof.batches):
+        by_section.setdefault(int(b.skin_section_index), []).append(i)
     for items in by_section.values():
-        items.sort(key=lambda b: (int(b.material_layer), int(b.priority_plane)))
+        items.sort(key=lambda i: (int(prof.batches[i].material_layer), int(prof.batches[i].priority_plane)))
     images = _Images(model_path, opts, report)
+    structural = {}
     old, _ = m2_mesh_export.submesh_objects(top)
     for ob in old:
         si = ob.wow_m2_submesh.index
         mat = ob.material_slots[0].material if ob.material_slots else None
         if mat is None or not len(mat.wow_m2_batches) or si not in by_section:
             continue
-        batches = by_section[si]
-        if len(batches) != len(mat.wow_m2_batches):
-            report.add("WARNING", "materials", f"{ob.name}: material has {len(mat.wow_m2_batches)} batches, model {len(batches)}; skipped")
-            continue
-        for b, p in zip(batches, mat.wow_m2_batches):
-            _apply(m, b, p, mat, images, report)
+        idxs = by_section[si]
+        items = list(mat.wow_m2_batches)
+        keep = {p.slot for p in items if 0 <= p.slot < len(idxs)}
+        if len(keep) != len(items) or len(keep) != len(idxs):
+            structural[si] = (idxs, items, mat)
+        for p in items:
+            if 0 <= p.slot < len(idxs):
+                _apply(m, prof.batches[idxs[p.slot]], p, mat, images, report)
+    if structural:
+        _rebuild_batches(m, prof, structural, images, report)
     images.write()
     return images.files

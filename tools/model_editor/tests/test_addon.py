@@ -1178,6 +1178,47 @@ def m2_material_edit_round_trip():
 
 
 @test
+def m2_material_layer_add_remove():
+    path = find_m2("duskwoodlamppost.m2")
+    clear()
+    top = m2_import.load(path, {"display": "NONE", "collision": False})
+    src = m2_import.read(path)
+    nb = len(src.skins[0].profile.batches)
+    mat = next(m for m in bpy.data.materials if len(m.wow_m2_batches))
+    n0 = len(mat.wow_m2_batches)
+    with bpy.context.temp_override(material=mat):
+        bpy.ops.wow.add_m2_batch()
+    assert len(mat.wow_m2_batches) == n0 + 1 and mat.wow_m2_batches[n0].slot == -1
+    mat.wow_m2_batches[n0].blending_mode = 3
+    mat.wow_m2_batches[n0].texture_count = 2
+    mat.wow_m2_batches[n0].texture_types[1] = 0
+    mat.wow_m2_batches[n0].texture_fdids[1] = mat.wow_m2_batches[0].texture_fdids[0]
+    users = sum(1 for o in bpy.data.objects if o.material_slots and o.material_slots[0].material == mat)
+    r = None
+    try:
+        r = m2_export.export(top, options={})
+        assert not r.errors, str(r)
+        m = m2_import.read(path)
+        nbn = len(m.skins[0].profile.batches)
+        assert nbn == nb + users, (nb, nbn, users)
+        assert m.validate().ok, [str(i) for i in m.validate().issues]
+        nbat = [b for b in m.skins[0].profile.batches if int(b.texture_count) == 2]
+        assert nbat
+        top2 = m2_import.load(path, {"display": "NONE", "collision": False})
+        mat2 = next(x for x in bpy.data.materials if len(x.wow_m2_batches) == n0 + 1)
+        with bpy.context.temp_override(material=mat2):
+            bpy.ops.wow.remove_m2_batch(index=n0)
+        r = m2_export.export(top2, options={})
+        assert not r.errors, str(r)
+        assert len(m2_import.read(path).skins[0].profile.batches) == nb
+    finally:
+        _cleanup_out(path, len(src.skins))
+        for f in r.files if r else ():
+            (common.Path(client.session().project) / f).unlink(missing_ok=True)
+        client.close()
+
+
+@test
 def m2_filename_textures():
     for stem in ("talktome_chat.m2", "bellow.m2"):
         path = find_m2(stem)

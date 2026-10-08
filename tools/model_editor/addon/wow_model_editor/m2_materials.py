@@ -57,14 +57,15 @@ def _mix(nt, blend, fac, a, b):
 def _layer(nt, b):
     """(color, alpha) sockets of one batch: its textures combined, times the static color and weight."""
     nodes = []
-    for k in range(min(max(b.texture_count, 1), 2)):
+    for k in range(min(max(b.texture_count, 1), 4)):
         node = _texture(nt, b.texture_fdids[k], b.texture_types[k], b.uv_sets[k],
                         b.preview_uv_offset, b.preview_uv_scale)
         node["wow_batch"], node["wow_slot"] = b.batch_index, k
         nodes.append(node)
     color, alpha = nodes[0].outputs["Color"], nodes[0].outputs["Alpha"]
     if len(nodes) > 1:
-        color = _mix(nt, "ADD" if b.uv_sets[1] < 0 else "MULTIPLY", 1.0, color, nodes[1].outputs["Color"])
+        for k in range(1, len(nodes)):
+            color = _mix(nt, "ADD" if b.uv_sets[k] < 0 else "MULTIPLY", 1.0, color, nodes[k].outputs["Color"])
     rgba = b.preview_color
     if tuple(rgba[:3]) != (1.0, 1.0, 1.0):
         color = _tint(nt, color, rgba)
@@ -136,13 +137,13 @@ def build_preview(mat):
         n.location = (i * 40, -i * 30)
 
 
-def set_batch(p, b, index, root_material, texture_indices, types, fdids, uv_sets, preview):
+def set_batch(p, b, index, root_material, texture_indices, types, fdids, uv_sets, preview, slot=-1):
     """Fill a wow_m2_batches item from a wowlib M2Batch and its resolved lookups."""
     for f in ("flags", "priority_plane", "shader_id", "skin_section_index", "geoset_index", "color_index",
               "material_index", "material_layer", "texture_count", "texture_combo_index", "texture_coord_combo_index",
               "texture_weight_combo_index", "texture_transform_combo_index"):
         setattr(p, f, int(getattr(b, f)))
-    p.batch_index = index
+    p.batch_index, p.slot = index, slot
     p.render_flags, p.blending_mode = int(root_material.flags), int(root_material.blending_mode)
     p.texture_indices, p.texture_types, p.uv_sets = texture_indices, types, uv_sets
     p.texture_fdids = fdids
@@ -154,7 +155,7 @@ def set_replaceable(mat, types_to_fdid):
     """Point replaceable-texture slots at new images; returns True when anything changed."""
     changed = False
     for p in mat.wow_m2_batches:
-        for k in range(2):
+        for k in range(4):
             t = p.texture_types[k]
             if t and t in types_to_fdid and p.texture_fdids[k] != types_to_fdid[t]:
                 fd = list(p.texture_fdids)
@@ -182,6 +183,45 @@ class WOW_OT_rebuild_m2_material(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class WOW_OT_add_m2_batch(bpy.types.Operator):
+    bl_idname = "wow.add_m2_batch"
+    bl_label = "Add layer"
+    bl_description = "Add a batch layer copied from the last one"
+
+    @classmethod
+    def poll(cls, context):
+        return context.material is not None and len(context.material.wow_m2_batches) > 0
+
+    def execute(self, context):
+        mat = context.material
+        items = mat.wow_m2_batches
+        last = items[len(items) - 1]
+        top = max(p.batch_index for p in items)
+        p = items.add()
+        for prop in last.bl_rna.properties:
+            if prop.identifier not in ("rna_type", "name"):
+                setattr(p, prop.identifier, getattr(last, prop.identifier))
+        p.slot, p.batch_index, p.material_layer = -1, top + 1, last.material_layer + 1
+        build_preview(mat)
+        return {"FINISHED"}
+
+
+class WOW_OT_remove_m2_batch(bpy.types.Operator):
+    bl_idname = "wow.remove_m2_batch"
+    bl_label = "Remove layer"
+
+    index: bpy.props.IntProperty()
+
+    @classmethod
+    def poll(cls, context):
+        return context.material is not None and len(context.material.wow_m2_batches) > 1
+
+    def execute(self, context):
+        context.material.wow_m2_batches.remove(self.index)
+        build_preview(context.material)
+        return {"FINISHED"}
+
+
 class WOW_PT_m2_material(bpy.types.Panel):
     bl_label = "WoW M2 batches"
     bl_space_type, bl_region_type, bl_context = "PROPERTIES", "WINDOW", "material"
@@ -191,14 +231,17 @@ class WOW_PT_m2_material(bpy.types.Panel):
         return context.material is not None and len(context.material.wow_m2_batches) > 0
 
     def draw(self, context):
-        for p in context.material.wow_m2_batches:
+        for i, p in enumerate(context.material.wow_m2_batches):
             box = self.layout.box()
-            box.label(text=f"Batch {p.batch_index}: layer {p.material_layer}, {m2_names.BLENDING[p.blending_mode % 8]}")
+            row = box.row()
+            row.label(text=f"Batch {p.batch_index}: layer {p.material_layer}, {m2_names.BLENDING[p.blending_mode % 8]}")
+            row.operator("wow.remove_m2_batch", text="", icon="X").index = i
             col = box.column(align=True)
             for name in ("flags", "shader_id", "priority_plane", "render_flags", "texture_count", "texture_fdids",
-                         "texture_types", "uv_sets"):
+                         "texture_types", "uv_sets", "material_layer", "blending_mode"):
                 col.prop(p, name)
+        self.layout.operator("wow.add_m2_batch", icon="ADD")
         self.layout.operator("wow.rebuild_m2_material")
 
 
-classes = (WOW_OT_rebuild_m2_material, WOW_PT_m2_material)
+classes = (WOW_OT_add_m2_batch, WOW_OT_remove_m2_batch, WOW_OT_rebuild_m2_material, WOW_PT_m2_material)
