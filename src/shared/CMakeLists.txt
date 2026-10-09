@@ -112,6 +112,7 @@ set (shared_SRCS
     Database/SQLStorage.h
     Database/SQLStorageImpl.h
     Database/StatementStats.h
+    Persistence/SqliteSeed.h
     Multithreading/Messager.h
     nonstd/expected.hpp
     nonstd/nodiscard.hpp
@@ -139,6 +140,7 @@ set (shared_SRCS
     Database/SqlPreparedStatement.cpp
     Database/SQLStorage.cpp
     Database/StatementStats.cpp
+    Persistence/SqliteSeed.cpp
     Multithreading/Messager.cpp
     IO/Context/IoContext.h
     IO/Utils.h

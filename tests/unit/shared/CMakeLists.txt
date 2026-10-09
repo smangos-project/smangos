@@ -13,6 +13,7 @@ add_executable(tests-shared
   BnetRpcFramingTests.cpp
   ConfigTests.cpp
   StatementStatsTests.cpp
+  SqliteSeedTests.cpp
   TestMain.cpp
 )
 
