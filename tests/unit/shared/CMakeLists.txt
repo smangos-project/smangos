@@ -14,6 +14,7 @@ add_executable(tests-shared
   ConfigTests.cpp
   StatementStatsTests.cpp
   SqliteSeedTests.cpp
+  CharStoreWriterTests.cpp
   TestMain.cpp
 )
 

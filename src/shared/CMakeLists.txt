@@ -112,7 +112,11 @@ set (shared_SRCS
     Database/SQLStorage.h
     Database/SQLStorageImpl.h
     Database/StatementStats.h
+    Persistence/CharTables.h
+    Persistence/EpochBuffer.h
+    Persistence/EpochWriter.h
     Persistence/SqliteSeed.h
+    Persistence/TableRegistry.h
     Multithreading/Messager.h
     nonstd/expected.hpp
     nonstd/nodiscard.hpp
@@ -140,7 +144,11 @@ set (shared_SRCS
     Database/SqlPreparedStatement.cpp
     Database/SQLStorage.cpp
     Database/StatementStats.cpp
+    Persistence/CharTables.cpp
+    Persistence/EpochBuffer.cpp
+    Persistence/EpochWriter.cpp
     Persistence/SqliteSeed.cpp
+    Persistence/TableRegistry.cpp
     Multithreading/Messager.cpp
     IO/Context/IoContext.h
     IO/Utils.h
