@@ -43,6 +43,7 @@ namespace Persistence
         uint32 walAutocheckpoint = 1000;
         uint32 checkpointIntervalMs = 1000;
         size_t maxPendingEpochs = 2;
+        std::string extraPragmas;       // run after the defaults, e.g. "PRAGMA cache_size = -65536;"
     };
 
     struct EpochStats

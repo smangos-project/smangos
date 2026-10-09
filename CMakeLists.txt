@@ -351,6 +351,10 @@ if (BUILD_CASC_EXTRACTOR)
     add_subdirectory(tools/casc_extractor)
 endif()
 
+if (BUILD_CHARSTORE_BENCH)
+    add_subdirectory(tools/charstore_bench)
+endif()
+
 if (BUILD_CLIENT AND WIN32)
     add_subdirectory(client)
 endif()

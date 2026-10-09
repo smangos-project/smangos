@@ -92,7 +92,7 @@ namespace Persistence
     bool EpochWriter::Prepare(std::string& error)
     {
         std::string const pragmas = "PRAGMA synchronous = " + m_config.synchronous + "; PRAGMA wal_autocheckpoint = " +
-            std::to_string(m_config.checkpoint == CheckpointMode::Auto ? m_config.walAutocheckpoint : 0);
+            std::to_string(m_config.checkpoint == CheckpointMode::Auto ? m_config.walAutocheckpoint : 0) + "; " + m_config.extraPragmas;
         if (sqlite3_exec(m_db, pragmas.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
         {
             error = std::string("pragmas: ") + sqlite3_errmsg(m_db);

@@ -16,6 +16,7 @@ option(BUILD_CLIENT                   "Build the client loader and library (Wind
 option(BUILD_DATABASE_TOOL            "Build the database setup tool (tools/database_tool)"                                            OFF)
 option(BUILD_MAP_EXTRACTOR            "Build the map/vmap/mmap extractor (tools/map_extractor)"                                         OFF)
 option(BUILD_CASC_EXTRACTOR           "Build the CASC client extractor (tools/casc_extractor)"                                          OFF)
+option(BUILD_CHARSTORE_BENCH          "Build the character store writer benchmark (tools/charstore_bench)"                              OFF)
 
 if (BUILD_MAP_EXTRACTOR AND NOT BUILD_DATABASE_TOOL)
   set(BUILD_DATABASE_TOOL ON CACHE BOOL "Build the database setup tool (tools/database_tool)" FORCE)
@@ -95,6 +96,7 @@ message(STATUS
     BUILD_DATABASE_TOOL       Build the database setup tool (tools/database_tool)
     BUILD_MAP_EXTRACTOR       Build the map/vmap/mmap extractor (tools/map_extractor)
     BUILD_CASC_EXTRACTOR      Build the CASC client extractor (tools/casc_extractor)
+    BUILD_CHARSTORE_BENCH     Build the character store writer benchmark (tools/charstore_bench)
 
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
