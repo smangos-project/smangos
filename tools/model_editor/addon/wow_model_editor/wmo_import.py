@@ -170,6 +170,31 @@ def import_portals(root, coll):
             e.group_index, e.portal_index, e.side = r.group_index, r.portal_index, r.side
 
 
+def import_convex_planes(root, coll):
+    """One quad per MCVP plane, centred on the plane point nearest the origin; the face normal and position define the plane."""
+    planes = root.convex_volume_planes
+    if not len(planes):
+        return
+    verts, faces = [], []
+    for pl in planes:
+        n = np.array((pl.normal.x, pl.normal.y, pl.normal.z), np.float64)
+        ln = np.linalg.norm(n)
+        n = n / ln if ln else np.array((0.0, 0.0, 1.0))
+        a = np.array((1.0, 0.0, 0.0)) if abs(n[0]) < 0.9 else np.array((0.0, 1.0, 0.0))
+        u = np.cross(n, a)
+        u /= np.linalg.norm(u)
+        v = np.cross(n, u)
+        c = -n * pl.distance
+        base = len(verts)
+        verts += [tuple(c - u - v), tuple(c + u - v), tuple(c + u + v), tuple(c - u + v)]
+        faces.append([base, base + 1, base + 2, base + 3])
+    me = bpy.data.meshes.new("convex_planes")
+    me.from_pydata(verts, [], faces)
+    ob = bpy.data.objects.new("convex_planes", me)
+    ob.display_type = "WIRE"
+    coll.objects.link(ob)
+
+
 def import_lights(root, coll):
     for i, l in enumerate(root.lights):
         kind = LIGHT_KINDS.get(l.type, "POINT")
@@ -336,6 +361,8 @@ def load(client_path, options=None, parent=None):
     group_objs = import_groups(w, _link(top, "groups"), mats, opts, stem)
     if opts["portals"]:
         import_portals(root, _link(top, "portals"))
+    if opts["portals"]:
+        import_convex_planes(root, _link(top, "convex planes"))
     if opts["lights"]:
         import_lights(root, _link(top, "lights"))
     if opts["doodads"]:

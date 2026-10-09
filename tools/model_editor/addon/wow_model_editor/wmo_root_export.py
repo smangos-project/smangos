@@ -590,6 +590,29 @@ def update_portals(w, root, report):
     return changed
 
 
+def update_convex_planes(w, root, report):
+    r = w.root
+    ob = next((o for o in root.all_objects if o.type == "MESH" and o.name.startswith("convex_planes")), None)
+    if ob is None:
+        return False
+    src = r.convex_volume_planes
+    me = ob.data
+    if len(me.polygons) != len(src):
+        report.add("ERROR", ob.name, f"convex planes are one face each: {len(src)} faces expected, has {len(me.polygons)}")
+        return False
+    changed = False
+    m = ob.matrix_basis
+    for i, poly in enumerate(me.polygons):
+        co = np.array([tuple(m @ me.vertices[k].co) for k in poly.vertices], np.float64)
+        n, d = _plane(co)
+        pl = src[i]
+        if not (_close(n, _vec(pl.normal), 1e-4) and abs(d - pl.distance) <= 1e-4):
+            _set_vec(pl.normal, n)
+            pl.distance = d
+            changed = True
+    return changed
+
+
 def _create_liquid(g, ob, report):
     """Gives a liquid-less group the grid described by new liquid object `ob`."""
     p = ob.wow_wmo_liquid
@@ -770,7 +793,7 @@ def delete_groups(w, gone, report, order=None):
 
 def update_root_objects(w, root, report):
     """Returns the set of group indices whose liquids changed; root edits are applied in place."""
-    for fn in (update_header, update_doodads, update_lights, update_fogs, update_portals):
+    for fn in (update_header, update_doodads, update_lights, update_fogs, update_portals, update_convex_planes):
         if fn(w, root, report):
             report.add("INFO", fn.__name__.replace("update_", ""), "updated")
     reference_new_groups(w, sorted(getattr(report, "new_groups", {}).values()))

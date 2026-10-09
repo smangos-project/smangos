@@ -1024,6 +1024,24 @@ def wmo_portal_create_delete():
 
 
 @test
+def wmo_convex_planes_edit():
+    path = "world/wmo/transports/transport_ship/transportship.wmo"
+    coll, r = export_files(path)
+    assert not differing(r.files), differing(r.files)
+    src = wmo_expect(path)[1]
+    n = len(src.convex_volume_planes)
+    ob = next(o for o in coll.all_objects if o.name.startswith("convex_planes"))
+    assert len(ob.data.polygons) == n > 0
+    ob.data.vertices[0].co.z += 2.0
+    r = wmo_export.export(coll, options={"dry_run": True})
+    assert not r.errors, str(r)
+    new = reread(path, r.files)
+    assert len(new.root.convex_volume_planes) == n and new.validate().ok
+    ch = [i for i in range(n) if abs(new.root.convex_volume_planes[i].distance - src.convex_volume_planes[i].distance) > 1e-4]
+    assert ch == [0], ch
+
+
+@test
 def wmo_group_delete():
     path = REFS[1]
     coll, r = export_files(path)
