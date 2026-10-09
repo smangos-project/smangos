@@ -39,6 +39,7 @@ database_tool export   --format db2|dbc [--tables A,B] [--dir D] [--client]
 database_tool fdid     import --listfile FILE | import --custom FILE... | export | allocate PATH... | retire PATH...
 database_tool port-migration <file>...
 database_tool compare-world --mysql "<host;port;user;pass;db>"
+database_tool charstore import --mysql "<host;port;user;pass;db>" --out FILE [--schema-only] [--tables a,b] [--page-size N] [--without-rowid]
 database_tool reference
 database_tool spec init
 database_tool spec set --source <srv|vdbc|new> --table <t> [--column <c>] [--disposition D] [--target T] [--rule R] [--reason "..."] [--reviewed yes|no] [--overwrite]
@@ -108,6 +109,16 @@ evaluate is left untouched and reported (exit `2`); those need a hand port (worl
 Diffs every table `.world` and a MySQL `mangos` database have in common: table sets, column
 names/order, row counts, and the first differing row per table (by primary key, or by every
 column if a table has none). Floats are compared as float32. Exit `0` only if identical.
+
+### charstore import
+
+Copies a MariaDB character database into a new stock sqlite file (refuses an existing one):
+`SHOW CREATE TABLE` through the DDL translator, rows in one transaction, secondary indexes after
+the rows, then row counts, `integrity_check` and WAL mode are checked. The file is seeded with an
+empty stock image (`src/shared/Persistence/SqliteSeed`) because the linked doltlite would
+otherwise create its own format; doltlite also does not persist `PRAGMA journal_mode=WAL` on a
+stock file, so WAL is seeded into the header. `--without-rowid` makes composite-key tables
+`WITHOUT ROWID`. Translator warnings are printed (today only `gm_subsurveys`' AUTO_INCREMENT).
 
 ### reference
 
