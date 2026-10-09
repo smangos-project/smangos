@@ -17,6 +17,7 @@ add_library(database_tool_lib STATIC
   Migrations/MigrationState.cpp
   Migrations/MigrationRunner.cpp
   Commands/CreateMysqlDatabase.cpp
+  Commands/CharStoreImport.cpp
   Commands/CreateWorldDatabase.cpp
   Commands/GenerateWms.cpp
   Fdid/FileDataIds.cpp

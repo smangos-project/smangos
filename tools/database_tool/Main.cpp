@@ -1,5 +1,6 @@
 #include "Version.h"
 
+#include "Commands/CharStoreImport.h"
 #include "Commands/CreateWorldDatabase.h"
 #include "Commands/GenerateWms.h"
 #include "Commands/PortMigrationFile.h"
@@ -918,6 +919,72 @@ namespace
     }
 
 
+    // charstore import --mysql "<host;port;user;pass;db>" --out FILE [--schema-only] [--tables a,b]
+    //                  [--page-size N] [--without-rowid]
+    int RunCharStore(std::vector<std::string> const& args)
+    {
+        if (args.empty() || args[0] != "import")
+        {
+            std::printf("usage: charstore import --mysql \"<host;port;user;pass;db>\" --out FILE [--schema-only] "
+                "[--tables a,b] [--page-size N] [--without-rowid]\n");
+            return 1;
+        }
+
+        CharStoreImportOptions options;
+        for (size_t i = 1; i < args.size(); ++i)
+        {
+            bool const hasValue = i + 1 < args.size();
+            if (args[i] == "--mysql" && hasValue)
+                options.mysqlInfo = args[++i];
+            else if (args[i] == "--out" && hasValue)
+                options.out = args[++i];
+            else if (args[i] == "--tables" && hasValue)
+            {
+                std::string const list = args[++i];
+                for (size_t start = 0; start <= list.size();)
+                {
+                    size_t const comma = std::min(list.find(',', start), list.size());
+                    if (comma > start)
+                        options.tables.push_back(list.substr(start, comma - start));
+                    start = comma + 1;
+                }
+            }
+            else if (args[i] == "--page-size" && hasValue)
+                options.pageSize = static_cast<uint32_t>(std::strtoul(args[++i].c_str(), nullptr, 10));
+            else if (args[i] == "--schema-only")
+                options.schemaOnly = true;
+            else if (args[i] == "--without-rowid")
+                options.withoutRowid = true;
+            else
+            {
+                std::printf("charstore import: unknown argument %s\n", args[i].c_str());
+                return 1;
+            }
+        }
+        if (options.mysqlInfo.empty() || options.out.empty())
+        {
+            std::printf("charstore import: --mysql and --out are required\n");
+            return 1;
+        }
+
+        CharStoreImportResult result = ImportCharStore(options);
+        uint64_t rows = 0;
+        for (CharStoreTableResult const& table : result.tables)
+        {
+            for (std::string const& warning : table.warnings)
+                std::printf("%s: %s\n", table.table.c_str(), warning.c_str());
+            rows += table.rows;
+        }
+        if (!result.error.empty())
+        {
+            std::printf("charstore import: %s\n", result.error.c_str());
+            return 1;
+        }
+        std::printf("charstore import: %zu tables, %llu rows -> %s\n", result.tables.size(),
+            static_cast<unsigned long long>(rows), options.out.string().c_str());
+        return 0;
+    }
+
     // generate-wms [--out DIR]
     int RunGenerateWms(std::vector<std::string> const& args)
     {
@@ -980,6 +1047,8 @@ int main(int argc, char** argv)
         return RunFdid(rest);
     if (command == "generate-wms")
         return RunGenerateWms(rest);
+    if (command == "charstore")
+        return RunCharStore(rest);
     if (command == "verify")
         return RunVerifyCommand(rest);
 

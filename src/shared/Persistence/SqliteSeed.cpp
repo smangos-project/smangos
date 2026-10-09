@@ -24,14 +24,14 @@ namespace Persistence
         }
     }
 
-    std::vector<uint8> EmptySqliteImage(uint32 pageSize)
+    std::vector<uint8> EmptySqliteImage(uint32 pageSize, bool wal)
     {
         std::vector<uint8> image(pageSize, 0);
         static char const magic[16] = "SQLite format 3";
         std::copy(magic, magic + 16, image.begin());
         PutBE16(image, 16, pageSize == 65536 ? 1 : pageSize);
-        image[18] = 1;              // write version: legacy (rollback journal)
-        image[19] = 1;              // read version
+        image[18] = wal ? 2 : 1;    // write version: 1 rollback journal, 2 WAL
+        image[19] = wal ? 2 : 1;    // read version
         image[20] = 0;              // reserved bytes per page
         image[21] = 64;             // max embedded payload fraction
         image[22] = 32;             // min embedded payload fraction
@@ -48,7 +48,7 @@ namespace Persistence
         return image;
     }
 
-    bool EnsureStockSqliteFile(std::string const& path, uint32 pageSize, std::string& error)
+    bool EnsureStockSqliteFile(std::string const& path, uint32 pageSize, bool wal, std::string& error)
     {
         if (pageSize < 512 || pageSize > 65536 || (pageSize & (pageSize - 1)))
         {
@@ -60,7 +60,7 @@ namespace Persistence
         if (std::filesystem::exists(path, ec) && std::filesystem::file_size(path, ec) > 0)
             return true;
 
-        std::vector<uint8> const image = EmptySqliteImage(pageSize);
+        std::vector<uint8> const image = EmptySqliteImage(pageSize, wal);
         FILE* file = std::fopen(path.c_str(), "wb");
         if (!file)
         {
@@ -93,9 +93,9 @@ namespace Persistence
         return engine == "orig";
     }
 
-    sqlite3* OpenStockSqlite(std::string const& path, uint32 pageSize, std::string& error)
+    sqlite3* OpenStockSqlite(std::string const& path, uint32 pageSize, bool wal, std::string& error)
     {
-        if (!EnsureStockSqliteFile(path, pageSize, error))
+        if (!EnsureStockSqliteFile(path, pageSize, wal, error))
             return nullptr;
 
         sqlite3* db = nullptr;

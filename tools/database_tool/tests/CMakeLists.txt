@@ -17,6 +17,7 @@ add_executable(tests-database-tool
   Migrations/MigrationRunnerTests.cpp
   ToolConfigTests.cpp
   Commands/CreateMysqlDatabaseTests.cpp
+  Commands/CharStoreImportTests.cpp
   Commands/CreateWorldDatabaseTests.cpp
   Commands/PortMigrationFileTests.cpp
   Commands/GenerateWmsTests.cpp
