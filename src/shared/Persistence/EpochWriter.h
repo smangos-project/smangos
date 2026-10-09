@@ -39,7 +39,7 @@ namespace Persistence
         bool useReplace = false;        // REPLACE instead of INSERT ... ON CONFLICT DO UPDATE
         bool primeFirstImage = true;    // an owner's first image only records hashes (rows are already stored)
         std::string synchronous = "FULL";
-        CheckpointMode checkpoint = CheckpointMode::Auto;
+        CheckpointMode checkpoint = CheckpointMode::AfterCommit;
         uint32 walAutocheckpoint = 1000;
         uint32 checkpointIntervalMs = 1000;
         size_t maxPendingEpochs = 2;

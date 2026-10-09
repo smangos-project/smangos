@@ -90,8 +90,8 @@ namespace
         config.mode = mode == "full" ? WriteMode::Full : mode == "none" ? WriteMode::None : WriteMode::Diff;
         config.useReplace = args.Has("--replace");
         config.synchronous = args.Get("--sync", "full");
-        std::string const checkpoint = args.Get("--checkpoint", "auto");
-        config.checkpoint = checkpoint == "commit" ? CheckpointMode::AfterCommit : checkpoint == "thread" ? CheckpointMode::Thread : CheckpointMode::Auto;
+        std::string const checkpoint = args.Get("--checkpoint", "commit");
+        config.checkpoint = checkpoint == "commit" ? CheckpointMode::AfterCommit : checkpoint == "thread" ? CheckpointMode::Thread : checkpoint == "auto" ? CheckpointMode::Auto : CheckpointMode::AfterCommit;
         config.walAutocheckpoint = uint32(args.Num("--wal-autocheckpoint", 1000));
         config.checkpointIntervalMs = uint32(args.Num("--checkpoint-ms", 1000));
         config.maxPendingEpochs = size_t(args.Num("--max-pending", 2));
