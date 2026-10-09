@@ -138,3 +138,6 @@ Progression.h
 
 # manager
 .manager
+
+# python
+__pycache__
