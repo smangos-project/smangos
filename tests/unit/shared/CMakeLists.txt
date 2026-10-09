@@ -12,6 +12,7 @@ add_executable(tests-shared
   PacketFramingTests.cpp
   BnetRpcFramingTests.cpp
   ConfigTests.cpp
+  StatementStatsTests.cpp
   TestMain.cpp
 )
 

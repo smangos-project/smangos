@@ -69,6 +69,7 @@
 #include "BattleGroundMgr.h"
 #include "Chat.h"
 #include "Database/DatabaseImpl.h"
+#include "Database/StatementStats.h"
 #include "Spell.h"
 #include "SpellModifier.h"
 #include "ScriptMgr.h"
@@ -16069,6 +16070,8 @@ void Player::SaveToDB(bool online, bool force)
         ScheduleDelayedOperation(DELAYED_SAVE_PLAYER);
         return;
     }
+
+    StatementStats::ScopedTiming saveTiming(CharacterDatabase.GetStatementStats(), "Player::SaveToDB");
 
     CharacterDatabase.BeginTransaction(GetGUIDLow());
 

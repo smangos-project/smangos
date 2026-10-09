@@ -27,6 +27,7 @@
 #include "Database/SqlOperations.h"
 #include "IO/Multithreading/CreateThread.h"
 #include "Database.h"
+#include "Database/StatementStats.h"
 
 #include <ctime>
 #include <iostream>
@@ -142,6 +143,22 @@ bool SqlConnection::ExecuteStmt(int nIndex, SqlStmtParameters const& id)
 Database::~Database()
 {
     StopServer();
+    delete m_stmtStats;
+}
+
+void Database::EnableStatementStats(char const* fileName, uint32 intervalMs)
+{
+    if (m_stmtStats)
+        return;
+    m_stmtStats = new StatementStats(m_logsDir + fileName, intervalMs);
+    LOCK_GUARD _guard(m_stmtGuard);
+    for (auto const& entry : m_stmtRegistry)
+        m_stmtStats->RegisterPrepared(entry.second, entry.first);
+}
+
+void Database::RecordPlainStatement(std::string const& sql)
+{
+    m_stmtStats->RecordPlain(sql);
 }
 
 bool Database::Initialize(char const* infoString, int nConns /*= 1*/, int nWorkers)
@@ -663,6 +680,13 @@ bool Database::DirectExecuteStmt(SqlStatementID const& id, SqlStmtParameters* pa
 {
     MANGOS_ASSERT(params);
     std::unique_ptr<SqlStmtParameters> p(params);
+    if (m_stmtStats)
+    {
+        size_t bytes = 0;
+        for (SqlStmtFieldData const& data : params->params())
+            bytes += data.size();
+        m_stmtStats->RecordPrepared(id.ID(), bytes);
+    }
     //execute statement
     SqlConnection::Lock _guard(getAsyncConnection());
     return _guard->ExecuteStmt(id.ID(), *params);
@@ -685,6 +709,8 @@ SqlStatement Database::CreateStatement(SqlStatementID& index, char const* fmt)
         {
             nId = ++m_iStmtIndex;
             m_stmtRegistry[szFmt] = nId;
+            if (m_stmtStats)
+                m_stmtStats->RegisterPrepared(nId, szFmt);
         }
         else
             nId = iter->second;

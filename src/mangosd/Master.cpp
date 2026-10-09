@@ -458,6 +458,9 @@ bool Master::_StartDB()
         return false;
     }
 
+    if (sConfig.GetBoolDefault("Persistence.Measure.Baseline", false))
+        CharacterDatabase.EnableStatementStats("charstore-baseline.csv", sConfig.GetIntDefault("Persistence.Measure.BaselineInterval", 10000));
+
     // Clean the database before starting
     clearOnlineAccounts();
 

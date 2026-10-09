@@ -25,6 +25,9 @@
 #include "DatabaseImpl.h"
 #include "Timer.h"
 #include "ThreadPool.h"
+#include "Database/StatementStats.h"
+
+#include <chrono>
 
 #define LOCK_DB_CONN(conn) SqlConnection::Lock guard(conn)
 
@@ -33,6 +36,8 @@
 bool SqlPlainRequest::Execute(SqlConnection* conn)
 {
     // just do it
+    if (StatementStats* stats = conn->DB().GetStatementStats())
+        stats->RecordPlain(m_sql);
     LOCK_DB_CONN(conn);
     return conn->Execute(m_sql);
 }
@@ -53,6 +58,11 @@ bool SqlTransaction::Execute(SqlConnection* conn)
 
     LOCK_DB_CONN(conn);
 
+    StatementStats* stats = conn->DB().GetStatementStats();
+    auto const start = std::chrono::steady_clock::now();
+    if (stats)
+        StatementStats::SetInTransaction(true);
+
     conn->BeginTransaction();
 
     int const nItems = m_queue.size();
@@ -63,11 +73,18 @@ bool SqlTransaction::Execute(SqlConnection* conn)
         if(!pStmt->Execute(conn))
         {
             conn->RollbackTransaction();
+            StatementStats::SetInTransaction(false);
             return false;
         }
     }
 
-    return conn->CommitTransaction();
+    bool const committed = conn->CommitTransaction();
+    if (stats)
+    {
+        StatementStats::SetInTransaction(false);
+        stats->RecordTransaction(uint32(nItems), uint64(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count()));
+    }
+    return committed;
 }
 
 SqlPreparedRequest::SqlPreparedRequest(int nIndex, SqlStmtParameters* arg) : m_nIndex(nIndex), m_param(arg)
@@ -81,6 +98,13 @@ SqlPreparedRequest::~SqlPreparedRequest()
 
 bool SqlPreparedRequest::Execute(SqlConnection* conn)
 {
+    if (StatementStats* stats = conn->DB().GetStatementStats())
+    {
+        size_t bytes = 0;
+        for (SqlStmtFieldData const& data : m_param->params())
+            bytes += data.size();
+        stats->RecordPrepared(m_nIndex, bytes);
+    }
     LOCK_DB_CONN(conn);
     return conn->ExecuteStmt(m_nIndex, *m_param);
 }

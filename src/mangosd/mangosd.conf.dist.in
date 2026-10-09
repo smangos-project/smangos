@@ -113,6 +113,15 @@ BindIP = "0.0.0.0"
 #        Default: 1 (only save on logout)
 #                 0 (save on every player save)
 #
+#    Persistence.Measure.Baseline
+#        Count executed character DB write statements per table and time Player::SaveToDB,
+#        written to LogsDir/charstore-baseline.csv
+#        Default: 0
+#
+#    Persistence.Measure.BaselineInterval
+#        Milliseconds per CSV block
+#        Default: 10000
+#
 #    Terrain.Preload.Continents
 #    Terrain.Preload.Instances
 #        Enable/Disable to load all terrain data on server startup
@@ -331,6 +340,8 @@ ChangeWeatherInterval = 600000
 PlayerSave.Interval = 900000
 PlayerSave.Stats.MinLevel = 0
 PlayerSave.Stats.SaveOnlyOnLogout = 1
+Persistence.Measure.Baseline = 0
+Persistence.Measure.BaselineInterval = 10000
 Terrain.Preload.Continents = 0
 Terrain.Preload.Instances = 0
 vmap.enableLOS = 1

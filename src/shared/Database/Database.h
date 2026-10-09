@@ -37,6 +37,7 @@ class SqlQueryHolder;
 class SqlStmtParameters;
 class SqlParamBinder;
 class Database;
+class StatementStats;
 
 #define MAX_QUERY_LEN   (32*1024)
 
@@ -156,6 +157,8 @@ class Database
             if(!m_pAsyncConn)
                 return false;
 
+            if (m_stmtStats)
+                RecordPlainStatement(sql);
             SqlConnection::Lock guard(m_pAsyncConn);
             return guard->Execute(sql);
         }
@@ -285,6 +288,11 @@ class Database
 
         // Frees data, cancels scheduled queries, closes connection
         void StopServer();
+
+        // Counts executed write statements into LogsDir/fileName (call before async use starts)
+        void EnableStatementStats(char const* fileName, uint32 intervalMs);
+        StatementStats* GetStatementStats() const { return m_stmtStats; }
+        void RecordPlainStatement(std::string const& sql);
     protected:
         Database() : m_nQueryConnPoolSize(1), m_delayQueue(new SqlQueue()), m_pAsyncConn(nullptr),
                      m_pResultQueue(nullptr), m_numAsyncWorkers(0),
@@ -346,6 +354,7 @@ class Database
 
         bool m_logSQL;
         std::string m_logsDir;
+        StatementStats* m_stmtStats = nullptr;
         uint32 m_pingIntervalMs;
 };
 #endif
